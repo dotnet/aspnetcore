@@ -29,7 +29,8 @@ powershell.exe -NoProfile -ExecutionPolicy unrestricted -file GetDotNetInstall.p
 echo "Installing SDK"
 powershell.exe -NoProfile -ExecutionPolicy unrestricted -file dotnet-install.ps1 -Architecture %$arch% -Version %$sdkVersion% -InstallDir %DOTNET_ROOT%" -NoCdn true
 echo "Installing Runtime"
-powershell.exe -NoProfile -ExecutionPolicy unrestricted -file dotnet-install.ps1 -Architecture %$arch% -Runtime dotnet -Version %$runtimeVersion% -InstallDir %DOTNET_ROOT%" -NoCdn true
+echo powershell.exe -NoProfile -ExecutionPolicy unrestricted -file dotnet-install.ps1 -Architecture %$arch% -Runtime dotnet -Version %$runtimeVersion% -InstallDir %DOTNET_ROOT%" -NoCdn true
+powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %$arch% -Runtime dotnet -Version %$runtimeVersion% -InstallDir %DOTNET_ROOT%"
 
 set exit_code=0
 echo "Restore: dotnet restore RunTests\RunTests.csproj --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --ignore-failed-sources..."
