@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var initialResourcesRequested = GetAndClearRequestedPaths();
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json")));
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm")));
-            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.timezones.dat")));            
+            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.timezones.dat")));
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".js")));
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".dll")));
 
@@ -66,6 +66,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void IncrementallyUpdatesCache()
         {
             // Perform a first load to populate the cache
