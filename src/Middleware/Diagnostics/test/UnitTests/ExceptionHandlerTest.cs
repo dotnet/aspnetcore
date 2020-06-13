@@ -410,7 +410,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             // Assert
             Assert.Equal("An error occurred when configuring the exception handler middleware. " +
                 "Either the 'ExceptionHandlingPath' or the 'ExceptionHandler' property must be set in 'UseExceptionHandler()'. " +
-                @"Alternatively, set one of the aforementioned properties in 'Startup.ConfigureServices' as follows: 'services.Configure&lt;ExceptionHandlerOptions&gt;(options =&gt; { ... });'.",
+                "Alternatively, set one of the aforementioned properties in 'Startup.ConfigureServices' as follows: 'services.Configure<ExceptionHandlerOptions>(options => { ... });'.",
                 exception.Message);
         }
     }
