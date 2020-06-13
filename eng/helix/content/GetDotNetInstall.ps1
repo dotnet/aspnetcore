@@ -5,6 +5,7 @@
      Installs dotnet-install.ps1 from https://dot.net/v1/dotnet-install.ps1
  #> 
 
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $installScript = 'dotnet-install.ps1'
 if (!(Test-Path $installScript)) {
   $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
