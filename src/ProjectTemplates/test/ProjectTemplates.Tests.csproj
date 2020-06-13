@@ -64,7 +64,7 @@
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>Test.RazorSdkDirectoryRoot</_Parameter1>
-      <_Parameter2>$(RazorSdkDirectoryRoot)</_Parameter2>
+      <_Parameter2 Condition="'$(IsHelixJob)' != 'true'">$(RazorSdkDirectoryRoot)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(ContinuousIntegrationBuild)' == 'true'">
       <_Parameter1>ContinuousIntegrationBuild</_Parameter1>
