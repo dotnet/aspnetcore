@@ -93,8 +93,8 @@ namespace Microsoft.AspNetCore.Hosting
         Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureAppConfiguration(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.Configuration.IConfigurationBuilder> configureDelegate);
         Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureServices(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.DependencyInjection.IServiceCollection> configureServices);
         Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureServices(System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection> configureServices);
-        string GetSetting(string key);
-        Microsoft.AspNetCore.Hosting.IWebHostBuilder UseSetting(string key, string value);
+        string? GetSetting(string key);
+        Microsoft.AspNetCore.Hosting.IWebHostBuilder UseSetting(string key, string? value);
     }
     public partial interface IWebHostEnvironment : Microsoft.Extensions.Hosting.IHostEnvironment
     {
