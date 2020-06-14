@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Builder
     public partial interface IApplicationBuilder
     {
         System.IServiceProvider ApplicationServices { get; set; }
-        System.Collections.Generic.IDictionary<string, object> Properties { get; }
+        System.Collections.Generic.IDictionary<string, object?> Properties { get; }
         Microsoft.AspNetCore.Http.Features.IFeatureCollection ServerFeatures { get; }
         Microsoft.AspNetCore.Http.RequestDelegate Build();
         Microsoft.AspNetCore.Builder.IApplicationBuilder New();
@@ -108,13 +108,13 @@ namespace Microsoft.AspNetCore.Http
     public abstract partial class ConnectionInfo
     {
         protected ConnectionInfo() { }
-        public abstract System.Security.Cryptography.X509Certificates.X509Certificate2 ClientCertificate { get; set; }
+        public abstract System.Security.Cryptography.X509Certificates.X509Certificate2? ClientCertificate { get; set; }
         public abstract string Id { get; set; }
-        public abstract System.Net.IPAddress LocalIpAddress { get; set; }
+        public abstract System.Net.IPAddress? LocalIpAddress { get; set; }
         public abstract int LocalPort { get; set; }
-        public abstract System.Net.IPAddress RemoteIpAddress { get; set; }
+        public abstract System.Net.IPAddress? RemoteIpAddress { get; set; }
         public abstract int RemotePort { get; set; }
-        public abstract System.Threading.Tasks.Task<System.Security.Cryptography.X509Certificates.X509Certificate2> GetClientCertificateAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        public abstract System.Threading.Tasks.Task<System.Security.Cryptography.X509Certificates.X509Certificate2?> GetClientCertificateAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
     }
     public partial class CookieBuilder
     {
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Http
         public abstract System.Threading.CancellationToken RequestAborted { get; set; }
         public abstract System.IServiceProvider RequestServices { get; set; }
         public abstract Microsoft.AspNetCore.Http.HttpResponse Response { get; }
-        public abstract Microsoft.AspNetCore.Http.ISession? Session { get; set; }
+        public abstract Microsoft.AspNetCore.Http.ISession Session { get; set; }
         public abstract string TraceIdentifier { get; set; }
         public abstract System.Security.Claims.ClaimsPrincipal User { get; set; }
         public abstract Microsoft.AspNetCore.Http.WebSocketManager WebSockets { get; }
@@ -326,7 +326,7 @@ namespace Microsoft.AspNetCore.Http
     }
     public partial interface IHttpContextAccessor
     {
-        Microsoft.AspNetCore.Http.HttpContext HttpContext { get; set; }
+        Microsoft.AspNetCore.Http.HttpContext? HttpContext { get; set; }
     }
     public partial interface IHttpContextFactory
     {

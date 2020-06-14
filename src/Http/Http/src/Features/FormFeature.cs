@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -16,8 +17,8 @@ namespace Microsoft.AspNetCore.Http.Features
     {
         private readonly HttpRequest _request;
         private readonly FormOptions _options;
-        private Task<IFormCollection> _parsedFormTask;
-        private IFormCollection _form;
+        private Task<IFormCollection>? _parsedFormTask;
+        private IFormCollection? _form;
 
         public FormFeature(IFormCollection form)
         {
@@ -27,7 +28,10 @@ namespace Microsoft.AspNetCore.Http.Features
             }
 
             Form = form;
+            _request = default!;
+            _options = FormOptions.Default;
         }
+
         public FormFeature(HttpRequest request)
             : this(request, FormOptions.Default)
         {
@@ -48,12 +52,11 @@ namespace Microsoft.AspNetCore.Http.Features
             _options = options;
         }
 
-        private MediaTypeHeaderValue ContentType
+        private MediaTypeHeaderValue? ContentType
         {
             get
             {
-                MediaTypeHeaderValue mt;
-                MediaTypeHeaderValue.TryParse(_request.ContentType, out mt);
+                MediaTypeHeaderValue.TryParse(_request.ContentType, out var mt);
                 return mt;
             }
         }
@@ -73,7 +76,7 @@ namespace Microsoft.AspNetCore.Http.Features
             }
         }
 
-        public IFormCollection Form
+        public IFormCollection? Form
         {
             get { return _form; }
             set
@@ -138,11 +141,11 @@ namespace Microsoft.AspNetCore.Http.Features
                 _request.EnableRewind(_options.MemoryBufferThreshold, _options.BufferBodyLengthLimit);
             }
 
-            FormCollection formFields = null;
-            FormFileCollection files = null;
+            FormCollection? formFields = null;
+            FormFileCollection? files = null;
 
             // Some of these code paths use StreamReader which does not support cancellation tokens.
-            using (cancellationToken.Register((state) => ((HttpContext)state).Abort(), _request.HttpContext))
+            using (cancellationToken.Register((state) => ((HttpContext)state!).Abort(), _request.HttpContext))
             {
                 var contentType = ContentType;
                 // Check the content-type
@@ -270,7 +273,7 @@ namespace Microsoft.AspNetCore.Http.Features
             return Form;
         }
 
-        private Encoding FilterEncoding(Encoding encoding)
+        private static Encoding FilterEncoding(Encoding? encoding)
         {
             // UTF-7 is insecure and should not be honored. UTF-8 will succeed for most cases.
             if (encoding == null || Encoding.UTF7.Equals(encoding))
@@ -280,13 +283,13 @@ namespace Microsoft.AspNetCore.Http.Features
             return encoding;
         }
 
-        private bool HasApplicationFormContentType(MediaTypeHeaderValue contentType)
+        private bool HasApplicationFormContentType([NotNullWhen(true)] MediaTypeHeaderValue? contentType)
         {
             // Content-Type: application/x-www-form-urlencoded; charset=utf-8
             return contentType != null && contentType.MediaType.Equals("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase);
         }
 
-        private bool HasMultipartFormContentType(MediaTypeHeaderValue contentType)
+        private bool HasMultipartFormContentType([NotNullWhen(true)] MediaTypeHeaderValue? contentType)
         {
             // Content-Type: multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq
             return contentType != null && contentType.MediaType.Equals("multipart/form-data", StringComparison.OrdinalIgnoreCase);

@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.WebUtilities
     {
         public MultipartSection() { }
         public long? BaseStreamOffset { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public System.IO.Stream? Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.IO.Stream Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public string? ContentDisposition { get { throw null; } }
         public string? ContentType { get { throw null; } }
         public System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues>? Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
