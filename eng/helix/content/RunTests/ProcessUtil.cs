@@ -66,7 +66,7 @@ namespace RunTests
             string filename,
             string arguments,
             string? workingDirectory = null,
-            string dumpDirectoryPath = null,
+            string? dumpDirectoryPath = null,
             bool throwOnError = true,
             IDictionary<string, string?>? environmentVariables = null,
             Action<string>? outputDataReceived = null,
@@ -164,8 +164,8 @@ namespace RunTests
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
-            var canceledTcs = new TaskCompletionSource();
-            await using var _ = cancellationToken.Register(() => canceledTcs.TrySetResult());
+            var canceledTcs = new TaskCompletionSource<object?>();
+            await using var _ = cancellationToken.Register(() => canceledTcs.TrySetResult(null));
 
             var result = await Task.WhenAny(processLifetimeTask.Task, canceledTcs.Task);
 
