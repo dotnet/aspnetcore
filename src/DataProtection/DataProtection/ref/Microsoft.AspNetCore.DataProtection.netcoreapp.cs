@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
     }
     public partial interface IXmlRepository
     {
-        System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement?> GetAllElements();
+        System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement> GetAllElements();
         void StoreElement(System.Xml.Linq.XElement element, string friendlyName);
     }
     public partial class RegistryXmlRepository : Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository
