@@ -9,6 +9,7 @@
     <!-- Set this to false because assemblies should not reference this assembly directly, (except for tests, of course). -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
     <NoWarn>$(NoWarn);CS0649</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

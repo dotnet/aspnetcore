@@ -8,6 +8,7 @@
     <IsShippingPackage>true</IsShippingPackage>
     <StartupObject>Microsoft.AspNetCore.Components.WebAssembly.DevServer.Program</StartupObject>
     <Description>Development server for use when building Blazor applications.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- Set this to false because assemblies should not reference this assembly directly, (except for tests, of course). -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>

@@ -6,6 +6,7 @@
     <IsPackable>true</IsPackable>
     <IsShippingPackage>false</IsShippingPackage>
     <DefineConstants>$(DefineConstants);IGNITOR</DefineConstants>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
