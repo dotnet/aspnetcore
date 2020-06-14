@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Components
             Element = element;
             ValueAttribute = valueAttribute;
             ChangeAttribute = changeAttribute;
+            Suffix = suffix;
         }
         
         /// <summary>

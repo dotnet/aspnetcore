@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -26,14 +27,14 @@ namespace Microsoft.AspNetCore.Components
         private readonly ParameterViewLifetime _lifetime;
         private readonly RenderTreeFrame[] _frames;
         private readonly int _ownerIndex;
-        private readonly IReadOnlyList<CascadingParameterState> _cascadingParametersOrNull;
+        private readonly IReadOnlyList<CascadingParameterState>? _cascadingParametersOrNull;
 
         internal ParameterView(in ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex)
             : this(lifetime, frames, ownerIndex, null)
         {
         }
 
-        private ParameterView(in ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState> cascadingParametersOrNull)
+        private ParameterView(in ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState>? cascadingParametersOrNull)
         {
             _lifetime = lifetime;
             _frames = frames;
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="parameterName">The name of the parameter.</param>
         /// <param name="result">Receives the result, if any.</param>
         /// <returns>True if a matching parameter was found; false otherwise.</returns>
-        public bool TryGetValue<TValue>(string parameterName, out TValue result)
+        public bool TryGetValue<TValue>(string parameterName, [MaybeNullWhen(false)] out TValue result)
         {
             foreach (var entry in this)
             {
@@ -87,8 +88,9 @@ namespace Microsoft.AspNetCore.Components
         /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="parameterName">The name of the parameter.</param>
         /// <returns>The parameter value if found; otherwise the default value for the specified type.</returns>
+        [return: MaybeNull]
         public TValue GetValueOrDefault<TValue>(string parameterName)
-            => GetValueOrDefault<TValue>(parameterName, default);
+            => GetValueOrDefault<TValue>(parameterName, default!);
 
         /// <summary>
         /// Gets the value of the parameter with the specified name, or a specified default value
@@ -253,7 +255,7 @@ namespace Microsoft.AspNetCore.Components
             private CascadingParameterEnumerator _cascadingParameterEnumerator;
             private bool _isEnumeratingDirectParams;
 
-            internal Enumerator(RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState> cascadingParameters)
+            internal Enumerator(RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState>? cascadingParameters)
             {
                 _directParamsEnumerator = new RenderTreeFrameParameterEnumerator(frames, ownerIndex);
                 _cascadingParameterEnumerator = new CascadingParameterEnumerator(cascadingParameters);
@@ -335,11 +337,11 @@ namespace Microsoft.AspNetCore.Components
 
         private struct CascadingParameterEnumerator
         {
-            private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
+            private readonly IReadOnlyList<CascadingParameterState>? _cascadingParameters;
             private int _currentIndex;
             private ParameterValue _current;
 
-            public CascadingParameterEnumerator(IReadOnlyList<CascadingParameterState> cascadingParameters)
+            public CascadingParameterEnumerator(IReadOnlyList<CascadingParameterState>? cascadingParameters)
             {
                 _cascadingParameters = cascadingParameters;
                 _currentIndex = -1;
@@ -362,7 +364,7 @@ namespace Microsoft.AspNetCore.Components
                     _currentIndex = nextIndex;
 
                     var state = _cascadingParameters[_currentIndex];
-                    _current = new ParameterValue(state.LocalValueName, state.ValueSupplier.CurrentValue, true);
+                    _current = new ParameterValue(state.LocalValueName, state.ValueSupplier.CurrentValue!, true);
                     return true;
                 }
                 else

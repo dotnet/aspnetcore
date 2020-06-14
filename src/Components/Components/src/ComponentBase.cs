@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Components
             StateHasChanged();
         }
 
-        Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, object arg)
+        Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, object? arg)
         {
             var task = callback.InvokeAsync(arg);
             var shouldAwaitTask = task.Status != TaskStatus.RanToCompletion &&

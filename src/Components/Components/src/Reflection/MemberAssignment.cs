@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
     internal class MemberAssignment
     {
         public static IEnumerable<PropertyInfo> GetPropertiesIncludingInherited(
-            Type type, BindingFlags bindingFlags)
+            Type? type, BindingFlags bindingFlags)
         {
             var dictionary = new Dictionary<string, List<PropertyInfo>>();
 
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
             return (IPropertySetter)Activator.CreateInstance(
                 typeof(PropertySetter<,>).MakeGenericType(targetType, property.PropertyType),
                 property.SetMethod,
-                cascading);
+                cascading)!;
         }
 
         class PropertySetter<TTarget, TValue> : IPropertySetter
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
             {
                 if (value == null)
                 {
-                    _setterDelegate((TTarget)target, default);
+                    _setterDelegate((TTarget)target, default!);
                 }
                 else
                 {
