@@ -38,8 +38,8 @@ namespace Microsoft.AspNetCore.Http
     }
     public partial interface IFormFileCollection : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.IFormFile>, System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.Http.IFormFile>, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.IFormFile>, System.Collections.IEnumerable
     {
-        Microsoft.AspNetCore.Http.IFormFile this[string name] { get; }
-        Microsoft.AspNetCore.Http.IFormFile GetFile(string name);
+        Microsoft.AspNetCore.Http.IFormFile? this[string name] { get; }
+        Microsoft.AspNetCore.Http.IFormFile? GetFile(string name);
         System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.IFormFile> GetFiles(string name);
     }
     public partial interface IHeaderDictionary : System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>>, System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Primitives.StringValues>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>>, System.Collections.IEnumerable
@@ -58,10 +58,10 @@ namespace Microsoft.AspNetCore.Http
     public partial interface IRequestCookieCollection : System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, string>>, System.Collections.IEnumerable
     {
         int Count { get; }
-        string this[string key] { get; }
+        string? this[string key] { get; }
         System.Collections.Generic.ICollection<string> Keys { get; }
         bool ContainsKey(string key);
-        bool TryGetValue(string key, out string value);
+        bool TryGetValue(string key, [System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute(false)] out string? value);
     }
     public partial interface IResponseCookies
     {
@@ -121,8 +121,8 @@ namespace Microsoft.AspNetCore.Http.Features
         public FeatureReferences(Microsoft.AspNetCore.Http.Features.IFeatureCollection collection) { throw null; }
         public Microsoft.AspNetCore.Http.Features.IFeatureCollection Collection { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public int Revision { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public TFeature Fetch<TFeature>([System.Diagnostics.CodeAnalysis.AllowNullAttribute, System.Diagnostics.CodeAnalysis.MaybeNullAttribute] ref TFeature cached, System.Func<Microsoft.AspNetCore.Http.Features.IFeatureCollection, TFeature> factory) where TFeature : class { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public TFeature Fetch<TFeature, TState>([System.Diagnostics.CodeAnalysis.AllowNullAttribute, System.Diagnostics.CodeAnalysis.MaybeNullAttribute] ref TFeature cached, TState state, System.Func<TState, TFeature> factory) where TFeature : class { throw null; }
+        public TFeature Fetch<TFeature>([System.Diagnostics.CodeAnalysis.AllowNullAttribute, System.Diagnostics.CodeAnalysis.MaybeNullAttribute] ref TFeature cached, System.Func<Microsoft.AspNetCore.Http.Features.IFeatureCollection, TFeature> factory) where TFeature : class? { throw null; }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public TFeature Fetch<TFeature, TState>([System.Diagnostics.CodeAnalysis.AllowNullAttribute, System.Diagnostics.CodeAnalysis.MaybeNullAttribute] ref TFeature cached, TState state, System.Func<TState, TFeature> factory) where TFeature : class? { throw null; }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public void Initalize(Microsoft.AspNetCore.Http.Features.IFeatureCollection collection) { }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public void Initalize(Microsoft.AspNetCore.Http.Features.IFeatureCollection collection, int revision) { }
     }
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Http.Features
     }
     public partial interface IFormFeature
     {
-        Microsoft.AspNetCore.Http.IFormCollection Form { get; set; }
+        Microsoft.AspNetCore.Http.IFormCollection? Form { get; set; }
         bool HasFormContentType { get; }
         Microsoft.AspNetCore.Http.IFormCollection ReadForm();
         System.Threading.Tasks.Task<Microsoft.AspNetCore.Http.IFormCollection> ReadFormAsync(System.Threading.CancellationToken cancellationToken);
@@ -170,9 +170,9 @@ namespace Microsoft.AspNetCore.Http.Features
     public partial interface IHttpConnectionFeature
     {
         string ConnectionId { get; set; }
-        System.Net.IPAddress LocalIpAddress { get; set; }
+        System.Net.IPAddress? LocalIpAddress { get; set; }
         int LocalPort { get; set; }
-        System.Net.IPAddress RemoteIpAddress { get; set; }
+        System.Net.IPAddress? RemoteIpAddress { get; set; }
         int RemotePort { get; set; }
     }
     public partial interface IHttpMaxRequestBodySizeFeature
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Http.Features
         System.IO.Stream Body { get; set; }
         bool HasStarted { get; }
         Microsoft.AspNetCore.Http.IHeaderDictionary Headers { get; set; }
-        string ReasonPhrase { get; set; }
+        string? ReasonPhrase { get; set; }
         int StatusCode { get; set; }
         void OnCompleted(System.Func<object, System.Threading.Tasks.Task> callback, object state);
         void OnStarting(System.Func<object, System.Threading.Tasks.Task> callback, object state);
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Http.Features
     }
     public partial interface IItemsFeature
     {
-        System.Collections.Generic.IDictionary<object, object> Items { get; set; }
+        System.Collections.Generic.IDictionary<object, object?> Items { get; set; }
     }
     public partial interface IQueryFeature
     {
@@ -287,8 +287,8 @@ namespace Microsoft.AspNetCore.Http.Features
     }
     public partial interface ITlsConnectionFeature
     {
-        System.Security.Cryptography.X509Certificates.X509Certificate2 ClientCertificate { get; set; }
-        System.Threading.Tasks.Task<System.Security.Cryptography.X509Certificates.X509Certificate2> GetClientCertificateAsync(System.Threading.CancellationToken cancellationToken);
+        System.Security.Cryptography.X509Certificates.X509Certificate2? ClientCertificate { get; set; }
+        System.Threading.Tasks.Task<System.Security.Cryptography.X509Certificates.X509Certificate2?> GetClientCertificateAsync(System.Threading.CancellationToken cancellationToken);
     }
     public partial interface ITlsTokenBindingFeature
     {
@@ -309,6 +309,6 @@ namespace Microsoft.AspNetCore.Http.Features.Authentication
 {
     public partial interface IHttpAuthenticationFeature
     {
-        System.Security.Claims.ClaimsPrincipal User { get; set; }
+        System.Security.Claims.ClaimsPrincipal? User { get; set; }
     }
 }

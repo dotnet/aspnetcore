@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         public void DeleteCookieShouldSetDefaultPath()
         {
             var headers = new HeaderDictionary();
-            var cookies = new ResponseCookies(headers, null);
+            var cookies = new ResponseCookies(headers);
             var testCookie = "TestCookie";
 
             cookies.Delete(testCookie);
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         public void DeleteCookieWithCookieOptionsShouldKeepPropertiesOfCookieOptions()
         {
             var headers = new HeaderDictionary();
-            var cookies = new ResponseCookies(headers, null);
+            var cookies = new ResponseCookies(headers);
             var testCookie = "TestCookie";
             var time = new DateTimeOffset(2000, 1, 1, 1, 1, 1, 1, TimeSpan.Zero);
             var options = new CookieOptions
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         public void NoParamsDeleteRemovesCookieCreatedByAdd()
         {
             var headers = new HeaderDictionary();
-            var cookies = new ResponseCookies(headers, null);
+            var cookies = new ResponseCookies(headers);
             var testCookie = "TestCookie";
 
             cookies.Append(testCookie, testCookie);
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         public void ProvidesMaxAgeWithCookieOptionsArgumentExpectMaxAgeToBeSet()
         {
             var headers = new HeaderDictionary();
-            var cookies = new ResponseCookies(headers, null);
+            var cookies = new ResponseCookies(headers);
             var cookieOptions = new CookieOptions();
             var maxAgeTime = TimeSpan.FromHours(1);
             cookieOptions.MaxAge = TimeSpan.FromHours(1);
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Http.Tests
             string expected)
         {
             var headers = new HeaderDictionary();
-            var cookies = new ResponseCookies(headers, null);
+            var cookies = new ResponseCookies(headers);
 
             cookies.Append(key, value);
 

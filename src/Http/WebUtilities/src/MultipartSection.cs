@@ -36,7 +36,10 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public Dictionary<string, StringValues>? Headers { get; set; }
 
-        public Stream? Body { get; set; }
+        /// <summary>
+        /// Gets or sets the body.
+        /// </summary>
+        public Stream Body { get; set; } = default!;
 
         /// <summary>
         /// The position where the body starts in the total multipart body.

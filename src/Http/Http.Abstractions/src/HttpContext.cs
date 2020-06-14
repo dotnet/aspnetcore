@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets or sets the object used to manage user session data for this request.
         /// </summary>
-        public abstract ISession? Session { get; set; }
+        public abstract ISession Session { get; set; }
 
         /// <summary>
         /// Aborts the connection underlying this request.
