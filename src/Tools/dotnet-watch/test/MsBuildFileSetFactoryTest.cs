@@ -222,6 +222,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task ProjectReferences_Graph()
         {
             var graph = new TestProjectGraph(_tempDir);
