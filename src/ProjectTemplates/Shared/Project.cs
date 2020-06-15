@@ -117,7 +117,9 @@ namespace Templates.Test.Helpers
             // Avoid restoring as part of build or publish. These projects should have already restored as part of running dotnet new. Explicitly disabling restore
             // should avoid any global contention and we can execute a build or publish in a lock-free way
 
-            using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish --no-restore -c Release /bl /p:RazorSdkDirectoryRoot={RazorSdkDirectoryRoot} {additionalArgs}", packageOptions);
+            var razorSDKarg = string.IsNullOrEmpty(RazorSdkDirectoryRoot) ? string.Empty : $"/p:RazorSdkDirectoryRoot={RazorSdkDirectoryRoot}";
+
+            using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish --no-restore -c Release /bl {razorSDKarg} {additionalArgs}", packageOptions);
             await result.Exited;
             CaptureBinLogOnFailure(result);
             return new ProcessResult(result);
@@ -130,7 +132,9 @@ namespace Templates.Test.Helpers
             // Avoid restoring as part of build or publish. These projects should have already restored as part of running dotnet new. Explicitly disabling restore
             // should avoid any global contention and we can execute a build or publish in a lock-free way
 
-            using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"build --no-restore -c Debug /bl /p:RazorSdkDirectoryRoot={RazorSdkDirectoryRoot} {additionalArgs}", packageOptions);
+            var razorSDKarg = string.IsNullOrEmpty(RazorSdkDirectoryRoot) ? string.Empty : $"/p:RazorSdkDirectoryRoot={RazorSdkDirectoryRoot}";
+
+            using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"build --no-restore -c Debug /bl {razorSDKarg} {additionalArgs}", packageOptions);
             await result.Exited;
             CaptureBinLogOnFailure(result);
             return new ProcessResult(result);
