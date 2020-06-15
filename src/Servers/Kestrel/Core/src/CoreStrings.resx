@@ -566,9 +566,6 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="HTTP2NoTlsOsx" xml:space="preserve">
     <value>HTTP/2 over TLS is not supported on macOS due to missing ALPN support.</value>
   </data>
-  <data name="HTTP2NoTlsWin7" xml:space="preserve">
-    <value>HTTP/2 over TLS is not supported on Windows 7 due to missing ALPN support.</value>
-  </data>
   <data name="Http2StreamResetByApplication" xml:space="preserve">
     <value>The HTTP/2 stream was reset by the application with error code {errorCode}.</value>
   </data>
@@ -607,6 +604,9 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   </data>
   <data name="HTTP2DefaultCiphersInsufficient" xml:space="preserve">
     <value>HTTP/2 over TLS is not supported on Windows versions older than Windows 10 and Windows Server 2016 due to incompatible ciphers or missing ALPN support. Falling back to HTTP/1.1 instead.</value>
+  </data>
+  <data name="HTTP2NoTlsWin81" xml:space="preserve">
+    <value>HTTP/2 over TLS is not supported on Windows versions earlier than Windows 10 and Windows Server 2016 due to incompatible ciphers or missing ALPN support.</value>
   </data>
   <data name="Http2ErrorKeepAliveTimeout" xml:space="preserve">
     <value>Timeout while waiting for incoming HTTP/2 frames after a keep alive ping.</value>

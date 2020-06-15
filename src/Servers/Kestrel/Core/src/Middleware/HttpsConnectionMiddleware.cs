@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         private readonly ILogger _logger;
         private readonly X509Certificate2 _serverCertificate;
         private readonly Func<ConnectionContext, string, X509Certificate2> _serverCertificateSelector;
+        private const string EnableWindows81Http2 = "Microsoft.AspNetCore.Server.Kestrel.EnableWindows81Http2";
 
         public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options)
           : this(next, options, loggerFactory: NullLoggerFactory.Instance)
@@ -53,19 +54,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 {
                     throw new NotSupportedException(CoreStrings.HTTP2NoTlsOsx);
                 }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2))
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    throw new NotSupportedException(CoreStrings.HTTP2NoTlsWin7);
+                    var enableHttp2OnWindows81 = AppContext.TryGetSwitch(EnableWindows81Http2, out var enabled) && enabled;
+                    if (Environment.OSVersion.Version < new Version(6, 3)
+                        || (Environment.OSVersion.Version < new Version(10, 0) && !enableHttp2OnWindows81))
+                    {
+                        throw new NotSupportedException(CoreStrings.HTTP2NoTlsWin81);
+                    }
                 }
             }
 
             if (options.HttpProtocols == HttpProtocols.Http1AndHttp2)
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                    && Environment.OSVersion.Version < new Version(10, 0))
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    _logger.HTTP2DefaultCiphersInsufficient();
-                    options.HttpProtocols = HttpProtocols.Http1;
+                    var enableHttp2OnWindows81 = AppContext.TryGetSwitch(EnableWindows81Http2, out var enabled) && enabled;
+                    if (Environment.OSVersion.Version < new Version(6, 3)
+                        || (Environment.OSVersion.Version < new Version(10, 0) && !enableHttp2OnWindows81))
+                    {
+                        _logger.HTTP2DefaultCiphersInsufficient();
+                        options.HttpProtocols = HttpProtocols.Http1;
+                    }
                 }
             }
 
