@@ -2345,7 +2345,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 // Close the SSE connection
                 connection.Transport.Output.Complete();
 
-                var tcs = new TaskCompletionSource<object>();
+                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection.ConnectionClosed.Register(() => tcs.SetResult(null));
                 await tcs.Task.OrTimeout();
             }
@@ -2379,8 +2379,59 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await websocket.Accepted.OrTimeout();
                 await websocket.Client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", cancellationToken: default).OrTimeout();
 
-                var tcs = new TaskCompletionSource<object>();
+                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection.ConnectionClosed.Register(() => tcs.SetResult(null));
+                await tcs.Task.OrTimeout();
+            }
+        }
+
+        public class CustomHttpRequestLifetimeFeature : IHttpRequestLifetimeFeature
+        {
+            public CancellationToken RequestAborted { get; set; }
+
+            private CancellationTokenSource _cts;
+            public CustomHttpRequestLifetimeFeature()
+            {
+                _cts = new CancellationTokenSource();
+                RequestAborted = _cts.Token;
+            }
+
+            public void Abort()
+            {
+                _cts.Cancel();
+            }
+        }
+
+        [Fact]
+        public async Task AbortingConnectionAbortsHttpContextAndTriggersConnectionClosedToken()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.ServerSentEvents;
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+                var context = MakeRequest("/foo", connection);
+                var lifetimeFeature = new CustomHttpRequestLifetimeFeature();
+                context.Features.Set<IHttpRequestLifetimeFeature>(lifetimeFeature);
+                SetTransport(context, connection.TransportType);
+
+                var services = new ServiceCollection();
+                services.AddSingleton<NeverEndingConnectionHandler>();
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<NeverEndingConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+                _ = dispatcher.ExecuteAsync(context, options, app);
+
+                connection.Abort();
+
+                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                connection.ConnectionClosed.Register(() => tcs.SetResult(null));
+                await tcs.Task.OrTimeout();
+
+                tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                lifetimeFeature.RequestAborted.Register(() => tcs.SetResult(null));
                 await tcs.Task.OrTimeout();
             }
         }
