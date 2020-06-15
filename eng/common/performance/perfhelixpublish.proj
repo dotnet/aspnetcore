@@ -113,17 +113,49 @@
       <PayloadDirectory>$(WorkItemDirectory)\ScenarioCorrelation</PayloadDirectory>
       <Command>$(Python) %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen\test.py crossgen --test-name System.Private.Xml.dll --core-root %HELIX_CORRELATION_PAYLOAD%\Core_Root</Command>
     </HelixWorkItem>
-     <HelixWorkItem Include="Crossgen System.Linq.Expressions.dll">
+    <HelixWorkItem Include="Crossgen System.Linq.Expressions.dll">
       <PayloadDirectory>$(WorkItemDirectory)\ScenarioCorrelation</PayloadDirectory>
       <Command>$(Python) %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen\test.py crossgen --test-name System.Linq.Expressions.dll --core-root %HELIX_CORRELATION_PAYLOAD%\Core_Root</Command>
     </HelixWorkItem>
-     <HelixWorkItem Include="Crossgen Microsoft.CodeAnalysis.VisualBasic.dll">
+    <HelixWorkItem Include="Crossgen Microsoft.CodeAnalysis.VisualBasic.dll">
       <PayloadDirectory>$(WorkItemDirectory)\ScenarioCorrelation</PayloadDirectory>
       <Command>$(Python) %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen\test.py crossgen --test-name Microsoft.CodeAnalysis.VisualBasic.dll --core-root %HELIX_CORRELATION_PAYLOAD%\Core_Root</Command>
     </HelixWorkItem>
-     <HelixWorkItem Include="Crossgen Microsoft.CodeAnalysis.CSharp.dll">
+    <HelixWorkItem Include="Crossgen Microsoft.CodeAnalysis.CSharp.dll">
       <PayloadDirectory>$(WorkItemDirectory)\ScenarioCorrelation</PayloadDirectory>
       <Command>$(Python) %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen\test.py crossgen --test-name Microsoft.CodeAnalysis.CSharp.dll --core-root %HELIX_CORRELATION_PAYLOAD%\Core_Root</Command>
     </HelixWorkItem>
+    <HelixWorkItem Include="Crossgen System.Private.CoreLib.dll">
+      <PayloadDirectory>$(WorkItemDirectory)\ScenarioCorrelation</PayloadDirectory>
+      <Command>$(Python) %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen\test.py crossgen --test-name System.Private.CoreLib.dll --core-root %HELIX_CORRELATION_PAYLOAD%\Core_Root</Command>
+    </HelixWorkItem>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(AGENT_OS)' == 'Windows_NT' and '$(Architecture)' == 'x64'">
+    <HelixWorkItem Include="Crossgen2 System.Private.Xml.dll">
+      <PayloadDirectory>$(WorkItemDirectory)\ScenarioCorrelation</PayloadDirectory>
+      <Command>$(Python) %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen2\test.py crossgen2 --single System.Private.Xml.dll --core-root %HELIX_CORRELATION_PAYLOAD%\Core_Root</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="Crossgen2 System.Linq.Expressions.dll">
+      <PayloadDirectory>$(WorkItemDirectory)\ScenarioCorrelation</PayloadDirectory>
+      <Command>$(Python) %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen2\test.py crossgen2 --single System.Linq.Expressions.dll --core-root %HELIX_CORRELATION_PAYLOAD%\Core_Root</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="Crossgen2 Microsoft.CodeAnalysis.VisualBasic.dll">
+      <PayloadDirectory>$(WorkItemDirectory)\ScenarioCorrelation</PayloadDirectory>
+      <Command>$(Python) %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen2\test.py crossgen2 --single Microsoft.CodeAnalysis.VisualBasic.dll --core-root %HELIX_CORRELATION_PAYLOAD%\Core_Root</Command>
+    </HelixWorkItem>     
+    <HelixWorkItem Include="Crossgen2 Microsoft.CodeAnalysis.CSharp.dll">
+      <PayloadDirectory>$(WorkItemDirectory)\ScenarioCorrelation</PayloadDirectory>
+      <Command>$(Python) %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen2\test.py crossgen2 --single Microsoft.CodeAnalysis.CSharp.dll --core-root %HELIX_CORRELATION_PAYLOAD%\Core_Root</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="Crossgen2 System.Private.CoreLib.dll">
+      <PayloadDirectory>$(WorkItemDirectory)\ScenarioCorrelation</PayloadDirectory>
+      <Command>$(Python) %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen2\test.py crossgen2 --single System.Private.CoreLib.dll --core-root %HELIX_CORRELATION_PAYLOAD%\Core_Root</Command>
+    </HelixWorkItem>
+    <HelixWorkItem Include="Crossgen2 Composite Framework R2R">
+      <PayloadDirectory>$(WorkItemDirectory)\ScenarioCorrelation</PayloadDirectory>
+      <Command>$(Python) %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen2\test.py crossgen2 --composite %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen2\framework-r2r.dll.rsp --core-root %HELIX_CORRELATION_PAYLOAD%\Core_Root</Command>
+    </HelixWorkItem>
+
   </ItemGroup>
 </Project>

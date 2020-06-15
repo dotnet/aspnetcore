@@ -3,6 +3,9 @@ set(CROSS_ROOTFS $ENV{ROOTFS_DIR})
 set(TARGET_ARCH_NAME $ENV{TARGET_BUILD_ARCH})
 if(EXISTS ${CROSS_ROOTFS}/bin/freebsd-version)
   set(CMAKE_SYSTEM_NAME FreeBSD)
+elseif(EXISTS ${CROSS_ROOTFS}/usr/platform/i86pc)
+  set(CMAKE_SYSTEM_NAME SunOS)
+  set(ILLUMOS 1)
 else()
   set(CMAKE_SYSTEM_NAME Linux)
 endif()
@@ -34,6 +37,9 @@ elseif(TARGET_ARCH_NAME STREQUAL "x86")
 elseif (CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
   set(CMAKE_SYSTEM_PROCESSOR "x86_64")
   set(triple "x86_64-unknown-freebsd11")
+elseif (ILLUMOS)
+  set(CMAKE_SYSTEM_PROCESSOR "x86_64")
+  set(TOOLCHAIN "x86_64-illumos")
 else()
   message(FATAL_ERROR "Arch is ${TARGET_ARCH_NAME}. Only armel, arm, arm64 and x86 are supported!")
 endif()
@@ -67,12 +73,43 @@ if("$ENV{__DistroRid}" MATCHES "android.*")
 
     # include official NDK toolchain script
     include(${CROSS_ROOTFS}/../build/cmake/android.toolchain.cmake)
-elseif (CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+elseif(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
     # we cross-compile by instructing clang
     set(CMAKE_C_COMPILER_TARGET ${triple})
     set(CMAKE_CXX_COMPILER_TARGET ${triple})
     set(CMAKE_ASM_COMPILER_TARGET ${triple})
     set(CMAKE_SYSROOT "${CROSS_ROOTFS}")
+elseif(ILLUMOS)
+    set(CMAKE_SYSROOT "${CROSS_ROOTFS}")
+
+    include_directories(SYSTEM ${CROSS_ROOTFS}/include)
+
+    set(TOOLSET_PREFIX ${TOOLCHAIN}-)
+    function(locate_toolchain_exec exec var)
+        string(TOUPPER ${exec} EXEC_UPPERCASE)
+        if(NOT "$ENV{CLR_${EXEC_UPPERCASE}}" STREQUAL "")
+            set(${var} "$ENV{CLR_${EXEC_UPPERCASE}}" PARENT_SCOPE)
+            return()
+        endif()
+
+        find_program(EXEC_LOCATION_${exec}
+            NAMES
+            "${TOOLSET_PREFIX}${exec}${CLR_CMAKE_COMPILER_FILE_NAME_VERSION}"
+            "${TOOLSET_PREFIX}${exec}")
+
+        if (EXEC_LOCATION_${exec} STREQUAL "EXEC_LOCATION_${exec}-NOTFOUND")
+            message(FATAL_ERROR "Unable to find toolchain executable. Name: ${exec}, Prefix: ${TOOLSET_PREFIX}.")
+        endif()
+        set(${var} ${EXEC_LOCATION_${exec}} PARENT_SCOPE)
+    endfunction()
+
+    set(CMAKE_SYSTEM_PREFIX_PATH "${CROSS_ROOTFS}")
+
+    locate_toolchain_exec(gcc CMAKE_C_COMPILER)
+    locate_toolchain_exec(g++ CMAKE_CXX_COMPILER)
+
+    set(CMAKE_C_STANDARD_LIBRARIES "${CMAKE_C_STANDARD_LIBRARIES} -lssp")
+    set(CMAKE_CXX_STANDARD_LIBRARIES "${CMAKE_CXX_STANDARD_LIBRARIES} -lssp")
 else()
     set(CMAKE_SYSROOT "${CROSS_ROOTFS}")
 
@@ -92,11 +129,14 @@ if(TARGET_ARCH_NAME STREQUAL "armel")
   endif()
 elseif(TARGET_ARCH_NAME STREQUAL "x86")
   add_link_options(-m32)
+elseif(ILLUMOS)
+   add_link_options("-L${CROSS_ROOTFS}/lib/amd64")
+   add_link_options("-L${CROSS_ROOTFS}/usr/amd64/lib")
 endif()
 
 # Specify compile options
 
-if(TARGET_ARCH_NAME MATCHES "^(arm|armel|arm64)$" AND NOT "$ENV{__DistroRid}" MATCHES "android.*")
+if((TARGET_ARCH_NAME MATCHES "^(arm|armel|arm64)$" AND NOT "$ENV{__DistroRid}" MATCHES "android.*") OR ILLUMOS)
   set(CMAKE_C_COMPILER_TARGET ${TOOLCHAIN})
   set(CMAKE_CXX_COMPILER_TARGET ${TOOLCHAIN})
   set(CMAKE_ASM_COMPILER_TARGET ${TOOLCHAIN})
@@ -154,7 +194,6 @@ if(TARGET_ARCH_NAME MATCHES "^(arm|armel|x86)$")
     endif()
   endif()
 endif()
-
 
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
