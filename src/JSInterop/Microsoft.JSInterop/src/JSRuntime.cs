@@ -186,11 +186,8 @@ namespace Microsoft.JSInterop
                 if (succeeded)
                 {
                     var resultType = TaskGenericsUtil.GetTaskCompletionSourceResultType(tcs);
-                    if (resultType != typeof(VoidReturn))
-                    {
-                        var result = JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerOptions);
-                        TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
-                    }
+                    var result = resultType != typeof(VoidReturn) ? JsonSerializer.Deserialize(ref jsonReader, resultType, JsonSerializerOptions) : null;
+                    TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
                 }
                 else
                 {
