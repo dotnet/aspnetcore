@@ -625,7 +625,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Downgrade logic only applies on Windows")]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win7)]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81)]
         public void Http1AndHttp2DowngradeToHttp1ForHttpsOnIncompatibleWindowsVersions()
         {
