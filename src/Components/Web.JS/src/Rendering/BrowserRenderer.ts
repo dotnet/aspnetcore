@@ -257,7 +257,6 @@ export class BrowserRenderer {
     if (newDomElementRaw instanceof HTMLSelectElement && selectValuePropname in newDomElementRaw) {
       const selectValue = newDomElementRaw[selectValuePropname];
       newDomElementRaw.value = selectValue;
-      delete newDomElementRaw[selectValuePropname];
     }
   }
 

@@ -432,6 +432,41 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("invalid", () => input.GetAttribute("class"));
         }
 
+        [Fact]
+        public void SelectComponentSupportsOptionsComponent() {
+            var appElement = Browser.MountTestComponent<SelectVariantsComponent>();
+            var input = appElement.FindElement(By.Id("input-value"));
+            var showAdditionalOptionButton = appElement.FindElement(By.Id("show-additional-option"));
+            var selectWithComponent = appElement.FindElement(By.Id("select-without-component"));
+            var selectWithoutComponent = appElement.FindElement(By.Id("select-without-component"));
+
+            // Select with custom options component and HTML component behave the
+            // same when the set value does not exist
+            Browser.Equal("", () => selectWithComponent.Text);
+            Browser.Equal("Option A", () => selectWithoutComponent.Text);
+
+            // Dynamically showing the fourth option updates the selected value
+            showAdditionalOptionButton.Click();
+
+            Browser.Equal("Option D", () => selectWithComponent.Text);
+            Browser.Equal("Option D", () => selectWithoutComponent.Text);
+
+            // Reset to a value that doesn't exist
+            input.Clear();
+            input.SendKeys("F\t");
+
+            // Confirm that both values are cleared
+            Browser.Equal("", () => selectWithComponent.Text);
+            Browser.Equal("", () => selectWithoutComponent.Text);
+
+            // Change the value to one that does exist
+            input.Clear();
+            input.SendKeys("A\t");
+
+            Browser.Equal("Option A", () => selectWithComponent.Text);
+            Browser.Equal("Option A", () => selectWithoutComponent.Text);
+        }
+
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
         {
             return () => appElement.FindElements(By.ClassName("validation-message"))
