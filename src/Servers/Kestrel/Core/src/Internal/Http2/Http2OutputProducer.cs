@@ -129,6 +129,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _stream.ResetAndAbort(abortReason, Http2ErrorCode.INTERNAL_ERROR);
         }
 
+        void IHttpOutputAborter.OnInputOrOutputCompleted()
+        {
+            _stream.ResetAndAbort(new ConnectionAbortedException($"{nameof(Http2OutputProducer)}.{nameof(ProcessDataWrites)} has completed."), Http2ErrorCode.INTERNAL_ERROR);
+        }
+
         public ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
