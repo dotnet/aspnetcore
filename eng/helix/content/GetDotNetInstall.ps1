@@ -1,24 +1,42 @@
  <# 
  .SYNOPSIS 
-     Installs dotnet-install.ps1 from https://dot.net/v1/dotnet-install.ps1
- .DESCRIPTION 
-     Installs dotnet-install.ps1 from https://dot.net/v1/dotnet-install.ps1
- #> 
+     Installs dotnet sdk and runtime using https://dot.net/v1/dotnet-install.ps1
+ .DESCRIPTION
+     Installs dotnet sdk and runtime using https://dot.net/v1/dotnet-install.ps1
+.PARAMETER arch
+    The architecture to install.
+.PARAMETER sdkVersion
+    The sdk version to install
+.PARAMETER runtimeVersion
+    The runtime version to install
+.PARAMETER installDir
+    The directory to install to
+#>
+param(
+    [Parameter(Mandatory = $true)]
+    $arch,
 
+    [Parameter(Mandatory = $true)]
+    $sdkVersion,
+    
+    [Parameter(Mandatory = $true)]
+    $runtimeVersion,
+    
+    [Parameter(Mandatory = $true)]
+    $installDir    
+)
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$installScript = 'dotnet-install.ps1'
-if (!(Test-Path $installScript)) {
-  $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
+$ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
 
-  $maxRetries = 5
-  $retries = 1
+$maxRetries = 5
+$retries = 1
 
-  $uri = "https://dot.net/v1/dotnet-install.ps1"
+$uri = "https://dot.net/v1/dotnet-install.ps1"
 
-  while($true) {
+while($true) {
     try {
       Write-Host "GET $uri"
-      Invoke-WebRequest $uri -OutFile $installScript
+      $installScript = Invoke-WebRequest $uri
       break
     }
     catch {
@@ -34,5 +52,11 @@ if (!(Test-Path $installScript)) {
     else {
       throw "Unable to download file in $maxRetries attempts."
     }
-  }
-}
+ }
+
+Write-Host "Download of '$uri' complete..."
+Write-Host "Installing SDK..."
+([scriptblock]::Create($installScript) -Architecture $arch -Version $sdkVersion -InstallDir $installDir
+Write-Host "Installing Runtime..."
+([scriptblock]::Create($installScript) -Architecture $arch -Runtime dotnet -Version $runtimeVersion -InstallDir $installDir
+ 
