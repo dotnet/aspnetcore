@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc
         public JsonSerializerSettings SerializerSettings { get; } = JsonSerializerSettingsProvider.CreateSerializerSettings();
 
         /// <summary>
-        /// Gets the maximum size to buffer in memory when <see cref="MvcOptions.SuppressInputFormatterBuffering"/> is not reset.
+        /// Gets the maximum size to buffer in memory when <see cref="MvcOptions.SuppressInputFormatterBuffering"/> is not set.
         /// <para>
         /// <see cref="NewtonsoftJsonInputFormatter"/> buffers the input stream by default, buffering up to a certain amount in memory, before buffering to disk.
         /// This option configures the size in bytes that MVC will buffer in memory, before switching to disk.
