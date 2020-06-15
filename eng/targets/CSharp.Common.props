@@ -14,30 +14,24 @@
     <PackageReference Condition="'$(DotNetBuildFromSource)' != 'true'" Include="Microsoft.DotNet.GenAPI" PrivateAssets="All" Version="$(MicrosoftDotNetGenApiPackageVersion)" IsImplicitlyDefined="true" />
   </ItemGroup>
 
-  <Choose>
-    <When Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
-      <ItemGroup>
-        <!--
-          Use the Razor SDK as a project reference. The version of the .NET Core SDK we build with often contains a version of the Razor SDK
-          several versions older than latest. We reference the project to ensure it's built before the other projects that use it. Since this
-          is a project reference, we must explicitly import the props file and also specify the output location of the SDK directory.
-        -->
-        <ProjectReference Include="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\Microsoft.NET.Sdk.Razor.csproj"
-          PrivateAssets="All"
-          IsImplicitlyDefined="true"
-          ReferenceOutputAssembly="false"
-          SkipGetTargetFrameworkProperties="true"
-          UndefineProperties="TargetFramework;TargetFrameworks" />
-      </ItemGroup>
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
+    <!--
+      Use the Razor SDK as a project reference. The version of the .NET Core SDK we build with often contains a version of the Razor SDK
+      several versions older than latest. We reference the project to ensure it's built before the other projects that use it. Since this
+      is a project reference, we must explicitly import the props file and also specify the output location of the SDK directory.
+    -->
+    <ProjectReference Include="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\Microsoft.NET.Sdk.Razor.csproj"
+      PrivateAssets="All"
+      IsImplicitlyDefined="true"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework;TargetFrameworks" />
+  </ItemGroup>
 
-      <PropertyGroup>
-        <RazorSdkDirectoryRoot>$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
-      </PropertyGroup>
-    </When>
-  </Choose>
-
-  <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props" Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''" />
-
+  <ImportGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
+    <Import Project="$(RepoRoot)eng\targets\GetRazorSDKDirectory.props" />
+    <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props" />
+  </ImportGroup>
 
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />

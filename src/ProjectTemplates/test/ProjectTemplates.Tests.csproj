@@ -2,6 +2,7 @@
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
   <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
+  <Import Project="$(RepoRoot)eng\targets\GetRazorSDKDirectory.props" Condition="'$(IsHelixJob)' != 'true'"/>
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -60,6 +61,10 @@
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>Test.DefaultTargetFramework</_Parameter1>
       <_Parameter2>$(DefaultNetCoreTargetFramework)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Test.RazorSdkDirectoryRoot</_Parameter1>
+      <_Parameter2>$(RazorSdkDirectoryRoot)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(ContinuousIntegrationBuild)' == 'true'">
       <_Parameter1>ContinuousIntegrationBuild</_Parameter1>
