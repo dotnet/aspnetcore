@@ -18,10 +18,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             SourceDocument = source;
-            var chars = new char[source.Length];
-            source.CopyTo(0, chars, 0, source.Length);
 
-            Source = new SeekableTextReader(chars, source.FilePath);
+            Source = new SeekableTextReader(SourceDocument);
             DesignTimeMode = options.DesignTime;
             FeatureFlags = options.FeatureFlags;
             ParseLeadingDirectives = options.ParseLeadingDirectives;

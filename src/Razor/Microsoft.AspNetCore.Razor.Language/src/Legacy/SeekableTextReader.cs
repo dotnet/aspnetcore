@@ -3,32 +3,36 @@
 
 using System;
 using System.IO;
+using System.Text;
+using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class SeekableTextReader : TextReader, ITextDocument
     {
-        private readonly LineTrackingStringBuffer _buffer;
+        private readonly RazorSourceDocument _sourceDocument;
         private int _position = 0;
         private int _current;
         private SourceLocation _location;
+        private (TextSpan Span, int LineIndex) _cachedLineInfo;
 
-        public SeekableTextReader(string source, string filePath) : this(source.ToCharArray(), filePath) { }
+        public SeekableTextReader(string source, string filePath) : this(new StringSourceDocument(source, Encoding.UTF8, new RazorSourceDocumentProperties(filePath, relativePath: null))) { }
 
-        public SeekableTextReader(char[] source, string filePath)
+        public SeekableTextReader(RazorSourceDocument source)
         {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
-            _buffer = new LineTrackingStringBuffer(source, filePath);
+            _sourceDocument = source;
+            _cachedLineInfo = (new TextSpan(0, _sourceDocument.Lines.GetLineLength(0)), 0);
             UpdateState();
         }
 
         public SourceLocation Location => _location;
 
-        public int Length => _buffer.Length;
+        public int Length => _sourceDocument.Length;
 
         public int Position
         {
@@ -55,22 +59,73 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void UpdateState()
         {
-            if (_position < _buffer.Length)
+            if (_cachedLineInfo.Span.Contains(_position))
             {
-                var chr = _buffer.CharAt(_position);
-                _current = chr.Character;
-                _location = chr.Location;
+                _location = new SourceLocation(_sourceDocument.FilePath, _position, _cachedLineInfo.LineIndex, _position - _cachedLineInfo.Span.Start);
+                _current = _sourceDocument[_location.AbsoluteIndex];
+
+                return;
             }
-            else if (_buffer.Length == 0)
+
+            if (_position < _sourceDocument.Length)
             {
-                _current = -1;
+                if (_position >= _cachedLineInfo.Span.End)
+                {
+                    // Try to avoid the GetLocation call by checking if the next line contains the position
+                    var nextLineIndex = _cachedLineInfo.LineIndex + 1;
+                    var nextLineLength = _sourceDocument.Lines.GetLineLength(nextLineIndex);
+                    var nextLineSpan = new TextSpan(_cachedLineInfo.Span.End, nextLineLength);
+
+                    if (nextLineSpan.Contains(_position))
+                    {
+                        _cachedLineInfo = (nextLineSpan, nextLineIndex);
+                        _location = new SourceLocation(_sourceDocument.FilePath, _position, nextLineIndex, _position - nextLineSpan.Start);
+                        _current = _sourceDocument[_location.AbsoluteIndex];
+
+                        return;
+                    }
+                }
+                else
+                {
+                    // Try to avoid the GetLocation call by checking if the previous line contains the position
+                    var prevLineIndex = _cachedLineInfo.LineIndex - 1;
+                    var prevLineLength = _sourceDocument.Lines.GetLineLength(prevLineIndex);
+                    var prevLineSpan = new TextSpan(_cachedLineInfo.Span.Start - prevLineLength, prevLineLength);
+
+                    if (prevLineSpan.Contains(_position))
+                    {
+                        _cachedLineInfo = (prevLineSpan, prevLineIndex);
+                        _location = new SourceLocation(_sourceDocument.FilePath, _position, prevLineIndex, _position - prevLineSpan.Start);
+                        _current = _sourceDocument[_location.AbsoluteIndex];
+
+                        return;
+                    }
+                }
+
+                // The call to GetLocation is expensive
+                _location = _sourceDocument.Lines.GetLocation(_position);
+
+                var lineLength = _sourceDocument.Lines.GetLineLength(_location.LineIndex);
+                var lineSpan = new TextSpan(_position - _location.CharacterIndex, lineLength);
+                _cachedLineInfo = (lineSpan, _location.LineIndex);
+
+                _current = _sourceDocument[_location.AbsoluteIndex];
+
+                return;
+            }
+
+            if (_sourceDocument.Length == 0)
+            {
                 _location = SourceLocation.Zero;
-            }
-            else
-            {
                 _current = -1;
-                _location = _buffer.EndLocation;
+
+                return;
             }
+
+            var lineNumber = _sourceDocument.Lines.Count - 1;
+            _location = new SourceLocation(_sourceDocument.FilePath, Length, lineNumber, _sourceDocument.Lines.GetLineLength(lineNumber));
+
+            _current = -1;
         }
     }
 }
