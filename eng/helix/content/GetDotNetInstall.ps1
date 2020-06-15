@@ -56,7 +56,7 @@ while($true) {
 
 Write-Host "Download of '$uri' complete..."
 Write-Host "Installing SDK..."
-([scriptblock]::Create($installScript) -Architecture $arch -Version $sdkVersion -InstallDir $installDir
+([scriptblock]::Create($installScript)) -Architecture $arch -Version $sdkVersion -InstallDir $installDir
 Write-Host "Installing Runtime..."
-([scriptblock]::Create($installScript) -Architecture $arch -Runtime dotnet -Version $runtimeVersion -InstallDir $installDir
+([scriptblock]::Create($installScript)) -Architecture $arch -Runtime dotnet -Version $runtimeVersion -InstallDir $installDir
  
