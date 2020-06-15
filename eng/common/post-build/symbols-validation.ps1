@@ -189,7 +189,11 @@ function CheckSymbolsAvailable {
       }
 
       foreach ($Job in @(Get-Job -State 'Completed')) {
-        Receive-Job -Id $Job.Id
+        $jobResult = Wait-Job -Id $Job.Id | Receive-Job
+        if ($jobResult -ne '0') {
+          $TotalFailures++
+        }
+        Remove-Job -Id $Job.Id
       }
       Write-Host
     }
