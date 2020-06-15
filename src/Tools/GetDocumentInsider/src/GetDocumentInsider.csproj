@@ -15,9 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
     <Compile Include="$(ToolSharedSourceRoot)CommandLine/**/*.cs" />
-    <Compile Include="$(SharedSourceRoot)HostFactoryResolver\*.cs" />
   </ItemGroup>
 
   <Target Name="BuildX86" BeforeTargets="Build" Condition=" '$(TargetFramework)' == 'net461' And '$(Platform)' != 'x86' ">

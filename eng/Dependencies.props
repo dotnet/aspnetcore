@@ -46,6 +46,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="$(MicrosoftExtensionsFileProvidersCompositePackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="$(MicrosoftExtensionsFileProvidersPhysicalPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.HostFactoryResolver.Sources" Version="$(MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(MicrosoftExtensionsHostingAbstractionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsHostingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsHttpPackageVersion)"  />

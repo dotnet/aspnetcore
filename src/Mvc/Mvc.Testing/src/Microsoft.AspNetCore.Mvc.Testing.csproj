@@ -17,8 +17,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Microsoft.Extensions.DependencyModel" />
     <Reference Include="Microsoft.Extensions.Hosting" />
-
-    <Compile Include="$(SharedSourceRoot)HostFactoryResolver\*.cs" />
+    <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
   </ItemGroup>
 
   <ItemGroup>
