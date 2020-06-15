@@ -66,6 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private int _isClosed;
 
         // Internal for testing
+        internal readonly Http2KeepAlive _keepAlive;
         internal readonly Dictionary<int, Http2Stream> _streams = new Dictionary<int, Http2Stream>();
         internal Http2StreamStack StreamPool;
 
@@ -105,6 +106,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             var connectionWindow = (uint)http2Limits.InitialConnectionWindowSize;
             _inputFlowControl = new InputFlowControl(connectionWindow, connectionWindow / 2);
+
+            if (http2Limits.KeepAlivePingInterval != TimeSpan.MaxValue)
+            {
+                _keepAlive = new Http2KeepAlive(
+                    http2Limits.KeepAlivePingInterval,
+                    http2Limits.KeepAlivePingTimeout,
+                    context.ServiceContext.SystemClock);
+            }
 
             _serverSettings.MaxConcurrentStreams = (uint)http2Limits.MaxStreamsPerConnection;
             _serverSettings.MaxFrameSize = (uint)http2Limits.MaxFrameSize;
@@ -211,8 +220,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                     try
                     {
+                        bool frameReceived = false;
                         while (Http2FrameReader.TryReadFrame(ref buffer, _incomingFrame, _serverSettings.MaxFrameSize, out var framePayload))
                         {
+                            frameReceived = true;
                             Log.Http2FrameReceived(ConnectionId, _incomingFrame);
                             await ProcessFrameAsync(application, framePayload);
                         }
@@ -220,6 +231,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         if (result.IsCompleted)
                         {
                             return;
+                        }
+
+                        if (_keepAlive != null)
+                        {
+                            // Note that the keep alive uses a complete frame being received to reset state.
+                            // Some other keep alive implementations use any bytes being received to reset state.
+                            var state = _keepAlive.ProcessKeepAlive(frameReceived);
+                            if (state == KeepAliveState.SendPing)
+                            {
+                                await _frameWriter.WritePingAsync(Http2PingFrameFlags.NONE, Http2KeepAlive.PingPayload);
+                            }
+                            else if (state == KeepAliveState.Timeout)
+                            {
+                                // There isn't a good error code to return with the GOAWAY.
+                                // NO_ERROR isn't a good choice because it indicates the connection is gracefully shutting down.
+                                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorKeepAliveTimeout, Http2ErrorCode.INTERNAL_ERROR);
+                            }
                         }
                     }
                     catch (Http2StreamErrorException ex)
