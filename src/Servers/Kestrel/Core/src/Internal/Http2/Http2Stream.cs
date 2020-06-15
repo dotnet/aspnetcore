@@ -552,7 +552,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             CancelRequestAbortedToken();
 
             // Unblock the request body.
-            PoisonBodyStreamsAndPipes(abortReason);
+            PoisonBody(abortReason);
             RequestBodyPipe.Writer.Complete(abortReason);
 
             _inputFlowControl.Abort();

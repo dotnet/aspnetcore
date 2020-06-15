@@ -92,7 +92,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void OnInputOrOutputCompleted()
         {
-            Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
+            _http1Output.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
+            CancelRequestAbortedToken();
         }
 
         /// <summary>
@@ -102,15 +103,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             _http1Output.Abort(abortReason);
             CancelRequestAbortedToken();
-            PoisonBodyStreamsAndPipes(abortReason);
+            PoisonBody(abortReason);
         }
 
         protected override void ApplicationAbort()
         {
             Log.ApplicationAbortedConnection(ConnectionId, TraceIdentifier);
-
-            var abortReason = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication);
-            Abort(abortReason);
+            Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication));
         }
 
         /// <summary>

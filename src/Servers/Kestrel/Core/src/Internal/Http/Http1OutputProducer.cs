@@ -33,10 +33,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private readonly string _connectionId;
         private readonly ConnectionContext _connectionContext;
+        private readonly MemoryPool<byte> _memoryPool;
         private readonly IKestrelTrace _log;
         private readonly IHttpMinResponseDataRateFeature _minResponseDataRateFeature;
         private readonly IHttpOutputAborter _outputAborter;
-        private readonly MemoryPool<byte> _memoryPool;
         private readonly TimingPipeFlusher _flusher;
 
         // This locks access to all of the below fields
@@ -88,10 +88,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _pipeWriter = new ConcurrentPipeWriter(pipeWriter, memoryPool, _contextLock);
             _connectionId = connectionId;
             _connectionContext = connectionContext;
+            _memoryPool = memoryPool;
             _log = log;
             _minResponseDataRateFeature = minResponseDataRateFeature;
             _outputAborter = outputAborter;
-            _memoryPool = memoryPool;
 
             _flusher = new TimingPipeFlusher(_pipeWriter, timeoutControl, log);
         }

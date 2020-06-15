@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
         {
             var pipeFlushTask = _writer.FlushAsync(cancellationToken);
 
-            if (minRate != null)
+            if (minRate is object)
             {
                 _timeoutControl.BytesWrittenToBuffer(minRate, count);
             }
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
                 if (flushResult.IsCompleted && outputAborter is object)
                 {
-                    outputAborter.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
+                    outputAborter.OnInputOrOutputCompleted();
                 }
 
                 return new ValueTask<FlushResult>(flushResult);
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
         private async ValueTask<FlushResult> TimeFlushAsyncAwaited(ValueTask<FlushResult> pipeFlushTask, MinDataRate? minRate, IHttpOutputAborter? outputAborter, CancellationToken cancellationToken)
         {
-            if (minRate != null)
+            if (minRate is object)
             {
                 _timeoutControl.StartTimingWrite();
             }
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
 
                 if (flushResult.IsCompleted && outputAborter is object)
                 {
-                    outputAborter.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
+                    outputAborter.OnInputOrOutputCompleted();
                 }
             }
             catch (OperationCanceledException ex) when (outputAborter is object)
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.PipeW
             }
             finally
             {
-                if (minRate != null)
+                if (minRate is object)
                 {
                     _timeoutControl.StopTimingWrite();
                 }
