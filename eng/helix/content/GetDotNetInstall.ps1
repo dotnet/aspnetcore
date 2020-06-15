@@ -32,11 +32,11 @@ $maxRetries = 5
 $retries = 1
 
 $uri = "https://dot.net/v1/dotnet-install.ps1"
-
+$installScript = 'dotnet-install.ps1'
 while($true) {
     try {
       Write-Host "GET $uri"
-      $installScript = Invoke-WebRequest $uri
+      $installScript = Invoke-WebRequest $uri -OutFile $installScript
       break
     }
     catch {
@@ -55,9 +55,9 @@ while($true) {
  }
 
 Write-Host "Download of '$uri' complete..."
-$dotnetInstall = ([scriptblock]::Create($installScript));
-Write-Host "Installing SDK..."
-&$dotnetInstall -Architecture $arch -Version $sdkVersion -InstallDir $installDir
-Write-Host "Installing Runtime..."
-&$dotnetInstall -Architecture $arch -Runtime dotnet -Version $runtimeVersion -InstallDir $installDir
+Write-Host "Installing SDK...&$installScript -Architecture $arch -Version $sdkVersion -InstallDir $installDir"
+Invoke-Expression "&$installScript -Architecture $arch -Version $sdkVersion -InstallDir $installDir"
+Write-Host "Installing Runtime...&$installScript dotnetInstall -Architecture $arch -Runtime dotnet -Version $runtimeVersion -InstallDir $installDir"
+Invoke-Expression "&$installScript dotnetInstall -Architecture $arch -Runtime dotnet -Version $runtimeVersion -InstallDir $installDir"
+Write-Host "GetDotNetInstall complete..."
  
