@@ -188,8 +188,7 @@ namespace Microsoft.AspNetCore.SignalR
         public Microsoft.AspNetCore.SignalR.Hub Hub { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Reflection.MethodInfo HubMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Collections.Generic.IReadOnlyList<object> HubMethodArguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        [System.ObsoleteAttribute("This property is obsolete and will be removed in a future version. Use HubMethod.Name instead.")]
-        public string HubMethodName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string HubMethodName { get { throw null; } }
         public System.IServiceProvider ServiceProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public sealed partial class HubLifetimeContext

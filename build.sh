@@ -338,6 +338,9 @@ if [[ "$binary_log" == true ]]; then
     if [[ "$found" == false ]]; then
         msbuild_args[${#msbuild_args[*]}]="/bl:$log_dir/Build.binlog"
     fi
+elif [[ "$ci" == true ]]; then
+    # Ensure the artifacts/log directory isn't empty to avoid warnings.
+    touch "$log_dir/empty.log"
 fi
 
 # Capture MSBuild crash logs

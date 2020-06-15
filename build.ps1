@@ -369,6 +369,9 @@ if ($BinaryLog) {
     if (-not $bl) {
         $MSBuildArguments += "/bl:" + (Join-Path $LogDir "Build.binlog")
     }
+} elseif ($CI) {
+    # Ensure the artifacts/log directory isn't empty to avoid warnings.
+    New-Item (Join-Path $LogDir "empty.log") -ItemType File -ErrorAction SilentlyContinue >$null
 }
 
 # Capture MSBuild crash logs
