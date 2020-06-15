@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     internal static class StringUtilities
     {
         private static string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span, Encoding defaultEncoding)
-            => GetAsciiOrUTF8StringNonNullCharacters((ReadOnlySpan<byte>)span);
+            => GetAsciiOrUTF8StringNonNullCharacters((ReadOnlySpan<byte>)span, defaultEncoding);
 
         public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span, Encoding defaultEncoding)
         {
@@ -50,10 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
                 return resultString;
             }
-
-            return resultString;
         }
-
 
         private static readonly SpanAction<char, IntPtr> s_getAsciiOrUtf8StringNonNullCharacters = GetAsciiOrUTF8StringNonNullCharacters;
 
@@ -71,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        public static unsafe string GetLatin1StringNonNullCharacters(this Span<byte> span)
+        public static unsafe string GetLatin1StringNonNullCharacters(this ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
             {

@@ -120,6 +120,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
+        public static string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span)
+            => GetAsciiOrUTF8StringNonNullCharacters((ReadOnlySpan<byte>)span);
+
+        public static string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span)
+            => StringUtilities.GetAsciiOrUTF8StringNonNullCharacters(span, HeaderValueEncoding);
+
         private static unsafe void GetAsciiStringNonNullCharacters(Span<char> buffer, IntPtr state)
         {
             fixed (char* output = &MemoryMarshal.GetReference(buffer))
@@ -133,7 +139,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        public static string GetRequestHeaderStringNonNullCharacters(this Span<byte> span, bool useLatin1) =>
+        public static string GetRequestHeaderStringNonNullCharacters(this ReadOnlySpan<byte> span, bool useLatin1) =>
             useLatin1 ? span.GetLatin1StringNonNullCharacters() : span.GetAsciiOrUTF8StringNonNullCharacters(HeaderValueEncoding);
 
         public static string GetAsciiStringEscaped(this ReadOnlySpan<byte> span, int maxChars)
