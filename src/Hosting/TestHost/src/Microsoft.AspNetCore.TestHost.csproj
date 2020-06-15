@@ -12,8 +12,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="System.IO.Pipelines" />
-
-    <Compile Include="$(SharedSourceRoot)HostFactoryResolver\*.cs" />
+    <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
   </ItemGroup>
 
 </Project>

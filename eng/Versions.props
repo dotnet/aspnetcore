@@ -90,6 +90,7 @@
     <MicrosoftExtensionsFileProvidersCompositePackageVersion>5.0.0-preview.7.20314.1</MicrosoftExtensionsFileProvidersCompositePackageVersion>
     <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>5.0.0-preview.7.20314.1</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>5.0.0-preview.7.20314.1</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
+    <MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>5.0.0-preview.7.20314.1</MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>
     <MicrosoftExtensionsHostingAbstractionsPackageVersion>5.0.0-preview.7.20314.1</MicrosoftExtensionsHostingAbstractionsPackageVersion>
     <MicrosoftExtensionsHostingPackageVersion>5.0.0-preview.7.20314.1</MicrosoftExtensionsHostingPackageVersion>
     <MicrosoftExtensionsHttpPackageVersion>5.0.0-preview.7.20314.1</MicrosoftExtensionsHttpPackageVersion>
