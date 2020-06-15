@@ -72,9 +72,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 if (_position >= _cachedLineInfo.Span.End)
                 {
                     // Try to avoid the GetLocation call by checking if the next line contains the position
-                    int nextLineIndex = _cachedLineInfo.LineIndex + 1;
-                    int nextLineLength = _sourceDocument.Lines.GetLineLength(nextLineIndex);
-                    TextSpan nextLineSpan = new TextSpan(_cachedLineInfo.Span.End, nextLineLength);
+                    var nextLineIndex = _cachedLineInfo.LineIndex + 1;
+                    var nextLineLength = _sourceDocument.Lines.GetLineLength(nextLineIndex);
+                    var nextLineSpan = new TextSpan(_cachedLineInfo.Span.End, nextLineLength);
 
                     if (nextLineSpan.Contains(_position))
                     {
@@ -88,9 +88,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 else
                 {
                     // Try to avoid the GetLocation call by checking if the previous line contains the position
-                    int prevLineIndex = _cachedLineInfo.LineIndex - 1;
-                    int prevLineLength = _sourceDocument.Lines.GetLineLength(prevLineIndex);
-                    TextSpan prevLineSpan = new TextSpan(_cachedLineInfo.Span.Start - prevLineLength, prevLineLength);
+                    var prevLineIndex = _cachedLineInfo.LineIndex - 1;
+                    var prevLineLength = _sourceDocument.Lines.GetLineLength(prevLineIndex);
+                    var prevLineSpan = new TextSpan(_cachedLineInfo.Span.Start - prevLineLength, prevLineLength);
 
                     if (prevLineSpan.Contains(_position))
                     {
@@ -105,8 +105,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // The call to GetLocation is expensive
                 _location = _sourceDocument.Lines.GetLocation(_position);
 
-                int lineLength = _sourceDocument.Lines.GetLineLength(_location.LineIndex);
-                TextSpan lineSpan = new TextSpan(_position - _location.CharacterIndex, lineLength);
+                var lineLength = _sourceDocument.Lines.GetLineLength(_location.LineIndex);
+                var lineSpan = new TextSpan(_position - _location.CharacterIndex, lineLength);
                 _cachedLineInfo = (lineSpan, _location.LineIndex);
 
                 _current = _sourceDocument[_location.AbsoluteIndex];
