@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                     {
                         _logger.ApplyingMigrations(db.GetType().FullName);
 
-                        db.Database.Migrate();
+                        await db.Database.MigrateAsync();
 
                         context.Response.StatusCode = (int)HttpStatusCode.NoContent;
                         context.Response.Headers.Add("Pragma", new[] { "no-cache" });
