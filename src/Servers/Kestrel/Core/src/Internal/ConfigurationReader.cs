@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             return stringProtocols?.Aggregate(SslProtocols.None, (acc, current) =>
             {
-                if (Enum.TryParse(current, out SslProtocols parsed))
+                if (Enum.TryParse(current, ignoreCase: true, out SslProtocols parsed))
                 {
                     return acc | parsed;
                 }
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             Url == other.Url &&
             (Protocols ?? ListenOptions.DefaultHttpProtocols) == (other.Protocols ?? ListenOptions.DefaultHttpProtocols) &&
             Certificate == other.Certificate &&
-            SslProtocols == other.SslProtocols &&
+            (SslProtocols ?? System.Security.Authentication.SslProtocols.None) == (other.SslProtocols ?? System.Security.Authentication.SslProtocols.None) &&
             _configSectionClone == other._configSectionClone;
 
         public override int GetHashCode() => HashCode.Combine(Name, Url, Protocols ?? ListenOptions.DefaultHttpProtocols, Certificate, _configSectionClone);

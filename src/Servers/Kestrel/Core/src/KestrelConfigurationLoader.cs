@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Certificates.Generation;
@@ -279,13 +280,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 var httpsOptions = new HttpsConnectionAdapterOptions();
                 if (https)
                 {
+                    httpsOptions.SslProtocols = ConfigurationReader.EndpointDefaults.SslProtocols ?? SslProtocols.None;
+
                     // Defaults
                     Options.ApplyHttpsDefaults(httpsOptions);
 
-                    // Default SslProtocol from config
-                    if (ConfigurationReader.EndpointDefaults.SslProtocols.HasValue)
+                    if (endpoint.SslProtocols.HasValue)
                     {
-                        httpsOptions.SslProtocols = ConfigurationReader.EndpointDefaults.SslProtocols.Value;
+                        httpsOptions.SslProtocols = endpoint.SslProtocols.Value;
                     }
 
                     // Specified
@@ -317,11 +319,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 {
                     var endpointConfig = new EndpointConfiguration(https, listenOptions, httpsOptions, endpoint.ConfigSection);
                     configureEndpoint(endpointConfig);
-                }
-
-                if (https && endpoint.SslProtocols.HasValue)
-                {
-                    httpsOptions.SslProtocols = endpoint.SslProtocols.Value;
                 }
 
                 // EndpointDefaults or configureEndpoint may have added an https adapter.

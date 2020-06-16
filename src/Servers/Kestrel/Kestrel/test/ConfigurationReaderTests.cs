@@ -205,6 +205,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         }
 
         [Fact]
+        public void ReadEndpointWithSslProtocolSet_ReadsCaseInsensitive()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+                new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "TLS11"),
+            }).Build();
+            var reader = new ConfigurationReader(config);
+
+            var endpoint = reader.Endpoints.First();
+            Assert.Equal(SslProtocols.Tls11, endpoint.SslProtocols);
+        }
+
+        [Fact]
         public void ReadEndpointWithNoSslProtocolSettings_ReturnsNull()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
