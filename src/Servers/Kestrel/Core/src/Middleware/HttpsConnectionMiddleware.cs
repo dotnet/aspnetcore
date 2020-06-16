@@ -25,12 +25,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 {
     internal class HttpsConnectionMiddleware
     {
+        private const string EnableWindows81Http2 = "Microsoft.AspNetCore.Server.Kestrel.EnableWindows81Http2";
         private readonly ConnectionDelegate _next;
         private readonly HttpsConnectionAdapterOptions _options;
         private readonly ILogger _logger;
         private readonly X509Certificate2 _serverCertificate;
         private readonly Func<ConnectionContext, string, X509Certificate2> _serverCertificateSelector;
-        private const string EnableWindows81Http2 = "Microsoft.AspNetCore.Server.Kestrel.EnableWindows81Http2";
 
         public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options)
           : this(next, options, loggerFactory: NullLoggerFactory.Instance)
@@ -52,31 +52,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    throw new NotSupportedException(CoreStrings.HTTP2NoTlsOsx);
+                    throw new NotSupportedException(CoreStrings.Http2NoTlsOsx);
                 }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                else if (IsWindowsVersionIncompatible())
                 {
-                    var enableHttp2OnWindows81 = AppContext.TryGetSwitch(EnableWindows81Http2, out var enabled) && enabled;
-                    if (Environment.OSVersion.Version < new Version(6, 3)
-                        || (Environment.OSVersion.Version < new Version(10, 0) && !enableHttp2OnWindows81))
-                    {
-                        throw new NotSupportedException(CoreStrings.HTTP2NoTlsWin81);
-                    }
+                    throw new NotSupportedException(CoreStrings.Http2NoTlsWin81);
                 }
             }
-
-            if (options.HttpProtocols == HttpProtocols.Http1AndHttp2)
+            else if (options.HttpProtocols == HttpProtocols.Http1AndHttp2 && IsWindowsVersionIncompatible())
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    var enableHttp2OnWindows81 = AppContext.TryGetSwitch(EnableWindows81Http2, out var enabled) && enabled;
-                    if (Environment.OSVersion.Version < new Version(6, 3)
-                        || (Environment.OSVersion.Version < new Version(10, 0) && !enableHttp2OnWindows81))
-                    {
-                        _logger.HTTP2DefaultCiphersInsufficient();
-                        options.HttpProtocols = HttpProtocols.Http1;
-                    }
-                }
+                _logger.Http2DefaultCiphersInsufficient();
+                options.HttpProtocols = HttpProtocols.Http1;
             }
 
             _next = next;
@@ -318,6 +304,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             return new X509Certificate2(certificate);
         }
+
+        private static bool IsWindowsVersionIncompatible()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var enableHttp2OnWindows81 = AppContext.TryGetSwitch(EnableWindows81Http2, out var enabled) && enabled;
+                if (Environment.OSVersion.Version < new Version(6, 3)
+                    || (Environment.OSVersion.Version < new Version(10, 0) && !enableHttp2OnWindows81))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 
     internal static class HttpsConnectionMiddlewareLoggerExtensions
@@ -344,8 +345,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         private static readonly Action<ILogger, Exception> _http2DefaultCiphersInsufficient =
             LoggerMessage.Define(
                 logLevel: LogLevel.Information,
-                eventId: new EventId(4, "HTTP2DefaultCiphersInsufficient"),
-                formatString: CoreStrings.HTTP2DefaultCiphersInsufficient);
+                eventId: new EventId(4, "Http2DefaultCiphersInsufficient"),
+                formatString: CoreStrings.Http2DefaultCiphersInsufficient);
 
         public static void AuthenticationFailed(this ILogger logger, Exception exception) => _authenticationFailed(logger, exception);
 
@@ -353,6 +354,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
         public static void HttpsConnectionEstablished(this ILogger logger, string connectionId, SslProtocols sslProtocol) => _httpsConnectionEstablished(logger, connectionId, sslProtocol, null);
 
-        public static void HTTP2DefaultCiphersInsufficient(this ILogger logger) => _http2DefaultCiphersInsufficient(logger, null);
+        public static void Http2DefaultCiphersInsufficient(this ILogger logger) => _http2DefaultCiphersInsufficient(logger, null);
     }
 }

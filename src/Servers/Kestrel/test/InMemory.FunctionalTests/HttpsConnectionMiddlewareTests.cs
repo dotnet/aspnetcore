@@ -653,6 +653,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(HttpProtocols.Http1AndHttp2, httpConnectionAdapterOptions.HttpProtocols);
         }
 
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Error logic only applies on Windows")]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81)]
+        public void Http2ThrowsOnIncompatibleWindowsVersions()
+        {
+            var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = _x509Certificate2,
+                HttpProtocols = HttpProtocols.Http2
+            };
+
+            Assert.Throws<NotSupportedException>(() => new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions));
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Error logic only applies on Windows")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
+        public void Http2DoesNotThrowOnCompatibleWindowsVersions()
+        {
+            var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = _x509Certificate2,
+                HttpProtocols = HttpProtocols.Http2
+            };
+
+            // Does not throw
+            new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions);
+        }
+
         private static async Task App(HttpContext httpContext)
         {
             var request = httpContext.Request;
