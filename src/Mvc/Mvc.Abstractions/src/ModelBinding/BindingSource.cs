@@ -210,13 +210,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public bool Equals(BindingSource other)
+        public bool Equals(BindingSource? other)
         {
             return string.Equals(other?.Id, Id, StringComparison.Ordinal);
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as BindingSource);
         }
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public static bool operator ==(BindingSource s1, BindingSource s2)
+        public static bool operator ==(BindingSource? s1, BindingSource? s2)
         {
             if (s1 is null)
             {
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public static bool operator !=(BindingSource s1, BindingSource s2)
+        public static bool operator !=(BindingSource? s1, BindingSource? s2)
         {
             return !(s1 == s2);
         }

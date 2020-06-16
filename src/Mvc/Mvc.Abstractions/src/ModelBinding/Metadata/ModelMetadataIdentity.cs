@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
     {
         private ModelMetadataIdentity(
             Type modelType,
-            string name = null,
-            Type containerType = null,
-            object fieldInfo = null)
+            string? name = null,
+            Type? containerType = null,
+            object? fieldInfo = null)
         {
             ModelType = modelType;
             Name = name;
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <param name="parameter">The <see cref="ParameterInfo" />.</param>
         /// <returns>A <see cref="ModelMetadataIdentity"/>.</returns>
         public static ModelMetadataIdentity ForParameter(ParameterInfo parameter)
-            => ForParameter(parameter, parameter?.ParameterType);
+            => ForParameter(parameter, parameter.ParameterType);
 
         /// <summary>
         /// Creates a <see cref="ModelMetadataIdentity"/> for the provided parameter with the specified
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Gets the <see cref="Type"/> defining the model property represented by the current
         /// instance, or <c>null</c> if the current instance does not represent a property.
         /// </summary>
-        public Type ContainerType { get; }
+        public Type? ContainerType { get; }
 
         /// <summary>
         /// Gets the <see cref="Type"/> represented by the current instance.
@@ -168,21 +168,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Gets the name of the current instance if it represents a parameter or property, or <c>null</c> if
         /// the current instance represents a type.
         /// </summary>
-        public string Name { get; }
+        public string? Name { get; }
 
-        private object FieldInfo { get; }
+        private object? FieldInfo { get; }
 
         /// <summary>
         /// Gets a descriptor for the parameter, or <c>null</c> if this instance
         /// does not represent a parameter.
         /// </summary>
-        public ParameterInfo ParameterInfo => FieldInfo as ParameterInfo;
+        public ParameterInfo? ParameterInfo => FieldInfo as ParameterInfo;
 
         /// <summary>
         /// Gets a descriptor for the property, or <c>null</c> if this instance
         /// does not represent a property.
         /// </summary>
-        public PropertyInfo PropertyInfo => FieldInfo as PropertyInfo;
+        public PropertyInfo? PropertyInfo => FieldInfo as PropertyInfo;
 
         /// <inheritdoc />
         public bool Equals(ModelMetadataIdentity other)
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as ModelMetadataIdentity?;
             return other.HasValue && Equals(other.Value);

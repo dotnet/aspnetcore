@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the type containing the property if this metadata is for a property; <see langword="null"/> otherwise.
         /// </summary>
-        public Type ContainerType => Identity.ContainerType;
+        public Type? ContainerType => Identity.ContainerType;
 
         /// <summary>
         /// Gets the metadata for <see cref="ContainerType"/> if this metadata is for a property;
@@ -68,17 +68,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets the name of the parameter or property if this metadata is for a parameter or property;
         /// <see langword="null"/> otherwise i.e. if this is the metadata for a type.
         /// </summary>
-        public string Name => Identity.Name;
+        public string? Name => Identity.Name;
 
         /// <summary>
         /// Gets the name of the parameter if this metadata is for a parameter; <see langword="null"/> otherwise.
         /// </summary>
-        public string ParameterName => MetadataKind == ModelMetadataKind.Parameter ? Identity.Name : null;
+        public string? ParameterName => MetadataKind == ModelMetadataKind.Parameter ? Identity.Name : null;
 
         /// <summary>
         /// Gets the name of the property if this metadata is for a property; <see langword="null"/> otherwise.
         /// </summary>
-        public string PropertyName => MetadataKind == ModelMetadataKind.Property ? Identity.Name : null;
+        public string? PropertyName => MetadataKind == ModelMetadataKind.Property ? Identity.Name : null;
 
         /// <summary>
         /// Gets the key for the current instance.
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// implements <see cref="IEnumerable"/> but not <see cref="IEnumerable{T}"/>. <c>null</c> otherwise i.e. when
         /// <see cref="IsEnumerableType"/> is <c>false</c>.
         /// </value>
-        public abstract ModelMetadata ElementMetadata { get; }
+        public abstract ModelMetadata? ElementMetadata { get; }
 
         /// <summary>
         /// Gets the ordered and grouped display names and values of all <see cref="Enum"/> values in
@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// validated. If <c>null</c>, properties with this <see cref="ModelMetadata"/> are validated.
         /// </summary>
         /// <value>Defaults to <c>null</c>.</value>
-        public virtual IPropertyValidationFilter PropertyValidationFilter => null;
+        public virtual IPropertyValidationFilter? PropertyValidationFilter => null;
 
         /// <summary>
         /// Gets a value that indicates whether properties or elements of the model should be validated.
@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets the <see cref="Type"/> for elements of <see cref="ModelType"/> if that <see cref="Type"/>
         /// implements <see cref="IEnumerable"/>.
         /// </summary>
-        public Type ElementType { get; private set; }
+        public Type? ElementType { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether <see cref="ModelType"/> is a complex type.
@@ -389,7 +389,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <remarks>
         /// Identical to <see cref="ModelType"/> unless <see cref="IsNullableValueType"/> is <c>true</c>.
         /// </remarks>
-        public Type UnderlyingOrModelType { get; private set; }
+        public Type UnderlyingOrModelType { get; private set; } = default!;
 
         /// <summary>
         /// Gets a property getter delegate to get the property value from a model object.
@@ -415,7 +415,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public bool Equals(ModelMetadata other)
+        public bool Equals(ModelMetadata? other)
         {
             if (object.ReferenceEquals(this, other))
             {
@@ -433,7 +433,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return Equals(obj as ModelMetadata);
         }
@@ -469,14 +469,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             else if (ModelType.IsArray)
             {
                 IsEnumerableType = true;
-                ElementType = ModelType.GetElementType();
+                ElementType = ModelType.GetElementType()!;
             }
             else
             {
                 IsEnumerableType = true;
 
                 var enumerableType = ClosedGenericMatcher.ExtractGenericInterface(ModelType, typeof(IEnumerable<>));
-                ElementType = enumerableType?.GenericTypeArguments[0];
+                ElementType = enumerableType?.GenericTypeArguments[0]!;
 
                 if (ElementType == null)
                 {
@@ -497,7 +497,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 case ModelMetadataKind.Parameter:
                     return $"ModelMetadata (Parameter: '{ParameterName}' Type: '{ModelType.Name}')";
                 case ModelMetadataKind.Property:
-                    return $"ModelMetadata (Property: '{ContainerType.Name}.{PropertyName}' Type: '{ModelType.Name}')";
+                    return $"ModelMetadata (Property: '{ContainerType!.Name}.{PropertyName}' Type: '{ModelType.Name}')";
                 case ModelMetadataKind.Type:
                     return $"ModelMetadata (Type: '{ModelType.Name}')";
                 default:

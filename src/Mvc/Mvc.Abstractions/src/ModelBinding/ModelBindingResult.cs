@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             return new ModelBindingResult(model: null, isModelSet: false);
         }
-        
+
         /// <summary>
         /// Creates a <see cref="ModelBindingResult"/> representing a successful model binding operation.
         /// </summary>
@@ -27,10 +27,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <returns>A <see cref="ModelBindingResult"/> representing a successful model bind.</returns>
         public static ModelBindingResult Success(object model)
         {
-            return new ModelBindingResult( model, isModelSet: true);
+            return new ModelBindingResult(model, isModelSet: true);
         }
 
-        private ModelBindingResult(object model, bool isModelSet)
+        private ModelBindingResult(object? model, bool isModelSet)
         {
             Model = model;
             IsModelSet = isModelSet;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the model associated with this context.
         /// </summary>
-        public object Model { get; }
+        public object? Model { get; }
 
         /// <summary>
         /// <para>
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public bool IsModelSet { get; }
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as ModelBindingResult?;
             if (other == null)
