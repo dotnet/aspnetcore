@@ -1385,7 +1385,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 // Manually control PreviousPollTask instead of using a real PreviousPollTask, because a real
                 // PreviousPollTask might complete too early when the second request cancels it.
-                var lastPollTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var lastPollTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 connection.PreviousPollTask = lastPollTcs.Task;
 
                 request1 = dispatcher.ExecuteAsync(context1, options, app);
@@ -1394,7 +1394,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 Assert.False(request1.IsCompleted);
                 Assert.False(request2.IsCompleted);
 
-                lastPollTcs.SetResult(null);
+                lastPollTcs.SetResult();
 
                 var completedTask = await Task.WhenAny(request1, request2).OrTimeout();
 
@@ -1977,18 +1977,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var connection = manager.CreateConnection();
                 connection.TransportType = transportType;
 
-                var waitForMessageTcs1 = new TaskCompletionSource<object>();
-                var messageTcs1 = new TaskCompletionSource<object>();
-                var waitForMessageTcs2 = new TaskCompletionSource<object>();
-                var messageTcs2 = new TaskCompletionSource<object>();
+                var waitForMessageTcs1 = new TaskCompletionSource();
+                var messageTcs1 = new TaskCompletionSource();
+                var waitForMessageTcs2 = new TaskCompletionSource();
+                var messageTcs2 = new TaskCompletionSource();
                 ConnectionDelegate connectionDelegate = async c =>
                 {
                     await waitForMessageTcs1.Task.OrTimeout();
                     await c.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Message1")).OrTimeout();
-                    messageTcs1.TrySetResult(null);
+                    messageTcs1.TrySetResult();
                     await waitForMessageTcs2.Task.OrTimeout();
                     await c.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Message2")).OrTimeout();
-                    messageTcs2.TrySetResult(null);
+                    messageTcs2.TrySetResult();
                 };
                 {
                     var options = new HttpConnectionDispatcherOptions();
@@ -1996,7 +1996,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     await dispatcher.ExecuteAsync(context, options, connectionDelegate).OrTimeout();
 
                     // second poll should have data
-                    waitForMessageTcs1.SetResult(null);
+                    waitForMessageTcs1.SetResult();
                     await messageTcs1.Task.OrTimeout();
 
                     var ms = new MemoryStream();
@@ -2005,7 +2005,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     await dispatcher.ExecuteAsync(context, options, connectionDelegate).OrTimeout();
                     Assert.Equal("Message1", Encoding.UTF8.GetString(ms.ToArray()));
 
-                    waitForMessageTcs2.SetResult(null);
+                    waitForMessageTcs2.SetResult();
                     await messageTcs2.Task.OrTimeout();
 
                     context = MakeRequest("/foo", connection);
@@ -2372,7 +2372,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
     {
         public override Task OnConnectedAsync(ConnectionContext connection)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             return tcs.Task;
         }
     }
@@ -2438,13 +2438,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
     public class TestConnectionHandler : ConnectionHandler
     {
-        private TaskCompletionSource<object> _startedTcs = new TaskCompletionSource<object>();
+        private TaskCompletionSource _startedTcs = new TaskCompletionSource();
 
         public Task Started => _startedTcs.Task;
 
         public override async Task OnConnectedAsync(ConnectionContext connection)
         {
-            _startedTcs.TrySetResult(null);
+            _startedTcs.TrySetResult();
 
             while (true)
             {

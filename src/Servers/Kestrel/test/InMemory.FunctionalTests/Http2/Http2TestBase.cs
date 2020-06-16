@@ -130,14 +130,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         internal readonly Mock<ITimeoutHandler> _mockTimeoutHandler = new Mock<ITimeoutHandler>();
         internal readonly Mock<MockTimeoutControlBase> _mockTimeoutControl;
 
-        protected readonly ConcurrentDictionary<int, TaskCompletionSource<object>> _runningStreams = new ConcurrentDictionary<int, TaskCompletionSource<object>>();
+        protected readonly ConcurrentDictionary<int, TaskCompletionSource> _runningStreams = new ConcurrentDictionary<int, TaskCompletionSource>();
         protected readonly Dictionary<string, string> _receivedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         protected readonly Dictionary<string, string> _receivedTrailers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         protected readonly Dictionary<string, string> _decodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         protected readonly HashSet<int> _abortedStreamIds = new HashSet<int>();
         protected readonly object _abortedStreamIdsLock = new object();
-        protected readonly TaskCompletionSource<object> _closingStateReached = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-        protected readonly TaskCompletionSource<object> _closedStateReached = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        protected readonly TaskCompletionSource _closingStateReached = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        protected readonly TaskCompletionSource _closedStateReached = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         protected readonly RequestDelegate _noopApplication;
         protected readonly RequestDelegate _readHeadersApplication;
@@ -174,10 +174,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _mockKestrelTrace
                 .Setup(m => m.Http2ConnectionClosing(It.IsAny<string>()))
-                .Callback(() => _closingStateReached.SetResult(null));
+                .Callback(() => _closingStateReached.SetResult());
             _mockKestrelTrace
                 .Setup(m => m.Http2ConnectionClosed(It.IsAny<string>(), It.IsAny<int>()))
-                .Callback(() => _closedStateReached.SetResult(null));
+                .Callback(() => _closedStateReached.SetResult());
 
             _mockConnectionContext.Setup(c => c.Abort(It.IsAny<ConnectionAbortedException>())).Callback<ConnectionAbortedException>(ex =>
             {
@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 await sem.WaitAsync().DefaultTimeout();
 
-                _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
+                _runningStreams[streamIdFeature.StreamId].TrySetResult();
             };
 
             _waitForAbortFlushingApplication = async context =>
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 await context.Response.Body.FlushAsync();
 
-                _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
+                _runningStreams[streamIdFeature.StreamId].TrySetResult();
             };
 
             _readRateApplication = async context =>
@@ -509,7 +509,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected Task StartStreamAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, bool endStream)
         {
             var writableBuffer = _pair.Application.Output;
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
             writableBuffer.WriteStartStream(streamId, _hpackEncoder, GetHeadersEnumerator(headers), _headerEncodingBuffer, endStream);
@@ -519,7 +519,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected Task StartStreamAsync(int streamId, Span<byte> headerData, bool endStream)
         {
             var writableBuffer = _pair.Application.Output;
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
             writableBuffer.WriteStartStream(streamId, headerData, endStream);
@@ -538,7 +538,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected Task SendHeadersWithPaddingAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, byte padLength, bool endStream)
         {
             var writableBuffer = _pair.Application.Output;
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
             var frame = new Http2Frame();
@@ -580,7 +580,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected Task SendHeadersWithPriorityAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, byte priority, int streamDependency, bool endStream)
         {
             var writableBuffer = _pair.Application.Output;
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
             var frame = new Http2Frame();
@@ -625,7 +625,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected Task SendHeadersWithPaddingAndPriorityAsync(int streamId, IEnumerable<KeyValuePair<string, string>> headers, byte padLength, byte priority, int streamDependency, bool endStream)
         {
             var writableBuffer = _pair.Application.Output;
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _runningStreams[streamId] = tcs;
 
             var frame = new Http2Frame();

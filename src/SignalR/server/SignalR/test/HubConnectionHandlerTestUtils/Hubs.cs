@@ -510,7 +510,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         public override Task OnConnectedAsync()
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             tcs.SetException(new InvalidOperationException("Hub OnConnected failed."));
             return tcs.Task;
         }
@@ -520,7 +520,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             tcs.SetException(new InvalidOperationException("Hub OnDisconnected failed."));
             return tcs.Task;
         }

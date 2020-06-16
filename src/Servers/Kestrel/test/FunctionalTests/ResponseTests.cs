@@ -139,19 +139,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task WriteAfterConnectionCloseNoops(ListenOptions listenOptions)
         {
-            var connectionClosed = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var requestStarted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var appCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var connectionClosed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(async httpContext =>
             {
                 try
                 {
-                    requestStarted.SetResult(null);
+                    requestStarted.SetResult();
                     await connectionClosed.Task.DefaultTimeout();
                     httpContext.Response.ContentLength = 12;
                     await httpContext.Response.WriteAsync("hello, world");
-                    appCompleted.TrySetResult(null);
+                    appCompleted.TrySetResult();
                 }
                 catch (Exception ex)
                 {
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await connection.WaitForConnectionClose();
                 }
 
-                connectionClosed.SetResult(null);
+                connectionClosed.SetResult();
 
                 await appCompleted.Task.DefaultTimeout();
                 await server.StopAsync();
@@ -189,19 +189,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             // Ensure string is long enough to disable write-behind buffering
             var largeString = new string('a', maxBytesPreCompleted + 1);
 
-            var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var requestAbortedWh = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var requestStartWh = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var writeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestAbortedWh = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestStartWh = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(async httpContext =>
             {
-                requestStartWh.SetResult(null);
+                requestStartWh.SetResult();
 
                 var response = httpContext.Response;
                 var request = httpContext.Request;
                 var lifetime = httpContext.Features.Get<IHttpRequestLifetimeFeature>();
 
-                lifetime.RequestAborted.Register(() => requestAbortedWh.SetResult(null));
+                lifetime.RequestAborted.Register(() => requestAbortedWh.SetResult());
                 await requestAbortedWh.Task.DefaultTimeout();
 
                 try
@@ -250,10 +250,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             const int connectionPausedEventId = 4;
             const int maxRequestBufferSize = 4096;
 
-            var requestAborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var readCallbackUnwired = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var clientClosedConnection = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestAborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var readCallbackUnwired = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var clientClosedConnection = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var writeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             TestSink.MessageLogged += context =>
             {
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 if (context.EventId.Id == connectionPausedEventId)
                 {
-                    readCallbackUnwired.TrySetResult(null);
+                    readCallbackUnwired.TrySetResult();
                 }
             };
 
@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var server = new TestServer(async context =>
             {
-                context.RequestAborted.Register(() => requestAborted.SetResult(null));
+                context.RequestAborted.Register(() => requestAborted.SetResult());
 
                 await clientClosedConnection.Task;
 
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await readCallbackUnwired.Task.DefaultTimeout();
                 }
 
-                clientClosedConnection.SetResult(null);
+                clientClosedConnection.SetResult();
 
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => writeTcs.Task).DefaultTimeout();
                 await server.StopAsync();
@@ -349,14 +349,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             const int responseBodySegmentSize = 65536;
             const int responseBodySegmentCount = 100;
 
-            var requestAborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var appCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestAborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var scratchBuffer = new byte[responseBodySegmentSize];
 
             using (var server = new TestServer(async context =>
             {
-                context.RequestAborted.Register(() => requestAborted.SetResult(null));
+                context.RequestAborted.Register(() => requestAborted.SetResult());
 
                 for (var i = 0; i < responseBodySegmentCount; i++)
                 {
@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
 
                 await requestAborted.Task.DefaultTimeout();
-                appCompletedTcs.SetResult(null);
+                appCompletedTcs.SetResult();
             }, new TestServiceContext(LoggerFactory), listenOptions))
             {
                 using (var connection = server.CreateConnection())
@@ -459,18 +459,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var responseSize = chunks * chunkSize;
             var chunkData = new byte[chunkSize];
 
-            var responseRateTimeoutMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var connectionStopMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var requestAborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var appFuncCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var responseRateTimeoutMessageLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var connectionStopMessageLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestAborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appFuncCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var mockKestrelTrace = new Mock<IKestrelTrace>();
             mockKestrelTrace
                 .Setup(trace => trace.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
-                .Callback(() => responseRateTimeoutMessageLogged.SetResult(null));
+                .Callback(() => responseRateTimeoutMessageLogged.SetResult());
             mockKestrelTrace
                 .Setup(trace => trace.ConnectionStop(It.IsAny<string>()))
-                .Callback(() => connectionStopMessageLogged.SetResult(null));
+                .Callback(() => connectionStopMessageLogged.SetResult());
 
             var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
             {
@@ -489,7 +489,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             async Task App(HttpContext context)
             {
                 appLogger.LogInformation("Request received");
-                context.RequestAborted.Register(() => requestAborted.SetResult(null));
+                context.RequestAborted.Register(() => requestAborted.SetResult());
 
                 context.Response.ContentLength = responseSize;
 
@@ -507,7 +507,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
                 catch (OperationCanceledException)
                 {
-                    appFuncCompleted.SetResult(null);
+                    appFuncCompleted.SetResult();
                     throw;
                 }
                 catch (Exception ex)
@@ -559,18 +559,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var certificate = TestResources.GetTestCertificate();
 
-            var responseRateTimeoutMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var connectionStopMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var aborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var appFuncCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var responseRateTimeoutMessageLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var connectionStopMessageLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var aborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appFuncCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var mockKestrelTrace = new Mock<IKestrelTrace>();
             mockKestrelTrace
                 .Setup(trace => trace.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
-                .Callback(() => responseRateTimeoutMessageLogged.SetResult(null));
+                .Callback(() => responseRateTimeoutMessageLogged.SetResult());
             mockKestrelTrace
                 .Setup(trace => trace.ConnectionStop(It.IsAny<string>()))
-                .Callback(() => connectionStopMessageLogged.SetResult(null));
+                .Callback(() => connectionStopMessageLogged.SetResult());
 
             var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
             {
@@ -594,7 +594,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 context.RequestAborted.Register(() =>
                 {
-                    aborted.SetResult(null);
+                    aborted.SetResult();
                 });
 
                 context.Response.ContentLength = chunks * chunkSize;
@@ -608,7 +608,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
                 catch (OperationCanceledException)
                 {
-                    appFuncCompleted.SetResult(null);
+                    appFuncCompleted.SetResult();
                     throw;
                 }
                 finally
@@ -646,18 +646,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var responseSize = bufferCount * bufferSize;
             var buffer = new byte[bufferSize];
 
-            var responseRateTimeoutMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var connectionStopMessageLogged = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var requestAborted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var copyToAsyncCts = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var responseRateTimeoutMessageLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var connectionStopMessageLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestAborted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var copyToAsyncCts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var mockKestrelTrace = new Mock<IKestrelTrace>();
             mockKestrelTrace
                 .Setup(trace => trace.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
-                .Callback(() => responseRateTimeoutMessageLogged.SetResult(null));
+                .Callback(() => responseRateTimeoutMessageLogged.SetResult());
             mockKestrelTrace
                 .Setup(trace => trace.ConnectionStop(It.IsAny<string>()))
-                .Callback(() => connectionStopMessageLogged.SetResult(null));
+                .Callback(() => connectionStopMessageLogged.SetResult());
 
             var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
             {
@@ -679,7 +679,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 context.RequestAborted.Register(() =>
                 {
-                    requestAborted.SetResult(null);
+                    requestAborted.SetResult();
                 });
 
                 try
@@ -740,7 +740,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var chunkData = new byte[chunkSize];
 
             var requestAborted = false;
-            var appFuncCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appFuncCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var mockKestrelTrace = new Mock<IKestrelTrace>();
 
             var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
@@ -773,7 +773,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await context.Response.BodyWriter.WriteAsync(new Memory<byte>(chunkData, 0, chunkData.Length), context.RequestAborted);
                 }
 
-                appFuncCompleted.SetResult(null);
+                appFuncCompleted.SetResult();
             }
 
             using (var server = new TestServer(App, testContext, listenOptions))
@@ -906,7 +906,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var chunkData = new byte[chunkSize];
 
             var requestAborted = false;
-            var appFuncCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appFuncCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var mockKestrelTrace = new Mock<IKestrelTrace>();
 
             var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object)
@@ -939,7 +939,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await context.Response.BodyWriter.WriteAsync(new Memory<byte>(chunkData, 0, chunkData.Length), context.RequestAborted);
                 }
 
-                appFuncCompleted.SetResult(null);
+                appFuncCompleted.SetResult();
             }
 
             using (var server = new TestServer(App, testContext, listenOptions))

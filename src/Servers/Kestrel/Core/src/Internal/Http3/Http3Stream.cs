@@ -46,11 +46,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         private readonly Http3Connection _http3Connection;
         private bool _receivedHeaders;
-        private TaskCompletionSource<object> _appCompleted;
+        private TaskCompletionSource _appCompleted;
 
         public Pipe RequestBodyPipe { get; }
 
-        public Http3Stream(Http3Connection http3Connection, Http3StreamContext context) 
+        public Http3Stream(Http3Connection http3Connection, Http3StreamContext context)
         {
             Initialize(context);
 
@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         {
             Debug.Assert(_appCompleted != null);
 
-            _appCompleted.SetResult(new object());
+            _appCompleted.SetResult();
         }
 
         private bool TryClose()
@@ -457,7 +457,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             _receivedHeaders = true;
             InputRemaining = HttpRequestHeaders.ContentLength;
 
-            _appCompleted = new TaskCompletionSource<object>();
+            _appCompleted = new TaskCompletionSource();
 
             ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
 

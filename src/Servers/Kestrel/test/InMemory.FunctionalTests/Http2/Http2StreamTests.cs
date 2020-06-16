@@ -715,7 +715,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task ContentLength_Received_MultipleDataFrame_ReadViaPipeAndStream_Verified()
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -729,7 +729,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Equal(1, readResult.Buffer.Length);
                 context.Request.BodyReader.AdvanceTo(readResult.Buffer.End);
 
-                tcs.SetResult(null);
+                tcs.SetResult();
 
                 var buffer = new byte[100];
 
@@ -1256,7 +1256,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StartAsync_WithoutFinalFlushDoesNotFlushUntilResponseEnd()
         {
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var headers = new[]
             {
@@ -1285,7 +1285,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1);
 
-            tcs.SetResult(null);
+            tcs.SetResult();
 
             await ExpectAsync(Http2FrameType.DATA,
                 withLength: 0,
@@ -2335,7 +2335,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
 
-                _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
+                _runningStreams[streamIdFeature.StreamId].TrySetResult();
             });
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
@@ -2370,7 +2370,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 context.Response.BodyWriter.Advance(10);
                 await context.Response.BodyWriter.FlushAsync();
 
-                _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
+                _runningStreams[streamIdFeature.StreamId].TrySetResult();
             });
 
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
@@ -2406,7 +2406,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                         _abortedStreamIds.Add(streamIdFeature.StreamId);
                     }
 
-                    _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
+                    _runningStreams[streamIdFeature.StreamId].TrySetResult();
                 }
                 catch (Exception ex)
                 {
@@ -2449,7 +2449,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                         _abortedStreamIds.Add(streamIdFeature.StreamId);
                     }
 
-                    _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
+                    _runningStreams[streamIdFeature.StreamId].TrySetResult();
                 }
                 catch (Exception ex)
                 {
@@ -2483,7 +2483,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                             _abortedStreamIds.Add(streamIdFeature.StreamId);
                         }
 
-                        _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
+                        _runningStreams[streamIdFeature.StreamId].TrySetResult();
                     });
 
                     context.Abort();
@@ -2523,7 +2523,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                             _abortedStreamIds.Add(streamIdFeature.StreamId);
                         }
 
-                        _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
+                        _runningStreams[streamIdFeature.StreamId].TrySetResult();
                     });
 
                     await context.Response.Body.WriteAsync(new byte[10], 0, 10);
@@ -3926,7 +3926,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task CompleteAsync_AdvanceAfterComplete_AdvanceThrows()
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
@@ -3943,7 +3943,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
                 catch (InvalidOperationException)
                 {
-                    tcs.SetResult(null);
+                    tcs.SetResult();
                     return;
                 }
 

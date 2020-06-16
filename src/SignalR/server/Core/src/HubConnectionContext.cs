@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly ConnectionContext _connectionContext;
         private readonly ILogger _logger;
         private readonly CancellationTokenSource _connectionAbortedTokenSource = new CancellationTokenSource();
-        private readonly TaskCompletionSource<object> _abortCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _abortCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly long _keepAliveInterval;
         private readonly long _clientTimeoutInterval;
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1);
@@ -640,7 +640,7 @@ namespace Microsoft.AspNetCore.SignalR
                 {
                     // Communicate the fact that we're finished triggering abort callbacks
                     // HubOnDisconnectedAsync is waiting on this to complete the Pipe
-                    connection._abortCompletedTcs.TrySetResult(null);
+                    connection._abortCompletedTcs.TrySetResult();
                 }
                 finally
                 {
