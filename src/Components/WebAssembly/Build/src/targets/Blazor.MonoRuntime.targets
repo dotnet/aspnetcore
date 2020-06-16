@@ -79,13 +79,17 @@
   <UsingTask TaskName="BlazorReadSatelliteAssemblyFile" AssemblyFile="$(_BlazorTasksPath)" />
   <UsingTask TaskName="MarkLazyLoadDependencies" AssemblyFile="$(_BlazorTasksPath)" />
 
-  <Target Name="_ResolveBlazorOutputs" DependsOnTargets="_ResolveBlazorOutputsWhenLinked;_ResolveBlazorOutputsWhenNotLinked">
+  <Target Name="_MarkLazyLoadDependencies" DependsOnTargets="_ResolveBlazorOutputsWhenLinked;_ResolveBlazorOutputsWhenNotLinked">
     <MarkLazyLoadDependencies
       AssemblyReferences="@(ReferencePath)"
-      PackageReferences="@(PackageReference)"
-      ExplicitLazyLoad="@(BlazorLazyLoad)">
-      <Output TaskParameter="LazyLoadedAssemblies" ItemName="_LazyLoadedAssemblies" />
+      ResolvedAssemblies="@(_BlazorResolvedAssembly)"
+      PackageReferences="@(PackageReference)">
+      <Output TaskParameter="EagerlyLoadedAssemblies" ItemName="_EagerlyLoadedAssemblies" />
     </MarkLazyLoadDependencies>
+  </Target>
+
+  <Target Name="_ResolveBlazorOutputs" DependsOnTargets="_MarkLazyLoadDependencies">
+
     <!--
       These are the items calculated as the closure of the runtime assemblies, either by calling the linker
       or by calling our custom ResolveBlazorRuntimeDependencies task if the linker was disabled. Other than
@@ -133,9 +137,16 @@
         <TargetOutputPath>$(_BlazorRuntimeBinOutputPath)%(ReferenceSatellitePaths.DestinationSubDirectory)%(FileName)%(Extension)</TargetOutputPath>
       </_BlazorOutputWithTargetPath>
 
-      <_BlazorOutputWithTargetPath Include="@(_BlazorResolvedAssembly)">
-        <BootManifestResourceType Condition="'%(Extension)' == '.dll'">assembly</BootManifestResourceType>
-        <BootManifestResourceType Condition="'%(Extension)' == '.pdb'">pdb</BootManifestResourceType>
+      <_BlazorOutputWithTargetPath Include="@(_EagerlyLoadedAssemblies)">
+        <BootManifestResourceType>assembly</BootManifestResourceType>
+        <BootManifestResourceType Condition="@(BlazorLazyLoad->AnyHaveMetadataValue('Identity', '%(Filename)')) != ''">dynamicAssembly</BootManifestResourceType>
+        <BootManifestResourceName>%(FileName)%(Extension)</BootManifestResourceName>
+        <TargetOutputPath>$(_BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
+      </_BlazorOutputWithTargetPath>
+
+      <_BlazorOutputWithTargetPath Include="@(_BlazorResolvedAssembly)" Condition="@(_BlazorOutputWithTargetPath->AnyHaveMetadataValue('Filename', '%(Filename)')) == ''">
+      <BootManifestResourceType Condition="'%(Extension)' == '.dll'">dynamicAssembly</BootManifestResourceType>
+      <BootManifestResourceType Condition="'%(Extension)' == '.pdb'">pdb</BootManifestResourceType>
         <BootManifestResourceName>%(FileName)%(Extension)</BootManifestResourceName>
         <TargetOutputPath>$(_BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
       </_BlazorOutputWithTargetPath>
@@ -148,23 +159,6 @@
 
       <_BlazorOutputWithTargetPath Include="@(_BlazorJSFile)">
         <TargetOutputPath>$(_BaseBlazorRuntimeOutputPath)%(FileName)%(Extension)</TargetOutputPath>
-      </_BlazorOutputWithTargetPath>
-
-
-     <!--
-      Once we processed the remaining targets, we need to add in any lazy-loaded
-      components by looking through the set of _BlazorManagedRuntimeAssembly and
-      picking out the assemblies that are:
-      - Included in the list of _LazyLoadedAssemblies
-      - Have not already been added to the Blazor output because they were resolved or required elsewhere
-      - OR are a root assembly if we are running with the mono linker
-     -->
-     <_BlazorOutputWithTargetPath
-          Include="@(_BlazorManagedRuntimeAssembly)"
-          Condition="@(_LazyLoadedAssemblies->AnyHaveMetadataValue('Identity', '%(Filename)')) != '' AND (@(_BlazorOutputWithTargetPath->AnyHaveMetadataValue('FileName', '%(Filename)')) == '' OR @(_BlazorLinkerRoot->AnyHaveMetadataValue('FileName', '%(Filename)')) != '')">
-        <BootManifestResourceType>dynamicAssembly</BootManifestResourceType>
-        <BootManifestResourceName>%(FileName)%(Extension)</BootManifestResourceName>
-        <TargetOutputPath>$(_BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
       </_BlazorOutputWithTargetPath>
 
       <_BlazorWriteSatelliteAssembly Include="@(_BlazorOutputWithTargetPath->WithMetadataValue('BootManifestResourceType', 'satellite'))" />

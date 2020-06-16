@@ -23,6 +23,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             project.AddProjectFileContent(
 @"
+<PropertyGroup>
+    <DefineConstants>$(DefineConstants);REFERENCE_RclWithNoDeps</DefineConstants>
+</PropertyGroup>
 <ItemGroup>
     <ProjectReference Include='..\rclwithnodependencies\RclWithNoDeps.csproj'/>
 </ItemGroup>
@@ -43,8 +46,15 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             // And that it has been labelled as a dynamic assembly in the boot.json
             var dynamicAssemblies = bootJson.resources.dynamicAssembly;
+            var assemblies = bootJson.resources.assembly;
+
             Assert.NotNull(dynamicAssemblies);
             Assert.Contains("RclWithNoDeps.dll", dynamicAssemblies.Keys);
+            Assert.DoesNotContain("RclWithNoDeps.dll", assemblies.Keys);
+
+            // App assembly should not be lazy loaded
+            Assert.DoesNotContain("standalone.dll", dynamicAssemblies.Keys);
+            Assert.Contains("standalone.dll", assemblies.Keys);
         }
 
         [Fact]
@@ -56,6 +66,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             project.AddProjectFileContent(
 @"
+<PropertyGroup>
+    <DefineConstants>$(DefineConstants);REFERENCE_RclWithNoDeps</DefineConstants>
+</PropertyGroup>
 <ItemGroup>
     <ProjectReference Include='..\rclwithnodependencies\RclWithNoDeps.csproj' BlazorLazyLoad='true'/>
 </ItemGroup>");
@@ -70,8 +83,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             var bootJson = ReadBootJsonData(result, Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json"));
 
             var dynamicAssemblies = bootJson.resources.dynamicAssembly;
+            var assemblies = bootJson.resources.assembly;
+
             Assert.NotNull(dynamicAssemblies);
             Assert.Contains("RclWithNoDeps.dll", dynamicAssemblies.Keys);
+
+            // App assembly should not be lazy loaded
+            Assert.DoesNotContain("standalone.dll", dynamicAssemblies.Keys);
+            Assert.Contains("standalone.dll", assemblies.Keys);
         }
 
         [Fact]
@@ -83,6 +102,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             project.AddProjectFileContent(
 @"
+<PropertyGroup>
+    <DefineConstants>$(DefineConstants);REFERENCE_rclwithpackages</DefineConstants>
+</PropertyGroup>
 <ItemGroup>
     <ProjectReference Include='..\rclwithpackages\rclwithpackages.csproj' BlazorLazyLoad='true'/>
 </ItemGroup>");
@@ -93,19 +115,25 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "rclwithpackages.dll");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "Newtonsoft.Json.dll");
 
             var bootJson = ReadBootJsonData(result, Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json"));
 
             var dynamicAssemblies = bootJson.resources.dynamicAssembly;
+            var assemblies = bootJson.resources.assembly;
+
             Assert.NotNull(dynamicAssemblies);
 
             // Packages that are dependencies of rclwithpackage and rclwithpackages itself are lazy-loaded
             Assert.Contains("rclwithpackages.dll", dynamicAssemblies.Keys);
-            Assert.Contains("Newtonsoft.Json.dll", dynamicAssemblies.Keys);
 
             // Dependencies of rclwithpackages that are also dependencies of
             // non-lazy loaded components should not be lazy loaded
             Assert.DoesNotContain("Microsoft.AspNetCore.Components.dll", dynamicAssemblies.Keys);
+
+            // App assembly should not be lazy loaded
+            Assert.DoesNotContain("standalone.dll", dynamicAssemblies.Keys);
+            Assert.Contains("standalone.dll", assemblies.Keys);
         }
 
         [Fact]
@@ -117,9 +145,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             project.AddProjectFileContent(
 @"
+<PropertyGroup>
+    <DefineConstants>$(DefineConstants);REFERENCE_Newtonsoft</DefineConstants>
+</PropertyGroup>
 <ItemGroup>
     <PackageReference Include='Newtonsoft.Json' Version='12.0.3' BlazorLazyLoad='true'/>
-    <PackageReference Include='Polly' Version='7.2.1' BlazorLazyLoad='true' />
 </ItemGroup>");
 
             var result = await MSBuildProcessManager.DotnetMSBuild(project, args: "/restore");
@@ -128,14 +158,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "Newtonsoft.Json.dll");
-            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "Polly.dll");
 
             var bootJson = ReadBootJsonData(result, Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json"));
 
             var dynamicAssemblies = bootJson.resources.dynamicAssembly;
+            var assemblies = bootJson.resources.assembly;
+
             Assert.NotNull(dynamicAssemblies);
             Assert.Contains("Newtonsoft.Json.dll", dynamicAssemblies.Keys);
-            Assert.Contains("Polly.dll", dynamicAssemblies.Keys);
+
+            // App assembly should not be lazy loaded
+            Assert.DoesNotContain("standalone.dll", dynamicAssemblies.Keys);
+            Assert.Contains("standalone.dll", assemblies.Keys);
         }
 
         [Fact]
@@ -147,6 +181,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             project.AddProjectFileContent(
 @"
+<PropertyGroup>
+    <DefineConstants>$(DefineConstants);REFERENCE_RclWithNoDeps</DefineConstants>
+</PropertyGroup>
 <ItemGroup>
     <ProjectReference Include='..\rclwithnodependencies\RclWithNoDeps.csproj'/>
 </ItemGroup>
@@ -167,8 +204,15 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             // And that it has been labelled as a dynamic assembly in the boot.json
             var dynamicAssemblies = bootJson.resources.dynamicAssembly;
+            var assemblies = bootJson.resources.assembly;
+
             Assert.NotNull(dynamicAssemblies);
             Assert.Contains("RclWithNoDeps.dll", dynamicAssemblies.Keys);
+            Assert.DoesNotContain("RclWithNoDeps.dll", assemblies.Keys);
+
+            // App assembly should not be lazy loaded
+            Assert.DoesNotContain("standalone.dll", dynamicAssemblies.Keys);
+            Assert.Contains("standalone.dll", assemblies.Keys);
         }
 
         [Fact]
@@ -180,6 +224,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             project.AddProjectFileContent(
 @"
+<PropertyGroup>
+    <DefineConstants>$(DefineConstants);REFERENCE_RclWithNoDeps</DefineConstants>
+</PropertyGroup>
 <ItemGroup>
     <ProjectReference Include='..\rclwithnodependencies\RclWithNoDeps.csproj' BlazorLazyLoad='true'/>
 </ItemGroup>");
@@ -194,8 +241,14 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             var bootJson = ReadBootJsonData(result, Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json"));
 
             var dynamicAssemblies = bootJson.resources.dynamicAssembly;
+            var assemblies = bootJson.resources.assembly;
+
             Assert.NotNull(dynamicAssemblies);
             Assert.Contains("RclWithNoDeps.dll", dynamicAssemblies.Keys);
+
+            // App assembly should not be lazy loaded
+            Assert.DoesNotContain("standalone.dll", dynamicAssemblies.Keys);
+            Assert.Contains("standalone.dll", assemblies.Keys);
         }
 
         [Fact]
@@ -207,6 +260,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             project.AddProjectFileContent(
 @"
+<PropertyGroup>
+    <DefineConstants>$(DefineConstants);REFERENCE_rclwithpackages</DefineConstants>
+</PropertyGroup>
 <ItemGroup>
     <ProjectReference Include='..\rclwithpackages\rclwithpackages.csproj' BlazorLazyLoad='true'/>
 </ItemGroup>");
@@ -217,19 +273,25 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "rclwithpackages.dll");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "Newtonsoft.Json.dll");
 
             var bootJson = ReadBootJsonData(result, Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json"));
 
             var dynamicAssemblies = bootJson.resources.dynamicAssembly;
+            var assemblies = bootJson.resources.assembly;
+
             Assert.NotNull(dynamicAssemblies);
 
             // Packages that are dependencies of rclwithpackage and rclwithpackages itself are lazy-loaded
             Assert.Contains("rclwithpackages.dll", dynamicAssemblies.Keys);
-            Assert.Contains("Newtonsoft.Json.dll", dynamicAssemblies.Keys);
 
             // Dependencies of rclwithpackages that are also dependencies of
             // non-lazy loaded components should not be lazy loaded
             Assert.DoesNotContain("Microsoft.AspNetCore.Components.dll", dynamicAssemblies.Keys);
+
+            // App assembly should not be lazy loaded
+            Assert.DoesNotContain("standalone.dll", dynamicAssemblies.Keys);
+            Assert.Contains("standalone.dll", assemblies.Keys);
         }
 
         [Fact]
@@ -241,9 +303,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             project.AddProjectFileContent(
 @"
+<PropertyGroup>
+    <DefineConstants>$(DefineConstants);REFERENCE_Newtonsoft</DefineConstants>
+</PropertyGroup>
 <ItemGroup>
     <PackageReference Include='Newtonsoft.Json' Version='12.0.3' BlazorLazyLoad='true'/>
-    <PackageReference Include='Polly' Version='7.2.1' BlazorLazyLoad='true' />
 </ItemGroup>");
 
             var result = await MSBuildProcessManager.DotnetMSBuild(project, args: "/restore");
@@ -252,14 +316,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
 
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "Newtonsoft.Json.dll");
-            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "Polly.dll");
 
             var bootJson = ReadBootJsonData(result, Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json"));
 
             var dynamicAssemblies = bootJson.resources.dynamicAssembly;
+            var assemblies = bootJson.resources.assembly;
+
             Assert.NotNull(dynamicAssemblies);
             Assert.Contains("Newtonsoft.Json.dll", dynamicAssemblies.Keys);
-            Assert.Contains("Polly.dll", dynamicAssemblies.Keys);
+
+            // App assembly should not be lazy loaded
+            Assert.DoesNotContain("standalone.dll", dynamicAssemblies.Keys);
+            Assert.Contains("standalone.dll", assemblies.Keys);
         }
 
         private static GenerateBlazorBootJson.BootJsonData ReadBootJsonData(MSBuildResult result, string path)

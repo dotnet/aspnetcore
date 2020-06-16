@@ -1,4 +1,4 @@
-namespace RazorClassLibrary
+namespace RclWithNoDeps
 {
     public class Class2
     {
