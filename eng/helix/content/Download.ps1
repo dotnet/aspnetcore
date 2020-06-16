@@ -1,12 +1,12 @@
  <# 
  .SYNOPSIS 
-     Downloads a given uri and saves it to outputFile
+     Downloads a given URI and saves it to outputFile
  .DESCRIPTION
-     Downloads a given uri and saves it to outputFile
+     Downloads a given URI and saves it to outputFile
  PARAMETER uri
-    The uri to fetch
+    The URI to fetch
 .PARAMETER outputFile
-    The outputh file path to save the uri
+    The outputh file path to save the URI
 #>
 param(
     [Parameter(Mandatory = $true)]
@@ -29,15 +29,16 @@ while($true) {
     }
     catch {
       Write-Host "Failed to download '$uri'"
-      Write-Error $_.Exception.Message -ErrorAction Continue
     }
 
     if (++$retries -le $maxRetries) {
+      Write-Warning $_.Exception.Message -ErrorAction Continue
       $delayInSeconds = [math]::Pow(2, $retries) - 1 # Exponential backoff
       Write-Host "Retrying. Waiting for $delayInSeconds seconds before next attempt ($retries of $maxRetries)."
       Start-Sleep -Seconds $delayInSeconds
     }
     else {
+      Write-Error $_.Exception.Message -ErrorAction Continue
       throw "Unable to download file in $maxRetries attempts."
     }
  }
