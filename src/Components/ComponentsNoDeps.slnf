@@ -20,7 +20,6 @@
       "WebAssembly\\Build\\src\\Microsoft.AspNetCore.Components.WebAssembly.Build.csproj",
       "WebAssembly\\Build\\test\\Microsoft.AspNetCore.Components.WebAssembly.Build.Tests.csproj",
       "WebAssembly\\Compression\\src\\Microsoft.AspNetCore.Components.WebAssembly.Build.BrotliCompression.csproj",
-      "WebAssembly\\DebugProxy\\src\\Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.csproj",
       "WebAssembly\\DevServer\\src\\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj",
       "WebAssembly\\JSInterop\\src\\Microsoft.JSInterop.WebAssembly.csproj",
       "WebAssembly\\Server\\src\\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj",

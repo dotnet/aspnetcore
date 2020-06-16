@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Builder
             var debugProxyPath = Path.Combine(
                 Path.GetDirectoryName(assembly.Location),
                 "BlazorDebugProxy",
-                "Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.dll");
+                "DebugProxy.dll");
 
             if (!File.Exists(debugProxyPath))
             {

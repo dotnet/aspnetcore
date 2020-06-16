@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.DebugProxy" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,18 +24,13 @@
     <Compile Include="$(ComponentsSharedSourceRoot)\src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
     <Compile Include="$(SharedSourceRoot)\CommandLineUtils\Utilities\DotNetMuxer.cs" Link="Shared\DotNetMuxer.cs" />
 
-    <!-- Ensure debug proxy is built first, but don't create an actual reference, since we don't want its transitive dependencies. -->
-    <ProjectReference
-      Include="..\..\DebugProxy\src\Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.csproj"
-      ReferenceOutputAssembly="false" />
-
     <Content Include="build\**" Pack="true" PackagePath="build\%(RecursiveDir)%(FileName)%(Extension)" />
   </ItemGroup>
 
   <!-- Emit debug proxy binaries to output directory. This lets us launch it as a separate process while keeping the build output self-contained.  -->
   <Target Name="IncludeDebugProxyBinariesAsContent" BeforeTargets="AssignTargetPaths">
     <ItemGroup>
-      <DebugProxyBinaries Include="..\..\DebugProxy\src\bin\$(Configuration)\$(DefaultNetCoreTargetFramework)\**" />
+      <DebugProxyBinaries Include="$(NuGetPackageRoot)\microsoft.aspnetcore.components.webassembly.debugproxy\$(MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion)\tools\**" />
 
       <!--
         For when we're building a package, we use Pack and PackagePath to bundle the debug proxy binaries into 'tools'.
