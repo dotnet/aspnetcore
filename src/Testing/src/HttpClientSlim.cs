@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Testing
                     validateCertificate ? null : (RemoteCertificateValidationCallback)((a, b, c, d) => true));
 
                 await sslStream.AuthenticateAsClientAsync(requestUri.Host, clientCertificates: null,
-                    enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12,
+                    enabledSslProtocols: SslProtocols.None,
                     checkCertificateRevocation: validateCertificate).ConfigureAwait(false);
                 return sslStream;
             }
