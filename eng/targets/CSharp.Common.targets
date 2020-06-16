@@ -35,13 +35,14 @@
         The code block that follows sets it up so projects in this repo that target ns2.0 or netfx can compile when Nullable is configured.
         Based on https://github.com/dotnet/runtime/blob/93b6c449d4f31ddd7d573d1d3769e681d5ebceb9/src/libraries/Directory.Build.targets#L215-L222
      -->
-    <When Condition="'$(Nullable)' != '' AND ('$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
-        <PropertyGroup>
-          <DefineConstants>$(DefineConstants),INTERNAL_NULLABLE_ATTRIBUTES</DefineConstants>
-        </PropertyGroup>
-        <ItemGroup>
-          <Compile Include="$(SharedSourceRoot)Nullable\NullableAttributes.cs" />
-        </ItemGroup>
+    <When Condition="'$(Nullable)' != '' AND ('$(TargetFrameworkIdentifier)' == '.NETStandard' OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
+      <PropertyGroup>
+        <DefineConstants>$(DefineConstants),INTERNAL_NULLABLE_ATTRIBUTES</DefineConstants>
+        <NoWarn>$(NoWarn);nullable</NoWarn>
+      </PropertyGroup>
+      <ItemGroup>
+        <Compile Include="$(SharedSourceRoot)Nullable\NullableAttributes.cs" />
+      </ItemGroup>
     </When>
   </Choose>
 
