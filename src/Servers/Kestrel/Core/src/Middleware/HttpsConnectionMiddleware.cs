@@ -310,7 +310,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 var enableHttp2OnWindows81 = AppContext.TryGetSwitch(EnableWindows81Http2, out var enabled) && enabled;
-                if (Environment.OSVersion.Version < new Version(6, 3)
+                if (Environment.OSVersion.Version < new Version(6, 3) // Missing ALPN support
+                    // Win8.1 and 2012 R2 don't support the right cipher configuration by default.
                     || (Environment.OSVersion.Version < new Version(10, 0) && !enableHttp2OnWindows81))
                 {
                     return true;
