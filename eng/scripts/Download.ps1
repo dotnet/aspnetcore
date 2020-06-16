@@ -29,15 +29,17 @@ while($true) {
     }
     catch {
       Write-Host "Failed to download '$uri'"
-      Write-Error $_.Exception.Message -ErrorAction Continue
+      $error = $_.Exception.Message
     }
 
     if (++$retries -le $maxRetries) {
+      Write-Warning $error -ErrorAction Continue
       $delayInSeconds = [math]::Pow(2, $retries) - 1 # Exponential backoff
       Write-Host "Retrying. Waiting for $delayInSeconds seconds before next attempt ($retries of $maxRetries)."
       Start-Sleep -Seconds $delayInSeconds
     }
     else {
+      Write-Error $error -ErrorAction Continue
       throw "Unable to download file in $maxRetries attempts."
     }
  }
