@@ -25,34 +25,8 @@ param(
     [Parameter(Mandatory = $true)]
     $installDir    
 )
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-$ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
 
-$maxRetries = 5
-$retries = 1
-
-$uri = "https://dot.net/v1/dotnet-install.ps1"
-while($true) {
-    try {
-      Write-Host "GET $uri"
-      Invoke-WebRequest $uri -OutFile dotnet-install.ps1
-      break
-    }
-    catch {
-      Write-Host "Failed to download '$uri'"
-      Write-Error $_.Exception.Message -ErrorAction Continue
-    }
-
-    if (++$retries -le $maxRetries) {
-      $delayInSeconds = [math]::Pow(2, $retries) - 1 # Exponential backoff
-      Write-Host "Retrying. Waiting for $delayInSeconds seconds before next attempt ($retries of $maxRetries)."
-      Start-Sleep -Seconds $delayInSeconds
-    }
-    else {
-      throw "Unable to download file in $maxRetries attempts."
-    }
- }
-
+& $PSScriptRoot\Download.ps1 "https://dot.net/v1/dotnet-install.ps1" dotnet-install.ps1
 Write-Host "Download of '$uri' complete..."
 Write-Host "Installing SDK...& dotnet-install.ps1 -Architecture $arch -Version $sdkVersion -InstallDir $installDir"
 Invoke-Expression "& dotnet-install.ps1 -Architecture $arch -Version $sdkVersion -InstallDir $installDir"
