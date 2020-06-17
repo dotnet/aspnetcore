@@ -1,8 +1,4 @@
 ﻿<Project>
-  <PropertyGroup Condition="'$(IsUnitTestProject)' != 'true'">
-    <GenerateDocumentationFile Condition="'$(GenerateDocumentationFile)' == ''">true</GenerateDocumentationFile>
-  </PropertyGroup>
-
   <ItemGroup>
     <!-- Add a project dependency without reference output assemblies to enforce build order -->
     <!-- Applying workaround for https://github.com/microsoft/msbuild/issues/2661 and https://github.com/dotnet/sdk/issues/952 -->

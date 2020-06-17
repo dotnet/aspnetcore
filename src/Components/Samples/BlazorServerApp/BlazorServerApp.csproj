@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
     <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 

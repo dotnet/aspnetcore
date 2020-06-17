@@ -3,7 +3,6 @@
   <PropertyGroup>
     <Description>Transport package for Mvc.Razor.Extensions pdbs. For internal use only.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>

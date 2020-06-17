@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
   </PropertyGroup>
 
    <ItemGroup>

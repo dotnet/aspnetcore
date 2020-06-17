@@ -4,7 +4,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <!-- We have tests that test runtime view compilation. -->
     <RazorCompileOnBuild>false</RazorCompileOnBuild>
-    <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 
   <ItemGroup>

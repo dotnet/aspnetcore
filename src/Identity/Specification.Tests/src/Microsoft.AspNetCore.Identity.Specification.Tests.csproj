@@ -7,7 +7,6 @@
     <PackageTags>aspnetcore;identity;membership</PackageTags>
     <IsTestProject>false</IsTestProject>
     <IsPackable>false</IsPackable>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>

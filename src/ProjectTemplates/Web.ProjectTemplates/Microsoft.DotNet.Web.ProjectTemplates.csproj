@@ -4,7 +4,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PackageId>Microsoft.DotNet.Web.ProjectTemplates.$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</PackageId>
     <Description>ASP.NET Core Web Template Pack for Microsoft Template Engine</Description>
-    <IsPackable>true</IsPackable>
     <ComponentsWebAssemblyProjectsRoot>$(RepoRoot)src\Components\WebAssembly\</ComponentsWebAssemblyProjectsRoot>
   </PropertyGroup>
 

@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <IsPackable>false</IsPackable>
     <BlazorWebAssemblyEnableLinking>false</BlazorWebAssemblyEnableLinking>
     <OutputType>exe</OutputType>
     <RazorLangVersion>3.0</RazorLangVersion>

@@ -11,7 +11,6 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnostics;healthchecks</PackageTags>
-    <IsPackable>true</IsPackable>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <Nullable>enable</Nullable>
   </PropertyGroup>
