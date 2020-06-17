@@ -8,9 +8,6 @@
 
     <!-- Work around https://github.com/microsoft/msbuild/issues/4740 -->
     <EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
-
-    <!-- Tests do not work on Helix yet -->
-    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
