@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore
     public class TargetingPackTests
     {
         private readonly string _expectedRid;
+        private readonly string _targetingPackTfm;
         private readonly string _targetingPackRoot;
         private readonly ITestOutputHelper _output;
         private readonly bool _isTargetingPackBuilding;
@@ -26,6 +27,7 @@ namespace Microsoft.AspNetCore
         {
             _output = output;
             _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
+            _targetingPackTfm = "net" + TestData.GetSharedFxVersion().Substring(0, 3);
             _targetingPackRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))
                 ? Path.Combine(TestData.GetTestDataValue("TargetingPackLayoutRoot"), "packs", "Microsoft.AspNetCore.App.Ref", TestData.GetTestDataValue("TargetingPackVersion"))
                 : Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "Microsoft.AspNetCore.App.Ref");
@@ -35,7 +37,7 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void TargetingPackContainsListedAssemblies()
         {
-            var actualAssemblies = Directory.GetFiles(_targetingPackRoot, "*.dll")
+            var actualAssemblies = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll")
                 .Select(Path.GetFileNameWithoutExtension)
                 .ToHashSet();
 
@@ -64,7 +66,7 @@ namespace Microsoft.AspNetCore
                 return;
             }
 
-            IEnumerable<string> dlls = Directory.GetFiles(_targetingPackRoot, "*.dll", SearchOption.AllDirectories);
+            IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll", SearchOption.AllDirectories);
             Assert.NotEmpty(dlls);
 
             Assert.All(dlls, path =>

@@ -147,7 +147,6 @@ namespace Microsoft.AspNetCore
 
         public static HashSet<string> ListedTargetingPackAssemblies = new HashSet<string>
         {
-            "aspnetcorev2_inprocess",
             "Microsoft.AspNetCore",
             "Microsoft.AspNetCore.Antiforgery",
             "Microsoft.AspNetCore.Authentication",
@@ -270,13 +269,14 @@ namespace Microsoft.AspNetCore
             "Microsoft.Extensions.WebEncoders",
             "Microsoft.JSInterop",
             "Microsoft.Net.Http.Headers",
-            "Microsoft.Win32.SystemEvents",
+            "Microsoft.Win32.Registry",
             "System.Diagnostics.EventLog",
-            "System.Drawing.Common",
             "System.IO.Pipelines",
-            "System.Security.Cryptography.Pkcs",
+            "System.Security.AccessControl",
+            "System.Security.Cryptography.Cng",
             "System.Security.Cryptography.Xml",
             "System.Security.Permissions",
+            "System.Security.Principal.Windows",
             "System.Windows.Extensions"
         };
 
