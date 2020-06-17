@@ -76,7 +76,7 @@ namespace Microsoft.Net.Http.Headers
 
             if (HttpRuleParser.GetTokenLength(value, 0) != value.Length)
             {
-                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Invalid token '{0}.", value));
+                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Invalid token '{0}'.", value));
             }
         }
 
