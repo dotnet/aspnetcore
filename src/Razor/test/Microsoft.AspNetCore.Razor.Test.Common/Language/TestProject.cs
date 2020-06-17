@@ -11,18 +11,16 @@ namespace Microsoft.AspNetCore.Razor.Language
         public static string GetProjectDirectory(string directoryHint)
         {
             var repoRoot = SearchUp(AppContext.BaseDirectory, "global.json");
+            if (repoRoot == null)
+            {
+                repoRoot = AppContext.BaseDirectory;
+            }
+            
             var projectDirectory = Path.Combine(repoRoot, "src", "Razor", directoryHint, "test");
 
-            if (!Directory.Exists(projectDirectory) &&
-                string.Equals(directoryHint, "Microsoft.AspNetCore.Razor.Language.Test", StringComparison.Ordinal))
+            if (string.Equals(directoryHint, "Microsoft.AspNetCore.Razor.Language.Test", StringComparison.Ordinal))
             {
                 projectDirectory = Path.Combine(repoRoot, "src", "Razor", "Microsoft.AspNetCore.Razor.Language", "test");
-            }
-
-            if (!Directory.Exists(projectDirectory))
-            {
-                throw new InvalidOperationException(
-                    $@"Could not locate project directory for directory hint {directoryHint}. Directory probe path: {projectDirectory}.");
             }
 
             return projectDirectory;
@@ -31,18 +29,16 @@ namespace Microsoft.AspNetCore.Razor.Language
         public static string GetProjectDirectory(Type type)
         {
             var repoRoot = SearchUp(AppContext.BaseDirectory, "global.json");
-            var assemblyName = type.Assembly.GetName().Name;
-            var projectDirectory = Path.Combine(repoRoot, "src", "Razor", assemblyName, "test");
-            if (!Directory.Exists(projectDirectory) &&
-                string.Equals(assemblyName, "Microsoft.AspNetCore.Razor.Language.Test", StringComparison.Ordinal))
+            if (repoRoot == null)
             {
-                projectDirectory = Path.Combine(repoRoot, "src", "Razor", "Microsoft.AspNetCore.Razor.Language", "test");
+                repoRoot = AppContext.BaseDirectory;
             }
 
-            if (!Directory.Exists(projectDirectory))
+            var assemblyName = type.Assembly.GetName().Name;
+            var projectDirectory = Path.Combine(repoRoot, "src", "Razor", assemblyName, "test");
+            if (string.Equals(assemblyName, "Microsoft.AspNetCore.Razor.Language.Test", StringComparison.Ordinal))
             {
-                throw new InvalidOperationException(
-                    $@"Could not locate project directory for type {type.FullName}. Directory probe path: {projectDirectory}.");
+                projectDirectory = Path.Combine(repoRoot, "src", "Razor", "Microsoft.AspNetCore.Razor.Language", "test");
             }
 
             return projectDirectory;
@@ -62,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
             while (directoryInfo.Parent != null);
 
-            throw new Exception($"File {fileName} could not be found in {baseDirectory} or its parent directories.");
+            return null;
         }
     }
 }
