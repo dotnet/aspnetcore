@@ -1,0 +1,108 @@
+@page "/gridrendering"
+@inject IJSRuntime JSRuntime
+@using Wasm.Performance.TestApp.Shared.FastGrid
+
+<h1>20 x 200 Grid</h1>
+
+<fieldset>
+    <select id="render-mode" @bind="selectedRenderMode">
+        <option>@RenderMode.FastGrid</option>
+        <option>@RenderMode.ComplexTable</option>
+    </select>
+
+    <button id="show" @onclick="Show">Show</button>
+    <button id="hide" @onclick="Hide">Hide</button>
+    @if (forecasts != null)
+    {
+        <button id="change-page" @onclick="ChangePage">Switch pages</button>
+    }
+</fieldset>
+
+@if (forecasts == null)
+{
+    <p><em>(No data assigned)</em></p>
+}
+else if (selectedRenderMode == RenderMode.FastGrid)
+{
+    <Grid Data="@forecasts">
+        <GridColumn TRowData="WeatherForecast" Title="Date">@context.Date</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="TemperatureC">@context.TemperatureC</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="TemperatureF">@context.TemperatureF</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="Summary">@context.Summary</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="Date">@context.Date</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="TemperatureC">@context.TemperatureC</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="TemperatureF">@context.TemperatureF</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="Summary">@context.Summary</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="Date">@context.Date</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="TemperatureC">@context.TemperatureC</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="TemperatureF">@context.TemperatureF</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="Summary">@context.Summary</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="Date">@context.Date</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="TemperatureC">@context.TemperatureC</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="TemperatureF">@context.TemperatureF</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="Summary">@context.Summary</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="Date">@context.Date</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="TemperatureC">@context.TemperatureC</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="TemperatureF">@context.TemperatureF</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="Summary">@context.Summary</GridColumn>
+    </Grid>
+}
+else if (selectedRenderMode == RenderMode.ComplexTable)
+{
+    <Wasm.Performance.TestApp.Shared.ComplexTable.TableComponent Data="@forecasts" Columns="@Columns"></Wasm.Performance.TestApp.Shared.ComplexTable.TableComponent>
+}
+
+@code {
+    enum RenderMode { ComplexTable, FastGrid }
+
+    private RenderMode selectedRenderMode = RenderMode.FastGrid;
+
+    private WeatherForecast[] forecasts;
+    public List<string> Columns { get; set; } = new List<string>
+{
+        "Date", "TemperatureC", "TemperatureF", "Summary", "Date", "TemperatureC", "TemperatureF", "Summary", "Date", "TemperatureC",
+        "Date", "TemperatureC", "TemperatureF", "Summary", "Date", "TemperatureC", "TemperatureF", "Summary", "Date", "TemperatureC"
+    };
+
+    private static string[] sampleSummaries = new[] { "Balmy", "Chilly", "Freezing", "Bracing" };
+    private static WeatherForecast[] staticSampleDataPage1 = Enumerable.Range(0, 200).Select(CreateSampleDataItem).ToArray();
+    private static WeatherForecast[] staticSampleDataPage2 = Enumerable.Range(200, 200).Select(CreateSampleDataItem).ToArray();
+
+    private static WeatherForecast CreateSampleDataItem(int index) => new WeatherForecast
+    {
+        Date = DateTime.Now.Date.AddDays(index),
+        Summary = sampleSummaries[index % sampleSummaries.Length],
+        TemperatureC = index,
+    };
+
+    void Show()
+    {
+        forecasts = staticSampleDataPage1;
+    }
+
+    void Hide()
+    {
+        forecasts = null;
+    }
+
+    void ChangePage()
+    {
+        forecasts = (forecasts == staticSampleDataPage1) ? staticSampleDataPage2 : staticSampleDataPage1;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        BenchmarkEvent.Send(JSRuntime, "Finished rendering table");
+    }
+
+    public class WeatherForecast
+    {
+        public DateTime Date { get; set; }
+
+        public int TemperatureC { get; set; }
+
+        public string Summary { get; set; }
+
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    }
+}
