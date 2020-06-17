@@ -8,9 +8,6 @@
 
     <!-- Work around https://github.com/microsoft/msbuild/issues/4740 -->
     <EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
-
-    <!-- Tests do not work on Helix yet -->
-    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,11 +25,19 @@
     <ProjectReference Include="..\..\test\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X.csproj" />
   </ItemGroup>
 
-  <Target Name="CopyDepsFromShims" AfterTargets="Build">
+  <Target Name="CopyDepsFromShims_Build" AfterTargets="Build">
     <ItemGroup>
       <MvcShim Condition="$(TargetFramework) != ''" Include="$(ArtifactsBinDir)\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X\$(Configuration)\$(TargetFramework)\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X.deps.json" />
     </ItemGroup>
 
     <Copy SourceFiles="@(MvcShim)" DestinationFolder="$(OutputPath)" />
+  </Target>
+
+  <Target Name="CopyDepsFromShims_Publish" AfterTargets="Publish">
+    <ItemGroup>
+      <MvcShim Condition="$(TargetFramework) != ''" Include="$(ArtifactsBinDir)\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X\$(Configuration)\$(TargetFramework)\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X.deps.json" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(MvcShim)"  DestinationFolder="$(PublishDir)" Condition="Exists($(PublishDir))" />
   </Target>
 </Project>

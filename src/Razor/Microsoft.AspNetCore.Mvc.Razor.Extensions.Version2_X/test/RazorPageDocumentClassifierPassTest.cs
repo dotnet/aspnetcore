@@ -51,10 +51,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X
                 length: 5 + Environment.NewLine.Length);
 
             var expectedDiagnostic = RazorExtensionsDiagnosticFactory.CreatePageDirective_MustExistAtTheTopOfFile(sourceSpan);
-            var content = @"
-@somethingelse
-@page
-";
+            var content = Environment.NewLine +
+"@somethingelse" + Environment.NewLine +
+"@page" + Environment.NewLine;
             var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create(content, "Test.cshtml"));
 
             var engine = CreateProjectEngine().Engine;
