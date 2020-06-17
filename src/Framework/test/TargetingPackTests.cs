@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore
                 var assemblyDefinition = reader.GetAssemblyDefinition();
 
                 Assert.True(
-                    assemblyDefinition.Version.Revision == 0 && assemblyDefinition.Version.Revision == 0,
+                    assemblyDefinition.Version.Revision == 0 && assemblyDefinition.Version.Build == 0,
                     $"{path} should have a 0.0 revision number and build number version, e.g. major.minor.0.0");
             });
         }
