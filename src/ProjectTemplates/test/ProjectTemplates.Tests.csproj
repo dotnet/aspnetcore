@@ -42,6 +42,9 @@
     <ProjectReference Include="../Web.ItemTemplates/Microsoft.DotNet.Web.ItemTemplates.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../Web.Spa.ProjectTemplates/Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\Microsoft.NET.Sdk.Razor.csproj"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <PropertyGroup>
