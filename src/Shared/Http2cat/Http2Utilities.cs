@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Http2Cat
             return asciiString;
         }
 
-        public unsafe string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span)
+        public unsafe string GetAsciiOrUTF8StringNonNullCharacters(ReadOnlySpan<byte> span)
         {
             if (span.IsEmpty)
             {
