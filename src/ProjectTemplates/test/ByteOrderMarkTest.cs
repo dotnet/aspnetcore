@@ -15,6 +15,8 @@ namespace Templates.Test
     public class ByteOrderMarkTest
     {
         private readonly ITestOutputHelper _output;
+        private readonly string RepoRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))
+            ? GetTestAttribute("Testing.RepoRoot") : Directory.GetCurrentDirectory();
 
         public ByteOrderMarkTest(ITestOutputHelper output)
         {
@@ -64,12 +66,17 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
-        [QuarantinedTest]
         public void RazorFilesInWebProjects_ShouldContainBOM()
         {
             var projectName = "Web.ProjectTemplates";
-            var currentDirectory = Directory.GetCurrentDirectory();
-            var projectTemplateDir = Directory.GetParent(currentDirectory).Parent.Parent.Parent.FullName;
+
+            // Resolve the templates from different locations if we are running in Helix/non-Helix environments
+            var projectTemplateDir = Path.Combine(RepoRoot, "src", "ProjectTemplates");
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))) {
+                var currentDirectory = Directory.GetCurrentDirectory();
+                projectTemplateDir = Directory.GetParent(currentDirectory).Parent.Parent.Parent.FullName;
+            }
+
             var path = Path.Combine(projectName, "content");
             var directories = Directory.GetDirectories(Path.Combine(projectTemplateDir, path), "*Sharp");
 
