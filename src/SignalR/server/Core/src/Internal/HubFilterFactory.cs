@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             var filter = (IHubFilter?)serviceProvider.GetService(_filterType);
             if (filter == null)
             {
-                filter = (IHubFilter)_objectFactory.Invoke(serviceProvider, null);
+                filter = (IHubFilter)_objectFactory.Invoke(serviceProvider, Array.Empty<object>());
                 owned = true;
             }
 
