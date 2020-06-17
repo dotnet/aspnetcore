@@ -87,7 +87,7 @@
     <ItemGroup>
       <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
         <_Parameter1>TargetingPackDependencies</_Parameter1>
-        <_Parameter2>@(_TargetingPackDependencies)</_Parameter2>
+        <_Parameter2>@(_TargetingPackDependencies->'%(FileName)')</_Parameter2>
       </AssemblyAttribute>
 
       <AspNetCoreTargetingPackDependencies

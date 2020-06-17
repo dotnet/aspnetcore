@@ -213,13 +213,6 @@ namespace Microsoft.AspNetCore
             var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
             var expectedAssemblies = TestData.GetTargetingPackDependencies()
                 .Split(';', StringSplitOptions.RemoveEmptyEntries)
-                .Select(i =>
-                {
-                    var fileName = Path.GetFileName(i);
-                    return fileName.EndsWith(".dll", StringComparison.Ordinal)
-                        ? fileName.Substring(0, fileName.Length - 4)
-                        : fileName;
-                })
                 .ToHashSet();
             expectedAssemblies.Remove("aspnetcorev2_inprocess");
 
