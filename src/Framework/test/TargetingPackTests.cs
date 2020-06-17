@@ -33,6 +33,30 @@ namespace Microsoft.AspNetCore
         }
 
         [Fact]
+        public void TargetingPackContainsListedAssemblies()
+        {
+            var actualAssemblies = Directory.GetFiles(_targetingPackRoot, "*.dll")
+                .Select(Path.GetFileNameWithoutExtension)
+                .ToHashSet();
+
+            _output.WriteLine("==== actual assemblies ====");
+            _output.WriteLine(string.Join('\n', actualAssemblies.OrderBy(i => i)));
+            _output.WriteLine("==== expected assemblies ====");
+            _output.WriteLine(string.Join('\n', TestData.ListedTargetingPackAssemblies.OrderBy(i => i)));
+
+            var missing = TestData.ListedTargetingPackAssemblies.Except(actualAssemblies);
+            var unexpected = actualAssemblies.Except(TestData.ListedTargetingPackAssemblies);
+
+            _output.WriteLine("==== missing assemblies from the framework ====");
+            _output.WriteLine(string.Join('\n', missing));
+            _output.WriteLine("==== unexpected assemblies in the framework ====");
+            _output.WriteLine(string.Join('\n', unexpected));
+
+            Assert.Empty(missing);
+            Assert.Empty(unexpected);
+        }
+
+        [Fact]
         public void AssembliesHavePatchVersion0()
         {
             if (!_isTargetingPackBuilding)
