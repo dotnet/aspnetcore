@@ -37,9 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     new SourceSpan(new SourceLocation(14 + Environment.NewLine.Length, 1, 14), contentLength: 1), "\"")
             };
 
-            var content =
-            @"
-@addTagHelper """;
+            var content = Environment.NewLine + "@addTagHelper \"";
             var sourceDocument = TestRazorSourceDocument.Create(content, filePath: null);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
@@ -76,9 +74,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     new SourceSpan(new SourceLocation(17 + Environment.NewLine.Length, 1, 17), contentLength: 1), "\"")
             };
 
-            var content =
-            @"
-@removeTagHelper """;
+            var content = Environment.NewLine + "@removeTagHelper \"";
             var sourceDocument = TestRazorSourceDocument.Create(content, filePath: null);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
@@ -115,9 +111,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     new SourceSpan(new SourceLocation(17 + Environment.NewLine.Length, 1, 17), contentLength: 1), "tagHelperPrefix", '\"', "\""),
             };
 
-            var content =
-            @"
-@tagHelperPrefix """;
+            var content = Environment.NewLine + "@tagHelperPrefix \"";
             var sourceDocument = TestRazorSourceDocument.Create(content, filePath: null);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
@@ -552,10 +546,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             };
 
             var content =
-            @"
-@addTagHelper *, TestAssembly
-<form>
-    <input value='Hello' type='text' />";
+            Environment.NewLine +
+"@addTagHelper *, TestAssembly" + Environment.NewLine +
+"<form>" + Environment.NewLine +
+"    <input value='Hello' type='text' />";
             var sourceDocument = TestRazorSourceDocument.Create(content, filePath: null);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
 

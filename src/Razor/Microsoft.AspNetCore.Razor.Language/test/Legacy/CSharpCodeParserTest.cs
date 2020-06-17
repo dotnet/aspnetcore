@@ -198,8 +198,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
             var expectedDiagnostic = RazorDiagnosticFactory.CreateParsing_DuplicateDirective(
                 new SourceSpan(null, 22 + Environment.NewLine.Length, 1, 0, 16), "tagHelperPrefix");
             var source = TestRazorSourceDocument.Create(
-                @"@tagHelperPrefix ""th:""
-@tagHelperPrefix ""th""",
+                "@tagHelperPrefix \"th:\"" + Environment.NewLine +
+                "@tagHelperPrefix \"th\"",
                 filePath: null);
 
             // Act

@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 )";
 
             var output = context.CodeWriter.GenerateCode();
-            Assert.Equal(expected, output);
+            Assert.Equal(expected, output, ignoreLineEndingDifferences: true);
         }
     }
 }

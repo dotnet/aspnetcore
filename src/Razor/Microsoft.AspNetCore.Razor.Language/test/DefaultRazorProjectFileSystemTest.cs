@@ -9,6 +9,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
+    [SkipOnHelix("This entire test class depends on files being on disk in a specific location")]
     public class DefaultRazorProjectFileSystemTest
     {
         private static string TestFolder { get; } = Path.Combine(

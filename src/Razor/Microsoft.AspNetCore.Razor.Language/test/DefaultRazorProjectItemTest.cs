@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Assert.Equal("/Home.cshtml", projectItem.FilePath);
             Assert.Equal("/", projectItem.BasePath);
-            Assert.True(projectItem.Exists);
             Assert.Equal("Home.cshtml", projectItem.FileName);
             Assert.Equal("test", projectItem.FileKind);
             Assert.Equal(fileInfo.FullName, projectItem.PhysicalPath);
@@ -95,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var stream = projectItem.Read();
 
             // Assert
-            Assert.Equal("home-content", new StreamReader(stream).ReadToEnd());
+            Assert.Equal("home-content", new StreamReader(stream).ReadToEnd(), ignoreLineEndingDifferences: true);
         }
     }
 }

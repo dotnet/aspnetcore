@@ -260,10 +260,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Lower_TagHelper_InSection()
         {
             // Arrange
-            var codeDocument = TestRazorCodeDocument.Create(@"@addTagHelper *, TestAssembly
-@section test {
-<span val=""@Hello World""></span>
-}");
+            var codeDocument = TestRazorCodeDocument.Create("@addTagHelper *, TestAssembly" + Environment.NewLine +
+"@section test {" + Environment.NewLine +
+"<span val=\"@Hello World\"></span>" + Environment.NewLine +
+"}");
             var tagHelpers = new[]
             {
                         CreateTagHelperDescriptor(
