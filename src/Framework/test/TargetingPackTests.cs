@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore
 
                 Assert.True(
                     assemblyDefinition.Version.Revision == 0 && assemblyDefinition.Version.Build == 0,
-                    $"{path} should have a 0.0 revision number and build number version, e.g. major.minor.0.0");
+                    $"{path} has version {assemblyDefinition.Version} should have a 0.0 revision number and build number version, e.g. major.minor.0.0");
             });
         }
 
@@ -249,11 +249,12 @@ namespace Microsoft.AspNetCore
 
             Assert.All(frameworkListEntries, i =>
             {
+                var assemblyPath = i.Attribute("Path").Value;
                 var assemblyVersion = i.Attribute("AssemblyVersion").Value;
                 var fileVersion = i.Attribute("FileVersion").Value;
 
-                Assert.True(Version.TryParse(assemblyVersion, out _), "Assembly version must be convertable to System.Version");
-                Assert.True(Version.TryParse(fileVersion, out _), "File version must be convertable to System.Version");
+                Assert.True(Version.TryParse(assemblyVersion, out _), $"{assemblyPath} has assembly version {assemblyVersion}. Assembly version must be convertable to System.Version");
+                Assert.True(Version.TryParse(fileVersion, out _), $"{assemblyPath} has file version {fileVersion}. File version must be convertable to System.Version");
             });
         }
     }
