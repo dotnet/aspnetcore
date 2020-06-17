@@ -9,11 +9,6 @@ namespace Microsoft.AspNetCore.Authorization
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
     }
-    public partial class AuthorizationMiddlewareContext
-    {
-        public AuthorizationMiddlewareContext() { }
-        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-    }
     public partial interface IAuthorizationMiddlewareResultHandler
     {
         System.Threading.Tasks.Task HandleAsync(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authorization.AuthorizationPolicy policy, Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult authorizeResult);

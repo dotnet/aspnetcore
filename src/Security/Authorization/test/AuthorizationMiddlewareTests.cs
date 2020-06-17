@@ -317,10 +317,10 @@ namespace Microsoft.AspNetCore.Authorization.Test
         public async Task AuthZResourceShouldBeHttpContextAndHaveHEndpoint()
         {
             // Arrange
-            AuthorizationMiddlewareContext resource = null;
+            HttpContext resource = null;
             var policy = new AuthorizationPolicyBuilder().RequireAssertion(c =>
             {
-                resource = c.Resource as AuthorizationMiddlewareContext;
+                resource = c.Resource as HttpContext;
                 return true;
             }).Build();
             var policyProvider = new Mock<IAuthorizationPolicyProvider>();
@@ -336,8 +336,8 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
             // Assert
             Assert.NotNull(resource);
-            Assert.Equal(context, resource.HttpContext);
-            Assert.Equal(endpoint, resource.HttpContext.GetEndpoint());
+            Assert.Equal(context, resource);
+            Assert.Equal(endpoint, resource.GetEndpoint());
         }
 
         [Fact]
