@@ -358,16 +358,11 @@ if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJ
 # Initialize global variables need to be set before the import of Arcade is imported
 $restore = $RunRestore
 
-# Though VS Code may indicate $nodeReuse, $warnAsError and $msbuildEngine are unused, tools.ps1 uses them.
+# Though VS Code may indicate $nodeReuse and $msbuildEngine are unused, tools.ps1 uses them.
 
 # Disable node reuse - Workaround perpetual issues in node reuse and custom task assemblies
 $nodeReuse = $false
 $env:MSBUILDDISABLENODEREUSE=1
-
-# Our build often has warnings that we can't fix, like "MSB3026: Could not copy" due to race
-# conditions in building C++
-# Fixing this is tracked by https://github.com/dotnet/aspnetcore-internal/issues/601
-$warnAsError = $false
 
 # Use `dotnet msbuild` by default
 $msbuildEngine = 'dotnet'
