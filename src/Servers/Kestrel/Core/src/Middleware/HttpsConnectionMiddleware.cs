@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 {
     internal class HttpsConnectionMiddleware
     {
+        private const string EnableWindows81Http2 = "Microsoft.AspNetCore.Server.Kestrel.EnableWindows81Http2";
         private readonly ConnectionDelegate _next;
         private readonly HttpsConnectionAdapterOptions _options;
         private readonly ILogger _logger;
@@ -43,17 +44,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 throw new ArgumentNullException(nameof(options));
             }
 
+            _options = options;
+            _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
+
             // This configuration will always fail per-request, preemptively fail it here. See HttpConnection.SelectProtocol().
             if (options.HttpProtocols == HttpProtocols.Http2)
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
-                    throw new NotSupportedException(CoreStrings.HTTP2NoTlsOsx);
+                    throw new NotSupportedException(CoreStrings.Http2NoTlsOsx);
                 }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && Environment.OSVersion.Version < new Version(6, 2))
+                else if (IsWindowsVersionIncompatible())
                 {
-                    throw new NotSupportedException(CoreStrings.HTTP2NoTlsWin7);
+                    throw new NotSupportedException(CoreStrings.Http2NoTlsWin81);
                 }
+            }
+            else if (options.HttpProtocols == HttpProtocols.Http1AndHttp2 && IsWindowsVersionIncompatible())
+            {
+                _logger.Http2DefaultCiphersInsufficient();
+                options.HttpProtocols = HttpProtocols.Http1;
             }
 
             _next = next;
@@ -75,9 +84,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             {
                 EnsureCertificateIsAllowedForServerAuth(_serverCertificate);
             }
-
-            _options = options;
-            _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
         }
 
         public async Task OnConnectionAsync(ConnectionContext context)
@@ -214,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
                     KestrelEventSource.Log.TlsHandshakeStop(context, null);
 
-                    _logger.LogDebug(2, CoreStrings.AuthenticationTimedOut);
+                    _logger.AuthenticationTimedOut();
                     await sslStream.DisposeAsync();
                     return;
                 }
@@ -223,7 +229,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
                     KestrelEventSource.Log.TlsHandshakeStop(context, null);
 
-                    _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
+                    _logger.AuthenticationFailed(ex);
                     await sslStream.DisposeAsync();
                     return;
                 }
@@ -232,7 +238,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
                     KestrelEventSource.Log.TlsHandshakeStop(context, null);
 
-                    _logger.LogDebug(1, ex, CoreStrings.AuthenticationFailed);
+                    _logger.AuthenticationFailed(ex);
 
                     await sslStream.DisposeAsync();
                     return;
@@ -252,7 +258,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             KestrelEventSource.Log.TlsHandshakeStop(context, feature);
 
-            _logger.LogDebug(3, CoreStrings.HttpsConnectionEstablished, context.ConnectionId, sslStream.SslProtocol);
+            _logger.HttpsConnectionEstablished(context.ConnectionId, sslStream.SslProtocol);
 
             var originalTransport = context.Transport;
 
@@ -298,5 +304,57 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             return new X509Certificate2(certificate);
         }
+
+        private static bool IsWindowsVersionIncompatible()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var enableHttp2OnWindows81 = AppContext.TryGetSwitch(EnableWindows81Http2, out var enabled) && enabled;
+                if (Environment.OSVersion.Version < new Version(6, 3) // Missing ALPN support
+                    // Win8.1 and 2012 R2 don't support the right cipher configuration by default.
+                    || (Environment.OSVersion.Version < new Version(10, 0) && !enableHttp2OnWindows81))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    internal static class HttpsConnectionMiddlewareLoggerExtensions
+    {
+
+        private static readonly Action<ILogger, Exception> _authenticationFailed =
+            LoggerMessage.Define(
+                logLevel: LogLevel.Debug,
+                eventId: new EventId(1, "AuthenticationFailed"),
+                formatString: CoreStrings.AuthenticationFailed);
+
+        private static readonly Action<ILogger, Exception> _authenticationTimedOut =
+            LoggerMessage.Define(
+                logLevel: LogLevel.Debug,
+                eventId: new EventId(2, "AuthenticationTimedOut"),
+                formatString: CoreStrings.AuthenticationTimedOut);
+
+        private static readonly Action<ILogger, string, SslProtocols, Exception> _httpsConnectionEstablished =
+            LoggerMessage.Define<string, SslProtocols>(
+                logLevel: LogLevel.Debug,
+                eventId: new EventId(3, "HttpsConnectionEstablished"),
+                formatString: CoreStrings.HttpsConnectionEstablished);
+
+        private static readonly Action<ILogger, Exception> _http2DefaultCiphersInsufficient =
+            LoggerMessage.Define(
+                logLevel: LogLevel.Information,
+                eventId: new EventId(4, "Http2DefaultCiphersInsufficient"),
+                formatString: CoreStrings.Http2DefaultCiphersInsufficient);
+
+        public static void AuthenticationFailed(this ILogger logger, Exception exception) => _authenticationFailed(logger, exception);
+
+        public static void AuthenticationTimedOut(this ILogger logger) => _authenticationTimedOut(logger, null);
+
+        public static void HttpsConnectionEstablished(this ILogger logger, string connectionId, SslProtocols sslProtocol) => _httpsConnectionEstablished(logger, connectionId, sslProtocol, null);
+
+        public static void Http2DefaultCiphersInsufficient(this ILogger logger) => _http2DefaultCiphersInsufficient(logger, null);
     }
 }

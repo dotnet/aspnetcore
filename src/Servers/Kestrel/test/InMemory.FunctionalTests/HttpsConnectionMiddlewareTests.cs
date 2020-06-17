@@ -594,7 +594,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [InlineData(HttpProtocols.Http1AndHttp2)]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10428", Queues = "Debian.8.Amd64;Debian.8.Amd64.Open")] // Debian 8 uses OpenSSL 1.0.1 which does not support HTTP/2
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
         public async Task ListenOptionsProtolsCanBeSetAfterUseHttps(HttpProtocols httpProtocols)
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
@@ -621,6 +621,65 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     SslApplicationProtocol.Http2 :
                     SslApplicationProtocol.Http11,
                 stream.NegotiatedApplicationProtocol);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Downgrade logic only applies on Windows")]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81)]
+        public void Http1AndHttp2DowngradeToHttp1ForHttpsOnIncompatibleWindowsVersions()
+        {
+            var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = _x509Certificate2,
+                HttpProtocols = HttpProtocols.Http1AndHttp2
+            };
+            new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions);
+
+            Assert.Equal(HttpProtocols.Http1, httpConnectionAdapterOptions.HttpProtocols);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Downgrade logic only applies on Windows")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
+        public void Http1AndHttp2DoesNotDowngradeOnCompatibleWindowsVersions()
+        {
+            var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = _x509Certificate2,
+                HttpProtocols = HttpProtocols.Http1AndHttp2
+            };
+            new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions);
+
+            Assert.Equal(HttpProtocols.Http1AndHttp2, httpConnectionAdapterOptions.HttpProtocols);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Error logic only applies on Windows")]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81)]
+        public void Http2ThrowsOnIncompatibleWindowsVersions()
+        {
+            var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = _x509Certificate2,
+                HttpProtocols = HttpProtocols.Http2
+            };
+
+            Assert.Throws<NotSupportedException>(() => new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions));
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Error logic only applies on Windows")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
+        public void Http2DoesNotThrowOnCompatibleWindowsVersions()
+        {
+            var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = _x509Certificate2,
+                HttpProtocols = HttpProtocols.Http2
+            };
+
+            // Does not throw
+            new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions);
         }
 
         private static async Task App(HttpContext httpContext)
