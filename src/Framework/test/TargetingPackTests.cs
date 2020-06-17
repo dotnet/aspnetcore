@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -98,7 +99,6 @@ namespace Microsoft.AspNetCore
                 }
             }
         }
-
 
         [Fact]
         public void AssembliesAreReferenceAssemblies()
@@ -199,6 +199,68 @@ namespace Microsoft.AspNetCore
                     Assert.True(Version.TryParse(parts[2], out _), "Assembly version must be convertable to System.Version");
                 }
                 Assert.True(Version.TryParse(parts[3], out _), "File version must be convertable to System.Version");
+            });
+        }
+
+        [Fact]
+        public void FrameworkListListsContainsCorrectEntries()
+        {
+            if (!_isTargetingPackBuilding)
+            {
+                return;
+            }
+
+            var frameworkListPath = Path.Combine(_targetingPackRoot, "data", "FrameworkList.xml");
+            var expectedAssemblies = TestData.GetTargetingPackDependencies()
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .Select(i =>
+                {
+                    var fileName = Path.GetFileName(i);
+                    return fileName.EndsWith(".dll", StringComparison.Ordinal)
+                        ? fileName.Substring(0, fileName.Length - 4)
+                        : fileName;
+                })
+                .ToHashSet();
+            expectedAssemblies.Remove("aspnetcorev2_inprocess");
+
+            AssertEx.FileExists(frameworkListPath);
+
+            var frameworkListDoc = XDocument.Load(frameworkListPath);
+            var frameworkListEntries = frameworkListDoc.Root.Descendants();
+
+            _output.WriteLine("==== file contents ====");
+            _output.WriteLine(string.Join('\n', frameworkListEntries.Select(i => i.Attribute("Path").Value).OrderBy(i => i)));
+            _output.WriteLine("==== expected assemblies ====");
+            _output.WriteLine(string.Join('\n', expectedAssemblies.OrderBy(i => i)));
+
+             var actualAssemblies = frameworkListEntries
+                .Select(i =>
+                {
+                    var fileName = i.Attribute("Path").Value;
+                    return fileName.EndsWith(".dll", StringComparison.Ordinal)
+                        ? fileName.Substring(0, fileName.Length - 4)
+                        : fileName;
+                })
+                .ToHashSet();
+
+            var missing = expectedAssemblies.Except(actualAssemblies);
+            var unexpected = actualAssemblies.Except(expectedAssemblies);
+
+            _output.WriteLine("==== missing assemblies from the framework list ====");
+            _output.WriteLine(string.Join('\n', missing));
+            _output.WriteLine("==== unexpected assemblies in the framework list ====");
+            _output.WriteLine(string.Join('\n', unexpected));
+
+            Assert.Empty(missing);
+            Assert.Empty(unexpected);
+
+            Assert.All(frameworkListEntries, i =>
+            {
+                var assemblyVersion = i.Attribute("AssemblyVersion").Value;
+                var fileVersion = i.Attribute("FileVersion").Value;
+
+                Assert.True(Version.TryParse(assemblyVersion, out _), "Assembly version must be convertable to System.Version");
+                Assert.True(Version.TryParse(fileVersion, out _), "File version must be convertable to System.Version");
             });
         }
     }
