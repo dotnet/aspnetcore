@@ -1,0 +1,59 @@
+@using WeatherForecast = Pages.ComplexTableRendering.WeatherForecast
+
+<td @attributes="@Attributes"
+    @onclick="@(() => OnClick.Invoke(CellIndex))"
+    >
+    @switch (Field)
+    {
+        case "Date":
+            @Item.Date.ToShortDateString()
+            break;
+        case "TemperatureC":
+            @Item.TemperatureC
+            break;
+        case "TemperatureF":
+            @Item.TemperatureF
+            break;
+        case "Summary":
+            @Item.Summary
+            break;
+    }
+</td>
+
+@code {
+    [Parameter]
+    public WeatherForecast Item { get; set; }
+
+    [CascadingParameter]
+    public TableComponent ParentTable { get; set; }
+
+    [Parameter]
+    public string Field { get; set; }
+
+    [Parameter]
+    public int CellIndex { get; set; }
+
+    [Parameter]
+    public int RowIndex { get; set; }
+
+    [Parameter]
+    public bool Selected { get; set; }
+
+    [Parameter]
+    public string FormatString { get; set; }
+
+    [Parameter]
+    public Func<int, Task> OnClick { get; set; }
+
+    private protected Dictionary<string, object> Attributes
+    {
+        get
+        {
+            var attributes = new Dictionary<string, object>();
+
+            attributes["tabindex"] = CellIndex;
+
+            return attributes;
+        }
+    }
+}

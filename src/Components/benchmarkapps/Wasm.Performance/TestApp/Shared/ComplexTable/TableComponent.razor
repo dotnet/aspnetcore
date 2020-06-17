@@ -1,0 +1,46 @@
+@using WeatherForecast = Pages.ComplexTableRendering.WeatherForecast
+
+<table class="table">
+    <thead>
+        <tr>
+            @foreach (var item in Columns)
+            {
+                <th>@item</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        <CascadingValue Value="@this">
+            <RowCollection Data="@Data"
+                           Columns="@Columns"
+                           OnClick="@RefreshComponent"></RowCollection>
+        </CascadingValue>
+    </tbody>
+</table>
+
+
+@code {
+    [Parameter]
+    public WeatherForecast[] Data { get; set; }
+
+    [Parameter]
+    public List<string> Columns { get; set; }
+
+    DateTime t1;
+    DateTime t2;
+    Task RefreshComponent(int index)
+    {
+        t1 = DateTime.Now;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            t2 = DateTime.Now;
+            Console.WriteLine("Refresh Time " + (t2 - t1).TotalMilliseconds);
+        }
+        return base.OnAfterRenderAsync(firstRender);
+    }
+}

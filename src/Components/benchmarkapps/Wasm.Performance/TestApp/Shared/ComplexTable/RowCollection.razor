@@ -1,0 +1,19 @@
+@using WeatherForecast = Pages.ComplexTableRendering.WeatherForecast
+
+@foreach (var item in Data)
+{
+    <Row Item="@item" Columns="@Columns"
+         OnClick="@OnClick"></Row>
+}
+
+
+@code {
+    [Parameter]
+    public WeatherForecast[] Data { get; set; }
+
+    [Parameter]
+    public List<string> Columns { get; set; }
+
+    [Parameter]
+    public Func<int, Task> OnClick { get; set; }
+}

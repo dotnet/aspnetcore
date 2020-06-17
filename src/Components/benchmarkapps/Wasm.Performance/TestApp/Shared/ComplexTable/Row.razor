@@ -1,0 +1,39 @@
+@using WeatherForecast = Pages.ComplexTableRendering.WeatherForecast
+
+<tr class="complex-table-row" style="@rowStyle">
+    @foreach (var item in Columns)
+    {
+        <Cell Item="@Item"
+              Field="@item"
+              CellIndex="1"
+              RowIndex="2"
+              Selected="@isSelected"
+              FormatString="foo"
+              OnClick="@OnCellClick">
+        </Cell>
+    }
+</tr>
+
+
+@code {
+
+    private bool isSelected = false;
+
+    private string rowStyle => isSelected ? "background-color: lightblue;" : "";
+
+    [Parameter]
+    public WeatherForecast Item { get; set; }
+
+    [Parameter]
+    public List<string> Columns { get; set; }
+
+    [Parameter]
+    public Func<int, Task> OnClick { get; set; }
+
+    Task OnCellClick(int args)
+    {
+        isSelected = !isSelected;
+
+        return OnClick.Invoke(args);
+    }
+}
