@@ -59,8 +59,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
-            OnAdvance(_readResult, consumed, examined);
+            // Ensure we consume data from the RequestBodyPipe before sending WINDOW_UPDATES to the client.
             _context.RequestBodyPipe.Reader.AdvanceTo(consumed, examined);
+            OnAdvance(_readResult, consumed, examined);
         }
 
         public override bool TryRead(out ReadResult readResult)
