@@ -22,7 +22,7 @@ namespace Templates.Test
         }
 
         [ConditionalTheory]
-        [SkipOnHelix("missing files")]
+        [QuarantinedTest]
         [InlineData("Web.ProjectTemplates")]
         [InlineData("Web.Spa.ProjectTemplates")]
         public void JSAndJSONInAllTemplates_ShouldNotContainBOM(string projectName)
@@ -64,7 +64,7 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
-        [SkipOnHelix("missing files")]
+        [QuarantinedTest]
         public void RazorFilesInWebProjects_ShouldContainBOM()
         {
             var projectName = "Web.ProjectTemplates";

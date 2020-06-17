@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
     public class RuntimeDependenciesResolverTest
     {
         [Fact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10426")]
+        [QuarantinedTest]
         public void FindsReferenceAssemblyGraph_ForStandaloneApp()
         {
             // Arrange
