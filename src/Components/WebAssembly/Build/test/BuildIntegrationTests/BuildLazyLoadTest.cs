@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             project.AddProjectFileContent(
 @"
 <ItemGroup>
-    <BlazorLazyLoad Include='RazorClassLibrary.dll' />
+    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary.dll' />
 </ItemGroup>
 ");
 
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             project.AddProjectFileContent(
 @"
 <ItemGroup>
-    <BlazorLazyLoad Include='RazorClassLibrary.dll' />
+    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary.dll' />
 </ItemGroup>
 ");
 
@@ -76,6 +76,82 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "_bin", "RazorClassLibrary.dll");
 
             var bootJson = ReadBootJsonData(result, Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json"));
+
+            // And that it has been labelled as a dynamic assembly in the boot.json
+            var dynamicAssemblies = bootJson.resources.dynamicAssembly;
+            var assemblies = bootJson.resources.assembly;
+
+            Assert.NotNull(dynamicAssemblies);
+            Assert.Contains("RazorClassLibrary.dll", dynamicAssemblies.Keys);
+            Assert.DoesNotContain("RazorClassLibrary.dll", assemblies.Keys);
+
+            // App assembly should not be lazy loaded
+            Assert.DoesNotContain("standalone.dll", dynamicAssemblies.Keys);
+            Assert.Contains("standalone.dll", assemblies.Keys);
+        }
+
+                [Fact]
+        public async Task Publish_LazyLoadExplicitAssembly_Debug_Works()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
+            project.Configuration = "Debug";
+
+            project.AddProjectFileContent(
+@"
+<ItemGroup>
+    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary.dll' />
+</ItemGroup>
+");
+
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
+
+            var publishDirectory = project.PublishOutputDirectory;
+
+            // Verify that a blazor.boot.json file has been created
+            Assert.FileExists(result, publishDirectory, "wwwroot", "_framework", "blazor.boot.json");
+            // And that the assembly is in the output
+            Assert.FileExists(result, publishDirectory, "wwwroot", "_framework", "_bin", "RazorClassLibrary.dll");
+
+            var bootJson = ReadBootJsonData(result, Path.Combine(publishDirectory, "wwwroot", "_framework", "blazor.boot.json"));
+
+            // And that it has been labelled as a dynamic assembly in the boot.json
+            var dynamicAssemblies = bootJson.resources.dynamicAssembly;
+            var assemblies = bootJson.resources.assembly;
+
+            Assert.NotNull(dynamicAssemblies);
+            Assert.Contains("RazorClassLibrary.dll", dynamicAssemblies.Keys);
+            Assert.DoesNotContain("RazorClassLibrary.dll", assemblies.Keys);
+
+            // App assembly should not be lazy loaded
+            Assert.DoesNotContain("standalone.dll", dynamicAssemblies.Keys);
+            Assert.Contains("standalone.dll", assemblies.Keys);
+        }
+
+        [Fact]
+        public async Task Publish_LazyLoadExplicitAssembly_Release_Works()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("standalone", additionalProjects: new[] { "razorclasslibrary" });
+            project.Configuration = "Release";
+
+            project.AddProjectFileContent(
+@"
+<ItemGroup>
+    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary.dll' />
+</ItemGroup>
+");
+
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
+
+            var publishDirectory = project.PublishOutputDirectory;
+
+            // Verify that a blazor.boot.json file has been created
+            Assert.FileExists(result, publishDirectory, "wwwroot", "_framework", "blazor.boot.json");
+            // And that the assembly is in the output
+            Assert.FileExists(result, publishDirectory, "wwwroot", "_framework", "_bin", "RazorClassLibrary.dll");
+
+            var bootJson = ReadBootJsonData(result, Path.Combine(publishDirectory, "wwwroot", "_framework", "blazor.boot.json"));
 
             // And that it has been labelled as a dynamic assembly in the boot.json
             var dynamicAssemblies = bootJson.resources.dynamicAssembly;
