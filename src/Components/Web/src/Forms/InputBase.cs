@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be applied to the created element.
         /// </summary>
-        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> AdditionalAttributes { get; set; }
+        [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> AdditionalAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets the value of the input. This should be used with two-way binding.
@@ -127,7 +128,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         protected InputBase()
         {
-            _validationStateChangedHandler = (sender, eventArgs) => StateHasChanged();
+            _validationStateChangedHandler = OnValidateStateChanged;
         }
 
         /// <summary>
@@ -216,8 +217,30 @@ namespace Microsoft.AspNetCore.Components.Forms
                     $"{nameof(Forms.EditContext)} dynamically.");
             }
 
+            SetAdditionalAttributesIfValidationFailed();
+
             // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
-            return base.SetParametersAsync(ParameterView.Empty);
+            return base.SetParametersAsync(parameters);
+        }
+
+        private void OnValidateStateChanged(object sender, ValidationStateChangedEventArgs eventArgs)
+        {
+            SetAdditionalAttributesIfValidationFailed();
+
+            StateHasChanged();
+        }
+
+        private void SetAdditionalAttributesIfValidationFailed()
+        {
+            if (!EditContext.GetValidationMessages(FieldIdentifier).Any())
+                return;
+
+            if (AdditionalAttributes == null)
+                AdditionalAttributes = new Dictionary<string, object>();
+
+            // To make the `Input` components accessible by default
+            // we will automatically render the `aria-invalid` attribute when the validation fails
+            AdditionalAttributes["aria-invalid"] = true;
         }
 
         protected virtual void Dispose(bool disposing)
