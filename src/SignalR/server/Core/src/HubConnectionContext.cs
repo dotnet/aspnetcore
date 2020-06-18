@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1);
         private readonly object _receiveMessageTimeoutLock = new object();
         private readonly ISystemClock _systemClock;
+        private readonly CancellationTokenRegistration _closedRegistration;
 
         private StreamTracker _streamTracker;
         private long _lastSendTimeStamp;
@@ -66,6 +67,7 @@ namespace Microsoft.AspNetCore.SignalR
             _connectionContext = connectionContext;
             _logger = loggerFactory.CreateLogger<HubConnectionContext>();
             ConnectionAborted = CancellationTokenSource.CreateLinkedTokenSource(_connectionAbortedTokenSource.Token, connectionContext.ConnectionClosed).Token;
+            _closedRegistration = connectionContext.ConnectionClosed.Register((state) => ((HubConnectionContext)state).Abort(), this);
 
             HubCallerContext = new DefaultHubCallerContext(this);
 
@@ -630,6 +632,8 @@ namespace Microsoft.AspNetCore.SignalR
                 {
                     connection._streamTracker.CompleteAll(new OperationCanceledException("The underlying connection was closed."));
                 }
+
+                connection._closedRegistration.Dispose();
             }
 
             static async Task InnerAbortConnection(HubConnectionContext connection)

@@ -957,20 +957,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 using (var client = new TestClient())
                 {
-                    var connectionHandlerTask = (Task)await client.ConnectAsync(connectionHandler);
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
 
                     var invokeTask = client.InvokeAsync(nameof(MethodHub.BlockingMethod));
 
                     client.Connection.Abort();
 
-                    var result = Assert.IsType<CompletionMessage>(await invokeTask.OrTimeout());
-                    Assert.True(result.HasResult);
-                    Assert.Null(result.Result);
-
-                    // kill the connection
-                    client.Dispose();
-
+                    // If this completes then the server has completed the connection
                     await connectionHandlerTask.OrTimeout();
+
+                    // Nothing written to connection because it was closed
+                    Assert.False(invokeTask.IsCompleted);
                 }
             }
         }

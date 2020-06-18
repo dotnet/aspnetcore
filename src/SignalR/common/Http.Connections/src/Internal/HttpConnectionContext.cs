@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         Application?.Input.Complete();
 
                         // Trigger ConnectionClosed
-                        _connectionClosedTokenSource.Cancel();
+                        ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
                     }
                 }
                 else
@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     Application?.Input.Complete();
 
                     // Trigger ConnectionClosed
-                    _connectionClosedTokenSource.Cancel();
+                    ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
 
                     try
                     {
