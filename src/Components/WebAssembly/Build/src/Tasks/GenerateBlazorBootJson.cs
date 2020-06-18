@@ -88,6 +88,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
                         case "assembly":
                             resourceList = resourceData.assembly;
                             break;
+                        case "dynamicAssembly":
+                            resourceList = resourceData.dynamicAssembly;
+                            break;
                         case "pdb":
                             resourceData.pdb ??= new ResourceHashesByNameDictionary();
                             resourceList = resourceData.pdb;
@@ -206,6 +209,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             /// "assembly" (.dll) resources
             /// </summary>
             public ResourceHashesByNameDictionary assembly { get; set; } = new ResourceHashesByNameDictionary();
+
+            /// <summary>
+            /// Assembly (.dll) resources that are loaded dynamically during runtime
+            /// </summary>
+            public ResourceHashesByNameDictionary dynamicAssembly { get; set; } = new ResourceHashesByNameDictionary();
 
             /// <summary>
             /// "debug" (.pdb) resources
