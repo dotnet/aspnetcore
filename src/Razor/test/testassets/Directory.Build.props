@@ -26,9 +26,6 @@
 
     <!-- Working around an issue in XDT transforms -->
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
-
-    <!-- Working around https://github.com/NuGet/Home/issues/8467 -->
-    <NoWarn>$(NoWarn);NU5131</NoWarn>
   </PropertyGroup>
 
   <!-- Don't use the server when building in place. This locks up rzc.dll -->
