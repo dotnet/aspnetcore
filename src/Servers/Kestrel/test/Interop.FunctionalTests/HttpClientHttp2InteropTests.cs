@@ -42,7 +42,7 @@ namespace Interop.FunctionalTests
                     new[] { "http" }
                 };
 
-                if (Utilities.CurrentPlatformSupportsAlpn())
+                if (Utilities.CurrentPlatformSupportsHTTP2OverTls())
                 {
                     list.Add(new[] { "https" });
                 }
