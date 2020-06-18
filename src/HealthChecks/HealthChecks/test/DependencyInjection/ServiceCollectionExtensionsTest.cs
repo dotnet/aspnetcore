@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddHealthChecks();
 
             // Assert
-            Assert.Collection(services.OrderBy(s => s.ServiceType.FullName).ThenBy(s => s.ImplementationType.FullName),
+            Assert.Collection(services.OrderBy(s => s.ServiceType.FullName).ThenBy(s => s.ImplementationType!.FullName),
                 actual =>
                 {
                     Assert.Equal(ServiceLifetime.Singleton, actual.Lifetime);

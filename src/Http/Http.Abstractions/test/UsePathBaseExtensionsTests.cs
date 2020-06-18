@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
                 set { _wrappedBuilder.ApplicationServices = value; }
             }
 
-            public IDictionary<string, object> Properties => _wrappedBuilder.Properties;
+            public IDictionary<string, object?> Properties => _wrappedBuilder.Properties;
             public IFeatureCollection ServerFeatures => _wrappedBuilder.ServerFeatures;
             public RequestDelegate Build() => _wrappedBuilder.Build();
             public IApplicationBuilder New() => _wrappedBuilder.New();
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
 
         private static ApplicationBuilder CreateBuilder()
         {
-            return new ApplicationBuilder(serviceProvider: null);
+            return new ApplicationBuilder(serviceProvider: null!);
         }
     }
 }

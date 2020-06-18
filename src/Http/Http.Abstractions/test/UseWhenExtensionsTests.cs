@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
 
         private static ApplicationBuilder CreateBuilder()
         {
-            return new ApplicationBuilder(serviceProvider: null);
+            return new ApplicationBuilder(serviceProvider: null!);
         }
 
         private static bool TruePredicate(HttpContext context)
