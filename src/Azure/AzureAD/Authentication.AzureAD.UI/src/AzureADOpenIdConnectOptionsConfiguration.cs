@@ -21,6 +21,11 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
         public void Configure(string name, OpenIdConnectOptions options)
         {
             var azureADScheme = GetAzureADScheme(name);
+            if (azureADScheme is null)
+            {
+                return;
+            }
+
             var azureADOptions = _azureADOptions.Get(azureADScheme);
             if (name != azureADOptions.OpenIdConnectSchemeName)
             {
