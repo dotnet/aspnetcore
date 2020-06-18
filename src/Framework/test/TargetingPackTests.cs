@@ -82,9 +82,8 @@ namespace Microsoft.AspNetCore
                 var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
                 var assemblyDefinition = reader.GetAssemblyDefinition();
 
-                Assert.Equal(
-                    TestData.ListedTargetingPackAssemblies[fileName],
-                    assemblyDefinition.Version.ToString());
+                TestData.ListedTargetingPackAssemblies.TryGetValue(fileName, out var expectedVersion);
+                Assert.Equal(expectedVersion, assemblyDefinition.Version.ToString());
             });
         }
 
