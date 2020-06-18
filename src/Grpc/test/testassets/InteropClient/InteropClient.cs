@@ -135,9 +135,12 @@ namespace InteropTestsClient
 
         private async Task Run()
         {
-            var channel = await HttpClientCreateChannel();
-            await RunTestCaseAsync(channel, options);
-            await channel.ShutdownAsync();
+            for (int i = 0; i < 100000; i++)
+            {
+                var channel = await HttpClientCreateChannel();
+                await RunTestCaseAsync(channel, options);
+                await channel.ShutdownAsync();
+            }
         }
 
         private async Task<IChannelWrapper> HttpClientCreateChannel()
