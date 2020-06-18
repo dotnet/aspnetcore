@@ -446,11 +446,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             var flushTask = RequestBodyPipe.Writer.FlushAsync();
                             // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if
                             // _inputFlowControl.Advance() didn't throw.
-                            //Debug.Assert(flushTask.IsCompleted);
-                            if (!flushTask.IsCompleted)
-                            {
-                                Debugger.Launch();
-                            }
+                            Debug.Assert(flushTask.IsCompleted);
                         }
                     }
                 }
