@@ -5,6 +5,7 @@
 #nullable enable
 using System.Buffers;
 using System.Diagnostics;
+using System.Numerics;
 #if KESTREL
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 #endif
@@ -339,84 +340,78 @@ namespace System.Net.Http.HPack
 
                 var b = data[currentIndex++];
 
-                // TODO: Instead of masking and comparing each prefix value,
-                // consider doing a 16-way switch on the first four bits (which is the max prefix size).
-                // Look at this once we have more concrete perf data.
-                if ((b & IndexedHeaderFieldMask) == IndexedHeaderFieldRepresentation)
+                switch (BitOperations.LeadingZeroCount(b) - 24) // byte 'b' is extended to uint, so will have 24 extra 0s.
                 {
-                    _headersObserved = true;
+                    case 0: // Indexed Header Field
+                        {
+                            _headersObserved = true;
 
-                    int val = b & ~IndexedHeaderFieldMask;
+                            int val = b & ~IndexedHeaderFieldMask;
 
-                    if (_integerDecoder.BeginTryDecode((byte)val, IndexedHeaderFieldPrefix, out var intResult))
-                    {
-                        OnIndexedHeaderField(intResult, handler);
-                    }
-                    else
-                    {
-                        _state = State.HeaderFieldIndex;
-                        ParseHeaderFieldIndex(data, ref currentIndex, handler);
-                    }
-                }
-                else if ((b & LiteralHeaderFieldWithIncrementalIndexingMask) == LiteralHeaderFieldWithIncrementalIndexingRepresentation)
-                {
-                    ParseLiteralHeaderField(
-                        data,
-                        ref currentIndex,
-                        b,
-                        LiteralHeaderFieldWithIncrementalIndexingMask,
-                        LiteralHeaderFieldWithIncrementalIndexingPrefix,
-                        index: true,
-                        handler);
-                }
-                else if ((b & LiteralHeaderFieldWithoutIndexingMask) == LiteralHeaderFieldWithoutIndexingRepresentation)
-                {
-                    ParseLiteralHeaderField(
-                        data,
-                        ref currentIndex,
-                        b,
-                        LiteralHeaderFieldWithoutIndexingMask,
-                        LiteralHeaderFieldWithoutIndexingPrefix,
-                        index: false,
-                        handler);
-                }
-                else if ((b & LiteralHeaderFieldNeverIndexedMask) == LiteralHeaderFieldNeverIndexedRepresentation)
-                {
-                    ParseLiteralHeaderField(
-                        data,
-                        ref currentIndex,
-                        b,
-                        LiteralHeaderFieldNeverIndexedMask,
-                        LiteralHeaderFieldNeverIndexedPrefix,
-                        index: false,
-                        handler);
-                }
-                else if ((b & DynamicTableSizeUpdateMask) == DynamicTableSizeUpdateRepresentation)
-                {
-                    // https://tools.ietf.org/html/rfc7541#section-4.2
-                    // This dynamic table size
-                    // update MUST occur at the beginning of the first header block
-                    // following the change to the dynamic table size.
-                    if (_headersObserved)
-                    {
-                        throw new HPackDecodingException(SR.net_http_hpack_late_dynamic_table_size_update);
-                    }
+                            if (_integerDecoder.BeginTryDecode((byte)val, IndexedHeaderFieldPrefix, out var intResult))
+                            {
+                                OnIndexedHeaderField(intResult, handler);
+                            }
+                            else
+                            {
+                                _state = State.HeaderFieldIndex;
+                                ParseHeaderFieldIndex(data, ref currentIndex, handler);
+                            }
+                            break;
+                        }
+                    case 1: // Literal Header Field with Incremental Indexing
+                        ParseLiteralHeaderField(
+                            data,
+                            ref currentIndex,
+                            b,
+                            LiteralHeaderFieldWithIncrementalIndexingMask,
+                            LiteralHeaderFieldWithIncrementalIndexingPrefix,
+                            index: true,
+                            handler);
+                        break;
+                    case 4:
+                    default: // Literal Header Field without Indexing
+                        ParseLiteralHeaderField(
+                            data,
+                            ref currentIndex,
+                            b,
+                            LiteralHeaderFieldWithoutIndexingMask,
+                            LiteralHeaderFieldWithoutIndexingPrefix,
+                            index: false,
+                            handler);
+                        break;
+                    case 3: // Literal Header Field Never Indexed
+                        ParseLiteralHeaderField(
+                            data,
+                            ref currentIndex,
+                            b,
+                            LiteralHeaderFieldNeverIndexedMask,
+                            LiteralHeaderFieldNeverIndexedPrefix,
+                            index: false,
+                            handler);
+                        break;
+                    case 2: // Dynamic Table Size Update
+                        {
+                            // https://tools.ietf.org/html/rfc7541#section-4.2
+                            // This dynamic table size
+                            // update MUST occur at the beginning of the first header block
+                            // following the change to the dynamic table size.
+                            if (_headersObserved)
+                            {
+                                throw new HPackDecodingException(SR.net_http_hpack_late_dynamic_table_size_update);
+                            }
 
-                    if (_integerDecoder.BeginTryDecode((byte)(b & ~DynamicTableSizeUpdateMask), DynamicTableSizeUpdatePrefix, out var intResult))
-                    {
-                        SetDynamicHeaderTableSize(intResult);
-                    }
-                    else
-                    {
-                        _state = State.DynamicTableSizeUpdate;
-                        ParseDynamicTableSizeUpdate(data, ref currentIndex);
-                    }
-                }
-                else
-                {
-                    // Can't happen
-                    Debug.Fail("Unreachable code");
-                    throw new InvalidOperationException("Unreachable code.");
+                            if (_integerDecoder.BeginTryDecode((byte)(b & ~DynamicTableSizeUpdateMask), DynamicTableSizeUpdatePrefix, out var intResult))
+                            {
+                                SetDynamicHeaderTableSize(intResult);
+                            }
+                            else
+                            {
+                                _state = State.DynamicTableSizeUpdate;
+                                ParseDynamicTableSizeUpdate(data, ref currentIndex);
+                            }
+                            break;
+                        }
                 }
             }
         }

@@ -14,8 +14,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     public class HPackDecoderBenchmark
     {
-        private static readonly byte[] _literalHeaderFieldWithoutIndexingNewName = new byte[] { 0x00 };
+        // Indexed Header Field Representation - Dynamic Table - Index 62 (first index in dynamic table)
+        private static readonly byte[] _indexedHeaderDynamic = new byte[] { 0xbe };
 
+        private static readonly byte[] _literalHeaderFieldWithoutIndexingNewName = new byte[] { 0x00 };
 
         private const string _headerNameString = "new-header";
 
@@ -40,7 +42,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private static readonly byte[] _literalHeaderFieldNeverIndexed_NewName_Large;
         private static readonly byte[] _literalHeaderFieldNeverIndexed_NewName_Multiple;
-
+        private static readonly byte[] _indexedHeaderDynamic_Multiple;
+        
         static HPackDecoderBenchmark()
         {
             string string8193 = new string('a', 8193);
@@ -58,15 +61,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 .Concat(_literalHeaderFieldNeverIndexed_NewName)
                 .Concat(_literalHeaderFieldNeverIndexed_NewName)
                 .ToArray();
+
+            _indexedHeaderDynamic_Multiple = _indexedHeaderDynamic
+                .Concat(_indexedHeaderDynamic)
+                .Concat(_indexedHeaderDynamic)
+                .Concat(_indexedHeaderDynamic)
+                .Concat(_indexedHeaderDynamic)
+                .ToArray();
         }
 
         private HPackDecoder _decoder;
         private TestHeadersHandler _testHeadersHandler;
+        private DynamicTable _dynamicTable;
 
         [GlobalSetup]
         public void GlobalSetup()
         {
-            _decoder = new HPackDecoder();
+            _dynamicTable = new DynamicTable(maxSize: 4096);
+            _dynamicTable.Insert(_headerNameBytes, _headerValueBytes);
+            _decoder = new HPackDecoder(maxDynamicTableSize: 4096, maxHeadersLength: 65536, _dynamicTable);
             _testHeadersHandler = new TestHeadersHandler();
         }
 
@@ -86,6 +99,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void DecodesLiteralHeaderFieldNeverIndexed_NewName_Multiple()
         {
             _decoder.Decode(_literalHeaderFieldNeverIndexed_NewName_Multiple, endHeaders: true, handler: _testHeadersHandler);
+        }
+
+        [Benchmark]
+        public void DecodesIndexedHeaderField_DynamicTable()
+        {
+            _decoder.Decode(_indexedHeaderDynamic, endHeaders: true, handler: _testHeadersHandler);
+        }
+
+        [Benchmark]
+        public void DecodesIndexedHeaderField_DynamicTable_Multiple()
+        {
+            _decoder.Decode(_indexedHeaderDynamic_Multiple, endHeaders: true, handler: _testHeadersHandler);
         }
 
         private class TestHeadersHandler : IHttpHeadersHandler
