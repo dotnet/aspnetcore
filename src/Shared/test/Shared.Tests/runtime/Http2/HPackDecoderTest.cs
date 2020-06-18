@@ -502,6 +502,26 @@ namespace System.Net.Http.Unit.Tests.HPack
             Assert.Equal(string8193, _handler.DecodedHeaders[string8193]);
         }
 
+        [Fact]
+        public void DecodesHeaderNameAndValue_SeparateSegments()
+        {
+            byte[][] segments = new byte[][]
+            {
+                _literalHeaderFieldWithoutIndexingNewName,
+                _headerName,
+                _headerValue
+            };
+
+            for (int i = 0; i < segments.Length; i++)
+            {
+                bool end = i + 1 == segments.Length;
+
+                _decoder.Decode(segments[i], endHeaders: end, handler: _handler);
+            }
+
+            Assert.Equal(_headerValueString, _handler.DecodedHeaders[_headerNameString]);
+        }
+
         public static readonly TheoryData<byte[]> _incompleteHeaderBlockData = new TheoryData<byte[]>
         {
             // Indexed Header Field Representation - incomplete index encoding

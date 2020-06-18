@@ -92,6 +92,8 @@ namespace System.Net.Http.HPack
         private byte[] _stringOctets;
         private byte[] _headerNameOctets;
         private byte[] _headerValueOctets;
+        private Range _headerNameRange;
+        private Range _headerValueRange;
 
         private State _state = State.Ready;
         private byte[]? _headerName;
@@ -181,6 +183,19 @@ namespace System.Net.Http.HPack
                 }
             }
             while (currentIndex < data.Length);
+
+            // If a header range was set, but the value was not in the data, then copy the range
+            // to the name buffer. Must copy because because the data will be replaced and the range
+            // will no longer be valid.
+            if (!_headerNameRange.Equals(default))
+            {
+                _headerName = _headerNameOctets;
+
+                var headerBytes = data[_headerNameRange];
+                headerBytes.CopyTo(_headerName);
+                _headerNameLength = headerBytes.Length;
+                _headerNameRange = default;
+            }
         }
 
         private void ParseDynamicTableSizeUpdate(ReadOnlySpan<byte> data, ref int currentIndex)
@@ -211,7 +226,8 @@ namespace System.Net.Http.HPack
 
                     if (intResult == 0)
                     {
-                        ProcessHeaderValue(handler);
+                        OnString(nextState: State.Ready);
+                        ProcessHeaderValue(data, handler);
                     }
                     else
                     {
@@ -437,14 +453,29 @@ namespace System.Net.Http.HPack
             // Read remaining chars, up to the length of the current data
             var count = Math.Min(_stringLength - _stringIndex, data.Length - currentIndex);
 
-            data.Slice(currentIndex, count).CopyTo(_stringOctets.AsSpan(_stringIndex));
-            _stringIndex += count;
-            currentIndex += count;
-
-            if (_stringIndex == _stringLength)
+            // Check whether the whole string is available in the data and no decompressed required.
+            // If string is good then mark its range.
+            // NOTE: it may need to be copied to buffer later the if value is not current data.
+            if (count == _stringLength && !_huffman)
             {
-                OnString(nextState: State.HeaderValueLength);
-                ParseHeaderValueLength(data, ref currentIndex, handler);
+                // Fast path. Store the range rather than copying.
+                _headerNameRange = new Range(currentIndex, currentIndex + count);
+                currentIndex += count;
+
+                _state = State.HeaderValueLength;
+            }
+            else
+            {
+                // Copy string to temporary buffer.
+                data.Slice(currentIndex, count).CopyTo(_stringOctets.AsSpan(_stringIndex));
+                _stringIndex += count;
+                currentIndex += count;
+
+                if (_stringIndex == _stringLength)
+                {
+                    OnString(nextState: State.HeaderValueLength);
+                    ParseHeaderValueLength(data, ref currentIndex, handler);
+                }
             }
         }
 
@@ -453,13 +484,29 @@ namespace System.Net.Http.HPack
             // Read remaining chars, up to the length of the current data
             var count = Math.Min(_stringLength - _stringIndex, data.Length - currentIndex);
 
-            data.Slice(currentIndex, count).CopyTo(_stringOctets.AsSpan(_stringIndex));
-            _stringIndex += count;
-            currentIndex += count;
-
-            if (_stringIndex == _stringLength)
+            // Check whether the whole string is available in the data and no decompressed required.
+            // If string is good then mark its range.
+            if (count == _stringLength && !_huffman)
             {
-                ProcessHeaderValue(handler);
+                // Fast path. Store the range rather than copying.
+                _headerValueRange = new Range(currentIndex, currentIndex + count);
+                currentIndex += count;
+
+                _state = State.Ready;
+                ProcessHeaderValue(data, handler);
+            }
+            else
+            {
+                // Copy string to temporary buffer.
+                data.Slice(currentIndex, count).CopyTo(_stringOctets.AsSpan(_stringIndex));
+                _stringIndex += count;
+                currentIndex += count;
+
+                if (_stringIndex == _stringLength)
+                {
+                    OnString(nextState: State.Ready);
+                    ProcessHeaderValue(data, handler);
+                }
             }
         }
 
@@ -476,14 +523,20 @@ namespace System.Net.Http.HPack
             }
         }
 
-        private void ProcessHeaderValue(IHttpHeadersHandler? handler)
+        private void ProcessHeaderValue(ReadOnlySpan<byte> data, IHttpHeadersHandler? handler)
         {
-            OnString(nextState: State.Ready);
+            var headerNameSpan = _headerNameRange.Equals(default)
+                ? new Span<byte>(_headerName, 0, _headerNameLength)
+                : data[_headerNameRange];
 
-            var headerNameSpan = new Span<byte>(_headerName, 0, _headerNameLength);
-            var headerValueSpan = new Span<byte>(_headerValueOctets, 0, _headerValueLength);
+            var headerValueSpan = _headerValueRange.Equals(default)
+                ? new Span<byte>(_headerValueOctets, 0, _headerValueLength)
+                : data[_headerValueRange];
 
             handler?.OnHeader(headerNameSpan, headerValueSpan);
+
+            _headerNameRange = default;
+            _headerValueRange = default;
 
             if (_index)
             {
