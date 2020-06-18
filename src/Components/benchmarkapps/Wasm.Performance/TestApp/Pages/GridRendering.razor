@@ -25,23 +25,23 @@
 else if (selectedRenderMode == RenderMode.FastGrid)
 {
     <Grid Data="@forecasts">
-        <GridColumn TRowData="WeatherForecast" Title="Date">@context.Date</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="Date">@context.Date.ToShortDateString()</GridColumn>
         <GridColumn TRowData="WeatherForecast" Title="TemperatureC">@context.TemperatureC</GridColumn>
         <GridColumn TRowData="WeatherForecast" Title="TemperatureF">@context.TemperatureF</GridColumn>
         <GridColumn TRowData="WeatherForecast" Title="Summary">@context.Summary</GridColumn>
-        <GridColumn TRowData="WeatherForecast" Title="Date">@context.Date</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="Date">@context.Date.ToShortDateString()</GridColumn>
         <GridColumn TRowData="WeatherForecast" Title="TemperatureC">@context.TemperatureC</GridColumn>
         <GridColumn TRowData="WeatherForecast" Title="TemperatureF">@context.TemperatureF</GridColumn>
         <GridColumn TRowData="WeatherForecast" Title="Summary">@context.Summary</GridColumn>
-        <GridColumn TRowData="WeatherForecast" Title="Date">@context.Date</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="Date">@context.Date.ToShortDateString()</GridColumn>
         <GridColumn TRowData="WeatherForecast" Title="TemperatureC">@context.TemperatureC</GridColumn>
         <GridColumn TRowData="WeatherForecast" Title="TemperatureF">@context.TemperatureF</GridColumn>
         <GridColumn TRowData="WeatherForecast" Title="Summary">@context.Summary</GridColumn>
-        <GridColumn TRowData="WeatherForecast" Title="Date">@context.Date</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="Date">@context.Date.ToShortDateString()</GridColumn>
         <GridColumn TRowData="WeatherForecast" Title="TemperatureC">@context.TemperatureC</GridColumn>
         <GridColumn TRowData="WeatherForecast" Title="TemperatureF">@context.TemperatureF</GridColumn>
         <GridColumn TRowData="WeatherForecast" Title="Summary">@context.Summary</GridColumn>
-        <GridColumn TRowData="WeatherForecast" Title="Date">@context.Date</GridColumn>
+        <GridColumn TRowData="WeatherForecast" Title="Date">@context.Date.ToShortDateString()</GridColumn>
         <GridColumn TRowData="WeatherForecast" Title="TemperatureC">@context.TemperatureC</GridColumn>
         <GridColumn TRowData="WeatherForecast" Title="TemperatureF">@context.TemperatureF</GridColumn>
         <GridColumn TRowData="WeatherForecast" Title="Summary">@context.Summary</GridColumn>
@@ -60,8 +60,11 @@ else if (selectedRenderMode == RenderMode.ComplexTable)
     private WeatherForecast[] forecasts;
     public List<string> Columns { get; set; } = new List<string>
 {
-        "Date", "TemperatureC", "TemperatureF", "Summary", "Date", "TemperatureC", "TemperatureF", "Summary", "Date", "TemperatureC",
-        "Date", "TemperatureC", "TemperatureF", "Summary", "Date", "TemperatureC", "TemperatureF", "Summary", "Date", "TemperatureC"
+        "Date", "TemperatureC", "TemperatureF", "Summary",
+        "Date", "TemperatureC", "TemperatureF", "Summary",
+        "Date", "TemperatureC", "TemperatureF", "Summary",
+        "Date", "TemperatureC", "TemperatureF", "Summary",
+        "Date", "TemperatureC", "TemperatureF", "Summary",
     };
 
     private static string[] sampleSummaries = new[] { "Balmy", "Chilly", "Freezing", "Bracing" };
