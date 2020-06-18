@@ -18,12 +18,12 @@ namespace Microsoft.AspNetCore.Authorization
     }
     public partial class AuthorizationHandlerContext
     {
-        public AuthorizationHandlerContext(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement> requirements, System.Security.Claims.ClaimsPrincipal user, object resource) { }
+        public AuthorizationHandlerContext(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement> requirements, System.Security.Claims.ClaimsPrincipal user, object? resource) { }
         public virtual bool HasFailed { get { throw null; } }
         public virtual bool HasSucceeded { get { throw null; } }
         public virtual System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement> PendingRequirements { get { throw null; } }
         public virtual System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement> Requirements { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public virtual object Resource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public virtual object? Resource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public virtual System.Security.Claims.ClaimsPrincipal User { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public virtual void Fail() { }
         public virtual void Succeed(Microsoft.AspNetCore.Authorization.IAuthorizationRequirement requirement) { }
@@ -46,11 +46,11 @@ namespace Microsoft.AspNetCore.Authorization
     {
         public AuthorizationOptions() { }
         public Microsoft.AspNetCore.Authorization.AuthorizationPolicy DefaultPolicy { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Authorization.AuthorizationPolicy FallbackPolicy { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Authorization.AuthorizationPolicy? FallbackPolicy { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool InvokeHandlersAfterFailure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public void AddPolicy(string name, Microsoft.AspNetCore.Authorization.AuthorizationPolicy policy) { }
         public void AddPolicy(string name, System.Action<Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder> configurePolicy) { }
-        public Microsoft.AspNetCore.Authorization.AuthorizationPolicy GetPolicy(string name) { throw null; }
+        public Microsoft.AspNetCore.Authorization.AuthorizationPolicy? GetPolicy(string name) { throw null; }
     }
     public partial class AuthorizationPolicy
     {
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Authorization
         public static Microsoft.AspNetCore.Authorization.AuthorizationPolicy Combine(params Microsoft.AspNetCore.Authorization.AuthorizationPolicy[] policies) { throw null; }
         public static Microsoft.AspNetCore.Authorization.AuthorizationPolicy Combine(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.AuthorizationPolicy> policies) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy> CombineAsync(Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider policyProvider, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizeData> authorizeData) { throw null; }
+        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy?> CombineAsync(Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider policyProvider, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizeData> authorizeData) { throw null; }
     }
     public partial class AuthorizationPolicyBuilder
     {
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Authorization
     public partial class AuthorizationResult
     {
         internal AuthorizationResult() { }
-        public Microsoft.AspNetCore.Authorization.AuthorizationFailure Failure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Authorization.AuthorizationFailure? Failure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool Succeeded { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public static Microsoft.AspNetCore.Authorization.AuthorizationResult Failed() { throw null; }
         public static Microsoft.AspNetCore.Authorization.AuthorizationResult Failed(Microsoft.AspNetCore.Authorization.AuthorizationFailure failure) { throw null; }
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Authorization
     public static partial class AuthorizationServiceExtensions
     {
         public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult> AuthorizeAsync(this Microsoft.AspNetCore.Authorization.IAuthorizationService service, System.Security.Claims.ClaimsPrincipal user, Microsoft.AspNetCore.Authorization.AuthorizationPolicy policy) { throw null; }
-        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult> AuthorizeAsync(this Microsoft.AspNetCore.Authorization.IAuthorizationService service, System.Security.Claims.ClaimsPrincipal user, object resource, Microsoft.AspNetCore.Authorization.AuthorizationPolicy policy) { throw null; }
+        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult> AuthorizeAsync(this Microsoft.AspNetCore.Authorization.IAuthorizationService service, System.Security.Claims.ClaimsPrincipal user, object? resource, Microsoft.AspNetCore.Authorization.AuthorizationPolicy policy) { throw null; }
         public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult> AuthorizeAsync(this Microsoft.AspNetCore.Authorization.IAuthorizationService service, System.Security.Claims.ClaimsPrincipal user, object resource, Microsoft.AspNetCore.Authorization.IAuthorizationRequirement requirement) { throw null; }
         public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult> AuthorizeAsync(this Microsoft.AspNetCore.Authorization.IAuthorizationService service, System.Security.Claims.ClaimsPrincipal user, string policyName) { throw null; }
     }
@@ -103,9 +103,9 @@ namespace Microsoft.AspNetCore.Authorization
     {
         public AuthorizeAttribute() { }
         public AuthorizeAttribute(string policy) { }
-        public string AuthenticationSchemes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public string Policy { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public string Roles { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? AuthenticationSchemes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Policy { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Roles { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class DefaultAuthorizationEvaluator : Microsoft.AspNetCore.Authorization.IAuthorizationEvaluator
     {
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Authorization
     public partial class DefaultAuthorizationHandlerContextFactory : Microsoft.AspNetCore.Authorization.IAuthorizationHandlerContextFactory
     {
         public DefaultAuthorizationHandlerContextFactory() { }
-        public virtual Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext CreateContext(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement> requirements, System.Security.Claims.ClaimsPrincipal user, object resource) { throw null; }
+        public virtual Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext CreateContext(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement> requirements, System.Security.Claims.ClaimsPrincipal user, object? resource) { throw null; }
     }
     public partial class DefaultAuthorizationHandlerProvider : Microsoft.AspNetCore.Authorization.IAuthorizationHandlerProvider
     {
@@ -126,16 +126,16 @@ namespace Microsoft.AspNetCore.Authorization
     {
         public DefaultAuthorizationPolicyProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Authorization.AuthorizationOptions> options) { }
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy> GetDefaultPolicyAsync() { throw null; }
-        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy> GetFallbackPolicyAsync() { throw null; }
-        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy> GetPolicyAsync(string policyName) { throw null; }
+        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy?> GetFallbackPolicyAsync() { throw null; }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy?> GetPolicyAsync(string policyName) { throw null; }
     }
     public partial class DefaultAuthorizationService : Microsoft.AspNetCore.Authorization.IAuthorizationService
     {
         public DefaultAuthorizationService(Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider policyProvider, Microsoft.AspNetCore.Authorization.IAuthorizationHandlerProvider handlers, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Authorization.DefaultAuthorizationService> logger, Microsoft.AspNetCore.Authorization.IAuthorizationHandlerContextFactory contextFactory, Microsoft.AspNetCore.Authorization.IAuthorizationEvaluator evaluator, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Authorization.AuthorizationOptions> options) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult> AuthorizeAsync(System.Security.Claims.ClaimsPrincipal user, object resource, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement> requirements) { throw null; }
+        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult> AuthorizeAsync(System.Security.Claims.ClaimsPrincipal user, object? resource, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement> requirements) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult> AuthorizeAsync(System.Security.Claims.ClaimsPrincipal user, object resource, string policyName) { throw null; }
+        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult> AuthorizeAsync(System.Security.Claims.ClaimsPrincipal user, object? resource, string policyName) { throw null; }
     }
     public partial interface IAuthorizationEvaluator
     {
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Authorization
     }
     public partial interface IAuthorizationHandlerContextFactory
     {
-        Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext CreateContext(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement> requirements, System.Security.Claims.ClaimsPrincipal user, object resource);
+        Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext CreateContext(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement> requirements, System.Security.Claims.ClaimsPrincipal user, object? resource);
     }
     public partial interface IAuthorizationHandlerProvider
     {
@@ -156,16 +156,16 @@ namespace Microsoft.AspNetCore.Authorization
     public partial interface IAuthorizationPolicyProvider
     {
         System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy> GetDefaultPolicyAsync();
-        System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy> GetFallbackPolicyAsync();
-        System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy> GetPolicyAsync(string policyName);
+        System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy?> GetFallbackPolicyAsync();
+        System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy?> GetPolicyAsync(string policyName);
     }
     public partial interface IAuthorizationRequirement
     {
     }
     public partial interface IAuthorizationService
     {
-        System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult> AuthorizeAsync(System.Security.Claims.ClaimsPrincipal user, object resource, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement> requirements);
-        System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult> AuthorizeAsync(System.Security.Claims.ClaimsPrincipal user, object resource, string policyName);
+        System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult> AuthorizeAsync(System.Security.Claims.ClaimsPrincipal user, object? resource, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement> requirements);
+        System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult> AuthorizeAsync(System.Security.Claims.ClaimsPrincipal user, object? resource, string policyName);
     }
 }
 namespace Microsoft.AspNetCore.Authorization.Infrastructure
@@ -181,8 +181,8 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
     }
     public partial class ClaimsAuthorizationRequirement : Microsoft.AspNetCore.Authorization.AuthorizationHandler<Microsoft.AspNetCore.Authorization.Infrastructure.ClaimsAuthorizationRequirement>, Microsoft.AspNetCore.Authorization.IAuthorizationRequirement
     {
-        public ClaimsAuthorizationRequirement(string claimType, System.Collections.Generic.IEnumerable<string> allowedValues) { }
-        public System.Collections.Generic.IEnumerable<string> AllowedValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public ClaimsAuthorizationRequirement(string claimType, System.Collections.Generic.IEnumerable<string>? allowedValues) { }
+        public System.Collections.Generic.IEnumerable<string>? AllowedValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string ClaimType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override System.Threading.Tasks.Task HandleRequirementAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext context, Microsoft.AspNetCore.Authorization.Infrastructure.ClaimsAuthorizationRequirement requirement) { throw null; }
         public override string ToString() { throw null; }
