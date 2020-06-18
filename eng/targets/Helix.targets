@@ -27,6 +27,7 @@
   <!-- Item group has to be defined here becasue Helix.props is evaluated before xunit.runner.console.props  -->
   <ItemGroup Condition="$(BuildHelixPayload)">
     <Content Include="@(HelixContent)" />
+    <Content Include="$(RepoRoot)eng\scripts\Download.ps1" />
   </ItemGroup>
 
 <!--
