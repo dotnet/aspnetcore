@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/3615", FlakyOn.Helix.All)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/3615")]
         public void InputDateInteractsWithEditContext_NonNullableDateTime()
         {
             var appElement = MountTypicalValidationComponent();
