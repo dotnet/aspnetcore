@@ -39,8 +39,8 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         [Fact]
         public void NullArguments_ArgumentNullException()
         {
-            var builder = new ApplicationBuilder(serviceProvider: null);
-            var noMiddleware = new ApplicationBuilder(serviceProvider: null).Build();
+            var builder = new ApplicationBuilder(serviceProvider: null!);
+            var noMiddleware = new ApplicationBuilder(serviceProvider: null!).Build();
             var noOptions = new MapOptions();
             Assert.Throws<ArgumentNullException>(() => builder.Map("/foo", configuration: null!));
             Assert.Throws<ArgumentNullException>(() => new MapMiddleware(noMiddleware, null!));
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         public async Task PathMatchFunc_BranchTaken(string matchPath, string basePath, string requestPath)
         {
             HttpContext context = CreateRequest(basePath, requestPath);
-            var builder = new ApplicationBuilder(serviceProvider: null);
+            var builder = new ApplicationBuilder(serviceProvider: null!);
             builder.Map(matchPath, UseSuccess);
             var app = builder.Build();
             await app.Invoke(context);
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         public async Task PathMatchAction_BranchTaken(string matchPath, string basePath, string requestPath)
         {
             HttpContext context = CreateRequest(basePath, requestPath);
-            var builder = new ApplicationBuilder(serviceProvider: null);
+            var builder = new ApplicationBuilder(serviceProvider: null!);
             builder.Map(matchPath, subBuilder => subBuilder.Run(Success));
             var app = builder.Build();
             await app.Invoke(context);
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         public async Task PathMatchAction_BranchTaken_WithPreserveMatchedPathSegment(string matchPath, string basePath, string requestPath)
         {
             HttpContext context = CreateRequest(basePath, requestPath);
-            var builder = new ApplicationBuilder(serviceProvider: null);
+            var builder = new ApplicationBuilder(serviceProvider: null!);
             builder.Map(matchPath, true, subBuilder => subBuilder.Run(Success));
             var app = builder.Build();
             await app.Invoke(context);
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         [InlineData("/foo/cho/")]
         public void MatchPathWithTrailingSlashThrowsException(string matchPath)
         {
-            Assert.Throws<ArgumentException>(() => new ApplicationBuilder(serviceProvider: null).Map(matchPath, map => { }).Build());
+            Assert.Throws<ArgumentException>(() => new ApplicationBuilder(serviceProvider: null!).Map(matchPath, map => { }).Build());
         }
 
         [Theory]
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         public async Task PathMismatchFunc_PassedThrough(string matchPath, string basePath, string requestPath)
         {
             HttpContext context = CreateRequest(basePath, requestPath);
-            var builder = new ApplicationBuilder(serviceProvider: null);
+            var builder = new ApplicationBuilder(serviceProvider: null!);
             builder.Map(matchPath, UseNotImplemented);
             builder.Run(Success);
             var app = builder.Build();
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         public async Task PathMismatchAction_PassedThrough(string matchPath, string basePath, string requestPath)
         {
             HttpContext context = CreateRequest(basePath, requestPath);
-            var builder = new ApplicationBuilder(serviceProvider: null);
+            var builder = new ApplicationBuilder(serviceProvider: null!);
             builder.Map(matchPath, UseNotImplemented);
             builder.Run(Success);
             var app = builder.Build();
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         [Fact]
         public async Task ChainedRoutes_Success()
         {
-            var builder = new ApplicationBuilder(serviceProvider: null);
+            var builder = new ApplicationBuilder(serviceProvider: null!);
             builder.Map("/route1", map =>
             {
                 map.Map("/subroute1", UseSuccess);

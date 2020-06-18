@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             httpContext.Request.Headers.Add("header-name", "header-value");
 
             // Will not be accessed
-            httpContext.Request.Form = null;
+            httpContext.Request.Form = null!;
 
             var options = new AntiforgeryOptions
             {
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             httpContext.Request.ContentType = "application/json";
 
             // Will not be accessed
-            httpContext.Request.Form = null;
+            httpContext.Request.Form = null!;
 
             var options = new AntiforgeryOptions
             {
