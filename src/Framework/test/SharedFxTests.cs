@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -31,14 +32,20 @@ namespace Microsoft.AspNetCore
             var actualAssemblies = Directory.GetFiles(_sharedFxRoot, "*.dll")
                 .Select(Path.GetFileNameWithoutExtension)
                 .ToHashSet();
+            var listedSharedFxAssemblies = TestData.ListedSharedFxAssemblies;
+
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                listedSharedFxAssemblies.Remove("aspnetcorev2_inprocess");
+            }
 
             _output.WriteLine("==== actual assemblies ====");
             _output.WriteLine(string.Join('\n', actualAssemblies.OrderBy(i => i)));
             _output.WriteLine("==== expected assemblies ====");
-            _output.WriteLine(string.Join('\n', TestData.ListedSharedFxAssemblies.OrderBy(i => i)));
+            _output.WriteLine(string.Join('\n', listedSharedFxAssemblies.OrderBy(i => i)));
 
-            var missing = TestData.ListedSharedFxAssemblies.Except(actualAssemblies);
-            var unexpected = actualAssemblies.Except(TestData.ListedSharedFxAssemblies);
+            var missing = listedSharedFxAssemblies.Except(actualAssemblies);
+            var unexpected = actualAssemblies.Except(listedSharedFxAssemblies);
 
             _output.WriteLine("==== missing assemblies from the framework ====");
             _output.WriteLine(string.Join('\n', missing));

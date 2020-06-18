@@ -35,6 +35,11 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void TargetingPackContainsListedAssemblies()
         {
+            if (!_isTargetingPackBuilding)
+            {
+                return;
+            }
+
             var actualAssemblies = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll")
                 .Select(Path.GetFileNameWithoutExtension)
                 .ToHashSet();
