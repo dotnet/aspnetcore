@@ -1016,5 +1016,19 @@ namespace TestSite
 
             await context.Response.WriteAsync(httpsPort.HasValue ? httpsPort.Value.ToString() : "NOVALUE");
         }
+
+        public Task Latin1(HttpContext context)
+        {
+            var value = context.Request.Headers["foo"];
+            Assert.Equal("£", value);
+            return Task.CompletedTask;
+        }
+
+        public Task InvalidCharacter(HttpContext context)
+        {
+            var value = context.Request.Headers["foo"];
+            Assert.Equal("�", value);
+            return Task.CompletedTask;
+        }
     }
 }

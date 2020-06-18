@@ -214,11 +214,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private class IISContextFactory<T> : IISContextFactory
         {
+            private const string Latin1Suppport = "Microsoft.AspNetCore.Server.IIS.Latin1RequestHeaders";
+
             private readonly IHttpApplication<T> _application;
             private readonly MemoryPool<byte> _memoryPool;
             private readonly IISServerOptions _options;
             private readonly IISHttpServer _server;
             private readonly ILogger _logger;
+            private readonly bool _useLatin1;
 
             public IISContextFactory(MemoryPool<byte> memoryPool, IHttpApplication<T> application, IISServerOptions options, IISHttpServer server, ILogger logger)
             {
@@ -227,11 +230,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 _options = options;
                 _server = server;
                 _logger = logger;
+                AppContext.TryGetSwitch(Latin1Suppport, out _useLatin1);
             }
 
             public IISHttpContext CreateHttpContext(IntPtr pInProcessHandler)
             {
-                return new IISHttpContextOfT<T>(_memoryPool, _application, pInProcessHandler, _options, _server, _logger);
+                return new IISHttpContextOfT<T>(_memoryPool, _application, pInProcessHandler, _options, _server, _logger, _useLatin1);
             }
         }
     }

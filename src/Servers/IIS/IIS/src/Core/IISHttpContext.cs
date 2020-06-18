@@ -76,8 +76,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             IntPtr pInProcessHandler,
             IISServerOptions options,
             IISHttpServer server,
-            ILogger logger)
-            : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.HttpGetRawRequest(pInProcessHandler))
+            ILogger logger,
+            bool useLatin1)
+            : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.HttpGetRawRequest(pInProcessHandler), useLatin1: useLatin1)
         {
             _memoryPool = memoryPool;
             _pInProcessHandler = pInProcessHandler;
