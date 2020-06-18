@@ -129,6 +129,7 @@
       <_BlazorOutputWithTargetPath Include="@(_BlazorResolvedAssembly)">
         <BootManifestResourceType Condition="'%(Extension)' == '.dll'">assembly</BootManifestResourceType>
         <BootManifestResourceType Condition="'%(Extension)' == '.pdb'">pdb</BootManifestResourceType>
+        <BootManifestResourceType Condition="@(BlazorWebAssemblyLazyLoad->AnyHaveMetadataValue('Identity', '%(Filename)')) != ''">dynamicAssembly</BootManifestResourceType>
         <BootManifestResourceName>%(FileName)%(Extension)</BootManifestResourceName>
         <TargetOutputPath>$(_BlazorRuntimeBinOutputPath)%(FileName)%(Extension)</TargetOutputPath>
       </_BlazorOutputWithTargetPath>
