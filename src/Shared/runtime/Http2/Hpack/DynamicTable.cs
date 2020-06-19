@@ -25,7 +25,7 @@ namespace System.Net.Http.HPack
 
         public int MaxSize => _maxSize;
 
-        public HeaderField this[int index]
+        public ref readonly HeaderField this[int index]
         {
             get
             {
@@ -42,7 +42,7 @@ namespace System.Net.Http.HPack
                     index += _buffer.Length;
                 }
 
-                return _buffer[index];
+                return ref _buffer[index];
             }
         }
 

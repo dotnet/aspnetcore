@@ -550,14 +550,14 @@ namespace System.Net.Http.HPack
 
         private void OnIndexedHeaderField(int index, IHttpHeadersHandler? handler)
         {
-            HeaderField header = GetHeader(index);
+            ref readonly HeaderField header = ref GetHeader(index);
             handler?.OnHeader(header.Name, header.Value);
             _state = State.Ready;
         }
 
         private void OnIndexedHeaderName(int index)
         {
-            HeaderField header = GetHeader(index);
+            ref readonly HeaderField header = ref GetHeader(index);
             _headerName = header.Name;
             _headerNameLength = header.Name.Length;
             _state = State.HeaderValueLength;
@@ -620,13 +620,13 @@ namespace System.Net.Http.HPack
             _state = nextState;
         }
 
-        private HeaderField GetHeader(int index)
+        private ref readonly HeaderField GetHeader(int index)
         {
             try
             {
-                return index <= H2StaticTable.Count
-                    ? H2StaticTable.Get(index - 1)
-                    : _dynamicTable[index - H2StaticTable.Count - 1];
+                return ref index <= H2StaticTable.Count
+                    ? ref H2StaticTable.Get(index - 1)
+                    : ref _dynamicTable[index - H2StaticTable.Count - 1];
             }
             catch (IndexOutOfRangeException)
             {
