@@ -236,8 +236,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- StaticWebAssets from packages are already available, so we don't do anything. -->
   <Target
     Name="ResolveStaticWebAssetsInputs"
-    DependsOnTargets="$(ResolveStaticWebAssetsInputsDependsOn)"
-    Returns="@(StaticWebAsset)" />
+    DependsOnTargets="$(ResolveStaticWebAssetsInputsDependsOn)" />
 
   <!-- This is a helper task to compute the project references we need to invoke to retrieve
        the static assets for a given application. We do it this way so that we can

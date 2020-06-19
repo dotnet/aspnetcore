@@ -307,6 +307,73 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        public async Task Publish_HostedApp_ProducesBootJsonDataWithExpectedContent()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "blazorwasm", "razorclasslibrary", });
+            var wwwroot = Path.Combine(project.DirectoryPath, "..", "blazorwasm", "wwwroot");
+            File.WriteAllText(Path.Combine(wwwroot, "appsettings.json"), "Default settings");
+            File.WriteAllText(Path.Combine(wwwroot, "appsettings.development.json"), "Development settings");
+
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
+            Assert.BuildPassed(result);
+
+            var bootJsonPath = Path.Combine(project.PublishOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
+            var bootJsonData = ReadBootJsonData(result, bootJsonPath);
+
+            var runtime = bootJsonData.resources.runtime.Keys;
+            Assert.Contains(DotNetJsFileName, runtime);
+            Assert.Contains("dotnet.wasm", runtime);
+
+            var assemblies = bootJsonData.resources.assembly.Keys;
+            Assert.Contains("blazorwasm.dll", assemblies);
+            Assert.Contains("RazorClassLibrary.dll", assemblies);
+            Assert.Contains("System.Text.Json.dll", assemblies);
+
+            // No pdbs
+            Assert.Null(bootJsonData.resources.pdb);
+            Assert.Null(bootJsonData.resources.satelliteResources);
+
+            Assert.Contains("appsettings.json", bootJsonData.config);
+            Assert.Contains("appsettings.development.json", bootJsonData.config);
+        }
+
+        [Fact]
+        public async Task Publish_HostedApp_WithSatelliteAssemblies()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorhosted", additionalProjects: new[] { "blazorwasm", "razorclasslibrary", "classlibrarywithsatelliteassemblies", });
+            var wasmProject = project.GetSibling("blazorwasm");
+
+            wasmProject.AddProjectFileContent(
+@"
+<PropertyGroup>
+    <DefineConstants>$(DefineConstants);REFERENCE_classlibrarywithsatelliteassemblies</DefineConstants>
+</PropertyGroup>
+<ItemGroup>
+    <ProjectReference Include=""..\classlibrarywithsatelliteassemblies\classlibrarywithsatelliteassemblies.csproj"" />
+</ItemGroup>");
+            var resxfileInProject = Path.Combine(wasmProject.DirectoryPath, "Resources.ja.resx.txt");
+            File.Move(resxfileInProject, Path.Combine(wasmProject.DirectoryPath, "Resource.ja.resx"));
+
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish", "/restore");
+            Assert.BuildPassed(result);
+
+            var bootJsonPath = Path.Combine(project.PublishOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
+            var bootJsonData = ReadBootJsonData(result, bootJsonPath);
+
+            var publishOutputDirectory = project.PublishOutputDirectory;
+
+            Assert.FileExists(result, publishOutputDirectory, "wwwroot", "_framework", "blazorwasm.dll");
+            Assert.FileExists(result, publishOutputDirectory, "wwwroot", "_framework", "classlibrarywithsatelliteassemblies.dll");
+            Assert.FileExists(result, publishOutputDirectory, "wwwroot", "_framework", "Microsoft.CodeAnalysis.CSharp.dll");
+            Assert.FileExists(result, publishOutputDirectory, "wwwroot", "_framework", "fr", "Microsoft.CodeAnalysis.CSharp.resources.dll"); // Verify satellite assemblies are present in the build output.
+
+            Assert.FileContains(result, bootJsonPath, "\"Microsoft.CodeAnalysis.CSharp.dll\"");
+            Assert.FileContains(result, bootJsonPath, "\"fr\\/Microsoft.CodeAnalysis.CSharp.resources.dll\"");
+        }
+
+        [Fact]
         // Regression test for https://github.com/dotnet/aspnetcore/issues/18752
         public async Task Publish_HostedApp_WithoutTrimming_Works()
         {
@@ -507,6 +574,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.Contains("fr/Microsoft.CodeAnalysis.CSharp.resources.dll", satelliteResources["fr"].Keys);
             Assert.Contains("ja", satelliteResources.Keys);
             Assert.Contains("ja/blazorwasm.resources.dll", satelliteResources["ja"].Keys);
+
+            VerifyServiceWorkerFiles(result, blazorPublishDirectory,
+                serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
+                serviceWorkerContent: "// This is the production service worker",
+                assetsManifestPath: "custom-service-worker-assets.js");
         }
 
         private static void AddWasmProjectContent(ProjectDirectory project, string content)
@@ -559,6 +631,13 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Assert.StartsWith("sha256-", webFormattedHash);
                 return webFormattedHash.Substring(7);
             }
+        }
+
+        private static BootJsonData ReadBootJsonData(MSBuildResult result, string path)
+        {
+            return JsonSerializer.Deserialize<BootJsonData>(
+                File.ReadAllText(Path.Combine(result.Project.DirectoryPath, path)),
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
     }
 }

@@ -112,6 +112,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var expectedValues = expectedAsyncValues;
             if (_serverFixture.ExecutionMode == ExecutionMode.Client)
             {
+                // Workaround for https://github.com/dotnet/runtime/issues/38098
+                expectedValues = new Dictionary<string, string>();
+                expectedSyncValues.Remove("genericInstanceMethod");
+
                 foreach (var kvp in expectedSyncValues)
                 {
                     expectedValues.Add(kvp.Key, kvp.Value);

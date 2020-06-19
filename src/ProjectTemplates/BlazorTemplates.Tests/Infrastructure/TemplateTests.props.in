@@ -34,5 +34,8 @@
     several versions older than latest. To avoid a cyclical dependency, this package reference is added to override the bundled version.
     Since this is a project reference, we must explicitly import the props file and also specify the output location of the SDK directory.
   -->
+  <PropertyGroup>
+    <RazorSdkDirectoryRoot>${ArtifactsBinDir}Microsoft.NET.Sdk.Razor\$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
+  </PropertyGroup>
   <Import Project="${RepoRoot}src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props" Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''" />
 </Project>

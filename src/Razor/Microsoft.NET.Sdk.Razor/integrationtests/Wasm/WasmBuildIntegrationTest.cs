@@ -73,6 +73,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // Arrange
             using var project = ProjectDirectory.Create("blazorwasm", additionalProjects: new[] { "razorclasslibrary" });
             project.Configuration = "Debug";
+            var wwwroot = Path.Combine(project.DirectoryPath, "wwwroot");
+            File.WriteAllText(Path.Combine(wwwroot, "appsettings.json"), "Default settings");
+            File.WriteAllText(Path.Combine(wwwroot, "appsettings.development.json"), "Development settings");
+
             var result = await MSBuildProcessManager.DotnetMSBuild(project);
 
             Assert.BuildPassed(result);
@@ -96,6 +100,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.Contains("RazorClassLibrary.pdb", pdb);
 
             Assert.Null(bootJsonData.resources.satelliteResources);
+
+            Assert.Contains("appsettings.json", bootJsonData.config);
+            Assert.Contains("appsettings.development.json", bootJsonData.config);
         }
 
         [Fact]

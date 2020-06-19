@@ -39,47 +39,50 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
     results['instanceMethodIncomingByRef'] = instanceMethodResult.incomingByRef;
     results['instanceMethodOutgoingByRef'] = DotNet.invokeMethod(assemblyName, 'ExtractNonSerializedValue', instanceMethodResult.outgoingByRef);
   }
+  
+  if (!shouldSupportSyncInterop) {
+    // workaround for https://github.com/dotnet/runtime/issues/38098
+    console.log('Invoking void async methods.');
 
-  console.log('Invoking void async methods.');
+    await DotNet.invokeMethodAsync(assemblyName, 'VoidParameterlessAsync');
+    await DotNet.invokeMethodAsync(assemblyName, 'VoidWithOneParameterAsync', ...createArgumentList(1, dotNetObjectByRef));
+    await DotNet.invokeMethodAsync(assemblyName, 'VoidWithTwoParametersAsync', ...createArgumentList(2, dotNetObjectByRef));
+    await DotNet.invokeMethodAsync(assemblyName, 'VoidWithThreeParametersAsync', ...createArgumentList(3, dotNetObjectByRef));
+    await DotNet.invokeMethodAsync(assemblyName, 'VoidWithFourParametersAsync', ...createArgumentList(4, dotNetObjectByRef));
+    await DotNet.invokeMethodAsync(assemblyName, 'VoidWithFiveParametersAsync', ...createArgumentList(5, dotNetObjectByRef));
+    await DotNet.invokeMethodAsync(assemblyName, 'VoidWithSixParametersAsync', ...createArgumentList(6, dotNetObjectByRef));
+    await DotNet.invokeMethodAsync(assemblyName, 'VoidWithSevenParametersAsync', ...createArgumentList(7, dotNetObjectByRef));
+    await DotNet.invokeMethodAsync(assemblyName, 'VoidWithEightParametersAsync', ...createArgumentList(8, dotNetObjectByRef));
 
-  await DotNet.invokeMethodAsync(assemblyName, 'VoidParameterlessAsync');
-  await DotNet.invokeMethodAsync(assemblyName, 'VoidWithOneParameterAsync', ...createArgumentList(1, dotNetObjectByRef));
-  await DotNet.invokeMethodAsync(assemblyName, 'VoidWithTwoParametersAsync', ...createArgumentList(2, dotNetObjectByRef));
-  await DotNet.invokeMethodAsync(assemblyName, 'VoidWithThreeParametersAsync', ...createArgumentList(3, dotNetObjectByRef));
-  await DotNet.invokeMethodAsync(assemblyName, 'VoidWithFourParametersAsync', ...createArgumentList(4, dotNetObjectByRef));
-  await DotNet.invokeMethodAsync(assemblyName, 'VoidWithFiveParametersAsync', ...createArgumentList(5, dotNetObjectByRef));
-  await DotNet.invokeMethodAsync(assemblyName, 'VoidWithSixParametersAsync', ...createArgumentList(6, dotNetObjectByRef));
-  await DotNet.invokeMethodAsync(assemblyName, 'VoidWithSevenParametersAsync', ...createArgumentList(7, dotNetObjectByRef));
-  await DotNet.invokeMethodAsync(assemblyName, 'VoidWithEightParametersAsync', ...createArgumentList(8, dotNetObjectByRef));
+    console.log('Invoking returning async methods.');
+    results['result1Async'] = await DotNet.invokeMethodAsync(assemblyName, 'ReturnArrayAsync');
+    results['result2Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoOneParameterAsync', ...createArgumentList(1, dotNetObjectByRef));
+    results['result3Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoTwoParametersAsync', ...createArgumentList(2, dotNetObjectByRef));
+    results['result4Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoThreeParametersAsync', ...createArgumentList(3, dotNetObjectByRef));
+    results['result5Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoFourParametersAsync', ...createArgumentList(4, dotNetObjectByRef));
+    results['result6Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoFiveParametersAsync', ...createArgumentList(5, dotNetObjectByRef));
+    results['result7Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoSixParametersAsync', ...createArgumentList(6, dotNetObjectByRef));
+    results['result8Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoSevenParametersAsync', ...createArgumentList(7, dotNetObjectByRef));
+    results['result9Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoEightParametersAsync', ...createArgumentList(8, dotNetObjectByRef));
 
-  console.log('Invoking returning async methods.');
-  results['result1Async'] = await DotNet.invokeMethodAsync(assemblyName, 'ReturnArrayAsync');
-  results['result2Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoOneParameterAsync', ...createArgumentList(1, dotNetObjectByRef));
-  results['result3Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoTwoParametersAsync', ...createArgumentList(2, dotNetObjectByRef));
-  results['result4Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoThreeParametersAsync', ...createArgumentList(3, dotNetObjectByRef));
-  results['result5Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoFourParametersAsync', ...createArgumentList(4, dotNetObjectByRef));
-  results['result6Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoFiveParametersAsync', ...createArgumentList(5, dotNetObjectByRef));
-  results['result7Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoSixParametersAsync', ...createArgumentList(6, dotNetObjectByRef));
-  results['result8Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoSevenParametersAsync', ...createArgumentList(7, dotNetObjectByRef));
-  results['result9Async'] = await DotNet.invokeMethodAsync(assemblyName, 'EchoEightParametersAsync', ...createArgumentList(8, dotNetObjectByRef));
+    const returnDotNetObjectByRefAsync = await DotNet.invokeMethodAsync(assemblyName, 'ReturnDotNetObjectByRefAsync');
+    results['resultReturnDotNetObjectByRefAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'ExtractNonSerializedValue', returnDotNetObjectByRefAsync['Some async instance']);
 
-  const returnDotNetObjectByRefAsync = await DotNet.invokeMethodAsync(assemblyName, 'ReturnDotNetObjectByRefAsync');
-  results['resultReturnDotNetObjectByRefAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'ExtractNonSerializedValue', returnDotNetObjectByRefAsync['Some async instance']);
+    const instanceMethodAsync = await instanceMethodsTarget.invokeMethodAsync('InstanceMethodAsync', {
+      stringValue: 'My string',
+      dtoByRef: dotNetObjectByRef
+    });
 
-  const instanceMethodAsync = await instanceMethodsTarget.invokeMethodAsync('InstanceMethodAsync', {
-    stringValue: 'My string',
-    dtoByRef: dotNetObjectByRef
-  });
+    results['instanceMethodThisTypeNameAsync'] = instanceMethodAsync.thisTypeName;
+    results['instanceMethodStringValueUpperAsync'] = instanceMethodAsync.stringValueUpper;
+    results['instanceMethodIncomingByRefAsync'] = instanceMethodAsync.incomingByRef;
+    results['instanceMethodOutgoingByRefAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'ExtractNonSerializedValue', instanceMethodAsync.outgoingByRef);
 
-  results['instanceMethodThisTypeNameAsync'] = instanceMethodAsync.thisTypeName;
-  results['instanceMethodStringValueUpperAsync'] = instanceMethodAsync.stringValueUpper;
-  results['instanceMethodIncomingByRefAsync'] = instanceMethodAsync.incomingByRef;
-  results['instanceMethodOutgoingByRefAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'ExtractNonSerializedValue', instanceMethodAsync.outgoingByRef);
+    console.log('Invoking generic type instance methods.');
 
-  console.log('Invoking generic type instance methods.');
-
-  results['syncGenericInstanceMethod'] = await genericDotNetObjectByRef.invokeMethodAsync('Update', 'Updated value 1');
-  results['asyncGenericInstanceMethod'] = await genericDotNetObjectByRef.invokeMethodAsync('UpdateAsync', 'Updated value 2');
+    results['syncGenericInstanceMethod'] = await genericDotNetObjectByRef.invokeMethodAsync('Update', 'Updated value 1');
+    results['asyncGenericInstanceMethod'] = await genericDotNetObjectByRef.invokeMethodAsync('UpdateAsync', 'Updated value 2');
+  }
 
   if (shouldSupportSyncInterop) {
     results['genericInstanceMethod'] = genericDotNetObjectByRef.invokeMethod('Update', 'Updated Value 3');
@@ -93,13 +96,13 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
   }
 
   try {
-    await DotNet.invokeMethodAsync(assemblyName, 'AsyncThrowSyncException');
+    !shouldSupportSyncInterop && await DotNet.invokeMethodAsync(assemblyName, 'AsyncThrowSyncException');
   } catch (e) {
     results['AsyncThrowSyncException'] = e.message;
   }
 
   try {
-    await DotNet.invokeMethodAsync(assemblyName, 'AsyncThrowAsyncException');
+    !shouldSupportSyncInterop && await DotNet.invokeMethodAsync(assemblyName, 'AsyncThrowAsyncException');
   } catch (e) {
     results['AsyncThrowAsyncException'] = e.message;
   }
