@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be applied to the created element.
         /// </summary>
-        [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> AdditionalAttributes { get; set; }
+        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> AdditionalAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets the value of the input. This should be used with two-way binding.
@@ -234,18 +234,49 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             if (EditContext.GetValidationMessages(FieldIdentifier).Any())
             {
+                if (AdditionalAttributes != null && AdditionalAttributes.ContainsKey("aria-invalid"))
+                {
+                    // Do not overwrite the attribute value
+                    return;
+                }
+
+                if (ConvertToDictionary(AdditionalAttributes, out Dictionary<string, object> additionalAttributes))
+                {
+                    AdditionalAttributes = additionalAttributes;
+                }
+
                 // To make the `Input` components accessible by default
                 // we will automatically render the `aria-invalid` attribute when the validation fails
-                if (AdditionalAttributes == null)
+                additionalAttributes["aria-invalid"] = true;
+            }
+        }
+
+        /// <summary>
+        /// Returns a dictionary with the same values as the specified <paramref name="source"/>.
+        /// </summary>
+        /// <returns>true, if a new dictrionary with copied values was created. false - otherwise.</returns>
+        private bool ConvertToDictionary(IReadOnlyDictionary<string, object> source, out Dictionary<string, object> result)
+        {
+            bool newDictionaryCreated = true;
+            if (source == null)
+            {
+                result = new Dictionary<string, object>();
+            }
+            else if (source is Dictionary<string, object> currentDictionary)
+            {
+                result = currentDictionary;
+                newDictionaryCreated = false;
+            }
+            else
+            {
+                result = new Dictionary<string, object>();
+                foreach (var item in source)
                 {
-                    AdditionalAttributes = new Dictionary<string, object>();
-                    AdditionalAttributes["aria-invalid"] = true;
-                }
-                else if (!AdditionalAttributes.ContainsKey("aria-invalid"))
-                {
-                    AdditionalAttributes["aria-invalid"] = true;
+                    result.Add(item.Key, item.Value);
                 }
             }
+
+            return newDictionaryCreated;
         }
 
         protected virtual void Dispose(bool disposing)
