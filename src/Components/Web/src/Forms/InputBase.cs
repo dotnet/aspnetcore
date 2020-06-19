@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             SetAdditionalAttributesIfValidationFailed();
 
             // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
-            return base.SetParametersAsync(parameters);
+            return base.SetParametersAsync(ParameterView.Empty);
         }
 
         private void OnValidateStateChanged(object sender, ValidationStateChangedEventArgs eventArgs)
