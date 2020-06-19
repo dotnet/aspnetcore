@@ -5,69 +5,69 @@ namespace Microsoft.AspNetCore.Components
 {
     public static partial class BindConverter
     {
-        public static bool FormatValue(bool value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(System.DateTime value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(System.DateTime value, string format, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(System.DateTimeOffset value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(System.DateTimeOffset value, string format, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(decimal value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(double value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(short value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(int value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(long value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static bool? FormatValue(bool? value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(System.DateTimeOffset? value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(System.DateTimeOffset? value, string format, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(System.DateTime? value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(System.DateTime? value, string format, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(decimal? value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(double? value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(short? value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(int? value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(long? value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(float? value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(float value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static string FormatValue(string value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static object FormatValue<T>(T value, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static bool TryConvertToBool(object obj, System.Globalization.CultureInfo culture, out bool value) { throw null; }
-        public static bool TryConvertToDateTime(object obj, System.Globalization.CultureInfo culture, out System.DateTime value) { throw null; }
-        public static bool TryConvertToDateTime(object obj, System.Globalization.CultureInfo culture, string format, out System.DateTime value) { throw null; }
-        public static bool TryConvertToDateTimeOffset(object obj, System.Globalization.CultureInfo culture, out System.DateTimeOffset value) { throw null; }
-        public static bool TryConvertToDateTimeOffset(object obj, System.Globalization.CultureInfo culture, string format, out System.DateTimeOffset value) { throw null; }
-        public static bool TryConvertToDecimal(object obj, System.Globalization.CultureInfo culture, out decimal value) { throw null; }
-        public static bool TryConvertToDouble(object obj, System.Globalization.CultureInfo culture, out double value) { throw null; }
-        public static bool TryConvertToFloat(object obj, System.Globalization.CultureInfo culture, out float value) { throw null; }
-        public static bool TryConvertToInt(object obj, System.Globalization.CultureInfo culture, out int value) { throw null; }
-        public static bool TryConvertToLong(object obj, System.Globalization.CultureInfo culture, out long value) { throw null; }
-        public static bool TryConvertToNullableBool(object obj, System.Globalization.CultureInfo culture, out bool? value) { throw null; }
-        public static bool TryConvertToNullableDateTime(object obj, System.Globalization.CultureInfo culture, out System.DateTime? value) { throw null; }
-        public static bool TryConvertToNullableDateTime(object obj, System.Globalization.CultureInfo culture, string format, out System.DateTime? value) { throw null; }
-        public static bool TryConvertToNullableDateTimeOffset(object obj, System.Globalization.CultureInfo culture, out System.DateTimeOffset? value) { throw null; }
-        public static bool TryConvertToNullableDateTimeOffset(object obj, System.Globalization.CultureInfo culture, string format, out System.DateTimeOffset? value) { throw null; }
-        public static bool TryConvertToNullableDecimal(object obj, System.Globalization.CultureInfo culture, out decimal? value) { throw null; }
-        public static bool TryConvertToNullableDouble(object obj, System.Globalization.CultureInfo culture, out double? value) { throw null; }
-        public static bool TryConvertToNullableFloat(object obj, System.Globalization.CultureInfo culture, out float? value) { throw null; }
-        public static bool TryConvertToNullableInt(object obj, System.Globalization.CultureInfo culture, out int? value) { throw null; }
-        public static bool TryConvertToNullableLong(object obj, System.Globalization.CultureInfo culture, out long? value) { throw null; }
-        public static bool TryConvertToNullableShort(object obj, System.Globalization.CultureInfo culture, out short? value) { throw null; }
-        public static bool TryConvertToShort(object obj, System.Globalization.CultureInfo culture, out short value) { throw null; }
-        public static bool TryConvertToString(object obj, System.Globalization.CultureInfo culture, out string value) { throw null; }
-        public static bool TryConvertTo<T>(object obj, System.Globalization.CultureInfo culture, out T value) { throw null; }
+        public static bool FormatValue(bool value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string FormatValue(System.DateTime value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string FormatValue(System.DateTime value, string format, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string FormatValue(System.DateTimeOffset value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string FormatValue(System.DateTimeOffset value, string format, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string FormatValue(decimal value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string? FormatValue(double value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string FormatValue(short value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string? FormatValue(int value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string FormatValue(long value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static bool? FormatValue(bool? value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string? FormatValue(System.DateTimeOffset? value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string? FormatValue(System.DateTimeOffset? value, string format, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string? FormatValue(System.DateTime? value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string? FormatValue(System.DateTime? value, string? format, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string? FormatValue(decimal? value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string? FormatValue(double? value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string? FormatValue(short? value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string? FormatValue(int? value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string? FormatValue(long? value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string? FormatValue(float? value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string FormatValue(float value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string FormatValue(string value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static object? FormatValue<T>(T value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static bool TryConvertToBool(object? obj, System.Globalization.CultureInfo? culture, out bool value) { throw null; }
+        public static bool TryConvertToDateTime(object? obj, System.Globalization.CultureInfo? culture, out System.DateTime value) { throw null; }
+        public static bool TryConvertToDateTime(object? obj, System.Globalization.CultureInfo? culture, string format, out System.DateTime value) { throw null; }
+        public static bool TryConvertToDateTimeOffset(object? obj, System.Globalization.CultureInfo? culture, out System.DateTimeOffset value) { throw null; }
+        public static bool TryConvertToDateTimeOffset(object? obj, System.Globalization.CultureInfo? culture, string format, out System.DateTimeOffset value) { throw null; }
+        public static bool TryConvertToDecimal(object? obj, System.Globalization.CultureInfo? culture, out decimal value) { throw null; }
+        public static bool TryConvertToDouble(object? obj, System.Globalization.CultureInfo? culture, out double value) { throw null; }
+        public static bool TryConvertToFloat(object? obj, System.Globalization.CultureInfo? culture, out float value) { throw null; }
+        public static bool TryConvertToInt(object? obj, System.Globalization.CultureInfo? culture, out int value) { throw null; }
+        public static bool TryConvertToLong(object? obj, System.Globalization.CultureInfo? culture, out long value) { throw null; }
+        public static bool TryConvertToNullableBool(object? obj, System.Globalization.CultureInfo? culture, out bool? value) { throw null; }
+        public static bool TryConvertToNullableDateTime(object? obj, System.Globalization.CultureInfo? culture, out System.DateTime? value) { throw null; }
+        public static bool TryConvertToNullableDateTime(object? obj, System.Globalization.CultureInfo? culture, string format, out System.DateTime? value) { throw null; }
+        public static bool TryConvertToNullableDateTimeOffset(object? obj, System.Globalization.CultureInfo? culture, out System.DateTimeOffset? value) { throw null; }
+        public static bool TryConvertToNullableDateTimeOffset(object? obj, System.Globalization.CultureInfo? culture, string format, out System.DateTimeOffset? value) { throw null; }
+        public static bool TryConvertToNullableDecimal(object? obj, System.Globalization.CultureInfo? culture, out decimal? value) { throw null; }
+        public static bool TryConvertToNullableDouble(object? obj, System.Globalization.CultureInfo? culture, out double? value) { throw null; }
+        public static bool TryConvertToNullableFloat(object? obj, System.Globalization.CultureInfo? culture, out float? value) { throw null; }
+        public static bool TryConvertToNullableInt(object? obj, System.Globalization.CultureInfo? culture, out int? value) { throw null; }
+        public static bool TryConvertToNullableLong(object? obj, System.Globalization.CultureInfo? culture, out long? value) { throw null; }
+        public static bool TryConvertToNullableShort(object? obj, System.Globalization.CultureInfo? culture, out short? value) { throw null; }
+        public static bool TryConvertToShort(object? obj, System.Globalization.CultureInfo? culture, out short value) { throw null; }
+        public static bool TryConvertToString(object? obj, System.Globalization.CultureInfo? culture, out string? value) { throw null; }
+        public static bool TryConvertTo<T>(object? obj, System.Globalization.CultureInfo? culture, out T value) { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=true)]
     public sealed partial class BindElementAttribute : System.Attribute
     {
-        public BindElementAttribute(string element, string suffix, string valueAttribute, string changeAttribute) { }
+        public BindElementAttribute(string element, string? suffix, string valueAttribute, string changeAttribute) { }
         public string ChangeAttribute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string Element { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public string Suffix { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string? Suffix { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string ValueAttribute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class CascadingParameterAttribute : System.Attribute
     {
         public CascadingParameterAttribute() { }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class CascadingValue<TValue> : Microsoft.AspNetCore.Components.IComponent
     {
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Components
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public bool IsFixed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public TValue Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Components
     public partial class ChangeEventArgs : System.EventArgs
     {
         public ChangeEventArgs() { }
-        public object Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public object? Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public abstract partial class ComponentBase : Microsoft.AspNetCore.Components.IComponent, Microsoft.AspNetCore.Components.IHandleAfterRender, Microsoft.AspNetCore.Components.IHandleEvent
     {
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Components
         protected System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> workItem) { throw null; }
         void Microsoft.AspNetCore.Components.IComponent.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         System.Threading.Tasks.Task Microsoft.AspNetCore.Components.IHandleAfterRender.OnAfterRenderAsync() { throw null; }
-        System.Threading.Tasks.Task Microsoft.AspNetCore.Components.IHandleEvent.HandleEventAsync(Microsoft.AspNetCore.Components.EventCallbackWorkItem callback, object arg) { throw null; }
+        System.Threading.Tasks.Task Microsoft.AspNetCore.Components.IHandleEvent.HandleEventAsync(Microsoft.AspNetCore.Components.EventCallbackWorkItem callback, object? arg) { throw null; }
         protected virtual void OnAfterRender(bool firstRender) { }
         protected virtual System.Threading.Tasks.Task OnAfterRenderAsync(bool firstRender) { throw null; }
         protected virtual void OnInitialized() { }
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Components
         private readonly int _dummyPrimitive;
         public static readonly Microsoft.AspNetCore.Components.EventCallback Empty;
         public static readonly Microsoft.AspNetCore.Components.EventCallbackFactory Factory;
-        public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent receiver, System.MulticastDelegate @delegate) { throw null; }
+        public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent? receiver, System.MulticastDelegate? @delegate) { throw null; }
         public bool HasDelegate { get { throw null; } }
         public System.Threading.Tasks.Task InvokeAsync(object arg) { throw null; }
     }
@@ -162,30 +162,30 @@ namespace Microsoft.AspNetCore.Components
     }
     public static partial class EventCallbackFactoryBinderExtensions
     {
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<bool> setter, bool existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTimeOffset> setter, System.DateTimeOffset existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTimeOffset> setter, System.DateTimeOffset existingValue, string format, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTime> setter, System.DateTime existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTime> setter, System.DateTime existingValue, string format, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<decimal> setter, decimal existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<double> setter, double existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<short> setter, short existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<int> setter, int existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<long> setter, long existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<bool?> setter, bool? existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTimeOffset?> setter, System.DateTimeOffset? existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTimeOffset?> setter, System.DateTimeOffset? existingValue, string format, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTime?> setter, System.DateTime? existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTime?> setter, System.DateTime? existingValue, string format, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<decimal?> setter, decimal? existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<double?> setter, double? existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<short?> setter, short? existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<int?> setter, int? existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<long?> setter, long? existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<float?> setter, float? existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<float> setter, float existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<string> setter, string existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder<T>(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<T> setter, T existingValue, System.Globalization.CultureInfo culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<bool> setter, bool existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTimeOffset> setter, System.DateTimeOffset existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTimeOffset> setter, System.DateTimeOffset existingValue, string format, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTime> setter, System.DateTime existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTime> setter, System.DateTime existingValue, string format, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<decimal> setter, decimal existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<double> setter, double existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<short> setter, short existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<int> setter, int existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<long> setter, long existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<bool?> setter, bool? existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTimeOffset?> setter, System.DateTimeOffset? existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTimeOffset?> setter, System.DateTimeOffset? existingValue, string format, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTime?> setter, System.DateTime? existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<System.DateTime?> setter, System.DateTime? existingValue, string format, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<decimal?> setter, decimal? existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<double?> setter, double? existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<short?> setter, short? existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<int?> setter, int? existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<long?> setter, long? existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<float?> setter, float? existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<float> setter, float existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<string?> setter, string existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder<T>(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<T> setter, T existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
     }
     public static partial class EventCallbackFactoryEventArgsExtensions
     {
@@ -200,8 +200,8 @@ namespace Microsoft.AspNetCore.Components
         private readonly object _dummy;
         private readonly int _dummyPrimitive;
         public static readonly Microsoft.AspNetCore.Components.EventCallbackWorkItem Empty;
-        public EventCallbackWorkItem(System.MulticastDelegate @delegate) { throw null; }
-        public System.Threading.Tasks.Task InvokeAsync(object arg) { throw null; }
+        public EventCallbackWorkItem(System.MulticastDelegate? @delegate) { throw null; }
+        public System.Threading.Tasks.Task InvokeAsync(object? arg) { throw null; }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct EventCallback<TValue>
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Components
         private readonly object _dummy;
         private readonly int _dummyPrimitive;
         public static readonly Microsoft.AspNetCore.Components.EventCallback<TValue> Empty;
-        public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent receiver, System.MulticastDelegate @delegate) { throw null; }
+        public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent? receiver, System.MulticastDelegate? @delegate) { throw null; }
         public bool HasDelegate { get { throw null; } }
         public System.Threading.Tasks.Task InvokeAsync(TValue arg) { throw null; }
     }
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Components
     }
     public partial interface IHandleEvent
     {
-        System.Threading.Tasks.Task HandleEventAsync(Microsoft.AspNetCore.Components.EventCallbackWorkItem item, object arg);
+        System.Threading.Tasks.Task HandleEventAsync(Microsoft.AspNetCore.Components.EventCallbackWorkItem item, object? arg);
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class InjectAttribute : System.Attribute
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Components
     {
         protected LayoutComponentBase() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Components.RenderFragment? Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class LayoutView : Microsoft.AspNetCore.Components.IComponent
     {
@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.Components
         protected virtual void Dispose(bool disposing) { }
         void System.IDisposable.Dispose() { }
     }
-    public abstract partial class OwningComponentBase<TService> : Microsoft.AspNetCore.Components.OwningComponentBase, System.IDisposable
+    public abstract partial class OwningComponentBase<TService> : Microsoft.AspNetCore.Components.OwningComponentBase, System.IDisposable where TService : notnull
     {
         protected OwningComponentBase() { }
         protected TService Service { get { throw null; } }
@@ -332,11 +332,12 @@ namespace Microsoft.AspNetCore.Components
         public static Microsoft.AspNetCore.Components.ParameterView Empty { get { throw null; } }
         public static Microsoft.AspNetCore.Components.ParameterView FromDictionary(System.Collections.Generic.IDictionary<string, object> parameters) { throw null; }
         public Microsoft.AspNetCore.Components.ParameterView.Enumerator GetEnumerator() { throw null; }
+        [return: System.Diagnostics.CodeAnalysis.MaybeNullAttribute]
         public TValue GetValueOrDefault<TValue>(string parameterName) { throw null; }
         public TValue GetValueOrDefault<TValue>(string parameterName, TValue defaultValue) { throw null; }
         public void SetParameterProperties(object target) { }
         public System.Collections.Generic.IReadOnlyDictionary<string, object> ToDictionary() { throw null; }
-        public bool TryGetValue<TValue>(string parameterName, out TValue result) { throw null; }
+        public bool TryGetValue<TValue>(string parameterName, [System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute(false)] out TValue result) { throw null; }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         public partial struct Enumerator
         {

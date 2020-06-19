@@ -6,6 +6,7 @@
     <Description>Components feature for ASP.NET Core.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
