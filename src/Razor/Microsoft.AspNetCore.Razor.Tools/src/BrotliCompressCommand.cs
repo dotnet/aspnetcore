@@ -56,8 +56,6 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 var source = Sources.Values[i];
                 var output = Outputs.Values[i];
 
-                Directory.CreateDirectory(Path.GetDirectoryName(output));
-
                 using var sourceStream = File.OpenRead(source);
                 using var fileStream = new FileStream(output, FileMode.Create);
 

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization.Json;
 using System.Text;
@@ -34,6 +35,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         [Required]
         public string OutputPath { get; set; }
+
+        public ITaskItem[] LazyLoadedAssemblies { get; set; }
 
         public override bool Execute()
         {
@@ -85,7 +88,12 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     var assetType = resource.GetMetadata("AssetType");
                     var resourceName = $"{fileName}{extension}";
 
-                    if (!string.IsNullOrEmpty(resourceCulture))
+                    if (IsLazyLoadedAssembly(fileName))
+                    {
+                        resourceData.dynamicAssembly ??= new ResourceHashesByNameDictionary();
+                        resourceList = resourceData.dynamicAssembly;
+                    }
+                    else if (!string.IsNullOrEmpty(resourceCulture))
                     {
                         resourceData.satelliteResources ??= new Dictionary<string, ResourceHashesByNameDictionary>(StringComparer.OrdinalIgnoreCase);
                         resourceName = resourceCulture + "/" + resourceName;
@@ -137,6 +145,11 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
             using var writer = JsonReaderWriterFactory.CreateJsonWriter(output, Encoding.UTF8, ownsStream: false, indent: true);
             serializer.WriteObject(writer, result);
+        }
+
+        private bool IsLazyLoadedAssembly(string fileName)
+        {
+            return LazyLoadedAssemblies != null && LazyLoadedAssemblies.Any(a => a.ItemSpec == fileName);
         }
     }
 }

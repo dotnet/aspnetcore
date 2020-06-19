@@ -74,6 +74,12 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         /// </summary>
         [DataMember(EmitDefaultValue = false)]
         public Dictionary<string, ResourceHashesByNameDictionary> satelliteResources { get; set; }
+
+        /// <summary>
+        /// Assembly (.dll) resources that are loaded dynamically during runtime
+        /// </summary>
+        [DataMember(EmitDefaultValue = false)]
+        public ResourceHashesByNameDictionary dynamicAssembly { get; set; }
     }
 #pragma warning restore IDE1006 // Naming Styles
 }

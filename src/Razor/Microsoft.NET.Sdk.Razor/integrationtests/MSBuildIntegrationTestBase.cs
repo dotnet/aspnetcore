@@ -30,9 +30,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 #error Configuration not supported
 #endif
 
-        protected string IntermediateOutputPath => Path.Combine("obj", Configuration, TargetFramework);
+        protected string IntermediateOutputPath => Path.Combine("obj", Configuration, Project.TargetFramework);
 
-        protected string OutputPath => Path.Combine("bin", Configuration, TargetFramework);
+        protected string OutputPath => Path.Combine("bin", Configuration, Project.TargetFramework);
 
         protected string PublishOutputPath => Path.Combine(OutputPath, "publish");
 
@@ -48,12 +48,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         protected string RazorIntermediateOutputPath => Path.Combine(IntermediateOutputPath, "Razor");
 
         protected string RazorComponentIntermediateOutputPath => Path.Combine(IntermediateOutputPath, "RazorDeclaration");
-
-        internal static string TargetFramework
-        {
-            get => Project.TargetFramework;
-            set => Project.TargetFramework = value;
-        }
 
         protected BuildServerTestFixtureBase BuildServer { get; set; }
 

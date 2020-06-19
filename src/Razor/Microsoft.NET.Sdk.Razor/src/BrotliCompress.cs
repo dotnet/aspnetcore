@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Build.Framework;
@@ -12,6 +13,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 {
     public class BrotliCompress : DotNetToolTask
     {
+        private static readonly char[] InvalidPathChars = Path.GetInvalidFileNameChars();
+
         [Required]
         public ITaskItem[] FilesToCompress { get; set; }
 
@@ -46,14 +49,15 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 var input = FilesToCompress[i];
                 var inputFullPath = input.GetMetadata("FullPath");
                 var relativePath = input.GetMetadata("RelativePath");
-                var outputRelativePath = CalculateTargetPath(relativePath);
+                var outputRelativePath = Path.Combine(OutputDirectory, CalculateTargetPath(relativePath));
 
                 var outputItem = new TaskItem(outputRelativePath);
                 input.CopyMetadataTo(outputItem);
                 // Relative path in the publish dir
                 outputItem.SetMetadata("RelativePath", relativePath + ".br");
+                CompressedFiles[i] = outputItem;
 
-                var outputFullPath = Path.Combine(OutputDirectory, outputRelativePath);
+                var outputFullPath = Path.GetFullPath(outputRelativePath);
 
                 if (SkipIfOutputIsNewer && File.Exists(outputFullPath) && File.GetLastWriteTimeUtc(inputFullPath) < File.GetLastWriteTimeUtc(outputFullPath))
                 {
@@ -79,7 +83,17 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             using var hash = SHA1.Create();
             var bytes = Encoding.UTF8.GetBytes(relativePath);
             var hashString = Convert.ToBase64String(hash.ComputeHash(bytes));
-            return hashString.Substring(0, 8) + ".br";
+
+            var builder = new StringBuilder();
+
+            for (var i = 0; i < 8; i++)
+            {
+                var c = hashString[i];
+                builder.Append(InvalidPathChars.Contains(c) ? '+' : c);
+            }
+
+            builder.Append(".br");
+            return builder.ToString();
         }
     }
 }

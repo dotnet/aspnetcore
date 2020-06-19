@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var buildOutputDirectory = project.BuildOutputDirectory;
 
             // Act
-            var compressedFilesFolder = Path.Combine("..", "blazorwasm", project.IntermediateOutputDirectory, "compressed");
+            var compressedFilesFolder = Path.Combine("..", "blazorwasm", project.IntermediateOutputDirectory, "brotli");
             var thumbPrint = FileThumbPrint.CreateFolderThumbprint(project, compressedFilesFolder);
 
             // Assert
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var buildOutputDirectory = project.BuildOutputDirectory;
 
             // Act
-            var compressedFilesFolder = Path.Combine("..", "blazorwasm", project.IntermediateOutputDirectory, "compressed");
+            var compressedFilesFolder = Path.Combine("..", "blazorwasm", project.IntermediateOutputDirectory, "brotli");
             var thumbPrint = FileThumbPrint.CreateFolderThumbprint(project, compressedFilesFolder);
 
             // Assert

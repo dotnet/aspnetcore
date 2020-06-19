@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public async Task Publish_WithDefaultSettings_Works()
         {
             // Arrange
-            var project = ProjectDirectory.Create("blazorwasm", additionalProjects: new[] { "razorclasslibrary", "LinkBaseToWebRoot" });
+            using var project = ProjectDirectory.Create("blazorwasm", additionalProjects: new[] { "razorclasslibrary", "LinkBaseToWebRoot" });
             project.Configuration = "Debug";
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
 
@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var blazorPublishDirectory = Path.Combine(publishDirectory, "wwwroot");
 
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", DotNetJsFileName);
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll");
@@ -77,6 +78,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var blazorPublishDirectory = Path.Combine(publishDirectory, "wwwroot");
 
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", DotNetJsFileName);
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll");
@@ -138,6 +140,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var blazorPublishDirectory = Path.Combine(publishDirectory, "wwwroot");
 
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", DotNetJsFileName);
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll");
@@ -195,6 +198,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var blazorPublishDirectory = Path.Combine(publishDirectory, "wwwroot");
 
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", DotNetJsFileName);
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll");
@@ -272,6 +276,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             var blazorPublishDirectory = Path.Combine(publishDirectory, "wwwroot");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", DotNetJsFileName);
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll");

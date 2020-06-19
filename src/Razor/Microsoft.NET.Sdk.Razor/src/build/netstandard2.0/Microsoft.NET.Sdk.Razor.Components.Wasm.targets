@@ -36,6 +36,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Internal properties -->
     <_BlazorOutputPath>wwwroot\_framework\</_BlazorOutputPath>
     <_BlazorSatelliteAssemblyCacheFile>$(IntermediateOutputPath)blazor.satelliteasm.props</_BlazorSatelliteAssemblyCacheFile>
+
+    <!-- Workaround for https://github.com/dotnet/sdk/issues/12114-->
+    <PublishDir Condition="'$(AppendRuntimeIdentifierToOutputPath)' != 'true' AND '$(PublishDir)' == '$(OutputPath)$(RuntimeIdentifier)\$(PublishDirName)\'">$(OutputPath)$(PublishDirName)\</PublishDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -174,7 +177,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       LinkerEnabled="false"
       CacheBootResources="$(BlazorCacheBootResources)"
       OutputPath="$(_BlazorBuildBootJsonPath)"
-      ConfigurationFiles="@(_BlazorConfigFile)" />
+      ConfigurationFiles="@(_BlazorConfigFile)"
+      LazyLoadedAssemblies="@(BlazorWebAssemblyLazyLoad)" />
 
     <ItemGroup>
       <FileWrites Include="$(OutDir)$(_BlazorOutputPath)blazor.boot.json" />
@@ -360,7 +364,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       LinkerEnabled="$(PublishTrimmed)"
       CacheBootResources="$(BlazorCacheBootResources)"
       OutputPath="$(IntermediateOutputPath)blazor.publish.boot.json"
-      ConfigurationFiles="@(_BlazorConfigFile)" />
+      ConfigurationFiles="@(_BlazorConfigFile)"
+      LazyLoadedAssemblies="@(BlazorWebAssemblyLazyLoad)" />
 
     <ItemGroup>
       <ResolvedFileToPublish
@@ -376,6 +381,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_BlazorCompressPublishFiles" AfterTargets="_ProcessPublishFilesForBlazor" Condition="'$(BlazorEnableCompression)' != 'false'">
     <PropertyGroup>
       <_CompressedFileOutputPath>$(IntermediateOutputPath)brotli\</_CompressedFileOutputPath>
+      <_BlazorWebAssemblyBrotliIncremental>true</_BlazorWebAssemblyBrotliIncremental>
     </PropertyGroup>
 
     <ItemGroup>
@@ -386,12 +392,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <Message Text="Compressing Blazor WebAssembly publish artifacts. This may take a while..." Importance="High" />
 
+    <MakeDir Directories="$(_CompressedFileOutputPath)" Condition="!Exists('$(_CompressedFileOutputPath)')" />
+
     <BrotliCompress
       OutputDirectory="$(_CompressedFileOutputPath)"
       FilesToCompress="@(_BrotliFileToCompress)"
       CompressionLevel="$(_BlazorBrotliCompressionLevel)"
-      SkipIfOutputIsNewer="true"
-      ToolAssembly="$(_RazorToolAssembly)">
+      SkipIfOutputIsNewer="$(_BlazorWebAssemblyBrotliIncremental)"
+      ToolAssembly="$(_RazorSdkToolAssembly)">
 
       <Output TaskParameter="CompressedFiles" ItemName="_BrotliCompressedFile" />
       <Output TaskParameter="CompressedFiles" ItemName="FileWrites" />

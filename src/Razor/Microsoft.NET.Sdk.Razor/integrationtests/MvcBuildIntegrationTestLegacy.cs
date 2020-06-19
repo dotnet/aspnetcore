@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         IClassFixture<LegacyBuildServerTestFixture>
     {
         public abstract string TestProjectName { get; }
-        public abstract new string TargetFramework { get; }
+        public abstract string TargetFramework { get; }
         public virtual string OutputFileName => $"{TestProjectName}.dll";
 
         public MvcBuildIntegrationTestLegacy(LegacyBuildServerTestFixture buildServer)
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         protected IDisposable CreateTestProject()
         {
             Project = ProjectDirectory.Create(TestProjectName);
-            MSBuildIntegrationTestBase.TargetFramework = TargetFramework;
+            Project.TargetFramework = TargetFramework;
 
             return new Disposable();
         }
@@ -52,7 +52,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     result,
                     Path.Combine(IntermediateOutputPath, $"{TestProjectName}.TagHelpers.output.cache"),
                     @"""Name"":""SimpleMvc.SimpleTagHelper""");
-
             }
         }
 

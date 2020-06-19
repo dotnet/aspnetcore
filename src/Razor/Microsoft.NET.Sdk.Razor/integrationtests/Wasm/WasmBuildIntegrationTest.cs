@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public async Task Build_InRelease_ProducesBootJsonDataWithExpectedContent()
         {
             // Arrange
-            var project = ProjectDirectory.Create("blazorwasm", additionalProjects: new[] { "razorclasslibrary" });
+            using var project = ProjectDirectory.Create("blazorwasm", additionalProjects: new[] { "razorclasslibrary" });
             project.Configuration = "Release";
             var result = await MSBuildProcessManager.DotnetMSBuild(project);
 
