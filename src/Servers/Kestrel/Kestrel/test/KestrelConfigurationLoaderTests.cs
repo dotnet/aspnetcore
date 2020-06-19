@@ -465,6 +465,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             serverOptions.ConfigureHttpsDefaults(opt =>
             {
+                opt.ServerCertificate = TestResources.GetTestCertificate();
+
                 // Kestrel default
                 Assert.Equal(SslProtocols.None, opt.SslProtocols);
                 ranDefault = true;
@@ -506,6 +508,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             serverOptions.ConfigureHttpsDefaults(opt =>
             {
+                opt.ServerCertificate = TestResources.GetTestCertificate();
                 opt.SslProtocols = SslProtocols.Tls12;
             });
 
@@ -530,6 +533,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         public void DefaultEndpointConfigureSection_CanSetSslProtocols()
         {
             var serverOptions = CreateServerOptions();
+
+            serverOptions.ConfigureHttpsDefaults(opt =>
+            {
+                opt.ServerCertificate = TestResources.GetTestCertificate();
+            });
 
             var ran1 = false;
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -556,6 +564,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             serverOptions.ConfigureHttpsDefaults(opt =>
             {
+                opt.ServerCertificate = TestResources.GetTestCertificate();
+
                 Assert.Equal(SslProtocols.Tls11, opt.SslProtocols);
                 opt.SslProtocols = SslProtocols.Tls12;
             });
