@@ -103,5 +103,18 @@ namespace Microsoft.AspNetCore.Http
             Assert.Throws<InvalidOperationException>(() => headers.Remove(new KeyValuePair<string, StringValues>("header1", "value1")));
             Assert.Throws<InvalidOperationException>(() => headers.Remove("header1"));
         }
+
+        [Fact]
+        public void GetCommaSeparatedValues_WorksForUnquotedHeaderValuesEndingWithSpace()
+        {
+            var headers = new HeaderDictionary
+            {
+                { "Via", "value " },
+            };
+
+            var result = headers.GetCommaSeparatedValues("Via");
+
+            Assert.Equal(new[]{"value "}, result);
+        }
     }
 }
