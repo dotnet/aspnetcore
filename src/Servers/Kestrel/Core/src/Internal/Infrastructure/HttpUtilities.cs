@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
@@ -27,7 +28,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private const ulong _http10VersionLong = 3471766442030158920; // GetAsciiStringAsLong("HTTP/1.0"); const results in better codegen
         private const ulong _http11VersionLong = 3543824036068086856; // GetAsciiStringAsLong("HTTP/1.1"); const results in better codegen
 
-        private static readonly UTF8EncodingSealed HeaderValueEncoding = new UTF8EncodingSealed();
         private static readonly SpanAction<char, IntPtr> _getHeaderName = GetHeaderName;
         private static readonly SpanAction<char, IntPtr> _getAsciiStringNonNullCharacters = GetAsciiStringNonNullCharacters;
 
@@ -120,11 +120,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        public static string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span)
-            => GetAsciiOrUTF8StringNonNullCharacters((ReadOnlySpan<byte>)span);
-
         public static string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span)
-            => StringUtilities.GetAsciiOrUTF8StringNonNullCharacters(span, HeaderValueEncoding);
+            => StringUtilities.GetAsciiOrUTF8StringNonNullCharacters(span, KestrelServerOptions.DefaultRequestHeaderEncoding);
 
         private static unsafe void GetAsciiStringNonNullCharacters(Span<char> buffer, IntPtr state)
         {
@@ -139,8 +136,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        public static string GetRequestHeaderStringNonNullCharacters(this ReadOnlySpan<byte> span, bool useLatin1) =>
-            useLatin1 ? span.GetLatin1StringNonNullCharacters() : span.GetAsciiOrUTF8StringNonNullCharacters(HeaderValueEncoding);
+        public static string GetRequestHeaderString(this ReadOnlySpan<byte> span, string name, Func<string, Encoding> encodingSelector)
+        {
+            if (ReferenceEquals(KestrelServerOptions.DefaultRequestHeaderEncodingSelector, encodingSelector))
+            {
+                return span.GetAsciiOrUTF8StringNonNullCharacters(KestrelServerOptions.DefaultRequestHeaderEncoding);
+            }
+
+            var encoding = encodingSelector(name);
+
+            if (encoding is null)
+            {
+                return span.GetAsciiOrUTF8StringNonNullCharacters(KestrelServerOptions.DefaultRequestHeaderEncoding);
+            }
+
+            if (ReferenceEquals(encoding, Encoding.Latin1))
+            {
+                return span.GetLatin1StringNonNullCharacters();
+            }
+
+            try
+            {
+                return encoding.GetString(span);
+            }
+            catch (DecoderFallbackException)
+            {
+                throw new InvalidOperationException();
+            }
+        }
 
         public static string GetAsciiStringEscaped(this ReadOnlySpan<byte> span, int maxChars)
         {
@@ -528,14 +551,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // Cast to uint to change negative numbers to large numbers
                 // Check if less than 6 representing chars 'a' - 'f'
                 || (uint)((ch | 32) - 'a') < 6u;
-        }
-
-        // Allow for de-virtualization (see https://github.com/dotnet/coreclr/pull/9230)
-        private sealed class UTF8EncodingSealed : UTF8Encoding
-        {
-            public UTF8EncodingSealed() : base(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true) { }
-
-            public override byte[] GetPreamble() => Array.Empty<byte>();
         }
     }
 }

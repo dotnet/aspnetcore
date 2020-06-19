@@ -6270,6 +6270,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public unsafe void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             ref byte nameStart = ref MemoryMarshal.GetReference(name);
+            var nameStr = string.Empty;
             ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
             var flag = 0L;
 
@@ -6281,6 +6282,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x20000000000L;
                         values = ref _headers._TE;
+                        nameStr = HeaderNames.TE;
                     }
                     break;
                 case 3:
@@ -6289,11 +6291,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x100000000000L;
                         values = ref _headers._DNT;
+                        nameStr = HeaderNames.DNT;
                     }
                     else if ((firstTerm3 == 0x4956u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)2) & 0xdfu) == 0x41u))
                     {
                         flag = 0x100L;
                         values = ref _headers._Via;
+                        nameStr = HeaderNames.Via;
                     }
                     break;
                 case 4:
@@ -6302,16 +6306,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x80000000L;
                         values = ref _headers._Host;
+                        nameStr = HeaderNames.Host;
                     }
                     else if ((firstTerm4 == 0x45544144u))
                     {
                         flag = 0x4L;
                         values = ref _headers._Date;
+                        nameStr = HeaderNames.Date;
                     }
                     else if ((firstTerm4 == 0x4d4f5246u))
                     {
                         flag = 0x40000000L;
                         values = ref _headers._From;
+                        nameStr = HeaderNames.From;
                     }
                     break;
                 case 5:
@@ -6319,16 +6326,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x200000L;
                         values = ref _headers._Path;
+                        nameStr = HeaderNames.Path;
                     }
                     else if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu) == 0x4f4c4c41u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)4) & 0xdfu) == 0x57u))
                     {
                         flag = 0x400L;
                         values = ref _headers._Allow;
+                        nameStr = HeaderNames.Allow;
                     }
                     else if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu) == 0x474e4152u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)4) & 0xdfu) == 0x45u))
                     {
                         flag = 0x10000000000L;
                         values = ref _headers._Range;
+                        nameStr = HeaderNames.Range;
                     }
                     break;
                 case 6:
@@ -6337,26 +6347,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x800000L;
                         values = ref _headers._Accept;
+                        nameStr = HeaderNames.Accept;
                     }
                     else if ((firstTerm6 == 0x4b4f4f43u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4549u))
                     {
                         flag = 0x10000000L;
                         values = ref _headers._Cookie;
+                        nameStr = HeaderNames.Cookie;
                     }
                     else if ((firstTerm6 == 0x45505845u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x5443u))
                     {
                         flag = 0x20000000L;
                         values = ref _headers._Expect;
+                        nameStr = HeaderNames.Expect;
                     }
                     else if ((firstTerm6 == 0x4749524fu) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4e49u))
                     {
                         flag = 0x4000000000000L;
                         values = ref _headers._Origin;
+                        nameStr = HeaderNames.Origin;
                     }
                     else if ((firstTerm6 == 0x47415250u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x414du))
                     {
                         flag = 0x10L;
                         values = ref _headers._Pragma;
+                        nameStr = HeaderNames.Pragma;
                     }
                     break;
                 case 7:
@@ -6364,36 +6379,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x100000L;
                         values = ref _headers._Method;
+                        nameStr = HeaderNames.Method;
                     }
                     else if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfffu) == 0x4843533au) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4d45u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x45u))
                     {
                         flag = 0x400000L;
                         values = ref _headers._Scheme;
+                        nameStr = HeaderNames.Scheme;
                     }
                     else if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu) == 0x49505845u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4552u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x53u))
                     {
                         flag = 0x20000L;
                         values = ref _headers._Expires;
+                        nameStr = HeaderNames.Expires;
                     }
                     else if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu) == 0x45464552u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4552u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x52u))
                     {
                         flag = 0x8000000000L;
                         values = ref _headers._Referer;
+                        nameStr = HeaderNames.Referer;
                     }
                     else if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu) == 0x49415254u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x454cu) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x52u))
                     {
                         flag = 0x20L;
                         values = ref _headers._Trailer;
+                        nameStr = HeaderNames.Trailer;
                     }
                     else if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu) == 0x52475055u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4441u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x45u))
                     {
                         flag = 0x80L;
                         values = ref _headers._Upgrade;
+                        nameStr = HeaderNames.Upgrade;
                     }
                     else if (((Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu) == 0x4e524157u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4e49u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x47u))
                     {
                         flag = 0x200L;
                         values = ref _headers._Warning;
+                        nameStr = HeaderNames.Warning;
                     }
                     break;
                 case 8:
@@ -6402,11 +6424,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x100000000L;
                         values = ref _headers._IfMatch;
+                        nameStr = HeaderNames.IfMatch;
                     }
                     else if ((firstTerm8 == 0x45474e41522d4649uL))
                     {
                         flag = 0x800000000L;
                         values = ref _headers._IfRange;
+                        nameStr = HeaderNames.IfRange;
                     }
                     break;
                 case 9:
@@ -6414,6 +6438,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x40000000000L;
                         values = ref _headers._Translate;
+                        nameStr = HeaderNames.Translate;
                     }
                     break;
                 case 10:
@@ -6421,31 +6446,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x80000L;
                         values = ref _headers._Authority;
+                        nameStr = HeaderNames.Authority;
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x495443454e4e4f43uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4e4fu))
                     {
                         flag = 0x2L;
                         values = ref _headers._Connection;
+                        nameStr = HeaderNames.Connection;
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x4547412d52455355uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x544eu))
                     {
                         flag = 0x80000000000L;
                         values = ref _headers._UserAgent;
+                        nameStr = HeaderNames.UserAgent;
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x494c412d5045454buL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4556u))
                     {
                         flag = 0x8L;
                         values = ref _headers._KeepAlive;
+                        nameStr = HeaderNames.KeepAlive;
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d54534555514552uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4449u))
                     {
                         flag = 0x400000000000L;
                         values = ref _headers._RequestId;
+                        nameStr = HeaderNames.RequestId;
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x4154534543415254uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4554u))
                     {
                         flag = 0x2000000000000L;
                         values = ref _headers._TraceState;
+                        nameStr = HeaderNames.TraceState;
                     }
                     break;
                 case 11:
@@ -6453,11 +6484,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x8000L;
                         values = ref _headers._ContentMD5;
+                        nameStr = HeaderNames.ContentMD5;
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x5241504543415254uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4e45u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)10) & 0xdfu) == 0x54u))
                     {
                         flag = 0x1000000000000L;
                         values = ref _headers._TraceParent;
+                        nameStr = HeaderNames.TraceParent;
                     }
                     break;
                 case 12:
@@ -6465,11 +6498,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x800L;
                         values = ref _headers._ContentType;
+                        nameStr = HeaderNames.ContentType;
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfffdfdfdfuL) == 0x57524f462d58414duL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x53445241u))
                     {
                         flag = 0x2000000000L;
                         values = ref _headers._MaxForwards;
+                        nameStr = HeaderNames.MaxForwards;
                     }
                     break;
                 case 13:
@@ -6477,26 +6512,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x8000000L;
                         values = ref _headers._Authorization;
+                        nameStr = HeaderNames.Authorization;
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfffdfdfdfdfdfuL) == 0x4f432d4548434143uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4f52544eu) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x4cu))
                     {
                         flag = 0x1L;
                         values = ref _headers._CacheControl;
+                        nameStr = HeaderNames.CacheControl;
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d544e45544e4f43uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x474e4152u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x45u))
                     {
                         flag = 0x10000L;
                         values = ref _headers._ContentRange;
+                        nameStr = HeaderNames.ContentRange;
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfffdfdfuL) == 0x2d454e4f4e2d4649uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4354414du) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x48u))
                     {
                         flag = 0x400000000L;
                         values = ref _headers._IfNoneMatch;
+                        nameStr = HeaderNames.IfNoneMatch;
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x444f4d2d5453414cuL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x45494649u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x44u))
                     {
                         flag = 0x40000L;
                         values = ref _headers._LastModified;
+                        nameStr = HeaderNames.LastModified;
                     }
                     break;
                 case 14:
@@ -6504,10 +6544,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x1000000L;
                         values = ref _headers._AcceptCharset;
+                        nameStr = HeaderNames.AcceptCharset;
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d544e45544e4f43uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x474e454cu) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x4854u))
                     {
-                        AppendContentLength(value);
+                        if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector)
+                            || ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultLatin1RequestHeaderEncodingSelector))
+                        {
+                            AppendContentLength(value);
+                        }
+                        else
+                        {
+                            AppendContentLengthCustomEncoding(value, EncodingSelector(HeaderNames.ContentLength));
+                        }
                         return;
                     }
                     break;
@@ -6517,11 +6566,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x2000000L;
                         values = ref _headers._AcceptEncoding;
+                        nameStr = HeaderNames.AcceptEncoding;
                     }
                     else if ((firstTerm15 == 0x4c2d545045434341uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x55474e41u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x4741u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)14) & 0xdfu) == 0x45u))
                     {
                         flag = 0x4000000L;
                         values = ref _headers._AcceptLanguage;
+                        nameStr = HeaderNames.AcceptLanguage;
                     }
                     break;
                 case 16:
@@ -6532,16 +6583,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         {
                             flag = 0x1000L;
                             values = ref _headers._ContentEncoding;
+                            nameStr = HeaderNames.ContentEncoding;
                         }
                         else if (((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfdfuL) == 0x45474155474e414cuL))
                         {
                             flag = 0x2000L;
                             values = ref _headers._ContentLanguage;
+                            nameStr = HeaderNames.ContentLanguage;
                         }
                         else if (((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfdfuL) == 0x4e4f495441434f4cuL))
                         {
                             flag = 0x4000L;
                             values = ref _headers._ContentLocation;
+                            nameStr = HeaderNames.ContentLocation;
                         }
                     }
                     break;
@@ -6550,11 +6604,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x200000000L;
                         values = ref _headers._IfModifiedSince;
+                        nameStr = HeaderNames.IfModifiedSince;
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x524546534e415254uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfffuL) == 0x4e49444f434e452duL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)16) & 0xdfu) == 0x47u))
                     {
                         flag = 0x40L;
                         values = ref _headers._TransferEncoding;
+                        nameStr = HeaderNames.TransferEncoding;
                     }
                     break;
                 case 19:
@@ -6562,16 +6618,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x800000000000L;
                         values = ref _headers._CorrelationContext;
+                        nameStr = HeaderNames.CorrelationContext;
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfffdfdfuL) == 0x444f4d4e552d4649uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfffdfdfdfdfdfuL) == 0x49532d4445494649uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(8 * sizeof(ushort)))) & 0xdfdfu) == 0x434eu) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)18) & 0xdfu) == 0x45u))
                     {
                         flag = 0x1000000000L;
                         values = ref _headers._IfUnmodifiedSince;
+                        nameStr = HeaderNames.IfUnmodifiedSince;
                     }
                     else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfffdfdfdfdfdfuL) == 0x55412d59584f5250uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfdfuL) == 0x54415a49524f4854uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(8 * sizeof(ushort)))) & 0xdfdfu) == 0x4f49u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)18) & 0xdfu) == 0x4eu))
                     {
                         flag = 0x4000000000L;
                         values = ref _headers._ProxyAuthorization;
+                        nameStr = HeaderNames.ProxyAuthorization;
                     }
                     break;
                 case 25:
@@ -6579,6 +6638,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x200000000000L;
                         values = ref _headers._UpgradeInsecureRequests;
+                        nameStr = HeaderNames.UpgradeInsecureRequests;
                     }
                     break;
                 case 29:
@@ -6586,6 +6646,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x8000000000000L;
                         values = ref _headers._AccessControlRequestMethod;
+                        nameStr = HeaderNames.AccessControlRequestMethod;
                     }
                     break;
                 case 30:
@@ -6593,6 +6654,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         flag = 0x10000000000000L;
                         values = ref _headers._AccessControlRequestHeaders;
+                        nameStr = HeaderNames.AccessControlRequestHeaders;
                     }
                     break;
             }
@@ -6622,7 +6684,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
-                var valueStr = value.GetRequestHeaderStringNonNullCharacters(UseLatin1);
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
                 if ((_bits & flag) == 0)
                 {
                     // We didn't already have a header set, so add a new one.
@@ -6640,8 +6702,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // The header was not one of the "known" headers.
                 // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in 
                 // this method with rep stosd, which is slower than necessary.
-                var valueStr = value.GetRequestHeaderStringNonNullCharacters(UseLatin1);
-                AppendUnknownHeaders(name, valueStr);
+                nameStr = name.GetHeaderName();
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
+                AppendUnknownHeaders(nameStr, valueStr);
             }
         }
 

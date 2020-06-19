@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Microsoft.Net.Http.Headers;
 
 namespace CodeGenerator
 {
@@ -230,23 +231,40 @@ namespace CodeGenerator
                 firstTermVar = "";
             }
 
+            string GenerateIfBody(KnownHeader header, string extraIndent = "")
+            {
+                if (header.Identifier == "ContentLength")
+                {
+                    return $@"
+                        {extraIndent}if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector)
+                        {extraIndent}    || ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultLatin1RequestHeaderEncodingSelector))
+                        {extraIndent}{{
+                        {extraIndent}    AppendContentLength(value);
+                        {extraIndent}}}
+                        {extraIndent}else
+                        {extraIndent}{{
+                        {extraIndent}    AppendContentLengthCustomEncoding(value, EncodingSelector(HeaderNames.ContentLength));
+                        {extraIndent}}}
+                        {extraIndent}return;";
+                }
+                else
+                {
+                    return $@"
+                        {extraIndent}flag = {header.FlagBit()};
+                        {extraIndent}values = ref _headers._{header.Identifier};
+                        {extraIndent}nameStr = HeaderNames.{header.Identifier};";
+                }
+            }
+
             var groups = values.GroupBy(header => header.EqualIgnoreCaseBytesFirstTerm());
             return start + $@"{Each(groups,  (byFirstTerm, i) => $@"{(byFirstTerm.Count() == 1 ? $@"{Each(byFirstTerm, header => $@"
                     {(i > 0 ? "else " : "")}if ({header.EqualIgnoreCaseBytes(firstTermVar)})
-                    {{{(header.Identifier == "ContentLength" ? $@"
-                        AppendContentLength(value);
-                        return;" : $@"
-                        flag = {header.FlagBit()};
-                        values = ref _headers._{header.Identifier};")}
+                    {{{GenerateIfBody(header)}
                     }}")}" : $@"
                     if ({byFirstTerm.Key.Replace(firstTermVarExpression, firstTermVar)})
                     {{{Each(byFirstTerm, (header, i) => $@"
                         {(i > 0 ? "else " : "")}if ({header.EqualIgnoreCaseBytesSecondTermOnwards()})
-                        {{{(header.Identifier == "ContentLength" ? $@"
-                            AppendContentLength(value);
-                            return;" : $@"
-                            flag = {header.FlagBit()};
-                            values = ref _headers._{header.Identifier};")}
+                        {{{GenerateIfBody(header, extraIndent: "    ")}
                         }}")}
                     }}")}")}";
         }
@@ -986,6 +1004,7 @@ $@"        private void Clear(long bitsToClear)
         public unsafe void Append(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {{
             ref byte nameStart = ref MemoryMarshal.GetReference(name);
+            var nameStr = string.Empty;
             ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
             var flag = 0L;
 
@@ -1017,7 +1036,7 @@ $@"        private void Clear(long bitsToClear)
                 }}
 
                 // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
-                var valueStr = value.GetRequestHeaderStringNonNullCharacters(UseLatin1);
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
                 if ((_bits & flag) == 0)
                 {{
                     // We didn't already have a header set, so add a new one.
@@ -1035,8 +1054,9 @@ $@"        private void Clear(long bitsToClear)
                 // The header was not one of the ""known"" headers.
                 // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in 
                 // this method with rep stosd, which is slower than necessary.
-                var valueStr = value.GetRequestHeaderStringNonNullCharacters(UseLatin1);
-                AppendUnknownHeaders(name, valueStr);
+                nameStr = name.GetHeaderName();
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
+                AppendUnknownHeaders(nameStr, valueStr);
             }}
         }}" : "")}
 

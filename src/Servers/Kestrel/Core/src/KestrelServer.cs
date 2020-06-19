@@ -5,11 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -35,12 +37,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         private IDisposable _configChangedRegistration;
 
-        public KestrelServer(IOptions<KestrelServerOptions> options, IEnumerable<IConnectionListenerFactory> transportFactories, ILoggerFactory loggerFactory)
+        public KestrelServer(
+            IOptions<KestrelServerOptions> options,
+            IEnumerable<IConnectionListenerFactory> transportFactories,
+            ILoggerFactory loggerFactory)
             : this(transportFactories, null, CreateServiceContext(options, loggerFactory))
         {
         }
 
-        public KestrelServer(IOptions<KestrelServerOptions> options, IEnumerable<IConnectionListenerFactory> transportFactories, IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories, ILoggerFactory loggerFactory)
+        public KestrelServer(
+            IOptions<KestrelServerOptions> options,
+            IEnumerable<IConnectionListenerFactory> transportFactories,
+            IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories,
+            ILoggerFactory loggerFactory)
             : this(transportFactories, multiplexedFactories, CreateServiceContext(options, loggerFactory))
         {
         }
@@ -52,7 +61,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         // For testing
-        internal KestrelServer(IEnumerable<IConnectionListenerFactory> transportFactories, IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories, ServiceContext serviceContext)
+        internal KestrelServer(
+            IEnumerable<IConnectionListenerFactory> transportFactories,
+            IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories,
+            ServiceContext serviceContext)
         {
             if (transportFactories == null)
             {
@@ -361,6 +373,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             {
                 throw new InvalidOperationException(
                     CoreStrings.FormatMaxRequestBufferSmallerThanRequestHeaderBuffer(Options.Limits.MaxRequestBufferSize.Value, Options.Limits.MaxRequestHeadersTotalSize));
+            }
+
+            if (Options.RequestHeaderEncodingSelector is null)
+            {
+                throw new InvalidOperationException($"{nameof(KestrelServerOptions)}.{nameof(KestrelServerOptions.RequestHeaderEncodingSelector)} must not be null.");
             }
         }
 

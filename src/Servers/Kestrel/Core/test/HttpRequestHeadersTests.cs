@@ -490,7 +490,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(KnownRequestHeaders))]
         public void Latin1ValuesAcceptedInLatin1ModeButNotReused(bool reuseValue, KnownHeader header)
         {
-            var headers = new HttpRequestHeaders(reuseHeaderValues: reuseValue, useLatin1: true);
+            var headers = new HttpRequestHeaders(reuseHeaderValues: reuseValue, KestrelServerOptions.DefaultLatin1RequestHeaderEncodingSelector);
 
             var headerValue = new char[127]; // 64 + 32 + 16 + 8 + 4 + 2 + 1
             for (var i = 0; i < headerValue.Length; i++)
@@ -541,7 +541,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(KnownRequestHeaders))]
         public void NullCharactersRejectedInUTF8AndLatin1Mode(bool useLatin1, KnownHeader header)
         {
-            var headers = new HttpRequestHeaders(useLatin1: useLatin1);
+            var selector = useLatin1 ?
+                KestrelServerOptions.DefaultLatin1RequestHeaderEncodingSelector :
+                KestrelServerOptions.DefaultRequestHeaderEncodingSelector;
+
+            var headers = new HttpRequestHeaders(encodingSelector: selector);
 
             var valueArray = new char[127]; // 64 + 32 + 16 + 8 + 4 + 2 + 1
             for (var i = 0; i < valueArray.Length; i++)

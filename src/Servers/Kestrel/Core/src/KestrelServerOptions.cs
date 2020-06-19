@@ -1,15 +1,19 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +26,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class KestrelServerOptions
     {
+        // Internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
+        internal static readonly UTF8EncodingSealed DefaultRequestHeaderEncoding = new UTF8EncodingSealed();
+        internal static readonly Func<string, Encoding> DefaultRequestHeaderEncodingSelector = _ => DefaultRequestHeaderEncoding;
+        internal static readonly Func<string, Encoding> DefaultLatin1RequestHeaderEncodingSelector = _ => Encoding.Latin1;
+
         // The following two lists configure the endpoints that Kestrel should listen to. If both lists are empty, the "urls" config setting (e.g. UseUrls) is used.
         internal List<ListenOptions> CodeBackedListenOptions { get; } = new List<ListenOptions>();
         internal List<ListenOptions> ConfigurationBackedListenOptions { get; } = new List<ListenOptions>();
@@ -66,10 +75,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public bool DisableStringReuse { get; set; } = false;
 
         /// <summary>
+        /// Controls whether to return the AltSvcHeader from on an HTTP/2 or lower response for HTTP/3
+        /// </summary>
+        /// <remarks>
+        /// Defaults to false.
+        /// </remarks>
+        public bool EnableAltSvc { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets a callback that returns the <see cref="Encoding"/> to decode the value for the specified request header name.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to returning a <see cref="UTF8Encoding"/> for all headers.
+        /// </remarks>
+        public Func<string, Encoding?> RequestHeaderEncodingSelector { get; set; } = DefaultRequestHeaderEncodingSelector;
+
+        /// <summary>
         /// Enables the Listen options callback to resolve and use services registered by the application during startup.
         /// Typically initialized by UseKestrel()"/>.
         /// </summary>
-        public IServiceProvider ApplicationServices { get; set; }
+        public IServiceProvider? ApplicationServices { get; set; }
 
         /// <summary>
         /// Provides access to request limit options.
@@ -80,12 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Provides a configuration source where endpoints will be loaded from on server start.
         /// The default is null.
         /// </summary>
-        public KestrelConfigurationLoader ConfigurationLoader { get; set; }
-
-        /// <summary>
-        /// Controls whether to return the AltSvcHeader from on an HTTP/2 or lower response for HTTP/3
-        /// </summary>
-        public bool EnableAltSvc { get; set; } = false;
+        public KestrelConfigurationLoader? ConfigurationLoader { get; set; }
 
         /// <summary>
         /// A default configuration action for all endpoints. Use for Listen, configuration, the default url, and URLs.
@@ -100,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// The default server certificate for https endpoints. This is applied lazily after HttpsDefaults and user options.
         /// </summary>
-        internal X509Certificate2 DefaultCertificate { get; set; }
+        internal X509Certificate2? DefaultCertificate { get; set; }
 
         /// <summary>
         /// Has the default dev certificate load been attempted?
@@ -121,9 +141,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             EndpointDefaults = configureOptions ?? throw new ArgumentNullException(nameof(configureOptions));
         }
 
+        internal Func<string, Encoding?> GetRequestHeaderEncodingSelector()
+        {
+            if (ReferenceEquals(RequestHeaderEncodingSelector, DefaultRequestHeaderEncodingSelector) && Latin1RequestHeaders)
+            {
+                return DefaultLatin1RequestHeaderEncodingSelector;
+            }
+
+            return RequestHeaderEncodingSelector;
+        }
+
         internal void ApplyEndpointDefaults(ListenOptions listenOptions)
         {
-            listenOptions.KestrelServerOptions = this;
+            listenOptions.KestrelServerOptions = this; 
             ConfigurationLoader?.ApplyConfigurationDefaults(listenOptions);
             EndpointDefaults(listenOptions);
         }
@@ -159,7 +189,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             if (DefaultCertificate == null && !IsDevCertLoaded)
             {
                 IsDevCertLoaded = true; // Only try once
-                var logger = ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
+                var logger = ApplicationServices!.GetRequiredService<ILogger<KestrelServer>>();
                 try
                 {
                     DefaultCertificate = CertificateManager.Instance.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true)
@@ -220,10 +250,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         /// <param name="config">The configuration section for Kestrel.</param>
         /// <param name="reloadOnChange">
-        /// If <see langword="true" />, Kestrel will dynamically update endpoint bindings when configuration changes.
+        /// If <see langword="true"/>, Kestrel will dynamically update endpoint bindings when configuration changes.
         /// This will only reload endpoints defined in the "Endpoints" section of your <paramref name="config"/>. Endpoints defined in code will not be reloaded.
         /// </param>
         /// <returns>A <see cref="KestrelConfigurationLoader"/> for further endpoint configuration.</returns>
+
         public KestrelConfigurationLoader Configure(IConfiguration config, bool reloadOnChange)
         {
             var loader = new KestrelConfigurationLoader(this, config, reloadOnChange);

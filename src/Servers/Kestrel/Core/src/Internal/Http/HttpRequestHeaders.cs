@@ -5,7 +5,9 @@ using System;
 using System.Buffers.Text;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -17,12 +19,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private long _previousBits = 0;
 
         public bool ReuseHeaderValues { get; set; }
-        public bool UseLatin1 { get; set; }
+        public Func<string, Encoding> EncodingSelector { get; set; }
 
-        public HttpRequestHeaders(bool reuseHeaderValues = true, bool useLatin1 = false)
+        public HttpRequestHeaders(bool reuseHeaderValues = true, Func<string, Encoding> encodingSelector = null)
         {
             ReuseHeaderValues = reuseHeaderValues;
-            UseLatin1 = useLatin1;
+            EncodingSelector = encodingSelector ?? KestrelServerOptions.DefaultRequestHeaderEncodingSelector;
         }
 
         public void OnHeadersComplete()
@@ -87,11 +89,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 parsed < 0 ||
                 consumed != value.Length)
             {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderStringNonNullCharacters(UseLatin1));
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderString(HeaderNames.ContentLength, EncodingSelector));
             }
 
             _contentLength = parsed;
         }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void AppendContentLengthCustomEncoding(ReadOnlySpan<byte> value, Encoding customEncoding)
+        {
+            if (_contentLength.HasValue)
+            {
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.MultipleContentLengths);
+            }
+
+            // long.MaxValue = 9223372036854775807 (19 chars)
+            Span<char> decodedChars = stackalloc char[20];
+            var numChars = customEncoding.GetChars(value, decodedChars);
+            long parsed = -1;
+
+            if (numChars > 19 ||
+                !long.TryParse(decodedChars.Slice(0, numChars), NumberStyles.Integer, CultureInfo.InvariantCulture, out parsed) ||
+                parsed < 0)
+            {
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderString(HeaderNames.ContentLength, EncodingSelector));
+            }
+
+            _contentLength = parsed;
+        }
+
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void SetValueUnknown(string key, StringValues value)
@@ -108,11 +134,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private unsafe void AppendUnknownHeaders(ReadOnlySpan<byte> name, string valueString)
+        private unsafe void AppendUnknownHeaders(string name, string valueString)
         {
-            string key = name.GetHeaderName();
-            Unknown.TryGetValue(key, out var existing);
-            Unknown[key] = AppendValue(existing, valueString);
+            Unknown.TryGetValue(name, out var existing);
+            Unknown[name] = AppendValue(existing, valueString);
         }
 
         public Enumerator GetEnumerator()

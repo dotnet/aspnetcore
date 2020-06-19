@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             ConnectionIdFeature = ConnectionId;
 
             HttpRequestHeaders.Reset();
-            HttpRequestHeaders.UseLatin1 = ServerOptions.Latin1RequestHeaders;
+            HttpRequestHeaders.EncodingSelector = ServerOptions.GetRequestHeaderEncodingSelector();
             HttpRequestHeaders.ReuseHeaderValues = !ServerOptions.DisableStringReuse;
             HttpResponseHeaders.Reset();
             RequestHeaders = HttpRequestHeaders;
@@ -532,7 +532,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             string key = name.GetHeaderName();
-            var valueStr = value.GetRequestHeaderStringNonNullCharacters(ServerOptions.Latin1RequestHeaders);
+            var valueStr = value.GetRequestHeaderString(key, HttpRequestHeaders.EncodingSelector);
             RequestTrailers.Append(key, valueStr);
         }
 
