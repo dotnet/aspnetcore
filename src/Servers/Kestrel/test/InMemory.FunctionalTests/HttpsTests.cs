@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/22917", Queues = "Windows.7.Amd64.Open")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)] // Investigation: https://github.com/dotnet/aspnetcore/issues/22917
         public async Task EmptyRequestLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/22917", Queues = "Windows.7.Amd64.Open")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)] // Investigation: https://github.com/dotnet/aspnetcore/issues/22917
         public async Task ClientHandshakeFailureLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
