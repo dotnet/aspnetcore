@@ -441,30 +441,30 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var selectWithoutComponent = appElement.FindElement(By.Id("select-without-component"));
 
             // Select with custom options component and HTML component behave the
-            // same when the set value does not exist
-            Browser.Equal("", () => selectWithoutComponent.GetAttribute("value"));
-            Browser.Equal("", () => selectWithComponent.GetAttribute("value"));
-
-            // Dynamically showing the fourth option updates the selected value
-            showAdditionalOptionButton.Click();
-
-            Browser.Equal("Option D", () => selectWithComponent.GetAttribute("value"));
-            Browser.Equal("Option D", () => selectWithoutComponent.GetAttribute("value"));
+            // same when the selectElement.value is provided
+            Browser.Equal("B", () => selectWithoutComponent.GetAttribute("value"));
+            Browser.Equal("B", () => selectWithComponent.GetAttribute("value"));
 
             // Reset to a value that doesn't exist
             input.Clear();
-            input.SendKeys("F\t");
+            input.SendKeys("D\t");
 
             // Confirm that both values are cleared
             Browser.Equal("", () => selectWithComponent.GetAttribute("value"));
             Browser.Equal("", () => selectWithoutComponent.GetAttribute("value"));
 
-            // Change the value to one that does exist
-            input.Clear();
-            input.SendKeys("A\t");
+            // Dynamically showing the fourth option updates the selected value
+            showAdditionalOptionButton.Click();
 
-            Browser.Equal("Option A", () => selectWithComponent.GetAttribute("value"));
-            Browser.Equal("Option A", () => selectWithoutComponent.GetAttribute("value"));
+            Browser.Equal("D", () => selectWithComponent.GetAttribute("value"));
+            Browser.Equal("D", () => selectWithoutComponent.GetAttribute("value"));
+
+            // Change the value to one that does really doesn't exist
+            input.Clear();
+            input.SendKeys("F\t");
+
+            Browser.Equal("", () => selectWithComponent.GetAttribute("value"));
+            Browser.Equal("", () => selectWithoutComponent.GetAttribute("value"));
         }
 
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
