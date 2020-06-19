@@ -333,7 +333,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (IsNotInitialized(Fields.ClientCertificate))
             {
-                _clientCert = await Request.GetClientCertificateAsync(cancellationToken);
+                var method = _requestContext.Server.Options.ClientCertificateMethod;
+                if (method != ClientCertificateMethod.NoCertificate)
+                {
+                    // Check if a cert was already available on the connection.
+                    _clientCert = Request.ClientCertificate;
+                }
+
+                if (_clientCert == null && method == ClientCertificateMethod.AllowRenegotation)
+                {
+                    _clientCert = await Request.GetClientCertificateAsync(cancellationToken);
+                }
+
                 SetInitialized(Fields.ClientCertificate);
             }
             return _clientCert;
