@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Certificates.Generation;
@@ -279,8 +280,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 var httpsOptions = new HttpsConnectionAdapterOptions();
                 if (https)
                 {
+                    httpsOptions.SslProtocols = ConfigurationReader.EndpointDefaults.SslProtocols ?? SslProtocols.None;
+
                     // Defaults
                     Options.ApplyHttpsDefaults(httpsOptions);
+
+                    if (endpoint.SslProtocols.HasValue)
+                    {
+                        httpsOptions.SslProtocols = endpoint.SslProtocols.Value;
+                    }
 
                     // Specified
                     httpsOptions.ServerCertificate = LoadCertificate(endpoint.Certificate, endpoint.Name)

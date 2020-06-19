@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -18,7 +19,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 {
-    public class KestrelConfigurationBuilderTests
+    public class KestrelConfigurationLoaderTests
     {
         private KestrelServerOptions CreateServerOptions()
         {
@@ -454,6 +455,136 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(ran1);
             Assert.True(ran2);
             Assert.True(ran3);
+        }
+
+        [Fact]
+        public void EndpointConfigureSection_CanSetSslProtocol()
+        {
+            var serverOptions = CreateServerOptions();
+            var ranDefault = false;
+
+            serverOptions.ConfigureHttpsDefaults(opt =>
+            {
+                opt.ServerCertificate = TestResources.GetTestCertificate();
+
+                // Kestrel default
+                Assert.Equal(SslProtocols.None, opt.SslProtocols);
+                ranDefault = true;
+            });
+
+            var ran1 = false;
+            var ran2 = false;
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "Tls11"),
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            }).Build();
+            serverOptions.Configure(config)
+                .Endpoint("End1", opt =>
+                {
+                    Assert.Equal(SslProtocols.Tls11, opt.HttpsOptions.SslProtocols);
+                    ran1 = true;
+                })
+                .Load();
+            serverOptions.ListenAnyIP(0, opt =>
+            {
+                opt.UseHttps(httpsOptions =>
+                {
+                    // Kestrel default.
+                    Assert.Equal(SslProtocols.None, httpsOptions.SslProtocols);
+                    ran2 = true;
+                });
+            });
+
+            Assert.True(ranDefault);
+            Assert.True(ran1);
+            Assert.True(ran2);
+        }
+
+        [Fact]
+        public void EndpointConfigureSection_CanOverrideSslProtocolsFromConfigureHttpsDefaults()
+        {
+            var serverOptions = CreateServerOptions();
+
+            serverOptions.ConfigureHttpsDefaults(opt =>
+            {
+                opt.ServerCertificate = TestResources.GetTestCertificate();
+                opt.SslProtocols = SslProtocols.Tls12;
+            });
+
+            var ran1 = false;
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "Tls11"),
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            }).Build();
+            serverOptions.Configure(config)
+                .Endpoint("End1", opt =>
+                {
+                    Assert.Equal(SslProtocols.Tls11, opt.HttpsOptions.SslProtocols);
+                    ran1 = true;
+                })
+                .Load();
+
+            Assert.True(ran1);
+        }
+
+        [Fact]
+        public void DefaultEndpointConfigureSection_CanSetSslProtocols()
+        {
+            var serverOptions = CreateServerOptions();
+
+            serverOptions.ConfigureHttpsDefaults(opt =>
+            {
+                opt.ServerCertificate = TestResources.GetTestCertificate();
+            });
+
+            var ran1 = false;
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("EndpointDefaults:SslProtocols:0", "Tls11"),
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            }).Build();
+            serverOptions.Configure(config)
+                .Endpoint("End1", opt =>
+                {
+                    Assert.Equal(SslProtocols.Tls11, opt.HttpsOptions.SslProtocols);
+                    ran1 = true;
+                })
+                .Load();
+
+            Assert.True(ran1);
+        }
+
+
+        [Fact]
+        public void DefaultEndpointConfigureSection_ConfigureHttpsDefaultsCanOverrideSslProtocols()
+        {
+            var serverOptions = CreateServerOptions();
+
+            serverOptions.ConfigureHttpsDefaults(opt =>
+            {
+                opt.ServerCertificate = TestResources.GetTestCertificate();
+
+                Assert.Equal(SslProtocols.Tls11, opt.SslProtocols);
+                opt.SslProtocols = SslProtocols.Tls12;
+            });
+
+            var ran1 = false;
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("EndpointDefaults:SslProtocols:0", "Tls11"),
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            }).Build();
+            serverOptions.Configure(config)
+                .Endpoint("End1", opt =>
+                {
+                    Assert.Equal(SslProtocols.Tls12, opt.HttpsOptions.SslProtocols);
+                    ran1 = true;
+                })
+                .Load();
+
+            Assert.True(ran1);
         }
 
         [Fact]
