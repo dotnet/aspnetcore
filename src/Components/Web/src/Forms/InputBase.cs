@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                     return;
                 }
 
-                if (ConvertToDictionary(AdditionalAttributes, out Dictionary<string, object> additionalAttributes))
+                if (ConvertToDictionary(AdditionalAttributes, out var additionalAttributes))
                 {
                     AdditionalAttributes = additionalAttributes;
                 }
