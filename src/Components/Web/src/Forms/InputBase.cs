@@ -232,15 +232,20 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         private void SetAdditionalAttributesIfValidationFailed()
         {
-            if (!EditContext.GetValidationMessages(FieldIdentifier).Any())
-                return;
-
-            if (AdditionalAttributes == null)
-                AdditionalAttributes = new Dictionary<string, object>();
-
-            // To make the `Input` components accessible by default
-            // we will automatically render the `aria-invalid` attribute when the validation fails
-            AdditionalAttributes["aria-invalid"] = true;
+            if (EditContext.GetValidationMessages(FieldIdentifier).Any())
+            {
+                // To make the `Input` components accessible by default
+                // we will automatically render the `aria-invalid` attribute when the validation fails
+                if (AdditionalAttributes == null)
+                {
+                    AdditionalAttributes = new Dictionary<string, object>();
+                    AdditionalAttributes["aria-invalid"] = true;
+                }
+                else if (!AdditionalAttributes.ContainsKey("aria-invalid"))
+                {
+                    AdditionalAttributes["aria-invalid"] = true;
+                }
+            }
         }
 
         protected virtual void Dispose(bool disposing)

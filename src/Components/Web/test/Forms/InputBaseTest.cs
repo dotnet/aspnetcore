@@ -409,13 +409,13 @@ namespace Microsoft.AspNetCore.Components.Forms
             // Arrange// Arrange
             var model = new TestModel();
             var invalidContext = new EditContext(model);
-            
+
             var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
             {
                 EditContext = invalidContext,
                 ValueExpression = () => model.StringProperty
             };
-            
+
             var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
             var messageStore = new ValidationMessageStore(invalidContext);
             messageStore.Add(fieldIdentifier, "Test error message");
@@ -424,7 +424,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             var rootComponentId = renderer.AssignRootComponentId(rootComponent);
             await renderer.RenderRootComponentAsync(rootComponentId);
 
-            
+
             // Initally, it rendered one batch and is valid
             var batch1 = renderer.Batches.Single();
             var componentFrame1 = batch1.GetComponentFrames<TestInputComponent<string>>().Single();
@@ -434,6 +434,40 @@ namespace Microsoft.AspNetCore.Components.Forms
             Assert.NotNull(component.AdditionalAttributes);
             Assert.Equal(1, component.AdditionalAttributes.Count);
             Assert.True((bool)component.AdditionalAttributes["aria-invalid"]);
+        }
+
+        [Fact]
+        public async Task UserSpecifiedAriaValueIsNotChangedIfInvalid()
+        {
+            // Arrange// Arrange
+            var model = new TestModel();
+            var invalidContext = new EditContext(model);
+
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
+            {
+                EditContext = invalidContext,
+                ValueExpression = () => model.StringProperty
+            };
+            rootComponent.AdditionalAttributes = new Dictionary<string, object>();
+            rootComponent.AdditionalAttributes["aria-invalid"] = "userSpecifiedValue";
+
+            var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
+            var messageStore = new ValidationMessageStore(invalidContext);
+            messageStore.Add(fieldIdentifier, "Test error message");
+
+            var renderer = new TestRenderer();
+            var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+            await renderer.RenderRootComponentAsync(rootComponentId);
+
+            // Initally, it rendered one batch and is valid
+            var batch1 = renderer.Batches.Single();
+            var componentFrame1 = batch1.GetComponentFrames<TestInputComponent<string>>().Single();
+            var inputComponentId = componentFrame1.ComponentId;
+            var component = (TestInputComponent<string>)componentFrame1.Component;
+            Assert.Equal("invalid", component.CssClass);
+            Assert.NotNull(component.AdditionalAttributes);
+            Assert.Equal(1, component.AdditionalAttributes.Count);
+            Assert.Equal("userSpecifiedValue", component.AdditionalAttributes["aria-invalid"]);
         }
 
         private static TComponent FindComponent<TComponent>(CapturedBatch batch)
