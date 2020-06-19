@@ -34,11 +34,11 @@ namespace Microsoft.AspNetCore.Components
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
-            Action<string> setter,
+            Action<string?> setter,
             string existingValue,
             CultureInfo? culture = null)
         {
-            return CreateBinderCore<string>(factory, receiver, setter, culture, ConvertToString);
+            return CreateBinderCore<string?>(factory, receiver, setter, culture, ConvertToString);
         }
 
         /// <summary>

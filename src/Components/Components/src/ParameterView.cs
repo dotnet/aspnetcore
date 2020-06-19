@@ -22,24 +22,24 @@ namespace Microsoft.AspNetCore.Components
             RenderTreeFrame.Element(0, string.Empty).WithComponentSubtreeLength(1)
         };
 
-        private static readonly ParameterView _empty = new ParameterView(ParameterViewLifetime.Unbound, _emptyFrames, 0, null);
+        private static readonly ParameterView _empty = new ParameterView(ParameterViewLifetime.Unbound, _emptyFrames, 0, Array.Empty<CascadingParameterState>());
 
         private readonly ParameterViewLifetime _lifetime;
         private readonly RenderTreeFrame[] _frames;
         private readonly int _ownerIndex;
-        private readonly IReadOnlyList<CascadingParameterState>? _cascadingParametersOrNull;
+        private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
 
         internal ParameterView(in ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex)
-            : this(lifetime, frames, ownerIndex, null)
+            : this(lifetime, frames, ownerIndex, Array.Empty<CascadingParameterState>())
         {
         }
 
-        private ParameterView(in ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState>? cascadingParametersOrNull)
+        private ParameterView(in ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState> cascadingParameters)
         {
             _lifetime = lifetime;
             _frames = frames;
             _ownerIndex = ownerIndex;
-            _cascadingParametersOrNull = cascadingParametersOrNull;
+            _cascadingParameters = cascadingParameters;
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Components
         public Enumerator GetEnumerator()
         {
             _lifetime.AssertNotExpired();
-            return new Enumerator(_frames, _ownerIndex, _cascadingParametersOrNull);
+            return new Enumerator(_frames, _ownerIndex, _cascadingParameters);
         }
 
         /// <summary>
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Components
             private CascadingParameterEnumerator _cascadingParameterEnumerator;
             private bool _isEnumeratingDirectParams;
 
-            internal Enumerator(RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState>? cascadingParameters)
+            internal Enumerator(RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState> cascadingParameters)
             {
                 _directParamsEnumerator = new RenderTreeFrameParameterEnumerator(frames, ownerIndex);
                 _cascadingParameterEnumerator = new CascadingParameterEnumerator(cascadingParameters);
@@ -337,11 +337,11 @@ namespace Microsoft.AspNetCore.Components
 
         private struct CascadingParameterEnumerator
         {
-            private readonly IReadOnlyList<CascadingParameterState>? _cascadingParameters;
+            private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
             private int _currentIndex;
             private ParameterValue _current;
 
-            public CascadingParameterEnumerator(IReadOnlyList<CascadingParameterState>? cascadingParameters)
+            public CascadingParameterEnumerator(IReadOnlyList<CascadingParameterState> cascadingParameters)
             {
                 _cascadingParameters = cascadingParameters;
                 _currentIndex = -1;
@@ -352,12 +352,6 @@ namespace Microsoft.AspNetCore.Components
 
             public bool MoveNext()
             {
-                // Bail out early if there are no cascading parameters
-                if (_cascadingParameters == null)
-                {
-                    return false;
-                }
-
                 var nextIndex = _currentIndex + 1;
                 if (nextIndex < _cascadingParameters.Count)
                 {

@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components
         {
             if (Receiver == null)
             {
-                return EventCallbackWorkItem.InvokeAsync<object>(Delegate!, arg);
+                return EventCallbackWorkItem.InvokeAsync<object>(Delegate, arg);
             }
 
             return Receiver.HandleEventAsync(new EventCallbackWorkItem(Delegate), arg);

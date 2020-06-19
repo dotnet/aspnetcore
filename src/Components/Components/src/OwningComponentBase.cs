@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable disable warnings
-
 using System;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,9 +17,9 @@ namespace Microsoft.AspNetCore.Components
     /// </remarks>
     public abstract class OwningComponentBase : ComponentBase, IDisposable
     {
-        private IServiceScope _scope;
+        private IServiceScope? _scope;
 
-        [Inject] IServiceScopeFactory ScopeFactory { get; set; }
+        [Inject] IServiceScopeFactory ScopeFactory { get; set; } = default!;
 
         /// <summary>
         /// Gets a value determining if the component and associated services have been disposed.
@@ -77,9 +75,9 @@ namespace Microsoft.AspNetCore.Components
     /// requires disposal such as a repository or database abstraction. Using <see cref="OwningComponentBase{TService}"/>
     /// as a base class ensures that the service and relates services that share its scope are disposed with the component.
     /// </remarks>
-    public abstract class OwningComponentBase<TService> : OwningComponentBase, IDisposable
+    public abstract class OwningComponentBase<TService> : OwningComponentBase, IDisposable where TService : notnull
     {
-        private TService _item;
+        private TService _item = default!;
 
         /// <summary>
         /// Gets the <typeparamref name="TService"/> that is associated with this component.

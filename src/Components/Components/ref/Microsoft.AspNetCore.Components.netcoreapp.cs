@@ -29,38 +29,38 @@ namespace Microsoft.AspNetCore.Components
         public static string FormatValue(float value, System.Globalization.CultureInfo? culture = null) { throw null; }
         public static string FormatValue(string value, System.Globalization.CultureInfo? culture = null) { throw null; }
         public static object? FormatValue<T>(T value, System.Globalization.CultureInfo? culture = null) { throw null; }
-        public static bool TryConvertToBool(object obj, System.Globalization.CultureInfo? culture, out bool value) { throw null; }
-        public static bool TryConvertToDateTime(object obj, System.Globalization.CultureInfo? culture, out System.DateTime value) { throw null; }
-        public static bool TryConvertToDateTime(object obj, System.Globalization.CultureInfo? culture, string format, out System.DateTime value) { throw null; }
-        public static bool TryConvertToDateTimeOffset(object obj, System.Globalization.CultureInfo? culture, out System.DateTimeOffset value) { throw null; }
-        public static bool TryConvertToDateTimeOffset(object obj, System.Globalization.CultureInfo? culture, string format, out System.DateTimeOffset value) { throw null; }
-        public static bool TryConvertToDecimal(object obj, System.Globalization.CultureInfo? culture, out decimal value) { throw null; }
-        public static bool TryConvertToDouble(object obj, System.Globalization.CultureInfo? culture, out double value) { throw null; }
-        public static bool TryConvertToFloat(object obj, System.Globalization.CultureInfo? culture, out float value) { throw null; }
-        public static bool TryConvertToInt(object obj, System.Globalization.CultureInfo? culture, out int value) { throw null; }
-        public static bool TryConvertToLong(object obj, System.Globalization.CultureInfo? culture, out long value) { throw null; }
-        public static bool TryConvertToNullableBool(object obj, System.Globalization.CultureInfo? culture, out bool? value) { throw null; }
-        public static bool TryConvertToNullableDateTime(object obj, System.Globalization.CultureInfo? culture, out System.DateTime? value) { throw null; }
-        public static bool TryConvertToNullableDateTime(object obj, System.Globalization.CultureInfo? culture, string format, out System.DateTime? value) { throw null; }
-        public static bool TryConvertToNullableDateTimeOffset(object obj, System.Globalization.CultureInfo? culture, out System.DateTimeOffset? value) { throw null; }
-        public static bool TryConvertToNullableDateTimeOffset(object obj, System.Globalization.CultureInfo? culture, string format, out System.DateTimeOffset? value) { throw null; }
-        public static bool TryConvertToNullableDecimal(object obj, System.Globalization.CultureInfo? culture, out decimal? value) { throw null; }
-        public static bool TryConvertToNullableDouble(object obj, System.Globalization.CultureInfo? culture, out double? value) { throw null; }
-        public static bool TryConvertToNullableFloat(object obj, System.Globalization.CultureInfo? culture, out float? value) { throw null; }
-        public static bool TryConvertToNullableInt(object obj, System.Globalization.CultureInfo? culture, out int? value) { throw null; }
-        public static bool TryConvertToNullableLong(object obj, System.Globalization.CultureInfo? culture, out long? value) { throw null; }
-        public static bool TryConvertToNullableShort(object obj, System.Globalization.CultureInfo? culture, out short? value) { throw null; }
-        public static bool TryConvertToShort(object obj, System.Globalization.CultureInfo? culture, out short value) { throw null; }
-        public static bool TryConvertToString(object obj, System.Globalization.CultureInfo? culture, out string value) { throw null; }
-        public static bool TryConvertTo<T>(object obj, System.Globalization.CultureInfo? culture, out T value) { throw null; }
+        public static bool TryConvertToBool(object? obj, System.Globalization.CultureInfo? culture, out bool value) { throw null; }
+        public static bool TryConvertToDateTime(object? obj, System.Globalization.CultureInfo? culture, out System.DateTime value) { throw null; }
+        public static bool TryConvertToDateTime(object? obj, System.Globalization.CultureInfo? culture, string format, out System.DateTime value) { throw null; }
+        public static bool TryConvertToDateTimeOffset(object? obj, System.Globalization.CultureInfo? culture, out System.DateTimeOffset value) { throw null; }
+        public static bool TryConvertToDateTimeOffset(object? obj, System.Globalization.CultureInfo? culture, string format, out System.DateTimeOffset value) { throw null; }
+        public static bool TryConvertToDecimal(object? obj, System.Globalization.CultureInfo? culture, out decimal value) { throw null; }
+        public static bool TryConvertToDouble(object? obj, System.Globalization.CultureInfo? culture, out double value) { throw null; }
+        public static bool TryConvertToFloat(object? obj, System.Globalization.CultureInfo? culture, out float value) { throw null; }
+        public static bool TryConvertToInt(object? obj, System.Globalization.CultureInfo? culture, out int value) { throw null; }
+        public static bool TryConvertToLong(object? obj, System.Globalization.CultureInfo? culture, out long value) { throw null; }
+        public static bool TryConvertToNullableBool(object? obj, System.Globalization.CultureInfo? culture, out bool? value) { throw null; }
+        public static bool TryConvertToNullableDateTime(object? obj, System.Globalization.CultureInfo? culture, out System.DateTime? value) { throw null; }
+        public static bool TryConvertToNullableDateTime(object? obj, System.Globalization.CultureInfo? culture, string format, out System.DateTime? value) { throw null; }
+        public static bool TryConvertToNullableDateTimeOffset(object? obj, System.Globalization.CultureInfo? culture, out System.DateTimeOffset? value) { throw null; }
+        public static bool TryConvertToNullableDateTimeOffset(object? obj, System.Globalization.CultureInfo? culture, string format, out System.DateTimeOffset? value) { throw null; }
+        public static bool TryConvertToNullableDecimal(object? obj, System.Globalization.CultureInfo? culture, out decimal? value) { throw null; }
+        public static bool TryConvertToNullableDouble(object? obj, System.Globalization.CultureInfo? culture, out double? value) { throw null; }
+        public static bool TryConvertToNullableFloat(object? obj, System.Globalization.CultureInfo? culture, out float? value) { throw null; }
+        public static bool TryConvertToNullableInt(object? obj, System.Globalization.CultureInfo? culture, out int? value) { throw null; }
+        public static bool TryConvertToNullableLong(object? obj, System.Globalization.CultureInfo? culture, out long? value) { throw null; }
+        public static bool TryConvertToNullableShort(object? obj, System.Globalization.CultureInfo? culture, out short? value) { throw null; }
+        public static bool TryConvertToShort(object? obj, System.Globalization.CultureInfo? culture, out short value) { throw null; }
+        public static bool TryConvertToString(object? obj, System.Globalization.CultureInfo? culture, out string? value) { throw null; }
+        public static bool TryConvertTo<T>(object? obj, System.Globalization.CultureInfo? culture, out T value) { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=true)]
     public sealed partial class BindElementAttribute : System.Attribute
     {
-        public BindElementAttribute(string element, string suffix, string valueAttribute, string changeAttribute) { }
+        public BindElementAttribute(string element, string? suffix, string valueAttribute, string changeAttribute) { }
         public string ChangeAttribute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string Element { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public string Suffix { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string? Suffix { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string ValueAttribute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Components
     public partial class ChangeEventArgs : System.EventArgs
     {
         public ChangeEventArgs() { }
-        public object Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public object? Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public abstract partial class ComponentBase : Microsoft.AspNetCore.Components.IComponent, Microsoft.AspNetCore.Components.IHandleAfterRender, Microsoft.AspNetCore.Components.IHandleEvent
     {
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Components
         public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<long?> setter, long? existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
         public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<float?> setter, float? existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
         public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<float> setter, float existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
-        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<string> setter, string existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<string?> setter, string existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
         public static Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> CreateBinder<T>(this Microsoft.AspNetCore.Components.EventCallbackFactory factory, object receiver, System.Action<T> setter, T existingValue, System.Globalization.CultureInfo? culture = null) { throw null; }
     }
     public static partial class EventCallbackFactoryEventArgsExtensions
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Components
     {
         protected LayoutComponentBase() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Components.RenderFragment? Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class LayoutView : Microsoft.AspNetCore.Components.IComponent
     {
@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.Components
         protected virtual void Dispose(bool disposing) { }
         void System.IDisposable.Dispose() { }
     }
-    public abstract partial class OwningComponentBase<TService> : Microsoft.AspNetCore.Components.OwningComponentBase, System.IDisposable
+    public abstract partial class OwningComponentBase<TService> : Microsoft.AspNetCore.Components.OwningComponentBase, System.IDisposable where TService : notnull
     {
         protected OwningComponentBase() { }
         protected TService Service { get { throw null; } }
@@ -433,7 +433,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     {
         private readonly object _dummy;
         private readonly int _dummyPrimitive;
-        public T[]? Array { get { throw null; } }
+        public T[] Array { get { throw null; } }
         public int Count { get { throw null; } }
         public T this[int index] { get { throw null; } }
         public int Offset { get { throw null; } }

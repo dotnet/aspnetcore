@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -83,33 +82,47 @@ namespace Microsoft.AspNetCore.Components.Reflection
                         isCaptureUnmatchedValuesParameterSetExplicitly = true;
                     }
 
-                    var isUnmatchedValue = !writers.WritersByName.TryGetValue(parameterName, out var writer);
-
-                    if ((isUnmatchedValue && parameter.Cascading) || (writer != null && !writer.Cascading && parameter.Cascading))
+                    if (writers.WritersByName.TryGetValue(parameterName, out var writer))
                     {
-                        // Don't allow an "extra" cascading value to be collected - or don't allow a non-cascading
-                        // parameter to be set with a cascading value.
-                        //
-                        // This is likely a bug in our infrastructure or an attempt to deliberately do something unsupported.
-                        ThrowForSettingParameterWithCascadingValue(targetType, parameterName);
-                        throw null; // Unreachable
-
-                    }
-                    else if (isUnmatchedValue ||
-
-                        // Allow unmatched parameters to collide with the names of cascading parameters. This is
-                        // valid because cascading parameter names are not part of the public API. There's no
-                        // way for the user of a component to know what the names of cascading parameters
-                        // are.
-                        (writer!.Cascading && !parameter.Cascading))
-                    {
-                        unmatched ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-                        unmatched[parameterName] = parameter.Value;
+                        if (!writer.Cascading && parameter.Cascading)
+                        {
+                            // Don't allow an "extra" cascading value to be collected - or don't allow a non-cascading
+                            // parameter to be set with a cascading value.
+                            //
+                            // This is likely a bug in our infrastructure or an attempt to deliberately do something unsupported.
+                            ThrowForSettingParameterWithCascadingValue(targetType, parameterName);
+                            throw null; // Unreachable
+                        }
+                        else if (writer.Cascading && !parameter.Cascading)
+                        {
+                            // Allow unmatched parameters to collide with the names of cascading parameters. This is
+                            // valid because cascading parameter names are not part of the public API. There's no
+                            // way for the user of a component to know what the names of cascading parameters
+                            // are.
+                            unmatched ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                            unmatched[parameterName] = parameter.Value;
+                        }
+                        else
+                        {
+                            SetProperty(target, writer, parameterName, parameter.Value);
+                        }
                     }
                     else
                     {
-                        Debug.Assert(writer != null);
-                        SetProperty(target, writer!, parameterName, parameter.Value);
+                        if (parameter.Cascading)
+                        {
+                            // Don't allow an "extra" cascading value to be collected - or don't allow a non-cascading
+                            // parameter to be set with a cascading value.
+                            //
+                            // This is likely a bug in our infrastructure or an attempt to deliberately do something unsupported.
+                            ThrowForSettingParameterWithCascadingValue(targetType, parameterName);
+                            throw null; // Unreachable
+                        }
+                        else
+                        {
+                            unmatched ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                            unmatched[parameterName] = parameter.Value;
+                        }
                     }
                 }
 

@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Gets or sets the new value.
         /// </summary>
-        public object Value { get; set; } = default!;
+        public object? Value { get; set; }
     }
 }

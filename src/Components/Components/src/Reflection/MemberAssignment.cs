@@ -11,14 +11,16 @@ namespace Microsoft.AspNetCore.Components.Reflection
     internal class MemberAssignment
     {
         public static IEnumerable<PropertyInfo> GetPropertiesIncludingInherited(
-            Type? type, BindingFlags bindingFlags)
+            Type type, BindingFlags bindingFlags)
         {
             var dictionary = new Dictionary<string, List<PropertyInfo>>();
 
-            while (type != null)
+            Type? currentType = type;
+
+            while (currentType != null)
             {
-                var properties = type.GetProperties(bindingFlags)
-                    .Where(prop => prop.DeclaringType == type);
+                var properties = currentType.GetProperties(bindingFlags)
+                    .Where(prop => prop.DeclaringType == currentType);
                 foreach (var property in properties)
                 {
                     if (!dictionary.TryGetValue(property.Name, out var others))
@@ -37,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                     others.Add(property);
                 }
 
-                type = type.BaseType;
+                currentType = currentType.BaseType;
             }
 
             return dictionary.Values.SelectMany(p => p);
@@ -58,7 +60,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 cascading)!;
         }
 
-        class PropertySetter<TTarget, TValue> : IPropertySetter
+        class PropertySetter<TTarget, TValue> : IPropertySetter where TTarget : notnull
         {
             private readonly Action<TTarget, TValue> _setterDelegate;
 
