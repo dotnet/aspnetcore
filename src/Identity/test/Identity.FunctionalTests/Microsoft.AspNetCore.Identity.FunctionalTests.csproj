@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <!-- Test asset publishing not working on arm64 https://github.com/dotnet/aspnetcore/issues/11205 -->
-    <SkipHelixArm>true</SkipHelixArm>
    </PropertyGroup>
 
   <ItemGroup>
@@ -70,13 +68,13 @@
       <_IdentityUIContent Include="$(MSBuildThisFileDirectory)..\..\UI\src\wwwroot\**\*" />
       <_IdentityUIPages Include="$(MSBuildThisFileDirectory)..\..\UI\src\Areas\Identity\Pages\**\*" />
     </ItemGroup>
-    <Copy SourceFiles="@(_PublishFiles)" DestinationFolder="$(PublishDir)" />
-    <Copy SourceFiles="@(_PagesFiles)" DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\Pages" />
-    <Copy SourceFiles="@(_wwwrootFiles)" DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot" />
-    <Copy SourceFiles="@(_IdentityUIContent)" DestinationFiles="$(PublishDir)\UI\wwwroot\%(_IdentityUIContent.RecursiveDir)\%(_IdentityUIContent.FileName)%(_IdentityUIContent.Extension)" />
-    <Copy SourceFiles="@(_IdentityUIPages)" DestinationFiles="$(PublishDir)UI\Areas\Identity\Pages\%(_IdentityUIPages.RecursiveDir)\%(_IdentityUIPages.FileName)%(_IdentityUIPages.Extension)" />
+    <Copy SourceFiles="@(_PublishFiles)" DestinationFolder="$(PublishDir)" Condition="Exists($(PublishDir))" />
+    <Copy SourceFiles="@(_PagesFiles)" DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\Pages" Condition="Exists($(PublishDir))" />
+    <Copy SourceFiles="@(_wwwrootFiles)" DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot" Condition="Exists($(PublishDir))" />
+    <Copy SourceFiles="@(_IdentityUIContent)" DestinationFiles="$(PublishDir)\UI\wwwroot\%(_IdentityUIContent.RecursiveDir)\%(_IdentityUIContent.FileName)%(_IdentityUIContent.Extension)" Condition="Exists($(PublishDir))" />
+    <Copy SourceFiles="@(_IdentityUIPages)" DestinationFiles="$(PublishDir)UI\Areas\Identity\Pages\%(_IdentityUIPages.RecursiveDir)\%(_IdentityUIPages.FileName)%(_IdentityUIPages.Extension)" Condition="Exists($(PublishDir))" />
     <!-- Drop a dummy sln to specify content root location -->
-    <WriteLinesToFile File="$(PublishDir)\contentroot.sln" Lines="Ignored" Overwrite="true" Encoding="Unicode" />
+    <WriteLinesToFile File="$(PublishDir)\contentroot.sln" Lines="Ignored" Overwrite="true" Encoding="Unicode" Condition="Exists($(PublishDir))" />
   </Target>
 
 </Project>
