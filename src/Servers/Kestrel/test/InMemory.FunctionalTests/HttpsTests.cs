@@ -115,7 +115,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Null(serverOptions.DefaultCertificate);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)] // Investigation: https://github.com/dotnet/aspnetcore/issues/22917
         public async Task EmptyRequestLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -142,7 +143,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 userMessage: string.Join(Environment.NewLine, loggerProvider.ErrorLogger.ErrorMessages));
         }
 
-        [Fact]
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)] // Investigation: https://github.com/dotnet/aspnetcore/issues/22917
         public async Task ClientHandshakeFailureLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -415,7 +417,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var sslStream = new SslStream(connection.Stream, true, (sender, certificate, chain, errors) => true))
                 {
                     await sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
-                            enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12,
+                            enabledSslProtocols: SslProtocols.None,
                             checkCertificateRevocation: false);
                 }
             }
@@ -454,7 +456,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var sslStream = new SslStream(connection.Stream, true, (sender, certificate, chain, errors) => true))
                 {
                     await sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
-                            enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12,
+                            enabledSslProtocols: SslProtocols.None,
                             checkCertificateRevocation: false);
                 }
             }

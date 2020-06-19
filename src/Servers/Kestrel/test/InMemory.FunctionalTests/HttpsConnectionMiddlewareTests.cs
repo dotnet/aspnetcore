@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStream(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
                 }
             }
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStream(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
                     Assert.Equal(1, selectorCalled);
                 }
@@ -207,14 +207,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStream(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
                     Assert.Equal(1, selectorCalled);
                 }
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStream(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2NoExt));
                     Assert.Equal(2, selectorCalled);
                 }
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStream(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
                     Assert.Equal(1, selectorCalled);
                 }
@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     // HttpClient might not send the certificate because it is invalid or it doesn't match any
                     // of the certificate authorities sent by the server in the SSL handshake.
                     var stream = OpenSslStreamWithCert(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     await AssertConnectionResult(stream, true);
                 }
             }
@@ -417,7 +417,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStreamWithCert(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     await AssertConnectionResult(stream, true);
                     Assert.True(clientCertificateValidationCalled);
                 }
@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStreamWithCert(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     await AssertConnectionResult(stream, false);
                 }
             }
@@ -469,7 +469,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStreamWithCert(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     await AssertConnectionResult(stream, false);
                 }
             }
@@ -494,7 +494,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStreamWithCert(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     await AssertConnectionResult(stream, true);
                 }
             }
@@ -528,7 +528,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStreamWithCert(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     await AssertConnectionResult(stream, true);
                 }
             }
@@ -609,7 +609,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var sslOptions = new SslClientAuthenticationOptions
             {
                 TargetHost = "localhost",
-                EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11,
+                EnabledSslProtocols = SslProtocols.None,
                 ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http11, SslApplicationProtocol.Http2 },
             };
 
