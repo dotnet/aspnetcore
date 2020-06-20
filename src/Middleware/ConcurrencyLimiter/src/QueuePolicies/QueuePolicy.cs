@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
         private readonly int _maxTotalRequest;
         private readonly SemaphoreSlim _serverSemaphore;
 
-        private readonly object _totalRequestsLock = new object();
-
         private int _totalRequests;
 
         public int TotalRequests => _totalRequests;
@@ -46,14 +44,12 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
             // a return value of 'true' indicates that the request may proceed
             // _serverSemaphore.Release is *not* called in this method, it is called externally when requests leave the server
 
-            lock (_totalRequestsLock)
-            {
-                if (_totalRequests >= _maxTotalRequest)
-                {
-                    return new ValueTask<bool>(false);
-                }
+            int totalRequests = Interlocked.Increment(ref _totalRequests);
 
-                _totalRequests++;
+            if (totalRequests > _maxTotalRequest)
+            {
+                Interlocked.Decrement(ref _totalRequests);
+                return new ValueTask<bool>(false);
             }
 
             Task task = _serverSemaphore.WaitAsync();
