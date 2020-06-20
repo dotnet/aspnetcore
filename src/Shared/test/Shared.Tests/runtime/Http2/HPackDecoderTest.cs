@@ -505,21 +505,26 @@ namespace System.Net.Http.Unit.Tests.HPack
         [Fact]
         public void DecodesHeaderNameAndValue_SeparateSegments()
         {
+            HPackDecoder decoder = new HPackDecoder(DynamicTableInitialMaxSize, MaxHeaderFieldSize + 1);
+            string string8193 = new string('a', MaxHeaderFieldSize + 1);
+
             byte[][] segments = new byte[][]
             {
                 _literalHeaderFieldWithoutIndexingNewName,
-                _headerName,
-                _headerValue
+                new byte[] { 0x7f, 0x82, 0x3f }, // 8193 encoded with 7-bit prefix, no Huffman encoding
+                Encoding.ASCII.GetBytes(string8193),
+                new byte[] { 0x7f, 0x82, 0x3f }, // 8193 encoded with 7-bit prefix, no Huffman encoding
+                Encoding.ASCII.GetBytes(string8193)
             };
 
             for (int i = 0; i < segments.Length; i++)
             {
                 bool end = i + 1 == segments.Length;
 
-                _decoder.Decode(segments[i], endHeaders: end, handler: _handler);
+                decoder.Decode(segments[i], endHeaders: end, handler: _handler);
             }
 
-            Assert.Equal(_headerValueString, _handler.DecodedHeaders[_headerNameString]);
+            Assert.Equal(string8193, _handler.DecodedHeaders[string8193]);
         }
 
         public static readonly TheoryData<byte[]> _incompleteHeaderBlockData = new TheoryData<byte[]>
@@ -673,10 +678,12 @@ namespace System.Net.Http.Unit.Tests.HPack
             }
             else
             {
+                // Parse data in 1 byte chunks, separated by empty chunks
                 for (int i = 0; i < encoded.Length; i++)
                 {
                     bool end = i + 1 == encoded.Length;
 
+                    decoder.Decode(Array.Empty<byte>(), endHeaders: false, handler: handler);
                     decoder.Decode(new byte[] { encoded[i] }, endHeaders: end, handler: handler);
                 }
             }

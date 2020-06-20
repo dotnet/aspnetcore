@@ -88,8 +88,8 @@ namespace System.Net.Http.HPack
         private byte[] _stringOctets;
         private byte[] _headerNameOctets;
         private byte[] _headerValueOctets;
-        private Range _headerNameRange;
-        private Range _headerValueRange;
+        private (int start, int length)? _headerNameRange;
+        private (int start, int length)? _headerValueRange;
 
         private State _state = State.Ready;
         private byte[]? _headerName;
@@ -128,6 +128,9 @@ namespace System.Net.Http.HPack
             CheckIncompleteHeaderBlock(endHeaders);
         }
 
+        // TODO: Consider removing null annotation from handler. Only used here:
+        // https://github.com/dotnet/runtime/blob/29e0165eac74b78bd49d326f0be0345a00774f35/src/libraries/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/Http2Connection.cs#L363-L367
+        // Instead a singleton NullHttpHeadersHandler could be passed in that does nothing when called.
         public void Decode(ReadOnlySpan<byte> data, bool endHeaders, IHttpHeadersHandler? handler)
         {
             DecodeInternal(data, handler);
@@ -178,16 +181,19 @@ namespace System.Net.Http.HPack
                         throw new NotImplementedException(_state.ToString());
                 }
             }
+            // Parse methods each check the length. This check is to see whether there is still data available
+            // and to continue parsing.
             while (currentIndex < data.Length);
 
             // If a header range was set, but the value was not in the data, then copy the range
             // to the name buffer. Must copy because because the data will be replaced and the range
             // will no longer be valid.
-            if (!_headerNameRange.Equals(default))
+            if (_headerNameRange != null)
             {
+                EnsureStringCapacity(ref _headerNameOctets);
                 _headerName = _headerNameOctets;
 
-                var headerBytes = data[_headerNameRange];
+                ReadOnlySpan<byte> headerBytes = data.Slice(_headerNameRange.GetValueOrDefault().start, _headerNameRange.GetValueOrDefault().length);
                 headerBytes.CopyTo(_headerName);
                 _headerNameLength = headerBytes.Length;
                 _headerNameRange = default;
@@ -196,15 +202,10 @@ namespace System.Net.Http.HPack
 
         private void ParseDynamicTableSizeUpdate(ReadOnlySpan<byte> data, ref int currentIndex)
         {
-            for (; currentIndex < data.Length; currentIndex++)
+            if (TryDecodeInteger(data, ref currentIndex, out int intResult))
             {
-                if (_integerDecoder.TryDecode(data[currentIndex], out var intResult))
-                {
-                    SetDynamicHeaderTableSize(intResult);
-                    _state = State.Ready;
-                    currentIndex++;
-                    break;
-                }
+                SetDynamicHeaderTableSize(intResult);
+                _state = State.Ready;
             }
         }
 
@@ -212,11 +213,11 @@ namespace System.Net.Http.HPack
         {
             if (currentIndex < data.Length)
             {
-                var b = data[currentIndex++];
+                byte b = data[currentIndex++];
 
-                _huffman = (b & HuffmanMask) != 0;
+                _huffman = IsHuffmanEncoded(b);
 
-                if (_integerDecoder.BeginTryDecode((byte)(b & ~HuffmanMask), StringLengthPrefix, out var intResult))
+                if (_integerDecoder.BeginTryDecode((byte)(b & ~HuffmanMask), StringLengthPrefix, out int intResult))
                 {
                     OnStringLength(intResult, nextState: State.HeaderValue);
 
@@ -240,64 +241,43 @@ namespace System.Net.Http.HPack
 
         private void ParseHeaderNameLengthContinue(ReadOnlySpan<byte> data, ref int currentIndex, IHttpHeadersHandler? handler)
         {
-            for (; currentIndex < data.Length; currentIndex++)
+            if (TryDecodeInteger(data, ref currentIndex, out int intResult))
             {
-                if (_integerDecoder.TryDecode(data[currentIndex], out var intResult))
-                {
-                    // IntegerDecoder disallows overlong encodings, where an integer is encoded with more bytes than is strictly required.
-                    // 0 should always be represented by a single byte, so we shouldn't need to check for it in the continuation case.
-                    Debug.Assert(intResult != 0, "A header name length of 0 should never be encoded with a continuation byte.");
+                // IntegerDecoder disallows overlong encodings, where an integer is encoded with more bytes than is strictly required.
+                // 0 should always be represented by a single byte, so we shouldn't need to check for it in the continuation case.
+                Debug.Assert(intResult != 0, "A header name length of 0 should never be encoded with a continuation byte.");
 
-                    OnStringLength(intResult, nextState: State.HeaderName);
-                    currentIndex++;
-                    ParseHeaderName(data, ref currentIndex, handler);
-                    break;
-                }
+                OnStringLength(intResult, nextState: State.HeaderName);
+                ParseHeaderName(data, ref currentIndex, handler);
             }
         }
 
         private void ParseHeaderValueLengthContinue(ReadOnlySpan<byte> data, ref int currentIndex, IHttpHeadersHandler? handler)
         {
-            for (; currentIndex < data.Length; currentIndex++)
+            if (TryDecodeInteger(data, ref currentIndex, out int intResult))
             {
-                if (_integerDecoder.TryDecode(data[currentIndex], out var intResult))
-                {
-                    // IntegerDecoder disallows overlong encodings where an integer is encoded with more bytes than is strictly required.
-                    // 0 should always be represented by a single byte, so we shouldn't need to check for it in the continuation case.
-                    Debug.Assert(intResult != 0, "A header value length of 0 should never be encoded with a continuation byte.");
+                // 0 should always be represented by a single byte, so we shouldn't need to check for it in the continuation case.
+                Debug.Assert(intResult != 0, "A header value length of 0 should never be encoded with a continuation byte.");
 
-                    OnStringLength(intResult, nextState: State.HeaderValue);
-                    currentIndex++;
-                    ParseHeaderValue(data, ref currentIndex, handler);
-                    break;
-                }
+                OnStringLength(intResult, nextState: State.HeaderValue);
+                ParseHeaderValue(data, ref currentIndex, handler);
             }
         }
 
         private void ParseHeaderFieldIndex(ReadOnlySpan<byte> data, ref int currentIndex, IHttpHeadersHandler? handler)
         {
-            for (; currentIndex < data.Length; currentIndex++)
+            if (TryDecodeInteger(data, ref currentIndex, out int intResult))
             {
-                if (_integerDecoder.TryDecode(data[currentIndex], out var intResult))
-                {
-                    OnIndexedHeaderField(intResult, handler);
-                    currentIndex++;
-                    break;
-                }
+                OnIndexedHeaderField(intResult, handler);
             }
         }
 
         private void ParseHeaderNameIndex(ReadOnlySpan<byte> data, ref int currentIndex, IHttpHeadersHandler? handler)
         {
-            for (; currentIndex < data.Length; currentIndex++)
+            if (TryDecodeInteger(data, ref currentIndex, out int intResult))
             {
-                if (_integerDecoder.TryDecode(data[currentIndex], out var intResult))
-                {
-                    OnIndexedHeaderName(intResult);
-                    currentIndex++;
-                    ParseHeaderValueLength(data, ref currentIndex, handler);
-                    break;
-                }
+                OnIndexedHeaderName(intResult);
+                ParseHeaderValueLength(data, ref currentIndex, handler);
             }
         }
 
@@ -305,11 +285,11 @@ namespace System.Net.Http.HPack
         {
             if (currentIndex < data.Length)
             {
-                var b = data[currentIndex++];
+                byte b = data[currentIndex++];
 
-                _huffman = (b & HuffmanMask) != 0;
+                _huffman = IsHuffmanEncoded(b);
 
-                if (_integerDecoder.BeginTryDecode((byte)(b & ~HuffmanMask), StringLengthPrefix, out var intResult))
+                if (_integerDecoder.BeginTryDecode((byte)(b & ~HuffmanMask), StringLengthPrefix, out int intResult))
                 {
                     if (intResult == 0)
                     {
@@ -333,7 +313,7 @@ namespace System.Net.Http.HPack
             {
                 Debug.Assert(_state == State.Ready, "Should be ready to parse a new header.");
 
-                var b = data[currentIndex++];
+                byte b = data[currentIndex++];
 
                 switch (BitOperations.LeadingZeroCount(b) - 24) // byte 'b' is extended to uint, so will have 24 extra 0s.
                 {
@@ -343,7 +323,7 @@ namespace System.Net.Http.HPack
 
                             int val = b & ~IndexedHeaderFieldMask;
 
-                            if (_integerDecoder.BeginTryDecode((byte)val, IndexedHeaderFieldPrefix, out var intResult))
+                            if (_integerDecoder.BeginTryDecode((byte)val, IndexedHeaderFieldPrefix, out int intResult))
                             {
                                 OnIndexedHeaderField(intResult, handler);
                             }
@@ -396,7 +376,7 @@ namespace System.Net.Http.HPack
                                 throw new HPackDecodingException(SR.net_http_hpack_late_dynamic_table_size_update);
                             }
 
-                            if (_integerDecoder.BeginTryDecode((byte)(b & ~DynamicTableSizeUpdateMask), DynamicTableSizeUpdatePrefix, out var intResult))
+                            if (_integerDecoder.BeginTryDecode((byte)(b & ~DynamicTableSizeUpdateMask), DynamicTableSizeUpdatePrefix, out int intResult))
                             {
                                 SetDynamicHeaderTableSize(intResult);
                             }
@@ -425,7 +405,7 @@ namespace System.Net.Http.HPack
             }
             else
             {
-                if (_integerDecoder.BeginTryDecode((byte)val, indexPrefix, out var intResult))
+                if (_integerDecoder.BeginTryDecode((byte)val, indexPrefix, out int intResult))
                 {
                     OnIndexedHeaderName(intResult);
                     ParseHeaderValueLength(data, ref currentIndex, handler);
@@ -441,15 +421,15 @@ namespace System.Net.Http.HPack
         private void ParseHeaderName(ReadOnlySpan<byte> data, ref int currentIndex, IHttpHeadersHandler? handler)
         {
             // Read remaining chars, up to the length of the current data
-            var count = Math.Min(_stringLength - _stringIndex, data.Length - currentIndex);
+            int count = Math.Min(_stringLength - _stringIndex, data.Length - currentIndex);
 
-            // Check whether the whole string is available in the data and no decompressed required.
+            // Check whether the whole string is available in the data and no decompression required.
             // If string is good then mark its range.
             // NOTE: it may need to be copied to buffer later the if value is not current data.
             if (count == _stringLength && !_huffman)
             {
                 // Fast path. Store the range rather than copying.
-                _headerNameRange = new Range(currentIndex, currentIndex + count);
+                _headerNameRange = (start: currentIndex, count);
                 currentIndex += count;
 
                 _state = State.HeaderValueLength;
@@ -457,6 +437,7 @@ namespace System.Net.Http.HPack
             else
             {
                 // Copy string to temporary buffer.
+                // _stringOctets was already
                 data.Slice(currentIndex, count).CopyTo(_stringOctets.AsSpan(_stringIndex));
                 _stringIndex += count;
                 currentIndex += count;
@@ -472,14 +453,14 @@ namespace System.Net.Http.HPack
         private void ParseHeaderValue(ReadOnlySpan<byte> data, ref int currentIndex, IHttpHeadersHandler? handler)
         {
             // Read remaining chars, up to the length of the current data
-            var count = Math.Min(_stringLength - _stringIndex, data.Length - currentIndex);
+            int count = Math.Min(_stringLength - _stringIndex, data.Length - currentIndex);
 
             // Check whether the whole string is available in the data and no decompressed required.
             // If string is good then mark its range.
             if (count == _stringLength && !_huffman)
             {
                 // Fast path. Store the range rather than copying.
-                _headerValueRange = new Range(currentIndex, currentIndex + count);
+                _headerValueRange = (start: currentIndex, count);
                 currentIndex += count;
 
                 _state = State.Ready;
@@ -515,13 +496,13 @@ namespace System.Net.Http.HPack
 
         private void ProcessHeaderValue(ReadOnlySpan<byte> data, IHttpHeadersHandler? handler)
         {
-            var headerNameSpan = _headerNameRange.Equals(default)
+            ReadOnlySpan<byte> headerNameSpan = _headerNameRange == null
                 ? new Span<byte>(_headerName, 0, _headerNameLength)
-                : data[_headerNameRange];
+                : data.Slice(_headerNameRange.GetValueOrDefault().start, _headerNameRange.GetValueOrDefault().length);
 
-            var headerValueSpan = _headerValueRange.Equals(default)
+            ReadOnlySpan<byte> headerValueSpan = _headerValueRange == null
                 ? new Span<byte>(_headerValueOctets, 0, _headerValueLength)
-                : data[_headerValueRange];
+                : data.Slice(_headerValueRange.GetValueOrDefault().start, _headerValueRange.GetValueOrDefault().length);
 
             handler?.OnHeader(headerNameSpan, headerValueSpan);
 
@@ -552,9 +533,8 @@ namespace System.Net.Http.HPack
 
         private void OnIndexedHeaderName(int index)
         {
-            ref readonly HeaderField header = ref GetHeader(index);
-            _headerName = header.Name;
-            _headerNameLength = header.Name.Length;
+            _headerName = GetHeader(index).Name;
+            _headerNameLength = _headerName.Length;
             _state = State.HeaderValueLength;
         }
 
@@ -585,11 +565,7 @@ namespace System.Net.Http.HPack
                 }
                 else
                 {
-                    if (dst.Length < _stringLength)
-                    {
-                        dst = new byte[Math.Max(_stringLength, dst.Length * 2)];
-                    }
-
+                    EnsureStringCapacity(ref dst);
                     Buffer.BlockCopy(_stringOctets, 0, dst, 0, _stringLength);
                     return _stringLength;
                 }
@@ -613,6 +589,34 @@ namespace System.Net.Http.HPack
             }
 
             _state = nextState;
+        }
+
+        private void EnsureStringCapacity(ref byte[] dst)
+        {
+            if (dst.Length < _stringLength)
+            {
+                dst = new byte[Math.Max(_stringLength, dst.Length * 2)];
+            }
+        }
+
+        private bool TryDecodeInteger(ReadOnlySpan<byte> data, ref int currentIndex, out int result)
+        {
+            for (; currentIndex < data.Length; currentIndex++)
+            {
+                if (_integerDecoder.TryDecode(data[currentIndex], out result))
+                {
+                    currentIndex++;
+                    return true;
+                }
+            }
+
+            result = default;
+            return false;
+        }
+
+        private static bool IsHuffmanEncoded(byte b)
+        {
+            return (b & HuffmanMask) != 0;
         }
 
         private ref readonly HeaderField GetHeader(int index)
