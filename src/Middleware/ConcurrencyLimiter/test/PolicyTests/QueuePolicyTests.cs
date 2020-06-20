@@ -37,6 +37,27 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
         }
 
         [Fact]
+        public void DoesNotWaitIfQueueFull()
+        {
+            using var s = TestUtils.CreateQueuePolicy(2, 1);
+
+            var t1 = s.TryEnterAsync();
+            Assert.True(t1.IsCompleted);
+            Assert.True(t1.Result);
+
+            var t2 = s.TryEnterAsync();
+            Assert.True(t2.IsCompleted);
+            Assert.True(t2.Result);
+
+            var t3 = s.TryEnterAsync();
+            Assert.False(t3.IsCompleted);
+
+            var t4 = s.TryEnterAsync();
+            Assert.True(t4.IsCompleted);
+            Assert.False(t4.Result);
+        }
+
+        [Fact]
         public async Task IsEncapsulated()
         {
             using var s1 = TestUtils.CreateQueuePolicy(1);
