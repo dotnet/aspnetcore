@@ -69,10 +69,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
         {
             _serverSemaphore.Release();
 
-            lock (_totalRequestsLock)
-            {
-                _totalRequests--;
-            }
+            Interlocked.Decrement(ref _totalRequests);
         }
 
         public void Dispose()
