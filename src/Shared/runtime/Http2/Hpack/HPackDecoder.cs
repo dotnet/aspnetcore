@@ -196,7 +196,7 @@ namespace System.Net.Http.HPack
                 ReadOnlySpan<byte> headerBytes = data.Slice(_headerNameRange.GetValueOrDefault().start, _headerNameRange.GetValueOrDefault().length);
                 headerBytes.CopyTo(_headerName);
                 _headerNameLength = headerBytes.Length;
-                _headerNameRange = default;
+                _headerNameRange = null;
             }
         }
 
@@ -506,8 +506,8 @@ namespace System.Net.Http.HPack
 
             handler?.OnHeader(headerNameSpan, headerValueSpan);
 
-            _headerNameRange = default;
-            _headerValueRange = default;
+            _headerNameRange = null;
+            _headerValueRange = null;
 
             if (_index)
             {
