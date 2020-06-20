@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// A metadata object representing a source of data for model binding.
     /// </summary>
     [DebuggerDisplay("Source: {DisplayName}")]
-    public class BindingSource : IEquatable<BindingSource>
+    public class BindingSource : IEquatable<BindingSource?>
     {
         /// <summary>
         /// A <see cref="BindingSource"/> for the request body.

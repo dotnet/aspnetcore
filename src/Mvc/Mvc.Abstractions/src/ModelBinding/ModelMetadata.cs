@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// A metadata representation of a model type, property or parameter.
     /// </summary>
     [DebuggerDisplay("{DebuggerToString(),nq}")]
-    public abstract class ModelMetadata : IEquatable<ModelMetadata>, IModelMetadataProvider
+    public abstract class ModelMetadata : IEquatable<ModelMetadata?>, IModelMetadataProvider
     {
         /// <summary>
         /// The default value of <see cref="ModelMetadata.Order"/>.
