@@ -21,8 +21,4 @@ Microsoft.AspNetCore.Mvc.IActionResult</Description>
     <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
-  <ItemGroup Label="Shared Source">
-    <Compile Include="$(SharedSourceRoot)HashCodeCombiner\*.cs" />
-  </ItemGroup>
-
 </Project>

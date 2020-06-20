@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -69,11 +68,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            var hashCodeCombiner = HashCodeCombiner.Start();
+            var hashCodeCombiner = new HashCode();
             hashCodeCombiner.Add(IsModelSet);
             hashCodeCombiner.Add(Model);
 
-            return hashCodeCombiner.CombinedHash;
+            return hashCodeCombiner.ToHashCode();
         }
 
         /// <inheritdoc />

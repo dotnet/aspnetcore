@@ -4,7 +4,6 @@
 using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 {
@@ -205,13 +204,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            var hash = new HashCodeCombiner();
+            var hash = new HashCode();
             hash.Add(ContainerType);
             hash.Add(ModelType);
             hash.Add(Name, StringComparer.Ordinal);
             hash.Add(ParameterInfo);
             hash.Add(PropertyInfo);
-            return hash;
+            return hash.ToHashCode();
         }
     }
 }

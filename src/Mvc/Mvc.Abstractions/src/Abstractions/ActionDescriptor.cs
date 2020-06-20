@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         /// Gets or sets the endpoint metadata for this action.
         /// This API is meant for infrastructure and should not be used by application code.
         /// </summary>
-        public IList<object>? EndpointMetadata { get; set; }
+        public IList<object> EndpointMetadata { get; set; } = Array.Empty<ParameterDescriptor>();
 
         /// <summary>
         /// The set of parameters associated with this action.
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         /// <summary>
         /// A friendly name for this action.
         /// </summary>
-        public virtual string DisplayName { get; set; } = default!;
+        public virtual string? DisplayName { get; set; }
 
         /// <summary>
         /// Stores arbitrary metadata properties associated with the <see cref="ActionDescriptor"/>.
