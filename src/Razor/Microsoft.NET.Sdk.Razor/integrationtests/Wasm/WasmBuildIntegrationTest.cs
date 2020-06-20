@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     public class WasmBuildIntegrationTest
     {
-        private static readonly string DotNetJsFileName = "dotnet.js";
+        private static readonly string DotNetJsFileName = $"dotnet-{BuildVariables.MicrosoftNETCoreAppRuntimeVersion}.js";
 
         [Fact]
         public async Task Build_Works()

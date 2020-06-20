@@ -55,6 +55,33 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="Microsoft.NET.Sdk.Razor.Components.ServiceWorkerAssetsManifest.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
 
+  <Target Name="_ScrambleDotnetJsFileName" AfterTargets="ResolveRuntimePackAssets">
+    <!--
+      We want the dotnet.js file output to have a version to better work with caching. We'll append the runtime version to the file name as soon as file has been discovered.
+    -->
+    <PropertyGroup>
+      <_BlazorDotnetJsFileName>dotnet-$(RuntimeFrameworkVersion).js</_BlazorDotnetJsFileName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_DotNetJsItem Include="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.DestinationSubPath)' == 'dotnet.js' AND '%(ReferenceCopyLocalPaths.AssetType)' == 'native'" />
+    </ItemGroup>
+
+    <Copy
+      SourceFiles="@(_DotNetJsItem)"
+      DestinationFiles="$(IntermediateOutputPath)$(_BlazorDotnetJsFileName)"
+      SkipUnchangedFiles="true"
+      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)" />
+
+    <ItemGroup Condition="'@(_DotNetJsItem->Count())' != '0'">
+      <ReferenceCopyLocalPaths
+        Include="$(IntermediateOutputPath)$(_BlazorDotnetJsFileName)"
+        AssetType="native"
+        CopyLocal="true"
+        DestinationSubPath="$(_BlazorDotnetJsFileName)" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="_ResolveBlazorWasmOutputs" DependsOnTargets="ResolveReferences;PrepareResourceNames;ComputeIntermediateSatelliteAssemblies">
     <!--
       Calculates the outputs and the paths for Blazor WASM. This target is invoked frequently and should perform minimal work.
@@ -302,7 +329,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <TrimmerRootDescriptor Include="$(_BlazorApplicationTrimmerDescriptorFile)" />
       <TrimmerRootDescriptor Include="$(_BlazorApplicationTrimmerDescriptorFile)" />
-      <TrimmerRootDescriptor Include="$(MSBuildThisFileDirectory)Linkerworkaround.xml" />
+      <TrimmerRootDescriptor Include="$(MSBuildThisFileDirectory)LinkerWorkaround.xml" />
 
       <FileWrites Include="$(_BlazorApplicationTrimmerDescriptorFile)" />
       <FileWrites Include="$(_BlazorTypeGranularTrimmerDescriptorFile)" />

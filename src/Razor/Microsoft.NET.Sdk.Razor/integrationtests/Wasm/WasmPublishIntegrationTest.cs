@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     public class WasmPublishIntegrationTest
     {
-        private static readonly string DotNetJsFileName = "dotnet.js";
+        private static readonly string DotNetJsFileName = $"dotnet-{BuildVariables.MicrosoftNETCoreAppRuntimeVersion}.js";
 
         [Fact]
         public async Task Publish_WithDefaultSettings_Works()
