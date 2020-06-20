@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
     public class QueuePolicyTests
     {
         [Fact]
-        public void DoesNotWaitIfSpaceAvailible()
+        public void DoesNotWaitIfSpaceAvailable()
         {
             using var s = TestUtils.CreateQueuePolicy(2);
 
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter.Tests.PolicyTests
         }
 
         [Fact]
-        public async Task WaitsIfNoSpaceAvailible()
+        public async Task WaitsIfNoSpaceAvailable()
         {
             using var s = TestUtils.CreateQueuePolicy(1);
             Assert.True(await s.TryEnterAsync().OrTimeout());
