@@ -15,7 +15,9 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
 
         private object _totalRequestsLock = new object();
 
-        public int TotalRequests { get; private set; }
+        private int _totalRequests;
+
+        public int TotalRequests => _totalRequests;
 
         public QueuePolicy(IOptions<QueuePolicyOptions> options)
         {
@@ -46,12 +48,12 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
 
             lock (_totalRequestsLock)
             {
-                if (TotalRequests >= _maxTotalRequest)
+                if (_totalRequests >= _maxTotalRequest)
                 {
                     return new ValueTask<bool>(false);
                 }
 
-                TotalRequests++;
+                _totalRequests++;
             }
 
             Task task = _serverSemaphore.WaitAsync();
@@ -69,7 +71,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
 
             lock (_totalRequestsLock)
             {
-                TotalRequests--;
+                _totalRequests--;
             }
         }
 
