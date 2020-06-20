@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
         private readonly int _maxTotalRequest;
         private readonly SemaphoreSlim _serverSemaphore;
 
-        private object _totalRequestsLock = new object();
+        private readonly object _totalRequestsLock = new object();
 
         private int _totalRequests;
 
