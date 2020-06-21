@@ -54,7 +54,7 @@ namespace System.Net.Http.HPack
                 case 404:
                 case 500:
                     // Status codes which exist in the HTTP/2 StaticTable.
-                    return EncodeIndexedHeaderField(H2StaticTable.StatusIndex[statusCode], destination, out bytesWritten);
+                    return EncodeIndexedHeaderField(H2StaticTable.GetStatusIndex(statusCode), destination, out bytesWritten);
                 default:
                     // If the status code doesn't have a static index then we need to include the full value.
                     // Write a status index and then the number bytes as a string literal.
