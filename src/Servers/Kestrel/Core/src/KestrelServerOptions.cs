@@ -83,10 +83,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public bool EnableAltSvc { get; set; } = false;
 
         /// <summary>
-        /// Gets or sets a callback that returns the <see cref="Encoding"/> to decode the value for the specified request header name.
+        /// Gets or sets a callback that returns the <see cref="Encoding"/> to decode the value for the specified request header name,
+        /// or <see langword="null"/> to use the default <see cref="UTF8Encoding"/>.
         /// </summary>
         /// <remarks>
-        /// Defaults to returning a <see cref="UTF8Encoding"/> for all headers.
+        /// Defaults to returning a <see langword="null"/> for all headers.
         /// </remarks>
         public Func<string, Encoding?> RequestHeaderEncodingSelector { get; set; } = DefaultRequestHeaderEncodingSelector;
 
@@ -103,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         /// <summary>
         /// Provides a configuration source where endpoints will be loaded from on server start.
-        /// The default is null.
+        /// The default is <see langword="null"/>.
         /// </summary>
         public KestrelConfigurationLoader? ConfigurationLoader { get; set; }
 
