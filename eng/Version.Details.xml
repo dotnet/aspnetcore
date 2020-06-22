@@ -312,5 +312,9 @@
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>5911981d56de6afdaa84b26343ab915c5f9aca56</Sha>
     </Dependency>
+    <Dependency Name="System.Resources.Extensions" Version="5.0.0-preview.7.20321.2">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>1f4d0db2339c37d75723d063827fd2a4c6e2ecef</Sha>
+    </Dependency>
   </ToolsetDependencies>
 </Dependencies>

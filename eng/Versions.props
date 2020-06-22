@@ -116,6 +116,7 @@
     <SystemNetHttpWinHttpHandlerPackageVersion>5.0.0-preview.7.20321.2</SystemNetHttpWinHttpHandlerPackageVersion>
     <SystemNetWebSocketsWebSocketProtocolPackageVersion>5.0.0-preview.7.20321.2</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <SystemReflectionMetadataPackageVersion>5.0.0-preview.7.20321.2</SystemReflectionMetadataPackageVersion>
+    <SystemResourcesExtensionsVersion>5.0.0-preview.7.20321.2</SystemResourcesExtensionsVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>5.0.0-preview.7.20321.2</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>5.0.0-preview.7.20321.2</SystemSecurityCryptographyCngPackageVersion>
     <SystemSecurityCryptographyPkcsPackageVersion>5.0.0-preview.7.20321.2</SystemSecurityCryptographyPkcsPackageVersion>
