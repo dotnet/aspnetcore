@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public abstract class InputBase<TValue> : ComponentBase, IDisposable
     {
-        private readonly EventHandler<ValidationStateChangedEventArgs>? _validationStateChangedHandler;
+        private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
         private bool _previousParsingAttemptFailed;
         private ValidationMessageStore? _parsingValidationMessages;
         private Type? _nullableUnderlyingType;
@@ -228,7 +229,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             return base.SetParametersAsync(ParameterView.Empty);
         }
 
-        private void OnValidateStateChanged(object sender, ValidationStateChangedEventArgs eventArgs)
+        private void OnValidateStateChanged(object? sender, ValidationStateChangedEventArgs eventArgs)
         {
             SetAdditionalAttributesIfValidationFailed();
 
@@ -260,21 +261,21 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// Returns a dictionary with the same values as the specified <paramref name="source"/>.
         /// </summary>
         /// <returns>true, if a new dictrionary with copied values was created. false - otherwise.</returns>
-        private bool ConvertToDictionary(IReadOnlyDictionary<string, object> source, out Dictionary<string, object> result)
+        private bool ConvertToDictionary(IReadOnlyDictionary<string, object?>? source, out Dictionary<string, object?> result)
         {
-            bool newDictionaryCreated = true;
+            var newDictionaryCreated = true;
             if (source == null)
             {
-                result = new Dictionary<string, object>();
+                result = new Dictionary<string, object?>();
             }
-            else if (source is Dictionary<string, object> currentDictionary)
+            else if (source is Dictionary<string, object?> currentDictionary)
             {
                 result = currentDictionary;
                 newDictionaryCreated = false;
             }
             else
             {
-                result = new Dictionary<string, object>();
+                result = new Dictionary<string, object?>();
                 foreach (var item in source)
                 {
                     result.Add(item.Key, item.Value);
@@ -290,7 +291,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         void IDisposable.Dispose()
         {
-                EditContext.OnValidationStateChanged -= _validationStateChangedHandler;
+            EditContext.OnValidationStateChanged -= _validationStateChangedHandler;
             Dispose(disposing: true);
         }
     }
