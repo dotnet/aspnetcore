@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
@@ -127,7 +128,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         protected InputBase()
         {
-            _validationStateChangedHandler = (sender, eventArgs) => StateHasChanged();
+            _validationStateChangedHandler = OnValidateStateChanged;
         }
 
         /// <summary>
@@ -216,8 +217,66 @@ namespace Microsoft.AspNetCore.Components.Forms
                     $"{nameof(Forms.EditContext)} dynamically.");
             }
 
+            SetAdditionalAttributesIfValidationFailed();
+
             // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
             return base.SetParametersAsync(ParameterView.Empty);
+        }
+
+        private void OnValidateStateChanged(object sender, ValidationStateChangedEventArgs eventArgs)
+        {
+            SetAdditionalAttributesIfValidationFailed();
+
+            StateHasChanged();
+        }
+
+        private void SetAdditionalAttributesIfValidationFailed()
+        {
+            if (EditContext.GetValidationMessages(FieldIdentifier).Any())
+            {
+                if (AdditionalAttributes != null && AdditionalAttributes.ContainsKey("aria-invalid"))
+                {
+                    // Do not overwrite the attribute value
+                    return;
+                }
+
+                if (ConvertToDictionary(AdditionalAttributes, out var additionalAttributes))
+                {
+                    AdditionalAttributes = additionalAttributes;
+                }
+
+                // To make the `Input` components accessible by default
+                // we will automatically render the `aria-invalid` attribute when the validation fails
+                additionalAttributes["aria-invalid"] = true;
+            }
+        }
+
+        /// <summary>
+        /// Returns a dictionary with the same values as the specified <paramref name="source"/>.
+        /// </summary>
+        /// <returns>true, if a new dictrionary with copied values was created. false - otherwise.</returns>
+        private bool ConvertToDictionary(IReadOnlyDictionary<string, object> source, out Dictionary<string, object> result)
+        {
+            bool newDictionaryCreated = true;
+            if (source == null)
+            {
+                result = new Dictionary<string, object>();
+            }
+            else if (source is Dictionary<string, object> currentDictionary)
+            {
+                result = currentDictionary;
+                newDictionaryCreated = false;
+            }
+            else
+            {
+                result = new Dictionary<string, object>();
+                foreach (var item in source)
+                {
+                    result.Add(item.Key, item.Value);
+                }
+            }
+
+            return newDictionaryCreated;
         }
 
         protected virtual void Dispose(bool disposing)

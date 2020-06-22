@@ -94,16 +94,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("valid", () => nameInput.GetAttribute("class"));
             nameInput.SendKeys("Bert\t");
             Browser.Equal("modified valid", () => nameInput.GetAttribute("class"));
+            EnsureAttributeRendering(nameInput, "aria-invalid", false);
 
             // Can become invalid
             nameInput.SendKeys("01234567890123456789\t");
             Browser.Equal("modified invalid", () => nameInput.GetAttribute("class"));
+            EnsureAttributeRendering(nameInput, "aria-invalid");
             Browser.Equal(new[] { "That name is too long" }, messagesAccessor);
 
             // Can become valid
             nameInput.Clear();
             nameInput.SendKeys("Bert\t");
             Browser.Equal("modified valid", () => nameInput.GetAttribute("class"));
+            EnsureAttributeRendering(nameInput, "aria-invalid", false);
             Browser.Empty(messagesAccessor);
         }
 
@@ -490,6 +493,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 $"var elem = document.querySelector('{cssSelector}');"
                 + $"elem.value = {JsonSerializer.Serialize(invalidValue, TestJsonSerializerOptionsProvider.Options)};"
                 + "elem.dispatchEvent(new KeyboardEvent('change'));");
+        }
+
+        private void EnsureAttributeRendering(IWebElement element, string attributeName, bool shouldBeRendered = true)
+        {
+            Browser.Equal(shouldBeRendered, () => element.GetAttribute(attributeName) != null);
         }
     }
 }
