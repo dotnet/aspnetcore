@@ -148,7 +148,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 return DefaultLatin1RequestHeaderEncodingSelector;
             }
 
-            return RequestHeaderEncodingSelector;
+            return RequestHeaderEncodingSelector
+                ?? throw new InvalidOperationException($"{nameof(KestrelServerOptions)}.{nameof(RequestHeaderEncodingSelector)} must not be set to null.");
         }
 
         internal void ApplyEndpointDefaults(ListenOptions listenOptions)

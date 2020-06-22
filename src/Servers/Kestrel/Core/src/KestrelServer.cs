@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
             if (Options.RequestHeaderEncodingSelector is null)
             {
-                throw new InvalidOperationException($"{nameof(KestrelServerOptions)}.{nameof(KestrelServerOptions.RequestHeaderEncodingSelector)} must not be null.");
+                throw new InvalidOperationException($"{nameof(KestrelServerOptions)}.{nameof(KestrelServerOptions.RequestHeaderEncodingSelector)} must not be set to null.");
             }
         }
 

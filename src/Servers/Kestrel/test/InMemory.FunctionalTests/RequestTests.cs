@@ -2059,6 +2059,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
+        [Fact]
+        public async Task CustomRequestHeaderEncodingSelectorCanBeConfigured()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            testContext.ServerOptions.RequestHeaderEncodingSelector = _ => Encoding.UTF32;
+
+            await using (var server = new TestServer(context =>
+            {
+                Assert.Equal("£", context.Request.Headers["X-Test"]);
+                return Task.CompletedTask;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "X-Test: ");
+
+                    await connection.Stream.WriteAsync(Encoding.UTF32.GetBytes("£")).DefaultTimeout();
+
+                    await connection.Send("",
+                        "",
+                        "");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
         public static TheoryData<string, string> HostHeaderData => HttpParsingData.HostHeaderData;
 
         private class IntAsClass

@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 using static CodeGenerator.KnownHeaders;
 
@@ -307,11 +308,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var headers = new HttpRequestHeaders();
             const string key = "\u00141\u00F3d\017c";
 
-            var encoding = Encoding.GetEncoding("iso-8859-1");
 #pragma warning disable CS0618 // Type or member is obsolete
             var exception = Assert.Throws<BadHttpRequestException>(
 #pragma warning restore CS0618 // Type or member is obsolete
-                () => headers.Append(encoding.GetBytes(key), Encoding.ASCII.GetBytes("value")));
+                () => headers.Append(Encoding.Latin1.GetBytes(key), Encoding.ASCII.GetBytes("value")));
             Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
@@ -473,7 +473,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     Assert.Throws<InvalidOperationException>(() =>
                     {
                         var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
-                        var nextSpan = Encoding.GetEncoding("iso-8859-1").GetBytes(headerValueUtf16Latin1CrossOver).AsSpan();
+                        var nextSpan = Encoding.Latin1.GetBytes(headerValueUtf16Latin1CrossOver).AsSpan();
 
                         Assert.False(nextSpan.SequenceEqual(Encoding.ASCII.GetBytes(headerValueUtf16Latin1CrossOver)));
 
@@ -517,19 +517,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                         headerValueUtf16Latin1CrossOver = new string(headerValue.AsSpan().Slice(0, i + 1));
                     }
 
-                    headers.Reset();
-
                     var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
-                    var latinValueSpan = Encoding.GetEncoding("iso-8859-1").GetBytes(headerValueUtf16Latin1CrossOver).AsSpan();
+                    var latinValueSpan = Encoding.Latin1.GetBytes(headerValueUtf16Latin1CrossOver).AsSpan();
 
                     Assert.False(latinValueSpan.SequenceEqual(Encoding.ASCII.GetBytes(headerValueUtf16Latin1CrossOver)));
 
+                    headers.Reset();
                     headers.Append(headerName, latinValueSpan);
                     headers.OnHeadersComplete();
-                    var parsedHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
+                    var parsedHeaderValue1 = ((IHeaderDictionary)headers)[header.Name].ToString();
 
-                    Assert.Equal(headerValueUtf16Latin1CrossOver, parsedHeaderValue);
-                    Assert.NotSame(headerValueUtf16Latin1CrossOver, parsedHeaderValue);
+                    headers.Reset();
+                    headers.Append(headerName, latinValueSpan);
+                    headers.OnHeadersComplete();
+                    var parsedHeaderValue2 = ((IHeaderDictionary)headers)[header.Name].ToString();
+
+                    Assert.Equal(headerValueUtf16Latin1CrossOver, parsedHeaderValue1);
+                    Assert.Equal(parsedHeaderValue1, parsedHeaderValue2);
+                    Assert.NotSame(parsedHeaderValue1, parsedHeaderValue2);
                 }
 
                 // Reset back to Ascii
@@ -541,11 +546,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(KnownRequestHeaders))]
         public void NullCharactersRejectedInUTF8AndLatin1Mode(bool useLatin1, KnownHeader header)
         {
-            var selector = useLatin1 ?
-                KestrelServerOptions.DefaultLatin1RequestHeaderEncodingSelector :
-                KestrelServerOptions.DefaultRequestHeaderEncodingSelector;
+            var kso = new KestrelServerOptions
+            {
+                Latin1RequestHeaders = useLatin1,
+            };
 
-            var headers = new HttpRequestHeaders(encodingSelector: selector);
+            var headers = new HttpRequestHeaders(encodingSelector: kso.GetRequestHeaderEncodingSelector());
 
             var valueArray = new char[127]; // 64 + 32 + 16 + 8 + 4 + 2 + 1
             for (var i = 0; i < valueArray.Length; i++)
@@ -571,6 +577,53 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 valueArray[i] = 'a';
             }
+        }
+
+        [Fact]
+        public void CanSpecifyEncodingBasedOnHeaderName()
+        {
+            const string headerValue = "Hello \u03a0";
+            var acceptNameBytes = Encoding.ASCII.GetBytes(HeaderNames.Accept);
+            var cookieNameBytes = Encoding.ASCII.GetBytes(HeaderNames.Cookie);
+            var headerValueBytes = Encoding.UTF8.GetBytes(headerValue);
+
+            var headers = new HttpRequestHeaders(encodingSelector: headerName =>
+            {
+                // For known headers, the HeaderNames value is passed in.
+                if (ReferenceEquals(headerName, HeaderNames.Accept))
+                {
+                    return Encoding.GetEncoding("ASCII", EncoderFallback.ExceptionFallback, DecoderFallback.ExceptionFallback);
+                }
+
+                return Encoding.UTF8;
+            });
+
+            Assert.Throws<InvalidOperationException>(() => headers.Append(acceptNameBytes, headerValueBytes));
+            headers.Append(cookieNameBytes, headerValueBytes);
+            headers.OnHeadersComplete();
+
+            var parsedAcceptHeaderValue = ((IHeaderDictionary)headers)[HeaderNames.Accept].ToString();
+            var parsedCookieHeaderValue = ((IHeaderDictionary)headers)[HeaderNames.Cookie].ToString();
+
+            Assert.Empty(parsedAcceptHeaderValue);
+            Assert.Equal(headerValue, parsedCookieHeaderValue);
+        }
+
+        [Fact]
+        public void CanSpecifyEncodingForContentLength()
+        {
+            var contentLengthNameBytes = Encoding.ASCII.GetBytes(HeaderNames.ContentLength);
+            // Always 32 bits per code point, so not a superset of ASCII
+            var contentLengthValueBytes = Encoding.UTF32.GetBytes("1337");
+
+            var headers = new HttpRequestHeaders(encodingSelector: _ => Encoding.UTF32);
+            headers.Append(contentLengthNameBytes, contentLengthValueBytes);
+            headers.OnHeadersComplete();
+
+            Assert.Equal(1337, headers.ContentLength);
+
+            Assert.Throws<InvalidOperationException>(() =>
+                new HttpRequestHeaders().Append(contentLengthNameBytes, contentLengthValueBytes));
         }
 
         [Fact]
