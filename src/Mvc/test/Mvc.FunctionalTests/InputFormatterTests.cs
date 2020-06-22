@@ -3,8 +3,10 @@
 
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
+using FormatterWebSite.Controllers;
 using FormatterWebSite.Models;
 using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json;
@@ -22,9 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
-        [ConditionalFact]
-        // Mono issue - https://github.com/aspnet/External/issues/18
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public async Task CheckIfXmlInputFormatterIsBeingCalled()
         {
             // Arrange
@@ -167,6 +167,34 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     var value = Assert.IsType<JArray>(p.Value);
                     Assert.Equal("The DerivedProperty field is required.", value.First);
                 });
+        }
+
+        [Fact]
+        public async Task BodyIsRequiredByDefault()
+        {
+            // Act
+            var response = await Client.PostAsJsonAsync<object>($"Home/{nameof(HomeController.DefaultBody)}", value: null);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var problemDetails = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+            Assert.Collection(
+                problemDetails.Errors,
+                kvp =>
+                {
+                    Assert.Empty(kvp.Key);
+                    Assert.Equal("A non-empty request body is required.", Assert.Single(kvp.Value));
+                });
+        }
+
+        [Fact]
+        public async Task OptionalFromBodyWorks()
+        {
+            // Act
+            var response = await Client.PostAsJsonAsync<object>($"Home/{nameof(HomeController.OptionalBody)}", value: null);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         }
     }
 }

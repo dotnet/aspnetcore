@@ -33,6 +33,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         public BindingSource Source { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="BindingInfo"/>.
+        /// </summary>
+        public BindingInfo BindingInfo { get; set; }
+
+        /// <summary>
         /// Gets or sets the parameter type.
         /// </summary>
         public Type Type { get; set; }
