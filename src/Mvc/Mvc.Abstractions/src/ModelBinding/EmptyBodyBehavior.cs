@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     {
         /// <summary>
         /// Uses the framework default behavior for processing empty bodies.
-        /// This is typically configured using <c>MvcOptions.AllowEmptyInputInBodyModelBinding</c>
+        /// This is typically configured using <c>MvcOptions.AllowEmptyInputInBodyModelBinding</c>.
         /// </summary>
         Default,
         
