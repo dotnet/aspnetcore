@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected override string? FormatValueAsString(TValue value) { throw null; }
         protected override bool TryParseValueFromString(string? value, [System.Diagnostics.CodeAnalysis.MaybeNullAttribute] out TValue result, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(false)] out string? validationErrorMessage) { throw null; }
     }
-    public partial class InputSelect<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
+    public partial class InputSelect<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue> where TValue : notnull
     {
         public InputSelect() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
@@ -106,11 +106,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         protected override bool TryParseValueFromString(string? value, out string? result, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(false)] out string? validationErrorMessage) { throw null; }
     }
-    public partial class InputTextArea : Microsoft.AspNetCore.Components.Forms.InputBase<string>
+    public partial class InputTextArea : Microsoft.AspNetCore.Components.Forms.InputBase<string?>
     {
         public InputTextArea() { }
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
-        protected override bool TryParseValueFromString(string? value, [System.Diagnostics.CodeAnalysis.MaybeNullAttribute] out string result, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(false)] out string? validationErrorMessage) { throw null; }
+        protected override bool TryParseValueFromString(string? value, out string? result, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(false)] out string? validationErrorMessage) { throw null; }
     }
     public partial class ValidationMessage<TValue> : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
     {
