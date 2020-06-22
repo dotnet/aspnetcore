@@ -250,7 +250,7 @@ namespace Templates.Test
             TestBasicNavigation(project.ProjectName, skipFetchData: skipFetchData);
         }
 
-        [ConditionalFact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [ConditionalFact]
         // LocalDB doesn't work on non Windows platforms
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB()
@@ -258,7 +258,7 @@ namespace Templates.Test
             return BlazorWasmHostedTemplate_IndividualAuth_Works(true);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Fact]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB()
         {
             return BlazorWasmHostedTemplate_IndividualAuth_Works(false);
@@ -329,7 +329,7 @@ namespace Templates.Test
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Fact]
         public async Task BlazorWasmStandaloneTemplate_IndividualAuth_Works()
         {
             var project = await ProjectFactory.GetOrCreateProject("blazorstandaloneindividual", Output);
@@ -426,7 +426,7 @@ namespace Templates.Test
             public string[] Arguments { get; }
         }
 
-        [Theory(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Theory]
         [MemberData(nameof(TemplateData))]
         public async Task BlazorWasmHostedTemplate_AzureActiveDirectoryTemplate_Works(TemplateInstance instance)
         {

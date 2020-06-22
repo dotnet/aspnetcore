@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("Current count: 1", () => countDisplayElement.Text);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Fact]
         public void CanTriggerAsyncEventHandlers()
         {
             // Initial state is stopped
@@ -540,7 +540,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 e => Assert.Equal("End", e.Text));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Fact]
         public async Task CanAcceptSimultaneousRenderRequests()
         {
             var expectedOutput = string.Join(

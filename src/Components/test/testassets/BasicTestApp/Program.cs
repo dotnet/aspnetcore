@@ -85,8 +85,7 @@ namespace BasicTestApp
                 throw new InvalidTimeZoneException("This is a synchronous startup exception");
             }
 
-            // Undo this once https://github.com/dotnet/runtime/issues/38098 is resolved
-            // await Task.Yield();
+            await Task.Yield();
 
             if (currentUrl.Contains("error=async"))
             {

@@ -63,13 +63,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             WaitUntilLoaded();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Fact]
         public void WasmAuthentication_Loads()
         {
-            Assert.Equal("Wasm.Authentication.Client", Browser.Title);
+            Browser.Equal("Wasm.Authentication.Client", () => Browser.Title);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Fact]
         public void AnonymousUser_GetsRedirectedToLogin_AndBackToOriginalProtectedResource()
         {
             var link = By.PartialLinkText("Fetch data");
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ValidateFetchData();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Fact]
         public void CanPreserveApplicationState_DuringLogIn()
         {
             var originalAppState = Browser.Exists(By.Id("app-state")).Text;
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal(originalAppState, restoredAppState);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Fact]
         public void CanShareUserRolesBetweenClientAndServer()
         {
             ClickAndNavigate(By.PartialLinkText("Log in"), "/Identity/Account/Login");
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Contains(page, () => Browser.Url);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Fact]
         public void AnonymousUser_CanRegister_AndGetLoggedIn()
         {
             ClickAndNavigate(By.PartialLinkText("Register"), "/Identity/Account/Register");
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ValidateFetchData();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Fact]
         public void AuthenticatedUser_ProfileIncludesDetails_And_AccessToken()
         {
             ClickAndNavigate(By.PartialLinkText("User"), "/Identity/Account/Login");
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.True(currentTime.AddMinutes(60) >= tokenExpiration);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Fact]
         public void AuthenticatedUser_CanGoToProfile()
         {
             ClickAndNavigate(By.PartialLinkText("Register"), "/Identity/Account/Register");
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("/", () => new Uri(Browser.Url).PathAndQuery);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Fact]
         public void RegisterAndBack_DoesNotCause_RedirectLoop()
         {
             Browser.FindElement(By.PartialLinkText("Register")).Click();
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("/", () => new Uri(Browser.Url).PathAndQuery);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Fact]
         public void LoginAndBack_DoesNotCause_RedirectLoop()
         {
             Browser.FindElement(By.PartialLinkText("Log in")).Click();
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("/", () => new Uri(Browser.Url).PathAndQuery);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Fact]
         public void NewlyRegisteredUser_CanLogOut()
         {
             ClickAndNavigate(By.PartialLinkText("Register"), "/Identity/Account/Register");
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ValidateLogout();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Fact]
         public void AlreadyRegisteredUser_CanLogOut()
         {
             ClickAndNavigate(By.PartialLinkText("Register"), "/Identity/Account/Register");
@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ValidateLogout();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Fact]
         public void LoggedInUser_OnTheIdP_CanLogInSilently()
         {
             ClickAndNavigate(By.PartialLinkText("Register"), "/Identity/Account/Register");
@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ValidateLoggedIn(userName);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Fact]
         public void CanNotRedirect_To_External_ReturnUrl()
         {
             Browser.Navigate().GoToUrl(new Uri(new Uri(Browser.Url), "/authentication/login?returnUrl=https%3A%2F%2Fwww.bing.com").AbsoluteUri);
@@ -315,7 +315,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.NotEmpty(Browser.GetBrowserLogs(LogLevel.Severe));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38098")]
+        [Fact]
         public async Task CanNotTrigger_Logout_WithNavigation()
         {
             Browser.Navigate().GoToUrl(new Uri(new Uri(Browser.Url), "/authentication/logout").AbsoluteUri);
@@ -408,8 +408,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         private void WaitUntilLoaded(bool skipHeader = false)
         {
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                driver => driver.FindElement(By.TagName("app")).Text != "Loading...");
+            Browser.Exists(By.TagName("app"));
+            Browser.True(() => Browser.FindElement(By.TagName("app")).Text != "Loading...");
 
             if (!skipHeader)
             {
