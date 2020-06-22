@@ -189,12 +189,18 @@ namespace Microsoft.AspNetCore
                     config.AddCommandLine(args);
                 }
             })
-            .ConfigureLogging((hostingContext, logging) =>
+            .ConfigureLogging((hostingContext, loggingBuilder) =>
             {
-                logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                logging.AddConsole();
-                logging.AddDebug();
-                logging.AddEventSourceLogger();
+                loggingBuilder.Configure(options =>
+                {
+                    options.ActivityTrackingOptions = ActivityTrackingOptions.SpanId
+                                                        | ActivityTrackingOptions.TraceId
+                                                        | ActivityTrackingOptions.ParentId;
+                });
+                loggingBuilder.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+                loggingBuilder.AddConsole();
+                loggingBuilder.AddDebug();
+                loggingBuilder.AddEventSourceLogger();
             }).
             UseDefaultServiceProvider((context, options) =>
             {
