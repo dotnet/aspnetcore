@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void NotAddingSignalRServiceThrows()
         {
             var executedConfigure = false;
-            var builder = Host.CreateDefaultBuilder();
+            var builder = new HostBuilder();
 
             builder.ConfigureWebHost(webHostBuilder =>
             {
@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         private IHost BuildWebHost(Action<IEndpointRouteBuilder> configure)
         {
-            return Host.CreateDefaultBuilder()
+            return new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

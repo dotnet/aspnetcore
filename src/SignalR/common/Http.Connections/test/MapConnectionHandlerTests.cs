@@ -381,7 +381,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
         private IHost BuildWebHost(Action<IEndpointRouteBuilder> configure)
         {
-            return Host.CreateDefaultBuilder()
+            return new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -402,7 +402,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
         private IHost BuildWebHost<TConnectionHandler>(string path, Action<HttpConnectionDispatcherOptions> configureOptions) where TConnectionHandler : ConnectionHandler
         {
-            return Host.CreateDefaultBuilder()
+            return new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

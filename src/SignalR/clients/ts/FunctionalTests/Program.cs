@@ -29,7 +29,7 @@ namespace FunctionalTests
                 }
             }
 
-            var hostBuilder = Host.CreateDefaultBuilder()
+            var hostBuilder = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

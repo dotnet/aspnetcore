@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             // We're using 127.0.0.1 instead of localhost to ensure that we use IPV4 across different OSes
             var url = "http://127.0.0.1:0";
 
-            _host = Host.CreateDefaultBuilder()
+            _host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
