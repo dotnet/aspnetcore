@@ -38,6 +38,34 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         }
 
         /// <summary>
+        /// Creates a copy of the HTML tag passed as <paramref name="tagBuilder"/>.
+        /// </summary>
+        /// <param name="tagBuilder">Tag to copy.</param>
+        public TagBuilder(TagBuilder tagBuilder)
+        {
+            if (tagBuilder == null)
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(tagBuilder));
+            }
+
+            if (tagBuilder._attributes != null)
+            {
+                foreach (var tag in tagBuilder._attributes)
+                {
+                    Attributes.Add(tag);
+                }
+            }
+
+            if (tagBuilder._innerHtml != null)
+            {
+                tagBuilder.InnerHtml.CopyTo(InnerHtml);
+            }
+
+            TagName = tagBuilder.TagName;
+            TagRenderMode = tagBuilder.TagRenderMode;
+        }
+
+        /// <summary>
         /// Gets the set of attributes that will be written to the tag.
         /// </summary>
         public AttributeDictionary Attributes
