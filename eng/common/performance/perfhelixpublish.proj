@@ -152,10 +152,6 @@
       <PayloadDirectory>$(WorkItemDirectory)\ScenarioCorrelation</PayloadDirectory>
       <Command>$(Python) %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen2\test.py crossgen2 --single System.Private.CoreLib.dll --core-root %HELIX_CORRELATION_PAYLOAD%\Core_Root</Command>
     </HelixWorkItem>
-    <HelixWorkItem Include="Crossgen2 Composite Framework R2R">
-      <PayloadDirectory>$(WorkItemDirectory)\ScenarioCorrelation</PayloadDirectory>
-      <Command>$(Python) %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen2\test.py crossgen2 --composite %HELIX_CORRELATION_PAYLOAD%\performance\src\scenarios\crossgen2\framework-r2r.dll.rsp --core-root %HELIX_CORRELATION_PAYLOAD%\Core_Root</Command>
-    </HelixWorkItem>
 
   </ItemGroup>
 </Project>
