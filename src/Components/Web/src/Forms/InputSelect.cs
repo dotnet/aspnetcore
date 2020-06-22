@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// <summary>
     /// A dropdown selection component.
     /// </summary>
-    public class InputSelect<TValue> : InputBase<TValue> where TValue : notnull
+    public class InputSelect<TValue> : InputBase<TValue>
     {
         private static readonly Type? _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
 
