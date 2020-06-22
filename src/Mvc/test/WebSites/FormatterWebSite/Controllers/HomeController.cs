@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace FormatterWebSite.Controllers
 {
@@ -40,7 +41,7 @@ namespace FormatterWebSite.Controllers
             => ModelState.IsValid ? Ok() : ValidationProblem();
 
         [HttpPost]
-        public IActionResult OptionalBody([FromBody(AllowEmptyInputInBodyModelBinding = true)] DummyClass dummy)
+        public IActionResult OptionalBody([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] DummyClass dummy)
             => ModelState.IsValid ? Ok() : ValidationProblem();
     }
 }

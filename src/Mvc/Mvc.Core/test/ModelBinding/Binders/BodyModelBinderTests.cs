@@ -659,7 +659,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             var options = new MvcOptions();
             var binder = CreateBinder(formatters, options);
-            binder.AllowEmptyInputInBodyModelBinding = treatEmptyInputAsDefaultValueOption;
+            binder.AllowEmptyBody = treatEmptyInputAsDefaultValueOption;
 
             return binder;
         }

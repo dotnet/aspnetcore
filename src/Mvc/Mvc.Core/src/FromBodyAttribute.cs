@@ -10,27 +10,19 @@ namespace Microsoft.AspNetCore.Mvc
     /// Specifies that a parameter or property should be bound using the request body.
     /// </summary>
     [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    public class FromBodyAttribute : Attribute, IBindingSourceMetadata, IAllowEmptyInputInBodyModelBinding
+    public class FromBodyAttribute : Attribute, IBindingSourceMetadata, IConfigureEmptyBodyBehavior
     {
-        private bool? _allowEmptyInputInBodyModelBinding;
-
         /// <inheritdoc />
         public BindingSource BindingSource => BindingSource.Body;
 
         /// <summary>
-        /// Gets or sets the flag which decides whether body model binding (for example, on an
-        /// action method parameter with <see cref="FromBodyAttribute"/>) should treat empty
-        /// input as valid. <see langword="null"/> by default.
+        /// Gets or sets a value which decides whether body model binding should treat empty
+        /// input as valid.
         /// </summary>
         /// <remarks>
-        /// When configured, takes precedence over <see cref="MvcOptions.AllowEmptyInputInBodyModelBinding"/>.
+        /// The default behavior is to use framework defaults as configured by <see cref="MvcOptions.AllowEmptyInputInBodyModelBinding"/>.
+        /// Specifying <see cref="EmptyBodyBehavior.Allow"/> or <see cref="EmptyBodyBehavior.Disallow" /> will override the framework defaults.
         /// </remarks>
-        public bool AllowEmptyInputInBodyModelBinding
-        {
-            get => _allowEmptyInputInBodyModelBinding ?? false;
-            set => _allowEmptyInputInBodyModelBinding = value;
-        }
-
-        bool? IAllowEmptyInputInBodyModelBinding.AllowEmptyInputInBodyModelBinding => _allowEmptyInputInBodyModelBinding;
+        public EmptyBodyBehavior EmptyBodyBehavior { get; set; }
     }
 }

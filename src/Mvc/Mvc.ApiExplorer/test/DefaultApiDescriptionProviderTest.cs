@@ -1746,7 +1746,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         }
 
         [Fact]
-        public void ProcessIsRequired_SetsFalse_IfAllowEmptyInputInBodyModelBinding_IsSetInBindingInfo()
+        public void ProcessIsRequired_SetsFalse_IfEmptyBodyBehaviorIsAllowedInBindingInfo()
         {
             // Arrange
             var description = new ApiParameterDescription 
@@ -1754,7 +1754,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
                 Source = BindingSource.Body, 
                 BindingInfo = new BindingInfo
                 {
-                    AllowEmptyInputInBodyModelBinding = true,
+                    EmptyBodyBehavior = EmptyBodyBehavior.Allow,
                 }
             };
             var context = GetApiParameterContext(description);

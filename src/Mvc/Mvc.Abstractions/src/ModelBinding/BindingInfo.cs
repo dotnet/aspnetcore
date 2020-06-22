@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             BinderType = other.BinderType;
             PropertyFilterProvider = other.PropertyFilterProvider;
             RequestPredicate = other.RequestPredicate;
-            AllowEmptyInputInBodyModelBinding = other.AllowEmptyInputInBodyModelBinding;
+            EmptyBodyBehavior = other.EmptyBodyBehavior;
         }
 
         /// <summary>
@@ -89,10 +89,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public Func<ActionContext, bool> RequestPredicate { get; set; }
 
         /// <summary>
-        /// Gets or sets the flag which decides whether body model binding should treat empty
-        /// input as valid.
+        /// Gets or sets the value which decides if empty bodies are treated as valid inputs.
         /// </summary>
-        public bool? AllowEmptyInputInBodyModelBinding { get; set; }
+        public EmptyBodyBehavior EmptyBodyBehavior { get; set; }
 
         /// <summary>
         /// Constructs a new instance of <see cref="BindingInfo"/> from the given <paramref name="attributes"/>.
@@ -167,14 +166,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 }
             }
 
-            foreach (var allowEmptyInputInModelBinding in attributes.OfType<IAllowEmptyInputInBodyModelBinding>())
+            foreach (var configureEmptyBodyBehavior in attributes.OfType<IConfigureEmptyBodyBehavior>())
             {
                 isBindingInfoPresent = true;
-                if (allowEmptyInputInModelBinding.AllowEmptyInputInBodyModelBinding != null)
-                {
-                    bindingInfo.AllowEmptyInputInBodyModelBinding = allowEmptyInputInModelBinding.AllowEmptyInputInBodyModelBinding;
-                    break;
-                }
+                bindingInfo.EmptyBodyBehavior = configureEmptyBodyBehavior.EmptyBodyBehavior;
+                break;
             }
 
             return isBindingInfoPresent ? bindingInfo : null;

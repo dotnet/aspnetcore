@@ -90,18 +90,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         typeof(IInputFormatter).FullName));
                 }
 
-                var allowEmptyInputInBodyModelBinding =
-                    context?.BindingInfo.AllowEmptyInputInBodyModelBinding ??
-                    _options?.AllowEmptyInputInBodyModelBinding ??
-                    false;
+                var treatEmptyInputAsDefaultValue = CalculateAllowEmptyBody(context.BindingInfo.EmptyBodyBehavior, _options);
 
                 return new BodyModelBinder(_formatters, _readerFactory, _loggerFactory, _options)
                 {
-                    AllowEmptyInputInBodyModelBinding = allowEmptyInputInBodyModelBinding,
+                    AllowEmptyBody = treatEmptyInputAsDefaultValue,
                 };
             }
 
             return null;
+        }
+
+        internal static bool CalculateAllowEmptyBody(EmptyBodyBehavior emptyBodyBehavior, MvcOptions options)
+        {
+            if (emptyBodyBehavior == EmptyBodyBehavior.Default)
+            {
+                return options?.AllowEmptyInputInBodyModelBinding ?? false;
+            }
+
+            return emptyBodyBehavior == EmptyBodyBehavior.Allow;
         }
     }
 }

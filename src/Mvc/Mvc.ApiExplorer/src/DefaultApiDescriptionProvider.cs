@@ -279,7 +279,14 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 if (parameter.Source == BindingSource.Body)
                 {
-                    parameter.IsRequired = !(parameter.BindingInfo?.AllowEmptyInputInBodyModelBinding ?? mvcOptions.AllowEmptyInputInBodyModelBinding);
+                    if (parameter.BindingInfo == null || parameter.BindingInfo.EmptyBodyBehavior == EmptyBodyBehavior.Default)
+                    {
+                        parameter.IsRequired = !mvcOptions.AllowEmptyInputInBodyModelBinding;
+                    }
+                    else
+                    {
+                        parameter.IsRequired = !(parameter.BindingInfo.EmptyBodyBehavior == EmptyBodyBehavior.Allow);
+                    }
                 }
 
                 if (parameter.ModelMetadata != null && parameter.ModelMetadata.IsBindingRequired)

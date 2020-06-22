@@ -3,8 +3,8 @@
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
-    internal interface IAllowEmptyInputInBodyModelBinding
+    internal interface IConfigureEmptyBodyBehavior
     {
-        public bool? AllowEmptyInputInBodyModelBinding { get; }
+        public EmptyBodyBehavior EmptyBodyBehavior { get; }
     }
 }
