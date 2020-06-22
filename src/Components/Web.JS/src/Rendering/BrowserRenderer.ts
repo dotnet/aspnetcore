@@ -255,8 +255,8 @@ export class BrowserRenderer {
     //     added as an opaque markup block rather than individually
     // Right here we implement [2]
     if (newDomElementRaw instanceof HTMLSelectElement && selectValuePropname in newDomElementRaw) {
-      const selectValue = newDomElementRaw[selectValuePropname];
-      newDomElementRaw.value = selectValue;
+      const selectValue: string | null = newDomElementRaw[selectValuePropname];
+      setSelectElementValue(newDomElementRaw, selectValue);
     }
   }
 
@@ -357,16 +357,20 @@ export class BrowserRenderer {
       case 'SELECT':
       case 'TEXTAREA': {
         const value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
-        (element as any).value = value;
 
-        if (element.tagName === 'SELECT') {
+        if (element instanceof HTMLSelectElement) {
+          setSelectElementValue(element, value);
+
           // <select> is special, in that anything we write to .value will be lost if there
           // isn't yet a matching <option>. To maintain the expected behavior no matter the
           // element insertion/update order, preserve the desired value separately so
           // we can recover it when inserting any matching <option> or after inserting an
           // entire markup block of descendants.
           element[selectValuePropname] = value;
+        } else {
+          (element as any).value = value;
         }
+
         return true;
       }
       case 'OPTION': {
@@ -518,4 +522,16 @@ function stripOnPrefix(attributeName: string) {
   }
 
   throw new Error(`Attribute should be an event name, but doesn't start with 'on'. Value: '${attributeName}'`);
+}
+
+function setSelectElementValue(element: HTMLSelectElement, value: string | null) {
+  // There's no sensible way to represent a select option with value 'null', because
+  // (1) HTML attributes can't have null values - the closest equivalent is absence of the attribute
+  // (2) When picking an <option> with no 'value' attribute, the browser treats the value as being the
+  //     *text content* on that <option> element. Trying to suppress that default behavior would involve
+  //     a long chain of special-case hacks, as well as being breaking vs 3.x.
+  // So, the most plausible 'null' equivalent is an empty string. It's unfortunate that people can't
+  // write <option value=@someNullVariable>, and that we can never distinguish between null and empty
+  // string in a bound <select>, but that's a limit in the representational power of HTML.
+  element.value = value || '';
 }
