@@ -7,7 +7,6 @@
     <RazorLangVersion>3.0</RazorLangVersion>
     <!-- Disable compression in this project so that we can validate that it can be disabled -->
     <BlazorEnableCompression>false</BlazorEnableCompression>
-    <FixupWebAssemblyHttpHandlerReference>true</FixupWebAssemblyHttpHandlerReference>
   </PropertyGroup>
 
   <ItemGroup>

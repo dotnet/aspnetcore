@@ -14,12 +14,7 @@
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.JSInterop.WebAssembly" />
-
-    <!-- Tracking removing using https://github.com/dotnet/aspnetcore/issues/22283 -->
-    <ProjectReference
-      Include="..\..\WebAssemblyHttpHandler\src\Microsoft.AspNetCore.Components.WebAssembly.HttpHandler.csproj"
-      IncludeAssets="compile" />
-
+    
     <SuppressBaselineReference Include="Microsoft.AspNetCore.Components.WebAssembly.HttpHandler" />
   </ItemGroup>
 
