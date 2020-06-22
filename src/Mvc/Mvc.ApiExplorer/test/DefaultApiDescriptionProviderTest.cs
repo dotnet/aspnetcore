@@ -1725,10 +1725,45 @@ namespace Microsoft.AspNetCore.Mvc.Description
             var context = GetApiParameterContext(description);
 
             // Act
-            DefaultApiDescriptionProvider.ProcessIsRequired(context);
+            DefaultApiDescriptionProvider.ProcessIsRequired(context, new MvcOptions());
 
             // Assert
             Assert.True(description.IsRequired);
+        }
+
+        [Fact]
+        public void ProcessIsRequired_SetsFalse_IfAllowEmptyInputInBodyModelBinding_IsSetInMvcOptions()
+        {
+            // Arrange
+            var description = new ApiParameterDescription { Source = BindingSource.Body, };
+            var context = GetApiParameterContext(description);
+
+            // Act
+            DefaultApiDescriptionProvider.ProcessIsRequired(context, new MvcOptions { AllowEmptyInputInBodyModelBinding = true });
+
+            // Assert
+            Assert.False(description.IsRequired);
+        }
+
+        [Fact]
+        public void ProcessIsRequired_SetsFalse_IfEmptyBodyBehaviorIsAllowedInBindingInfo()
+        {
+            // Arrange
+            var description = new ApiParameterDescription 
+            { 
+                Source = BindingSource.Body, 
+                BindingInfo = new BindingInfo
+                {
+                    EmptyBodyBehavior = EmptyBodyBehavior.Allow,
+                }
+            };
+            var context = GetApiParameterContext(description);
+
+            // Act
+            DefaultApiDescriptionProvider.ProcessIsRequired(context, new MvcOptions());
+
+            // Assert
+            Assert.False(description.IsRequired);
         }
 
         [Fact]
@@ -1747,7 +1782,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
             description.ModelMetadata = modelMetadataProvider.GetMetadataForProperty(typeof(Person), nameof(Person.Name));
 
             // Act
-            DefaultApiDescriptionProvider.ProcessIsRequired(context);
+            DefaultApiDescriptionProvider.ProcessIsRequired(context, new MvcOptions());
 
             // Assert
             Assert.True(description.IsRequired);
@@ -1765,7 +1800,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
             var context = GetApiParameterContext(description);
 
             // Act
-            DefaultApiDescriptionProvider.ProcessIsRequired(context);
+            DefaultApiDescriptionProvider.ProcessIsRequired(context, new MvcOptions());
 
             // Assert
             Assert.True(description.IsRequired);
@@ -1779,7 +1814,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
             var context = GetApiParameterContext(description);
 
             // Act
-            DefaultApiDescriptionProvider.ProcessIsRequired(context);
+            DefaultApiDescriptionProvider.ProcessIsRequired(context, new MvcOptions());
 
             // Assert
             Assert.False(description.IsRequired);
@@ -1798,7 +1833,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
             description.ModelMetadata = modelMetadataProvider.GetMetadataForProperty(typeof(Person), nameof(Person.Name));
 
             // Act
-            DefaultApiDescriptionProvider.ProcessIsRequired(context);
+            DefaultApiDescriptionProvider.ProcessIsRequired(context, new MvcOptions());
 
             // Assert
             Assert.False(description.IsRequired);

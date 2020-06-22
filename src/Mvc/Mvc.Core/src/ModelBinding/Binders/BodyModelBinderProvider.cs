@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// <param name="formatters">The list of <see cref="IInputFormatter"/>.</param>
         /// <param name="readerFactory">The <see cref="IHttpRequestStreamReaderFactory"/>.</param>
         public BodyModelBinderProvider(IList<IInputFormatter> formatters, IHttpRequestStreamReaderFactory readerFactory)
-            : this(formatters, readerFactory, loggerFactory: null)
+            : this(formatters, readerFactory, loggerFactory: NullLoggerFactory.Instance)
         {
         }
 
@@ -89,10 +90,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         typeof(IInputFormatter).FullName));
                 }
 
-                return new BodyModelBinder(_formatters, _readerFactory, _loggerFactory, _options);
+                var treatEmptyInputAsDefaultValue = CalculateAllowEmptyBody(context.BindingInfo.EmptyBodyBehavior, _options);
+
+                return new BodyModelBinder(_formatters, _readerFactory, _loggerFactory, _options)
+                {
+                    AllowEmptyBody = treatEmptyInputAsDefaultValue,
+                };
             }
 
             return null;
+        }
+
+        internal static bool CalculateAllowEmptyBody(EmptyBodyBehavior emptyBodyBehavior, MvcOptions options)
+        {
+            if (emptyBodyBehavior == EmptyBodyBehavior.Default)
+            {
+                return options?.AllowEmptyInputInBodyModelBinding ?? false;
+            }
+
+            return emptyBodyBehavior == EmptyBodyBehavior.Allow;
         }
     }
 }
