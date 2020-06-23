@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Components;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Routing;
 using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services
@@ -22,10 +25,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             Initialize(baseUri, uri);
         }
 
-        public void SetLocation(string uri, bool isInterceptedLink)
+        public Task SetLocation(string uri, bool isInterceptedLink)
         {
             Uri = uri;
-            NotifyLocationChanged(isInterceptedLink);
+            return NotifyLocationChanged(isInterceptedLink);
         }
 
         /// <inheritdoc />
@@ -37,6 +40,42 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             }
 
             DefaultWebAssemblyJSRuntime.Instance.Invoke<object>(Interop.NavigateTo, uri, forceLoad);
+        }
+
+        public override async Task BeforeLocationChangeAsync()
+        {
+            if (OnNavigate == null) {
+                return;
+            }
+
+            var assembliesToLoad = OnNavigate(Uri);
+
+            if (assembliesToLoad.Count == 0)
+            {
+                return;
+            }
+
+            var count = (int)await DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<string[], object, object, Task<object>>(
+                "window.Blazor._internal.getDynamicAssemblies",
+                assembliesToLoad.ToArray(),
+                null,
+                null);
+
+            if (count == 0)
+            {
+                return;
+            }
+
+            var assemblies = DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<object, object, object, object[]>(
+                "window.Blazor._internal.readDynamicAssemblies",
+                null,
+                null,
+                null);
+
+            for (var i = 0; i < assemblies.Length; i++)
+            {
+                Assembly.Load((byte[])assemblies[i]);
+            }
         }
     }
 }

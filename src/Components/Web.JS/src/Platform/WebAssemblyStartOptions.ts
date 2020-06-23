@@ -14,4 +14,4 @@ export interface WebAssemblyStartOptions {
 // This type doesn't have to align with anything in BootConfig.
 // Instead, this represents the public API through which certain aspects
 // of boot resource loading can be customized.
-export type WebAssemblyBootResourceType = 'assembly' | 'pdb' | 'dotnetjs' | 'dotnetwasm' | 'timezonedata';
+export type WebAssemblyBootResourceType = 'assembly' | 'pdb' | 'dotnetjs' | 'dotnetwasm' | 'dynamicAssembly' | 'timezonedata';

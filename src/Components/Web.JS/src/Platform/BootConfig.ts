@@ -30,6 +30,7 @@ export interface BootJsonData {
 
 export interface ResourceGroups {
   readonly assembly: ResourceList;
+  readonly dynamicAssembly: ResourceList;
   readonly pdb?: ResourceList;
   readonly runtime: ResourceList;
   readonly satelliteResources?: { [cultureName: string] : ResourceList };

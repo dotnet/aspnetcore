@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components
@@ -27,6 +30,7 @@ namespace Microsoft.AspNetCore.Components
                 _locationChanged -= value;
             }
         }
+        public Func<string, List<string>>? OnNavigate { get; set; }
 
         private EventHandler<LocationChangedEventArgs>? _locationChanged;
 
@@ -199,10 +203,11 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Triggers the <see cref="LocationChanged"/> event with the current URI value.
         /// </summary>
-        protected void NotifyLocationChanged(bool isInterceptedLink)
+        protected async Task NotifyLocationChanged(bool isInterceptedLink)
         {
             try
             {
+                await BeforeLocationChangeAsync();
                 _locationChanged?.Invoke(this, new LocationChangedEventArgs(_uri!, isInterceptedLink));
             }
             catch (Exception ex)
@@ -210,6 +215,8 @@ namespace Microsoft.AspNetCore.Components
                 throw new LocationChangeException("An exception occurred while dispatching a location changed event.", ex);
             }
         }
+
+        public virtual Task BeforeLocationChangeAsync() => Task.CompletedTask;
 
         private void AssertInitialized()
         {
