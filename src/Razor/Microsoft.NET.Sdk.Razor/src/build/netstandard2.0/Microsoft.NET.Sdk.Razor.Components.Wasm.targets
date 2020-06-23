@@ -332,7 +332,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <TrimmerRootDescriptor Include="$(_BlazorApplicationTrimmerDescriptorFile)" />
-      <TrimmerRootDescriptor Include="$(_BlazorApplicationTrimmerDescriptorFile)" />
       <TrimmerRootDescriptor Include="$(MSBuildThisFileDirectory)LinkerWorkaround.xml" />
 
       <FileWrites Include="$(_BlazorApplicationTrimmerDescriptorFile)" />
