@@ -13,7 +13,6 @@ using System.Text;
 using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,10 +25,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class KestrelServerOptions
     {
-        // Internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
-        internal static readonly UTF8EncodingSealed DefaultRequestHeaderEncoding = new UTF8EncodingSealed();
-        internal static readonly Func<string, Encoding> DefaultRequestHeaderEncodingSelector = _ => DefaultRequestHeaderEncoding;
+        // internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
+        internal static readonly Func<string, Encoding?> DefaultRequestHeaderEncodingSelector = _ => null;
         internal static readonly Func<string, Encoding> DefaultLatin1RequestHeaderEncodingSelector = _ => Encoding.Latin1;
+
+        private Func<string, Encoding?> _requestHeaderEncodingSelector = DefaultRequestHeaderEncodingSelector;
 
         // The following two lists configure the endpoints that Kestrel should listen to. If both lists are empty, the "urls" config setting (e.g. UseUrls) is used.
         internal List<ListenOptions> CodeBackedListenOptions { get; } = new List<ListenOptions>();
@@ -86,10 +86,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Gets or sets a callback that returns the <see cref="Encoding"/> to decode the value for the specified request header name,
         /// or <see langword="null"/> to use the default <see cref="UTF8Encoding"/>.
         /// </summary>
-        /// <remarks>
-        /// Defaults to returning a <see langword="null"/> for all headers.
-        /// </remarks>
-        public Func<string, Encoding?> RequestHeaderEncodingSelector { get; set; } = DefaultRequestHeaderEncodingSelector;
+        public Func<string, Encoding?> RequestHeaderEncodingSelector
+        {
+            get => _requestHeaderEncodingSelector;
+            set => _requestHeaderEncodingSelector = value ?? throw new ArgumentNullException(nameof(value));
+        } 
 
         /// <summary>
         /// Enables the Listen options callback to resolve and use services registered by the application during startup.
@@ -144,13 +145,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         internal Func<string, Encoding?> GetRequestHeaderEncodingSelector()
         {
-            if (ReferenceEquals(RequestHeaderEncodingSelector, DefaultRequestHeaderEncodingSelector) && Latin1RequestHeaders)
+            if (ReferenceEquals(_requestHeaderEncodingSelector, DefaultRequestHeaderEncodingSelector) && Latin1RequestHeaders)
             {
                 return DefaultLatin1RequestHeaderEncodingSelector;
             }
 
-            return RequestHeaderEncodingSelector
-                ?? throw new InvalidOperationException($"{nameof(KestrelServerOptions)}.{nameof(RequestHeaderEncodingSelector)} must not be set to null.");
+            return _requestHeaderEncodingSelector;
         }
 
         internal void ApplyEndpointDefaults(ListenOptions listenOptions)
@@ -256,7 +256,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// This will only reload endpoints defined in the "Endpoints" section of your <paramref name="config"/>. Endpoints defined in code will not be reloaded.
         /// </param>
         /// <returns>A <see cref="KestrelConfigurationLoader"/> for further endpoint configuration.</returns>
-
         public KestrelConfigurationLoader Configure(IConfiguration config, bool reloadOnChange)
         {
             var loader = new KestrelConfigurationLoader(this, config, reloadOnChange);

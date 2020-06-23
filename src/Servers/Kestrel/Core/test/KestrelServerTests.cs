@@ -246,22 +246,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void StartWithNullRequestHeaderEncodingSelectorThrows()
-        {
-            var kso = CreateServerOptions();
-            kso.RequestHeaderEncodingSelector = null;
-
-            var testLogger = new TestApplicationErrorLogger { ThrowOnCriticalErrors = false };
-
-            using var server = CreateServer(kso, testLogger);
-
-            var ex = Assert.Throws<InvalidOperationException>(() => StartDummyApplication(server));
-            Assert.Contains(nameof(KestrelServerOptions.RequestHeaderEncodingSelector), ex.Message);
-
-            Assert.Equal(1, testLogger.CriticalErrorsLogged);
-        }
-
-        [Fact]
         public async Task StopAsyncCallsCompleteWhenFirstCallCompletes()
         {
             var options = new KestrelServerOptions

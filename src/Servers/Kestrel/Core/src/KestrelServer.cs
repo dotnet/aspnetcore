@@ -5,13 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -373,11 +371,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             {
                 throw new InvalidOperationException(
                     CoreStrings.FormatMaxRequestBufferSmallerThanRequestHeaderBuffer(Options.Limits.MaxRequestBufferSize.Value, Options.Limits.MaxRequestHeadersTotalSize));
-            }
-
-            if (Options.RequestHeaderEncodingSelector is null)
-            {
-                throw new InvalidOperationException($"{nameof(KestrelServerOptions)}.{nameof(KestrelServerOptions.RequestHeaderEncodingSelector)} must not be set to null.");
             }
         }
 

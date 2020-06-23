@@ -118,7 +118,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _contentLength = parsed;
         }
 
-
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void SetValueUnknown(string key, StringValues value)
         {
