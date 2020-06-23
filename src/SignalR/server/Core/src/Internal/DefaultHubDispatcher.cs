@@ -144,24 +144,31 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public override Task DispatchMessageAsync(HubConnectionContext connection, HubMessage hubMessage)
         {
+            connection.StopClientTimeout();
             // Messages are dispatched sequentially and will stop other messages from being processed until they complete.
             // Streaming methods will run sequentially until they start streaming, then they will fire-and-forget allowing other messages to run.
+
+            var tasks = connection.ActiveHubInvocations;
 
             switch (hubMessage)
             {
                 case InvocationBindingFailureMessage bindingFailureMessage:
-                    return ProcessInvocationBindingFailure(connection, bindingFailureMessage);
+                    tasks.Add(ProcessInvocationBindingFailure(connection, bindingFailureMessage));
+                    break;
 
                 case StreamBindingFailureMessage bindingFailureMessage:
-                    return ProcessStreamBindingFailure(connection, bindingFailureMessage);
+                    tasks.Add(ProcessStreamBindingFailure(connection, bindingFailureMessage));
+                    break;
 
                 case InvocationMessage invocationMessage:
                     Log.ReceivedHubInvocation(_logger, invocationMessage);
-                    return ProcessInvocation(connection, invocationMessage, isStreamResponse: false);
+                    tasks.Add(ProcessInvocation(connection, invocationMessage, isStreamResponse: false));
+                    break;
 
                 case StreamInvocationMessage streamInvocationMessage:
                     Log.ReceivedStreamHubInvocation(_logger, streamInvocationMessage);
-                    return ProcessInvocation(connection, streamInvocationMessage, isStreamResponse: true);
+                    tasks.Add(ProcessInvocation(connection, streamInvocationMessage, isStreamResponse: true));
+                    break;
 
                 case CancelInvocationMessage cancelInvocationMessage:
                     // Check if there is an associated active stream and cancel it if it exists.
@@ -183,7 +190,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     break;
 
                 case StreamItemMessage streamItem:
-                    return ProcessStreamItem(connection, streamItem);
+                    tasks.Add(ProcessStreamItem(connection, streamItem));
+                    break;
 
                 case CompletionMessage streamCompleteMessage:
                     // closes channels, removes from Lookup dict
@@ -202,6 +210,18 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 default:
                     Log.UnsupportedMessageReceived(_logger, hubMessage.GetType().FullName);
                     throw new NotSupportedException($"Received unsupported message: {hubMessage}");
+            }
+
+            var maxParallelOption = 2;
+            if (tasks.Count == maxParallelOption)
+            {
+                return WaitForSpace(tasks);
+            }
+
+            static async Task WaitForSpace(List<Task> tasks)
+            {
+                await Task.WhenAny(tasks);
+                tasks.RemoveAll(t => t.IsCompleted);
             }
 
             return Task.CompletedTask;
@@ -229,7 +249,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             connection.StreamTracker.TryComplete(message);
 
             // TODO: Send stream completion message to client when we add it
-
             return Task.CompletedTask;
         }
 

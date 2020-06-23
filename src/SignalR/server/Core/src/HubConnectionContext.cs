@@ -93,6 +93,9 @@ namespace Microsoft.AspNetCore.SignalR
 
         internal Exception? CloseException { get; private set; }
 
+        internal List<Task> ActiveHubInvocations { get; } = new List<Task>();
+
+
         /// <summary>
         /// Gets a <see cref="CancellationToken"/> that notifies when the connection is aborted.
         /// </summary>
