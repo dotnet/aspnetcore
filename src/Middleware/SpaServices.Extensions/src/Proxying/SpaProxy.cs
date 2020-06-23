@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
 
         // Don't forward User-Agent/Accept because of https://github.com/aspnet/JavaScriptServices/issues/1469
         // Others just aren't applicable in proxy scenarios
-        private static readonly string[] NotForwardedWebSocketHeaders = new[] { "Accept", "Connection", "Host", "User-Agent", "Upgrade", "Sec-WebSocket-Key", "Sec-WebSocket-Version" };
+        private static readonly string[] NotForwardedWebSocketHeaders = new[] { "Accept", "Connection", "Host", "User-Agent", "Upgrade", "Sec-WebSocket-Key", "Sec-WebSocket-Protocol", "Sec-WebSocket-Version" };
 
         public static HttpClient CreateHttpClientForProxy(TimeSpan requestTimeout)
         {
