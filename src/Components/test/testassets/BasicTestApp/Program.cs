@@ -42,7 +42,7 @@ namespace BasicTestApp
 
             builder.Logging.Services.AddSingleton<ILoggerProvider, PrependMessageLoggerProvider>(s =>
                 new PrependMessageLoggerProvider(builder.Configuration["Logging:PrependMessage:Message"], s.GetService<IJSRuntime>()));
-            
+
 
             var host = builder.Build();
             ConfigureCulture(host);
@@ -91,8 +91,6 @@ namespace BasicTestApp
             {
                 throw new InvalidTimeZoneException("This is an asynchronous startup exception");
             }
-
-            await Task.CompletedTask;
         }
     }
 }

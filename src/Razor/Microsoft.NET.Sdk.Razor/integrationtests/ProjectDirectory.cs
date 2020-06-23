@@ -179,6 +179,8 @@ $@"<Project>
 
         public string TargetFramework { get; set; } = BuildVariables.DefaultNetCoreTargetFramework;
 
+        public string RuntimeIdentifier { get; set; } = string.Empty;
+
         public string Configuration { get; set; } =
 #if DEBUG
             "Debug";
@@ -201,9 +203,9 @@ $@"<Project>
         /// </summary>
         public string SolutionPath { get; }
 
-        public string IntermediateOutputDirectory => Path.Combine("obj", Configuration, TargetFramework);
+        public string IntermediateOutputDirectory => Path.Combine("obj", Configuration, TargetFramework, RuntimeIdentifier);
 
-        public string BuildOutputDirectory => Path.Combine("bin", Configuration, TargetFramework);
+        public string BuildOutputDirectory => Path.Combine("bin", Configuration, TargetFramework, RuntimeIdentifier);
 
         public string PublishOutputDirectory => Path.Combine(BuildOutputDirectory, "publish");
 

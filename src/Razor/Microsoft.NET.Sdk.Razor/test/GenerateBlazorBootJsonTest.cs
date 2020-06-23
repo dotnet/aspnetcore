@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 {
     public class GenerateBlazorWebAssemblyBootJsonTest
     {
-        [Fact(Skip = "TODO fix this")]
+        [Fact]
         public void GroupsResourcesByType()
         {
             // Arrange
@@ -22,46 +22,46 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 Resources = new[]
                 {
                     CreateResourceTaskItem(
-                        "assembly",
-                        name: "My.Assembly1.dll", // Can specify filename with no dir
-                        fileHash: "abcdefghikjlmnopqrstuvwxyz"),
+                        ("FileName", "My.Assembly1"),
+                        ("Extension", ".dll"),
+                        ("FileHash", "abcdefghikjlmnopqrstuvwxyz")),
 
                     CreateResourceTaskItem(
-                        "assembly",
-                        name: "dir\\My.Assembly2.dll", // Can specify Windows-style path
-                        fileHash: "012345678901234567890123456789"),
+                        ("FileName", "My.Assembly2"),
+                        ("Extension", ".dll"),
+                        ("FileHash", "012345678901234567890123456789")),
 
                     CreateResourceTaskItem(
-                        "pdb",
-                        name: "otherdir/SomePdb.pdb", // Can specify Linux-style path
-                        fileHash: "pdbhashpdbhashpdbhash"),
+                        ("FileName", "SomePdb"),
+                        ("Extension", ".pdb"),
+                        ("FileHash", "pdbhashpdbhashpdbhash")),
 
                     CreateResourceTaskItem(
-                        "pdb",
-                        name: "My.Assembly1.pdb",
-                        fileHash: "pdbdefghikjlmnopqrstuvwxyz"),
+                        ("FileName", "My.Assembly1"),
+                        ("Extension", ".pdb"),
+                        ("FileHash", "pdbdefghikjlmnopqrstuvwxyz")),
 
                     CreateResourceTaskItem(
-                        "runtime",
-                        name: "some-runtime-file", // Can specify path with no extension
-                        fileHash: "runtimehashruntimehash"),
+                        ("FileName", "some-runtime-file"),
+                        ("FileHash", "runtimehashruntimehash"),
+                        ("AssetType", "native")),
 
                     CreateResourceTaskItem(
-                        "satellite",
-                        name: "en-GB\\satellite-assembly1.dll",
-                        fileHash: "hashsatelliteassembly1",
+                        ("FileName", "satellite-assembly1"),
+                        ("Extension", ".dll"),
+                        ("FileHash", "hashsatelliteassembly1"),
                         ("Culture", "en-GB")),
 
                     CreateResourceTaskItem(
-                        "satellite",
-                        name: "fr/satellite-assembly2.dll",
-                        fileHash: "hashsatelliteassembly2",
+                        ("FileName", "satellite-assembly2"),
+                        ("Extension", ".dll"),
+                        ("FileHash", "hashsatelliteassembly2"),
                         ("Culture", "fr")),
 
                     CreateResourceTaskItem(
-                        "satellite",
-                        name: "en-GB\\satellite-assembly3.dll",
-                        fileHash: "hashsatelliteassembly3",
+                        ("FileName", "satellite-assembly3"),
+                        ("Extension", ".dll"),
+                        ("FileHash", "hashsatelliteassembly3"),
                         ("Culture", "en-GB")),
                 }
             };
@@ -78,11 +78,11 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             var resources = parsedContent.resources.assembly;
             Assert.Equal(2, resources.Count);
             Assert.Equal("sha256-abcdefghikjlmnopqrstuvwxyz", resources["My.Assembly1.dll"]);
-            Assert.Equal("sha256-012345678901234567890123456789", resources["dir/My.Assembly2.dll"]); // Paths are converted to use URL-style separators
+            Assert.Equal("sha256-012345678901234567890123456789", resources["My.Assembly2.dll"]);
 
             resources = parsedContent.resources.pdb;
             Assert.Equal(2, resources.Count);
-            Assert.Equal("sha256-pdbhashpdbhashpdbhash", resources["otherdir/SomePdb.pdb"]);
+            Assert.Equal("sha256-pdbhashpdbhashpdbhash", resources["SomePdb.pdb"]);
             Assert.Equal("sha256-pdbdefghikjlmnopqrstuvwxyz", resources["My.Assembly1.pdb"]);
 
             resources = parsedContent.resources.runtime;
@@ -181,18 +181,13 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             return (BootJsonData)serializer.ReadObject(stream);
         }
 
-        private static ITaskItem CreateResourceTaskItem(string type, string name, string fileHash, params (string key, string value)[] values)
+        private static ITaskItem CreateResourceTaskItem(params (string key, string value)[] values)
         {
             var mock = new Mock<ITaskItem>();
-            mock.Setup(m => m.GetMetadata("BootManifestResourceName")).Returns(name);
-            mock.Setup(m => m.GetMetadata("Integrity")).Returns(fileHash);
 
-            if (values != null)
+            foreach (var (key, value) in values)
             {
-                foreach (var (key, value) in values)
-                {
-                    mock.Setup(m => m.GetMetadata(key)).Returns(value);
-                }
+                mock.Setup(m => m.GetMetadata(key)).Returns(value);
             }
             return mock.Object;
         }

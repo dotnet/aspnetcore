@@ -10,8 +10,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <Reference Include="System.Net.Http.Json" />
-
-    <FrameworkReference Remove="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <!-- A bit of msbuild magic to support reference resolver tests -->

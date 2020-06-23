@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
         public BrotliCompressCommand(Application parent)
             : base(parent, "brotli")
         {
-            Sources = Option("-s", ".cshtml files to compile", CommandOptionType.MultipleValue);
-            Outputs = Option("-o", "Generated output file path", CommandOptionType.MultipleValue);
+            Sources = Option("-s", "files to compress", CommandOptionType.MultipleValue);
+            Outputs = Option("-o", "Output file path", CommandOptionType.MultipleValue);
             CompressionLevelOption = Option("-c", "Compression level", CommandOptionType.SingleValue);
         }
 

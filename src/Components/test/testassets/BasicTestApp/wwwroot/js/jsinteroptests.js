@@ -81,7 +81,6 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
   results['syncGenericInstanceMethod'] = await genericDotNetObjectByRef.invokeMethodAsync('Update', 'Updated value 1');
   results['asyncGenericInstanceMethod'] = await genericDotNetObjectByRef.invokeMethodAsync('UpdateAsync', 'Updated value 2');
 
-
   if (shouldSupportSyncInterop) {
     results['genericInstanceMethod'] = genericDotNetObjectByRef.invokeMethod('Update', 'Updated Value 3');
   }

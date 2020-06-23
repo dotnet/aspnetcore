@@ -321,7 +321,7 @@ namespace Templates.Test
                 await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
 
                 aspNetProcess.VisitInBrowser(Browser);
-                TestBasicNavigation(project.ProjectName, usesAuth: false /* Todo: https://github.com/dotnet/runtime/issues/38154 */);
+                TestBasicNavigation(project.ProjectName, usesAuth: true);
             }
             else
             {
@@ -534,8 +534,6 @@ namespace Templates.Test
                 Browser.Equal(appName.Trim(), () => Browser.Title.Trim());
             }
 
-            // Skipping to workaround https://github.com/dotnet/runtime/issues/38154
-            skipFetchData = true;
             if (!skipFetchData)
             {
                 // Can navigate to the 'fetch data' page

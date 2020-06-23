@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     public class WasmPwaManifestTests
     {
-        private static readonly string DotNetJsFileName = "dotnet.js";
+        private static readonly string DotNetJsFileName = $"dotnet-{BuildVariables.MicrosoftNETCoreAppRuntimeVersion}.js";
 
         [Fact]
         public async Task Build_ServiceWorkerAssetsManifest_Works()

@@ -43,6 +43,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <ItemGroup>
     <FrameworkReference Remove="Microsoft.AspNetCore.App" />
+    <KnownFrameworkReference Remove="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <!-- Temporary workaround until ILLink.targets are updated -->
@@ -61,6 +62,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <PropertyGroup>
       <_BlazorDotnetJsFileName>dotnet-$(RuntimeFrameworkVersion).js</_BlazorDotnetJsFileName>
+      <_BlazorDotNetJsFilePath>$(IntermediateOutputPath)$(_BlazorDotnetJsFileName)</_BlazorDotNetJsFilePath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -69,16 +71,18 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <Copy
       SourceFiles="@(_DotNetJsItem)"
-      DestinationFiles="$(IntermediateOutputPath)$(_BlazorDotnetJsFileName)"
+      DestinationFiles="$(_BlazorDotNetJsFilePath)"
       SkipUnchangedFiles="true"
       OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)" />
 
     <ItemGroup Condition="'@(_DotNetJsItem->Count())' != '0'">
       <ReferenceCopyLocalPaths
-        Include="$(IntermediateOutputPath)$(_BlazorDotnetJsFileName)"
+        Include="$(_BlazorDotNetJsFilePath)"
         AssetType="native"
         CopyLocal="true"
         DestinationSubPath="$(_BlazorDotnetJsFileName)" />
+
+      <ReferenceCopyLocalPaths Remove="@(_DotNetJsItem)" />
     </ItemGroup>
   </Target>
 
@@ -356,6 +360,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.a'" />
 
+      <!-- Remove dotnet.js from publish output -->
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(ResolvedFileToPublish.RelativePath)' == 'dotnet.js'" />
+
       <!-- Retarget so that items are published to the wwwroot directory -->
       <ResolvedFileToPublish
         RelativePath="$(_BlazorOutputPath)%(ResolvedFileToPublish.RelativePath)"
@@ -456,7 +463,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GetBlazorWasmFilesForPublishInner"
       Properties="BuildProjectReferences=false;ResolveAssemblyReferencesFindRelatedSatellites=true;_PublishingBlazorWasmProject=true"
-      RemoveProperties="NoBuild"
+      RemoveProperties="NoBuild;RuntimeIdentifier"
       BuildInParallel="$(BuildInParallel)"
       Condition="'$(_PublishingBlazorWasmProject)' != 'true'">
 

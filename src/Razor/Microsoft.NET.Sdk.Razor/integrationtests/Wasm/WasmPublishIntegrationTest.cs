@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, blazorPublishDirectory, "_framework", DotNetJsFileName);
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll"); // Verify dependencies are part of the output.
-            
+
             // Verify compression works
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm.br");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br"); // 
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var publishDirectory = project.PublishOutputDirectory;
             // Make sure the main project exists
             Assert.FileExists(result, publishDirectory, "blazorhosted.dll");
-            
+
             // Verification for https://github.com/dotnet/aspnetcore/issues/19926. Verify binaries for projects
             // referenced by the Hosted project appear in the publish directory
             Assert.FileExists(result, publishDirectory, "RazorClassLibrary.dll");
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, blazorPublishDirectory, "_framework", DotNetJsFileName);
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll"); // Verify dependencies are part of the output.
-                                                                                                                                      
+
             // Verify project references appear as static web assets
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll");
             // Also verify project references to the server project appear in the publish output
@@ -579,6 +579,61 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.Contains("fr/Microsoft.CodeAnalysis.CSharp.resources.dll", satelliteResources["fr"].Keys);
             Assert.Contains("ja", satelliteResources.Keys);
             Assert.Contains("ja/blazorwasm.resources.dll", satelliteResources["ja"].Keys);
+
+            VerifyServiceWorkerFiles(result, blazorPublishDirectory,
+                serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
+                serviceWorkerContent: "// This is the production service worker",
+                assetsManifestPath: "custom-service-worker-assets.js");
+        }
+
+        [Fact]
+        public async Task Publish_HostedApp_WithRid_Works()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorhosted-rid", additionalProjects: new[] { "blazorwasm", "razorclasslibrary", });
+            project.RuntimeIdentifier = "linux-x64";
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
+
+            Assert.BuildPassed(result);
+
+            var publishDirectory = project.PublishOutputDirectory;
+            // Make sure the main project exists
+            Assert.FileExists(result, publishDirectory, "blazorhosted-rid.dll");
+            Assert.FileExists(result, publishDirectory, "libhostfxr.so"); // Verify that we're doing a self-contained deployment
+
+            Assert.FileExists(result, publishDirectory, "RazorClassLibrary.dll");
+            Assert.FileExists(result, publishDirectory, "blazorwasm.dll");
+
+            var blazorPublishDirectory = Path.Combine(publishDirectory, "wwwroot");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.webassembly.js");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", DotNetJsFileName);
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll"); // Verify dependencies are part of the output.
+
+            // Verify project references appear as static web assets
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll");
+            // Also verify project references to the server project appear in the publish output
+            Assert.FileExists(result, publishDirectory, "RazorClassLibrary.dll");
+
+            // Verify static assets are in the publish directory
+            Assert.FileExists(result, blazorPublishDirectory, "index.html");
+
+            // Verify static web assets from referenced projects are copied.
+            Assert.FileExists(result, publishDirectory, "wwwroot", "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
+            Assert.FileExists(result, publishDirectory, "wwwroot", "_content", "RazorClassLibrary", "styles.css");
+
+            // Verify web.config
+            Assert.FileExists(result, publishDirectory, "web.config");
+
+            VerifyBootManifestHashes(result, blazorPublishDirectory);
+
+            // Verify compression works
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm.br");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll.br");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.br");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br");
 
             VerifyServiceWorkerFiles(result, blazorPublishDirectory,
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
