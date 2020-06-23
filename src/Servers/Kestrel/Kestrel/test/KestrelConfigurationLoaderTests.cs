@@ -254,38 +254,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         }
 
         [Fact]
-        public void ConfigureEndpointDevelopmentCertificateIsCaseInsensitive()
-        {
-            try
-            {
-                var serverOptions = CreateServerOptions();
-                var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
-                var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
-                var path = GetCertificatePath();
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
-                File.WriteAllBytes(path, bytes);
-
-                var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
-                {
-                    new KeyValuePair<string, string>("Certificates:DEVELOPMENT:Password", "1234"),
-                }).Build();
-
-                serverOptions
-                    .Configure(config)
-                    .Load();
-
-                Assert.NotNull(serverOptions.DefaultCertificate);
-            }
-            finally
-            {
-                if (File.Exists(GetCertificatePath()))
-                {
-                    File.Delete(GetCertificatePath());
-                }
-            }
-        }
-
-        [Fact]
         public void ConfigureEndpointDevelopmentCertificateGetsIgnoredIfPasswordIsNotCorrect()
         {
             try
