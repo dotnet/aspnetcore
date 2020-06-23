@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// </summary>
     public class BindingInfo
     {
-        private Type _binderType;
+        private Type? _binderType;
 
         /// <summary>
         /// Creates a new <see cref="BindingInfo"/>.
@@ -44,12 +44,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets or sets the <see cref="ModelBinding.BindingSource"/>.
         /// </summary>
-        public BindingSource BindingSource { get; set; }
+        public BindingSource? BindingSource { get; set; }
 
         /// <summary>
         /// Gets or sets the binder model name.
         /// </summary>
-        public string BinderModelName { get; set; }
+        public string? BinderModelName { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Type"/> of the <see cref="IModelBinder"/> implementation used to bind the
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Also set <see cref="BindingSource"/> if the specified <see cref="IModelBinder"/> implementation does not
         /// use values from form data, route values or the query string.
         /// </remarks>
-        public Type BinderType
+        public Type? BinderType
         {
             get => _binderType;
             set
@@ -80,13 +80,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets or sets the <see cref="ModelBinding.IPropertyFilterProvider"/>.
         /// </summary>
-        public IPropertyFilterProvider PropertyFilterProvider { get; set; }
+        public IPropertyFilterProvider? PropertyFilterProvider { get; set; }
 
         /// <summary>
         /// Gets or sets a predicate which determines whether or not the model should be bound based on state
         /// from the current request.
         /// </summary>
-        public Func<ActionContext, bool> RequestPredicate { get; set; }
+        public Func<ActionContext, bool>? RequestPredicate { get; set; }
 
         /// <summary>
         /// Gets or sets the value which decides if empty bodies are treated as valid inputs.
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="attributes">A collection of attributes which are used to construct <see cref="BindingInfo"/>
         /// </param>
         /// <returns>A new instance of <see cref="BindingInfo"/>.</returns>
-        public static BindingInfo GetBindingInfo(IEnumerable<object> attributes)
+        public static BindingInfo? GetBindingInfo(IEnumerable<object> attributes)
         {
             var bindingInfo = new BindingInfo();
             var isBindingInfoPresent = false;
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="attributes">A collection of attributes which are used to construct <see cref="BindingInfo"/>.</param>
         /// <param name="modelMetadata">The <see cref="ModelMetadata"/>.</param>
         /// <returns>A new instance of <see cref="BindingInfo"/> if any binding metadata was discovered; otherwise or <see langword="null"/>.</returns>
-        public static BindingInfo GetBindingInfo(IEnumerable<object> attributes, ModelMetadata modelMetadata)
+        public static BindingInfo? GetBindingInfo(IEnumerable<object> attributes, ModelMetadata modelMetadata)
         {
             if (attributes == null)
             {

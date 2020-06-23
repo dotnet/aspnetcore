@@ -48,12 +48,12 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <summary>
         /// Gets the <see cref="FilterDescriptor"/> containing the filter metadata.
         /// </summary>
-        public FilterDescriptor Descriptor { get; }
+        public FilterDescriptor Descriptor { get; } = default!;
 
         /// <summary>
         /// Gets or sets the executable <see cref="IFilterMetadata"/> associated with <see cref="Descriptor"/>.
         /// </summary>
-        public IFilterMetadata Filter { get; set; }
+        public IFilterMetadata Filter { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets a value indicating whether or not <see cref="Filter"/> can be reused across requests.
