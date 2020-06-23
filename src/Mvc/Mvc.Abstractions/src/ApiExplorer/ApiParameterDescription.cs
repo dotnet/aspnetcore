@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <summary>
         /// Gets or sets the <see cref="BindingInfo"/>.
         /// </summary>
-        public BindingInfo BindingInfo { get; set; }
+        public BindingInfo? BindingInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the parameter type.
