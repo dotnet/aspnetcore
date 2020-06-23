@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             BinderType = other.BinderType;
             PropertyFilterProvider = other.PropertyFilterProvider;
             RequestPredicate = other.RequestPredicate;
+            EmptyBodyBehavior = other.EmptyBodyBehavior;
         }
 
         /// <summary>
@@ -86,6 +87,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// from the current request.
         /// </summary>
         public Func<ActionContext, bool> RequestPredicate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value which decides if empty bodies are treated as valid inputs.
+        /// </summary>
+        public EmptyBodyBehavior EmptyBodyBehavior { get; set; }
 
         /// <summary>
         /// Constructs a new instance of <see cref="BindingInfo"/> from the given <paramref name="attributes"/>.
@@ -158,6 +164,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     bindingInfo.RequestPredicate = requestPredicateProvider.RequestPredicate;
                     break;
                 }
+            }
+
+            foreach (var configureEmptyBodyBehavior in attributes.OfType<IConfigureEmptyBodyBehavior>())
+            {
+                isBindingInfoPresent = true;
+                bindingInfo.EmptyBodyBehavior = configureEmptyBodyBehavior.EmptyBodyBehavior;
+                break;
             }
 
             return isBindingInfoPresent ? bindingInfo : null;
@@ -234,6 +247,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 isBindingInfoPresent = true;
                 PropertyFilterProvider = modelMetadata.PropertyFilterProvider;
             }
+
+            // There isn't a ModelMetadata feature to configure AllowEmptyInputInBodyModelBinding, 
+            // so nothing to infer from it.
 
             return isBindingInfoPresent;
         }
