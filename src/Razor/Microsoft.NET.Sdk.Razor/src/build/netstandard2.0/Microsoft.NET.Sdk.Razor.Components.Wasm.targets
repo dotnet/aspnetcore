@@ -61,8 +61,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       We want the dotnet.js file output to have a version to better work with caching. We'll append the runtime version to the file name as soon as file has been discovered.
     -->
     <PropertyGroup>
+      <_DotNetJsVersion>$(BundledNETCoreAppPackageVersion)</_DotNetJsVersion>
       <_DotNetJsVersion Condition="'$(RuntimeFrameworkVersion)' != ''">$(RuntimeFrameworkVersion)</_DotNetJsVersion>
-      <_DotNetJsVersion Condition="'$(_DotNetJsVersion)' != ''">$(BundledNETCoreAppPackageVersion)</_DotNetJsVersion>
       <_BlazorDotnetJsFileName>dotnet.$(_DotNetJsVersion).js</_BlazorDotnetJsFileName>
       <_BlazorDotNetJsFilePath>$(IntermediateOutputPath)$(_BlazorDotnetJsFileName)</_BlazorDotNetJsFilePath>
     </PropertyGroup>
