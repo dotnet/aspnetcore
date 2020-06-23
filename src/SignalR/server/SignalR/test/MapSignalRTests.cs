@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
@@ -29,9 +30,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void NotAddingSignalRServiceThrows()
         {
             var executedConfigure = false;
-            var builder = new WebHostBuilder();
+            var builder = new HostBuilder();
 
-            builder
+            builder.ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
                 .UseKestrel()
                 .ConfigureServices(services =>
                 {
@@ -54,6 +57,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                                  "'IServiceCollection.AddSignalR' inside the call to 'ConfigureServices(...)' in the application startup code.", ex.Message);
                 })
                 .UseUrls("http://127.0.0.1:0");
+            });
 
             using (var host = builder.Build())
             {
@@ -338,20 +342,24 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
         }
 
-        private IWebHost BuildWebHost(Action<IEndpointRouteBuilder> configure)
+        private IHost BuildWebHost(Action<IEndpointRouteBuilder> configure)
         {
-            return new WebHostBuilder()
-                .UseKestrel()
-                .ConfigureServices(services =>
+            return new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddSignalR();
+                    webHostBuilder
+                    .UseKestrel()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddSignalR();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseEndpoints(endpoints => configure(endpoints));
+                    })
+                    .UseUrls("http://127.0.0.1:0");
                 })
-                .Configure(app =>
-                {
-                    app.UseRouting();
-                    app.UseEndpoints(endpoints => configure(endpoints));
-                })
-                .UseUrls("http://127.0.0.1:0")
                 .Build();
         }
     }
