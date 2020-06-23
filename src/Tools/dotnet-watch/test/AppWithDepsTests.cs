@@ -20,7 +20,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task ChangeFileInDependency()
         {
             await _app.StartWatcherAsync();
