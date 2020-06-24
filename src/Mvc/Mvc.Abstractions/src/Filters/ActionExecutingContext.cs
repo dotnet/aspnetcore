@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// Gets or sets the <see cref="IActionResult"/> to execute. Setting <see cref="Result"/> to a non-<c>null</c>
         /// value inside an action filter will short-circuit the action and any remaining action filters.
         /// </summary>
-        public virtual IActionResult Result { get; set; }
+        public virtual IActionResult? Result { get; set; }
 
         /// <summary>
         /// Gets the arguments to pass when invoking the action. Keys are parameter names.

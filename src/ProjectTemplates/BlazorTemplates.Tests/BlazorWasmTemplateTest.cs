@@ -44,7 +44,7 @@ namespace Templates.Test
         public async Task BlazorWasmStandaloneTemplate_Works()
         {
             var project = await ProjectFactory.GetOrCreateProject("blazorstandalone", Output);
-            project.TargetFramework = "netstandard2.1";
+            project.RuntimeIdentifier = "browser-wasm";
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm");
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
@@ -135,7 +135,7 @@ namespace Templates.Test
         public async Task BlazorWasmStandalonePwaTemplate_Works()
         {
             var project = await ProjectFactory.GetOrCreateProject("blazorstandalonepwa", Output);
-            project.TargetFramework = "netstandard2.1";
+            project.RuntimeIdentifier = "browser-wasm";
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--pwa" });
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", project, createResult));
@@ -457,8 +457,6 @@ namespace Templates.Test
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
             await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-            // We only do brotli precompression for published apps
-            await AssertCompressionFormat(aspNetProcess, "gzip");
             if (BrowserFixture.IsHostAutomationSupported())
             {
                 aspNetProcess.VisitInBrowser(Browser);
@@ -596,7 +594,6 @@ namespace Templates.Test
             var testAppSettings = appSettings.ToString();
             File.WriteAllText(Path.Combine(serverProject.TemplatePublishDir, "appsettings.json"), testAppSettings);
         }
-
 
         private (ProcessEx, string url) RunPublishedStandaloneBlazorProject(Project project)
         {

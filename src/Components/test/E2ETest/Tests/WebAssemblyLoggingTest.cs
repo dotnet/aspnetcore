@@ -52,7 +52,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             AssertLogContainsCriticalMessages(
                 "crit: Microsoft.AspNetCore.Components.WebAssembly.Rendering.WebAssemblyRenderer[100]",
                 "[Custom logger] Unhandled exception rendering component: Here is the outer exception",
-                "System.InvalidTimeZoneException: Here is the outer exception ---> System.ArithmeticException: Here is the inner exception",
+                "System.InvalidTimeZoneException: Here is the outer exception",
+                "System.ArithmeticException: Here is the inner exception",
                 "at BasicTestApp.ErrorComponent.ThrowInner");
         }
 

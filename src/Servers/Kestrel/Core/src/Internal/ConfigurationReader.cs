@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private IDictionary<string, CertificateConfig> ReadCertificates()
         {
-            var certificates = new Dictionary<string, CertificateConfig>(0);
+            var certificates = new Dictionary<string, CertificateConfig>(0, StringComparer.OrdinalIgnoreCase);
 
             var certificatesConfig = _configuration.GetSection(CertificatesKey).GetChildren();
             foreach (var certificateConfig in certificatesConfig)

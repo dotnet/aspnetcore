@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_RazorOutputPath_SetToNonDefault()
         {
-            var customOutputPath = Path.Combine("bin", Configuration, TargetFramework, "Razor");
+            var customOutputPath = Path.Combine("bin", Configuration, Project.TargetFramework, "Razor");
             var result = await DotnetMSBuild("Build", $"/p:RazorOutputPath={customOutputPath}");
 
             Assert.BuildPassed(result);
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_MvcRazorOutputPath_SetToNonDefault()
         {
-            var customOutputPath = Path.Combine("bin", Configuration, TargetFramework, "Razor");
+            var customOutputPath = Path.Combine("bin", Configuration, Project.TargetFramework, "Razor");
             var result = await DotnetMSBuild("Build", $"/p:MvcRazorOutputPath={customOutputPath}");
 
             Assert.BuildPassed(result);

@@ -69,6 +69,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         }
 
         [Fact]
+        public void ReadCertificatesSection_IsCaseInsensitive()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Certificates:filecert:Path", "/path/cert.pfx"),
+                new KeyValuePair<string, string>("Certificates:FILECERT:Password", "certpassword"),
+            }).Build();
+            var reader = new ConfigurationReader(config);
+            var certificates = reader.Certificates;
+            Assert.NotNull(certificates);
+            Assert.Equal(1, certificates.Count);
+
+            var fileCert = certificates["FiLeCeRt"];
+            Assert.True(fileCert.IsFileCert);
+            Assert.False(fileCert.IsStoreCert);
+            Assert.Equal("/path/cert.pfx", fileCert.Path);
+            Assert.Equal("certpassword", fileCert.Password);
+        }
+
+        [Fact]
+        public void ReadCertificatesSection_ThrowsOnCaseInsensitiveDuplicate()
+        {
+            var exception = Assert.Throws<ArgumentException>(() => 
+                new ConfigurationBuilder().AddInMemoryCollection(new[]
+                {
+                    new KeyValuePair<string, string>("Certificates:filecert:Password", "certpassword"),
+                    new KeyValuePair<string, string>("Certificates:FILECERT:Password", "certpassword"),
+                }).Build());
+
+            Assert.Contains("An item with the same key has already been added", exception.Message);
+        }
+
+        [Fact]
         public void ReadEndpointsWhenNoEndpointsSection_ReturnsEmptyCollection()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection().Build();

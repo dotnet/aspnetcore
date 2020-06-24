@@ -39,10 +39,10 @@ namespace Templates.Test.Helpers
         public string ProjectGuid { get; set; }
         public string TemplateOutputDir { get; set; }
         public string TargetFramework { get; set; } = GetAssemblyMetadata("Test.DefaultTargetFramework");
-        public string RazorSdkDirectoryRoot { get; set; } = GetAssemblyMetadata("Test.RazorSdkDirectoryRoot");
+        public string RuntimeIdentifier { get; set; } = string.Empty;
 
-        public string TemplateBuildDir => Path.Combine(TemplateOutputDir, "bin", "Debug", TargetFramework);
-        public string TemplatePublishDir => Path.Combine(TemplateOutputDir, "bin", "Release", TargetFramework, "publish");
+        public string TemplateBuildDir => Path.Combine(TemplateOutputDir, "bin", "Debug", TargetFramework, RuntimeIdentifier);
+        public string TemplatePublishDir => Path.Combine(TemplateOutputDir, "bin", "Release", TargetFramework, RuntimeIdentifier, "publish");
 
         public ITestOutputHelper Output { get; set; }
         public IMessageSink DiagnosticsMessageSink { get; set; }
@@ -117,9 +117,7 @@ namespace Templates.Test.Helpers
             // Avoid restoring as part of build or publish. These projects should have already restored as part of running dotnet new. Explicitly disabling restore
             // should avoid any global contention and we can execute a build or publish in a lock-free way
 
-            var razorSDKarg = string.IsNullOrEmpty(RazorSdkDirectoryRoot) ? string.Empty : $"/p:RazorSdkDirectoryRoot={RazorSdkDirectoryRoot}";
-
-            using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish --no-restore -c Release /bl {razorSDKarg} {additionalArgs}", packageOptions);
+            using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"publish --no-restore -c Release /bl {additionalArgs}", packageOptions);
             await result.Exited;
             CaptureBinLogOnFailure(result);
             return new ProcessResult(result);
@@ -132,9 +130,7 @@ namespace Templates.Test.Helpers
             // Avoid restoring as part of build or publish. These projects should have already restored as part of running dotnet new. Explicitly disabling restore
             // should avoid any global contention and we can execute a build or publish in a lock-free way
 
-            var razorSDKarg = string.IsNullOrEmpty(RazorSdkDirectoryRoot) ? string.Empty : $"/p:RazorSdkDirectoryRoot={RazorSdkDirectoryRoot}";
-
-            using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"build --no-restore -c Debug /bl {razorSDKarg} {additionalArgs}", packageOptions);
+            using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), $"build --no-restore -c Debug /bl {additionalArgs}", packageOptions);
             await result.Exited;
             CaptureBinLogOnFailure(result);
             return new ProcessResult(result);

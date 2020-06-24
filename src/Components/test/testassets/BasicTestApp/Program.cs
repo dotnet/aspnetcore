@@ -42,7 +42,7 @@ namespace BasicTestApp
 
             builder.Logging.Services.AddSingleton<ILoggerProvider, PrependMessageLoggerProvider>(s =>
                 new PrependMessageLoggerProvider(builder.Configuration["Logging:PrependMessage:Message"], s.GetService<IJSRuntime>()));
-            
+
 
             var host = builder.Build();
             ConfigureCulture(host);

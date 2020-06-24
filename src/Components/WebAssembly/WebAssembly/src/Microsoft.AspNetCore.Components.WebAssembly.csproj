@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
@@ -14,6 +14,14 @@
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.JSInterop.WebAssembly" />
+
+    <ProjectReference
+      Include="..\..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
+      ReferenceOutputAssemblies="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework"
+      Private="false"
+      Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'" />
 
     <!-- Tracking removing using https://github.com/dotnet/aspnetcore/issues/22283 -->
     <ProjectReference
@@ -34,5 +42,14 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication.Tests" />
     <InternalsVisibleTo Include="BasicTestApp" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <BlazorWebAssemblyJSFile>..\..\..\Web.JS\dist\$(Configuration)\blazor.webassembly.js</BlazorWebAssemblyJSFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="$(BlazorWebAssemblyJSFile)" Pack="true" PackagePath="build\netstandard2.0\" LinkBase="build\netstandard2.0\" />
+    <Content Include="build\netstandard2.0\*.props" Pack="true" PackagePath="build\netstandard2.0\" />
   </ItemGroup>
 </Project>
