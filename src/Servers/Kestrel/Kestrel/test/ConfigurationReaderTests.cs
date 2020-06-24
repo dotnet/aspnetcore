@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Authentication;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.Extensions.Configuration;
 using Xunit;
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {
                 new KeyValuePair<string, string>("Certificates:filecert:Path", "/path/cert.pfx"),
-                new KeyValuePair<string, string>("Certificates:FILECERT:Password", "certpassword"),
+                new KeyValuePair<string, string>("CERTIFICATES:FILECERT:PASSWORD", "certpassword"),
             }).Build();
             var reader = new ConfigurationReader(config);
             var certificates = reader.Certificates;
@@ -98,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
                     new KeyValuePair<string, string>("Certificates:FILECERT:Password", "certpassword"),
                 }).Build());
 
-            Assert.Contains("An item with the same key has already been added", exception.Message);
+            Assert.Contains(CoreStrings.KeyAlreadyExists, exception.Message);
         }
 
         [Fact]
