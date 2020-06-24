@@ -2318,10 +2318,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 Assert.Equal("text/plain", deleteContext.Response.ContentType);
                 Assert.Equal(HttpConnectionStatus.Disposed, connection.Status);
 
+                await connection.ConnectionClosed.WaitForCancellationAsync().OrTimeout();
+
                 // Verify the connection not removed because application is hanging
                 Assert.True(manager.TryGetConnection(connection.ConnectionId, out _));
-
-                Assert.True(connection.ConnectionClosed.IsCancellationRequested);
             }
         }
 
@@ -2348,9 +2348,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 // Close the SSE connection
                 connection.Transport.Output.Complete();
 
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-                connection.ConnectionClosed.Register(() => tcs.SetResult(null));
-                await tcs.Task.OrTimeout();
+                await connection.ConnectionClosed.WaitForCancellationAsync().OrTimeout();
             }
         }
 
@@ -2381,9 +2379,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 await websocket.Accepted.OrTimeout();
                 await websocket.Client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", cancellationToken: default).OrTimeout();
 
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-                connection.ConnectionClosed.Register(() => tcs.SetResult(null));
-                await tcs.Task.OrTimeout();
+                await connection.ConnectionClosed.WaitForCancellationAsync().OrTimeout();
             }
         }
 
