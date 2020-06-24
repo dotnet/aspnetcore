@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1);
         private readonly object _receiveMessageTimeoutLock = new object();
         private readonly ISystemClock _systemClock;
+        private readonly CancellationTokenRegistration _closedRegistration;
 
         private StreamTracker _streamTracker;
         private long _lastSendTimeStamp;
@@ -66,6 +67,7 @@ namespace Microsoft.AspNetCore.SignalR
             _connectionContext = connectionContext;
             _logger = loggerFactory.CreateLogger<HubConnectionContext>();
             ConnectionAborted = _connectionAbortedTokenSource.Token;
+            _closedRegistration = connectionContext.ConnectionClosed.Register((state) => ((HubConnectionContext)state).Abort(), this);
 
             HubCallerContext = new DefaultHubCallerContext(this);
 
@@ -624,12 +626,6 @@ namespace Microsoft.AspNetCore.SignalR
             finally
             {
                 _ = InnerAbortConnection(connection);
-
-                // Use _streamTracker to avoid lazy init from StreamTracker getter if it doesn't exist
-                if (connection._streamTracker != null)
-                {
-                    connection._streamTracker.CompleteAll(new OperationCanceledException("The underlying connection was closed."));
-                }
             }
 
             static async Task InnerAbortConnection(HubConnectionContext connection)
@@ -667,6 +663,17 @@ namespace Microsoft.AspNetCore.SignalR
                 _receivedMessageElapsedTicks = 0;
                 _receivedMessageTimestamp = 0;
                 _receivedMessageTimeoutEnabled = false;
+            }
+        }
+
+        internal void Cleanup()
+        {
+            _closedRegistration.Dispose();
+
+            // Use _streamTracker to avoid lazy init from StreamTracker getter if it doesn't exist
+            if (_streamTracker != null)
+            {
+                _streamTracker.CompleteAll(new OperationCanceledException("The underlying connection was closed."));
             }
         }
 

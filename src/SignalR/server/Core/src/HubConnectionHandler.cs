@@ -139,6 +139,8 @@ namespace Microsoft.AspNetCore.SignalR
             }
             finally
             {
+                connectionContext.Cleanup();
+
                 Log.ConnectedEnding(_logger);
                 await _lifetimeManager.OnDisconnectedAsync(connectionContext);
             }
