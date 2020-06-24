@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
@@ -34,6 +36,24 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var hash = Convert.ToBase64String(hashBytes);
             var lastWriteTimeUtc = File.GetLastWriteTimeUtc(path);
             return new FileThumbPrint(path, lastWriteTimeUtc, hash);
+        }
+
+        /// <summary>
+        /// Returns a list of thumbprints for all files (recursive) in the specified directory, sorted by file paths.
+        /// </summary>
+        internal static List<FileThumbPrint> CreateFolderThumbprint(ProjectDirectory project, string directoryPath, params string[] filesToIgnore)
+        {
+            directoryPath = System.IO.Path.Combine(project.DirectoryPath, directoryPath);
+            var files = Directory.GetFiles(directoryPath).Where(p => !filesToIgnore.Contains(p));
+            var thumbprintLookup = new List<FileThumbPrint>();
+            foreach (var file in files)
+            {
+                var thumbprint = Create(file);
+                thumbprintLookup.Add(thumbprint);
+            }
+
+            thumbprintLookup.Sort(Comparer<FileThumbPrint>.Create((a, b) => StringComparer.Ordinal.Compare(a.Path, b.Path)));
+            return thumbprintLookup;
         }
 
         public bool Equals(FileThumbPrint other)

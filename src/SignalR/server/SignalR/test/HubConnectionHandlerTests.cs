@@ -949,6 +949,30 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task HubMethodListeningToConnectionAbortedClosesOnConnectionContextAbort()
+        {
+            using (StartVerifiableLog())
+            {
+                var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(MethodHub), loggerFactory: LoggerFactory);
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    var invokeTask = client.InvokeAsync(nameof(MethodHub.BlockingMethod));
+
+                    client.Connection.Abort();
+
+                    // If this completes then the server has completed the connection
+                    await connectionHandlerTask.OrTimeout();
+
+                    // Nothing written to connection because it was closed
+                    Assert.False(invokeTask.IsCompleted);
+                }
+            }
+        }
+
+        [Fact]
         public async Task DetailedExceptionEvenWhenNotExplicitlySet()
         {
             bool ExpectedErrors(WriteContext writeContext)

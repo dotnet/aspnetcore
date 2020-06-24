@@ -32,6 +32,6 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         /// <summary>
         /// Gets or sets the <see cref="IActionInvoker"/> that will be used to invoke <see cref="ActionContext" />
         /// </summary>
-        public IActionInvoker Result { get; set; }
+        public IActionInvoker? Result { get; set; }
     }
 }

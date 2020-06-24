@@ -300,7 +300,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task StreamPool_MultipleStreamsInSequence_PooledStreamReused()
         {
             TaskCompletionSource appDelegateTcs = null;
@@ -365,7 +364,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task StreamPool_StreamIsInvalidState_DontReturnedToPool()
         {
             var serverTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -4010,7 +4008,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        [QuarantinedTest]
         public async Task CONTINUATION_Received_WithTrailers_Available(bool sendData)
         {
             await InitializeConnectionAsync(_readTrailersApplication);

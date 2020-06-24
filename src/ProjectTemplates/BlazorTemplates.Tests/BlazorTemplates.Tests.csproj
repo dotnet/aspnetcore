@@ -71,10 +71,6 @@
       <_Parameter2>$(TargetFramework)</_Parameter2>
       <_Parameter3></_Parameter3>
     </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>Test.RazorSdkDirectoryRoot</_Parameter1>
-      <_Parameter2>$(RazorSdkDirectoryRoot)</_Parameter2>
-    </AssemblyAttribute>
   </ItemGroup>
 
   <Target Name="PrepareForTest" BeforeTargets="GetAssemblyAttributes" Condition="$(DesignTimeBuild) != true">
