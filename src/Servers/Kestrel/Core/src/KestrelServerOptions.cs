@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         {
             get => _requestHeaderEncodingSelector;
             set => _requestHeaderEncodingSelector = value ?? throw new ArgumentNullException(nameof(value));
-        } 
+        }
 
         /// <summary>
         /// Enables the Listen options callback to resolve and use services registered by the application during startup.
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         internal void ApplyEndpointDefaults(ListenOptions listenOptions)
         {
-            listenOptions.KestrelServerOptions = this; 
+            listenOptions.KestrelServerOptions = this;
             ConfigurationLoader?.ApplyConfigurationDefaults(listenOptions);
             EndpointDefaults(listenOptions);
         }

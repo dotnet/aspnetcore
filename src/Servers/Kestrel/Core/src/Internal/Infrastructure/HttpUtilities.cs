@@ -160,9 +160,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             {
                 return encoding.GetString(span);
             }
-            catch (DecoderFallbackException)
+            catch (DecoderFallbackException ex)
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException(ex.Message, ex);
             }
         }
 
@@ -555,11 +555,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         // Allow for de-virtualization (see https://github.com/dotnet/coreclr/pull/9230)	
-        private sealed class UTF8EncodingSealed : UTF8Encoding	
-        {	
-            public UTF8EncodingSealed() : base(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true) { }	
+        private sealed class UTF8EncodingSealed : UTF8Encoding
+        {
+            public UTF8EncodingSealed() : base(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true) { }
 
-            public override byte[] GetPreamble() => Array.Empty<byte>();	
+            public override byte[] GetPreamble() => Array.Empty<byte>();
         }
     }
 }
