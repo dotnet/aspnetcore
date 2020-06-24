@@ -27,6 +27,6 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// Gets or sets the result of the request. Setting <see cref="Result"/> to a non-<c>null</c> value inside
         /// an authorization filter will short-circuit the remainder of the filter pipeline.
         /// </summary>
-        public virtual IActionResult Result { get; set; }
+        public virtual IActionResult? Result { get; set; }
     }
 }

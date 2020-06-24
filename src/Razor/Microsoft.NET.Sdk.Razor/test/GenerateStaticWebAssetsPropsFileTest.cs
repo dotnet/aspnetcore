@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNetCore.Razor.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;

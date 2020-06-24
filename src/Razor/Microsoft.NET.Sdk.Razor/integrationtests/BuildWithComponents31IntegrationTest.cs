@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("blazor31")]
         public async Task Build_Components_WithDotNetCoreMSBuild_Works()
         {
-            TargetFramework = "netcoreapp3.1";
+            Project.TargetFramework = "netcoreapp3.1";
             var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);

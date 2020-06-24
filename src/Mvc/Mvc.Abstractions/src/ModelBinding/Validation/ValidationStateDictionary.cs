@@ -4,7 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
@@ -25,8 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             _inner = new Dictionary<object, ValidationStateEntry>(ReferenceEqualityComparer.Instance);
         }
 
-        /// <inheritdoc />
-        public ValidationStateEntry this[object key]
+        public ValidationStateEntry? this[object key]
         {
             get
             {
@@ -36,9 +35,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
             set
             {
-                _inner[key] = value;
+                _inner[key] = value!;
             }
         }
+
+        /// <inheritdoc />
+        ValidationStateEntry IDictionary<object, ValidationStateEntry>.this[object key]
+        {
+            get => this[key]!;
+            set => this[key] = value;
+        }
+
+        ValidationStateEntry IReadOnlyDictionary<object, ValidationStateEntry>.this[object key] => this[key]!;
 
         /// <inheritdoc />
         public int Count => _inner.Count;
@@ -115,7 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         }
 
         /// <inheritdoc />
-        public bool TryGetValue(object key, out ValidationStateEntry value)
+        public bool TryGetValue(object key, [MaybeNullWhen(false)] out ValidationStateEntry value)
         {
             return _inner.TryGetValue(key, out value);
         }
@@ -124,31 +132,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         IEnumerator IEnumerable.GetEnumerator()
         {
             return ((IDictionary<object, ValidationStateEntry>)_inner).GetEnumerator();
-        }
-
-        private class ReferenceEqualityComparer : IEqualityComparer<object>
-        {
-            private static readonly bool IsMono = Type.GetType("Mono.Runtime") != null;
-
-            public static readonly ReferenceEqualityComparer Instance = new ReferenceEqualityComparer();
-
-            public new bool Equals(object x, object y)
-            {
-                return Object.ReferenceEquals(x, y);
-            }
-
-            public int GetHashCode(object obj)
-            {
-                // RuntimeHelpers.GetHashCode sometimes crashes the runtime on Mono 4.0.4
-                // See: https://github.com/aspnet/External/issues/45
-                // The workaround here is to just not hash anything, and fall back to an equality check.
-                if (IsMono)
-                {
-                    return 0;
-                }
-
-                return RuntimeHelpers.GetHashCode(obj);
-            }
         }
     }
 }

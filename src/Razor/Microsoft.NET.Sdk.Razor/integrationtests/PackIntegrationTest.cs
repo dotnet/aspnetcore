@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("ComponentLibrary")]
         public async Task Pack_DoesNotIncludeAnyCustomPropsFiles_WhenNoStaticAssetsAreAvailable()
         {
-            MSBuildIntegrationTestBase.TargetFramework = "netstandard2.0";
+            Project.TargetFramework = "netstandard2.0";
 
             var result = await DotnetMSBuild("Pack");
 
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("PackageLibraryTransitiveDependency")]
         public async Task Pack_Incremental_DoesNotRegenerateCacheAndPropsFiles()
         {
-            TargetFramework = "netstandard2.0";
+            Project.TargetFramework = "netstandard2.0";
             var result = await DotnetMSBuild("Pack");
 
             Assert.BuildPassed(result, allowWarnings: true);

@@ -29,7 +29,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                                          ITransferFormatFeature,
                                          IHttpContextFeature,
                                          IHttpTransportFeature,
-                                         IConnectionInherentKeepAliveFeature
+                                         IConnectionInherentKeepAliveFeature,
+                                         IConnectionLifetimeFeature
     {
         private static long _tenSeconds = TimeSpan.FromSeconds(10).Ticks;
 
@@ -41,6 +42,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private PipeWriterStream _applicationStream;
         private IDuplexPipe _application;
         private IDictionary<object, object> _items;
+        private CancellationTokenSource _connectionClosedTokenSource;
 
         private CancellationTokenSource _sendCts;
         private bool _activeSend;
@@ -82,6 +84,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             Features.Set<IHttpContextFeature>(this);
             Features.Set<IHttpTransportFeature>(this);
             Features.Set<IConnectionInherentKeepAliveFeature>(this);
+            Features.Set<IConnectionLifetimeFeature>(this);
+
+            _connectionClosedTokenSource = new CancellationTokenSource();
+            ConnectionClosed = _connectionClosedTokenSource.Token;
         }
 
         public CancellationTokenSource Cancellation { get; set; }
@@ -169,6 +175,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public TransferFormat ActiveFormat { get; set; }
 
         public HttpContext HttpContext { get; set; }
+
+        public override CancellationToken ConnectionClosed { get; set; }
+
+        public override void Abort()
+        {
+            ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
+
+            HttpContext?.Abort();
+        }
 
         public void OnHeartbeat(Action<object> action, object state)
         {
@@ -305,6 +320,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         // Now complete the application
                         Application?.Output.Complete();
                         Application?.Input.Complete();
+
+                        // Trigger ConnectionClosed
+                        ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
                     }
                 }
                 else
@@ -312,6 +330,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     // If the transport is complete, complete the application pipes
                     Application?.Output.Complete(transportTask.Exception?.InnerException);
                     Application?.Input.Complete();
+
+                    // Trigger ConnectionClosed
+                    ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
 
                     try
                     {

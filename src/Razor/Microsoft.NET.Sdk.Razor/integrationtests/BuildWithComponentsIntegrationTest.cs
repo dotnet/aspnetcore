@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("ComponentLibrary")]
         public async Task Build_WithoutRazorLangVersion_ProducesWarning()
         {
-            TargetFramework = "netstandard2.0";
+            Project.TargetFramework = "netstandard2.0";
             var result = await DotnetMSBuild("Build", "/p:RazorLangVersion=");
 
             Assert.BuildPassed(result, allowWarnings: true);
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("ComponentLibrary")]
         public async Task Building_NetstandardComponentLibrary()
         {
-            TargetFramework = "netstandard2.0";
+            Project.TargetFramework = "netstandard2.0";
 
             // Build
             var result = await DotnetMSBuild("Build");
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("ComponentLibrary")]
         public async Task Build_DoesNotProduceRefsDirectory()
         {
-            TargetFramework = "netstandard2.0";
+            Project.TargetFramework = "netstandard2.0";
 
             // Build
             var result = await DotnetMSBuild("Build");
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("ComponentLibrary")]
         public async Task Publish_DoesNotProduceRefsDirectory()
         {
-            TargetFramework = "netstandard2.0";
+            Project.TargetFramework = "netstandard2.0";
 
             // Build
             var result = await DotnetMSBuild("Publish");

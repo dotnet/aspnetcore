@@ -34,12 +34,10 @@
 
     <ProjectReference
       Include="..\..\Microsoft.AspNetCore.Mvc.Razor.Extensions\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj"
-      Targets="Publish"
       ReferenceOutputAssembly="false"
       IsImplicityDefined="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework;TargetFrameworks" />
-
   </ItemGroup>
 
   <ItemGroup>

@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     public abstract class MSBuildIntegrationTestBase
     {
         private static readonly AsyncLocal<ProjectDirectory> _project = new AsyncLocal<ProjectDirectory>();
-        private static readonly AsyncLocal<string> _projectTfm = new AsyncLocal<string>();
 
         protected MSBuildIntegrationTestBase(BuildServerTestFixtureBase buildServer)
         {
@@ -31,9 +30,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 #error Configuration not supported
 #endif
 
-        protected string IntermediateOutputPath => Path.Combine("obj", Configuration, TargetFramework);
+        protected string IntermediateOutputPath => Path.Combine("obj", Configuration, Project.TargetFramework);
 
-        protected string OutputPath => Path.Combine("bin", Configuration, TargetFramework);
+        protected string OutputPath => Path.Combine("bin", Configuration, Project.TargetFramework);
 
         protected string PublishOutputPath => Path.Combine(OutputPath, "publish");
 
@@ -49,12 +48,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         protected string RazorIntermediateOutputPath => Path.Combine(IntermediateOutputPath, "Razor");
 
         protected string RazorComponentIntermediateOutputPath => Path.Combine(IntermediateOutputPath, "RazorDeclaration");
-
-        internal static string TargetFramework
-        {
-            get => _projectTfm.Value;
-            set => _projectTfm.Value = value;
-        }
 
         protected BuildServerTestFixtureBase BuildServer { get; set; }
 
@@ -111,16 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         internal void AddProjectFileContent(string content)
-        {
-            if (content == null)
-            {
-                throw new ArgumentNullException(nameof(content));
-            }
-
-            var existing = File.ReadAllText(Project.ProjectFilePath);
-            var updated = existing.Replace("<!-- Test Placeholder -->", content);
-            File.WriteAllText(Project.ProjectFilePath, updated);
-        }
+            => Project.AddProjectFileContent(content);
 
         internal void ReplaceContent(string content, params string[] paths)
         {
