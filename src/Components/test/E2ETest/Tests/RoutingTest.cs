@@ -532,7 +532,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             // Navigate to a page without any lazy-loaded dependencies
             SetUrlViaPushState("/");
-            var app = Browser.MountTestComponent<TestRouterWithDynamicAssembly>();
+            var app = Browser.MountTestComponent<TestRouter>();
 
             // Ensure that we haven't requested the lazy loaded assembly
             Assert.False(HasLoadedAssembly("Newtonsoft.Json.dll"));
@@ -556,7 +556,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             // Navigate to a page with lazy loaded assemblies for the first time
             SetUrlViaPushState("/WithDynamicAssembly");
-            var app = Browser.MountTestComponent<TestRouterWithDynamicAssembly>();
+            var app = Browser.MountTestComponent<TestRouter>();
             var button = app.FindElement(By.Id("use-package-button"));
 
             // We should have requested the DLL

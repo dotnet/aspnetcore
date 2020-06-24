@@ -168,6 +168,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             };
         }
 
+        public void SetLazyLoadDefinition(WebAssemblyLazyLoadDefinition lazyLoadDefinition)
+        {
+            WebAssemblyNavigationManager.Instance.LazyLoadDefinition = lazyLoadDefinition;
+        }
+
         /// <summary>
         /// Builds a <see cref="WebAssemblyHost"/> instance based on the configuration of this builder.
         /// </summary>

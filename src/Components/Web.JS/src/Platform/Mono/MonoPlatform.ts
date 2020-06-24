@@ -301,12 +301,11 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       if (dynamicAssemblies) {
         const resourcePromises = Promise.all(assembliesToLoad
             .filter(assembly => dynamicAssemblies.hasOwnProperty(assembly))
-            .map(assembly => resourceLoader.loadResource(assembly, `_framework/_bin/${assembly}`, dynamicAssemblies[assembly], 'assembly'))
+            .map(assembly => resourceLoader.loadResource(assembly, `_framework/${assembly}`, dynamicAssemblies[assembly], 'assembly'))
             .map(async resource => (await resource.response).arrayBuffer()));
 
         return BINDING.js_to_mono_obj(
           resourcePromises.then(resourcesToLoad => {
-            console.log(`resourcesToLoad: ${resourcesToLoad}`)
             if (resourcesToLoad.length) {
               window['Blazor']._internal.readDynamicAssemblies = () => {
                 const array = BINDING.mono_obj_array_new(resourcesToLoad.length);

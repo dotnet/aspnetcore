@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Routing;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services
@@ -20,15 +22,18 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         /// </summary>
         public static WebAssemblyNavigationManager Instance { get; set; }
 
+        public WebAssemblyLazyLoadDefinition LazyLoadDefinition { get; set;  }
+
         public WebAssemblyNavigationManager(string baseUri, string uri)
         {
             Initialize(baseUri, uri);
         }
 
-        public Task SetLocation(string uri, bool isInterceptedLink)
+        public async Task SetLocation(string uri, bool isInterceptedLink)
         {
             Uri = uri;
-            return NotifyLocationChanged(isInterceptedLink);
+            await BeforeLocationChangeAsync();
+            NotifyLocationChanged(isInterceptedLink);
         }
 
         /// <inheritdoc />
@@ -42,15 +47,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             DefaultWebAssemblyJSRuntime.Instance.Invoke<object>(Interop.NavigateTo, uri, forceLoad);
         }
 
-        public override async Task BeforeLocationChangeAsync()
+        public async Task BeforeLocationChangeAsync()
         {
-            if (OnNavigate == null) {
+            if (LazyLoadDefinition == null) {
                 return;
             }
 
-            var assembliesToLoad = OnNavigate(Uri);
+            var path = Uri.Replace(BaseUri, "");
+            var assembliesToLoad = LazyLoadDefinition.GetLazyAssembliesForRoute(path);
 
-            if (assembliesToLoad.Count == 0)
+            if (assembliesToLoad == null)
             {
                 return;
             }
@@ -72,9 +78,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                 null,
                 null);
 
-            for (var i = 0; i < assemblies.Length; i++)
+            foreach (byte[] assembly in assemblies)
             {
-                Assembly.Load((byte[])assemblies[i]);
+                Assembly.Load(assembly);
             }
         }
     }
