@@ -407,7 +407,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         void IHttpHeadersHandler.OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             var nameStr = name.GetHeaderName();
-            _decodedHeaders[nameStr] = value.GetRequestHeaderString(nameStr, _serviceContext.ServerOptions.GetRequestHeaderEncodingSelector());
+            _decodedHeaders[nameStr] = value.GetRequestHeaderString(nameStr, _serviceContext.ServerOptions.RequestHeaderEncodingSelector);
         }
 
         void IHttpHeadersHandler.OnHeadersComplete(bool endStream) { }

@@ -236,8 +236,7 @@ namespace CodeGenerator
                 if (header.Identifier == "ContentLength")
                 {
                     return $@"
-                        {extraIndent}if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector)
-                        {extraIndent}    || ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultLatin1RequestHeaderEncodingSelector))
+                        {extraIndent}if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector))
                         {extraIndent}{{
                         {extraIndent}    AppendContentLength(value);
                         {extraIndent}}}

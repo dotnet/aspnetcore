@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             ConnectionIdFeature = ConnectionId;
 
             HttpRequestHeaders.Reset();
-            HttpRequestHeaders.EncodingSelector = ServerOptions.GetRequestHeaderEncodingSelector();
+            HttpRequestHeaders.EncodingSelector = ServerOptions.RequestHeaderEncodingSelector;
             HttpRequestHeaders.ReuseHeaderValues = !ServerOptions.DisableStringReuse;
             HttpResponseHeaders.Reset();
             RequestHeaders = HttpRequestHeaders;

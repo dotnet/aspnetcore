@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     {
         // internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
         internal static readonly Func<string, Encoding> DefaultRequestHeaderEncodingSelector = _ => null;
-        internal static readonly Func<string, Encoding> DefaultLatin1RequestHeaderEncodingSelector = _ => Encoding.Latin1;
 
         private Func<string, Encoding> _requestHeaderEncodingSelector = DefaultRequestHeaderEncodingSelector;
 
@@ -128,27 +127,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal bool IsDevCertLoaded { get; set; }
 
         /// <summary>
-        /// Treat request headers as Latin-1 or ISO/IEC 8859-1 instead of UTF-8.
-        /// </summary>
-        internal bool Latin1RequestHeaders { get; set; }
-
-        /// <summary>
         /// Specifies a configuration Action to run for each newly created endpoint. Calling this again will replace
         /// the prior action.
         /// </summary>
         public void ConfigureEndpointDefaults(Action<ListenOptions> configureOptions)
         {
             EndpointDefaults = configureOptions ?? throw new ArgumentNullException(nameof(configureOptions));
-        }
-
-        internal Func<string, Encoding> GetRequestHeaderEncodingSelector()
-        {
-            if (ReferenceEquals(_requestHeaderEncodingSelector, DefaultRequestHeaderEncodingSelector) && Latin1RequestHeaders)
-            {
-                return DefaultLatin1RequestHeaderEncodingSelector;
-            }
-
-            return _requestHeaderEncodingSelector;
         }
 
         internal void ApplyEndpointDefaults(ListenOptions listenOptions)

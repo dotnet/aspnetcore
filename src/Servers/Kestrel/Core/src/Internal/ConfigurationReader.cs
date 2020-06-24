@@ -18,14 +18,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private const string EndpointDefaultsKey = "EndpointDefaults";
         private const string EndpointsKey = "Endpoints";
         private const string UrlKey = "Url";
-        private const string Latin1RequestHeadersKey = "Latin1RequestHeaders";
 
         private readonly IConfiguration _configuration;
 
         private IDictionary<string, CertificateConfig> _certificates;
         private EndpointDefaults _endpointDefaults;
         private IEnumerable<EndpointConfig> _endpoints;
-        private bool? _latin1RequestHeaders;
 
         public ConfigurationReader(IConfiguration configuration)
         {
@@ -35,7 +33,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public IDictionary<string, CertificateConfig> Certificates => _certificates ??= ReadCertificates();
         public EndpointDefaults EndpointDefaults => _endpointDefaults ??= ReadEndpointDefaults();
         public IEnumerable<EndpointConfig> Endpoints => _endpoints ??= ReadEndpoints();
-        public bool Latin1RequestHeaders => _latin1RequestHeaders ??= _configuration.GetValue<bool>(Latin1RequestHeadersKey);
 
         private IDictionary<string, CertificateConfig> ReadCertificates()
         {

@@ -9,7 +9,6 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
@@ -554,7 +553,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 || (uint)((ch | 32) - 'a') < 6u;
         }
 
-        // Allow for de-virtualization (see https://github.com/dotnet/coreclr/pull/9230)	
+        // Allow for de-virtualization (see https://github.com/dotnet/coreclr/pull/9230)
         private sealed class UTF8EncodingSealed : UTF8Encoding
         {
             public UTF8EncodingSealed() : base(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true) { }

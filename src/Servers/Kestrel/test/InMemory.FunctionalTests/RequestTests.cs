@@ -2001,7 +2001,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            testContext.ServerOptions.Latin1RequestHeaders = true;
+            testContext.ServerOptions.RequestHeaderEncodingSelector = _ => Encoding.Latin1;
 
             await using (var server = new TestServer(context =>
             {
