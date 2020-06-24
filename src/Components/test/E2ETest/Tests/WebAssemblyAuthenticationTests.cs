@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void WasmAuthentication_Loads()
         {
-            Assert.Equal("Wasm.Authentication.Client", Browser.Title);
+            Browser.Equal("Wasm.Authentication.Client", () => Browser.Title);
         }
 
         [Fact]
@@ -408,8 +408,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         private void WaitUntilLoaded(bool skipHeader = false)
         {
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                driver => driver.FindElement(By.TagName("app")).Text != "Loading...");
+            Browser.Exists(By.TagName("app"));
+            Browser.True(() => Browser.FindElement(By.TagName("app")).Text != "Loading...");
 
             if (!skipHeader)
             {

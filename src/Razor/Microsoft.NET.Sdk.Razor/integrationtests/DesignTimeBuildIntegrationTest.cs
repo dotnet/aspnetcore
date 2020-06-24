@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("ComponentLibrary")]
         public async Task RazorGenerateComponentDesignTime_ReturnsRazorComponentWithTargetPath()
         {
-            TargetFramework = "netstandard2.0";
+            Project.TargetFramework = "netstandard2.0";
 
             var result = await DotnetMSBuild("RazorGenerateComponentDesignTime;_IntrospectRazorComponentWithTargetPath");
 

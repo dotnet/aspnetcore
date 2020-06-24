@@ -18,6 +18,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     Default properties for common Razor SDK behavior.
   -->
   <PropertyGroup>
+    <UsingMicrosoftNETSdkRazor>true</UsingMicrosoftNETSdkRazor>
+
     <!--
     Set to true to automatically include certain file types, such as .cshtml files, as content in the project.
     When referenced via Microsoft.NET.Sdk.Web, this additionally includes all files under wwwroot, and any config files.

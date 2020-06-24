@@ -48,7 +48,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var initialResourcesRequested = GetAndClearRequestedPaths();
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json")));
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm")));
-            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.timezones.dat")));
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".js")));
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".dll")));
 
@@ -60,7 +59,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var subsequentResourcesRequested = GetAndClearRequestedPaths();
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json")));
             Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm")));
-            Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith("/dotnet.timezones.dat")));
             Assert.NotEmpty(subsequentResourcesRequested.Where(path => path.EndsWith(".js")));
             Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith(".dll")));
         }
