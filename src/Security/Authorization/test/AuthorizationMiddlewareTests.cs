@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
         }
 
         [Fact]
-        public async Task AuthZResourceShouldBeHttpContextAndHaveHEndpoint()
+        public async Task AuthZResourceCanBeHttpContextAndHaveEndpoint()
         {
             // Arrange
             HttpContext resource = null;
@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
             var next = new TestRequestDelegate();
 
-            var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+            var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, useContextAsResource: true);
             var endpoint = CreateEndpoint(new AuthorizeAttribute());
             var context = GetHttpContext(endpoint: endpoint);
 
@@ -340,6 +340,31 @@ namespace Microsoft.AspNetCore.Authorization.Test
             Assert.Equal(endpoint, resource.GetEndpoint());
         }
 
+        [Fact]
+        public async Task AuthZResourceShouldBeEndpointByDefault()
+        {
+            // Arrange
+            object resource = null;
+            var policy = new AuthorizationPolicyBuilder().RequireAssertion(c =>
+            {
+                resource = c.Resource as Endpoint;
+                return true;
+            }).Build();
+            var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+            policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
+            var next = new TestRequestDelegate();
+
+            var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, useContextAsResource: true);
+            var endpoint = CreateEndpoint(new AuthorizeAttribute());
+            var context = GetHttpContext(endpoint: endpoint);
+
+            // Act
+            await middleware.Invoke(context);
+
+            // Assert
+            Assert.Equal(endpoint, resource);
+        }
+        
         [Fact]
         public async Task Invoke_RequireUnknownRoleShouldForbid()
         {
@@ -407,11 +432,11 @@ namespace Microsoft.AspNetCore.Authorization.Test
             Assert.True(authenticationService.ForbidCalled);
         }
 
-        private AuthorizationMiddleware CreateMiddleware(RequestDelegate requestDelegate = null, IAuthorizationPolicyProvider policyProvider = null)
+        private AuthorizationMiddleware CreateMiddleware(RequestDelegate requestDelegate = null, IAuthorizationPolicyProvider policyProvider = null, bool useContextAsResource = false)
         {
             requestDelegate = requestDelegate ?? ((context) => Task.CompletedTask);
 
-            return new AuthorizationMiddleware(requestDelegate, policyProvider);
+            return new AuthorizationMiddleware(requestDelegate, policyProvider, new OptionsWrapper<AuthorizationMiddlewareOptions>(new AuthorizationMiddlewareOptions { UseHttpContextAsResource = useContextAsResource }));
         }
 
         private Endpoint CreateEndpoint(params object[] metadata)
