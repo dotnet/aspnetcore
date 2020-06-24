@@ -268,7 +268,7 @@
     <value>Overriding endpoints defined in UseKestrel() because {settingName} is set to true. Binding to address(es) '{addresses}' instead.</value>
   </data>
   <data name="UnsupportedAddressScheme" xml:space="preserve">
-    <value>Unrecognized scheme in server address '{address}'. Only 'http://' is supported.</value>
+    <value>Unrecognized scheme in server address '{address}'. Only 'http://' and 'https://' are supported.</value>
   </data>
   <data name="HeadersAreReadOnly" xml:space="preserve">
     <value>Headers are read-only, response has already started.</value>

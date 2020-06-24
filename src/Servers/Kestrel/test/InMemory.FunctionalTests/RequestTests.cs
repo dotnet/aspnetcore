@@ -559,7 +559,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task TraceIdentifierIsUnique()
         {
             const int identifierLength = 22;
