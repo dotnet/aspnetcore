@@ -51,6 +51,11 @@
     </AssemblyAttribute>
 
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>DefaultNetCoreTargetFramework</_Parameter1>
+      <_Parameter2>$(DefaultNetCoreTargetFramework)</_Parameter2>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>MicrosoftNetCompilersToolsetPackageVersion</_Parameter1>
       <_Parameter2>$(MicrosoftNetCompilersToolsetPackageVersion)</_Parameter2>
     </AssemblyAttribute>
@@ -70,6 +75,11 @@
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\src\BootJsonData.cs" LinkBase="Wasm" />
+    <Compile Include="..\src\AssetsManifestFile.cs" LinkBase="Wasm" />
   </ItemGroup>
 
   <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes">

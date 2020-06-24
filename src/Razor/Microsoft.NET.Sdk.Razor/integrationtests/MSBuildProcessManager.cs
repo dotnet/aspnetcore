@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -15,6 +16,47 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     internal static class MSBuildProcessManager
     {
+        internal static Task<MSBuildResult> DotnetMSBuild(
+            ProjectDirectory project,
+             string target = "Build",
+             string args = null,
+             string buildServerPipeName = null)
+        {
+            var buildArgumentList = new List<string>
+            {
+                // Disable node-reuse. We don't want msbuild processes to stick around
+                // once the test is completed.
+                "/nr:false",
+
+                // Always generate a bin log for debugging purposes
+                "/bl",
+
+                // Let the test app know it is running as part of a test.
+                "/p:RunningAsTest=true",
+
+                $"/p:MicrosoftNETCoreAppRuntimeVersion={BuildVariables.MicrosoftNETCoreAppRuntimeVersion}",
+                $"/p:MicrosoftNetCompilersToolsetPackageVersion={BuildVariables.MicrosoftNetCompilersToolsetPackageVersion}",
+                $"/p:RazorSdkDirectoryRoot={BuildVariables.RazorSdkDirectoryRoot}",
+                $"/p:RepoRoot={BuildVariables.RepoRoot}",
+                $"/p:Configuration={project.Configuration}",
+                $"/t:{target}",
+                args,
+            };
+
+            if (buildServerPipeName != null)
+            {
+                buildArgumentList.Add($@"/p:_RazorBuildServerPipeName=""{buildServerPipeName}""");
+            }
+
+            var buildArguments = string.Join(" ", buildArgumentList);
+
+            return RunProcessAsync(
+                project,
+                buildArguments,
+                timeout: null,
+                MSBuildProcessKind.Dotnet);
+        }
+
         public static async Task<MSBuildResult> RunProcessAsync(
             ProjectDirectory project,
             string arguments,

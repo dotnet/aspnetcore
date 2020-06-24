@@ -36,12 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 throw new InvalidOperationException($"This should be used on a class derived from {typeof(MSBuildIntegrationTestBase)}");
             }
 
-            MSBuildIntegrationTestBase.Project = ProjectDirectory.Create(_originalProjectName, _testProjectName, _baseDirectory, _additionalProjects, _language);
-#if NETCOREAPP
-            MSBuildIntegrationTestBase.TargetFramework = "net5.0";
-#else
-#error Target frameworks need to be updated
-#endif
+            MSBuildIntegrationTestBase.Project = ProjectDirectory.Create(_originalProjectName, new ProjectDirectory.ProjectDirectoryOptions(_baseDirectory, _testProjectName, _language), _additionalProjects);
         }
 
         public override void After(MethodInfo methodUnderTest)
