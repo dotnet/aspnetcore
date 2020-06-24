@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Components
     /// Optional base class for components. Alternatively, components may
     /// implement <see cref="IComponent"/> directly.
     /// </summary>
+    [DebuggerDisplay("{DebuggerDisplayString()}")]
     public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRender
     {
         private readonly RenderFragment _renderFragment;
@@ -331,6 +333,18 @@ namespace Microsoft.AspNetCore.Components
             // reason we have OnAfterRenderAsync is so that the developer doesn't
             // have to use "async void" and do their own exception handling in
             // the case where they want to start an async task.
+        }
+
+        private string DebuggerDisplayString()
+        {
+            if (!_renderHandle.IsInitialized)
+            {
+                return "(uninitialized) " + ToString();
+            }
+            else
+            {
+                return $"({_renderHandle.ComponentId}) " + ToString();
+            }
         }
     }
 }

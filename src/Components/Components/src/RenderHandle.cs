@@ -44,6 +44,10 @@ namespace Microsoft.AspNetCore.Components
         public bool IsInitialized
             => _renderer != null;
 
+        // For debugging purposes, gives access to the component id from ComponentBase so
+        // that it can be displayed on DebuggerDisplayAttribute
+        internal int ComponentId => _componentId;
+
         /// <summary>
         /// Notifies the renderer that the component should be rendered.
         /// </summary>
