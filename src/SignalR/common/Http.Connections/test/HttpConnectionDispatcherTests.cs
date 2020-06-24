@@ -2283,10 +2283,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
 
-                var context = MakeRequest("/foo", connection);
-
                 var services = new ServiceCollection();
                 services.AddSingleton<NeverEndingConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<NeverEndingConnectionHandler>();
                 var app = builder.Build();
@@ -2334,10 +2334,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var connection = manager.CreateConnection();
                 connection.TransportType = HttpTransportType.ServerSentEvents;
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
-                var context = MakeRequest("/foo", connection);
-                SetTransport(context, connection.TransportType);
                 var services = new ServiceCollection();
                 services.AddSingleton<NeverEndingConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+                SetTransport(context, connection.TransportType);
+
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<NeverEndingConnectionHandler>();
                 var app = builder.Build();
@@ -2363,12 +2364,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 connection.TransportType = HttpTransportType.WebSockets;
 
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
-
-                var context = MakeRequest("/foo", connection);
-                SetTransport(context, HttpTransportType.WebSockets);
-
                 var services = new ServiceCollection();
                 services.AddSingleton<NeverEndingConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
+                SetTransport(context, HttpTransportType.WebSockets);
+
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<NeverEndingConnectionHandler>();
                 var app = builder.Build();
@@ -2413,13 +2413,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var connection = manager.CreateConnection();
                 connection.TransportType = HttpTransportType.ServerSentEvents;
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
-                var context = MakeRequest("/foo", connection);
+                var services = new ServiceCollection();
+                services.AddSingleton<NeverEndingConnectionHandler>();
+                var context = MakeRequest("/foo", connection, services);
                 var lifetimeFeature = new CustomHttpRequestLifetimeFeature();
                 context.Features.Set<IHttpRequestLifetimeFeature>(lifetimeFeature);
                 SetTransport(context, connection.TransportType);
 
-                var services = new ServiceCollection();
-                services.AddSingleton<NeverEndingConnectionHandler>();
                 var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseConnectionHandler<NeverEndingConnectionHandler>();
                 var app = builder.Build();
