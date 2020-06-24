@@ -5,6 +5,17 @@ import { EventDelegator } from '../Rendering/EventDelegator';
 let hasEnabledNavigationInterception = false;
 let hasRegisteredNavigationEventListeners = false;
 
+
+// Substitute for the clients adress bar and location.
+const locationStub = {
+  href: document.location.origin,
+};
+
+// Set the location to the base route if it's anything else.
+if (document.location.href !== (document.location.origin + '/')) {
+  document.location.href = document.location.origin + '/';
+}
+
 // Will be initialized once someone registers
 let notifyLocationChangedCallback: ((uri: string, intercepted: boolean) => Promise<void>) | null = null;
 
@@ -14,7 +25,7 @@ export const internalFunctions = {
   enableNavigationInterception,
   navigateTo,
   getBaseURI: () => document.baseURI,
-  getLocationHref: () => location.href,
+  getLocationHref: () => locationStub.href,
 };
 
 function listenForNavigationEvents(callback: (uri: string, intercepted: boolean) => Promise<void>) {
@@ -78,7 +89,7 @@ export function navigateTo(uri: string, forceLoad: boolean, replace: boolean = f
   if (!forceLoad && isWithinBaseUriSpace(absoluteUri)) {
     // It's an internal URL, so do client-side navigation
     performInternalNavigation(absoluteUri, false, replace);
-  } else if (forceLoad && location.href === uri) {
+  } else if (forceLoad && locationStub.href === uri) {
     // Force-loading the same URL you're already on requires special handling to avoid
     // triggering browser-specific behavior issues.
     // For details about what this fixes and why, see https://github.com/dotnet/aspnetcore/pull/10839
@@ -101,17 +112,14 @@ function performInternalNavigation(absoluteInternalHref: string, interceptedLink
   // we render the new page. As a best approximation, wait until the next batch.
   resetScrollAfterNextBatch();
 
-  if(!replace){
-    history.pushState(null, /* ignored title */ '', absoluteInternalHref);
-  }else{
-    history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
-  }
+  locationStub.href = absoluteInternalHref;
+  // history.pushState(null, /* ignored title */ '', absoluteInternalHref);
   notifyLocationChanged(interceptedLink);
 }
 
 async function notifyLocationChanged(interceptedLink: boolean) {
   if (notifyLocationChangedCallback) {
-    await notifyLocationChangedCallback(location.href, interceptedLink);
+    await notifyLocationChangedCallback(locationStub.href, interceptedLink);
   }
 }
 
