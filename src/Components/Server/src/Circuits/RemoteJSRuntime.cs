@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _options = options.Value;
             _logger = logger;
             DefaultAsyncTimeout = _options.JSInteropDefaultCallTimeout;
-            JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter());
+            JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(this));
         }
 
         internal void Initialize(CircuitClientProxy clientProxy)

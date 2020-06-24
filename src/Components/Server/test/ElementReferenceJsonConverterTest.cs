@@ -4,19 +4,30 @@
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.JSInterop;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components
 {
     public class ElementReferenceJsonConverterTest
     {
-        private readonly ElementReferenceJsonConverter Converter = new ElementReferenceJsonConverter();
+        private readonly IJSRuntime TestRuntime;
+
+        private readonly ElementReferenceJsonConverter Converter;
+
+        public ElementReferenceJsonConverterTest()
+        {
+            TestRuntime = new TestJsRuntime();
+            Converter = new ElementReferenceJsonConverter(TestRuntime);
+        }
 
         [Fact]
         public void Serializing_Works()
         {
             // Arrange
-            var elementReference = ElementReference.CreateWithUniqueId();
+            var elementReference = ElementReference.CreateWithUniqueId(TestRuntime);
             var expected = $"{{\"__internalId\":\"{elementReference.Id}\"}}";
             var memoryStream = new MemoryStream();
             var writer = new Utf8JsonWriter(memoryStream);
@@ -34,7 +45,7 @@ namespace Microsoft.AspNetCore.Components
         public void Deserializing_Works()
         {
             // Arrange
-            var id = ElementReference.CreateWithUniqueId().Id;
+            var id = ElementReference.CreateWithUniqueId(TestRuntime).Id;
             var json = $"{{\"__internalId\":\"{id}\"}}";
             var bytes = Encoding.UTF8.GetBytes(json);
             var reader = new Utf8JsonReader(bytes);
@@ -51,7 +62,7 @@ namespace Microsoft.AspNetCore.Components
         public void Deserializing_WithFormatting_Works()
         {
             // Arrange
-            var id = ElementReference.CreateWithUniqueId().Id;
+            var id = ElementReference.CreateWithUniqueId(TestRuntime).Id;
             var json =
 @$"{{
     ""__internalId"": ""{id}""
@@ -103,6 +114,15 @@ namespace Microsoft.AspNetCore.Components
 
             // Assert
             Assert.Equal("__internalId is required.", ex.Message);
+        }
+
+        private class TestJsRuntime : IJSRuntime
+        {
+            public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args) =>
+                ValueTask.FromResult(default(TValue));
+
+            public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) =>
+                ValueTask.FromResult(default(TValue));
         }
     }
 }

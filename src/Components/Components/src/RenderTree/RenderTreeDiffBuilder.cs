@@ -6,6 +6,8 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
@@ -917,7 +919,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         private static void InitializeNewElementReferenceCaptureFrame(ref DiffContext diffContext, ref RenderTreeFrame newFrame)
         {
-            var newElementReference = ElementReference.CreateWithUniqueId();
+            var jsRuntime = diffContext.Renderer.GetJSRuntime();
+            var newElementReference = ElementReference.CreateWithUniqueId(jsRuntime);
             newFrame = newFrame.WithElementReferenceCaptureId(newElementReference.Id);
             newFrame.ElementReferenceCaptureAction(newElementReference);
         }

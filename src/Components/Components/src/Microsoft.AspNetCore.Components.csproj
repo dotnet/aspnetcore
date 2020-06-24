@@ -33,18 +33,13 @@
   </ItemGroup>
 
   <Target Name="_GetNuspecDependencyPackageVersions">
-    <MSBuild Targets="_GetPackageVersionInfo"
-        BuildInParallel="$(BuildInParallel)"
-        Projects="
-          ../../Analyzers/src/Microsoft.AspNetCore.Components.Analyzers.csproj;
-          ../../../JSInterop/Microsoft.JSInterop/src/Microsoft.JSInterop.csproj;
-          ../../../Security/Authorization/Core/src/Microsoft.AspNetCore.Authorization.csproj">
+    <MSBuild Targets="_GetPackageVersionInfo" BuildInParallel="$(BuildInParallel)" Projects="&#xD;&#xA;          ../../Analyzers/src/Microsoft.AspNetCore.Components.Analyzers.csproj;&#xD;&#xA;          ../../../JSInterop/Microsoft.JSInterop/src/Microsoft.JSInterop.csproj;&#xD;&#xA;          ../../../Security/Authorization/Core/src/Microsoft.AspNetCore.Authorization.csproj">
       <Output TaskParameter="TargetOutputs" ItemName="_ProjectPathWithVersion" />
     </MSBuild>
     <ItemGroup>
-      <NuspecProperty Include="@(_ProjectPathWithVersion->WithMetadataValue('PackageId', 'Microsoft.AspnetCore.Components.Analyzers')->'componentAnalyzerPackageVersion=%(PackageVersion)')" />
-      <NuspecProperty Include="@(_ProjectPathWithVersion->WithMetadataValue('PackageId', 'Microsoft.AspnetCore.Authorization')->'authorizationPackageVersion=%(PackageVersion)')" />
-      <NuspecProperty Include="@(_ProjectPathWithVersion->WithMetadataValue('PackageId', 'Microsoft.JSInterop')->'jsInteropPackageVersion=%(PackageVersion)')" />
+      <NuspecProperty Include="@(_ProjectPathWithVersion-&gt;WithMetadataValue('PackageId', 'Microsoft.AspnetCore.Components.Analyzers')-&gt;'componentAnalyzerPackageVersion=%(PackageVersion)')" />
+      <NuspecProperty Include="@(_ProjectPathWithVersion-&gt;WithMetadataValue('PackageId', 'Microsoft.AspnetCore.Authorization')-&gt;'authorizationPackageVersion=%(PackageVersion)')" />
+      <NuspecProperty Include="@(_ProjectPathWithVersion-&gt;WithMetadataValue('PackageId', 'Microsoft.JSInterop')-&gt;'jsInteropPackageVersion=%(PackageVersion)')" />
     </ItemGroup>
   </Target>
 
@@ -60,6 +55,10 @@
     <NuspecProperty Include="AssemblyName=$(AssemblyName)" />
     <NuspecProperty Include="OutputPath=$(OutputPath)" />
     <NuspecProperty Include="PackageThirdPartyNoticesFile=$(PackageThirdPartyNoticesFile)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\JSInterop\Microsoft.JSInterop\src\Microsoft.JSInterop.csproj" />
   </ItemGroup>
 
 </Project>

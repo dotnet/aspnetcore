@@ -1,5 +1,4 @@
 @using Microsoft.JSInterop
-@inject IJSRuntime JSRuntime
 
 <button id="focus-button" @onclick="FocusInput">Click to focus!</button>
 <input id="focus-input" @ref="inputReference" />
@@ -9,6 +8,6 @@
 
     private async Task FocusInput()
     {
-        await inputReference.FocusAsync(JSRuntime);
+        await inputReference.FocusAsync();
     }
 }

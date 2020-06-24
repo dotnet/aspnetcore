@@ -9,7 +9,9 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
@@ -368,6 +370,16 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // for tree patching to work in an async environment.
             _eventHandlerIdReplacements.Add(oldEventHandlerId, newEventHandlerId);
         }
+
+        /// <summary>
+        /// Gets the <see cref="IJSRuntime"/> service from the <see cref="Renderer"/>'s service provider.
+        /// </summary>
+        /// <remarks>
+        /// The returned <see cref="IJSRuntime"/> may be <c>null</c> if the <see cref="Renderer"/>'s service
+        /// provider does not have one.
+        /// </remarks>
+        internal IJSRuntime GetJSRuntime()
+            => _serviceProvider.GetService<IJSRuntime>();
 
         private ulong FindLatestEventHandlerIdInChain(ulong eventHandlerId)
         {

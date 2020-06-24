@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Threading;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -23,13 +24,20 @@ namespace Microsoft.AspNetCore.Components
         /// </remarks>
         public string Id { get; }
 
-        public ElementReference(string id)
+        /// <summary>
+        /// Gets the <see cref="IJSRuntime"/> instance used to perform JS interop calls associated with
+        /// this <see cref="ElementReference"/>.
+        /// </summary>
+        public IJSRuntime JSRuntime { get; }
+
+        public ElementReference(string id, IJSRuntime jsRuntime)
         {
             Id = id;
+            JSRuntime = jsRuntime;
         }
 
-        internal static ElementReference CreateWithUniqueId()
-            => new ElementReference(CreateUniqueId());
+        internal static ElementReference CreateWithUniqueId(IJSRuntime jsRuntime)
+            => new ElementReference(CreateUniqueId(), jsRuntime);
 
         private static string CreateUniqueId()
         {
