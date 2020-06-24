@@ -16,6 +16,22 @@ group('Grid', () => {
     app.dispose();
   });
 
+  benchmark('PlainTable: From blank', () => measureRenderGridFromBlank(app), {
+    setup: () => prepare(app, 'PlainTable', false),
+    descriptor: {
+      name: 'blazorwasm/render-plaintable-from-blank',
+      description: 'Time to render plain table from blank (ms)'
+    }
+  });
+
+  benchmark('PlainTable: Switch pages', () => measureRenderGridSwitchPages(app), {
+    setup: () => prepare(app, 'PlainTable', true),
+    descriptor: {
+      name: 'blazorwasm/render-plaintable-switch-pages',
+      description: 'Time to render plain table change of page (ms)'
+    }
+  });
+
   benchmark('ComplexTable: From blank', () => measureRenderGridFromBlank(app), {
     setup: () => prepare(app, 'ComplexTable', false),
     descriptor: {

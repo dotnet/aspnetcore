@@ -7,6 +7,7 @@
 <fieldset>
     <select id="render-mode" @bind="selectedRenderMode">
         <option>@RenderMode.FastGrid</option>
+        <option>@RenderMode.PlainTable</option>
         <option>@RenderMode.ComplexTable</option>
     </select>
 
@@ -24,6 +25,8 @@
 }
 else if (selectedRenderMode == RenderMode.FastGrid)
 {
+    <p>FastGrid represents a minimal, optimized implementation of a grid.</p>
+
     <Grid Data="@forecasts">
         <GridColumn TRowData="WeatherForecast" Title="Date">@context.Date.ToShortDateString()</GridColumn>
         <GridColumn TRowData="WeatherForecast" Title="TemperatureC">@context.TemperatureC</GridColumn>
@@ -47,13 +50,21 @@ else if (selectedRenderMode == RenderMode.FastGrid)
         <GridColumn TRowData="WeatherForecast" Title="Summary">@context.Summary</GridColumn>
     </Grid>
 }
+else if (selectedRenderMode == RenderMode.PlainTable)
+{
+    <p>PlainTable represents a minimal but not optimized implementation of a grid.</p>
+
+    <Wasm.Performance.TestApp.Shared.PlainTable.TableComponent Data="@forecasts" Columns="@Columns" />
+}
 else if (selectedRenderMode == RenderMode.ComplexTable)
 {
-    <Wasm.Performance.TestApp.Shared.ComplexTable.TableComponent Data="@forecasts" Columns="@Columns"></Wasm.Performance.TestApp.Shared.ComplexTable.TableComponent>
+    <p>ComplexTable represents a maximal, not optimized implementation of a grid, using a wide range of Blazor features at once.</p>
+
+    <Wasm.Performance.TestApp.Shared.ComplexTable.TableComponent Data="@forecasts" Columns="@Columns" />
 }
 
 @code {
-    enum RenderMode { ComplexTable, FastGrid }
+    enum RenderMode { PlainTable, ComplexTable, FastGrid }
 
     private RenderMode selectedRenderMode = RenderMode.FastGrid;
 
