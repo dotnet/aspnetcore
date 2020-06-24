@@ -4,8 +4,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
     <UseBlazorWebAssembly>true</UseBlazorWebAssembly>
-
-    <FixupWebAssemblyHttpHandlerReference>true</FixupWebAssemblyHttpHandlerReference>
   </PropertyGroup>
 
   <ItemGroup>

@@ -10,8 +10,6 @@
 
     <!-- Resx generation on Resources.resx only -->
     <GenerateResxSource>false</GenerateResxSource>
-
-    <FixupWebAssemblyHttpHandlerReference>true</FixupWebAssemblyHttpHandlerReference>
   </PropertyGroup>
 
   <ItemGroup>
