@@ -313,7 +313,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_BlazorTypeGranularAssembly
           Include="@(ResolvedFileToPublish)"
-          Condition="$([System.String]::Copy('%(Filename)').StartsWith('Microsoft.AspNetCore.')) or $([System.String]::Copy('%(Filename)').StartsWith('Microsoft.Extensions.'))">
+          Condition="'%(Extension)' == '.dll' AND ($([System.String]::Copy('%(Filename)').StartsWith('Microsoft.AspNetCore.')) or $([System.String]::Copy('%(Filename)').StartsWith('Microsoft.Extensions.')))">
         <Required>false</Required>
         <Preserve>all</Preserve>
       </_BlazorTypeGranularAssembly>

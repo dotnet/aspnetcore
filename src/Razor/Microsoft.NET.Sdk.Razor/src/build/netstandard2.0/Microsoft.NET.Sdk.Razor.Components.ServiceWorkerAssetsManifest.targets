@@ -121,7 +121,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <ItemGroup>
-      <_ServiceWorkerIntermediatePublishFile Include="%(ServiceWorker.IntermediateOutputPath)serviceworkers\%(FileName).publish%(Extension)">
+      <_ServiceWorkerIntermediatePublishFile Include="$(IntermediateOutputPath)serviceworkers\%(FileName).publish%(Extension)">
         <ContentSourcePath Condition="'%(ServiceWorker.PublishedContent)' != ''">%(ServiceWorker.PublishedContent)</ContentSourcePath>
         <ContentSourcePath Condition="'%(ServiceWorker.PublishedContent)' == ''">%(ServiceWorker.Identity)</ContentSourcePath>
         <RelativePath>%(ServiceWorker.Identity)</RelativePath>
@@ -154,7 +154,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         CopyToPublishDirectory="PreserveNewest"
         RelativePath="%(_ServiceWorkerIntermediatePublishFile.RelativePath)"
         ExcludeFromSingleFile="true" />
-      
+
       <ResolvedFileToPublish
         Include="$(_ServiceWorkerAssetsManifestPublishIntermediateOutputPath)"
         CopyToPublishDirectory="PreserveNewest"

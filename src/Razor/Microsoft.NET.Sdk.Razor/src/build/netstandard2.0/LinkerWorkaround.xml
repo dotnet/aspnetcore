@@ -13,8 +13,6 @@
     <type fullname="System.ComponentModel.TimeSpanConverter" />
   </assembly>
 
-  <assembly fullname="System.Runtime.InteropServices.JavaScript" preserve="all" />
-
   <assembly fullname="System.Text.Json">
     <!-- S.T.J. uses Activator.CreateInstance to instantiate converters, so we need to preserve default constructors.
     For safety, do this for all converter types, even though most of them are preserved anyway due to being referenced
