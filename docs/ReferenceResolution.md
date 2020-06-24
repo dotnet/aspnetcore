@@ -10,10 +10,12 @@ See [ResolveReferences.targets](/eng/targets/ResolveReferences.targets) for the 
 
 The requirements that led to this system are:
 
-* Versions of external dependencies should be consistent.
-* Servicing updates of ASP.NET Core should minimize the number of assemblies which need to re-build and re-ship.
+* Versions of external dependencies should be consistent and easily discovered.
 * Newer versions of packages should not have lower dependency versions than previous releases.
 * Minimize the cascading effect of servicing updates where possible by keeping a consistent baseline of dependencies.
+* Servicing releases should not add or remove dependencies in existing packages.
+
+As a minor point, the current system also makes our project files somewhat less verbose.
 
 ## Recommendations for writing a .csproj
 
@@ -29,11 +31,13 @@ The requirements that led to this system are:
 
 ## Important files
 
-* [eng/Baseline.xml](/eng/Baseline.xml) - this contains the 'baseline' of the latest servicing release for this branch. It should be modified and used to update the generated file, Baseline.Designer.props.
+* [eng/Baseline.xml](/eng/Baseline.xml) - this contains the 'baseline' of the latest servicing release for this branch.
+  It should be modified and used to update the generated file, [eng/Baseline.Designer.props](eng/Baseline.Designer.props).
 * [eng/Dependencies.props](/eng/Dependencies.props) - contains a list of all package references that might be used in the repo.
 * [eng/ProjectReferences.props](/eng/ProjectReferences.props) - lists which assemblies or packages might be available to be referenced as a local project.
 * [eng/Versions.props](/eng/Versions.props) - contains a list of versions which may be updated by automation. This is used by MSBuild to restore and build.
-* [eng/Version.Details.xml](/eng/Version.Details.xml) - used by automation to update dependencies variables in other files.
+* [eng/Version.Details.xml](/eng/Version.Details.xml) - used by automation to update dependency variables in
+  [eng/Versions.props](/eng/Versions.props) and, for SDKs and `msbuild` toolsets, [global.json](global.json).
 
 ## Example: adding a new project
 
@@ -41,18 +45,17 @@ Steps for adding a new project to this repo.
 
 1. Create the .csproj
 2. Run `eng/scripts/GenerateProjectList.ps1`
-3. Add it to Extensions.sln
+3. Add it to Mvc.sln (for example)
 
 ## Example: adding a new dependency
 
 Steps for adding a new package dependency to an existing project. Let's say I'm adding a dependency on System.Banana.
 
 1. Add the package to the .csproj file using `<Reference Include="System.Banana" />`
-2. Add an entry to [eng/Dependencies.props](/eng/Dependencies.props), `<LatestPackageReference Include="System.Banana" Version="0.0.1-beta-1" />`
-3. If this package comes from another dotnet team and should be updated automatically by our bot...
-    1. Change the LatestPackageReference entry to `Version="$(SystemBananaPackageVersion)"`.
-    2. Add an entry to [eng/Versions.props](/eng/Versions.props) like this `<SystemBananaPackageVersion>0.0.1-beta-1</SystemBananaPackageVersion>`.
-    3. Add an entry to [eng/Version.Details.xml](/eng/Version.Details.xml) like this:
+2. Add an entry to [eng/Dependencies.props](/eng/Dependencies.props) e.g. `<LatestPackageReference Include="System.Banana" />`
+3. If this package comes from another dotnet team and should be updated automatically by our bot&hellip;
+    1. Add an entry to [eng/Versions.props](/eng/Versions.props) like this `<SystemBananaPackageVersion>0.0.1-beta-1</SystemBananaPackageVersion>`.
+    2. Add an entry to [eng/Version.Details.xml](/eng/Version.Details.xml) like this:
 
         ```xml
         <ProductDependencies>
@@ -65,27 +68,28 @@ Steps for adding a new package dependency to an existing project. Let's say I'm 
         </ProductDependencies>
         ```
 
-       If you don't know the commit hash of the source code used to produce "0.0.1-beta-1", you can use `000000` as a placeholder for `Sha`
-       as its value is unimportant and will be updated the next time the bot runs.
+        If you don't know the commit hash of the source code used to produce "0.0.1-beta-1", you can use `000000` as a
+        placeholder for `Sha` as its value will be updated the next time the bot runs.
 
-        If the new dependency comes from dotnet/CoreFx, dotnet/code-setup or dotnet/extensions, add a
+        If the new dependency comes from dotnet/runtime and you are updating dotnet/aspnetcore-tooling, add a
         `CoherentParentDependency` attribute to the `<Dependency>` element as shown below. This example indicates the
-        dotnet/CoreFx dependency version should be determined based on the build that produced the chosen
-        Microsoft.NETCore.App. That is, the dotnet/CoreFx dependency and Microsoft.NETCore.App should be
-        coherent.
+        dotnet/runtime dependency version for System.Banana should be determined based on the dotnet/aspnetcore build
+        that produced the chosen Microsoft.CodeAnalysis.Razor. That is, the dotnet/runtime and dotnet/aspnetcore
+        dependencies should be coherent.
 
         ```xml
-        <Dependency Name="System.Banana" Version="0.0.1-beta-1" CoherentParentDependency="Microsoft.NETCore.App">
+        <Dependency Name="System.Banana" Version="0.0.1-beta-1" CoherentParentDependency="Microsoft.CodeAnalysis.Razor">
           <!-- ... -->
         </Dependency>
         ```
 
-        The attribute value should be `"Microsoft.Extensions.Logging"` for dotnet/core-setup dependencies and
-        `"Microsoft.CodeAnalysis.Razor"` for dotnet/extensions dependencies.
+        The attribute value should be `"Microsoft.CodeAnalysis.Razor"` for dotnet/runtime dependencies in
+        dotnet/aspnetcore-tooling.
 
 ## Example: make a breaking change to references
 
-If Microsoft.AspNetCore.Banana in 2.1 had a reference to `Microsoft.AspNetCore.Orange`, but in 3.0 this reference is changing to `Microsoft.AspNetCore.BetterThanOrange`, you would need to make these changes to the .csproj file
+If Microsoft.AspNetCore.Banana in 2.1 had a reference to `Microsoft.AspNetCore.Orange`, but in 3.1 or 5.0 this reference
+is changing to `Microsoft.AspNetCore.BetterThanOrange`, you would need to make these changes to the .csproj file
 
 ```diff
 <!-- in Microsoft.AspNetCore.Banana.csproj -->
@@ -100,8 +104,12 @@ If Microsoft.AspNetCore.Banana in 2.1 had a reference to `Microsoft.AspNetCore.O
 
 If the `dotnet-maestro` bot has not correctly updated the dependencies, it may be worthwhile running `darc` manually:
 
-1. Install `darc` as described in https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md#setting-up-your-darc-client
-2. Run `darc update-dependencies --channel '.NET Core 3 Dev'`
-   * Use `'.NET Core 3 Release'` in a `release/3.0-*` branch
+1. Install `darc` as described in <https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md#setting-up-your-darc-client>
+2. Run `darc update-dependencies --channel '.NET Core 3.1 Release'`
+   * Use `'trigger-subscriptions'` to prod the bot to create a PR if you do not want to make local changes
+   * Use `'.NET 3 Eng''` to update dependencies from dotnet/arcade
+   * Use `'.NET Eng - Latest'` to update dependencies from dotnet/arcade in the `master` branch
+   * Use `'VS Master'` to update dependencies from dotnet/roslyn in the `master` branch
+   * Use `'.NET 5 Dev'` to update dependencies from dotnet/efcore or dotnet/runtime in the `master` branch
 3. `git diff` to confirm the tool's changes
 4. Proceed with usual commit and PR
