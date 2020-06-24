@@ -18,10 +18,11 @@ namespace Microsoft.AspNetCore.Authorization
         private readonly RequestDelegate _next;
         private readonly IAuthorizationPolicyProvider _policyProvider;
 
-        public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider)
+        public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider, IOptions<AuthorizationMiddelwareOptions> options)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
             _policyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
+            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));;
         }
 
         public async Task Invoke(HttpContext context)
@@ -61,8 +62,7 @@ namespace Microsoft.AspNetCore.Authorization
                 return;
             }
 
-            var authorizeResult = await policyEvaluator.AuthorizeAsync(policy, authenticateResult, context, resource: context);
-
+            var authorizeResult = await policyEvaluator.AuthorizeAsync(policy, authenticateResult, context, resource: _options.UseHttpContextAsResource ? context : endpoint);
             var authorizationMiddlewareResultHandler = context.RequestServices.GetRequiredService<IAuthorizationMiddlewareResultHandler>();
             await authorizationMiddlewareResultHandler.HandleAsync(_next, context, policy, authorizeResult);
         }
