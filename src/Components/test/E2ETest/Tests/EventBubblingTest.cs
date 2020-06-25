@@ -48,6 +48,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void BubblingStandardEvent_FiredOnElementWithoutHandler()
         {
             Browser.FindElement(By.Id("button-without-onclick")).Click();

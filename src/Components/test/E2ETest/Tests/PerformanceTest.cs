@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
     {
         public PerformanceTest(
             BrowserFixture browserFixture,
-            DevHostServerFixture<Wasm.Performance.TestApp.Program> serverFixture,
+            DevHostServerFixture<Wasm.Performance.TestApp.Program> servecrFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void BenchmarksRunWithoutError()
         {
             // In CI, we only verify that the benchmarks run without throwing any
