@@ -20,6 +20,11 @@ namespace Microsoft.AspNetCore.Authorization
         private readonly IAuthorizationPolicyProvider _policyProvider;
         private readonly AuthorizationMiddlewareOptions _options;
 
+        public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider) 
+            : this(next, policyProvider, new OptionsWrapper<AuthorizationMiddlewareOptions>(new AuthorizationMiddlewareOptions())) 
+        { 
+        }
+        
         public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider, IOptions<AuthorizationMiddlewareOptions> options)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
