@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 throw new ArgumentNullException(nameof(user));
             }
-            var ms = new MemoryStream();
+            using var ms = new MemoryStream();
             var userId = await manager.GetUserIdAsync(user);
             using (var writer = ms.CreateWriter())
             {
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Identity
             try
             {
                 var unprotectedData = Protector.Unprotect(Convert.FromBase64String(token));
-                var ms = new MemoryStream(unprotectedData);
+                using var ms = new MemoryStream(unprotectedData);
                 using (var reader = ms.CreateReader())
                 {
                     var creationTime = reader.ReadDateTimeOffset();
