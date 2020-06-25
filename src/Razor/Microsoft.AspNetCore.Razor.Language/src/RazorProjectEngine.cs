@@ -217,6 +217,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             ComponentLayoutDirective.Register(builder);
             ComponentPageDirective.Register(builder);
             ComponentTypeParamDirective.Register(builder);
+            ComponentPreserveWhitespaceDirective.Register(builder);
 
             // Document Classifier
             builder.Features.Add(new ComponentDocumentClassifierPass());

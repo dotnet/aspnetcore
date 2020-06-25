@@ -426,6 +426,16 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             return RazorDiagnostic.Create(Parsing_DirectiveExpectsCSharpAttribute, location, directiveName);
         }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_DirectiveExpectsBooleanLiteral =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1038",
+                () => Resources.DirectiveExpectsBooleanLiteral,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_DirectiveExpectsBooleanLiteral(SourceSpan location, string directiveName)
+        {
+            return RazorDiagnostic.Create(Parsing_DirectiveExpectsBooleanLiteral, location, directiveName);
+        }
         #endregion
 
         #region Semantic Errors

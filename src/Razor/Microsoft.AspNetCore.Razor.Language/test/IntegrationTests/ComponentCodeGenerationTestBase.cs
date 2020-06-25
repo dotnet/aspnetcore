@@ -2081,6 +2081,35 @@ namespace AnotherTest
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void Component_WithPreserveWhitespaceDirective()
+        {
+            // Arrange / Act
+            var generated = CompileToCSharp(@"
+@preservewhitespace false
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_WithPreserveWhitespaceDirective_Invalid()
+        {
+            // Arrange / Act
+            var generated = CompileToCSharp(@"
+@preservewhitespace someVariable
+@code {
+    bool someVariable = false;
+}
+", throwOnFailure: false);
+
+            // Assert
+            Assert.Collection(generated.Diagnostics, d => { Assert.Equal("RZ1038", d.Id); });
+        }
+
         #endregion
 
         #region EventCallback
