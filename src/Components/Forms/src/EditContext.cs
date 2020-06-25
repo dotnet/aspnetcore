@@ -36,17 +36,17 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// An event that is raised when a field value changes.
         /// </summary>
-        public event EventHandler<FieldChangedEventArgs> OnFieldChanged;
+        public event EventHandler<FieldChangedEventArgs>? OnFieldChanged;
 
         /// <summary>
         /// An event that is raised when validation is requested.
         /// </summary>
-        public event EventHandler<ValidationRequestedEventArgs> OnValidationRequested;
+        public event EventHandler<ValidationRequestedEventArgs>? OnValidationRequested;
 
         /// <summary>
         /// An event that is raised when validation state has changed.
         /// </summary>
-        public event EventHandler<ValidationStateChangedEventArgs> OnValidationStateChanged;
+        public event EventHandler<ValidationStateChangedEventArgs>? OnValidationStateChanged;
 
         /// <summary>
         /// Supplies a <see cref="FieldIdentifier"/> corresponding to a specified field name
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="fieldIdentifier">Identifies the field whose value has been changed.</param>
         public void NotifyFieldChanged(in FieldIdentifier fieldIdentifier)
         {
-            GetFieldState(fieldIdentifier, ensureExists: true).IsModified = true;
+            GetOrAddFieldState(fieldIdentifier).IsModified = true;
             OnFieldChanged?.Invoke(this, new FieldChangedEventArgs(fieldIdentifier));
         }
 
@@ -196,9 +196,15 @@ namespace Microsoft.AspNetCore.Components.Forms
             return !GetValidationMessages().Any();
         }
 
-        internal FieldState GetFieldState(in FieldIdentifier fieldIdentifier, bool ensureExists)
+        internal FieldState? GetFieldState(in FieldIdentifier fieldIdentifier)
         {
-            if (!_fieldStates.TryGetValue(fieldIdentifier, out var state) && ensureExists)
+            _fieldStates.TryGetValue(fieldIdentifier, out var state);
+            return state;
+        }
+
+        internal FieldState GetOrAddFieldState(in FieldIdentifier fieldIdentifier)
+        {
+            if (!_fieldStates.TryGetValue(fieldIdentifier, out var state))
             {
                 state = new FieldState(fieldIdentifier);
                 _fieldStates.Add(fieldIdentifier, state);

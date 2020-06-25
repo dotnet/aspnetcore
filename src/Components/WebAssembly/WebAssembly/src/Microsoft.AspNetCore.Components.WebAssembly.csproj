@@ -23,11 +23,6 @@
       Private="false"
       Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'" />
 
-    <!-- Tracking removing using https://github.com/dotnet/aspnetcore/issues/22283 -->
-    <ProjectReference
-      Include="..\..\WebAssemblyHttpHandler\src\Microsoft.AspNetCore.Components.WebAssembly.HttpHandler.csproj"
-      IncludeAssets="compile" />
-
     <SuppressBaselineReference Include="Microsoft.AspNetCore.Components.WebAssembly.HttpHandler" />
   </ItemGroup>
 

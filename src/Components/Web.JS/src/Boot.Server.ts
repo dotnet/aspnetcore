@@ -56,16 +56,18 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
     return true;
   };
 
-  window.addEventListener(
-    'unload',
-    () => {
+  let disconnectSent = false;
+  const cleanup = () => {
+    if (!disconnectSent) {
       const data = new FormData();
       const circuitId = circuit.circuitId!;
       data.append('circuitId', circuitId);
-      navigator.sendBeacon('_blazor/disconnect', data);
-    },
-    false
-  );
+      disconnectSent = navigator.sendBeacon('_blazor/disconnect', data);
+    }
+  };
+
+  window.addEventListener('beforeunload', cleanup, { capture: false, once: true });
+  window.addEventListener('unload', cleanup, { capture: false, once: true });
 
   window['Blazor'].reconnect = reconnect;
 

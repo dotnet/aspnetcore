@@ -48,10 +48,12 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (configure != null)
+            if (configure == null)
             {
-                builder.Services.Configure<HubOptions<ComponentHub>>(configure);
+                throw new ArgumentNullException(nameof(configure));
             }
+
+            builder.Services.Configure<HubOptions<ComponentHub>>(configure);
 
             return builder;
         }
