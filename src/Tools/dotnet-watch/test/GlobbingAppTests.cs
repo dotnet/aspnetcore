@@ -21,9 +21,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _app = new GlobbingApp(logger);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/23360", Queues = "Debian.9.Arm64;Debian.9.Arm64.Open")]
         public async Task ChangeCompiledFile(bool usePollingWatcher)
         {
             _app.UsePollingWatcher = usePollingWatcher;
@@ -41,7 +42,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Equal(2, types);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/23360", Queues = "Debian.9.Arm64;Debian.9.Arm64.Open")]
         public async Task DeleteCompiledFile()
         {
             await _app.StartWatcherAsync();
@@ -57,7 +59,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Equal(1, types);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/23360", Queues = "Debian.9.Arm64;Debian.9.Arm64.Open")]
         public async Task DeleteSourceFolder()
         {
             await _app.StartWatcherAsync();
@@ -73,7 +76,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Equal(1, types);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/23360", Queues = "Debian.9.Arm64;Debian.9.Arm64.Open")]
         public async Task RenameCompiledFile()
         {
             await _app.StartWatcherAsync();

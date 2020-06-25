@@ -23,7 +23,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _output = logger;
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/23360", Queues = "Debian.9.Arm64;Debian.9.Arm64.Open")]
         public async Task RestartProcessOnFileChange()
         {
             await _app.StartWatcherAsync(new[] { "--no-exit" });

@@ -19,7 +19,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _app = new AppWithDeps(logger);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/23360", Queues = "Windows.10.Arm64;Windows.10.Arm64.Open;Debian.9.Arm64;Debian.9.Arm64.Open")]
         public async Task ChangeFileInDependency()
         {
             await _app.StartWatcherAsync();
