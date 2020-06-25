@@ -14,16 +14,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     internal class RemoteJSRuntime : JSRuntime
     {
         private readonly CircuitOptions _options;
-        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<RemoteJSRuntime> _logger;
         private CircuitClientProxy _clientProxy;
 
         public ElementReferenceContext ElementReferenceContext { get; }
 
-        public RemoteJSRuntime(IOptions<CircuitOptions> options, IServiceProvider serviceProvider, ILogger<RemoteJSRuntime> logger)
+        public RemoteJSRuntime(IOptions<CircuitOptions> options, ILogger<RemoteJSRuntime> logger)
         {
             _options = options.Value;
-            _serviceProvider = serviceProvider;
             _logger = logger;
             DefaultAsyncTimeout = _options.JSInteropDefaultCallTimeout;
             ElementReferenceContext = new WebElementReferenceContext(this);

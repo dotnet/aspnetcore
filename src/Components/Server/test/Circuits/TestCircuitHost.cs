@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             serviceScope = serviceScope ?? Mock.Of<IServiceScope>();
             clientProxy = clientProxy ?? new CircuitClientProxy(Mock.Of<IClientProxy>(), Guid.NewGuid().ToString());
-            var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()), Mock.Of<IServiceProvider>(), Mock.Of<ILogger<RemoteJSRuntime>>());
+            var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()), Mock.Of<ILogger<RemoteJSRuntime>>());
 
             if (remoteRenderer == null)
             {
