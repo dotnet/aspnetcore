@@ -64,7 +64,8 @@ namespace Microsoft.AspNetCore.Authorization
                 return;
             }
 
-            var authorizeResult = await policyEvaluator.AuthorizeAsync(policy, authenticateResult, context, resource: _options.UseHttpContextAsResource ? context : endpoint);
+            object resource = _options.UseHttpContextAsResource ? context : endpoint;
+            var authorizeResult = await policyEvaluator.AuthorizeAsync(policy, authenticateResult, context, resource);
             var authorizationMiddlewareResultHandler = context.RequestServices.GetRequiredService<IAuthorizationMiddlewareResultHandler>();
             await authorizationMiddlewareResultHandler.HandleAsync(_next, context, policy, authorizeResult);
         }
