@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23366")]
         public void CanSendAndReceiveBytes()
         {
             IssueRequest("/subdir/api/data");
