@@ -355,7 +355,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
             var next = new TestRequestDelegate();
 
-            var middleware = CreateMiddleware(next.Invoke, policyProvider.Object, useContextAsResource: true);
+            var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
             var endpoint = CreateEndpoint(new AuthorizeAttribute());
             var context = GetHttpContext(endpoint: endpoint);
 
