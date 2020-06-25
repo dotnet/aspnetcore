@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             object resource = null;
             var policy = new AuthorizationPolicyBuilder().RequireAssertion(c =>
             {
-                resource = c.Resource as Endpoint;
+                resource = c.Resource;
                 return true;
             }).Build();
             var policyProvider = new Mock<IAuthorizationPolicyProvider>();
