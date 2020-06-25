@@ -86,6 +86,27 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
+        public async Task Caching_304_NotCached()
+        {
+            var requestCount = 1;
+            using (Utilities.CreateHttpServer(out string address, httpContext =>
+            {
+                // 304 responses are not themselves cachable. Their cache header mirrors the resource's original cache header.
+                httpContext.Response.StatusCode = StatusCodes.Status304NotModified;
+                httpContext.Response.ContentType = "some/thing"; // Http.Sys requires content-type for caching
+                httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
+                httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
+                httpContext.Response.ContentLength = 10;
+                return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
+            }))
+            {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
+                Assert.Equal("1", await SendRequestAsync(address, StatusCodes.Status304NotModified));
+                Assert.Equal("2", await SendRequestAsync(address, StatusCodes.Status304NotModified));
+            }
+        }
+
+        [ConditionalFact]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2207")]
         public async Task Caching_WithoutContentType_Cached_OnWin7AndWin2008R2()
         {
