@@ -307,36 +307,26 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_CreateBlazorTrimmerRootDescriptorFiles" BeforeTargets="ILLink" AfterTargets="ComputeResolvedFilesToPublishList">
     <PropertyGroup>
-      <_BlazorApplicationTrimmerDescriptorFile>$(IntermediateOutputPath)default.trimmerdescriptor.xml</_BlazorApplicationTrimmerDescriptorFile>
       <_BlazorTypeGranularTrimmerDescriptorFile>$(IntermediateOutputPath)typegranularity.trimmerdescriptor.xml</_BlazorTypeGranularTrimmerDescriptorFile>
     </PropertyGroup>
 
     <ItemGroup>
       <_BlazorTypeGranularAssembly
           Include="@(ResolvedFileToPublish)"
-          Condition="$([System.String]::Copy('%(Filename)').StartsWith('Microsoft.AspNetCore.')) or $([System.String]::Copy('%(Filename)').StartsWith('Microsoft.Extensions.'))">
+          Condition="'%(Extension)' == '.dll' AND ($([System.String]::Copy('%(Filename)').StartsWith('Microsoft.AspNetCore.')) or $([System.String]::Copy('%(Filename)').StartsWith('Microsoft.Extensions.')))">
         <Required>false</Required>
         <Preserve>all</Preserve>
       </_BlazorTypeGranularAssembly>
-
-      <_BlazorApplicationAssembly Include="@(IntermediateAssembly)">
-        <Required>true</Required>
-      </_BlazorApplicationAssembly>
     </ItemGroup>
-
-    <CreateBlazorTrimmerRootDescriptorFile
-      Assemblies="@(_BlazorApplicationAssembly)"
-      TrimmerFile="$(_BlazorApplicationTrimmerDescriptorFile)" />
 
     <CreateBlazorTrimmerRootDescriptorFile
       Assemblies="@(_BlazorTypeGranularAssembly)"
       TrimmerFile="$(_BlazorTypeGranularTrimmerDescriptorFile)" />
 
     <ItemGroup>
-      <TrimmerRootDescriptor Include="$(_BlazorApplicationTrimmerDescriptorFile)" />
+      <TrimmerRootDescriptor Include="$(_BlazorTypeGranularTrimmerDescriptorFile)" />
       <TrimmerRootDescriptor Include="$(MSBuildThisFileDirectory)LinkerWorkaround.xml" />
 
-      <FileWrites Include="$(_BlazorApplicationTrimmerDescriptorFile)" />
       <FileWrites Include="$(_BlazorTypeGranularTrimmerDescriptorFile)" />
     </ItemGroup>
   </Target>
