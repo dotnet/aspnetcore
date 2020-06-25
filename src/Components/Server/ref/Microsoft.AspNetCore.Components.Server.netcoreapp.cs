@@ -63,7 +63,7 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static partial class ComponentServiceCollectionExtensions
     {
-        public static Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder AddServerSideBlazor(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Components.Server.CircuitOptions> configure = null) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder AddServerSideBlazor(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Components.Server.CircuitOptions>? configure = null) { throw null; }
     }
     public partial interface IServerSideBlazorBuilder
     {

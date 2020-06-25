@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Components.Forms
     {
         public EditContext(object model) { }
         public object Model { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public event System.EventHandler<Microsoft.AspNetCore.Components.Forms.FieldChangedEventArgs> OnFieldChanged { add { } remove { } }
-        public event System.EventHandler<Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs> OnValidationRequested { add { } remove { } }
-        public event System.EventHandler<Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs> OnValidationStateChanged { add { } remove { } }
+        public event System.EventHandler<Microsoft.AspNetCore.Components.Forms.FieldChangedEventArgs>? OnFieldChanged { add { } remove { } }
+        public event System.EventHandler<Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs>? OnValidationRequested { add { } remove { } }
+        public event System.EventHandler<Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs>? OnValidationStateChanged { add { } remove { } }
         public Microsoft.AspNetCore.Components.Forms.FieldIdentifier Field(string fieldName) { throw null; }
         public System.Collections.Generic.IEnumerable<string> GetValidationMessages() { throw null; }
         public System.Collections.Generic.IEnumerable<string> GetValidationMessages(Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) { throw null; }
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         public object Model { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public static Microsoft.AspNetCore.Components.Forms.FieldIdentifier Create<TField>(System.Linq.Expressions.Expression<System.Func<TField>> accessor) { throw null; }
         public bool Equals(Microsoft.AspNetCore.Components.Forms.FieldIdentifier otherIdentifier) { throw null; }
-        public override bool Equals(object obj) { throw null; }
+        public override bool Equals(object? obj) { throw null; }
         public override int GetHashCode() { throw null; }
     }
     public sealed partial class ValidationMessageStore
