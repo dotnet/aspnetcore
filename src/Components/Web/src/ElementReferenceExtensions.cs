@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components
@@ -17,7 +16,7 @@ namespace Microsoft.AspNetCore.Components
         /// <returns>The <see cref="ValueTask"/> representing the asynchronous focus operation.</returns>
         public static ValueTask FocusAsync(this ElementReference elementReference)
         {
-            var jsRuntime = elementReference.ServiceProvider?.GetService<IJSRuntime>();
+            var jsRuntime = elementReference.GetJSRuntime();
 
             if (jsRuntime == null)
             {
@@ -25,6 +24,16 @@ namespace Microsoft.AspNetCore.Components
             }
 
             return jsRuntime.InvokeVoidAsync(DomWrapperInterop.Focus, elementReference);
+        }
+
+        internal static IJSRuntime GetJSRuntime(this ElementReference elementReference)
+        {
+            if (!(elementReference.Context is WebElementReferenceContext context))
+            {
+                throw new InvalidOperationException("ElementReference has not been configured correctly.");
+            }
+
+            return context.JSRuntime;
         }
     }
 }

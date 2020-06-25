@@ -12,20 +12,20 @@ namespace Microsoft.AspNetCore.Components
 {
     public class ElementReferenceJsonConverterTest
     {
-        private readonly IServiceProvider ServiceProvider;
+        private readonly ElementReferenceContext ElementReferenceContext;
         private readonly ElementReferenceJsonConverter Converter;
 
         public ElementReferenceJsonConverterTest()
         {
-            ServiceProvider = Mock.Of<IServiceProvider>();
-            Converter = new ElementReferenceJsonConverter { ServiceProvider = ServiceProvider};
+            ElementReferenceContext = Mock.Of<ElementReferenceContext>();
+            Converter = new ElementReferenceJsonConverter(ElementReferenceContext);
         }
 
         [Fact]
         public void Serializing_Works()
         {
             // Arrange
-            var elementReference = ElementReference.CreateWithUniqueId(ServiceProvider);
+            var elementReference = ElementReference.CreateWithUniqueId(ElementReferenceContext);
             var expected = $"{{\"__internalId\":\"{elementReference.Id}\"}}";
             var memoryStream = new MemoryStream();
             var writer = new Utf8JsonWriter(memoryStream);
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components
         public void Deserializing_Works()
         {
             // Arrange
-            var id = ElementReference.CreateWithUniqueId(ServiceProvider).Id;
+            var id = ElementReference.CreateWithUniqueId(ElementReferenceContext).Id;
             var json = $"{{\"__internalId\":\"{id}\"}}";
             var bytes = Encoding.UTF8.GetBytes(json);
             var reader = new Utf8JsonReader(bytes);
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Components
         public void Deserializing_WithFormatting_Works()
         {
             // Arrange
-            var id = ElementReference.CreateWithUniqueId(ServiceProvider).Id;
+            var id = ElementReference.CreateWithUniqueId(ElementReferenceContext).Id;
             var json =
 @$"{{
     ""__internalId"": ""{id}""

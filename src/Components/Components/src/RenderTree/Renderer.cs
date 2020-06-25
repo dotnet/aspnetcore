@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     // dispatching events to them, and notifying when the user interface is being updated.
     public abstract partial class Renderer : IDisposable
     {
+        private readonly IServiceProvider _serviceProvider;
         private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
         private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
         private readonly Dictionary<ulong, EventCallback> _eventBindings = new Dictionary<ulong, EventCallback>();
@@ -33,8 +34,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private ulong _lastEventHandlerId;
         private List<Task> _pendingTasks;
         private bool _disposed;
-
-        internal IServiceProvider ServiceProvider { get; }
 
         /// <summary>
         /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
@@ -68,7 +67,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            ServiceProvider = serviceProvider;
+            _serviceProvider = serviceProvider;
             _logger = loggerFactory.CreateLogger<Renderer>();
         }
 
@@ -78,12 +77,17 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public abstract Dispatcher Dispatcher { get; }
 
         /// <summary>
+        /// Gets the <see cref="Components.ElementReferenceContext"/> associated with this <see cref="Renderer"/>.
+        /// </summary>
+        public abstract ElementReferenceContext ElementReferenceContext { get; }
+
+        /// <summary>
         /// Constructs a new component of the specified type.
         /// </summary>
         /// <param name="componentType">The type of the component to instantiate.</param>
         /// <returns>The component instance.</returns>
         protected IComponent InstantiateComponent(Type componentType)
-            => ComponentFactory.Instance.InstantiateComponent(ServiceProvider, componentType);
+            => ComponentFactory.Instance.InstantiateComponent(_serviceProvider, componentType);
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning

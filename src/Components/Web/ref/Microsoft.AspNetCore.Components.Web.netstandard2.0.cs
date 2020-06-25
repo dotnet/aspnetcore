@@ -18,6 +18,10 @@ namespace Microsoft.AspNetCore.Components
     {
         public static System.Threading.Tasks.ValueTask FocusAsync(this Microsoft.AspNetCore.Components.ElementReference elementReference) { throw null; }
     }
+    public partial class WebElementReferenceContext : Microsoft.AspNetCore.Components.ElementReferenceContext
+    {
+        public WebElementReferenceContext(Microsoft.JSInterop.IJSRuntime jsRuntime) { }
+    }
 }
 namespace Microsoft.AspNetCore.Components.Forms
 {

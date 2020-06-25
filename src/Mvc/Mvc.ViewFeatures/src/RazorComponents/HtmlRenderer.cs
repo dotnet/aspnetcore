@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
+        public override ElementReferenceContext ElementReferenceContext => NullElementReferenceContext.Instance;
+
         /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
         {

@@ -3741,6 +3741,8 @@ namespace Microsoft.AspNetCore.Components.Test
 
             public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
+            public override ElementReferenceContext ElementReferenceContext => NullElementReferenceContext.Instance;
+
             public new int AssignRootComponentId(IComponent component)
                 => base.AssignRootComponentId(component);
 

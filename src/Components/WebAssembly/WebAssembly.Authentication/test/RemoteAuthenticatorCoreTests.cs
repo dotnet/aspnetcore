@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [_action] = RemoteAuthenticationActions.LogInCallback,
-                [_onLogInSucceded] = new EventCallbackFactory().Create< RemoteAuthenticationState>(
+                [_onLogInSucceded] = new EventCallbackFactory().Create<RemoteAuthenticationState>(
                     remoteAuthenticator,
                     (state) => loggingSucceededCalled = true),
             });
@@ -698,6 +698,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             private static readonly Dispatcher _dispatcher = Dispatcher.CreateDefault();
 
             public override Dispatcher Dispatcher => _dispatcher;
+
+            public override ElementReferenceContext ElementReferenceContext => NullElementReferenceContext.Instance;
 
             protected override void HandleException(Exception exception)
                 => ExceptionDispatchInfo.Capture(exception).Throw();

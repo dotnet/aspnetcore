@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
 
         public override Dispatcher Dispatcher { get; }
 
+        public override ElementReferenceContext ElementReferenceContext => NullElementReferenceContext.Instance;
+
         public Action OnExceptionHandled { get; set; }
 
         public Action<RenderBatch> OnUpdateDisplay { get; set; }

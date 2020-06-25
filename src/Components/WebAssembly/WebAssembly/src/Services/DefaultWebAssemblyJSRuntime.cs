@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.JSInterop.Infrastructure;
 using Microsoft.JSInterop.WebAssembly;
 
@@ -11,18 +10,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
     {
         internal static readonly DefaultWebAssemblyJSRuntime Instance = new DefaultWebAssemblyJSRuntime();
 
-        private readonly ElementReferenceJsonConverter jsonConverter;
+        public ElementReferenceContext ElementReferenceContext { get; }
 
         private DefaultWebAssemblyJSRuntime()
         {
-            jsonConverter = new ElementReferenceJsonConverter();
-
-            JsonSerializerOptions.Converters.Add(jsonConverter);
-        }
-
-        internal void AddServiceProviderDependency(IServiceProvider serviceProvider)
-        {
-            jsonConverter.ServiceProvider = serviceProvider;
+            ElementReferenceContext = new WebElementReferenceContext(this);
+            JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
         }
 
         #pragma warning disable IDE0051 // Remove unused private members. Invoked via Mono's JS interop mechanism (invoke_method)

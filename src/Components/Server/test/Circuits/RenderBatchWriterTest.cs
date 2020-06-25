@@ -387,6 +387,8 @@ namespace Microsoft.AspNetCore.Components.Server
 
             public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
+            public override ElementReferenceContext ElementReferenceContext => NullElementReferenceContext.Instance;
+
             protected override void HandleException(Exception exception)
             {
                 throw new NotImplementedException();

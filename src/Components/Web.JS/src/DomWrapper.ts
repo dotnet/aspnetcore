@@ -5,5 +5,9 @@ export const domFunctions = {
 };
 
 function focus(element: HTMLElement): void {
-  element.focus();
+  if (element instanceof HTMLElement) {
+    element.focus();
+  } else {
+    throw new Error('Unable to focus an invalid element.');
+  }
 }

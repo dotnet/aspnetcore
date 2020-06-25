@@ -34,9 +34,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             // The WebAssembly renderer registers and unregisters itself with the static registry
             _webAssemblyRendererId = RendererRegistry.Add(this);
             _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
+
+            ElementReferenceContext = DefaultWebAssemblyJSRuntime.Instance.ElementReferenceContext;
         }
 
         public override Dispatcher Dispatcher => NullDispatcher.Instance;
+
+        public override ElementReferenceContext ElementReferenceContext { get; }
 
         /// <summary>
         /// Attaches a new root component to the renderer,
