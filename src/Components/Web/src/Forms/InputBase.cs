@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -18,15 +19,15 @@ namespace Microsoft.AspNetCore.Components.Forms
     {
         private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
         private bool _previousParsingAttemptFailed;
-        private ValidationMessageStore _parsingValidationMessages;
-        private Type _nullableUnderlyingType;
+        private ValidationMessageStore? _parsingValidationMessages;
+        private Type? _nullableUnderlyingType;
 
-        [CascadingParameter] EditContext CascadedEditContext { get; set; }
+        [CascadingParameter] EditContext CascadedEditContext { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be applied to the created element.
         /// </summary>
-        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> AdditionalAttributes { get; set; }
+        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets the value of the input. This should be used with two-way binding.
@@ -34,7 +35,10 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <example>
         /// @bind-Value="model.PropertyName"
         /// </example>
-        [Parameter] public TValue Value { get; set; }
+        [AllowNull]
+        [MaybeNull]
+        [Parameter]
+        public TValue Value { get; set; } = default;
 
         /// <summary>
         /// Gets or sets a callback that updates the bound value.
@@ -44,12 +48,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets or sets an expression that identifies the bound value.
         /// </summary>
-        [Parameter] public Expression<Func<TValue>> ValueExpression { get; set; }
+        [Parameter] public Expression<Func<TValue>>? ValueExpression { get; set; }
 
         /// <summary>
         /// Gets the associated <see cref="Forms.EditContext"/>.
         /// </summary>
-        protected EditContext EditContext { get; set; }
+        protected EditContext EditContext { get; set; } = default!;
 
         /// <summary>
         /// Gets the <see cref="FieldIdentifier"/> for the bound value.
@@ -59,16 +63,18 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets or sets the current value of the input.
         /// </summary>
+        [AllowNull]
         protected TValue CurrentValue
         {
-            get => Value;
+            [return: MaybeNull]
+            get => Value!;
             set
             {
                 var hasChanged = !EqualityComparer<TValue>.Default.Equals(value, Value);
                 if (hasChanged)
                 {
-                    Value = value;
-                    _ = ValueChanged.InvokeAsync(value);
+                    Value = value!;
+                    _ = ValueChanged.InvokeAsync(Value);
                     EditContext.NotifyFieldChanged(FieldIdentifier);
                 }
             }
@@ -77,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets or sets the current value of the input, represented as a string.
         /// </summary>
-        protected string CurrentValueAsString
+        protected string? CurrentValueAsString
         {
             get => FormatValueAsString(CurrentValue);
             set
@@ -92,12 +98,12 @@ namespace Microsoft.AspNetCore.Components.Forms
                     // Then all subclasses get nullable support almost automatically (they just have to
                     // not reject Nullable<T> based on the type itself).
                     parsingFailed = false;
-                    CurrentValue = default;
+                    CurrentValue = default!;
                 }
                 else if (TryParseValueFromString(value, out var parsedValue, out var validationErrorMessage))
                 {
                     parsingFailed = false;
-                    CurrentValue = parsedValue;
+                    CurrentValue = parsedValue!;
                 }
                 else
                 {
@@ -136,7 +142,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         /// <param name="value">The value to format.</param>
         /// <returns>A string representation of the value.</returns>
-        protected virtual string FormatValueAsString(TValue value)
+        protected virtual string? FormatValueAsString(TValue value)
             => value?.ToString();
 
         /// <summary>
@@ -147,7 +153,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="result">An instance of <typeparamref name="TValue"/>.</param>
         /// <param name="validationErrorMessage">If the value could not be parsed, provides a validation error message.</param>
         /// <returns>True if the value could be parsed; otherwise false.</returns>
-        protected abstract bool TryParseValueFromString(string value, out TValue result, out string validationErrorMessage);
+        protected abstract bool TryParseValueFromString(string? value, [MaybeNull] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage);
 
         /// <summary>
         /// Gets a string that indicates the status of the field being edited. This will include
@@ -223,7 +229,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             return base.SetParametersAsync(ParameterView.Empty);
         }
 
-        private void OnValidateStateChanged(object sender, ValidationStateChangedEventArgs eventArgs)
+        private void OnValidateStateChanged(object? sender, ValidationStateChangedEventArgs eventArgs)
         {
             SetAdditionalAttributesIfValidationFailed();
 
@@ -255,9 +261,9 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// Returns a dictionary with the same values as the specified <paramref name="source"/>.
         /// </summary>
         /// <returns>true, if a new dictrionary with copied values was created. false - otherwise.</returns>
-        private bool ConvertToDictionary(IReadOnlyDictionary<string, object> source, out Dictionary<string, object> result)
+        private bool ConvertToDictionary(IReadOnlyDictionary<string, object>? source, out Dictionary<string, object> result)
         {
-            bool newDictionaryCreated = true;
+            var newDictionaryCreated = true;
             if (source == null)
             {
                 result = new Dictionary<string, object>();
@@ -285,11 +291,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         void IDisposable.Dispose()
         {
-            if (EditContext != null)
-            {
-                EditContext.OnValidationStateChanged -= _validationStateChangedHandler;
-            }
-
+            EditContext.OnValidationStateChanged -= _validationStateChangedHandler;
             Dispose(disposing: true);
         }
     }

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class DataAnnotationsValidator : ComponentBase
     {
-        [CascadingParameter] EditContext CurrentEditContext { get; set; }
+        [CascadingParameter] EditContext? CurrentEditContext { get; set; }
 
         /// <inheritdoc />
         protected override void OnInitialized()

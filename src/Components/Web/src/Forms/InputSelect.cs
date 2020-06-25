@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -12,12 +13,12 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class InputSelect<TValue> : InputBase<TValue>
     {
+        private static readonly Type? _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
+
         /// <summary>
         /// Gets or sets the child content to be rendering inside the select element.
         /// </summary>
-        [Parameter] public RenderFragment ChildContent { get; set; }
-
-        private readonly Type _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
+        [Parameter] public RenderFragment? ChildContent { get; set; }
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -26,17 +27,17 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.AddMultipleAttributes(1, AdditionalAttributes);
             builder.AddAttribute(2, "class", CssClass);
             builder.AddAttribute(3, "value", BindConverter.FormatValue(CurrentValueAsString));
-            builder.AddAttribute(4, "onchange", EventCallback.Factory.CreateBinder<string>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+            builder.AddAttribute(4, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
             builder.AddContent(5, ChildContent);
             builder.CloseElement();
         }
 
         /// <inheritdoc />
-        protected override bool TryParseValueFromString(string value, out TValue result, out string validationErrorMessage)
+        protected override bool TryParseValueFromString(string? value, [MaybeNull] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
         {
             if (typeof(TValue) == typeof(string))
             {
-                result = (TValue)(object)value;
+                result = (TValue)(object?)value;
                 validationErrorMessage = null;
                 return true;
             }

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
@@ -7,6 +7,7 @@
     <Description>Support for rendering ASP.NET Core components for browsers.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
