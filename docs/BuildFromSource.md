@@ -68,7 +68,7 @@ To update an existing copy, run:
 git submodule update --init --recursive
 ```
 
-**NOTE** some ISPs have been know to use web filtering software that has caused issues with git repository cloning, if you experiance issues cloning this repo please review <https://help.github.com/en/github/authenticating-to-github/using-ssh-over-the-https-port>
+**NOTE** some ISPs have been know to use web filtering software that has caused issues with git repository cloning, if you experience issues cloning this repo please review <https://help.github.com/en/github/authenticating-to-github/using-ssh-over-the-https-port>
 
 ## Building in Visual Studio
 
