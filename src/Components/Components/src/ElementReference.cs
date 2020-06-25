@@ -24,22 +24,30 @@ namespace Microsoft.AspNetCore.Components
         public string Id { get; }
 
         /// <summary>
-        /// Gets the <see cref="ElementReferenceContext"/> instance.
+        /// Gets the nullable <see cref="ElementReferenceContext"/> instance.
         /// </summary>
-        public ElementReferenceContext Context { get; }
+        public ElementReferenceContext? Context { get; }
 
         /// <summary>
         /// Instantiates a new <see cref="ElementReference" />.
         /// </summary>
         /// <param name="id">A unique identifier for this <see cref="ElementReference"/>.</param>
-        /// <param name="context">The <see cref="ElementReferenceContext"/> instance.</param>
-        public ElementReference(string id, ElementReferenceContext context)
+        /// <param name="context">The nullable <see cref="ElementReferenceContext"/> instance.</param>
+        public ElementReference(string id, ElementReferenceContext? context)
         {
             Id = id;
             Context = context;
         }
 
-        internal static ElementReference CreateWithUniqueId(ElementReferenceContext context)
+        /// <summary>
+        /// Instantiates a new <see cref="ElementReference"/>.
+        /// </summary>
+        /// <param name="id">A unique identifier for this <see cref="ElementReference"/>.</param>
+        public ElementReference(string id) : this(id, null)
+        {
+        }
+
+        internal static ElementReference CreateWithUniqueId(ElementReferenceContext? context)
             => new ElementReference(CreateUniqueId(), context);
 
         private static string CreateUniqueId()
