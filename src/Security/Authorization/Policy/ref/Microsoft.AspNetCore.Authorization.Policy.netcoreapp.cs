@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Authorization
     {
         public AuthorizationMiddlewareOptions() { }
         public bool UseHttpContextAsResource  { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-    }    
+    }
     public partial interface IAuthorizationMiddlewareResultHandler
     {
         System.Threading.Tasks.Task HandleAsync(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authorization.AuthorizationPolicy policy, Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult authorizeResult);
