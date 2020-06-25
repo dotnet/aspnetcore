@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
     {
         public PerformanceTest(
             BrowserFixture browserFixture,
-            DevHostServerFixture<Wasm.Performance.TestApp.Program> servecrFixture,
+            DevHostServerFixture<Wasm.Performance.TestApp.Program> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
