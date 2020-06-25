@@ -183,6 +183,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             var services = _createServiceProvider();
             var scope = services.GetRequiredService<IServiceScopeFactory>().CreateScope();
 
+            DefaultWebAssemblyJSRuntime.Instance.AddServiceProviderDependency(scope.ServiceProvider);
+
             return new WebAssemblyHost(services, scope, Configuration, RootComponents.ToArray());
         }
 

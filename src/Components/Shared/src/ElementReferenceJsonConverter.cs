@@ -4,7 +4,6 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -12,18 +11,7 @@ namespace Microsoft.AspNetCore.Components
     {
         private static readonly JsonEncodedText IdProperty = JsonEncodedText.Encode("__internalId");
 
-        private readonly IJSRuntime _jsRuntime;
-
-        /// <summary>
-        /// Instantiates a new element reference json converter using the given <see cref="IJSRuntime"/>.
-        /// </summary>
-        /// <param name="jsRuntime">
-        /// The <see cref="IJSRuntime"/> used for instantiating <see cref="ElementReference"/> instances.
-        /// </param>
-        public ElementReferenceJsonConverter(IJSRuntime jsRuntime)
-        {
-            _jsRuntime = jsRuntime;
-        }
+        internal IServiceProvider ServiceProvider { get; set; }
 
         public override ElementReference Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -53,7 +41,7 @@ namespace Microsoft.AspNetCore.Components
                 throw new JsonException("__internalId is required.");
             }
 
-            return new ElementReference(id, _jsRuntime);
+            return new ElementReference(id, ServiceProvider);
         }
 
         public override void Write(Utf8JsonWriter writer, ElementReference value, JsonSerializerOptions options)

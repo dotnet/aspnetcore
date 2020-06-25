@@ -1,6 +1,6 @@
 import '@microsoft/dotnet-js-interop';
 
-export const internalFunctions = {
+export const domFunctions = {
   focus,
 };
 

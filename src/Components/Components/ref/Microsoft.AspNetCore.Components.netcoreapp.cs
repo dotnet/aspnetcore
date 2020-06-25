@@ -124,8 +124,9 @@ namespace Microsoft.AspNetCore.Components
     {
         private readonly object _dummy;
         private readonly int _dummyPrimitive;
-        public ElementReference(string id) { throw null; }
+        public ElementReference(string id, System.IServiceProvider serviceProvider) { throw null; }
         public string Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.IServiceProvider ServiceProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct EventCallback

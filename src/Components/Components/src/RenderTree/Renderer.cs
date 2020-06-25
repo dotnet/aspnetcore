@@ -9,9 +9,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
@@ -24,7 +22,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     // dispatching events to them, and notifying when the user interface is being updated.
     public abstract partial class Renderer : IDisposable
     {
-        private readonly IServiceProvider _serviceProvider;
         private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
         private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
         private readonly Dictionary<ulong, EventCallback> _eventBindings = new Dictionary<ulong, EventCallback>();
@@ -36,6 +33,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private ulong _lastEventHandlerId;
         private List<Task> _pendingTasks;
         private bool _disposed;
+
+        internal IServiceProvider ServiceProvider { get; }
 
         /// <summary>
         /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
@@ -69,7 +68,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            _serviceProvider = serviceProvider;
+            ServiceProvider = serviceProvider;
             _logger = loggerFactory.CreateLogger<Renderer>();
         }
 
@@ -84,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="componentType">The type of the component to instantiate.</param>
         /// <returns>The component instance.</returns>
         protected IComponent InstantiateComponent(Type componentType)
-            => ComponentFactory.Instance.InstantiateComponent(_serviceProvider, componentType);
+            => ComponentFactory.Instance.InstantiateComponent(ServiceProvider, componentType);
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning
@@ -370,16 +369,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // for tree patching to work in an async environment.
             _eventHandlerIdReplacements.Add(oldEventHandlerId, newEventHandlerId);
         }
-
-        /// <summary>
-        /// Gets the <see cref="IJSRuntime"/> service from the <see cref="Renderer"/>'s service provider.
-        /// </summary>
-        /// <remarks>
-        /// The returned <see cref="IJSRuntime"/> may be <c>null</c> if the <see cref="Renderer"/>'s service
-        /// provider does not have one.
-        /// </remarks>
-        internal IJSRuntime GetJSRuntime()
-            => _serviceProvider.GetService<IJSRuntime>();
 
         private ulong FindLatestEventHandlerIdInChain(ulong eventHandlerId)
         {

@@ -4,7 +4,6 @@
 using System;
 using System.Globalization;
 using System.Threading;
-using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -25,19 +24,23 @@ namespace Microsoft.AspNetCore.Components
         public string Id { get; }
 
         /// <summary>
-        /// Gets the <see cref="IJSRuntime"/> instance used to perform JS interop calls associated with
-        /// this <see cref="ElementReference"/>.
+        /// Gets the <see cref="IServiceProvider"/> instance.
         /// </summary>
-        public IJSRuntime JSRuntime { get; }
+        public IServiceProvider ServiceProvider { get; }
 
-        public ElementReference(string id, IJSRuntime jsRuntime)
+        /// <summary>
+        /// Instantiates a new <see cref="ElementReference" />.
+        /// </summary>
+        /// <param name="id">A unique identifier for this <see cref="ElementReference"/>.</param>
+        /// <param name="serviceProvider">The <see cref="ElementReference"/>'s <see cref="IServiceProvider"/>.</param>
+        public ElementReference(string id, IServiceProvider serviceProvider)
         {
             Id = id;
-            JSRuntime = jsRuntime;
+            ServiceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
-        internal static ElementReference CreateWithUniqueId(IJSRuntime jsRuntime)
-            => new ElementReference(CreateUniqueId(), jsRuntime);
+        internal static ElementReference CreateWithUniqueId(IServiceProvider serviceProvider)
+            => new ElementReference(CreateUniqueId(), serviceProvider);
 
         private static string CreateUniqueId()
         {

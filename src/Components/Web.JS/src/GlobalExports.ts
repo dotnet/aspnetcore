@@ -1,6 +1,6 @@
 import { navigateTo, internalFunctions as navigationManagerInternalFunctions } from './Services/NavigationManager';
 import { attachRootComponentToElement } from './Rendering/Renderer';
-import { internalFunctions as domWrapperInternalFunctions } from './DomWrapper';
+import { domFunctions } from './DomWrapper';
 
 // Make the following APIs available in global scope for invocation from JS
 window['Blazor'] = {
@@ -9,6 +9,6 @@ window['Blazor'] = {
   _internal: {
     attachRootComponentToElement,
     navigationManager: navigationManagerInternalFunctions,
-    domWrapper: domWrapperInternalFunctions,
+    domWrapper: domFunctions,
   },
 };

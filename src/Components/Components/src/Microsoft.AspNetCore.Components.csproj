@@ -56,9 +56,4 @@
     <NuspecProperty Include="OutputPath=$(OutputPath)" />
     <NuspecProperty Include="PackageThirdPartyNoticesFile=$(PackageThirdPartyNoticesFile)" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\JSInterop\Microsoft.JSInterop\src\Microsoft.JSInterop.csproj" />
-  </ItemGroup>
-
 </Project>
