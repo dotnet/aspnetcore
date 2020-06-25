@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <c>a</c> element.
         /// </summary>
         [Parameter(CaptureUnmatchedValues = true)]
-        public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+        public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets the computed CSS class based on whether or not the link is active.

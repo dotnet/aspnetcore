@@ -399,7 +399,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="attributes">A collection of key-value pairs representing attributes.</param>
-        public void AddMultipleAttributes(int sequence, IEnumerable<KeyValuePair<string, object?>>? attributes)
+        public void AddMultipleAttributes(int sequence, IEnumerable<KeyValuePair<string, object>>? attributes)
         {
             // Calling this up-front just to make sure we validate before mutating anything.
             AssertCanAddAttribute();

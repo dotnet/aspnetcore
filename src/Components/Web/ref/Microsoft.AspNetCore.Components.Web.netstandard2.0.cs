@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     {
         public EditForm() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute(CaptureUnmatchedValues=true)]
-        public System.Collections.Generic.IReadOnlyDictionary<string, object?>? AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object>? AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Forms.EditContext>? ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     {
         protected InputBase() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute(CaptureUnmatchedValues=true)]
-        public System.Collections.Generic.IReadOnlyDictionary<string, object?>? AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object>? AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected string CssClass { get { throw null; } }
         protected TValue CurrentValue { get { throw null; } set { } }
         protected string? CurrentValueAsString { get { throw null; } set { } }
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected override string? FormatValueAsString(TValue value) { throw null; }
         protected override bool TryParseValueFromString(string? value, out TValue result, out string? validationErrorMessage) { throw null; }
     }
-    public partial class InputSelect<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue> where TValue : notnull
+    public partial class InputSelect<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
     {
         public InputSelect() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     {
         public ValidationMessage() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute(CaptureUnmatchedValues=true)]
-        public System.Collections.Generic.IReadOnlyDictionary<string, object?>? AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object>? AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public System.Linq.Expressions.Expression<System.Func<TValue>>? For { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     {
         public ValidationSummary() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute(CaptureUnmatchedValues=true)]
-        public System.Collections.Generic.IReadOnlyDictionary<string, object?>? AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object>? AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public object? Model { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public string? ActiveClass { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute(CaptureUnmatchedValues=true)]
-        public System.Collections.Generic.IReadOnlyDictionary<string, object?>? AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object>? AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment? ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected string? CssClass { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }

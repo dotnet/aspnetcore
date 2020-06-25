@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be applied to the created element.
         /// </summary>
-        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object?>? AdditionalAttributes { get; set; }
+        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
         /// <summary>
         /// Gets or sets the value of the input. This should be used with two-way binding.
@@ -261,21 +261,21 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// Returns a dictionary with the same values as the specified <paramref name="source"/>.
         /// </summary>
         /// <returns>true, if a new dictrionary with copied values was created. false - otherwise.</returns>
-        private bool ConvertToDictionary(IReadOnlyDictionary<string, object?>? source, out Dictionary<string, object?> result)
+        private bool ConvertToDictionary(IReadOnlyDictionary<string, object>? source, out Dictionary<string, object> result)
         {
             var newDictionaryCreated = true;
             if (source == null)
             {
-                result = new Dictionary<string, object?>();
+                result = new Dictionary<string, object>();
             }
-            else if (source is Dictionary<string, object?> currentDictionary)
+            else if (source is Dictionary<string, object> currentDictionary)
             {
                 result = currentDictionary;
                 newDictionaryCreated = false;
             }
             else
             {
-                result = new Dictionary<string, object?>();
+                result = new Dictionary<string, object>();
                 foreach (var item in source)
                 {
                     result.Add(item.Key, item.Value);
