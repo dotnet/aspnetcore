@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             CircuitOptions options,
             CircuitClientProxy client,
             ILogger logger,
-            ElementReferenceContext elementReferenceContext)
+            ElementReferenceContext? elementReferenceContext)
             : base(serviceProvider, loggerFactory)
         {
             _client = client;
@@ -49,8 +49,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
-
-        public override ElementReferenceContext ElementReferenceContext { get; }
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="RemoteRenderer"/>,

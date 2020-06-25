@@ -699,8 +699,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
 
             public override Dispatcher Dispatcher => _dispatcher;
 
-            public override ElementReferenceContext ElementReferenceContext => NullElementReferenceContext.Instance;
-
             protected override void HandleException(Exception exception)
                 => ExceptionDispatchInfo.Capture(exception).Throw();
 

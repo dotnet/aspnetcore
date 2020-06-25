@@ -301,11 +301,6 @@ namespace Microsoft.AspNetCore.Components
         public System.Uri ToAbsoluteUri(string relativeUri) { throw null; }
         public string ToBaseRelativePath(string uri) { throw null; }
     }
-    public partial class NullElementReferenceContext : Microsoft.AspNetCore.Components.ElementReferenceContext
-    {
-        public static readonly Microsoft.AspNetCore.Components.NullElementReferenceContext Instance;
-        public NullElementReferenceContext() { }
-    }
     public abstract partial class OwningComponentBase : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
     {
         protected OwningComponentBase() { }
@@ -477,7 +472,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     {
         public Renderer(System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         public abstract Microsoft.AspNetCore.Components.Dispatcher Dispatcher { get; }
-        public abstract Microsoft.AspNetCore.Components.ElementReferenceContext ElementReferenceContext { get; }
+        public Microsoft.AspNetCore.Components.ElementReferenceContext? ElementReferenceContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
         public event System.UnhandledExceptionEventHandler UnhandledSynchronizationException { add { } remove { } }
         protected internal int AssignRootComponentId(Microsoft.AspNetCore.Components.IComponent component) { throw null; }
         public virtual System.Threading.Tasks.Task DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo fieldInfo, System.EventArgs eventArgs) { throw null; }

@@ -40,8 +40,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
 
         public override Dispatcher Dispatcher => NullDispatcher.Instance;
 
-        public override ElementReferenceContext ElementReferenceContext { get; }
-
         /// <summary>
         /// Attaches a new root component to the renderer,
         /// causing it to be displayed in the specified DOM element.

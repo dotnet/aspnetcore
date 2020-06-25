@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                       new CircuitOptions(),
                       new CircuitClientProxy(client, "connection"),
                       NullLogger.Instance,
-                      NullElementReferenceContext.Instance)
+                      null)
             {
             }
 

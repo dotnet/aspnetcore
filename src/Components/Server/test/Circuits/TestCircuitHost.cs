@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     new CircuitOptions(),
                     clientProxy,
                     NullLogger.Instance,
-                    NullElementReferenceContext.Instance);
+                    null);
             }
 
             handlers = handlers ?? Array.Empty<CircuitHandler>();

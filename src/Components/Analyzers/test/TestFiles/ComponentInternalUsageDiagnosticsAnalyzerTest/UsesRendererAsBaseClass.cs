@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Tests.TestFiles.ComponentInt
 
         public override Dispatcher Dispatcher => throw new NotImplementedException();
 
-        public override ElementReferenceContext ElementReferenceContext => throw new NotImplementedException();
-
         protected override void HandleException(Exception exception)
         {
             throw new NotImplementedException();

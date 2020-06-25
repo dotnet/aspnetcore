@@ -77,9 +77,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public abstract Dispatcher Dispatcher { get; }
 
         /// <summary>
-        /// Gets the <see cref="Components.ElementReferenceContext"/> associated with this <see cref="Renderer"/>.
+        /// Gets or sets the <see cref="Components.ElementReferenceContext"/> associated with this <see cref="Renderer"/>,
+        /// if it exists.
         /// </summary>
-        public abstract ElementReferenceContext ElementReferenceContext { get; }
+        public ElementReferenceContext? ElementReferenceContext { get; protected set; }
 
         /// <summary>
         /// Constructs a new component of the specified type.

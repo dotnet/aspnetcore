@@ -15,8 +15,6 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Tests.TestFiles.ComponentInt
 
         public override Dispatcher Dispatcher => throw new NotImplementedException();
 
-        public override ElementReferenceContext ElementReferenceContext => throw new NotImplementedException();
-
         /*MMProperty*/public Renderer Property { get; set; }
 
         protected override void HandleException(Exception exception)
