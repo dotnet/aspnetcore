@@ -527,46 +527,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             }
         }
 
-        [Fact]
-        public void CanLazyLoadOnRouteChange()
-        {
-            // Navigate to a page without any lazy-loaded dependencies
-            SetUrlViaPushState("/");
-            var app = Browser.MountTestComponent<TestRouter>();
-
-            // Ensure that we haven't requested the lazy loaded assembly
-            Assert.False(HasLoadedAssembly("Newtonsoft.Json.dll"));
-
-            // Visit the route for the lazy-loaded assembly
-            SetUrlViaPushState("/WithDynamicAssembly");
-
-            var button = app.FindElement(By.Id("use-package-button"));
-
-            // Now we should have requested the DLL
-            Assert.True(HasLoadedAssembly("Newtonsoft.Json.dll"));
-
-            button.Click();
-
-            // We shouldn't get any errors about assemblies not being available
-            AssertLogDoesNotContainCriticalMessages("Could not load file or assembly 'Newtonsoft.Json");
-        }
-
-        [Fact]
-        public void CanLazyLoadOnFirstVisit()
-        {
-            // Navigate to a page with lazy loaded assemblies for the first time
-            SetUrlViaPushState("/WithDynamicAssembly");
-            var app = Browser.MountTestComponent<TestRouter>();
-            var button = app.FindElement(By.Id("use-package-button"));
-
-            // We should have requested the DLL
-            Assert.True(HasLoadedAssembly("Newtonsoft.Json.dll"));
-
-            button.Click();
-
-            // We shouldn't get any errors about assemblies not being available
-            AssertLogDoesNotContainCriticalMessages("Could not load file or assembly 'Newtonsoft.Json");
-        }
+        
 
         private long BrowserScrollY
         {
@@ -584,36 +545,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             return absoluteUri.AbsoluteUri;
         }
 
-        private bool HasLoadedAssembly(string name)
-        {
-            var checkScript = $"return window.performance.getEntriesByType('resource').some(r => r.name.endsWith('{name}'));";
-            var jsExecutor = (IJavaScriptExecutor)Browser;
-            var nameRequested = jsExecutor.ExecuteScript(checkScript);
-            if (nameRequested != null)
-            {
-                return (bool)nameRequested;
-            }
-            return false;
-        }
-
         private void AssertHighlightedLinks(params string[] linkTexts)
         {
             Browser.Equal(linkTexts, () => Browser
                 .FindElements(By.CssSelector("a.active"))
                 .Select(x => x.Text));
-        }
-
-        private void AssertLogDoesNotContainCriticalMessages(params string[] messages)
-        {
-            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
-            foreach (var message in messages)
-            {
-                Assert.DoesNotContain(log, entry =>
-                {
-                    return entry.Level == LogLevel.Severe
-                    && entry.Message.Contains(message);
-                });
-            }
         }
     }
 }
