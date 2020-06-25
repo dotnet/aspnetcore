@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Authorization
                 return;
             }
 
-            object resource;
+            object? resource;
             if (_options.UseHttpContextAsResource)
             {
                 resource = context;
