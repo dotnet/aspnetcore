@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.AddMultipleAttributes(1, AdditionalAttributes);
             builder.AddAttribute(2, "type", "radio");
             builder.AddAttribute(3, "class", CssClass);
-            builder.AddAttribute(4, "value", SelectedValue != null ? FormatValueAsString(SelectedValue) : string.Empty);
+            builder.AddAttribute(4, "value", BindConverter.FormatValue(SelectedValue != null ? FormatValueAsString(SelectedValue) : string.Empty));
             builder.AddAttribute(5, "checked", SelectedValue?.Equals(CurrentValue));
             builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
             builder.CloseElement();
