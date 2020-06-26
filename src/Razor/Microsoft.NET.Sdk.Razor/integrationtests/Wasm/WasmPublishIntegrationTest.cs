@@ -531,6 +531,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         // Regression test to verify satellite assemblies from the blazor app are copied to the published app's wwwroot output directory as
         // part of publishing in VS
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23397")]
         public async Task Publish_HostedApp_VisualStudio_WithSatelliteAssemblies()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
