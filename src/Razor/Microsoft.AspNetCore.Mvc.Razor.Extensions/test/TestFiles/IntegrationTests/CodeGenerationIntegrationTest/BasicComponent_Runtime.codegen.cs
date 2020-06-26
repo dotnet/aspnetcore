@@ -34,7 +34,6 @@ namespace __GeneratedComponent
 #line hidden
 #nullable disable
             );
-            __builder.AddMarkupContent(4, "\r\n");
             __builder.CloseElement();
         }
         #pragma warning restore 1998

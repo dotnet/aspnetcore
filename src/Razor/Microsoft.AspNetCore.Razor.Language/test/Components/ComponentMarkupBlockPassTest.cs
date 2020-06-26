@@ -47,11 +47,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 </html>");
 
             var expected = NormalizeContent(@"
-<html>
-  <head cool=""beans"">
+<html><head cool=""beans"">
     Hello, World!
-  </head>
-</html>");
+  </head></html>");
 
             var documentNode = Lower(document);
 
@@ -163,7 +161,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
   </head>
 </html>");
 
-            var expected = NormalizeContent("<div>foo</div>\n  ");
+            var expected = NormalizeContent("<div>foo</div>");
 
             var documentNode = Lower(document);
 
@@ -349,11 +347,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 </html>");
 
             var expected = NormalizeContent(@"
-<head cool=""beans"">
-    <option value=""1"">One</option>
-    <option selected value=""2"">Two</option>
-  </head>
-");
+<head cool=""beans""><option value=""1"">One</option>
+    <option selected value=""2"">Two</option></head>");
 
             var documentNode = Lower(document);
 
