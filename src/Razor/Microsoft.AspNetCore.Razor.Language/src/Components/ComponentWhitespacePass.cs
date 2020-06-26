@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.Components
@@ -38,12 +39,35 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return;
             }
 
+            // Respect @preservewhitespace directives
+            if (PreserveWhitespaceIsEnabled(documentNode))
+            {
+                return;
+            }
+
             var method = documentNode.FindPrimaryMethod();
             if (method != null)
             {
                 RemoveContiguousWhitespace(method.Children, TraversalDirection.Forwards);
                 RemoveContiguousWhitespace(method.Children, TraversalDirection.Backwards);
             }
+        }
+
+        private static bool PreserveWhitespaceIsEnabled(DocumentIntermediateNode documentNode)
+        {
+            foreach (var preserveWhitespaceDirective in documentNode.FindDirectiveReferences(ComponentPreserveWhitespaceDirective.Directive))
+            {
+                var token = ((DirectiveIntermediateNode)preserveWhitespaceDirective.Node).Tokens.FirstOrDefault();
+                var shouldPreserveWhitespaceContent = token?.Content as string;
+                if (shouldPreserveWhitespaceContent != null)
+                {
+                    // We accept the value of the first directive attribute we find. This is how it's possible to override the option.
+                    return string.Equals(shouldPreserveWhitespaceContent, "true", StringComparison.Ordinal);
+                }
+            }
+
+            // If there's no @preservewhitespace attribute, the default is that we *don't* preserve whitespace
+            return false;
         }
 
         private static void RemoveContiguousWhitespace(IntermediateNodeCollection nodes, TraversalDirection direction)

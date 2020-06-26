@@ -2086,7 +2086,7 @@ namespace AnotherTest
         {
             // Arrange / Act
             var generated = CompileToCSharp(@"
-@preservewhitespace false
+@preservewhitespace true
 ");
 
             // Assert
@@ -4640,6 +4640,32 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"<div class=""first second"">Hello</div>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void WhiteSpace_WithPreserveWhitespace()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+
+@preservewhitespace true
+
+    <elem attr=@Foo>
+        <child />
+    </elem>
+
+    @code {
+        int Foo = 18;
+    }
+
+");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
