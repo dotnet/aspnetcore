@@ -80,6 +80,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("2", await SendRequestAsync(address));
             }
@@ -126,6 +127,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("1", await SendRequestAsync(address));
             }
@@ -165,6 +167,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("1", await SendRequestAsync(address));
             }
@@ -335,6 +338,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("2", await SendRequestAsync(address));
             }
@@ -356,6 +360,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 Assert.Null(httpContext.Response.ContentLength);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await SendRequestAsync(address));
                 Assert.Equal("1", await SendRequestAsync(address));
             }
@@ -374,6 +379,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 await httpContext.Response.SendFileAsync(_absoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await GetFileAsync(address));
                 Assert.Equal("2", await GetFileAsync(address));
             }
@@ -393,6 +399,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 await httpContext.Response.SendFileAsync(_absoluteFilePath, 0, null, CancellationToken.None);
             }))
             {
+                address += Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                 Assert.Equal("1", await GetFileAsync(address));
                 Assert.Equal("1", await GetFileAsync(address));
             }
@@ -421,13 +428,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     switch (status)
                     {
                         case 206: // 206 (Partial Content) is not cached
+                        case 304: // 304 (Not Modified) is not cached
                         case 407: // 407 (Proxy Authentication Required) makes CoreCLR's HttpClient throw
                             continue;
                     }
                     requestCount = 1;
+                    var query = "?" + Guid.NewGuid().ToString(); // Avoid cache collisions for failed tests.
                     try
                     {
-                        Assert.Equal("1", await SendRequestAsync(address + status, status));
+                        Assert.Equal("1", await SendRequestAsync(address + status + query, status));
                     }
                     catch (Exception ex)
                     {
@@ -435,7 +444,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     }
                     try
                     {
-                        Assert.Equal("1", await SendRequestAsync(address + status, status));
+                        Assert.Equal("1", await SendRequestAsync(address + status + query, status));
                     }
                     catch (Exception ex)
                     {
