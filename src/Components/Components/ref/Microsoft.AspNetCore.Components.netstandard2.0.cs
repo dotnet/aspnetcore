@@ -124,8 +124,9 @@ namespace Microsoft.AspNetCore.Components
     {
         private readonly object _dummy;
         private readonly int _dummyPrimitive;
-        public ElementReference(string id, Microsoft.AspNetCore.Components.ElementReferenceContext context) { throw null; }
-        public Microsoft.AspNetCore.Components.ElementReferenceContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public ElementReference(string id) { throw null; }
+        public ElementReference(string id, Microsoft.AspNetCore.Components.ElementReferenceContext? context) { throw null; }
+        public Microsoft.AspNetCore.Components.ElementReferenceContext? Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public abstract partial class ElementReferenceContext
