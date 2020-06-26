@@ -45,8 +45,7 @@ namespace Test
 #nullable disable
             __builder.OpenComponent<Test.MyComponent>(3);
             __builder.AddAttribute(4, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
-                __builder2.AddMarkupContent(5, "\r\n");
-                __builder2.AddContent(6, 
+                __builder2.AddContent(5, 
 #nullable restore
 #line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
   "hello, world!"
@@ -55,7 +54,6 @@ namespace Test
 #line hidden
 #nullable disable
                 );
-                __builder2.AddMarkupContent(7, "\r\n");
             }
             ));
             __builder.CloseComponent();

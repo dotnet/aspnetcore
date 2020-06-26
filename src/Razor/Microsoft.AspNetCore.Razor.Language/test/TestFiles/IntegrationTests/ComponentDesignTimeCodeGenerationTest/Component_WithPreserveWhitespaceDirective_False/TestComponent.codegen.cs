@@ -23,6 +23,30 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
+#nullable restore
+#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
+     foreach (var item in Enumerable.Range(1, 100))
+    {
+        
+
+#line default
+#line hidden
+#nullable disable
+#nullable restore
+#line 7 "x:\dir\subdir\Test\TestComponent.cshtml"
+       __o = item;
+
+#line default
+#line hidden
+#nullable disable
+#nullable restore
+#line 8 "x:\dir\subdir\Test\TestComponent.cshtml"
+             
+    }
+
+#line default
+#line hidden
+#nullable disable
         }
         #pragma warning restore 1998
     }

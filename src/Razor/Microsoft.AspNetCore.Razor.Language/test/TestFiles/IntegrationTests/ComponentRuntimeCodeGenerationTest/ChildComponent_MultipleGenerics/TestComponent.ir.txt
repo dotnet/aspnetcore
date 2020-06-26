@@ -13,9 +13,6 @@ Document -
                             CSharpExpression - (77:1,22 [17] x:\dir\subdir\Test\TestComponent.cshtml)
                                 LazyIntermediateToken - (77:1,22 [17] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.ToLower()
                     ComponentChildContent - (117:2,0 [95] x:\dir\subdir\Test\TestComponent.cshtml) - AnotherChildContent - item
-                        HtmlContent - (153:2,36 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                            LazyIntermediateToken - (153:2,36 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                            LazyIntermediateToken - (155:3,0 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html -   
                         CSharpExpression - (158:3,3 [29] x:\dir\subdir\Test\TestComponent.cshtml)
                             LazyIntermediateToken - (158:3,3 [29] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - System.Math.Max(0, item.Item)
                         HtmlContent - (187:3,32 [3] x:\dir\subdir\Test\TestComponent.cshtml)

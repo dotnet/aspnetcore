@@ -17,8 +17,6 @@ Document -
                                     LazyIntermediateToken - (89:2,28 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - 1
                             CSharpExpression - (93:2,32 [23] x:\dir\subdir\Test\TestComponent.cshtml)
                                 LazyIntermediateToken - (93:2,32 [23] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - item.ToLowerInvariant()
-                        HtmlContent - (129:2,68 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                            LazyIntermediateToken - (129:2,68 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n  
                     ComponentAttribute - (21:0,21 [3] x:\dir\subdir\Test\TestComponent.cshtml) - MyAttr - MyAttr - AttributeStructure.DoubleQuotes
                         HtmlContent - (21:0,21 [3] x:\dir\subdir\Test\TestComponent.cshtml)
                             LazyIntermediateToken - (21:0,21 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - abc
