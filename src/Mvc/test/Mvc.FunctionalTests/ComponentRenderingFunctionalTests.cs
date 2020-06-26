@@ -172,9 +172,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var htmlDocument = parser.Parse(responseContent);
             var div = htmlDocument.Body.QuerySelector($"#{divId}");
             var content = div.InnerHtml;
+            var newlineWithWhitespace = new Regex(@"\s*\r\n?\s*");
             Assert.Equal(
-                expectedContent.Replace("\r\n","\n"),
-                content.Replace("\r\n","\n"));
+                newlineWithWhitespace.Replace(expectedContent, string.Empty),
+                newlineWithWhitespace.Replace(content, string.Empty));
         }
 
         // A simple delegating handler used in setting up test services so that we can configure
