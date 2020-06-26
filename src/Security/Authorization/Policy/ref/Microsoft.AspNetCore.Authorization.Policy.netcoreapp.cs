@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Authorization
     public partial class AuthorizationMiddlewareOptions
     {
         public AuthorizationMiddlewareOptions() { }
-        public bool UseHttpContextAsResource  { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool UseHttpContextAsResource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial interface IAuthorizationMiddlewareResultHandler
     {
