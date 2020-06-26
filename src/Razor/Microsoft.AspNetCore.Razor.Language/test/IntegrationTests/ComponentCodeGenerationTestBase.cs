@@ -4808,6 +4808,58 @@ namespace New.Test
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
             CompileToAssembly(generated);
         }
+
+        [Fact]
+        public void Component_PreserveWhitespaceDirective_InImports()
+        {
+            // Arrange
+            var importContent = @"
+@preservewhitespace true
+";
+            var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
+            ImportItems.Add(importItem);
+
+            // Act
+            var generated = CompileToCSharp(@"
+
+<parent>
+    <child> @DateTime.Now </child>
+</parent>
+
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_PreserveWhitespaceDirective_OverrideImports()
+        {
+            // Arrange
+            var importContent = @"
+@preservewhitespace true
+";
+            var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
+            ImportItems.Add(importItem);
+
+            // Act
+            var generated = CompileToCSharp(@"
+@preservewhitespace false
+
+<parent>
+    <child> @DateTime.Now </child>
+</parent>
+
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         #endregion
 
         #region Misc

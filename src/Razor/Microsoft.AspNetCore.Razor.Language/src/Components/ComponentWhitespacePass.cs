@@ -55,19 +55,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         private static bool PreserveWhitespaceIsEnabled(DocumentIntermediateNode documentNode)
         {
+            // If there's no @preservewhitespace attribute, the default is that we *don't* preserve whitespace
+            var shouldPreserveWhitespace = false;
+
             foreach (var preserveWhitespaceDirective in documentNode.FindDirectiveReferences(ComponentPreserveWhitespaceDirective.Directive))
             {
                 var token = ((DirectiveIntermediateNode)preserveWhitespaceDirective.Node).Tokens.FirstOrDefault();
-                var shouldPreserveWhitespaceContent = token?.Content as string;
+                var shouldPreserveWhitespaceContent = token?.Content;
                 if (shouldPreserveWhitespaceContent != null)
                 {
-                    // We accept the value of the first directive attribute we find. This is how it's possible to override the option.
-                    return string.Equals(shouldPreserveWhitespaceContent, "true", StringComparison.Ordinal);
+                    shouldPreserveWhitespace = string.Equals(shouldPreserveWhitespaceContent, "true", StringComparison.Ordinal);
                 }
             }
 
-            // If there's no @preservewhitespace attribute, the default is that we *don't* preserve whitespace
-            return false;
+            
+            return shouldPreserveWhitespace;
         }
 
         private static void RemoveContiguousWhitespace(IntermediateNodeCollection nodes, TraversalDirection direction)

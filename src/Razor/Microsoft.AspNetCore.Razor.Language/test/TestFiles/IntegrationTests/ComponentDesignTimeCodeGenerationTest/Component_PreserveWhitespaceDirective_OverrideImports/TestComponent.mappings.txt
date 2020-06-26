@@ -1,0 +1,5 @@
+Source Location: (52:3,13 [12] x:\dir\subdir\Test\TestComponent.cshtml)
+|DateTime.Now|
+Generated Location: (925:27,13 [12] )
+|DateTime.Now|
+
