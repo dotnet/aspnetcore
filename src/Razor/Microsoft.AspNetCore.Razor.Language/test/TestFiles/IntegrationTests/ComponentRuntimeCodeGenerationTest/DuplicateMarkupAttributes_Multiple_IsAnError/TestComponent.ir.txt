@@ -8,8 +8,6 @@ Document -
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 MarkupElement - (0:0,0 [145] x:\dir\subdir\Test\TestComponent.cshtml) - div
-                    HtmlContent - (5:0,5 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                        LazyIntermediateToken - (5:0,5 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n  
                     MarkupElement - (9:1,2 [128] x:\dir\subdir\Test\TestComponent.cshtml) - a
                         HtmlAttribute - (11:1,4 [17] x:\dir\subdir\Test\TestComponent.cshtml) -  href=" - "
                             HtmlAttributeValue - (18:1,11 [9] x:\dir\subdir\Test\TestComponent.cshtml) - 
@@ -22,5 +20,3 @@ Document -
                         HtmlAttribute - (70:1,63 [5] x:\dir\subdir\Test\TestComponent.cshtml) -  href - 
                         HtmlContent - (76:1,69 [57] x:\dir\subdir\Test\TestComponent.cshtml)
                             LazyIntermediateToken - (76:1,69 [57] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Learn the ten cool tricks your compiler author will hate!
-                    HtmlContent - (137:1,130 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                        LazyIntermediateToken - (137:1,130 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n

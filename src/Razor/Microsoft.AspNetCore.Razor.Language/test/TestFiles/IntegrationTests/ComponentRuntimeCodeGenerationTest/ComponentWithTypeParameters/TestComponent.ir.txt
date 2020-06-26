@@ -13,9 +13,6 @@ Document -
                 HtmlContent - (132:7,0 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     LazyIntermediateToken - (132:7,0 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html -     
                 MarkupElement - (136:7,4 [40] x:\dir\subdir\Test\TestComponent.cshtml) - p
-                    HtmlContent - (139:7,7 [6] x:\dir\subdir\Test\TestComponent.cshtml)
-                        LazyIntermediateToken - (139:7,7 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                        LazyIntermediateToken - (141:8,0 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html -     
                     CSharpExpression - (146:8,5 [19] x:\dir\subdir\Test\TestComponent.cshtml)
                         LazyIntermediateToken - (146:8,5 [19] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ChildContent(item2)
                     HtmlContent - (165:8,24 [7] x:\dir\subdir\Test\TestComponent.cshtml)

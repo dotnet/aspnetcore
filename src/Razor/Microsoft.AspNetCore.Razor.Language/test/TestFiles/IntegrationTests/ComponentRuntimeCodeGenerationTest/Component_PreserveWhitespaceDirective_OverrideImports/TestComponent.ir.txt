@@ -8,14 +8,6 @@ Document -
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 MarkupElement - (29:2,0 [55] x:\dir\subdir\Test\TestComponent.cshtml) - parent
-                    HtmlContent - (37:2,8 [6] x:\dir\subdir\Test\TestComponent.cshtml)
-                        LazyIntermediateToken - (37:2,8 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    
                     MarkupElement - (43:3,4 [30] x:\dir\subdir\Test\TestComponent.cshtml) - child
-                        HtmlContent - (50:3,11 [1] x:\dir\subdir\Test\TestComponent.cshtml)
-                            LazyIntermediateToken - (50:3,11 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html -  
                         CSharpExpression - (52:3,13 [12] x:\dir\subdir\Test\TestComponent.cshtml)
                             LazyIntermediateToken - (52:3,13 [12] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - DateTime.Now
-                        HtmlContent - (64:3,25 [1] x:\dir\subdir\Test\TestComponent.cshtml)
-                            LazyIntermediateToken - (64:3,25 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html -  
-                    HtmlContent - (73:3,34 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                        LazyIntermediateToken - (73:3,34 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n

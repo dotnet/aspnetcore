@@ -14,10 +14,8 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
             __builder.OpenElement(0, "parent");
-            __builder.AddMarkupContent(1, "\r\n    ");
-            __builder.OpenElement(2, "child");
-            __builder.AddContent(3, " ");
-            __builder.AddContent(4, 
+            __builder.OpenElement(1, "child");
+            __builder.AddContent(2, 
 #nullable restore
 #line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
              DateTime.Now
@@ -26,9 +24,7 @@ namespace Test
 #line hidden
 #nullable disable
             );
-            __builder.AddContent(5, " ");
             __builder.CloseElement();
-            __builder.AddMarkupContent(6, "\r\n");
             __builder.CloseElement();
         }
         #pragma warning restore 1998

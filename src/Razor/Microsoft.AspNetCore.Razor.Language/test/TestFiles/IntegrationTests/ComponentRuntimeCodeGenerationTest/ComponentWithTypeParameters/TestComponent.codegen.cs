@@ -30,8 +30,7 @@ using Microsoft.AspNetCore.Components;
 #nullable disable
             __builder.AddContent(1, "    ");
             __builder.OpenElement(2, "p");
-            __builder.AddMarkupContent(3, "\r\n    ");
-            __builder.AddContent(4, 
+            __builder.AddContent(3, 
 #nullable restore
 #line 9 "x:\dir\subdir\Test\TestComponent.cshtml"
      ChildContent(item2)
@@ -40,9 +39,9 @@ using Microsoft.AspNetCore.Components;
 #line hidden
 #nullable disable
             );
-            __builder.AddMarkupContent(5, ";\r\n    ");
+            __builder.AddMarkupContent(4, ";\r\n    ");
             __builder.CloseElement();
-            __builder.AddMarkupContent(6, "\r\n");
+            __builder.AddMarkupContent(5, "\r\n");
 #nullable restore
 #line 11 "x:\dir\subdir\Test\TestComponent.cshtml"
 }

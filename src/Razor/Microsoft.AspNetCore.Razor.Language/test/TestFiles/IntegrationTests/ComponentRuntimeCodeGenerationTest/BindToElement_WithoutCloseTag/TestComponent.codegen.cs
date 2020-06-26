@@ -14,9 +14,8 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
             __builder.OpenElement(0, "div");
-            __builder.AddMarkupContent(1, "\r\n  ");
-            __builder.OpenElement(2, "input");
-            __builder.AddAttribute(3, "@bind", 
+            __builder.OpenElement(1, "input");
+            __builder.AddAttribute(2, "@bind", 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
                  ParentValue
@@ -26,7 +25,6 @@ namespace Test
 #nullable disable
             );
             __builder.CloseElement();
-            __builder.AddMarkupContent(4, "\r\n");
             __builder.CloseElement();
         }
         #pragma warning restore 1998
