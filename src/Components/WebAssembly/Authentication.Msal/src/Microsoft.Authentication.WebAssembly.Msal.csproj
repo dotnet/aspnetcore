@@ -3,9 +3,8 @@
   <Sdk Name="Yarn.MSBuild" />
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Authenticate your Blazor webassembly applications with Azure Active Directory and Azure Active Directory B2C</Description>
-    <RazorLangVersion>3.0</RazorLangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 

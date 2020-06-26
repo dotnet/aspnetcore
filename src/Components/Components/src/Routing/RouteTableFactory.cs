@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Components
 
             public override int GetHashCode()
             {
-                var hash = new HashCodeCombiner();
+                var hash = new HashCode();
 
                 if (Assemblies != null)
                 {
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Components
                     }
                 }
 
-                return hash;
+                return hash.ToHashCode();
             }
         }
     }
