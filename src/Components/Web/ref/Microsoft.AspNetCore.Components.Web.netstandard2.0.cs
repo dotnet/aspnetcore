@@ -96,6 +96,14 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected override string? FormatValueAsString(TValue value) { throw null; }
         protected override bool TryParseValueFromString(string? value, out TValue result, out string? validationErrorMessage) { throw null; }
     }
+    public partial class InputRadio<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
+    {
+        public InputRadio() { }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public TValue SelectedValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
+        protected override bool TryParseValueFromString(string? value, out TValue result, out string? validationErrorMessage) { throw null; }
+    }
     public partial class InputSelect<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
     {
         public InputSelect() { }

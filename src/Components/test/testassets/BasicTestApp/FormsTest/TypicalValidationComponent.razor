@@ -41,9 +41,11 @@
         <span id="selected-ticket-class">@person.TicketClass</span>
     </p>
     <p class="airline">
+        Airline:
+        <br>
         @foreach (var airline in (Airline[])Enum.GetValues(typeof(Airline)))
         {
-            <InputRadio name="airline" SelectedValue="airline" @bind-Value="person.Airline" />
+            <InputRadio name="airline" extra="additional" SelectedValue="airline" @bind-Value="person.Airline" />
             @airline.ToString();
             <br>
         }
@@ -118,15 +120,15 @@
         public TicketClass TicketClass { get; set; }
 
         [Required]
-        [Range(typeof(Airline), nameof(Airline.Alaska), nameof(Airline.Southwest), ErrorMessage = "Don't fly Spirit")]
-        public Airline Airline { get; set; } = Airline.Spirit;
+        [Range(typeof(Airline), nameof(Airline.BestAirline), nameof(Airline.NoNameAirline), ErrorMessage = "Pick a valid airline.")]
+        public Airline Airline { get; set; } = Airline.Unknown;
 
         public string Username { get; set; }
     }
 
     enum TicketClass { Economy, Premium, First }
 
-    enum Airline { Alaska, United, Southwest, Spirit }
+    enum Airline { BestAirline, CoolAirline, NoNameAirline, Unknown }
 
     List<string> submissionLog = new List<string>(); // So we can assert about the callbacks
 

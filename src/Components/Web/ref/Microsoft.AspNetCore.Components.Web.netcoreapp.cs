@@ -100,6 +100,16 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected override string? FormatValueAsString(TValue value) { throw null; }
         protected override bool TryParseValueFromString(string? value, [System.Diagnostics.CodeAnalysis.MaybeNullAttribute] out TValue result, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(false)] out string? validationErrorMessage) { throw null; }
     }
+    public partial class InputRadio<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
+    {
+        public InputRadio() { }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        [System.Diagnostics.CodeAnalysis.MaybeNullAttribute]
+        [System.Diagnostics.CodeAnalysis.AllowNullAttribute]
+        public TValue SelectedValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
+        protected override bool TryParseValueFromString(string? value, [System.Diagnostics.CodeAnalysis.MaybeNullAttribute] out TValue result, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(false)] out string? validationErrorMessage) { throw null; }
+    }
     public partial class InputSelect<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
     {
         public InputSelect() { }
