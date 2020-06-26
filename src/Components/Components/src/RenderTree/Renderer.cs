@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// Gets or sets the <see cref="Components.ElementReferenceContext"/> associated with this <see cref="Renderer"/>,
         /// if it exists.
         /// </summary>
-        public ElementReferenceContext? ElementReferenceContext { get; protected set; }
+        protected internal ElementReferenceContext? ElementReferenceContext { get; protected set; }
 
         /// <summary>
         /// Constructs a new component of the specified type.

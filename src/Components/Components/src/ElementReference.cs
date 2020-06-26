@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components
         public string Id { get; }
 
         /// <summary>
-        /// Gets the nullable <see cref="ElementReferenceContext"/> instance.
+        /// Gets the <see cref="ElementReferenceContext"/> instance.
         /// </summary>
         public ElementReferenceContext? Context { get; }
 
