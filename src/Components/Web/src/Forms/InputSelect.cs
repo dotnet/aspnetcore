@@ -1,9 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms
@@ -11,10 +8,8 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// <summary>
     /// A dropdown selection component.
     /// </summary>
-    public class InputSelect<TValue> : InputBase<TValue>
+    public class InputSelect<TValue> : InputChoice<TValue>
     {
-        private static readonly Type? _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(TValue));
-
         /// <summary>
         /// Gets or sets the child content to be rendering inside the select element.
         /// </summary>
@@ -30,35 +25,6 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.AddAttribute(4, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
             builder.AddContent(5, ChildContent);
             builder.CloseElement();
-        }
-
-        /// <inheritdoc />
-        protected override bool TryParseValueFromString(string? value, [MaybeNull] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
-        {
-            if (typeof(TValue) == typeof(string))
-            {
-                result = (TValue)(object?)value;
-                validationErrorMessage = null;
-                return true;
-            }
-            else if (typeof(TValue).IsEnum || (_nullableUnderlyingType != null && _nullableUnderlyingType.IsEnum))
-            {
-                var success = BindConverter.TryConvertTo<TValue>(value, CultureInfo.CurrentCulture, out var parsedValue);
-                if (success)
-                {
-                    result = parsedValue;
-                    validationErrorMessage = null;
-                    return true;
-                }
-                else
-                {
-                    result = default;
-                    validationErrorMessage = $"The {FieldIdentifier.FieldName} field is not valid.";
-                    return false;
-                }
-            }
-
-            throw new InvalidOperationException($"{GetType()} does not support the type '{typeof(TValue)}'.");
         }
     }
 }

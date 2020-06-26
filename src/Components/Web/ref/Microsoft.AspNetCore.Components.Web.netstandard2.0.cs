@@ -78,6 +78,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         protected override bool TryParseValueFromString(string? value, out bool result, out string? validationErrorMessage) { throw null; }
     }
+    public abstract partial class InputChoice<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
+    {
+        protected InputChoice() { }
+        protected override bool TryParseValueFromString(string? value, out TValue result, out string? validationErrorMessage) { throw null; }
+    }
     public partial class InputDate<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
     {
         public InputDate() { }
@@ -96,21 +101,19 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected override string? FormatValueAsString(TValue value) { throw null; }
         protected override bool TryParseValueFromString(string? value, out TValue result, out string? validationErrorMessage) { throw null; }
     }
-    public partial class InputRadio<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
+    public partial class InputRadio<TValue> : Microsoft.AspNetCore.Components.Forms.InputChoice<TValue>
     {
         public InputRadio() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public TValue SelectedValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
-        protected override bool TryParseValueFromString(string? value, out TValue result, out string? validationErrorMessage) { throw null; }
     }
-    public partial class InputSelect<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
+    public partial class InputSelect<TValue> : Microsoft.AspNetCore.Components.Forms.InputChoice<TValue>
     {
         public InputSelect() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment? ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
-        protected override bool TryParseValueFromString(string? value, out TValue result, out string? validationErrorMessage) { throw null; }
     }
     public partial class InputText : Microsoft.AspNetCore.Components.Forms.InputBase<string?>
     {

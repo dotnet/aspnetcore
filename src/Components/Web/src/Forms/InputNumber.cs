@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         /// <param name="value">The value to format.</param>
         /// <returns>A string representation of the value.</returns>
-        protected override string? FormatValueAsString(TValue value)
+        protected override string? FormatValueAsString([AllowNull] TValue value)
         {
             // Avoiding a cast to IFormattable to avoid boxing.
             switch (value)

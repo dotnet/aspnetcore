@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         /// <param name="value">The value to format.</param>
         /// <returns>A string representation of the value.</returns>
-        protected virtual string? FormatValueAsString(TValue value)
+        protected virtual string? FormatValueAsString([AllowNull] TValue value)
             => value?.ToString();
 
         /// <summary>
