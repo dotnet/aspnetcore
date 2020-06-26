@@ -152,6 +152,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 VisitDefault(node);
             }
 
+            public override void VisitTagHelperBody(TagHelperBodyIntermediateNode node)
+            {
+                // The goal here is to remove leading/trailing whitespace inside component child content. However,
+                // at the time this whitespace pass runs, ComponentChildContent is still TagHelperBody in the tree.
+                RemoveContiguousWhitespace(node.Children, TraversalDirection.Forwards);
+                RemoveContiguousWhitespace(node.Children, TraversalDirection.Backwards);
+                VisitDefault(node);
+            }
+
             public override void VisitDefault(IntermediateNode node)
             {
                 // For any CSharpCodeIntermediateNode children, remove their preceding and trailing whitespace

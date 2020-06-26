@@ -4569,13 +4569,17 @@ namespace Test
 {
     public class SomeOtherComponent : ComponentBase
     {
+        [Parameter] public RenderFragment ChildContent { get; set; }
     }
 }
 "));
 
             // Act
             var generated = CompileToCSharp(@"
-<SomeOtherComponent />
+<SomeOtherComponent>
+    <h1>Child content at @DateTime.Now</h1>
+    <p>Very @(""good"")</p>
+</SomeOtherComponent>
 
 <h1>Hello</h1>");
 
