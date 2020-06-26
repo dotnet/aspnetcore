@@ -168,11 +168,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             };
         }
 
-        public void SetLazyLoadDefinition(WebAssemblyLazyLoadDefinition lazyLoadDefinition)
-        {
-            WebAssemblyNavigationManager.Instance.LazyLoadDefinition = lazyLoadDefinition;
-        }
-
         /// <summary>
         /// Builds a <see cref="WebAssemblyHost"/> instance based on the configuration of this builder.
         /// </summary>
@@ -196,6 +191,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
             Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
             Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
+            Services.AddSingleton<WebAssemblyDynamicResourceLoader>(new WebAssemblyDynamicResourceLoader(DefaultWebAssemblyJSRuntime.Instance));
             Services.AddLogging(builder => {
                 builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
             });

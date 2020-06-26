@@ -1,0 +1,48 @@
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.WebAssembly.Services
+@using System.Linq
+@using System.Reflection
+
+@inject WebAssemblyDynamicResourceLoader lazyLoader
+
+<Router AppAssembly="@typeof(BasicTestApp.Program).Assembly" AdditionalAssemblies="@lazyLoadedAssemblies" OnNavigate="@OnNavigate">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(RouterTestLayout)">
+            <div id="test-info">Oops, that component wasn't found!</div>
+        </LayoutView>
+    </NotFound>
+</Router>
+
+@code {
+    private List<Assembly> lazyLoadedAssemblies = new List<Assembly>();
+
+    public bool OnNavigate (string uri) {
+        Console.WriteLine($"Running OnNavigate for {uri}...");
+        _ = LoadAssemblies(uri);
+        return false;
+    }
+
+    private async Task LoadAssemblies(string uri) {
+        bool loadedAssemblies = false;
+        try {
+            if (uri.EndsWith("WithDynamicAssembly")) {
+                loadedAssemblies = true;
+                Console.WriteLine($"Loading assemblies for WithDynamicAssembly...");
+                var assemblies = await lazyLoader.LoadDynamicAssemblies(new List<string>(){ "Newtonsoft.Json.dll" });
+                lazyLoadedAssemblies.AddRange(assemblies);
+            }
+        } catch (Exception e) {
+            Console.WriteLine($"Error when loading assemblies: {e}");
+        } finally {
+            if (loadedAssemblies) {
+                Console.WriteLine("Calling StateHasChanged...");
+                StateHasChanged();
+            }
+        }
+
+        return;
+    }
+}

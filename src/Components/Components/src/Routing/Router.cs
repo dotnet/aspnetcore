@@ -29,6 +29,8 @@ namespace Microsoft.AspNetCore.Components.Routing
         bool _navigationInterceptionEnabled;
         ILogger<Router> _logger;
 
+        private bool initialOnNavigateCalled = false;
+
         [Inject] private NavigationManager NavigationManager { get; set; }
 
         [Inject] private INavigationInterception NavigationInterception { get; set; }
@@ -55,6 +57,11 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// Gets or sets the content to display when a match is found for the requested route.
         /// </summary>
         [Parameter] public RenderFragment<RouteData> Found { get; set; }
+
+        /// <summary>
+        /// Gets or sets a handler that should be called before navigating to a new page.
+        /// </summary>
+        [Parameter] public Func<string, bool> OnNavigate { get; set; }
 
         private RouteTable Routes { get; set; }
 
@@ -93,10 +100,21 @@ namespace Microsoft.AspNetCore.Components.Routing
                 throw new InvalidOperationException($"The {nameof(Router)} component requires a value for the parameter {nameof(NotFound)}.");
             }
 
-
             var assemblies = AdditionalAssemblies == null ? new[] { AppAssembly } : new[] { AppAssembly }.Concat(AdditionalAssemblies);
             Routes = RouteTableFactory.Create(assemblies);
+
+            // If we're about to render the router for the first time, then
+            // we need to call the `OnNavigate` handler to ensure that pre-processing
+            // steps are completed before rendering the route. This way, it will work
+            // if you navigate to /PageWithLazyLoadedAssemblies or visit it for the first time.
+            if (OnNavigate != null && !initialOnNavigateCalled) {
+                OnNavigate(NavigationManager.ToBaseRelativePath(_locationAbsolute));
+                initialOnNavigateCalled = true;
+            }
+
             Refresh(isNavigationIntercepted: false);
+
+
             return Task.CompletedTask;
         }
 
@@ -160,6 +178,12 @@ namespace Microsoft.AspNetCore.Components.Routing
             _locationAbsolute = args.Location;
             if (_renderHandle.IsInitialized && Routes != null)
             {
+                if (OnNavigate != null) {
+                    var continueRender = OnNavigate(NavigationManager.ToBaseRelativePath(_locationAbsolute));
+                    if (!continueRender) {
+                        return;
+                    }
+                }
                 Refresh(args.IsNavigationIntercepted);
             }
         }

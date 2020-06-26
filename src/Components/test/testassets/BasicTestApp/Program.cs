@@ -18,7 +18,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.JSInterop;
-using System.Collections.Generic;
 
 namespace BasicTestApp
 {
@@ -30,11 +29,6 @@ namespace BasicTestApp
 
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<Index>("root");
-
-            // Set lazy-load definition for a single path
-            WebAssemblyLazyLoadDefinition lazyLoadDefinition = new WebAssemblyLazyLoadDefinition();
-            lazyLoadDefinition.AddRouteDefinition("WithDynamicAssembly", new List<string>() { "Newtonsoft.Json.dll" });
-            builder.SetLazyLoadDefinition(lazyLoadDefinition);
 
             builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             builder.Services.AddSingleton<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
