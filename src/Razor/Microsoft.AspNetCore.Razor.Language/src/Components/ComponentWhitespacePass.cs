@@ -50,6 +50,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 RemoveContiguousWhitespace(method.Children, TraversalDirection.Forwards);
                 RemoveContiguousWhitespace(method.Children, TraversalDirection.Backwards);
+
+                var visitor = new Visitor();
+                visitor.Visit(method);
             }
         }
 
@@ -68,7 +71,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 }
             }
 
-            
             return shouldPreserveWhitespace;
         }
 
@@ -102,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         shouldContinueIteration = false;
                         break;
 
-                    case CSharpCodeIntermediateNode codeIntermediateNode:
+                    case CSharpCodeIntermediateNode _:
                         shouldRemoveNode = false;
                         shouldContinueIteration = false;
                         break;
@@ -135,6 +137,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         {
             Forwards,
             Backwards
+        }
+
+        class Visitor : IntermediateNodeWalker
+        {
+            public override void VisitMarkupElement(MarkupElementIntermediateNode node)
+            {
+                RemoveContiguousWhitespace(node.Children, TraversalDirection.Forwards);
+                RemoveContiguousWhitespace(node.Children, TraversalDirection.Backwards);
+
+                base.VisitDefault(node);
+            }
         }
     }
 }

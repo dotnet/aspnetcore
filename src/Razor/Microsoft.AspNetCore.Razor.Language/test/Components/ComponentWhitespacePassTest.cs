@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 
@@ -51,8 +52,40 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             // Assert
             var method = documentNode.FindPrimaryMethod();
-            var child = (MarkupElementIntermediateNode)method.Children.Single();
+            var child = Assert.IsType<MarkupElementIntermediateNode>(Assert.Single(method.Children));
             Assert.Equal("span", child.TagName);
+        }
+
+        [Fact]
+        public void Execute_RemovesLeadingAndTrailingWhitespaceInsideElement()
+        {
+            // Arrange
+            var document = CreateDocument(@"
+<parent>
+    <child>   Hello, @("" w o r l d "")   </child>
+</parent>
+");
+
+            var documentNode = Lower(document);
+
+            // Act
+            Pass.Execute(document, documentNode);
+
+            // Assert
+            var parentElement = Assert.IsType<MarkupElementIntermediateNode>(Assert.Single(documentNode.FindPrimaryMethod().Children));
+            var childElement = Assert.IsType<MarkupElementIntermediateNode>(Assert.Single(parentElement.Children));
+            Assert.Equal("child", childElement.TagName);
+            Assert.Collection(childElement.Children,
+                node =>
+                {
+                    var htmlNode = Assert.IsType<HtmlContentIntermediateNode>(node);
+                    Assert.Equal("   Hello, ", GetContent(htmlNode));
+                },
+                node =>
+                {
+                    var csharpExpressionNode = Assert.IsType<CSharpExpressionIntermediateNode>(node);
+                    Assert.Equal(@""" w o r l d """, GetContent(csharpExpressionNode));
+                });
         }
 
         private RazorCodeDocument CreateDocument(string content)
@@ -75,6 +108,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
 
             return codeDocument.GetDocumentIntermediateNode();
+        }
+
+        private static string GetContent(IntermediateNode node)
+        {
+            var builder = new StringBuilder();
+            var tokens = node.Children.OfType<IntermediateToken>();
+            foreach (var token in tokens)
+            {
+                builder.Append(token.Content);
+            }
+            return builder.ToString();
         }
     }
 }
