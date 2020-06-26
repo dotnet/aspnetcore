@@ -88,6 +88,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 });
         }
 
+        [Fact]
+        public void Execute_LeavesWhitespaceBetweenSiblingElements()
+        {
+            // Arrange
+            var document = CreateDocument(@" <elem attr=@expr /> <elem attr=@expr /> ");
+
+            var documentNode = Lower(document);
+
+            // Act
+            Pass.Execute(document, documentNode);
+
+            // Assert
+            Assert.Collection(documentNode.FindPrimaryMethod().Children,
+                node => Assert.IsType<MarkupElementIntermediateNode>(node),
+                node => Assert.IsType<HtmlContentIntermediateNode>(node),
+                node => Assert.IsType<MarkupElementIntermediateNode>(node));
+        }
+
         private RazorCodeDocument CreateDocument(string content)
         {
             var source = RazorSourceDocument.Create(content, "test.cshtml");
