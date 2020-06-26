@@ -24,7 +24,6 @@
       "WebAssembly\\Server\\test\\Microsoft.AspNetCore.Components.WebAssembly.Server.Tests.csproj",
       "WebAssembly\\WebAssembly.Authentication\\src\\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj",
       "WebAssembly\\WebAssembly.Authentication\\test\\Microsoft.AspNetCore.Components.WebAssembly.Authentication.Tests.csproj",
-      "WebAssembly\\WebAssemblyHttpHandler\\src\\Microsoft.AspNetCore.Components.WebAssembly.HttpHandler.csproj",
       "WebAssembly\\WebAssembly\\src\\Microsoft.AspNetCore.Components.WebAssembly.csproj",
       "WebAssembly\\WebAssembly\\test\\Microsoft.AspNetCore.Components.WebAssembly.Tests.csproj",
       "WebAssembly\\testassets\\HostedInAspNet.Client\\HostedInAspNet.Client.csproj",
