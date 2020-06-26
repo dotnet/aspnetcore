@@ -2082,11 +2082,45 @@ namespace AnotherTest
         }
 
         [Fact]
-        public void Component_WithPreserveWhitespaceDirective()
+        public void Component_WithPreserveWhitespaceDirective_True()
         {
             // Arrange / Act
             var generated = CompileToCSharp(@"
 @preservewhitespace true
+
+<ul>
+    @foreach (var item in Enumerable.Range(1, 100))
+    {
+        <li>
+            @item
+        </li>
+    }
+</ul>
+
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_WithPreserveWhitespaceDirective_False()
+        {
+            // Arrange / Act
+            var generated = CompileToCSharp(@"
+@preservewhitespace false
+
+<ul>
+    @foreach (var item in Enumerable.Range(1, 100))
+    {
+        <li>
+            @item
+        </li>
+    }
+</ul>
+
 ");
 
             // Assert
