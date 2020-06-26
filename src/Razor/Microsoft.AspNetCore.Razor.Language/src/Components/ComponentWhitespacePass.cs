@@ -74,9 +74,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             return shouldPreserveWhitespace;
         }
 
-        private static void RemoveContiguousWhitespace(IntermediateNodeCollection nodes, TraversalDirection direction)
+        private static int RemoveContiguousWhitespace(IntermediateNodeCollection nodes, TraversalDirection direction, int? startIndex = null)
         {
-            var position = direction == TraversalDirection.Forwards ? 0 : nodes.Count - 1;
+            var position = startIndex.GetValueOrDefault(direction == TraversalDirection.Forwards ? 0 : nodes.Count - 1);
+            var countRemoved = 0;
             while (position >= 0 && position < nodes.Count)
             {
                 var node = nodes[position];
@@ -118,6 +119,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 if (shouldRemoveNode)
                 {
                     nodes.RemoveAt(position);
+                    countRemoved++;
                     if (direction == TraversalDirection.Forwards)
                     {
                         position--;
@@ -131,6 +133,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     break;
                 }
             }
+
+            return countRemoved;
         }
 
         enum TraversalDirection
@@ -145,6 +149,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 RemoveContiguousWhitespace(node.Children, TraversalDirection.Forwards);
                 RemoveContiguousWhitespace(node.Children, TraversalDirection.Backwards);
+                VisitDefault(node);
+            }
+
+            public override void VisitDefault(IntermediateNode node)
+            {
+                // For any CSharpCodeIntermediateNode children, remove their preceding and trailing whitespace
+                for (var childIndex = 0; childIndex < node.Children.Count; childIndex++)
+                {
+                    if (node.Children[childIndex] is CSharpCodeIntermediateNode)
+                    {
+                        childIndex -= RemoveContiguousWhitespace(node.Children, TraversalDirection.Backwards, childIndex - 1);
+                        RemoveContiguousWhitespace(node.Children, TraversalDirection.Forwards, childIndex + 1);
+                    }
+                }
 
                 base.VisitDefault(node);
             }

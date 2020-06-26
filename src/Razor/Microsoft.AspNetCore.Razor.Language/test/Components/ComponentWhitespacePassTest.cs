@@ -106,6 +106,47 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 node => Assert.IsType<MarkupElementIntermediateNode>(node));
         }
 
+        [Fact]
+        public void Execute_RemovesWhitespacePrecedingAndTrailingCSharpCode()
+        {
+            // Arrange
+            var document = CreateDocument(@"
+<parent>
+    <child>@val1a @val1b</child>
+
+@if(someExpression) { /* Do something */ }
+
+    <child>@val2a @val2b</child>
+</parent>
+");
+
+            var documentNode = Lower(document);
+
+            // Act
+            Pass.Execute(document, documentNode);
+
+            // Assert
+            var parentElement = Assert.IsType<MarkupElementIntermediateNode>(Assert.Single(documentNode.FindPrimaryMethod().Children));
+            Assert.Collection(parentElement.Children,
+                node =>
+                {
+                    Assert.Equal("child", Assert.IsType<MarkupElementIntermediateNode>(node).TagName);
+                    Assert.Collection(node.Children,
+                        x => Assert.IsType<CSharpExpressionIntermediateNode>(x),
+                        x => Assert.IsType<HtmlContentIntermediateNode>(x), // We don't remove whitespace before/after C# expressions
+                        x => Assert.IsType<CSharpExpressionIntermediateNode>(x));
+                },
+                node => Assert.IsType<CSharpCodeIntermediateNode>(node),
+                node =>
+                {
+                    Assert.Equal("child", Assert.IsType<MarkupElementIntermediateNode>(node).TagName);
+                    Assert.Collection(node.Children,
+                        x => Assert.IsType<CSharpExpressionIntermediateNode>(x),
+                        x => Assert.IsType<HtmlContentIntermediateNode>(x), // We don't remove whitespace before/after C# expressions
+                        x => Assert.IsType<CSharpExpressionIntermediateNode>(x));
+                });
+        }
+
         private RazorCodeDocument CreateDocument(string content)
         {
             var source = RazorSourceDocument.Create(content, "test.cshtml");
