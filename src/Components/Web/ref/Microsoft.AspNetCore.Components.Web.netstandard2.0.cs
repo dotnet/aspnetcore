@@ -14,6 +14,14 @@ namespace Microsoft.AspNetCore.Components
         public string? Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string? ValueAttribute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
+    public static partial class ElementReferenceExtensions
+    {
+        public static System.Threading.Tasks.ValueTask FocusAsync(this Microsoft.AspNetCore.Components.ElementReference elementReference) { throw null; }
+    }
+    public partial class WebElementReferenceContext : Microsoft.AspNetCore.Components.ElementReferenceContext
+    {
+        public WebElementReferenceContext(Microsoft.JSInterop.IJSRuntime jsRuntime) { }
+    }
 }
 namespace Microsoft.AspNetCore.Components.Forms
 {
