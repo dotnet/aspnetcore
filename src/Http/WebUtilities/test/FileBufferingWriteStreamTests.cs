@@ -371,24 +371,6 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.Equal(0, bufferingStream.Length);
         }
 
-        [Fact]
-        public async Task DrainBufferAsync_IncludesContentPossiblyBufferedByFileStream()
-        {
-            // We want to ensure that the FileStream (which has a 1-byte buffer) flushes prior to the other read stream reading input.
-            // Arrange
-            var input = new byte[] { 3, };
-            using var bufferingStream = new FileBufferingWriteStream(0, tempFileDirectoryAccessor: () => TempDirectory);
-            bufferingStream.Write(input, 0, input.Length);
-            var memoryStream = new MemoryStream();
-
-            // Act
-            await bufferingStream.DrainBufferAsync(memoryStream, default);
-
-            // Assert
-            Assert.Equal(input, memoryStream.ToArray());
-            Assert.Equal(0, bufferingStream.Length);
-        }
-
         public void Dispose()
         {
             try
