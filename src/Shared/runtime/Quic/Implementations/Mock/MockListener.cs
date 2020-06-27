@@ -13,7 +13,7 @@ namespace System.Net.Quic.Implementations.Mock
 {
     internal sealed class MockListener : QuicListenerProvider
     {
-        private bool _disposed = false;
+        private bool _disposed;
         private SslServerAuthenticationOptions? _sslOptions;
         private IPEndPoint _listenEndPoint;
         private TcpListener _tcpListener;
