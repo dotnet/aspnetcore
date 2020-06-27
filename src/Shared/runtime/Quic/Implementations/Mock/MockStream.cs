@@ -13,14 +13,14 @@ namespace System.Net.Quic.Implementations.Mock
 {
     internal sealed class MockStream : QuicStreamProvider
     {
-        private bool _disposed = false;
+        private bool _disposed;
         private readonly long _streamId;
         private bool _canRead;
         private bool _canWrite;
 
         private MockConnection? _connection;
 
-        private Socket? _socket = null;
+        private Socket? _socket;
 
         // Constructor for outbound streams
         internal MockStream(MockConnection connection, long streamId, bool bidirectional)

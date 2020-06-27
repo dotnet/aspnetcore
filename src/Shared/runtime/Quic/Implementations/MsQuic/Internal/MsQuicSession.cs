@@ -6,7 +6,7 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
 {
     internal sealed class MsQuicSession : IDisposable
     {
-        private bool _disposed = false;
+        private bool _disposed;
         private IntPtr _nativeObjPtr;
         private bool _opened;
 
