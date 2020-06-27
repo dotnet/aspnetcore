@@ -356,7 +356,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public void OnStaticIndexedHeader(int index)
             {
                 var knownHeader = H3StaticTable.GetHeaderFieldAt(index);
-                _decodedHeaders[((Span<byte>)knownHeader.Name).GetAsciiStringNonNullCharacters()] = HttpUtilities.GetAsciiOrUTF8StringNonNullCharacters(knownHeader.Value);
+                _decodedHeaders[((Span<byte>)knownHeader.Name).GetAsciiStringNonNullCharacters()] = HttpUtilities.GetAsciiOrUTF8StringNonNullCharacters((ReadOnlySpan<byte>)knownHeader.Value);
             }
 
             public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)

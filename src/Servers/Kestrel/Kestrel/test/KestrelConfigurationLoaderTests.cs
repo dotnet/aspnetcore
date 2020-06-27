@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -585,27 +586,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
                 .Load();
 
             Assert.True(ran1);
-        }
-
-        [Fact]
-        public void Latin1RequestHeadersReadFromConfig()
-        {
-            var options = CreateServerOptions();
-            var config =  new ConfigurationBuilder().AddInMemoryCollection().Build();
-
-            Assert.False(options.Latin1RequestHeaders);
-            options.Configure(config).Load();
-            Assert.False(options.Latin1RequestHeaders);
-
-            options = CreateServerOptions();
-            config = new ConfigurationBuilder().AddInMemoryCollection(new[]
-            {
-                new KeyValuePair<string, string>("Latin1RequestHeaders", "true"),
-            }).Build();
-
-            Assert.False(options.Latin1RequestHeaders);
-            options.Configure(config).Load();
-            Assert.True(options.Latin1RequestHeaders);
         }
 
         [Fact]

@@ -4609,7 +4609,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task HEADERS_Received_Latin1_AcceptedWhenLatin1OptionIsConfigured()
         {
-            _serviceContext.ServerOptions.Latin1RequestHeaders = true;
+            _serviceContext.ServerOptions.RequestHeaderEncodingSelector = _ => Encoding.Latin1;
 
             await InitializeConnectionAsync(context =>
             {

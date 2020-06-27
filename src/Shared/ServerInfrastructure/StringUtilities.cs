@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal static class StringUtilities
     {
+        private static readonly SpanAction<char, IntPtr> s_getAsciiOrUtf8StringNonNullCharacters = GetAsciiStringNonNullCharacters;
+
         private static string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span, Encoding defaultEncoding)
             => GetAsciiOrUTF8StringNonNullCharacters((ReadOnlySpan<byte>)span, defaultEncoding);
 
@@ -52,15 +54,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        private static readonly SpanAction<char, IntPtr> s_getAsciiOrUtf8StringNonNullCharacters = GetAsciiOrUTF8StringNonNullCharacters;
-
-        private static unsafe void GetAsciiOrUTF8StringNonNullCharacters(Span<char> buffer, IntPtr state)
+        private static unsafe void GetAsciiStringNonNullCharacters(Span<char> buffer, IntPtr state)
         {
             fixed (char* output = &MemoryMarshal.GetReference(buffer))
             {
-                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
-                // in the string
-                if (!StringUtilities.TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
+                // This version if AsciiUtilities returns false if there are any null ('\0') or non-Ascii
+                // character (> 127) in the string.
+                if (!TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
                 {
                     // Mark resultString for UTF-8 encoding
                     output[0] = '\0';
