@@ -23,4 +23,7 @@
       <method signature="System.Void .ctor()" />
     </type>
   </assembly>
+
+  <!-- Workaround for https://github.com/mono/linker/issues/1298 -->
+  <assembly fullname="System.Security.Cryptography.X509Certificates" />
 </linker>

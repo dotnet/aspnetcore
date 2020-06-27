@@ -32,7 +32,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             var roots = new XElement("linker");
             foreach (var assembly in Assemblies)
             {
-                var assemblyName = assembly.GetMetadata("FileName") + assembly.GetMetadata("Extension");
+                // NOTE: Descriptor files don't include the file extension
+                // in the assemblyName.
+                var assemblyName = assembly.GetMetadata("FileName");
                 var typePreserved = assembly.GetMetadata("Preserve");
                 var typeRequired = assembly.GetMetadata("Required");
 
