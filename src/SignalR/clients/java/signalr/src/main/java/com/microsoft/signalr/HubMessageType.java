@@ -12,7 +12,7 @@ enum HubMessageType {
     PING(6),
     CLOSE(7),
     INVOCATION_BINDING_FAILURE(-1),
-	STREAM_BINDING_FAILURE(-2);
+    STREAM_BINDING_FAILURE(-2);
 
     public int value;
     HubMessageType(int id) { this.value = id; }

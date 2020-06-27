@@ -17,11 +17,11 @@ final class CloseMessage extends HubMessage {
     }
     
     public CloseMessage(String error) {
-    	this (error, false)
+        this (error, false);
     }
     
     public CloseMessage(boolean allowReconnect) {
-        this (null, allowReconnect)
+        this (null, allowReconnect);
     }
 
     public CloseMessage(String error, boolean allowReconnect) {

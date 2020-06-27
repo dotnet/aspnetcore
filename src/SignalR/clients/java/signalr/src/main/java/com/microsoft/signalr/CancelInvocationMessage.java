@@ -15,14 +15,14 @@ final class CancelInvocationMessage extends HubMessage {
     }
     
     public CancelInvocationMessage(Map<String, String> headers, String invocationId) {
-    	if (headers != null & !headers.isEmpty()) {
-    		this.headers = headers;
-    	}
+        if (headers != null & !headers.isEmpty()) {
+            this.headers = headers;
+        }
         this.invocationId = invocationId;
     }
 
     public Map<String, String> getHeaders() {
-    	return headers;
+        return headers;
     }
     
     @Override

@@ -23,13 +23,13 @@ class InvocationMessage extends HubMessage {
     }
 
     public InvocationMessage(String invocationId, String target, Object[] args, Collection<String> streamIds) {
-    	this(null, invocationId, target, args, streamIds);
+        this(null, invocationId, target, args, streamIds);
     }
     
     public InvocationMessage(Map<String, String> headers, String invocationId, String target, Object[] args, Collection<String> streamIds) {
-    	if (headers != null & !headers.isEmpty()) {
-    		this.headers = headers;
-    	}
+        if (headers != null & !headers.isEmpty()) {
+            this.headers = headers;
+        }
         this.invocationId = invocationId;
         this.target = target;
         this.arguments = args;
@@ -39,7 +39,7 @@ class InvocationMessage extends HubMessage {
     }
     
     public Map<String, String> getHeaders() {
-    	return headers;
+        return headers;
     }
 
     public String getInvocationId() {
