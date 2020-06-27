@@ -5,6 +5,7 @@ package com.microsoft.signalr;
 
 final class CloseMessage extends HubMessage {
     private final String error;
+    private final boolean allowReconnect;
 
     @Override
     public HubMessageType getMessageType() {
@@ -12,14 +13,27 @@ final class CloseMessage extends HubMessage {
     }
 
     public CloseMessage() {
-        this(null);
+        this(null, false);
+    }
+    
+    public CloseMessage(String error) {
+    	this (error, false)
+    }
+    
+    public CloseMessage(boolean allowReconnect) {
+        this (null, allowReconnect)
     }
 
-    public CloseMessage(String error) {
+    public CloseMessage(String error, boolean allowReconnect) {
         this.error = error;
+        this.allowReconnect = allowReconnect;
     }
 
     public String getError() {
         return this.error;
+    }
+    
+    public boolean getAllowReconnect() {
+        return this.allowReconnect;
     }
 }
