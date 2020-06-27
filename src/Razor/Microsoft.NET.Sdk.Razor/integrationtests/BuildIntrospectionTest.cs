@@ -88,13 +88,24 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [InitializeTestProject("SimpleMvc")]
+        [InitializeTestProject("SimpleMvc31")]
         public async Task RazorSdk_ResolvesRazorLangVersionTo30ForNetCoreApp30Projects()
         {
             var result = await DotnetMSBuild("ResolveRazorConfiguration", "/t:_IntrospectResolvedConfiguration");
 
             Assert.BuildPassed(result);
             Assert.BuildOutputContainsLine(result, "RazorLangVersion: 3.0");
+            Assert.BuildOutputContainsLine(result, "ResolvedRazorConfiguration: MVC-3.0");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task RazorSdk_ResolvesRazorLangVersionTo50ForNetCoreApp50Projects()
+        {
+            var result = await DotnetMSBuild("ResolveRazorConfiguration", "/t:_IntrospectResolvedConfiguration");
+
+            Assert.BuildPassed(result);
+            Assert.BuildOutputContainsLine(result, "RazorLangVersion: 5.0");
             Assert.BuildOutputContainsLine(result, "ResolvedRazorConfiguration: MVC-3.0");
         }
 
@@ -142,7 +153,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild("ResolveRazorConfiguration", "/t:_IntrospectResolvedConfiguration");
 
             Assert.BuildPassed(result);
-            Assert.BuildOutputContainsLine(result, "RazorLangVersion: 3.0");
+            Assert.BuildOutputContainsLine(result, "RazorLangVersion: 5.0");
             Assert.BuildOutputContainsLine(result, "ResolvedRazorConfiguration: MVC-3.0");
         }
 

@@ -20,7 +20,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public static readonly RazorLanguageVersion Version_3_0 = new RazorLanguageVersion(3, 0);
 
-        public static readonly RazorLanguageVersion Latest = Version_3_0;
+        public static readonly RazorLanguageVersion Version_5_0 = new RazorLanguageVersion(5, 0);
+
+        public static readonly RazorLanguageVersion Latest = Version_5_0;
 
         public static readonly RazorLanguageVersion Experimental = new RazorLanguageVersion(1337, 1337);
 
@@ -41,6 +43,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                 version = Experimental;
                 return true;
             }
+            else if (languageVersion == "5.0")
+            {
+                version = Version_5_0;
+                return true;
+            }
             else if (languageVersion == "3.0")
             {
                 version = Version_3_0;
@@ -49,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             else if (languageVersion == "2.1")
             {
                 version = Version_2_1;
-                return true; 
+                return true;
             }
             else if (languageVersion == "2.0")
             {
@@ -84,7 +91,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             throw new ArgumentException(
-                Resources.FormatRazorLanguageVersion_InvalidVersion(languageVersion), 
+                Resources.FormatRazorLanguageVersion_InvalidVersion(languageVersion),
                 nameof(languageVersion));
         }
 
@@ -131,7 +138,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // We don't need to do anything special for our hash code since reference equality is what we're going for.
             return base.GetHashCode();
         }
-        
+
         public override string ToString() => $"{Major}.{Minor}";
 
         private string DebuggerToString() => $"Razor '{Major}.{Minor}'";

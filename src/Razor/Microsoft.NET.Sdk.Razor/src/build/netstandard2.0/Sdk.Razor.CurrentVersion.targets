@@ -45,6 +45,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!--
       Infer the RazorLangVersion if no value was specified. When adding support for newer target frameworks, list newer language versions first.
     -->
+    <RazorLangVersion Condition="'$(RazorLangVersion)' == '' AND '$(_TargetingNET50OrLater)' == 'true'">5.0</RazorLangVersion>
     <RazorLangVersion Condition="'$(RazorLangVersion)' == '' AND '$(_TargetingNETCoreApp30OrLater)' == 'true'">3.0</RazorLangVersion>
 
     <!--
