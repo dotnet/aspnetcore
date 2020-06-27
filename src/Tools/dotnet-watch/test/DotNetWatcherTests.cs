@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Globalization;
+using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -52,6 +51,51 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 File.SetLastWriteTime(source, DateTime.Now);
                 await _app.HasRestarted(TimeSpan.FromMinutes(1));
             }
+        }
+
+        [Fact]
+        public async Task RunsWithNoRestoreOnOrdinaryFileChanges()
+        {
+            _app.DotnetWatchArgs.Add("--verbose");
+
+            await _app.StartWatcherAsync(arguments: new[] { "wait" });
+            var source = Path.Combine(_app.SourceDirectory, "Program.cs");
+            const string messagePrefix = "watch : Running dotnet with the following arguments: run";
+
+            // Verify that the first run does not use --no-restore
+            Assert.Contains(_app.Process.Output, p => string.Equals(messagePrefix + " -- wait", p.Trim()));
+
+            for (var i = 0; i < 3; i++)
+            {
+                File.SetLastWriteTime(source, DateTime.Now);
+                var message = await _app.Process.GetOutputLineStartsWithAsync(messagePrefix, TimeSpan.FromMinutes(2));
+
+                Assert.Equal(messagePrefix + " --no-restore -- wait", message.Trim());
+            }
+        }
+
+        [Fact]
+        public async Task RunsWithRestoreIfCsprojChanges()
+        {
+            _app.DotnetWatchArgs.Add("--verbose");
+
+            await _app.StartWatcherAsync(arguments: new[] { "wait" });
+            var source = Path.Combine(_app.SourceDirectory, "KitchenSink.csproj");
+            const string messagePrefix = "watch : Running dotnet with the following arguments: run";
+
+            // Verify that the first run does not use --no-restore
+            Assert.Contains(_app.Process.Output, p => string.Equals(messagePrefix + " -- wait", p.Trim()));
+
+            File.SetLastWriteTime(source, DateTime.Now);
+            var message = await _app.Process.GetOutputLineStartsWithAsync(messagePrefix, TimeSpan.FromMinutes(2));
+
+            // csproj changed. Do not expect a --no-restore
+            Assert.Equal(messagePrefix + " -- wait", message.Trim());
+
+            // regular file changed after csproj changes. Should use --no-restore
+            File.SetLastWriteTime(Path.Combine(_app.SourceDirectory, "Program.cs"), DateTime.Now);
+            message = await _app.Process.GetOutputLineStartsWithAsync(messagePrefix, TimeSpan.FromMinutes(2));
+            Assert.Equal(messagePrefix + " --no-restore -- wait", message.Trim());
         }
 
         public void Dispose()

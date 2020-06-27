@@ -3,9 +3,12 @@
 
 using System;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Watcher.Internal;
+using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -15,33 +18,56 @@ namespace Microsoft.DotNet.Watcher
     {
         private readonly IReporter _reporter;
         private readonly ProcessRunner _processRunner;
+        private readonly IWatchFilter[] _filters;
 
-        public DotNetWatcher(IReporter reporter)
+        public DotNetWatcher(IReporter reporter, IFileSetFactory fileSetFactory)
         {
             Ensure.NotNull(reporter, nameof(reporter));
 
             _reporter = reporter;
             _processRunner = new ProcessRunner(reporter);
+
+            _filters = new IWatchFilter[]
+            {
+                new MSBuildEvaluationFilter(fileSetFactory),
+                new NoRestoreFilter(),
+            };
         }
 
-        public async Task WatchAsync(ProcessSpec processSpec, IFileSetFactory fileSetFactory,
-            CancellationToken cancellationToken)
+        public async Task WatchAsync(ProcessSpec processSpec, CancellationToken cancellationToken)
         {
             Ensure.NotNull(processSpec, nameof(processSpec));
 
-            var cancelledTaskSource = new TaskCompletionSource<object>();
-            cancellationToken.Register(state => ((TaskCompletionSource<object>) state).TrySetResult(null),
+            var cancelledTaskSource = new TaskCompletionSource();
+            cancellationToken.Register(state => ((TaskCompletionSource)state).TrySetResult(),
                 cancelledTaskSource);
 
-            var iteration = 1;
+            var initialArguments = processSpec.Arguments.ToArray();
+            var context = new DotNetWatchContext
+            {
+                Iteration = -1,
+                ProcessSpec = processSpec,
+                Reporter = _reporter,
+            };
 
             while (true)
             {
-                processSpec.EnvironmentVariables["DOTNET_WATCH_ITERATION"] = iteration.ToString(CultureInfo.InvariantCulture);
-                iteration++;
+                context.Iteration++;
 
-                var fileSet = await fileSetFactory.CreateAsync(cancellationToken);
+                // Reset arguments
+                processSpec.Arguments = initialArguments;
 
+                for (var i = 0; i < _filters.Length; i++)
+                {
+                    await _filters[i].ProcessAsync(context, cancellationToken);
+                }
+
+                // Reset for next run
+                context.RequiresMSBuildRevaluation = false;
+
+                processSpec.EnvironmentVariables["DOTNET_WATCH_ITERATION"] = (context.Iteration + 1).ToString(CultureInfo.InvariantCulture);
+
+                var fileSet = context.FileSet;
                 if (fileSet == null)
                 {
                     _reporter.Error("Failed to find a list of files to watch");
@@ -91,10 +117,13 @@ namespace Microsoft.DotNet.Watcher
                         return;
                     }
 
+                    context.ChangedFile = fileSetTask.Result;
                     if (finishedTask == processTask)
                     {
+                        // Process exited. Redo evaludation
+                        context.RequiresMSBuildRevaluation = true;
                         // Now wait for a file to change before restarting process
-                        await fileSetWatcher.GetChangedFileAsync(cancellationToken, () => _reporter.Warn("Waiting for a file to change before restarting dotnet..."));
+                        context.ChangedFile = await fileSetWatcher.GetChangedFileAsync(cancellationToken, () => _reporter.Warn("Waiting for a file to change before restarting dotnet..."));
                     }
 
                     if (!string.IsNullOrEmpty(fileSetTask.Result))
