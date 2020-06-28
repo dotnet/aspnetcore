@@ -20,12 +20,12 @@ namespace Microsoft.AspNetCore.Routing
     }
     public partial interface IRouter
     {
-        Microsoft.AspNetCore.Routing.VirtualPathData GetVirtualPath(Microsoft.AspNetCore.Routing.VirtualPathContext context);
+        Microsoft.AspNetCore.Routing.VirtualPathData? GetVirtualPath(Microsoft.AspNetCore.Routing.VirtualPathContext context);
         System.Threading.Tasks.Task RouteAsync(Microsoft.AspNetCore.Routing.RouteContext context);
     }
     public partial interface IRoutingFeature
     {
-        Microsoft.AspNetCore.Routing.RouteData RouteData { get; set; }
+        Microsoft.AspNetCore.Routing.RouteData? RouteData { get; set; }
     }
     public abstract partial class LinkGenerator
     {
@@ -57,13 +57,13 @@ namespace Microsoft.AspNetCore.Routing
         public Microsoft.AspNetCore.Routing.RouteValueDictionary DataTokens { get { throw null; } }
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.IRouter> Routers { get { throw null; } }
         public Microsoft.AspNetCore.Routing.RouteValueDictionary Values { get { throw null; } }
-        public Microsoft.AspNetCore.Routing.RouteData.RouteDataSnapshot PushState(Microsoft.AspNetCore.Routing.IRouter router, Microsoft.AspNetCore.Routing.RouteValueDictionary values, Microsoft.AspNetCore.Routing.RouteValueDictionary dataTokens) { throw null; }
+        public Microsoft.AspNetCore.Routing.RouteData.RouteDataSnapshot PushState(Microsoft.AspNetCore.Routing.IRouter? router, Microsoft.AspNetCore.Routing.RouteValueDictionary? values, Microsoft.AspNetCore.Routing.RouteValueDictionary? dataTokens) { throw null; }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         public readonly partial struct RouteDataSnapshot
         {
             private readonly object _dummy;
             private readonly int _dummyPrimitive;
-            public RouteDataSnapshot(Microsoft.AspNetCore.Routing.RouteData routeData, Microsoft.AspNetCore.Routing.RouteValueDictionary dataTokens, System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.IRouter> routers, Microsoft.AspNetCore.Routing.RouteValueDictionary values) { throw null; }
+            public RouteDataSnapshot(Microsoft.AspNetCore.Routing.RouteData routeData, Microsoft.AspNetCore.Routing.RouteValueDictionary? dataTokens, System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.IRouter>? routers, Microsoft.AspNetCore.Routing.RouteValueDictionary? values) { throw null; }
             public void Restore() { }
         }
     }

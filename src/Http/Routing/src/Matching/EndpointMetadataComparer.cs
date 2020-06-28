@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,10 +16,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
     /// <see cref="IEndpointComparerPolicy" />. The implementation can be retrieved from the service
     /// provider and provided to <see cref="CandidateSet.ExpandEndpoint(int, IReadOnlyList{Endpoint}, IComparer{Endpoint})"/>.
     /// </summary>
-    public sealed class EndpointMetadataComparer : IComparer<Endpoint>
+    public sealed class EndpointMetadataComparer : IComparer<Endpoint?>
     {
         private IServiceProvider _services;
-        private IComparer<Endpoint>[] _comparers;
+        private IComparer<Endpoint>[]? _comparers;
 
         // This type is **INTENDED** for use in MatcherPolicy instances yet is also needs the MatcherPolicy instances.
         // using IServiceProvider to break the cycle.
@@ -48,7 +50,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
-        int IComparer<Endpoint>.Compare(Endpoint x, Endpoint y)
+        int IComparer<Endpoint?>.Compare(Endpoint? x, Endpoint? y)
         {
             if (x == null)
             {
@@ -83,7 +85,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
     /// The type of metadata to compare. Typically this is a type of metadata related
     /// to the application concern being handled.
     /// </typeparam>
-    public abstract class EndpointMetadataComparer<TMetadata> : IComparer<Endpoint> where TMetadata : class
+    public abstract class EndpointMetadataComparer<TMetadata> : IComparer<Endpoint?> where TMetadata : class
     {
         public static readonly EndpointMetadataComparer<TMetadata> Default = new DefaultComparer<TMetadata>();
 
@@ -98,7 +100,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// x is less than y, zero if x is equal to y, or a value greater than zero if x is 
         /// greater than y.
         /// </returns>
-        public int Compare(Endpoint x, Endpoint y)
+        public int Compare(Endpoint? x, Endpoint? y)
         {
             if (x == null)
             {
@@ -118,7 +120,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// </summary>
         /// <param name="endpoint">The <see cref="Endpoint"/>.</param>
         /// <returns>The <typeparamref name="TMetadata"/> instance or <c>null</c>.</returns>
-        protected virtual TMetadata GetMetadata(Endpoint endpoint)
+        protected virtual TMetadata? GetMetadata(Endpoint endpoint)
         {
             return endpoint.Metadata.GetMetadata<TMetadata>();
         }
@@ -139,7 +141,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// compared, the endpoint that defines an instance of <typeparamref name="TMetadata"/>
         /// will be considered higher priority.
         /// </remarks>
-        protected virtual int CompareMetadata(TMetadata x, TMetadata y)
+        protected virtual int CompareMetadata(TMetadata? x, TMetadata? y)
         {
             // The default policy is that if x endpoint defines TMetadata, and
             // y endpoint does not, then x is *more specific* than y. We return

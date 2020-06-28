@@ -1,8 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,7 +22,7 @@ namespace Microsoft.AspNetCore.Routing
         private readonly Dictionary<string, INamedRouter> _namedRoutes =
                                     new Dictionary<string, INamedRouter>(StringComparer.OrdinalIgnoreCase);
 
-        private RouteOptions _options;
+        private RouteOptions? _options;
 
         public IRouter this[int index]
         {
@@ -84,13 +88,13 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-        public virtual VirtualPathData GetVirtualPath(VirtualPathContext context)
+        public virtual VirtualPathData? GetVirtualPath(VirtualPathContext context)
         {
             EnsureOptions(context.HttpContext);
 
             if (!string.IsNullOrEmpty(context.RouteName))
             {
-                VirtualPathData namedRoutePathData = null;
+                VirtualPathData? namedRoutePathData = null;
 
                 if (_namedRoutes.TryGetValue(context.RouteName, out var matchedNamedRoute))
                 {
@@ -114,7 +118,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-        private VirtualPathData GetVirtualPath(VirtualPathContext context, List<IRouter> routes)
+        private VirtualPathData? GetVirtualPath(VirtualPathContext context, List<IRouter> routes)
         {
             for (var i = 0; i < routes.Count; i++)
             {
@@ -130,12 +134,14 @@ namespace Microsoft.AspNetCore.Routing
             return null;
         }
 
-        private VirtualPathData NormalizeVirtualPath(VirtualPathData pathData)
+        private VirtualPathData? NormalizeVirtualPath(VirtualPathData? pathData)
         {
             if (pathData == null)
             {
                 return pathData;
             }
+
+            Debug.Assert(_options != null);
 
             var url = pathData.VirtualPath;
 
@@ -175,6 +181,7 @@ namespace Microsoft.AspNetCore.Routing
             return pathData;
         }
 
+        [MemberNotNull(nameof(_options))]
         private void EnsureOptions(HttpContext context)
         {
             if (_options == null)
