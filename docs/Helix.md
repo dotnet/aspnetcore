@@ -23,9 +23,17 @@ This will restore, and then publish all the test project including some bootstra
 
 aspnetcore-ci runs non quarantined tests against the required helix queues as a required PR check and all builds on all branches.
 
-aspnetcore-quarantined-tests runs only quarantined tests against the required queues only on master every 4 hours.
-
 aspnetcore-helix-matrix runs non quarantined tests against all queues twice a day only on public master.
+
+aspnetcore-quarantined-pr runs only quarantined tests against the required queues on PRs and on master every 4 hours.
+
+aspnetcore-quarantined-tests runs only quarantined tests against all queues only on public master once a day at 11 PM.
+
+## Checkin process expectations
+
+- The normal PR process has aspnetcore-ci will ensure that the required queues are green.
+- If your changes are likely to have cross platform impact that would affect more than the required queues, you should kick off a manual aspnetcore-helix-matrix pipeline run against your branch before merging your PR. Even though aspnetcore-helix-matrix is not a required checkin gate, if your changes break this pipeline, you must either immediately revert your changes, or quarantine the test, its never ok to leave this pipeline in a broken state.
+
 
 ## How do I look at the results of a helix run on Azure Pipelines?
 
