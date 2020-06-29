@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms
@@ -8,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// <summary>
     /// A dropdown selection component.
     /// </summary>
-    public class InputSelect<TValue> : InputChoice<TValue>
+    public class InputSelect<TValue> : InputBase<TValue>
     {
         /// <summary>
         /// Gets or sets the child content to be rendering inside the select element.
@@ -26,5 +27,9 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.AddContent(5, ChildContent);
             builder.CloseElement();
         }
+
+        /// <inheritdoc />
+        protected override bool TryParseValueFromString(string? value, [MaybeNull] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
+            => this.TryParseSelectableValueFromString(value, out result, out validationErrorMessage);
     }
 }

@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected TValue CurrentValue { get { throw null; } set { } }
         protected string? CurrentValueAsString { get { throw null; } set { } }
         protected Microsoft.AspNetCore.Components.Forms.EditContext EditContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        protected Microsoft.AspNetCore.Components.Forms.FieldIdentifier FieldIdentifier { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        protected internal Microsoft.AspNetCore.Components.Forms.FieldIdentifier FieldIdentifier { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         [System.Diagnostics.CodeAnalysis.MaybeNullAttribute]
         [System.Diagnostics.CodeAnalysis.AllowNullAttribute]
@@ -81,11 +81,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         public InputCheckbox() { }
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         protected override bool TryParseValueFromString(string? value, out bool result, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(false)] out string? validationErrorMessage) { throw null; }
-    }
-    public abstract partial class InputChoice<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
-    {
-        protected InputChoice() { }
-        protected override bool TryParseValueFromString(string? value, [System.Diagnostics.CodeAnalysis.MaybeNullAttribute] out TValue result, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(false)] out string? validationErrorMessage) { throw null; }
     }
     public partial class InputDate<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
     {
@@ -115,25 +110,25 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         protected override void OnParametersSet() { }
     }
-    public partial class InputRadio<TValue> : Microsoft.AspNetCore.Components.Forms.InputChoice<TValue>
+    public partial class InputRadio<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
     {
         public InputRadio() { }
-        [Microsoft.AspNetCore.Components.CascadingParameterAttribute(Name="Name")]
-        public string? CascadedName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        protected string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        protected string? GroupName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         [System.Diagnostics.CodeAnalysis.MaybeNullAttribute]
         [System.Diagnostics.CodeAnalysis.AllowNullAttribute]
         public TValue SelectedValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         protected override void OnParametersSet() { }
+        protected override bool TryParseValueFromString(string? value, [System.Diagnostics.CodeAnalysis.MaybeNullAttribute] out TValue result, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(false)] out string? validationErrorMessage) { throw null; }
     }
-    public partial class InputSelect<TValue> : Microsoft.AspNetCore.Components.Forms.InputChoice<TValue>
+    public partial class InputSelect<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
     {
         public InputSelect() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment? ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
+        protected override bool TryParseValueFromString(string? value, [System.Diagnostics.CodeAnalysis.MaybeNullAttribute] out TValue result, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(false)] out string? validationErrorMessage) { throw null; }
     }
     public partial class InputText : Microsoft.AspNetCore.Components.Forms.InputBase<string?>
     {

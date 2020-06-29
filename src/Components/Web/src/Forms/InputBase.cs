@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets the <see cref="FieldIdentifier"/> for the bound value.
         /// </summary>
-        protected FieldIdentifier FieldIdentifier { get; set; }
+        protected internal FieldIdentifier FieldIdentifier { get; set; }
 
         /// <summary>
         /// Gets or sets the current value of the input.

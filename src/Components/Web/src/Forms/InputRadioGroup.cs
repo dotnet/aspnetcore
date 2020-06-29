@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class InputRadioGroup : ComponentBase
     {
-        private string? _name;
+        internal string? GroupName { get; private set; }
 
         /// <summary>
         /// Gets or sets the child content to be rendering inside the <see cref="InputRadioGroup"/>.
@@ -27,19 +27,18 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
-            _name ??= !string.IsNullOrWhiteSpace(Name) ? Name : Guid.NewGuid().ToString("N");
+            GroupName ??= !string.IsNullOrEmpty(Name) ? Name : Guid.NewGuid().ToString("N");
         }
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            Debug.Assert(_name != null);
+            Debug.Assert(GroupName != null);
 
-            builder.OpenComponent<CascadingValue<string>>(0);
+            builder.OpenComponent<CascadingValue<InputRadioGroup>>(0);
             builder.AddAttribute(1, "IsFixed", true);
-            builder.AddAttribute(2, "Name", nameof(Name));
-            builder.AddAttribute(3, "Value", _name);
-            builder.AddAttribute(4, "ChildContent", ChildContent);
+            builder.AddAttribute(2, "Value", this);
+            builder.AddAttribute(3, "ChildContent", ChildContent);
             builder.CloseComponent();
         }
     }

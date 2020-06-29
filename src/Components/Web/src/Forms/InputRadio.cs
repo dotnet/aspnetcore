@@ -11,12 +11,12 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// <summary>
     /// An input component used for selecting a value from a group of choices.
     /// </summary>
-    public class InputRadio<TValue> : InputChoice<TValue>
+    public class InputRadio<TValue> : InputBase<TValue>
     {
         /// <summary>
         /// Gets the name of this <see cref="InputRadio{TValue}"/> group.
         /// </summary>
-        protected string? Name { get; private set; }
+        protected string? GroupName { get; private set; }
 
         /// <summary>
         /// Gets or sets the value that will be bound when this radio input is selected.
@@ -29,17 +29,16 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets or sets group name inherited from an ancestor <see cref="InputRadioGroup"/>.
         /// </summary>
-        [CascadingParameter(Name = nameof(InputRadioGroup.Name))]
-        public string? CascadedName { get; set; }
+        [CascadingParameter] InputRadioGroup? CascadedRadioGroup { get; set; }
 
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
-            Name = AdditionalAttributes != null && AdditionalAttributes.TryGetValue("name", out var nameAttribute) ?
+            GroupName = AdditionalAttributes != null && AdditionalAttributes.TryGetValue("name", out var nameAttribute) ?
                 Convert.ToString(nameAttribute) :
-                CascadedName;
+                CascadedRadioGroup?.GroupName;
 
-            if (string.IsNullOrWhiteSpace(Name))
+            if (string.IsNullOrEmpty(GroupName))
             {
                 throw new InvalidOperationException($"{GetType()} requires either an explicit 'name' attribute or " +
                     $"a cascading parameter 'Name'. Normally this is provided by an ancestor {nameof(InputRadioGroup)}.");
@@ -49,17 +48,21 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            Debug.Assert(Name != null);
+            Debug.Assert(GroupName != null);
 
             builder.OpenElement(0, "input");
             builder.AddMultipleAttributes(1, AdditionalAttributes);
             builder.AddAttribute(2, "type", "radio");
             builder.AddAttribute(3, "class", CssClass);
-            builder.AddAttribute(4, "name", Name);
+            builder.AddAttribute(4, "name", GroupName);
             builder.AddAttribute(5, "value", BindConverter.FormatValue(FormatValueAsString(SelectedValue)));
             builder.AddAttribute(6, "checked", SelectedValue?.Equals(CurrentValue));
             builder.AddAttribute(7, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
             builder.CloseElement();
         }
+
+        /// <inheritdoc />
+        protected override bool TryParseValueFromString(string? value, [MaybeNull] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
+            => this.TryParseSelectableValueFromString(value, out result, out validationErrorMessage);
     }
 }
