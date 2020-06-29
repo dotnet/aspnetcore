@@ -6,12 +6,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 #nullable enable
 
-namespace Microsoft.AspNetCore.Http.Json
+namespace Microsoft.AspNetCore.Http
 {
     public static partial class HttpResponseJsonExtensions
     {
