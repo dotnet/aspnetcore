@@ -101,12 +101,26 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected override string? FormatValueAsString(TValue value) { throw null; }
         protected override bool TryParseValueFromString(string? value, out TValue result, out string? validationErrorMessage) { throw null; }
     }
+    public partial class InputRadioGroup : Microsoft.AspNetCore.Components.ComponentBase
+    {
+        public InputRadioGroup() { }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment? ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
+        protected override void OnParametersSet() { }
+    }
     public partial class InputRadio<TValue> : Microsoft.AspNetCore.Components.Forms.InputChoice<TValue>
     {
         public InputRadio() { }
+        [Microsoft.AspNetCore.Components.CascadingParameterAttribute(Name="Name")]
+        public string? CascadedName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        protected string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public TValue SelectedValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
+        protected override void OnParametersSet() { }
     }
     public partial class InputSelect<TValue> : Microsoft.AspNetCore.Components.Forms.InputChoice<TValue>
     {

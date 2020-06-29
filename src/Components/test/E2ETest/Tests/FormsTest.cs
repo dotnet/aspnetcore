@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void InputRadioInteractsWithEditContext()
+        public void InputRadioWithoutGroupInteractsWithEditContext()
         {
             var appElement = MountTypicalValidationComponent();
             var airlineInputs = appElement.FindElement(By.ClassName("airline")).FindElements(By.TagName("input"));
@@ -328,6 +328,27 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             unknownAirlineInput.Click();
             Assert.All(airlineInputs, i => Browser.Equal("modified invalid", () => i.GetAttribute("class")));
             Browser.Equal(new[] { "Pick a valid airline." }, messagesAccessor);
+        }
+
+        [Fact]
+        public void InputRadioWithGroupInteractsWithEditContext()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
+            var ratingInputs = appElement.FindElement(By.ClassName("star-rating")).FindElements(By.TagName("input"));
+            var firstRatingInput = ratingInputs.First();
+
+            // Validate unselected inputs
+            Assert.All(ratingInputs, i => Browser.False(() => i.Selected));
+
+            // Invalidates on submit
+            Assert.All(ratingInputs, i => Browser.Equal("valid", () => i.GetAttribute("class")));
+            submitButton.Click();
+            Assert.All(ratingInputs, i => Browser.Equal("invalid", () => i.GetAttribute("class")));
+
+            // Validates on edit
+            firstRatingInput.Click();
+            Assert.All(ratingInputs, i => Browser.Equal("modified valid", () => i.GetAttribute("class")));
         }
 
         [Fact]

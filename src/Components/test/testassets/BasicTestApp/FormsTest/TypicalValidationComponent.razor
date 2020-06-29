@@ -50,6 +50,18 @@
             <br>
         }
     </p>
+    <p class="star-rating">
+        Star rating:
+        <br>
+        <InputRadioGroup>
+            @foreach (var starRating in (StarRating[])Enum.GetValues(typeof(StarRating)))
+            {
+                <InputRadio SelectedValue="starRating" @bind-Value="person.StarRating" />
+                @starRating.ToString()
+                <br>
+            }
+        </InputRadioGroup>
+    </p>
     <p class="accepts-terms">
         Accepts terms: <InputCheckbox @bind-Value="person.AcceptsTerms" title="You have to check this" />
     </p>
@@ -123,12 +135,17 @@
         [Range(typeof(Airline), nameof(Airline.BestAirline), nameof(Airline.NoNameAirline), ErrorMessage = "Pick a valid airline.")]
         public Airline Airline { get; set; } = Airline.Unknown;
 
+        [Required, EnumDataType(typeof(StarRating))]
+        public StarRating? StarRating { get; set; } = null;
+
         public string Username { get; set; }
     }
 
     enum TicketClass { Economy, Premium, First }
 
     enum Airline { BestAirline, CoolAirline, NoNameAirline, Unknown }
+
+    enum StarRating { One, Two, Three, Four, Five }
 
     List<string> submissionLog = new List<string>(); // So we can assert about the callbacks
 
