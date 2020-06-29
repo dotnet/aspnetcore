@@ -3,10 +3,9 @@
   <Sdk Name="Yarn.MSBuild" />
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Build client-side authentication for single-page applications (SPAs).</Description>
     <IsShippingPackage>true</IsShippingPackage>
-    <RazorLangVersion>3.0</RazorLangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
