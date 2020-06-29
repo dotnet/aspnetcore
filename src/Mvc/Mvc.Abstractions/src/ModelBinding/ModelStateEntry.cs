@@ -10,17 +10,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// </summary>
     public abstract class ModelStateEntry
     {
-        private ModelErrorCollection _errors;
+        private ModelErrorCollection? _errors;
 
         /// <summary>
         /// Gets the raw value from the request associated with this entry.
         /// </summary>
-        public object RawValue { get; set; }
+        public object? RawValue { get; set; }
 
         /// <summary>
         /// Gets the set of values contained in <see cref="RawValue"/>, joined into a comma-separated string.
         /// </summary>
-        public string AttemptedValue { get; set; }
+        public string? AttemptedValue { get; set; }
 
         /// <summary>
         /// Gets the <see cref="ModelErrorCollection"/> for this entry.
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// This method returns any existing entry, even those with <see cref="IsContainerNode"/> with value
         /// <see langword="true"/>.
         /// </remarks>
-        public abstract ModelStateEntry GetModelStateForProperty(string propertyName);
+        public abstract ModelStateEntry? GetModelStateForProperty(string propertyName);
 
         /// <summary>
         /// Gets the <see cref="ModelStateEntry"/> values for sub-properties.
@@ -70,6 +70,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// This property returns all existing entries, even those with <see cref="IsContainerNode"/> with value
         /// <see langword="true"/>.
         /// </remarks>
-        public abstract IReadOnlyList<ModelStateEntry> Children { get; }
+        public abstract IReadOnlyList<ModelStateEntry>? Children { get; }
     }
 }

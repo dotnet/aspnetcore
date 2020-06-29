@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
@@ -10,6 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     public class WasmCompressionTests
     {
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23397")]
         public async Task Publish_UpdatesFilesWhenSourcesChange()
         {
             // Arrange
