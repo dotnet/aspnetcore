@@ -6,30 +6,25 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authorization
 {
     public class AuthorizationMiddleware
     {
+        // AppContext switch used to control whether HttpContext or endpoint is passed as a resource to AuthZ
+        private const string SuppressUseHttpContextAsAuthorizationResource = "Microsoft.AspNetCore.Authorization.SuppressUseHttpContextAsAuthorizationResource";
+
         // Property key is used by Endpoint routing to determine if Authorization has run
         private const string AuthorizationMiddlewareInvokedWithEndpointKey = "__AuthorizationMiddlewareWithEndpointInvoked";
         private static readonly object AuthorizationMiddlewareWithEndpointInvokedValue = new object();
 
         private readonly RequestDelegate _next;
         private readonly IAuthorizationPolicyProvider _policyProvider;
-        private readonly AuthorizationMiddlewareOptions _options;
 
         public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider) 
-            : this(next, policyProvider, new OptionsWrapper<AuthorizationMiddlewareOptions>(new AuthorizationMiddlewareOptions())) 
-        { 
-        }
-        
-        public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider, IOptions<AuthorizationMiddlewareOptions> options)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
             _policyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
-            _options = options?.Value ?? throw new ArgumentNullException(nameof(options));;
         }
 
         public async Task Invoke(HttpContext context)
@@ -70,13 +65,13 @@ namespace Microsoft.AspNetCore.Authorization
             }
 
             object? resource;
-            if (_options.UseHttpContextAsResource)
+            if (AppContext.TryGetSwitch(SuppressUseHttpContextAsAuthorizationResource, out var useEndpointAsResource) && useEndpointAsResource)
             {
-                resource = context;
+                resource = endpoint;
             }
             else
             {
-                resource = endpoint;
+                resource = context;
             }
             
             var authorizeResult = await policyEvaluator.AuthorizeAsync(policy, authenticateResult, context, resource);
