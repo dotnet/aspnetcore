@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// your deployment environment.
         /// </para>
         /// </remarks>
-        string Action(UrlActionContext actionContext);
+        string? Action(UrlActionContext actionContext);
 
         /// <summary>
         /// Converts a virtual (relative, starting with ~/) path to an application absolute path.
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </remarks>
         /// <param name="contentPath">The virtual path of the content.</param>
         /// <returns>The application absolute path.</returns>
-        string Content(string contentPath);
+        string? Content(string contentPath);
 
         /// <summary>
         /// Returns a value that indicates whether the URL is local. A URL is considered local if it does not have a
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// your deployment environment.
         /// </para>
         /// </remarks>
-        string RouteUrl(UrlRouteContext routeContext);
+        string? RouteUrl(UrlRouteContext routeContext);
 
         /// <summary>
         /// Generates an absolute URL for the specified <paramref name="routeName"/> and route
@@ -104,6 +104,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// validate the <c>Host</c> header in your deployment environment.
         /// </para>
         /// </remarks>
-        string Link(string routeName, object values);
+        string? Link(string? routeName, object? values);
     }
 }

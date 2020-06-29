@@ -113,10 +113,10 @@ namespace Microsoft.AspNetCore.Builder
             this IRouteBuilder routeBuilder,
             string name,
             string areaName,
-            string template,
-            object defaults,
-            object constraints,
-            object dataTokens)
+            string? template,
+            object? defaults,
+            object? constraints,
+            object? dataTokens)
         {
             if (routeBuilder == null)
             {

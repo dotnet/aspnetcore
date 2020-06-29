@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class ComplexTypeModelBinderProvider : IModelBinderProvider
     {
         /// <inheritdoc />
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
             {

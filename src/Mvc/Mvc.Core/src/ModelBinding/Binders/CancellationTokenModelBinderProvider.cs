@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private readonly CancellationTokenModelBinder _modelBinder = new CancellationTokenModelBinder();
 
         /// <inheritdoc />
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
             {

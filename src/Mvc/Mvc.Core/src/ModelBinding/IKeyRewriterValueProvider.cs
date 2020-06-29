@@ -18,6 +18,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <returns>
         /// The filtered value provider or <see langref="null"/> if the value provider only contains rewritten keys.
         /// </returns>
-        IValueProvider Filter();
+        IValueProvider? Filter();
     }
 }

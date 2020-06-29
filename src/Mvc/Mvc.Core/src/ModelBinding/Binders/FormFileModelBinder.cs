@@ -181,9 +181,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
             }
 
-            public IFormFile this[string name] => GetFile(name);
+            public IFormFile? this[string name] => GetFile(name);
 
-            public IFormFile GetFile(string name)
+            public IFormFile? GetFile(string name)
             {
                 for (var i = 0; i < Items.Count; i++)
                 {

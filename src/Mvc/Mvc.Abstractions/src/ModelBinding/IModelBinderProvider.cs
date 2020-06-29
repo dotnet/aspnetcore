@@ -14,6 +14,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         /// <param name="context">The <see cref="ModelBinderProviderContext"/>.</param>
         /// <returns>An <see cref="IModelBinder"/>.</returns>
-        IModelBinder GetBinder(ModelBinderProviderContext context);
+        IModelBinder? GetBinder(ModelBinderProviderContext context);
     }
 }

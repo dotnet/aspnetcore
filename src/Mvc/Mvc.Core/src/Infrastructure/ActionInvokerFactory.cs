@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             _actionInvokerProviders = actionInvokerProviders.OrderBy(item => item.Order).ToArray();
         }
 
-        public IActionInvoker CreateInvoker(ActionContext actionContext)
+        public IActionInvoker? CreateInvoker(ActionContext actionContext)
         {
             var context = new ActionInvokerProviderContext(actionContext);
 

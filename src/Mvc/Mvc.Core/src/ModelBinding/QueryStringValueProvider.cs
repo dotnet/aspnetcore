@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public class QueryStringValueProvider : BindingSourceValueProvider, IEnumerableValueProvider
     {
         private readonly IQueryCollection _values;
-        private PrefixContainer _prefixContainer;
+        private PrefixContainer? _prefixContainer;
 
         /// <summary>
         /// Creates a value provider for <see cref="IQueryCollection"/>.

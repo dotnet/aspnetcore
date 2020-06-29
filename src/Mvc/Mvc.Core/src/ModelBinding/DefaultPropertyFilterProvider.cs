@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Expressions which can be used to generate property filter which can filter model 
         /// properties.
         /// </summary>
-        public virtual IEnumerable<Expression<Func<TModel, object>>> PropertyIncludeExpressions => null;
+        public virtual IEnumerable<Expression<Func<TModel, object>>>? PropertyIncludeExpressions => null;
 
         /// <inheritdoc />
         public virtual Func<ModelMetadata, bool> PropertyFilter

@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </remarks>
         public ApiExplorerModel ApiExplorer { get; set; }
 
-        public ApplicationModel Application { get; set; }
+        public ApplicationModel Application { get; set; } = default!;
 
         public IReadOnlyList<object> Attributes { get; }
 
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// The name of this controller.
         /// </summary>
-        public string ControllerName { get; set; }
+        public string ControllerName { get; set; } = default!;
 
         /// <summary>
         /// The type of this controller.

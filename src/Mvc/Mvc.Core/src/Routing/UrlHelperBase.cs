@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     public abstract class UrlHelperBase : IUrlHelper
     {
         // Perf: Share the StringBuilder object across multiple calls of GenerateURL for this UrlHelper
-        private StringBuilder _stringBuilder;
+        private StringBuilder? _stringBuilder;
 
         // Perf: Reuse the RouteValueDictionary across multiple calls of Action for this UrlHelper
         private readonly RouteValueDictionary _routeValueDictionary;
@@ -88,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         /// <inheritdoc />
-        public virtual string Content(string contentPath)
+        public virtual string? Content(string contentPath)
         {
             if (string.IsNullOrEmpty(contentPath))
             {
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         /// <inheritdoc />
-        public virtual string Link(string routeName, object values)
+        public virtual string? Link(string? routeName, object? values)
         {
             return RouteUrl(new UrlRouteContext()
             {
@@ -118,12 +119,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         /// <inheritdoc />
-        public abstract string Action(UrlActionContext actionContext);
+        public abstract string? Action(UrlActionContext actionContext);
 
         /// <inheritdoc />
-        public abstract string RouteUrl(UrlRouteContext routeContext);
+        public abstract string? RouteUrl(UrlRouteContext routeContext);
 
-        protected RouteValueDictionary GetValuesDictionary(object values)
+        protected RouteValueDictionary GetValuesDictionary(object? values)
         {
             // Perf: RouteValueDictionary can be cast to IDictionary<string, object>, but it is
             // special cased to avoid allocating boxed Enumerator.
@@ -152,7 +153,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return new RouteValueDictionary(values);
         }
 
-        protected string GenerateUrl(string protocol, string host, string virtualPath, string fragment)
+        protected string? GenerateUrl(string? protocol, string? host, string? virtualPath, string? fragment)
         {
             if (virtualPath == null)
             {
@@ -213,7 +214,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// An absolute URI if the <paramref name="protocol"/> or <paramref name="host"/> is specified, otherwise generates a
         /// URI with an absolute path.
         /// </returns>
-        protected string GenerateUrl(string protocol, string host, string path)
+        protected string? GenerateUrl(string protocol, string host, string path)
         {
             // This method is similar to GenerateUrl, but it's used for EndpointRouting. It ignores pathbase and fragment
             // because those have already been incorporated.
@@ -265,12 +266,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         internal static void NormalizeRouteValuesForAction(
-            string action,
-            string controller,
+            string? action,
+            string? controller,
             RouteValueDictionary values,
-            RouteValueDictionary ambientValues)
+            RouteValueDictionary? ambientValues)
         {
-            object obj = null;
+            object? obj = null;
             if (action == null)
             {
                 if (!values.ContainsKey("action") &&
@@ -299,13 +300,13 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         internal static void NormalizeRouteValuesForPage(
-            ActionContext context,
-            string page,
-            string handler,
+            ActionContext? context,
+            string? page,
+            string? handler,
             RouteValueDictionary values,
-            RouteValueDictionary ambientValues)
+            RouteValueDictionary? ambientValues)
         {
-            object value = null;
+            object? value = null;
             if (string.IsNullOrEmpty(page))
             {
                 if (!values.ContainsKey("page") &&
@@ -334,14 +335,14 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
         }
 
-        private static object CalculatePageName(ActionContext context, RouteValueDictionary ambientValues, string pageName)
+        private static object CalculatePageName(ActionContext? context, RouteValueDictionary? ambientValues, string pageName)
         {
             Debug.Assert(pageName.Length > 0);
             // Paths not qualified with a leading slash are treated as relative to the current page.
             if (pageName[0] != '/')
             {
                 // OK now we should get the best 'normalized' version of the page route value that we can.
-                string currentPagePath;
+                string? currentPagePath;
                 if (context != null)
                 {
                     currentPagePath = NormalizedRouteValue.GetNormalizedRouteValue(context, "page");
@@ -374,7 +375,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         // for unit testing
-        internal static void AppendPathAndFragment(StringBuilder builder, PathString pathBase, string virtualPath, string fragment)
+        internal static void AppendPathAndFragment(StringBuilder builder, PathString pathBase, string virtualPath, string? fragment)
         {
             if (!pathBase.HasValue)
             {
@@ -402,7 +403,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 {
                     builder.Append(pathBase.Value);
 
-                    if (pathBase.Value.EndsWith("/", StringComparison.Ordinal))
+                    if (pathBase.Value!.EndsWith("/", StringComparison.Ordinal))
                     {
                         builder.Length--;
                     }
@@ -423,11 +424,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         private bool TryFastGenerateUrl(
-            string protocol,
-            string host,
+            string? protocol,
+            string? host,
             string virtualPath,
-            string fragment,
-            out string url)
+            string? fragment,
+            [NotNullWhen(true)] out string? url)
         {
             var pathBase = ActionContext.HttpContext.Request.PathBase;
             url = null;

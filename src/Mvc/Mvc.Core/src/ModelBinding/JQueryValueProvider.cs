@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         IKeyRewriterValueProvider
     {
         private readonly IDictionary<string, StringValues> _values;
-        private PrefixContainer _prefixContainer;
+        private PrefixContainer? _prefixContainer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JQueryValueProvider"/> class.
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <see cref="IValueProvider"/> with rewritten keys (if original contains brackets) or duplicate keys
         /// (that <see cref="FormValueProvider"/> will match).
         /// </remarks>
-        public IValueProvider Filter()
+        public IValueProvider? Filter()
         {
             return null;
         }

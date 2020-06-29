@@ -31,9 +31,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             _logger = loggerFactory.CreateLogger<MvcAttributeRouteHandler>();
         }
 
-        public ActionDescriptor[] Actions { get; set; }
+        public ActionDescriptor[] Actions { get; set; } = default!;
 
-        public VirtualPathData GetVirtualPath(VirtualPathContext context)
+        public VirtualPathData? GetVirtualPath(VirtualPathContext context)
         {
             if (context == null)
             {

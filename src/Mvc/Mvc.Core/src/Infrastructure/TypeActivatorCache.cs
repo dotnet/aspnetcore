@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
 
             var createFactory = _typeActivatorCache.GetOrAdd(implementationType, _createFactory);
-            return (TInstance)createFactory(serviceProvider, arguments: null);
+            return (TInstance)createFactory(serviceProvider, arguments: null!);
         }
     }
 }

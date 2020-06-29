@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         {
             Id = Guid.NewGuid().ToString();
             Properties = new Dictionary<object, object>();
-            RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            RouteValues = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         /// Gets or sets the collection of route values that must be provided by routing
         /// for the action to be selected.
         /// </summary>
-        public IDictionary<string, string> RouteValues { get; set; }
+        public IDictionary<string, string?> RouteValues { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Routing.AttributeRouteInfo"/>.

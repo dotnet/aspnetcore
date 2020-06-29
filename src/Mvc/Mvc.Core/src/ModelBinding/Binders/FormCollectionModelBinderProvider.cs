@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class FormCollectionModelBinderProvider : IModelBinderProvider
     {
         /// <inheritdoc />
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
             {

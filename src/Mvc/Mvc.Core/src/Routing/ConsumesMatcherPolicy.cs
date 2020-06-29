@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private class ConsumesMetadataEndpointComparer : EndpointMetadataComparer<IConsumesMetadata>
         {
-            protected override int CompareMetadata(IConsumesMetadata x, IConsumesMetadata y)
+            protected override int CompareMetadata(IConsumesMetadata? x, IConsumesMetadata? y)
             {
                 // Ignore the metadata if it has an empty list of content types.
                 return base.CompareMetadata(

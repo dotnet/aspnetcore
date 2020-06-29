@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = false)]
     public sealed class ProvideApplicationPartFactoryAttribute : Attribute
     {
-        private readonly Type _applicationPartFactoryType;
-        private readonly string _applicationPartFactoryTypeName;
+        private readonly Type? _applicationPartFactoryType;
+        private readonly string? _applicationPartFactoryTypeName;
 
         /// <summary>
         /// Creates a new instance of <see cref="ProvideApplicationPartFactoryAttribute"/> with the specified type.
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         public Type GetFactoryType()
         {
             return _applicationPartFactoryType ??
-                Type.GetType(_applicationPartFactoryTypeName, throwOnError: true);
+                Type.GetType(_applicationPartFactoryTypeName!, throwOnError: true)!;
         }
     }
 }

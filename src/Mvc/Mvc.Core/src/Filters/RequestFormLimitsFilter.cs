@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             _logger = loggerFactory.CreateLogger<RequestFormLimitsFilter>();
         }
 
-        public FormOptions FormOptions { get; set; }
+        public FormOptions FormOptions { get; set; } = default!;
 
         public void OnAuthorization(AuthorizationFilterContext context)
         {

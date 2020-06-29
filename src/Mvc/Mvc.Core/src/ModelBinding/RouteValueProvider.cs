@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public class RouteValueProvider : BindingSourceValueProvider
     {
         private readonly RouteValueDictionary _values;
-        private PrefixContainer _prefixContainer;
+        private PrefixContainer? _prefixContainer;
 
         /// <summary>
         /// Creates a new <see cref="RouteValueProvider"/>.

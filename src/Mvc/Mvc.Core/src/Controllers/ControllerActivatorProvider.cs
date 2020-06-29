@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
     public class ControllerActivatorProvider : IControllerActivatorProvider
     {
         private static readonly Action<ControllerContext, object> _dispose = Dispose;
-        private readonly Func<ControllerContext, object> _controllerActivatorCreate;
-        private readonly Action<ControllerContext, object> _controllerActivatorRelease;
+        private readonly Func<ControllerContext, object>? _controllerActivatorCreate;
+        private readonly Action<ControllerContext, object>? _controllerActivatorRelease;
 
         public ControllerActivatorProvider(IControllerActivator controllerActivator)
         {
@@ -54,10 +54,10 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             }
 
             var typeActivator = ActivatorUtilities.CreateFactory(controllerType, Type.EmptyTypes);
-            return controllerContext => typeActivator(controllerContext.HttpContext.RequestServices, arguments: null);
+            return controllerContext => typeActivator(controllerContext.HttpContext.RequestServices, arguments: null!);
         }
 
-        public Action<ControllerContext, object> CreateReleaser(ControllerActionDescriptor descriptor)
+        public Action<ControllerContext, object>? CreateReleaser(ControllerActionDescriptor descriptor)
         {
             if (descriptor == null)
             {

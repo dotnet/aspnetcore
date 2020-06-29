@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Creates a new <see cref="ConflictObjectResult"/> instance.
         /// </summary>
         /// <param name="error">Contains the errors to be returned to the client.</param>
-        public ConflictObjectResult([ActionResultObjectValue] object error)
+        public ConflictObjectResult([ActionResultObjectValue] object? error)
             : base(error)
         {
             StatusCode = DefaultStatusCode;

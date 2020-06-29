@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -91,6 +92,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return manager;
         }
 
+        [return: MaybeNull]
         private static T GetServiceFromCollection<T>(IServiceCollection services)
         {
             return (T)services

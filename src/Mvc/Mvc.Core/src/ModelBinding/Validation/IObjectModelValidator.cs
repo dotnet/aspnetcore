@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <param name="model">The model object.</param>
         void Validate(
             ActionContext actionContext,
-            ValidationStateDictionary validationState,
-            string prefix,
-            object model);
+            ValidationStateDictionary? validationState,
+            string? prefix,
+            object? model);
     }
 }

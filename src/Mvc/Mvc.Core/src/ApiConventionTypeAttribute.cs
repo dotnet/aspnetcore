@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc
                     continue;
                 }
 
-                var methodDisplayName = TypeNameHelper.GetTypeDisplayName(method.DeclaringType) + "." + method.Name;
+                var methodDisplayName = TypeNameHelper.GetTypeDisplayName(method.DeclaringType!) + "." + method.Name;
                 var errorMessage = Resources.FormatApiConvention_UnsupportedAttributesOnConvention(
                     methodDisplayName,
                     Environment.NewLine + string.Join(Environment.NewLine, unsupportedAttributes) + Environment.NewLine,

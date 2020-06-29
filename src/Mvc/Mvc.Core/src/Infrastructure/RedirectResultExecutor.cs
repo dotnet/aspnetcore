@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var destinationUrl = result.Url;
             if (urlHelper.IsLocalUrl(destinationUrl))
             {
-                destinationUrl = urlHelper.Content(result.Url);
+                destinationUrl = urlHelper.Content(result.Url)!;
             }
 
             _logger.RedirectResultExecuting(destinationUrl);

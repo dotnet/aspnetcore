@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.Builder
     }
     public static partial class ControllerEndpointRouteBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Builder.ControllerActionEndpointConventionBuilder MapAreaControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string name, string areaName, string pattern, object defaults = null, object constraints = null, object dataTokens = null) { throw null; }
-        public static Microsoft.AspNetCore.Builder.ControllerActionEndpointConventionBuilder MapControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string name, string pattern, object defaults = null, object constraints = null, object dataTokens = null) { throw null; }
+        public static Microsoft.AspNetCore.Builder.ControllerActionEndpointConventionBuilder MapAreaControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string name, string areaName, string pattern, object? defaults = null, object? constraints = null, object? dataTokens = null) { throw null; }
+        public static Microsoft.AspNetCore.Builder.ControllerActionEndpointConventionBuilder MapControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string name, string pattern, object? defaults = null, object? constraints = null, object? dataTokens = null) { throw null; }
         public static Microsoft.AspNetCore.Builder.ControllerActionEndpointConventionBuilder MapControllers(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints) { throw null; }
         public static Microsoft.AspNetCore.Builder.ControllerActionEndpointConventionBuilder MapDefaultControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints) { throw null; }
         public static void MapDynamicControllerRoute<TTransformer>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern) where TTransformer : Microsoft.AspNetCore.Mvc.Routing.DynamicRouteValueTransformer { }
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Builder
         public static Microsoft.AspNetCore.Routing.IRouteBuilder MapAreaRoute(this Microsoft.AspNetCore.Routing.IRouteBuilder routeBuilder, string name, string areaName, string template) { throw null; }
         public static Microsoft.AspNetCore.Routing.IRouteBuilder MapAreaRoute(this Microsoft.AspNetCore.Routing.IRouteBuilder routeBuilder, string name, string areaName, string template, object defaults) { throw null; }
         public static Microsoft.AspNetCore.Routing.IRouteBuilder MapAreaRoute(this Microsoft.AspNetCore.Routing.IRouteBuilder routeBuilder, string name, string areaName, string template, object defaults, object constraints) { throw null; }
-        public static Microsoft.AspNetCore.Routing.IRouteBuilder MapAreaRoute(this Microsoft.AspNetCore.Routing.IRouteBuilder routeBuilder, string name, string areaName, string template, object defaults, object constraints, object dataTokens) { throw null; }
+        public static Microsoft.AspNetCore.Routing.IRouteBuilder MapAreaRoute(this Microsoft.AspNetCore.Routing.IRouteBuilder routeBuilder, string name, string areaName, string? template, object? defaults, object? constraints, object? dataTokens) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Mvc
@@ -39,30 +39,30 @@ namespace Microsoft.AspNetCore.Mvc
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(202)]
     public partial class AcceptedAtActionResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
-        public AcceptedAtActionResult(string actionName, string controllerName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) : base (default(object)) { }
-        public string ActionName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public string ControllerName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Mvc.IUrlHelper UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public AcceptedAtActionResult(string? actionName, string? controllerName, object? routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) : base (default(object)) { }
+        public string? ActionName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? ControllerName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.RouteValueDictionary? RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Mvc.IUrlHelper? UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override void OnFormatting(Microsoft.AspNetCore.Mvc.ActionContext context) { }
     }
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(202)]
     public partial class AcceptedAtRouteResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
-        public AcceptedAtRouteResult(object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) : base (default(object)) { }
-        public AcceptedAtRouteResult(string routeName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) : base (default(object)) { }
-        public string RouteName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Mvc.IUrlHelper UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public AcceptedAtRouteResult(object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) : base (default(object)) { }
+        public AcceptedAtRouteResult(string? routeName, object? routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) : base (default(object)) { }
+        public string? RouteName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.RouteValueDictionary? RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Mvc.IUrlHelper? UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override void OnFormatting(Microsoft.AspNetCore.Mvc.ActionContext context) { }
     }
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(202)]
     public partial class AcceptedResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
         public AcceptedResult() : base (default(object)) { }
-        public AcceptedResult(string location, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) : base (default(object)) { }
-        public AcceptedResult(System.Uri locationUri, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) : base (default(object)) { }
-        public string Location { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public AcceptedResult(string? location, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) : base (default(object)) { }
+        public AcceptedResult(System.Uri locationUri, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) : base (default(object)) { }
+        public string? Location { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override void OnFormatting(Microsoft.AspNetCore.Mvc.ActionContext context) { }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Method, AllowMultiple=true, Inherited=true)]
@@ -72,10 +72,10 @@ namespace Microsoft.AspNetCore.Mvc
         public AcceptVerbsAttribute(params string[] methods) { }
         public System.Collections.Generic.IEnumerable<string> HttpMethods { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         int? Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider.Order { get { throw null; } }
-        string Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider.Template { get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        string? Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider.Template { get { throw null; } }
+        public string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public int Order { get { throw null; } set { } }
-        public string Route { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Route { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public partial class ActionContextAttribute : System.Attribute
@@ -98,7 +98,8 @@ namespace Microsoft.AspNetCore.Mvc
     {
         public ActionResult(Microsoft.AspNetCore.Mvc.ActionResult result) { }
         public ActionResult(TValue value) { }
-        public Microsoft.AspNetCore.Mvc.ActionResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ActionResult? Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        [System.Diagnostics.CodeAnalysis.MaybeNullAttribute]
         public TValue Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         Microsoft.AspNetCore.Mvc.IActionResult Microsoft.AspNetCore.Mvc.Infrastructure.IConvertToActionResult.Convert() { throw null; }
         public static implicit operator Microsoft.AspNetCore.Mvc.ActionResult<TValue> (Microsoft.AspNetCore.Mvc.ActionResult result) { throw null; }
@@ -140,13 +141,13 @@ namespace Microsoft.AspNetCore.Mvc
     public partial class ApiDescriptionActionData
     {
         public ApiDescriptionActionData() { }
-        public string GroupName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? GroupName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
     public partial class ApiExplorerSettingsAttribute : System.Attribute, Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionGroupNameProvider, Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionVisibilityProvider
     {
         public ApiExplorerSettingsAttribute() { }
-        public string GroupName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? GroupName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool IgnoreApi { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
@@ -158,7 +159,7 @@ namespace Microsoft.AspNetCore.Mvc
     public partial class BadRequestObjectResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
         public BadRequestObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) : base (default(object)) { }
-        public BadRequestObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object error) : base (default(object)) { }
+        public BadRequestObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? error) : base (default(object)) { }
     }
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(400)]
     public partial class BadRequestResult : Microsoft.AspNetCore.Mvc.StatusCodeResult
@@ -170,8 +171,8 @@ namespace Microsoft.AspNetCore.Mvc
     {
         public BindAttribute(params string[] include) { }
         public string[] Include { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        string Microsoft.AspNetCore.Mvc.ModelBinding.IModelNameProvider.Name { get { throw null; } }
-        public string Prefix { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        string? Microsoft.AspNetCore.Mvc.ModelBinding.IModelNameProvider.Name { get { throw null; } }
+        public string? Prefix { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Func<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata, bool> PropertyFilter { get { throw null; } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
@@ -184,10 +185,10 @@ namespace Microsoft.AspNetCore.Mvc
     public partial class BindPropertyAttribute : System.Attribute, Microsoft.AspNetCore.Mvc.ModelBinding.IBinderTypeProviderMetadata, Microsoft.AspNetCore.Mvc.ModelBinding.IBindingSourceMetadata, Microsoft.AspNetCore.Mvc.ModelBinding.IModelNameProvider, Microsoft.AspNetCore.Mvc.ModelBinding.IRequestPredicateProvider
     {
         public BindPropertyAttribute() { }
-        public System.Type BinderType { get { throw null; } set { } }
-        public virtual Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource BindingSource { get { throw null; } protected set { } }
+        public System.Type? BinderType { get { throw null; } set { } }
+        public virtual Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource? BindingSource { get { throw null; } protected set { } }
         System.Func<Microsoft.AspNetCore.Mvc.ActionContext, bool> Microsoft.AspNetCore.Mvc.ModelBinding.IRequestPredicateProvider.RequestPredicate { get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool SupportsGet { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class CacheProfile
@@ -196,19 +197,19 @@ namespace Microsoft.AspNetCore.Mvc
         public int? Duration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Mvc.ResponseCacheLocation? Location { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool? NoStore { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public string VaryByHeader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public string[] VaryByQueryKeys { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? VaryByHeader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string[]? VaryByQueryKeys { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class ChallengeResult : Microsoft.AspNetCore.Mvc.ActionResult
     {
         public ChallengeResult() { }
         public ChallengeResult(Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { }
         public ChallengeResult(System.Collections.Generic.IList<string> authenticationSchemes) { }
-        public ChallengeResult(System.Collections.Generic.IList<string> authenticationSchemes, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { }
+        public ChallengeResult(System.Collections.Generic.IList<string> authenticationSchemes, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) { }
         public ChallengeResult(string authenticationScheme) { }
-        public ChallengeResult(string authenticationScheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { }
+        public ChallengeResult(string authenticationScheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) { }
         public System.Collections.Generic.IList<string> AuthenticationSchemes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Authentication.AuthenticationProperties? Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public override System.Threading.Tasks.Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) { throw null; }
     }
@@ -233,7 +234,7 @@ namespace Microsoft.AspNetCore.Mvc
     public partial class ConflictObjectResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
         public ConflictObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) : base (default(object)) { }
-        public ConflictObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object error) : base (default(object)) { }
+        public ConflictObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? error) : base (default(object)) { }
     }
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(409)]
     public partial class ConflictResult : Microsoft.AspNetCore.Mvc.StatusCodeResult
@@ -255,8 +256,8 @@ namespace Microsoft.AspNetCore.Mvc
     public partial class ContentResult : Microsoft.AspNetCore.Mvc.ActionResult, Microsoft.AspNetCore.Mvc.IActionResult, Microsoft.AspNetCore.Mvc.Infrastructure.IStatusCodeActionResult
     {
         public ContentResult() { }
-        public string Content { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public string ContentType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Content { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? ContentType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public int? StatusCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override System.Threading.Tasks.Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) { throw null; }
     }
@@ -285,37 +286,37 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.AcceptedResult Accepted() { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedResult Accepted([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedResult Accepted([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.AcceptedResult Accepted(string uri) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedResult Accepted(string uri, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedResult Accepted(string uri, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.AcceptedResult Accepted(System.Uri uri) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedResult Accepted(System.Uri uri, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedResult Accepted(System.Uri uri, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string actionName) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string? actionName) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string actionName, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string? actionName, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string actionName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string? actionName, object? routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string actionName, string controllerName) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string? actionName, string? controllerName) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string actionName, string controllerName, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object routeValues) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string? actionName, string? controllerName, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? routeValues) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string actionName, string controllerName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string? actionName, string? controllerName, object? routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult AcceptedAtRoute([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object routeValues) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult AcceptedAtRoute([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? routeValues) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult AcceptedAtRoute(object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult AcceptedAtRoute(object? routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult AcceptedAtRoute(string routeName) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult AcceptedAtRoute(string? routeName) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult AcceptedAtRoute(string routeName, object routeValues) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult AcceptedAtRoute(string? routeName, object? routeValues) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult AcceptedAtRoute(string routeName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult AcceptedAtRoute(string? routeName, object? routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.BadRequestResult BadRequest() { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
@@ -339,27 +340,27 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.ContentResult Content(string content) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.ContentResult Content(string content, Microsoft.Net.Http.Headers.MediaTypeHeaderValue contentType) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.ContentResult Content(string content, Microsoft.Net.Http.Headers.MediaTypeHeaderValue? contentType) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.ContentResult Content(string content, string contentType) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.ContentResult Content(string content, string contentType, System.Text.Encoding contentEncoding) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.CreatedResult Created(string uri, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.CreatedResult Created(string uri, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.CreatedResult Created(System.Uri uri, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.CreatedResult Created(System.Uri uri, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.CreatedAtActionResult CreatedAtAction(string actionName, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.CreatedAtActionResult CreatedAtAction(string? actionName, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.CreatedAtActionResult CreatedAtAction(string actionName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.CreatedAtActionResult CreatedAtAction(string? actionName, object? routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.CreatedAtActionResult CreatedAtAction(string actionName, string controllerName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.CreatedAtActionResult CreatedAtAction(string? actionName, string? controllerName, object? routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.CreatedAtRouteResult CreatedAtRoute(object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.CreatedAtRouteResult CreatedAtRoute(object? routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.CreatedAtRouteResult CreatedAtRoute(string routeName, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.CreatedAtRouteResult CreatedAtRoute(string? routeName, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.CreatedAtRouteResult CreatedAtRoute(string routeName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.CreatedAtRouteResult CreatedAtRoute(string? routeName, object? routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.FileContentResult File(byte[] fileContents, string contentType) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
@@ -369,13 +370,13 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.FileContentResult File(byte[] fileContents, string contentType, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag, bool enableRangeProcessing) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.FileContentResult File(byte[] fileContents, string contentType, string fileDownloadName) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.FileContentResult File(byte[] fileContents, string contentType, string? fileDownloadName) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.FileContentResult File(byte[] fileContents, string contentType, string fileDownloadName, bool enableRangeProcessing) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.FileContentResult File(byte[] fileContents, string contentType, string? fileDownloadName, bool enableRangeProcessing) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.FileContentResult File(byte[] fileContents, string contentType, string fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.FileContentResult File(byte[] fileContents, string contentType, string? fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.FileContentResult File(byte[] fileContents, string contentType, string fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag, bool enableRangeProcessing) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.FileContentResult File(byte[] fileContents, string contentType, string? fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag, bool enableRangeProcessing) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.FileStreamResult File(System.IO.Stream fileStream, string contentType) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
@@ -385,13 +386,13 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.FileStreamResult File(System.IO.Stream fileStream, string contentType, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag, bool enableRangeProcessing) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.FileStreamResult File(System.IO.Stream fileStream, string contentType, string fileDownloadName) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.FileStreamResult File(System.IO.Stream fileStream, string contentType, string? fileDownloadName) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.FileStreamResult File(System.IO.Stream fileStream, string contentType, string fileDownloadName, bool enableRangeProcessing) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.FileStreamResult File(System.IO.Stream fileStream, string contentType, string? fileDownloadName, bool enableRangeProcessing) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.FileStreamResult File(System.IO.Stream fileStream, string contentType, string fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.FileStreamResult File(System.IO.Stream fileStream, string contentType, string? fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.FileStreamResult File(System.IO.Stream fileStream, string contentType, string fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag, bool enableRangeProcessing) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.FileStreamResult File(System.IO.Stream fileStream, string contentType, string? fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag, bool enableRangeProcessing) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.VirtualFileResult File(string virtualPath, string contentType) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
@@ -401,13 +402,13 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.VirtualFileResult File(string virtualPath, string contentType, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag, bool enableRangeProcessing) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.VirtualFileResult File(string virtualPath, string contentType, string fileDownloadName) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.VirtualFileResult File(string virtualPath, string contentType, string? fileDownloadName) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.VirtualFileResult File(string virtualPath, string contentType, string fileDownloadName, bool enableRangeProcessing) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.VirtualFileResult File(string virtualPath, string contentType, string? fileDownloadName, bool enableRangeProcessing) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.VirtualFileResult File(string virtualPath, string contentType, string fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.VirtualFileResult File(string virtualPath, string contentType, string? fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.VirtualFileResult File(string virtualPath, string contentType, string fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag, bool enableRangeProcessing) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.VirtualFileResult File(string virtualPath, string contentType, string? fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag, bool enableRangeProcessing) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.ForbidResult Forbid() { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
@@ -429,11 +430,11 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.NotFoundResult NotFound() { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.NotFoundObjectResult NotFound([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.NotFoundObjectResult NotFound([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.OkResult Ok() { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.OkObjectResult Ok([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.OkObjectResult Ok([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.PhysicalFileResult PhysicalFile(string physicalPath, string contentType) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
@@ -443,15 +444,15 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.PhysicalFileResult PhysicalFile(string physicalPath, string contentType, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag, bool enableRangeProcessing) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.PhysicalFileResult PhysicalFile(string physicalPath, string contentType, string fileDownloadName) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.PhysicalFileResult PhysicalFile(string physicalPath, string contentType, string? fileDownloadName) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.PhysicalFileResult PhysicalFile(string physicalPath, string contentType, string fileDownloadName, bool enableRangeProcessing) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.PhysicalFileResult PhysicalFile(string physicalPath, string contentType, string? fileDownloadName, bool enableRangeProcessing) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.PhysicalFileResult PhysicalFile(string physicalPath, string contentType, string fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.PhysicalFileResult PhysicalFile(string physicalPath, string contentType, string? fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.PhysicalFileResult PhysicalFile(string physicalPath, string contentType, string fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag, bool enableRangeProcessing) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.PhysicalFileResult PhysicalFile(string physicalPath, string contentType, string? fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue entityTag, bool enableRangeProcessing) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.ObjectResult Problem(string detail = null, string instance = null, int? statusCode = default(int?), string title = null, string type = null) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.ObjectResult Problem(string? detail = null, string? instance = null, int? statusCode = default(int?), string? title = null, string? type = null) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.RedirectResult Redirect(string url) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
@@ -463,83 +464,83 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToAction() { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToAction(string actionName) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToAction(string? actionName) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToAction(string actionName, object routeValues) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToAction(string? actionName, object? routeValues) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToAction(string actionName, string controllerName) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToAction(string? actionName, string? controllerName) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToAction(string actionName, string controllerName, object routeValues) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToAction(string? actionName, string? controllerName, object? routeValues) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToAction(string actionName, string controllerName, object routeValues, string fragment) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToAction(string? actionName, string? controllerName, object? routeValues, string? fragment) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToAction(string actionName, string controllerName, string fragment) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToAction(string? actionName, string? controllerName, string? fragment) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToActionPermanent(string actionName) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToActionPermanent(string? actionName) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToActionPermanent(string actionName, object routeValues) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToActionPermanent(string? actionName, object? routeValues) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToActionPermanent(string actionName, string controllerName) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToActionPermanent(string? actionName, string? controllerName) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToActionPermanent(string actionName, string controllerName, object routeValues) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToActionPermanent(string? actionName, string? controllerName, object? routeValues) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToActionPermanent(string actionName, string controllerName, object routeValues, string fragment) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToActionPermanent(string? actionName, string? controllerName, object? routeValues, string? fragment) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToActionPermanent(string actionName, string controllerName, string fragment) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToActionPermanent(string? actionName, string? controllerName, string? fragment) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToActionPermanentPreserveMethod(string actionName = null, string controllerName = null, object routeValues = null, string fragment = null) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToActionPermanentPreserveMethod(string? actionName = null, string? controllerName = null, object? routeValues = null, string? fragment = null) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToActionPreserveMethod(string actionName = null, string controllerName = null, object routeValues = null, string fragment = null) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToActionResult RedirectToActionPreserveMethod(string? actionName = null, string? controllerName = null, object? routeValues = null, string? fragment = null) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPage(string pageName) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPage(string pageName, object routeValues) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPage(string pageName, object? routeValues) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPage(string pageName, string pageHandler) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPage(string pageName, string? pageHandler) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPage(string pageName, string pageHandler, object routeValues) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPage(string pageName, string? pageHandler, object? routeValues) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPage(string pageName, string pageHandler, object routeValues, string fragment) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPage(string pageName, string? pageHandler, object? routeValues, string? fragment) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPage(string pageName, string pageHandler, string fragment) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPage(string pageName, string? pageHandler, string? fragment) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPagePermanent(string pageName) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPagePermanent(string pageName, object routeValues) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPagePermanent(string pageName, object? routeValues) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPagePermanent(string pageName, string pageHandler) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPagePermanent(string pageName, string? pageHandler) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPagePermanent(string pageName, string pageHandler, object routeValues, string fragment) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPagePermanent(string pageName, string? pageHandler, object? routeValues, string? fragment) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPagePermanent(string pageName, string pageHandler, string fragment) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPagePermanent(string pageName, string? pageHandler, string? fragment) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPagePermanentPreserveMethod(string pageName, string pageHandler = null, object routeValues = null, string fragment = null) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPagePermanentPreserveMethod(string pageName, string? pageHandler = null, object? routeValues = null, string? fragment = null) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPagePreserveMethod(string pageName, string pageHandler = null, object routeValues = null, string fragment = null) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToPageResult RedirectToPagePreserveMethod(string pageName, string? pageHandler = null, object? routeValues = null, string? fragment = null) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoute(object routeValues) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoute(object? routeValues) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoute(string routeName) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoute(string? routeName) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoute(string routeName, object routeValues) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoute(string? routeName, object? routeValues) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoute(string routeName, object routeValues, string fragment) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoute(string? routeName, object? routeValues, string? fragment) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoute(string routeName, string fragment) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoute(string? routeName, string? fragment) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoutePermanent(object routeValues) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoutePermanent(object? routeValues) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoutePermanent(string routeName) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoutePermanent(string? routeName) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoutePermanent(string routeName, object routeValues) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoutePermanent(string? routeName, object? routeValues) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoutePermanent(string routeName, object routeValues, string fragment) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoutePermanent(string? routeName, object? routeValues, string? fragment) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoutePermanent(string routeName, string fragment) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoutePermanent(string? routeName, string? fragment) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoutePermanentPreserveMethod(string routeName = null, object routeValues = null, string fragment = null) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoutePermanentPreserveMethod(string? routeName = null, object? routeValues = null, string? fragment = null) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoutePreserveMethod(string routeName = null, object routeValues = null, string fragment = null) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoutePreserveMethod(string? routeName = null, object? routeValues = null, string? fragment = null) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.SignInResult SignIn(System.Security.Claims.ClaimsPrincipal principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties, string authenticationScheme) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
@@ -551,7 +552,7 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.StatusCodeResult StatusCode([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultStatusCodeAttribute] int statusCode) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.ObjectResult StatusCode([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultStatusCodeAttribute] int statusCode, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.ObjectResult StatusCode([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultStatusCodeAttribute] int statusCode, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<bool> TryUpdateModelAsync(object model, System.Type modelType, string prefix) { throw null; }
@@ -577,11 +578,11 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual bool TryValidateModel(object model) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual bool TryValidateModel(object model, string prefix) { throw null; }
+        public virtual bool TryValidateModel(object model, string? prefix) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.UnauthorizedResult Unauthorized() { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.UnauthorizedObjectResult Unauthorized([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.UnauthorizedObjectResult Unauthorized([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.UnprocessableEntityResult UnprocessableEntity() { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
@@ -595,7 +596,7 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.ActionResult ValidationProblem([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] Microsoft.AspNetCore.Mvc.ValidationProblemDetails descriptor) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.ActionResult ValidationProblem(string detail = null, string instance = null, int? statusCode = default(int?), string title = null, string type = null, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelStateDictionary = null) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.ActionResult ValidationProblem(string? detail = null, string? instance = null, int? statusCode = default(int?), string? title = null, string? type = null, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary? modelStateDictionary = null) { throw null; }
     }
     public partial class ControllerContext : Microsoft.AspNetCore.Mvc.ActionContext
     {
@@ -612,28 +613,28 @@ namespace Microsoft.AspNetCore.Mvc
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(201)]
     public partial class CreatedAtActionResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
-        public CreatedAtActionResult(string actionName, string controllerName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) : base (default(object)) { }
-        public string ActionName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public string ControllerName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Mvc.IUrlHelper UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public CreatedAtActionResult(string? actionName, string? controllerName, object? routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) : base (default(object)) { }
+        public string? ActionName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? ControllerName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.RouteValueDictionary? RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Mvc.IUrlHelper? UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override void OnFormatting(Microsoft.AspNetCore.Mvc.ActionContext context) { }
     }
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(201)]
     public partial class CreatedAtRouteResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
-        public CreatedAtRouteResult(object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) : base (default(object)) { }
-        public CreatedAtRouteResult(string routeName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) : base (default(object)) { }
-        public string RouteName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Mvc.IUrlHelper UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public CreatedAtRouteResult(object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) : base (default(object)) { }
+        public CreatedAtRouteResult(string? routeName, object? routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) : base (default(object)) { }
+        public string? RouteName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.RouteValueDictionary? RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Mvc.IUrlHelper? UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override void OnFormatting(Microsoft.AspNetCore.Mvc.ActionContext context) { }
     }
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(201)]
     public partial class CreatedResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
-        public CreatedResult(string location, object value) : base (default(object)) { }
-        public CreatedResult(System.Uri location, object value) : base (default(object)) { }
+        public CreatedResult(string location, object? value) : base (default(object)) { }
+        public CreatedResult(System.Uri location, object? value) : base (default(object)) { }
         public string Location { get { throw null; } set { } }
         public override void OnFormatting(Microsoft.AspNetCore.Mvc.ActionContext context) { }
     }
@@ -709,7 +710,8 @@ namespace Microsoft.AspNetCore.Mvc
         protected FileResult(string contentType) { }
         public string ContentType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool EnableRangeProcessing { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.Net.Http.Headers.EntityTagHeaderValue EntityTag { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.Net.Http.Headers.EntityTagHeaderValue? EntityTag { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        [System.Diagnostics.CodeAnalysis.AllowNullAttribute]
         public string FileDownloadName { get { throw null; } set { } }
         public System.DateTimeOffset? LastModified { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
@@ -723,13 +725,13 @@ namespace Microsoft.AspNetCore.Mvc
     public partial class ForbidResult : Microsoft.AspNetCore.Mvc.ActionResult
     {
         public ForbidResult() { }
-        public ForbidResult(Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { }
+        public ForbidResult(Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) { }
         public ForbidResult(System.Collections.Generic.IList<string> authenticationSchemes) { }
-        public ForbidResult(System.Collections.Generic.IList<string> authenticationSchemes, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { }
+        public ForbidResult(System.Collections.Generic.IList<string> authenticationSchemes, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) { }
         public ForbidResult(string authenticationScheme) { }
-        public ForbidResult(string authenticationScheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { }
+        public ForbidResult(string authenticationScheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) { }
         public System.Collections.Generic.IList<string> AuthenticationSchemes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Authentication.AuthenticationProperties? Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public override System.Threading.Tasks.Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) { throw null; }
     }
@@ -752,28 +754,28 @@ namespace Microsoft.AspNetCore.Mvc
     {
         public FromFormAttribute() { }
         public Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource BindingSource { get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Parameter | System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public partial class FromHeaderAttribute : System.Attribute, Microsoft.AspNetCore.Mvc.ModelBinding.IBindingSourceMetadata, Microsoft.AspNetCore.Mvc.ModelBinding.IModelNameProvider
     {
         public FromHeaderAttribute() { }
         public Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource BindingSource { get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Parameter | System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public partial class FromQueryAttribute : System.Attribute, Microsoft.AspNetCore.Mvc.ModelBinding.IBindingSourceMetadata, Microsoft.AspNetCore.Mvc.ModelBinding.IModelNameProvider
     {
         public FromQueryAttribute() { }
         public Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource BindingSource { get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Parameter | System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public partial class FromRouteAttribute : System.Attribute, Microsoft.AspNetCore.Mvc.ModelBinding.IBindingSourceMetadata, Microsoft.AspNetCore.Mvc.ModelBinding.IModelNameProvider
     {
         public FromRouteAttribute() { }
         public Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource BindingSource { get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Parameter, AllowMultiple=false, Inherited=true)]
     public partial class FromServicesAttribute : System.Attribute, Microsoft.AspNetCore.Mvc.ModelBinding.IBindingSourceMetadata
@@ -833,12 +835,12 @@ namespace Microsoft.AspNetCore.Mvc
     }
     public partial class JsonResult : Microsoft.AspNetCore.Mvc.ActionResult, Microsoft.AspNetCore.Mvc.IActionResult, Microsoft.AspNetCore.Mvc.Infrastructure.IStatusCodeActionResult
     {
-        public JsonResult(object value) { }
-        public JsonResult(object value, object serializerSettings) { }
-        public string ContentType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public object SerializerSettings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public JsonResult(object? value) { }
+        public JsonResult(object? value, object serializerSettings) { }
+        public string? ContentType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public object? SerializerSettings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public int? StatusCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public object Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public object? Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override System.Threading.Tasks.Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) { throw null; }
     }
     public partial class LocalRedirectResult : Microsoft.AspNetCore.Mvc.ActionResult
@@ -849,7 +851,7 @@ namespace Microsoft.AspNetCore.Mvc
         public bool Permanent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool PreserveMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public string Url { get { throw null; } set { } }
-        public Microsoft.AspNetCore.Mvc.IUrlHelper UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Mvc.IUrlHelper? UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override System.Threading.Tasks.Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=true, Inherited=true)]
@@ -866,9 +868,9 @@ namespace Microsoft.AspNetCore.Mvc
     {
         public ModelBinderAttribute() { }
         public ModelBinderAttribute(System.Type binderType) { }
-        public System.Type BinderType { get { throw null; } set { } }
-        public virtual Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource BindingSource { get { throw null; } protected set { } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Type? BinderType { get { throw null; } set { } }
+        public virtual Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource? BindingSource { get { throw null; } protected set { } }
+        public string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
     public partial class ModelMetadataTypeAttribute : System.Attribute
@@ -932,7 +934,7 @@ namespace Microsoft.AspNetCore.Mvc
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(404)]
     public partial class NotFoundObjectResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
-        public NotFoundObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) : base (default(object)) { }
+        public NotFoundObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) : base (default(object)) { }
     }
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(404)]
     public partial class NotFoundResult : Microsoft.AspNetCore.Mvc.StatusCodeResult
@@ -941,20 +943,20 @@ namespace Microsoft.AspNetCore.Mvc
     }
     public partial class ObjectResult : Microsoft.AspNetCore.Mvc.ActionResult, Microsoft.AspNetCore.Mvc.IActionResult, Microsoft.AspNetCore.Mvc.Infrastructure.IStatusCodeActionResult
     {
-        public ObjectResult(object value) { }
+        public ObjectResult(object? value) { }
         public Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection ContentTypes { get { throw null; } set { } }
-        public System.Type DeclaredType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Type? DeclaredType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Mvc.Formatters.FormatterCollection<Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter> Formatters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public int? StatusCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]
-        public object Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public object? Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override System.Threading.Tasks.Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) { throw null; }
         public virtual void OnFormatting(Microsoft.AspNetCore.Mvc.ActionContext context) { }
     }
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(200)]
     public partial class OkObjectResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
-        public OkObjectResult(object value) : base (default(object)) { }
+        public OkObjectResult(object? value) : base (default(object)) { }
     }
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(200)]
     public partial class OkResult : Microsoft.AspNetCore.Mvc.StatusCodeResult
@@ -972,17 +974,17 @@ namespace Microsoft.AspNetCore.Mvc
     {
         public ProblemDetails() { }
         [System.Text.Json.Serialization.JsonPropertyNameAttribute("detail")]
-        public string Detail { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Detail { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [System.Text.Json.Serialization.JsonExtensionDataAttribute]
         public System.Collections.Generic.IDictionary<string, object> Extensions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         [System.Text.Json.Serialization.JsonPropertyNameAttribute("instance")]
-        public string Instance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Instance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [System.Text.Json.Serialization.JsonPropertyNameAttribute("status")]
         public int? Status { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [System.Text.Json.Serialization.JsonPropertyNameAttribute("title")]
-        public string Title { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Title { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [System.Text.Json.Serialization.JsonPropertyNameAttribute("type")]
-        public string Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
     public partial class ProducesAttribute : System.Attribute, Microsoft.AspNetCore.Mvc.ApiExplorer.IApiResponseMetadataProvider, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata, Microsoft.AspNetCore.Mvc.Filters.IOrderedFilter, Microsoft.AspNetCore.Mvc.Filters.IResultFilter
@@ -992,7 +994,7 @@ namespace Microsoft.AspNetCore.Mvc
         public Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection ContentTypes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public int StatusCode { get { throw null; } }
-        public System.Type Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Type? Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual void OnResultExecuted(Microsoft.AspNetCore.Mvc.Filters.ResultExecutedContext context) { }
         public virtual void OnResultExecuting(Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext context) { }
         public void SetContentTypes(Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection contentTypes) { }
@@ -1029,63 +1031,63 @@ namespace Microsoft.AspNetCore.Mvc
         public bool Permanent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool PreserveMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public string Url { get { throw null; } set { } }
-        public Microsoft.AspNetCore.Mvc.IUrlHelper UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Mvc.IUrlHelper? UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override System.Threading.Tasks.Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) { throw null; }
     }
     public partial class RedirectToActionResult : Microsoft.AspNetCore.Mvc.ActionResult, Microsoft.AspNetCore.Mvc.IActionResult, Microsoft.AspNetCore.Mvc.ViewFeatures.IKeepTempDataResult
     {
-        public RedirectToActionResult(string actionName, string controllerName, object routeValues) { }
-        public RedirectToActionResult(string actionName, string controllerName, object routeValues, bool permanent) { }
-        public RedirectToActionResult(string actionName, string controllerName, object routeValues, bool permanent, bool preserveMethod) { }
-        public RedirectToActionResult(string actionName, string controllerName, object routeValues, bool permanent, bool preserveMethod, string fragment) { }
-        public RedirectToActionResult(string actionName, string controllerName, object routeValues, bool permanent, string fragment) { }
-        public RedirectToActionResult(string actionName, string controllerName, object routeValues, string fragment) { }
-        public string ActionName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public string ControllerName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public string Fragment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public RedirectToActionResult(string? actionName, string? controllerName, object? routeValues) { }
+        public RedirectToActionResult(string? actionName, string? controllerName, object? routeValues, bool permanent) { }
+        public RedirectToActionResult(string? actionName, string? controllerName, object? routeValues, bool permanent, bool preserveMethod) { }
+        public RedirectToActionResult(string? actionName, string? controllerName, object? routeValues, bool permanent, bool preserveMethod, string? fragment) { }
+        public RedirectToActionResult(string? actionName, string? controllerName, object? routeValues, bool permanent, string? fragment) { }
+        public RedirectToActionResult(string? actionName, string? controllerName, object? routeValues, string? fragment) { }
+        public string? ActionName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? ControllerName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Fragment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool Permanent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool PreserveMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Mvc.IUrlHelper UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.RouteValueDictionary? RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Mvc.IUrlHelper? UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override System.Threading.Tasks.Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) { throw null; }
     }
     public partial class RedirectToPageResult : Microsoft.AspNetCore.Mvc.ActionResult, Microsoft.AspNetCore.Mvc.IActionResult, Microsoft.AspNetCore.Mvc.ViewFeatures.IKeepTempDataResult
     {
         public RedirectToPageResult(string pageName) { }
-        public RedirectToPageResult(string pageName, object routeValues) { }
-        public RedirectToPageResult(string pageName, string pageHandler) { }
-        public RedirectToPageResult(string pageName, string pageHandler, object routeValues) { }
-        public RedirectToPageResult(string pageName, string pageHandler, object routeValues, bool permanent) { }
-        public RedirectToPageResult(string pageName, string pageHandler, object routeValues, bool permanent, bool preserveMethod) { }
-        public RedirectToPageResult(string pageName, string pageHandler, object routeValues, bool permanent, bool preserveMethod, string fragment) { }
-        public RedirectToPageResult(string pageName, string pageHandler, object routeValues, bool permanent, string fragment) { }
-        public RedirectToPageResult(string pageName, string pageHandler, object routeValues, string fragment) { }
-        public string Fragment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public string Host { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public string PageHandler { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public RedirectToPageResult(string pageName, object? routeValues) { }
+        public RedirectToPageResult(string pageName, string? pageHandler) { }
+        public RedirectToPageResult(string pageName, string? pageHandler, object? routeValues) { }
+        public RedirectToPageResult(string pageName, string? pageHandler, object? routeValues, bool permanent) { }
+        public RedirectToPageResult(string pageName, string? pageHandler, object? routeValues, bool permanent, bool preserveMethod) { }
+        public RedirectToPageResult(string pageName, string? pageHandler, object? routeValues, bool permanent, bool preserveMethod, string? fragment) { }
+        public RedirectToPageResult(string pageName, string? pageHandler, object? routeValues, bool permanent, string? fragment) { }
+        public RedirectToPageResult(string pageName, string? pageHandler, object? routeValues, string? fragment) { }
+        public string? Fragment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Host { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? PageHandler { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public string PageName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool Permanent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool PreserveMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public string Protocol { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Mvc.IUrlHelper UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Protocol { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.RouteValueDictionary? RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Mvc.IUrlHelper? UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override System.Threading.Tasks.Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) { throw null; }
     }
     public partial class RedirectToRouteResult : Microsoft.AspNetCore.Mvc.ActionResult, Microsoft.AspNetCore.Mvc.IActionResult, Microsoft.AspNetCore.Mvc.ViewFeatures.IKeepTempDataResult
     {
-        public RedirectToRouteResult(object routeValues) { }
-        public RedirectToRouteResult(string routeName, object routeValues) { }
-        public RedirectToRouteResult(string routeName, object routeValues, bool permanent) { }
-        public RedirectToRouteResult(string routeName, object routeValues, bool permanent, bool preserveMethod) { }
-        public RedirectToRouteResult(string routeName, object routeValues, bool permanent, bool preserveMethod, string fragment) { }
-        public RedirectToRouteResult(string routeName, object routeValues, bool permanent, string fragment) { }
-        public RedirectToRouteResult(string routeName, object routeValues, string fragment) { }
-        public string Fragment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public RedirectToRouteResult(object? routeValues) { }
+        public RedirectToRouteResult(string? routeName, object? routeValues) { }
+        public RedirectToRouteResult(string? routeName, object? routeValues, bool permanent) { }
+        public RedirectToRouteResult(string? routeName, object? routeValues, bool permanent, bool preserveMethod) { }
+        public RedirectToRouteResult(string? routeName, object? routeValues, bool permanent, bool preserveMethod, string? fragment) { }
+        public RedirectToRouteResult(string? routeName, object? routeValues, bool permanent, string? fragment) { }
+        public RedirectToRouteResult(string? routeName, object? routeValues, string? fragment) { }
+        public string? Fragment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool Permanent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool PreserveMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public string RouteName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Mvc.IUrlHelper UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? RouteName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.RouteValueDictionary? RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Mvc.IUrlHelper? UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override System.Threading.Tasks.Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
@@ -1127,14 +1129,14 @@ namespace Microsoft.AspNetCore.Mvc
     public partial class ResponseCacheAttribute : System.Attribute, Microsoft.AspNetCore.Mvc.Filters.IFilterFactory, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata, Microsoft.AspNetCore.Mvc.Filters.IOrderedFilter
     {
         public ResponseCacheAttribute() { }
-        public string CacheProfileName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? CacheProfileName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public int Duration { get { throw null; } set { } }
         public bool IsReusable { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.ResponseCacheLocation Location { get { throw null; } set { } }
         public bool NoStore { get { throw null; } set { } }
         public int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public string VaryByHeader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public string[] VaryByQueryKeys { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? VaryByHeader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string[]? VaryByQueryKeys { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata CreateInstance(System.IServiceProvider serviceProvider) { throw null; }
         public Microsoft.AspNetCore.Mvc.CacheProfile GetCacheProfile(Microsoft.AspNetCore.Mvc.MvcOptions options) { throw null; }
     }
@@ -1149,7 +1151,7 @@ namespace Microsoft.AspNetCore.Mvc
     {
         public RouteAttribute(string template) { }
         int? Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider.Order { get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public int Order { get { throw null; } set { } }
         public string Template { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
@@ -1171,10 +1173,10 @@ namespace Microsoft.AspNetCore.Mvc
     public partial class SignInResult : Microsoft.AspNetCore.Mvc.ActionResult
     {
         public SignInResult(string authenticationScheme, System.Security.Claims.ClaimsPrincipal principal) { }
-        public SignInResult(string authenticationScheme, System.Security.Claims.ClaimsPrincipal principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { }
+        public SignInResult(string authenticationScheme, System.Security.Claims.ClaimsPrincipal principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) { }
         public string AuthenticationScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Security.Claims.ClaimsPrincipal Principal { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Authentication.AuthenticationProperties? Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public override System.Threading.Tasks.Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) { throw null; }
     }
@@ -1182,11 +1184,11 @@ namespace Microsoft.AspNetCore.Mvc
     {
         public SignOutResult() { }
         public SignOutResult(System.Collections.Generic.IList<string> authenticationSchemes) { }
-        public SignOutResult(System.Collections.Generic.IList<string> authenticationSchemes, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { }
+        public SignOutResult(System.Collections.Generic.IList<string> authenticationSchemes, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) { }
         public SignOutResult(string authenticationScheme) { }
-        public SignOutResult(string authenticationScheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { }
+        public SignOutResult(string authenticationScheme, Microsoft.AspNetCore.Authentication.AuthenticationProperties? properties) { }
         public System.Collections.Generic.IList<string> AuthenticationSchemes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Authentication.AuthenticationProperties? Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public override System.Threading.Tasks.Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) { throw null; }
     }
@@ -1202,7 +1204,7 @@ namespace Microsoft.AspNetCore.Mvc
     public partial class TypeFilterAttribute : System.Attribute, Microsoft.AspNetCore.Mvc.Filters.IFilterFactory, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata, Microsoft.AspNetCore.Mvc.Filters.IOrderedFilter
     {
         public TypeFilterAttribute(System.Type type) { }
-        public object[] Arguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public object[]? Arguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Type ImplementationType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool IsReusable { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
@@ -1211,7 +1213,7 @@ namespace Microsoft.AspNetCore.Mvc
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(401)]
     public partial class UnauthorizedObjectResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
-        public UnauthorizedObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object value) : base (default(object)) { }
+        public UnauthorizedObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute] object? value) : base (default(object)) { }
     }
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(401)]
     public partial class UnauthorizedResult : Microsoft.AspNetCore.Mvc.StatusCodeResult
@@ -1236,29 +1238,29 @@ namespace Microsoft.AspNetCore.Mvc
     }
     public static partial class UrlHelperExtensions
     {
-        public static string Action(this Microsoft.AspNetCore.Mvc.IUrlHelper helper) { throw null; }
-        public static string Action(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string action) { throw null; }
-        public static string Action(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string action, object values) { throw null; }
-        public static string Action(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string action, string controller) { throw null; }
-        public static string Action(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string action, string controller, object values) { throw null; }
-        public static string Action(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string action, string controller, object values, string protocol) { throw null; }
-        public static string Action(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string action, string controller, object values, string protocol, string host) { throw null; }
-        public static string Action(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string action, string controller, object values, string protocol, string host, string fragment) { throw null; }
-        public static string ActionLink(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string action = null, string controller = null, object values = null, string protocol = null, string host = null, string fragment = null) { throw null; }
-        public static string Page(this Microsoft.AspNetCore.Mvc.IUrlHelper urlHelper, string pageName) { throw null; }
-        public static string Page(this Microsoft.AspNetCore.Mvc.IUrlHelper urlHelper, string pageName, object values) { throw null; }
-        public static string Page(this Microsoft.AspNetCore.Mvc.IUrlHelper urlHelper, string pageName, string pageHandler) { throw null; }
-        public static string Page(this Microsoft.AspNetCore.Mvc.IUrlHelper urlHelper, string pageName, string pageHandler, object values) { throw null; }
-        public static string Page(this Microsoft.AspNetCore.Mvc.IUrlHelper urlHelper, string pageName, string pageHandler, object values, string protocol) { throw null; }
-        public static string Page(this Microsoft.AspNetCore.Mvc.IUrlHelper urlHelper, string pageName, string pageHandler, object values, string protocol, string host) { throw null; }
-        public static string Page(this Microsoft.AspNetCore.Mvc.IUrlHelper urlHelper, string pageName, string pageHandler, object values, string protocol, string host, string fragment) { throw null; }
-        public static string PageLink(this Microsoft.AspNetCore.Mvc.IUrlHelper urlHelper, string pageName = null, string pageHandler = null, object values = null, string protocol = null, string host = null, string fragment = null) { throw null; }
-        public static string RouteUrl(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, object values) { throw null; }
-        public static string RouteUrl(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string routeName) { throw null; }
-        public static string RouteUrl(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string routeName, object values) { throw null; }
-        public static string RouteUrl(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string routeName, object values, string protocol) { throw null; }
-        public static string RouteUrl(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string routeName, object values, string protocol, string host) { throw null; }
-        public static string RouteUrl(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string routeName, object values, string protocol, string host, string fragment) { throw null; }
+        public static string? Action(this Microsoft.AspNetCore.Mvc.IUrlHelper helper) { throw null; }
+        public static string? Action(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string action) { throw null; }
+        public static string? Action(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string action, object values) { throw null; }
+        public static string? Action(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string action, string controller) { throw null; }
+        public static string? Action(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string action, string controller, object values) { throw null; }
+        public static string? Action(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string? action, string? controller, object? values, string? protocol) { throw null; }
+        public static string? Action(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string? action, string? controller, object? values, string? protocol, string? host) { throw null; }
+        public static string? Action(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string? action, string? controller, object? values, string? protocol, string? host, string? fragment) { throw null; }
+        public static string? ActionLink(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string? action = null, string? controller = null, object? values = null, string? protocol = null, string? host = null, string? fragment = null) { throw null; }
+        public static string? Page(this Microsoft.AspNetCore.Mvc.IUrlHelper urlHelper, string pageName) { throw null; }
+        public static string? Page(this Microsoft.AspNetCore.Mvc.IUrlHelper urlHelper, string? pageName, object? values) { throw null; }
+        public static string? Page(this Microsoft.AspNetCore.Mvc.IUrlHelper urlHelper, string? pageName, string pageHandler) { throw null; }
+        public static string? Page(this Microsoft.AspNetCore.Mvc.IUrlHelper urlHelper, string? pageName, string? pageHandler, object? values) { throw null; }
+        public static string? Page(this Microsoft.AspNetCore.Mvc.IUrlHelper urlHelper, string? pageName, string? pageHandler, object? values, string? protocol) { throw null; }
+        public static string? Page(this Microsoft.AspNetCore.Mvc.IUrlHelper urlHelper, string? pageName, string? pageHandler, object? values, string? protocol, string? host) { throw null; }
+        public static string? Page(this Microsoft.AspNetCore.Mvc.IUrlHelper urlHelper, string? pageName, string? pageHandler, object? values, string? protocol, string? host, string? fragment) { throw null; }
+        public static string? PageLink(this Microsoft.AspNetCore.Mvc.IUrlHelper urlHelper, string? pageName = null, string? pageHandler = null, object? values = null, string? protocol = null, string? host = null, string? fragment = null) { throw null; }
+        public static string? RouteUrl(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, object values) { throw null; }
+        public static string? RouteUrl(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string routeName) { throw null; }
+        public static string? RouteUrl(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string routeName, object values) { throw null; }
+        public static string? RouteUrl(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string routeName, object values, string protocol) { throw null; }
+        public static string? RouteUrl(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string routeName, object values, string protocol, string host) { throw null; }
+        public static string? RouteUrl(this Microsoft.AspNetCore.Mvc.IUrlHelper helper, string? routeName, object? values, string? protocol, string? host, string? fragment) { throw null; }
     }
     public partial class ValidationProblemDetails : Microsoft.AspNetCore.Mvc.ProblemDetails
     {
@@ -1273,7 +1275,7 @@ namespace Microsoft.AspNetCore.Mvc
         public VirtualFileResult(string fileName, Microsoft.Net.Http.Headers.MediaTypeHeaderValue contentType) : base (default(string)) { }
         public VirtualFileResult(string fileName, string contentType) : base (default(string)) { }
         public string FileName { get { throw null; } set { } }
-        public Microsoft.Extensions.FileProviders.IFileProvider FileProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.Extensions.FileProviders.IFileProvider? FileProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override System.Threading.Tasks.Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) { throw null; }
     }
 }
@@ -1332,7 +1334,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     }
     public partial interface IApiDescriptionGroupNameProvider
     {
-        string GroupName { get; }
+        string? GroupName { get; }
     }
     public partial interface IApiDescriptionVisibilityProvider
     {
@@ -1340,7 +1342,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     }
     public partial interface IApiRequestFormatMetadataProvider
     {
-        System.Collections.Generic.IReadOnlyList<string> GetSupportedContentTypes(string contentType, System.Type objectType);
+        System.Collections.Generic.IReadOnlyList<string>? GetSupportedContentTypes(string contentType, System.Type objectType);
     }
     public partial interface IApiRequestMetadataProvider : Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata
     {
@@ -1349,12 +1351,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     public partial interface IApiResponseMetadataProvider : Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata
     {
         int StatusCode { get; }
-        System.Type Type { get; }
+        System.Type? Type { get; }
         void SetContentTypes(Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection contentTypes);
     }
     public partial interface IApiResponseTypeMetadataProvider
     {
-        System.Collections.Generic.IReadOnlyList<string> GetSupportedContentTypes(string contentType, System.Type objectType);
+        System.Collections.Generic.IReadOnlyList<string>? GetSupportedContentTypes(string contentType, System.Type objectType);
     }
 }
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
@@ -1375,7 +1377,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         string Microsoft.AspNetCore.Mvc.ApplicationModels.ICommonModel.Name { get { throw null; } }
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModel> Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Collections.Generic.IDictionary<object, object> Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public Microsoft.AspNetCore.Routing.IOutboundParameterTransformer RouteParameterTransformer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.IOutboundParameterTransformer? RouteParameterTransformer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Collections.Generic.IDictionary<string, string> RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel> Selectors { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
@@ -1390,7 +1392,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     {
         public ApiExplorerModel() { }
         public ApiExplorerModel(Microsoft.AspNetCore.Mvc.ApplicationModels.ApiExplorerModel other) { }
-        public string GroupName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? GroupName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool? IsVisible { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class ApiVisibilityConvention : Microsoft.AspNetCore.Mvc.ApplicationModels.IActionModelConvention
@@ -1419,18 +1421,18 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public AttributeRouteModel() { }
         public AttributeRouteModel(Microsoft.AspNetCore.Mvc.ApplicationModels.AttributeRouteModel other) { }
         public AttributeRouteModel(Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider templateProvider) { }
-        public Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider Attribute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider? Attribute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool IsAbsoluteTemplate { get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public int? Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool SuppressLinkGeneration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool SuppressPathMatching { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public string Template { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public static Microsoft.AspNetCore.Mvc.ApplicationModels.AttributeRouteModel CombineAttributeRouteModel(Microsoft.AspNetCore.Mvc.ApplicationModels.AttributeRouteModel left, Microsoft.AspNetCore.Mvc.ApplicationModels.AttributeRouteModel right) { throw null; }
-        public static string CombineTemplates(string prefix, string template) { throw null; }
-        public static bool IsOverridePattern(string template) { throw null; }
+        public string? Template { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public static Microsoft.AspNetCore.Mvc.ApplicationModels.AttributeRouteModel? CombineAttributeRouteModel(Microsoft.AspNetCore.Mvc.ApplicationModels.AttributeRouteModel? left, Microsoft.AspNetCore.Mvc.ApplicationModels.AttributeRouteModel? right) { throw null; }
+        public static string? CombineTemplates(string? prefix, string? template) { throw null; }
+        public static bool IsOverridePattern([System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(true)] string? template) { throw null; }
         public static string ReplaceTokens(string template, System.Collections.Generic.IDictionary<string, string> values) { throw null; }
-        public static string ReplaceTokens(string template, System.Collections.Generic.IDictionary<string, string> values, Microsoft.AspNetCore.Routing.IOutboundParameterTransformer routeTokenTransformer) { throw null; }
+        public static string ReplaceTokens(string template, System.Collections.Generic.IDictionary<string, string> values, Microsoft.AspNetCore.Routing.IOutboundParameterTransformer? routeTokenTransformer) { throw null; }
     }
     public partial class ClientErrorResultFilterConvention : Microsoft.AspNetCore.Mvc.ApplicationModels.IActionModelConvention
     {
@@ -1484,7 +1486,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     }
     public partial interface IBindingModel
     {
-        Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo BindingInfo { get; set; }
+        Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo? BindingInfo { get; set; }
     }
     public partial interface ICommonModel : Microsoft.AspNetCore.Mvc.ApplicationModels.IPropertyModel
     {
@@ -1542,7 +1544,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         protected ParameterModelBase(Microsoft.AspNetCore.Mvc.ApplicationModels.ParameterModelBase other) { }
         protected ParameterModelBase(System.Type parameterType, System.Collections.Generic.IReadOnlyList<object> attributes) { }
         public System.Collections.Generic.IReadOnlyList<object> Attributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo BindingInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo? BindingInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
         public System.Type ParameterType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Collections.Generic.IDictionary<object, object> Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
@@ -1570,7 +1572,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public SelectorModel() { }
         public SelectorModel(Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel other) { }
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ActionConstraints.IActionConstraintMetadata> ActionConstraints { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.ApplicationModels.AttributeRouteModel AttributeRouteModel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Mvc.ApplicationModels.AttributeRouteModel? AttributeRouteModel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Collections.Generic.IList<object> EndpointMetadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
 }
@@ -1598,7 +1600,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         public ApplicationPartManager() { }
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPart> ApplicationParts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationParts.IApplicationFeatureProvider> FeatureProviders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public void PopulateFeature<TFeature>(TFeature feature) { }
+        public void PopulateFeature<TFeature>(TFeature feature) where TFeature : notnull { }
     }
     public partial class AssemblyPart : Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPart, Microsoft.AspNetCore.Mvc.ApplicationParts.IApplicationPartTypeProvider
     {
@@ -1617,7 +1619,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
     public partial interface IApplicationFeatureProvider
     {
     }
-    public partial interface IApplicationFeatureProvider<TFeature> : Microsoft.AspNetCore.Mvc.ApplicationParts.IApplicationFeatureProvider
+    public partial interface IApplicationFeatureProvider<TFeature> : Microsoft.AspNetCore.Mvc.ApplicationParts.IApplicationFeatureProvider where TFeature : notnull
     {
         void PopulateFeature(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPart> parts, TFeature feature);
     }
@@ -1662,10 +1664,10 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         public AuthorizeFilter(Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider policyProvider, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizeData> authorizeData) { }
         public AuthorizeFilter(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizeData> authorizeData) { }
         public AuthorizeFilter(string policy) { }
-        public System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizeData> AuthorizeData { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizeData>? AuthorizeData { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         bool Microsoft.AspNetCore.Mvc.Filters.IFilterFactory.IsReusable { get { throw null; } }
-        public Microsoft.AspNetCore.Authorization.AuthorizationPolicy Policy { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider PolicyProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Authorization.AuthorizationPolicy? Policy { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider? PolicyProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata Microsoft.AspNetCore.Mvc.Filters.IFilterFactory.CreateInstance(System.IServiceProvider serviceProvider) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task OnAuthorizationAsync(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext context) { throw null; }
@@ -1680,14 +1682,14 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         public virtual string ActionName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public string ControllerName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Reflection.TypeInfo ControllerTypeInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public override string DisplayName { get { throw null; } set { } }
+        public override string? DisplayName { get { throw null; } set { } }
         public System.Reflection.MethodInfo MethodInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class ControllerActivatorProvider : Microsoft.AspNetCore.Mvc.Controllers.IControllerActivatorProvider
     {
         public ControllerActivatorProvider(Microsoft.AspNetCore.Mvc.Controllers.IControllerActivator controllerActivator) { }
         public System.Func<Microsoft.AspNetCore.Mvc.ControllerContext, object> CreateActivator(Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor descriptor) { throw null; }
-        public System.Action<Microsoft.AspNetCore.Mvc.ControllerContext, object> CreateReleaser(Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor descriptor) { throw null; }
+        public System.Action<Microsoft.AspNetCore.Mvc.ControllerContext, object>? CreateReleaser(Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor descriptor) { throw null; }
     }
     public partial class ControllerBoundPropertyDescriptor : Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor, Microsoft.AspNetCore.Mvc.Infrastructure.IPropertyInfoParameterDescriptor
     {
@@ -1718,7 +1720,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
     public partial interface IControllerActivatorProvider
     {
         System.Func<Microsoft.AspNetCore.Mvc.ControllerContext, object> CreateActivator(Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor descriptor);
-        System.Action<Microsoft.AspNetCore.Mvc.ControllerContext, object> CreateReleaser(Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor descriptor);
+        System.Action<Microsoft.AspNetCore.Mvc.ControllerContext, object>? CreateReleaser(Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor descriptor);
     }
     public partial interface IControllerFactory
     {
@@ -1728,7 +1730,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
     public partial interface IControllerFactoryProvider
     {
         System.Func<Microsoft.AspNetCore.Mvc.ControllerContext, object> CreateControllerFactory(Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor descriptor);
-        System.Action<Microsoft.AspNetCore.Mvc.ControllerContext, object> CreateControllerReleaser(Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor descriptor);
+        System.Action<Microsoft.AspNetCore.Mvc.ControllerContext, object>? CreateControllerReleaser(Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor descriptor);
     }
     public partial class ServiceBasedControllerActivator : Microsoft.AspNetCore.Mvc.Controllers.IControllerActivator
     {
@@ -2030,9 +2032,9 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
         protected EventData() { }
         protected abstract int Count { get; }
         protected abstract System.Collections.Generic.KeyValuePair<string, object> this[int index] { get; }
-        int System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<System.String,System.Object>>.Count { get { throw null; } }
-        System.Collections.Generic.KeyValuePair<string, object> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<System.String,System.Object>>.this[int index] { get { throw null; } }
-        System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, object>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String,System.Object>>.GetEnumerator() { throw null; }
+        int System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<string, object>>.Count { get { throw null; } }
+        System.Collections.Generic.KeyValuePair<string, object> System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string, object>>.this[int index] { get { throw null; } }
+        System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, object>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>>.GetEnumerator() { throw null; }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
         public partial struct Enumerator : System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, object>>, System.Collections.IEnumerator, System.IDisposable
@@ -2107,7 +2109,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     public partial class FormatFilter : Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata, Microsoft.AspNetCore.Mvc.Filters.IResourceFilter, Microsoft.AspNetCore.Mvc.Filters.IResultFilter
     {
         public FormatFilter(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        public virtual string GetFormat(Microsoft.AspNetCore.Mvc.ActionContext context) { throw null; }
+        public virtual string? GetFormat(Microsoft.AspNetCore.Mvc.ActionContext context) { throw null; }
         public void OnResourceExecuted(Microsoft.AspNetCore.Mvc.Filters.ResourceExecutedContext context) { }
         public void OnResourceExecuting(Microsoft.AspNetCore.Mvc.Filters.ResourceExecutingContext context) { }
         public void OnResultExecuted(Microsoft.AspNetCore.Mvc.Filters.ResultExecutedContext context) { }
@@ -2117,7 +2119,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     {
         public FormatterMappings() { }
         public bool ClearMediaTypeMappingForFormat(string format) { throw null; }
-        public string GetMediaTypeMappingForFormat(string format) { throw null; }
+        public string? GetMediaTypeMappingForFormat(string format) { throw null; }
         public void SetMediaTypeMappingForFormat(string format, Microsoft.Net.Http.Headers.MediaTypeHeaderValue contentType) { }
         public void SetMediaTypeMappingForFormat(string format, string contentType) { }
     }
@@ -2134,8 +2136,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection SupportedMediaTypes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public virtual bool CanRead(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext context) { throw null; }
         protected virtual bool CanReadType(System.Type type) { throw null; }
-        protected virtual object GetDefaultValueForType(System.Type modelType) { throw null; }
-        public virtual System.Collections.Generic.IReadOnlyList<string> GetSupportedContentTypes(string contentType, System.Type objectType) { throw null; }
+        protected virtual object? GetDefaultValueForType(System.Type modelType) { throw null; }
+        public virtual System.Collections.Generic.IReadOnlyList<string>? GetSupportedContentTypes(string contentType, System.Type objectType) { throw null; }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult> ReadAsync(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext context) { throw null; }
         public abstract System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult> ReadRequestBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext context);
     }
@@ -2148,7 +2150,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public MediaType(string mediaType) { throw null; }
         public MediaType(string mediaType, int offset, int? length) { throw null; }
         public Microsoft.Extensions.Primitives.StringSegment Charset { get { throw null; } }
-        public System.Text.Encoding Encoding { get { throw null; } }
+        public System.Text.Encoding? Encoding { get { throw null; } }
         public bool HasWildcard { get { throw null; } }
         public bool MatchesAllSubTypes { get { throw null; } }
         public bool MatchesAllSubTypesWithoutSuffix { get { throw null; } }
@@ -2158,8 +2160,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public Microsoft.Extensions.Primitives.StringSegment SubTypeWithoutSuffix { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.Extensions.Primitives.StringSegment Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public static Microsoft.AspNetCore.Mvc.Formatters.MediaTypeSegmentWithQuality CreateMediaTypeSegmentWithQuality(string mediaType, int start) { throw null; }
-        public static System.Text.Encoding GetEncoding(Microsoft.Extensions.Primitives.StringSegment mediaType) { throw null; }
-        public static System.Text.Encoding GetEncoding(string mediaType) { throw null; }
+        public static System.Text.Encoding? GetEncoding(Microsoft.Extensions.Primitives.StringSegment mediaType) { throw null; }
+        public static System.Text.Encoding? GetEncoding(string mediaType) { throw null; }
         public Microsoft.Extensions.Primitives.StringSegment GetParameter(Microsoft.Extensions.Primitives.StringSegment parameterName) { throw null; }
         public Microsoft.Extensions.Primitives.StringSegment GetParameter(string parameterName) { throw null; }
         public bool IsSubsetOf(Microsoft.AspNetCore.Mvc.Formatters.MediaType @set) { throw null; }
@@ -2188,8 +2190,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         protected OutputFormatter() { }
         public Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection SupportedMediaTypes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public virtual bool CanWriteResult(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext context) { throw null; }
-        protected virtual bool CanWriteType(System.Type type) { throw null; }
-        public virtual System.Collections.Generic.IReadOnlyList<string> GetSupportedContentTypes(string contentType, System.Type objectType) { throw null; }
+        protected virtual bool CanWriteType(System.Type? type) { throw null; }
+        public virtual System.Collections.Generic.IReadOnlyList<string>? GetSupportedContentTypes(string contentType, System.Type objectType) { throw null; }
         public virtual System.Threading.Tasks.Task WriteAsync(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext context) { throw null; }
         public abstract System.Threading.Tasks.Task WriteResponseBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext context);
         public virtual void WriteResponseHeaders(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext context) { }
@@ -2230,7 +2232,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public System.Collections.Generic.IList<System.Text.Encoding> SupportedEncodings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public override System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult> ReadRequestBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext context) { throw null; }
         public abstract System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult> ReadRequestBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext context, System.Text.Encoding encoding);
-        protected System.Text.Encoding SelectCharacterEncoding(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext context) { throw null; }
+        protected System.Text.Encoding? SelectCharacterEncoding(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext context) { throw null; }
     }
     public abstract partial class TextOutputFormatter : Microsoft.AspNetCore.Mvc.Formatters.OutputFormatter
     {
@@ -2247,7 +2249,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     public partial class ActionContextAccessor : Microsoft.AspNetCore.Mvc.Infrastructure.IActionContextAccessor
     {
         public ActionContextAccessor() { }
-        public Microsoft.AspNetCore.Mvc.ActionContext ActionContext { get { throw null; } set { } }
+        public Microsoft.AspNetCore.Mvc.ActionContext? ActionContext { get { throw null; } set { } }
     }
     public partial class ActionDescriptorCollection
     {
@@ -2301,7 +2303,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     public partial class DefaultOutputFormatterSelector : Microsoft.AspNetCore.Mvc.Infrastructure.OutputFormatterSelector
     {
         public DefaultOutputFormatterSelector(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        public override Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter SelectFormatter(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext context, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter> formatters, Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection contentTypes) { throw null; }
+        public override Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter? SelectFormatter(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext context, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter> formatters, Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection contentTypes) { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
     public sealed partial class DefaultStatusCodeAttribute : System.Attribute
@@ -2313,7 +2315,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     {
         public FileContentResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) : base (default(Microsoft.Extensions.Logging.ILogger)) { }
         public virtual System.Threading.Tasks.Task ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.FileContentResult result) { throw null; }
-        protected virtual System.Threading.Tasks.Task WriteFileAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.FileContentResult result, Microsoft.Net.Http.Headers.RangeItemHeaderValue range, long rangeLength) { throw null; }
+        protected virtual System.Threading.Tasks.Task WriteFileAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.FileContentResult result, Microsoft.Net.Http.Headers.RangeItemHeaderValue? range, long rangeLength) { throw null; }
     }
     public partial class FileResultExecutorBase
     {
@@ -2321,20 +2323,20 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public FileResultExecutorBase(Microsoft.Extensions.Logging.ILogger logger) { }
         protected Microsoft.Extensions.Logging.ILogger Logger { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected static Microsoft.Extensions.Logging.ILogger CreateLogger<T>(Microsoft.Extensions.Logging.ILoggerFactory factory) { throw null; }
-        protected virtual (Microsoft.Net.Http.Headers.RangeItemHeaderValue range, long rangeLength, bool serveBody) SetHeadersAndLog(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.FileResult result, long? fileLength, bool enableRangeProcessing, System.DateTimeOffset? lastModified = default(System.DateTimeOffset?), Microsoft.Net.Http.Headers.EntityTagHeaderValue etag = null) { throw null; }
+        protected virtual (Microsoft.Net.Http.Headers.RangeItemHeaderValue? range, long rangeLength, bool serveBody) SetHeadersAndLog(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.FileResult result, long? fileLength, bool enableRangeProcessing, System.DateTimeOffset? lastModified = default(System.DateTimeOffset?), Microsoft.Net.Http.Headers.EntityTagHeaderValue? etag = null) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        protected static System.Threading.Tasks.Task WriteFileAsync(Microsoft.AspNetCore.Http.HttpContext context, System.IO.Stream fileStream, Microsoft.Net.Http.Headers.RangeItemHeaderValue range, long rangeLength) { throw null; }
+        protected static System.Threading.Tasks.Task WriteFileAsync(Microsoft.AspNetCore.Http.HttpContext context, System.IO.Stream fileStream, Microsoft.Net.Http.Headers.RangeItemHeaderValue? range, long rangeLength) { throw null; }
     }
     public partial class FileStreamResultExecutor : Microsoft.AspNetCore.Mvc.Infrastructure.FileResultExecutorBase, Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultExecutor<Microsoft.AspNetCore.Mvc.FileStreamResult>
     {
         public FileStreamResultExecutor(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) : base (default(Microsoft.Extensions.Logging.ILogger)) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.FileStreamResult result) { throw null; }
-        protected virtual System.Threading.Tasks.Task WriteFileAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.FileStreamResult result, Microsoft.Net.Http.Headers.RangeItemHeaderValue range, long rangeLength) { throw null; }
+        protected virtual System.Threading.Tasks.Task WriteFileAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.FileStreamResult result, Microsoft.Net.Http.Headers.RangeItemHeaderValue? range, long rangeLength) { throw null; }
     }
     public partial interface IActionContextAccessor
     {
-        Microsoft.AspNetCore.Mvc.ActionContext ActionContext { get; set; }
+        Microsoft.AspNetCore.Mvc.ActionContext? ActionContext { get; set; }
     }
     public partial interface IActionDescriptorChangeProvider
     {
@@ -2346,7 +2348,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     }
     public partial interface IActionInvokerFactory
     {
-        Microsoft.AspNetCore.Mvc.Abstractions.IActionInvoker CreateInvoker(Microsoft.AspNetCore.Mvc.ActionContext actionContext);
+        Microsoft.AspNetCore.Mvc.Abstractions.IActionInvoker? CreateInvoker(Microsoft.AspNetCore.Mvc.ActionContext actionContext);
     }
     public partial interface IActionResultExecutor<in TResult> where TResult : Microsoft.AspNetCore.Mvc.IActionResult
     {
@@ -2433,7 +2435,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     public abstract partial class OutputFormatterSelector
     {
         protected OutputFormatterSelector() { }
-        public abstract Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter SelectFormatter(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext context, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter> formatters, Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection mediaTypes);
+        public abstract Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter? SelectFormatter(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext context, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter> formatters, Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection mediaTypes);
     }
     public partial class PhysicalFileResultExecutor : Microsoft.AspNetCore.Mvc.Infrastructure.FileResultExecutorBase, Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultExecutor<Microsoft.AspNetCore.Mvc.PhysicalFileResult>
     {
@@ -2442,7 +2444,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         protected virtual Microsoft.AspNetCore.Mvc.Infrastructure.PhysicalFileResultExecutor.FileMetadata GetFileInfo(string path) { throw null; }
         [System.ObsoleteAttribute("This API is no longer called.")]
         protected virtual System.IO.Stream GetFileStream(string path) { throw null; }
-        protected virtual System.Threading.Tasks.Task WriteFileAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.PhysicalFileResult result, Microsoft.Net.Http.Headers.RangeItemHeaderValue range, long rangeLength) { throw null; }
+        protected virtual System.Threading.Tasks.Task WriteFileAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.PhysicalFileResult result, Microsoft.Net.Http.Headers.RangeItemHeaderValue? range, long rangeLength) { throw null; }
         protected partial class FileMetadata
         {
             public FileMetadata() { }
@@ -2454,8 +2456,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     public abstract partial class ProblemDetailsFactory
     {
         protected ProblemDetailsFactory() { }
-        public abstract Microsoft.AspNetCore.Mvc.ProblemDetails CreateProblemDetails(Microsoft.AspNetCore.Http.HttpContext httpContext, int? statusCode = default(int?), string title = null, string type = null, string detail = null, string instance = null);
-        public abstract Microsoft.AspNetCore.Mvc.ValidationProblemDetails CreateValidationProblemDetails(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelStateDictionary, int? statusCode = default(int?), string title = null, string type = null, string detail = null, string instance = null);
+        public abstract Microsoft.AspNetCore.Mvc.ProblemDetails CreateProblemDetails(Microsoft.AspNetCore.Http.HttpContext httpContext, int? statusCode = default(int?), string? title = null, string? type = null, string? detail = null, string? instance = null);
+        public abstract Microsoft.AspNetCore.Mvc.ValidationProblemDetails CreateValidationProblemDetails(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelStateDictionary, int? statusCode = default(int?), string? title = null, string? type = null, string? detail = null, string? instance = null);
     }
     public partial class RedirectResultExecutor : Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultExecutor<Microsoft.AspNetCore.Mvc.RedirectResult>
     {
@@ -2483,7 +2485,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public virtual System.Threading.Tasks.Task ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.VirtualFileResult result) { throw null; }
         [System.ObsoleteAttribute("This API is no longer called.")]
         protected virtual System.IO.Stream GetFileStream(Microsoft.Extensions.FileProviders.IFileInfo fileInfo) { throw null; }
-        protected virtual System.Threading.Tasks.Task WriteFileAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.VirtualFileResult result, Microsoft.Extensions.FileProviders.IFileInfo fileInfo, Microsoft.Net.Http.Headers.RangeItemHeaderValue range, long rangeLength) { throw null; }
+        protected virtual System.Threading.Tasks.Task WriteFileAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.VirtualFileResult result, Microsoft.Extensions.FileProviders.IFileInfo fileInfo, Microsoft.Net.Http.Headers.RangeItemHeaderValue? range, long rangeLength) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -2505,7 +2507,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public BindingSourceValueProvider(Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource bindingSource) { }
         protected Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource BindingSource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public abstract bool ContainsPrefix(string prefix);
-        public virtual Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider Filter(Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource bindingSource) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider? Filter(Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource bindingSource) { throw null; }
         public abstract Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult GetValue(string key);
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Parameter | System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
@@ -2527,8 +2529,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.ModelBinding.CompositeValueProvider> CreateAsync(Microsoft.AspNetCore.Mvc.ActionContext actionContext, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ModelBinding.IValueProviderFactory> factories) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.ModelBinding.CompositeValueProvider> CreateAsync(Microsoft.AspNetCore.Mvc.ControllerContext controllerContext) { throw null; }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider Filter() { throw null; }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider Filter(Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource bindingSource) { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider? Filter() { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider? Filter(Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource bindingSource) { throw null; }
         public virtual System.Collections.Generic.IDictionary<string, string> GetKeysFromPrefix(string prefix) { throw null; }
         public virtual Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult GetValue(string key) { throw null; }
         protected override void InsertItem(int index, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider item) { }
@@ -2539,21 +2541,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public DefaultModelBindingContext() { }
         public override Microsoft.AspNetCore.Mvc.ActionContext ActionContext { get { throw null; } set { } }
         public override string BinderModelName { get { throw null; } set { } }
-        public override Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource BindingSource { get { throw null; } set { } }
+        public override Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource? BindingSource { get { throw null; } set { } }
         public override string FieldName { get { throw null; } set { } }
         public override bool IsTopLevelObject { get { throw null; } set { } }
-        public override object Model { get { throw null; } set { } }
+        public override object? Model { get { throw null; } set { } }
         public override Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata ModelMetadata { get { throw null; } set { } }
         public override string ModelName { get { throw null; } set { } }
         public override Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary ModelState { get { throw null; } set { } }
         public Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider OriginalValueProvider { get { throw null; } set { } }
-        public override System.Func<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata, bool> PropertyFilter { get { throw null; } set { } }
+        public override System.Func<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata, bool>? PropertyFilter { get { throw null; } set { } }
         public override Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult Result { get { throw null; } set { } }
         public override Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary ValidationState { get { throw null; } set { } }
         public override Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider ValueProvider { get { throw null; } set { } }
-        public static Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext CreateBindingContext(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider valueProvider, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata metadata, Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo bindingInfo, string modelName) { throw null; }
+        public static Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext CreateBindingContext(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider valueProvider, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata metadata, Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo? bindingInfo, string modelName) { throw null; }
         public override Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.NestedScope EnterNestedScope() { throw null; }
-        public override Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.NestedScope EnterNestedScope(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata modelMetadata, string fieldName, string modelName, object model) { throw null; }
+        public override Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.NestedScope EnterNestedScope(Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata modelMetadata, string fieldName, string modelName, object? model) { throw null; }
         protected override void ExitNestedScope() { }
     }
     public partial class DefaultPropertyFilterProvider<TModel> : Microsoft.AspNetCore.Mvc.ModelBinding.IPropertyFilterProvider where TModel : class
@@ -2561,7 +2563,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public DefaultPropertyFilterProvider() { }
         public virtual string Prefix { get { throw null; } }
         public virtual System.Func<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata, bool> PropertyFilter { get { throw null; } }
-        public virtual System.Collections.Generic.IEnumerable<System.Linq.Expressions.Expression<System.Func<TModel, object>>> PropertyIncludeExpressions { get { throw null; } }
+        public virtual System.Collections.Generic.IEnumerable<System.Linq.Expressions.Expression<System.Func<TModel, object>>>? PropertyIncludeExpressions { get { throw null; } }
     }
     public partial class EmptyModelMetadataProvider : Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataProvider
     {
@@ -2594,7 +2596,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     }
     public partial interface IBindingSourceValueProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider
     {
-        Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider Filter(Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource bindingSource);
+        Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider? Filter(Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource bindingSource);
     }
     public partial interface ICollectionModelBinder : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
     {
@@ -2606,7 +2608,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     }
     public partial interface IKeyRewriterValueProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider
     {
-        Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider Filter();
+        Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider? Filter();
     }
     public partial interface IModelBinderFactory
     {
@@ -2636,7 +2638,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public System.Globalization.CultureInfo Culture { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected Microsoft.AspNetCore.Mvc.ModelBinding.PrefixContainer PrefixContainer { get { throw null; } }
         public override bool ContainsPrefix(string prefix) { throw null; }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider Filter() { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider? Filter() { throw null; }
         public System.Collections.Generic.IDictionary<string, string> GetKeysFromPrefix(string prefix) { throw null; }
         public override Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult GetValue(string key) { throw null; }
     }
@@ -2661,8 +2663,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public partial class ModelBinderFactoryContext
     {
         public ModelBinderFactoryContext() { }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo BindingInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public object CacheToken { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo? BindingInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public object? CacheToken { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata Metadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public static partial class ModelBinderProviderExtensions
@@ -2683,18 +2685,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public abstract partial class ObjectModelValidator : Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IObjectModelValidator
     {
         public ObjectModelValidator(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidatorProvider> validatorProviders) { }
-        public abstract Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor GetValidationVisitor(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidatorProvider validatorProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorCache validatorCache, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary validationState);
-        public virtual void Validate(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary validationState, string prefix, object model) { }
+        public abstract Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor GetValidationVisitor(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidatorProvider validatorProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidatorCache validatorCache, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider metadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary? validationState);
+        public virtual void Validate(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary? validationState, string? prefix, object? model) { }
         public virtual void Validate(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary validationState, string prefix, object model, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata metadata) { }
-        public virtual void Validate(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary validationState, string prefix, object model, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata metadata, object container) { }
+        public virtual void Validate(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary? validationState, string? prefix, object? model, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata metadata, object? container) { }
     }
     public partial class ParameterBinder
     {
         public ParameterBinder(Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderFactory modelBinderFactory, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IObjectModelValidator validator, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions> mvcOptions, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         protected Microsoft.Extensions.Logging.ILogger Logger { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult> BindModelAsync(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder modelBinder, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider valueProvider, Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor parameter, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata metadata, object value) { throw null; }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult> BindModelAsync(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder modelBinder, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider valueProvider, Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor parameter, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata metadata, object? value) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public virtual System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult> BindModelAsync(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder modelBinder, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider valueProvider, Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor parameter, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata metadata, object value, object container) { throw null; }
+        public virtual System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult> BindModelAsync(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder modelBinder, Microsoft.AspNetCore.Mvc.ModelBinding.IValueProvider valueProvider, Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor parameter, Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata metadata, object? value, object? container) { throw null; }
     }
     public partial class PrefixContainer
     {
@@ -2734,8 +2736,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     {
         public SuppressChildValidationMetadataProvider(string fullTypeName) { }
         public SuppressChildValidationMetadataProvider(System.Type type) { }
-        public string FullTypeName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public System.Type Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string? FullTypeName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Type? Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void CreateValidationMetadata(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadataProviderContext context) { }
     }
     public partial class UnsupportedContentTypeException : System.Exception
@@ -2760,7 +2762,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public partial class ArrayModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider
     {
         public ArrayModelBinderProvider() { }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder? GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
     }
     public partial class ArrayModelBinder<TElement> : Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CollectionModelBinder<TElement>
     {
@@ -2768,7 +2770,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public ArrayModelBinder(Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder elementBinder, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, bool allowValidatingTopLevelNodes) : base (default(Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder), default(Microsoft.Extensions.Logging.ILoggerFactory)) { }
         public ArrayModelBinder(Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder elementBinder, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, bool allowValidatingTopLevelNodes, Microsoft.AspNetCore.Mvc.MvcOptions mvcOptions) : base (default(Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder), default(Microsoft.Extensions.Logging.ILoggerFactory)) { }
         public override bool CanCreateInstance(System.Type targetType) { throw null; }
-        protected override object ConvertToCollectionType(System.Type targetType, System.Collections.Generic.IEnumerable<TElement> collection) { throw null; }
+        protected override object? ConvertToCollectionType(System.Type targetType, System.Collections.Generic.IEnumerable<TElement> collection) { throw null; }
         protected override void CopyToModel(object target, System.Collections.Generic.IEnumerable<TElement> sourceCollection) { }
         protected override object CreateEmptyCollection(System.Type targetType) { throw null; }
     }
@@ -2781,13 +2783,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public partial class BinderTypeModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider
     {
         public BinderTypeModelBinderProvider() { }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder? GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
     }
     public partial class BodyModelBinder : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
     {
         public BodyModelBinder(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IInputFormatter> formatters, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpRequestStreamReaderFactory readerFactory) { }
         public BodyModelBinder(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IInputFormatter> formatters, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpRequestStreamReaderFactory readerFactory, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        public BodyModelBinder(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IInputFormatter> formatters, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpRequestStreamReaderFactory readerFactory, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Mvc.MvcOptions options) { }
+        public BodyModelBinder(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IInputFormatter> formatters, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpRequestStreamReaderFactory readerFactory, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Mvc.MvcOptions? options) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task BindModelAsync(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext bindingContext) { throw null; }
     }
@@ -2795,8 +2797,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     {
         public BodyModelBinderProvider(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IInputFormatter> formatters, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpRequestStreamReaderFactory readerFactory) { }
         public BodyModelBinderProvider(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IInputFormatter> formatters, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpRequestStreamReaderFactory readerFactory, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        public BodyModelBinderProvider(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IInputFormatter> formatters, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpRequestStreamReaderFactory readerFactory, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Mvc.MvcOptions options) { }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
+        public BodyModelBinderProvider(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IInputFormatter> formatters, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpRequestStreamReaderFactory readerFactory, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Mvc.MvcOptions? options) { }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder? GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
     }
     public partial class ByteArrayModelBinder : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
     {
@@ -2806,7 +2808,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public partial class ByteArrayModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider
     {
         public ByteArrayModelBinderProvider() { }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder? GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
     }
     public partial class CancellationTokenModelBinder : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
     {
@@ -2816,12 +2818,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public partial class CancellationTokenModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider
     {
         public CancellationTokenModelBinderProvider() { }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder? GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
     }
     public partial class CollectionModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider
     {
         public CollectionModelBinderProvider() { }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder? GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
     }
     public partial class CollectionModelBinder<TElement> : Microsoft.AspNetCore.Mvc.ModelBinding.ICollectionModelBinder, Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
     {
@@ -2852,7 +2854,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public partial class ComplexTypeModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider
     {
         public ComplexTypeModelBinderProvider() { }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder? GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
     }
     public partial class DecimalModelBinder : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
     {
@@ -2862,7 +2864,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public partial class DictionaryModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider
     {
         public DictionaryModelBinderProvider() { }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder? GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
     }
     public partial class DictionaryModelBinder<TKey, TValue> : Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CollectionModelBinder<System.Collections.Generic.KeyValuePair<TKey, TValue>>
     {
@@ -2883,17 +2885,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public partial class EnumTypeModelBinder : Microsoft.AspNetCore.Mvc.ModelBinding.Binders.SimpleTypeModelBinder
     {
         public EnumTypeModelBinder(bool suppressBindingUndefinedValueToEnumType, System.Type modelType, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) : base (default(System.Type), default(Microsoft.Extensions.Logging.ILoggerFactory)) { }
-        protected override void CheckModel(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext bindingContext, Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult valueProviderResult, object model) { }
+        protected override void CheckModel(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext bindingContext, Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult valueProviderResult, object? model) { }
     }
     public partial class EnumTypeModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider
     {
         public EnumTypeModelBinderProvider(Microsoft.AspNetCore.Mvc.MvcOptions options) { }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder? GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
     }
     public partial class FloatingPointTypeModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider
     {
         public FloatingPointTypeModelBinderProvider() { }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder? GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
     }
     public partial class FloatModelBinder : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
     {
@@ -2909,7 +2911,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public partial class FormCollectionModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider
     {
         public FormCollectionModelBinderProvider() { }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder? GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
     }
     public partial class FormFileModelBinder : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
     {
@@ -2920,7 +2922,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public partial class FormFileModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider
     {
         public FormFileModelBinderProvider() { }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder? GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
     }
     public partial class HeaderModelBinder : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
     {
@@ -2932,12 +2934,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public partial class HeaderModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider
     {
         public HeaderModelBinderProvider() { }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder? GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
     }
     public partial class KeyValuePairModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider
     {
         public KeyValuePairModelBinderProvider() { }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder? GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
     }
     public partial class KeyValuePairModelBinder<TKey, TValue> : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
     {
@@ -2953,18 +2955,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public partial class ServicesModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider
     {
         public ServicesModelBinderProvider() { }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder? GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
     }
     public partial class SimpleTypeModelBinder : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
     {
         public SimpleTypeModelBinder(System.Type type, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         public System.Threading.Tasks.Task BindModelAsync(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext bindingContext) { throw null; }
-        protected virtual void CheckModel(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext bindingContext, Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult valueProviderResult, object model) { }
+        protected virtual void CheckModel(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext bindingContext, Microsoft.AspNetCore.Mvc.ModelBinding.ValueProviderResult valueProviderResult, object? model) { }
     }
     public partial class SimpleTypeModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider
     {
         public SimpleTypeModelBinderProvider() { }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder? GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
@@ -2972,14 +2974,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
     public partial class BindingMetadata
     {
         public BindingMetadata() { }
-        public string BinderModelName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public System.Type BinderType { get { throw null; } set { } }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource BindingSource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? BinderModelName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Type? BinderType { get { throw null; } set { } }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource? BindingSource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool IsBindingAllowed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool IsBindingRequired { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool? IsReadOnly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelBindingMessageProvider ModelBindingMessageProvider { get { throw null; } set { } }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.IPropertyFilterProvider PropertyFilterProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.IPropertyFilterProvider? PropertyFilterProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class BindingMetadataProviderContext
     {
@@ -3174,7 +3176,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public ValidationMetadata() { }
         public bool? HasValidators { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool? IsRequired { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        public Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IPropertyValidationFilter PropertyValidationFilter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IPropertyValidationFilter? PropertyValidationFilter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool? ValidateChildren { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Collections.Generic.IList<object> ValidatorMetadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
@@ -3214,7 +3216,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     }
     public partial interface IObjectModelValidator
     {
-        void Validate(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary validationState, string prefix, object model);
+        void Validate(Microsoft.AspNetCore.Mvc.ActionContext actionContext, Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationStateDictionary? validationState, string? prefix, object? model);
     }
     public static partial class ModelValidatorProviderExtensions
     {
@@ -3282,12 +3284,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     public abstract partial class HttpMethodAttribute : System.Attribute, Microsoft.AspNetCore.Mvc.Routing.IActionHttpMethodProvider, Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider
     {
         public HttpMethodAttribute(System.Collections.Generic.IEnumerable<string> httpMethods) { }
-        public HttpMethodAttribute(System.Collections.Generic.IEnumerable<string> httpMethods, string template) { }
+        public HttpMethodAttribute(System.Collections.Generic.IEnumerable<string> httpMethods, string? template) { }
         public System.Collections.Generic.IEnumerable<string> HttpMethods { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         int? Microsoft.AspNetCore.Mvc.Routing.IRouteTemplateProvider.Order { get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public int Order { get { throw null; } set { } }
-        public string Template { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string? Template { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial interface IActionHttpMethodProvider
     {
@@ -3295,9 +3297,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     }
     public partial interface IRouteTemplateProvider
     {
-        string Name { get; }
+        string? Name { get; }
         int? Order { get; }
-        string Template { get; }
+        string? Template { get; }
     }
     public partial interface IRouteValueProvider
     {
@@ -3311,7 +3313,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     public partial class KnownRouteValueConstraint : Microsoft.AspNetCore.Routing.IParameterPolicy, Microsoft.AspNetCore.Routing.IRouteConstraint
     {
         public KnownRouteValueConstraint(Microsoft.AspNetCore.Mvc.Infrastructure.IActionDescriptorCollectionProvider actionDescriptorCollectionProvider) { }
-        public bool Match(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.IRouter route, string routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection) { throw null; }
+        public bool Match(Microsoft.AspNetCore.Http.HttpContext? httpContext, Microsoft.AspNetCore.Routing.IRouter route, string routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection) { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=true, Inherited=true)]
     public abstract partial class RouteValueAttribute : System.Attribute, Microsoft.AspNetCore.Mvc.Routing.IRouteValueProvider
@@ -3325,24 +3327,24 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         public UrlHelper(Microsoft.AspNetCore.Mvc.ActionContext actionContext) : base (default(Microsoft.AspNetCore.Mvc.ActionContext)) { }
         protected Microsoft.AspNetCore.Http.HttpContext HttpContext { get { throw null; } }
         protected Microsoft.AspNetCore.Routing.IRouter Router { get { throw null; } }
-        public override string Action(Microsoft.AspNetCore.Mvc.Routing.UrlActionContext actionContext) { throw null; }
-        protected virtual string GenerateUrl(string protocol, string host, Microsoft.AspNetCore.Routing.VirtualPathData pathData, string fragment) { throw null; }
-        protected virtual Microsoft.AspNetCore.Routing.VirtualPathData GetVirtualPathData(string routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary values) { throw null; }
-        public override string RouteUrl(Microsoft.AspNetCore.Mvc.Routing.UrlRouteContext routeContext) { throw null; }
+        public override string? Action(Microsoft.AspNetCore.Mvc.Routing.UrlActionContext actionContext) { throw null; }
+        protected virtual string? GenerateUrl(string? protocol, string? host, Microsoft.AspNetCore.Routing.VirtualPathData? pathData, string? fragment) { throw null; }
+        protected virtual Microsoft.AspNetCore.Routing.VirtualPathData? GetVirtualPathData(string? routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary values) { throw null; }
+        public override string? RouteUrl(Microsoft.AspNetCore.Mvc.Routing.UrlRouteContext routeContext) { throw null; }
     }
     public abstract partial class UrlHelperBase : Microsoft.AspNetCore.Mvc.IUrlHelper
     {
         protected UrlHelperBase(Microsoft.AspNetCore.Mvc.ActionContext actionContext) { }
         public Microsoft.AspNetCore.Mvc.ActionContext ActionContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected Microsoft.AspNetCore.Routing.RouteValueDictionary AmbientValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public abstract string Action(Microsoft.AspNetCore.Mvc.Routing.UrlActionContext actionContext);
-        public virtual string Content(string contentPath) { throw null; }
-        protected string GenerateUrl(string protocol, string host, string path) { throw null; }
-        protected string GenerateUrl(string protocol, string host, string virtualPath, string fragment) { throw null; }
-        protected Microsoft.AspNetCore.Routing.RouteValueDictionary GetValuesDictionary(object values) { throw null; }
+        public abstract string? Action(Microsoft.AspNetCore.Mvc.Routing.UrlActionContext actionContext);
+        public virtual string? Content(string contentPath) { throw null; }
+        protected string? GenerateUrl(string protocol, string host, string path) { throw null; }
+        protected string? GenerateUrl(string? protocol, string? host, string? virtualPath, string? fragment) { throw null; }
+        protected Microsoft.AspNetCore.Routing.RouteValueDictionary GetValuesDictionary(object? values) { throw null; }
         public virtual bool IsLocalUrl(string url) { throw null; }
-        public virtual string Link(string routeName, object values) { throw null; }
-        public abstract string RouteUrl(Microsoft.AspNetCore.Mvc.Routing.UrlRouteContext routeContext);
+        public virtual string? Link(string? routeName, object? values) { throw null; }
+        public abstract string? RouteUrl(Microsoft.AspNetCore.Mvc.Routing.UrlRouteContext routeContext);
     }
     public partial class UrlHelperFactory : Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory
     {
@@ -3360,17 +3362,17 @@ namespace Microsoft.AspNetCore.Routing
 {
     public static partial class ControllerLinkGeneratorExtensions
     {
-        public static string GetPathByAction(this Microsoft.AspNetCore.Routing.LinkGenerator generator, Microsoft.AspNetCore.Http.HttpContext httpContext, string action = null, string controller = null, object values = null, Microsoft.AspNetCore.Http.PathString? pathBase = default(Microsoft.AspNetCore.Http.PathString?), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) { throw null; }
-        public static string GetPathByAction(this Microsoft.AspNetCore.Routing.LinkGenerator generator, string action, string controller, object values = null, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) { throw null; }
-        public static string GetUriByAction(this Microsoft.AspNetCore.Routing.LinkGenerator generator, Microsoft.AspNetCore.Http.HttpContext httpContext, string action = null, string controller = null, object values = null, string scheme = null, Microsoft.AspNetCore.Http.HostString? host = default(Microsoft.AspNetCore.Http.HostString?), Microsoft.AspNetCore.Http.PathString? pathBase = default(Microsoft.AspNetCore.Http.PathString?), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) { throw null; }
-        public static string GetUriByAction(this Microsoft.AspNetCore.Routing.LinkGenerator generator, string action, string controller, object values, string scheme, Microsoft.AspNetCore.Http.HostString host, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) { throw null; }
+        public static string? GetPathByAction(this Microsoft.AspNetCore.Routing.LinkGenerator generator, Microsoft.AspNetCore.Http.HttpContext httpContext, string? action = null, string? controller = null, object? values = null, Microsoft.AspNetCore.Http.PathString? pathBase = default(Microsoft.AspNetCore.Http.PathString?), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) { throw null; }
+        public static string? GetPathByAction(this Microsoft.AspNetCore.Routing.LinkGenerator generator, string action, string controller, object? values = null, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) { throw null; }
+        public static string? GetUriByAction(this Microsoft.AspNetCore.Routing.LinkGenerator generator, Microsoft.AspNetCore.Http.HttpContext httpContext, string? action = null, string? controller = null, object? values = null, string? scheme = null, Microsoft.AspNetCore.Http.HostString? host = default(Microsoft.AspNetCore.Http.HostString?), Microsoft.AspNetCore.Http.PathString? pathBase = default(Microsoft.AspNetCore.Http.PathString?), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) { throw null; }
+        public static string? GetUriByAction(this Microsoft.AspNetCore.Routing.LinkGenerator generator, string action, string controller, object values, string scheme, Microsoft.AspNetCore.Http.HostString host, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) { throw null; }
     }
     public static partial class PageLinkGeneratorExtensions
     {
-        public static string GetPathByPage(this Microsoft.AspNetCore.Routing.LinkGenerator generator, Microsoft.AspNetCore.Http.HttpContext httpContext, string page = null, string handler = null, object values = null, Microsoft.AspNetCore.Http.PathString? pathBase = default(Microsoft.AspNetCore.Http.PathString?), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) { throw null; }
-        public static string GetPathByPage(this Microsoft.AspNetCore.Routing.LinkGenerator generator, string page, string handler = null, object values = null, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) { throw null; }
-        public static string GetUriByPage(this Microsoft.AspNetCore.Routing.LinkGenerator generator, Microsoft.AspNetCore.Http.HttpContext httpContext, string page = null, string handler = null, object values = null, string scheme = null, Microsoft.AspNetCore.Http.HostString? host = default(Microsoft.AspNetCore.Http.HostString?), Microsoft.AspNetCore.Http.PathString? pathBase = default(Microsoft.AspNetCore.Http.PathString?), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) { throw null; }
-        public static string GetUriByPage(this Microsoft.AspNetCore.Routing.LinkGenerator generator, string page, string handler, object values, string scheme, Microsoft.AspNetCore.Http.HostString host, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) { throw null; }
+        public static string? GetPathByPage(this Microsoft.AspNetCore.Routing.LinkGenerator generator, Microsoft.AspNetCore.Http.HttpContext httpContext, string? page = null, string? handler = null, object? values = null, Microsoft.AspNetCore.Http.PathString? pathBase = default(Microsoft.AspNetCore.Http.PathString?), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) { throw null; }
+        public static string? GetPathByPage(this Microsoft.AspNetCore.Routing.LinkGenerator generator, string page, string? handler = null, object? values = null, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) { throw null; }
+        public static string? GetUriByPage(this Microsoft.AspNetCore.Routing.LinkGenerator generator, Microsoft.AspNetCore.Http.HttpContext httpContext, string? page = null, string? handler = null, object? values = null, string? scheme = null, Microsoft.AspNetCore.Http.HostString? host = default(Microsoft.AspNetCore.Http.HostString?), Microsoft.AspNetCore.Http.PathString? pathBase = default(Microsoft.AspNetCore.Http.PathString?), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) { throw null; }
+        public static string? GetUriByPage(this Microsoft.AspNetCore.Routing.LinkGenerator generator, string page, string handler, object values, string scheme, Microsoft.AspNetCore.Http.HostString host, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions? options = null) { throw null; }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection
@@ -3412,7 +3414,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder AddAuthorization(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder builder, System.Action<Microsoft.AspNetCore.Authorization.AuthorizationOptions> setupAction) { throw null; }
         public static Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder AddControllersAsServices(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder builder) { throw null; }
         public static Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder AddFormatterMappings(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder builder) { throw null; }
-        public static Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder AddFormatterMappings(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder builder, System.Action<Microsoft.AspNetCore.Mvc.Formatters.FormatterMappings> setupAction) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder AddFormatterMappings(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder builder, System.Action<Microsoft.AspNetCore.Mvc.Formatters.FormatterMappings>? setupAction) { throw null; }
         public static Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder AddJsonOptions(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder builder, System.Action<Microsoft.AspNetCore.Mvc.JsonOptions> configure) { throw null; }
         public static Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder AddMvcOptions(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder builder, System.Action<Microsoft.AspNetCore.Mvc.MvcOptions> setupAction) { throw null; }
         public static Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder ConfigureApiBehaviorOptions(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder builder, System.Action<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions> setupAction) { throw null; }

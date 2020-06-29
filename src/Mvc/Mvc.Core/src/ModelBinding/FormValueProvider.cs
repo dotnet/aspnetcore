@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public class FormValueProvider : BindingSourceValueProvider, IEnumerableValueProvider
     {
         private readonly IFormCollection _values;
-        private PrefixContainer _prefixContainer;
+        private PrefixContainer? _prefixContainer;
 
         /// <summary>
         /// Creates a value provider for <see cref="IFormCollection"/>.

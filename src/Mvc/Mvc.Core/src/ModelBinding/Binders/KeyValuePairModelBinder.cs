@@ -66,8 +66,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             if (keyResult.IsModelSet && valueResult.IsModelSet)
             {
                 var model = new KeyValuePair<TKey, TValue>(
-                    ModelBindingHelper.CastOrDefault<TKey>(keyResult.Model),
-                    ModelBindingHelper.CastOrDefault<TValue>(valueResult.Model));
+                    ModelBindingHelper.CastOrDefault<TKey>(keyResult.Model!),
+                    ModelBindingHelper.CastOrDefault<TValue>(valueResult.Model!));
 
                 bindingContext.Result = ModelBindingResult.Success(model);
                 _logger.DoneAttemptingToBindModel(bindingContext);
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var propertyModelMetadata = bindingContext.ModelMetadata.Properties[propertyName];
 
             using (bindingContext.EnterNestedScope(
-                modelMetadata: propertyModelMetadata,
+                modelMetadata: propertyModelMetadata!,
                 fieldName: propertyName,
                 modelName: propertyModelName,
                 model: null))

@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             _returnHttpNotAcceptable = options.Value.ReturnHttpNotAcceptable;
         }
 
-        public override IOutputFormatter SelectFormatter(OutputFormatterCanWriteContext context, IList<IOutputFormatter> formatters, MediaTypeCollection contentTypes)
+        public override IOutputFormatter? SelectFormatter(OutputFormatterCanWriteContext context, IList<IOutputFormatter> formatters, MediaTypeCollection contentTypes)
         {
             if (context == null)
             {
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var acceptableMediaTypes = GetAcceptableMediaTypes(request);
             var selectFormatterWithoutRegardingAcceptHeader = false;
 
-            IOutputFormatter selectedFormatter = null;
+            IOutputFormatter? selectedFormatter = null;
             if (acceptableMediaTypes.Count == 0)
             {
                 // There is either no Accept header value, or it contained */* and we
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return result;
         }
 
-        private IOutputFormatter SelectFormatterNotUsingContentType(
+        private IOutputFormatter? SelectFormatterNotUsingContentType(
             OutputFormatterCanWriteContext formatterContext,
             IList<IOutputFormatter> formatters)
         {
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return null;
         }
 
-        private IOutputFormatter SelectFormatterUsingSortedAcceptHeaders(
+        private IOutputFormatter? SelectFormatterUsingSortedAcceptHeaders(
             OutputFormatterCanWriteContext formatterContext,
             IList<IOutputFormatter> formatters,
             IList<MediaTypeSegmentWithQuality> sortedAcceptHeaders)
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return null;
         }
 
-        private IOutputFormatter SelectFormatterUsingAnyAcceptableContentType(
+        private IOutputFormatter? SelectFormatterUsingAnyAcceptableContentType(
             OutputFormatterCanWriteContext formatterContext,
             IList<IOutputFormatter> formatters,
             MediaTypeCollection acceptableContentTypes)
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return null;
         }
 
-        private IOutputFormatter SelectFormatterUsingSortedAcceptHeadersAndContentTypes(
+        private IOutputFormatter? SelectFormatterUsingSortedAcceptHeadersAndContentTypes(
             OutputFormatterCanWriteContext formatterContext,
             IList<IOutputFormatter> formatters,
             IList<MediaTypeSegmentWithQuality> sortedAcceptableContentTypes,

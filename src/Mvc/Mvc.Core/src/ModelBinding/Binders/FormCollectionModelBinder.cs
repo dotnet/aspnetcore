@@ -94,11 +94,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private class EmptyFormFileCollection : List<IFormFile>, IFormFileCollection
         {
-            public IFormFile this[string name] => null;
+            public IFormFile? this[string name] => null;
 
-            public IFormFile GetFile(string name) => null;
+            public IFormFile? GetFile(string name) => null;
 
-            IReadOnlyList<IFormFile> IFormFileCollection.GetFiles(string name) => null;
+            IReadOnlyList<IFormFile> IFormFileCollection.GetFiles(string name) => Array.Empty<IFormFile>();
         }
     }
 }

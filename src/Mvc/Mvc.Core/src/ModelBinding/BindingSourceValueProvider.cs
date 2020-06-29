@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract ValueProviderResult GetValue(string key);
 
         /// <inheritdoc />
-        public virtual IValueProvider Filter(BindingSource bindingSource)
+        public virtual IValueProvider? Filter(BindingSource bindingSource)
         {
             if (bindingSource == null)
             {

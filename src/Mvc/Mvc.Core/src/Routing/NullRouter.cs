@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         {
         }
 
-        public VirtualPathData GetVirtualPath(VirtualPathContext context)
+        public VirtualPathData? GetVirtualPath(VirtualPathContext context)
         {
             return null;
         }

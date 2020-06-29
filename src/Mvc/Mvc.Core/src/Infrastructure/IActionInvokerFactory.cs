@@ -23,6 +23,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// The <see cref="ActionContext"/> associated with the current request.
         /// </param>
         /// <returns>An <see cref="IActionInvoker"/> or <c>null</c>.</returns>
-        IActionInvoker CreateInvoker(ActionContext actionContext);
+        IActionInvoker? CreateInvoker(ActionContext actionContext);
     }
 }

@@ -38,14 +38,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fileStream">The stream with the file.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
         public FileStreamResult(Stream fileStream, MediaTypeHeaderValue contentType)
-            : base(contentType?.ToString())
+            : base(contentType?.ToString()!)
         {
             if (fileStream == null)
             {
                 throw new ArgumentNullException(nameof(fileStream));
             }
 
-            FileStream = fileStream;
+            _fileStream = fileStream;
         }
 
         /// <summary>

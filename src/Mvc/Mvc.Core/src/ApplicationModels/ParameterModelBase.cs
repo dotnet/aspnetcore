@@ -45,8 +45,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         public Type ParameterType { get; }
 
-        public string Name { get; protected set;  }
+        public string Name { get; protected set; } = default!;
 
-        public BindingInfo BindingInfo { get; set; }
+        public BindingInfo? BindingInfo { get; set; }
     }
 }

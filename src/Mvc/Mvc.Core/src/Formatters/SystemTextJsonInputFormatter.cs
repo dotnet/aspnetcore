@@ -68,14 +68,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var httpContext = context.HttpContext;
             var (inputStream, usesTranscodingStream) = GetInputStream(httpContext, encoding);
 
-            object model;
+            object? model;
             try
             {
                 model = await JsonSerializer.DeserializeAsync(inputStream, context.ModelType, SerializerOptions);
             }
             catch (JsonException jsonException)
             {
-                var path = jsonException.Path;
+                var path = jsonException.Path ?? string.Empty;
 
                 var formatterException = new InputFormatterException(jsonException.Message, jsonException);
 
@@ -131,8 +131,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, Exception> _jsonInputFormatterException;
-            private static readonly Action<ILogger, string, Exception> _jsonInputSuccess;
+            private static readonly Action<ILogger, string, Exception?> _jsonInputFormatterException;
+            private static readonly Action<ILogger, string, Exception?> _jsonInputSuccess;
 
             static Log()
             {
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 => _jsonInputFormatterException(logger, exception.Message, exception);
 
             public static void JsonInputSuccess(ILogger logger, Type modelType)
-                => _jsonInputSuccess(logger, modelType.FullName, null);
+                => _jsonInputSuccess(logger, modelType.FullName!, null);
         }
     }
 }

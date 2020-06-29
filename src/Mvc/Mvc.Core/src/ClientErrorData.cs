@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// By default, this maps to <see cref="ProblemDetails.Type"/>.
         /// </remarks>
-        public string Link { get; set; }
+        public string Link { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the summary of the client error.
@@ -24,6 +24,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// By default, this maps to <see cref="ProblemDetails.Title"/> and should not change
         /// between multiple occurrences of the same error.
         /// </remarks>
-        public string Title { get; set; }
+        public string Title { get; set; } = default!;
     }
 }

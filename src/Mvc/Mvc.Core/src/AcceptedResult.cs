@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="location">The location at which the status of requested content can be monitored.</param>
         /// <param name="value">The value to format in the entity body.</param>
-        public AcceptedResult(string location, [ActionResultObjectValue] object value)
+        public AcceptedResult(string? location, [ActionResultObjectValue] object? value)
             : base(value)
         {
             Location = location;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="locationUri">The location at which the status of requested content can be monitored
         /// It is an optional parameter and may be null</param>
         /// <param name="value">The value to format in the entity body.</param>
-        public AcceptedResult(Uri locationUri, [ActionResultObjectValue] object value)
+        public AcceptedResult(Uri locationUri, [ActionResultObjectValue] object? value)
             : base(value)
         {
             if (locationUri == null)
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the location at which the status of the requested content can be monitored.
         /// </summary>
-        public string Location { get; set; }
+        public string? Location { get; set; }
 
         /// <inheritdoc />
         public override void OnFormatting(ActionContext context)

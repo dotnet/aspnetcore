@@ -11,15 +11,15 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private static readonly AsyncLocal<ActionContext> _storage = new AsyncLocal<ActionContext>();
 
-        public ActionContext ActionContext
+        public ActionContext? ActionContext
         {
             get { return _storage.Value; }
-            set { _storage.Value = value; }
+            set { _storage.Value = value!; }
         }
 
         private class NullActionContextAccessor : IActionContextAccessor
         {
-            public ActionContext ActionContext
+            public ActionContext? ActionContext
             {
                 get => null;
                 set { }

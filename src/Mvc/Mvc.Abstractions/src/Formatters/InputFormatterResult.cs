@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             HasError = hasError;
         }
 
-        private InputFormatterResult(object model)
+        private InputFormatterResult(object? model)
         {
             Model = model;
             IsModelSet = true;
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// An <see cref="InputFormatterResult"/> indicating the <see cref="IInputFormatter.ReadAsync"/>
         /// operation succeeded i.e. with <see cref="HasError"/> <c>false</c>.
         /// </returns>
-        public static InputFormatterResult Success(object model)
+        public static InputFormatterResult Success(object? model)
         {
             return new InputFormatterResult(model);
         }
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// A <see cref="Task"/> that on completion provides an <see cref="InputFormatterResult"/> indicating the
         /// <see cref="IInputFormatter.ReadAsync"/> operation succeeded i.e. with <see cref="HasError"/> <c>false</c>.
         /// </returns>
-        public static Task<InputFormatterResult> SuccessAsync(object model)
+        public static Task<InputFormatterResult> SuccessAsync(object? model)
         {
             return Task.FromResult(Success(model));
         }

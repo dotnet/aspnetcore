@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         internal static readonly NumberStyles SupportedStyles = NumberStyles.Float | NumberStyles.AllowThousands;
 
         /// <inheritdoc />
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
             {

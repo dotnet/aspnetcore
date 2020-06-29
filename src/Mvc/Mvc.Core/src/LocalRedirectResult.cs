@@ -3,13 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -58,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             Permanent = permanent;
             PreserveMethod = preserveMethod;
-            Url = localUrl;
+            _localUrl = localUrl;
         }
 
         /// <summary>
@@ -91,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the <see cref="IUrlHelper"/> for this result.
         /// </summary>
-        public IUrlHelper UrlHelper { get; set; }
+        public IUrlHelper? UrlHelper { get; set; }
 
         /// <inheritdoc />
         public override Task ExecuteResultAsync(ActionContext context)

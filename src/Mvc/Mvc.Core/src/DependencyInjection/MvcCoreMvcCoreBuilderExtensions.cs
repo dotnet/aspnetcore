@@ -87,7 +87,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="IMvcBuilder"/>.</returns>
         public static IMvcCoreBuilder AddFormatterMappings(
             this IMvcCoreBuilder builder,
-            Action<FormatterMappings> setupAction)
+            Action<FormatterMappings>? setupAction)
         {
             AddFormatterMappingsServices(builder.Services);
 

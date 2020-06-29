@@ -37,14 +37,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fileContents">The bytes that represent the file contents.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
         public FileContentResult(byte[] fileContents, MediaTypeHeaderValue contentType)
-            : base(contentType?.ToString())
+            : base(contentType?.ToString()!)
         {
             if (fileContents == null)
             {
                 throw new ArgumentNullException(nameof(fileContents));
             }
 
-            FileContents = fileContents;
+            _fileContents = fileContents;
         }
 
         /// <summary>

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// The <see cref="Type"/> for which the supported content types are desired.
         /// </param>
         /// <returns>Content types which are supported by the <see cref="Formatters.IInputFormatter"/>.</returns>
-        IReadOnlyList<string> GetSupportedContentTypes(
+        IReadOnlyList<string>? GetSupportedContentTypes(
             string contentType,
             Type objectType);
     }

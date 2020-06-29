@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         /// </summary>
         /// <typeparam name="TFeature">The type of the feature.</typeparam>
         /// <param name="feature">The feature instance to populate.</param>
-        public void PopulateFeature<TFeature>(TFeature feature)
+        public void PopulateFeature<TFeature>(TFeature feature) where TFeature : notnull
         {
             if (feature == null)
             {

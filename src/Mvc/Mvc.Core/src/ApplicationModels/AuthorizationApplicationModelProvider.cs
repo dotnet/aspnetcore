@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             if (policyProvider.GetType() == typeof(DefaultAuthorizationPolicyProvider))
             {
                 var policy = AuthorizationPolicy.CombineAsync(policyProvider, authData).GetAwaiter().GetResult();
-                return new AuthorizeFilter(policy);
+                return new AuthorizeFilter(policy!);
             }
             else
             {

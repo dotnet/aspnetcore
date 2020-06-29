@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
     /// A provider for a given <typeparamref name="TFeature"/> feature.
     /// </summary>
     /// <typeparam name="TFeature">The type of the feature.</typeparam>
-    public interface IApplicationFeatureProvider<TFeature> : IApplicationFeatureProvider
+    public interface IApplicationFeatureProvider<TFeature> : IApplicationFeatureProvider where TFeature : notnull
     {
         /// <summary>
         /// Updates the <paramref name="feature"/> instance.

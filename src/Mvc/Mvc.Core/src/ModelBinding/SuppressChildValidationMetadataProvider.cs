@@ -51,12 +51,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the <see cref="Type"/> for which to suppress validation of children.
         /// </summary>
-        public Type Type { get; }
+        public Type? Type { get; }
 
         /// <summary>
         /// Gets the full name of a type for which to suppress validation of children.
         /// </summary>
-        public string FullTypeName { get; }
+        public string? FullTypeName { get; }
 
         /// <inheritdoc />
         public void CreateValidationMetadata(ValidationMetadataProviderContext context)
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Debug.Fail("We shouldn't get here.");
         }
 
-        private bool IsMatchingName(Type type)
+        private bool IsMatchingName(Type? type)
         {
             Debug.Assert(FullTypeName != null);
 

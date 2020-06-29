@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </summary>
         /// <param name="modelType">The type of the value.</param>
         /// <returns>The default value for the <paramref name="modelType"/> type.</returns>
-        protected virtual object GetDefaultValueForType(Type modelType)
+        protected virtual object? GetDefaultValueForType(Type modelType)
         {
             if (modelType == null)
             {
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public abstract Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context);
 
         /// <inheritdoc />
-        public virtual IReadOnlyList<string> GetSupportedContentTypes(string contentType, Type objectType)
+        public virtual IReadOnlyList<string>? GetSupportedContentTypes(string contentType, Type objectType)
         {
             if (SupportedMediaTypes.Count == 0)
             {
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             else
             {
                 var parsedContentType = new MediaType(contentType);
-                List<string> mediaTypes = null;
+                List<string>? mediaTypes = null;
 
                 // Confirm this formatter supports a more specific media type than requested e.g. OK if "text/*"
                 // requested and formatter supports "text/plain". Treat contentType like it came from an Content-Type header.

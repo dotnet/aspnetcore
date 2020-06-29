@@ -5,6 +5,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     public interface IActionContextAccessor
     {
-        ActionContext ActionContext { get; set; }
+        ActionContext? ActionContext { get; set; }
     }
 }

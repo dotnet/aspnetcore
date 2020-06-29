@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(request);
 
             // Assert
-            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.Redirect);
             Assert.Equal("http://example.com/antiforgery-redirect", response.Headers.Location.AbsoluteUri);
         }
     }

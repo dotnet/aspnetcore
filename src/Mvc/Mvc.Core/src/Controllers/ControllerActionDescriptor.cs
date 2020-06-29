@@ -13,15 +13,15 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
     [DebuggerDisplay("{DisplayName}")]
     public class ControllerActionDescriptor : ActionDescriptor
     {
-        public string ControllerName { get; set; }
+        public string ControllerName { get; set; } = default!;
 
-        public virtual string ActionName { get; set; }
+        public virtual string ActionName { get; set; } = default!;
 
-        public MethodInfo MethodInfo { get; set; }
+        public MethodInfo MethodInfo { get; set; } = default!;
 
-        public TypeInfo ControllerTypeInfo { get; set; }
+        public TypeInfo ControllerTypeInfo { get; set; } = default!;
 
-        public override string DisplayName
+        public override string? DisplayName
         {
             get
             {

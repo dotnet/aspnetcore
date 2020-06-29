@@ -28,8 +28,8 @@ namespace Microsoft.AspNetCore.Mvc
         Inherited = true)]
     public class ModelBinderAttribute : Attribute, IModelNameProvider, IBinderTypeProviderMetadata
     {
-        private BindingSource _bindingSource;
-        private Type _binderType;
+        private BindingSource? _bindingSource;
+        private Type? _binderType;
 
         /// <summary>
         /// Initializes a new instance of <see cref="ModelBinderAttribute"/>.
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Subclass this attribute and set <see cref="BindingSource"/> if <see cref="BindingSource.Custom"/> is not
         /// correct for the specified (non-<see langword="null"/>) <see cref="IModelBinder"/> implementation.
         /// </remarks>
-        public Type BinderType
+        public Type? BinderType
         {
             get => _binderType;
             set
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// If <see cref="BinderType"/> is <see langword="null"/>, defaults to <see langword="null"/>. Otherwise,
         /// defaults to <see cref="BindingSource.Custom"/>. May be overridden in a subclass.
         /// </value>
-        public virtual BindingSource BindingSource
+        public virtual BindingSource? BindingSource
         {
             get
             {
@@ -102,6 +102,6 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <inheritdoc />
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

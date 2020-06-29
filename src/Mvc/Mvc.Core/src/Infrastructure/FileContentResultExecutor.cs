@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return WriteFileAsync(context, result, range, rangeLength);
         }
 
-        protected virtual Task WriteFileAsync(ActionContext context, FileContentResult result, RangeItemHeaderValue range, long rangeLength)
+        protected virtual Task WriteFileAsync(ActionContext context, FileContentResult result, RangeItemHeaderValue? range, long rangeLength)
         {
             if (context == null)
             {

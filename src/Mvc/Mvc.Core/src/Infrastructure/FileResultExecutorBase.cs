@@ -36,13 +36,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         protected ILogger Logger { get; }
 
-        protected virtual (RangeItemHeaderValue range, long rangeLength, bool serveBody) SetHeadersAndLog(
+        protected virtual (RangeItemHeaderValue? range, long rangeLength, bool serveBody) SetHeadersAndLog(
             ActionContext context,
             FileResult result,
             long? fileLength,
             bool enableRangeProcessing,
             DateTimeOffset? lastModified = null,
-            EntityTagHeaderValue etag = null)
+            EntityTagHeaderValue? etag = null)
         {
             if (context == null)
             {
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private static void SetLastModifiedAndEtagHeaders(HttpResponse response, DateTimeOffset? lastModified, EntityTagHeaderValue etag)
+        private static void SetLastModifiedAndEtagHeaders(HttpResponse response, DateTimeOffset? lastModified, EntityTagHeaderValue? etag)
         {
             var httpResponseHeaders = response.GetTypedHeaders();
             if (lastModified.HasValue)
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         internal bool IfRangeValid(
             RequestHeaders httpRequestHeaders,
             DateTimeOffset? lastModified = null,
-            EntityTagHeaderValue etag = null)
+            EntityTagHeaderValue? etag = null)
         {
             // 14.27 If-Range
             var ifRange = httpRequestHeaders.IfRange;
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         internal PreconditionState GetPreconditionState(
             RequestHeaders httpRequestHeaders,
             DateTimeOffset? lastModified = null,
-            EntityTagHeaderValue etag = null)
+            EntityTagHeaderValue? etag = null)
         {
             var ifMatchState = PreconditionState.Unspecified;
             var ifNoneMatchState = PreconditionState.Unspecified;
@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return max;
         }
 
-        private (RangeItemHeaderValue range, long rangeLength, bool serveBody) SetRangeHeaders(
+        private (RangeItemHeaderValue? range, long rangeLength, bool serveBody) SetRangeHeaders(
             ActionContext context,
             RequestHeaders httpRequestHeaders,
             long fileLength)
@@ -329,8 +329,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             response.StatusCode = StatusCodes.Status206PartialContent;
             httpResponseHeaders.ContentRange = new ContentRangeHeaderValue(
-                range.From.Value,
-                range.To.Value,
+                range.From!.Value,
+                range.To!.Value,
                 fileLength);
 
             // Overwrite the Content-Length header for valid range requests with the range length.
@@ -341,8 +341,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private static long SetContentLength(HttpResponse response, RangeItemHeaderValue range)
         {
-            var start = range.From.Value;
-            var end = range.To.Value;
+            var start = range.From!.Value;
+            var end = range.To!.Value;
             var length = end - start + 1;
             response.ContentLength = length;
             return length;
@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return factory.CreateLogger<T>();
         }
 
-        protected static async Task WriteFileAsync(HttpContext context, Stream fileStream, RangeItemHeaderValue range, long rangeLength)
+        protected static async Task WriteFileAsync(HttpContext context, Stream fileStream, RangeItemHeaderValue? range, long rangeLength)
         {
             var outputStream = context.Response.Body;
             using (fileStream)
@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     }
                     else
                     {
-                        fileStream.Seek(range.From.Value, SeekOrigin.Begin);
+                        fileStream.Seek(range.From!.Value, SeekOrigin.Begin);
                         await StreamCopyOperation.CopyToAsync(fileStream, outputStream, rangeLength, BufferSize, context.RequestAborted);
                     }
                 }

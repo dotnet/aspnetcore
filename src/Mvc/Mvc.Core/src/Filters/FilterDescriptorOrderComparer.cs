@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Microsoft.AspNetCore.Mvc.Filters
 {
@@ -11,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
     {
         public static FilterDescriptorOrderComparer Comparer { get; } = new FilterDescriptorOrderComparer();
 
-        public int Compare(FilterDescriptor x, FilterDescriptor y)
+        public int Compare(FilterDescriptor? x, FilterDescriptor? y)
         {
             if (x == null)
             {

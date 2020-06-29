@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// The <c>ApiDescription.GroupName</c> of <c>ApiDescription</c> objects for the associated
         /// action.
         /// </summary>
-        public string GroupName { get; set; }
+        public string? GroupName { get; set; }
     }
 }

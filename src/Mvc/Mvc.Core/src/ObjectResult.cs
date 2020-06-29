@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc
     {
         private MediaTypeCollection _contentTypes;
 
-        public ObjectResult(object value)
+        public ObjectResult(object? value)
         {
             Value = value;
             Formatters = new FormatterCollection<IOutputFormatter>();
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [ActionResultObjectValue]
-        public object Value { get; set; }
+        public object? Value { get; set; }
 
         public FormatterCollection<IOutputFormatter> Formatters { get; set; }
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc
             set => _contentTypes = value ?? throw new ArgumentNullException(nameof(value));
         }
 
-        public Type DeclaredType { get; set; }
+        public Type? DeclaredType { get; set; }
 
         /// <summary>
         /// Gets or sets the HTTP status code.

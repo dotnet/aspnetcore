@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
                     typeof(ApplicationPartFactory)));
             }
 
-            return (ApplicationPartFactory)Activator.CreateInstance(type);
+            return (ApplicationPartFactory)Activator.CreateInstance(type)!;
         }
     }
 }

@@ -11,6 +11,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <summary>
         /// The group name for the <c>ApiDescription</c> of the associated action or controller.
         /// </summary>
-        string GroupName { get; }
+        string? GroupName { get; }
     }
 }

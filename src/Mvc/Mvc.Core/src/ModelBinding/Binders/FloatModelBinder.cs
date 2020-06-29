@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 var value = valueProviderResult.FirstValue;
                 var culture = valueProviderResult.Culture;
 
-                object model;
+                object? model;
                 if (string.IsNullOrWhiteSpace(value))
                 {
                     // Parse() method trims the value (with common NumberStyles) then throws if the result is empty.

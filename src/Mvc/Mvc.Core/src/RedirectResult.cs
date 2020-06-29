@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             Permanent = permanent;
             PreserveMethod = preserveMethod;
-            Url = url;
+            _url = url;
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the <see cref="IUrlHelper"/> for this result.
         /// </summary>
-        public IUrlHelper UrlHelper { get; set; }
+        public IUrlHelper? UrlHelper { get; set; }
 
         /// <inheritdoc />
         public override Task ExecuteResultAsync(ActionContext context)

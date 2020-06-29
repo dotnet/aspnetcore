@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class DictionaryModelBinderProvider : IModelBinderProvider
     {
         /// <inheritdoc />
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
             {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     valueBinder,
                     loggerFactory,
                     true /* allowValidatingTopLevelNodes */,
-                    mvcOptions);
+                    mvcOptions)!;
             }
 
             return null;

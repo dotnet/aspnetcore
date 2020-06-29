@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             IModelValidatorProvider validatorProvider,
             ValidatorCache validatorCache,
             IModelMetadataProvider metadataProvider,
-            ValidationStateDictionary validationState)
+            ValidationStateDictionary? validationState)
         {
             var visitor = new ValidationVisitor(
                 actionContext,

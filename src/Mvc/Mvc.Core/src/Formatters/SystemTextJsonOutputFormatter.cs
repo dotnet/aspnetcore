@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 // selectedEncoding
                 var transcodingStream = Encoding.CreateTranscodingStream(httpContext.Response.Body, selectedEncoding, Encoding.UTF8, leaveOpen: true);
 
-                ExceptionDispatchInfo exceptionDispatchInfo = null;
+                ExceptionDispatchInfo? exceptionDispatchInfo = null;
                 try
                 {
                     await JsonSerializer.SerializeAsync(transcodingStream, context.Object, objectType, SerializerOptions);

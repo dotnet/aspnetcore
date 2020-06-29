@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
@@ -41,16 +42,18 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             Result = result ?? throw new ArgumentNullException(nameof(result));
+            Value = default!;
         }
 
         /// <summary>
         /// Gets the <see cref="ActionResult"/>.
         /// </summary>
-        public ActionResult Result { get; }
+        public ActionResult? Result { get; }
 
         /// <summary>
         /// Gets the value.
         /// </summary>
+        [MaybeNull]
         public TValue Value { get; }
 
         /// <summary>

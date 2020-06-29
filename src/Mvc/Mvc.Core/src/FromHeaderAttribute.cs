@@ -16,6 +16,6 @@ namespace Microsoft.AspNetCore.Mvc
         public BindingSource BindingSource => BindingSource.Header;
 
         /// <inheritdoc />
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

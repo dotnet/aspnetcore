@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public abstract class FileResult : ActionResult
     {
-        private string _fileDownloadName;
+        private string? _fileDownloadName;
 
         /// <summary>
         /// Creates a new <see cref="FileResult"/> instance with
@@ -37,6 +38,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets the file name that will be used in the Content-Disposition header of the response.
         /// </summary>
+        [AllowNull]
         public string FileDownloadName
         {
             get { return _fileDownloadName ?? string.Empty; }
@@ -51,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the etag associated with the <see cref="FileResult"/>.
         /// </summary>
-        public EntityTagHeaderValue EntityTag { get; set; }
+        public EntityTagHeaderValue? EntityTag { get; set; }
 
         /// <summary>
         /// Gets or sets the value that enables range processing for the <see cref="FileResult"/>.

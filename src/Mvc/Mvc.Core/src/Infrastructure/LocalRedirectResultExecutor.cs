@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 throw new InvalidOperationException(Resources.UrlNotLocal);
             }
 
-            var destinationUrl = urlHelper.Content(result.Url);
+            var destinationUrl = urlHelper.Content(result.Url)!;
             _logger.LocalRedirectResultExecuting(destinationUrl);
 
             if (result.PreserveMethod)

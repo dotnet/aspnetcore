@@ -44,9 +44,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public virtual void Validate(
             ActionContext actionContext,
-            ValidationStateDictionary validationState,
-            string prefix,
-            object model)
+            ValidationStateDictionary? validationState,
+            string? prefix,
+            object? model)
         {
             var visitor = GetValidationVisitor(
                 actionContext,
@@ -94,11 +94,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="container">The model container</param>
         public virtual void Validate(
             ActionContext actionContext,
-            ValidationStateDictionary validationState,
-            string prefix,
-            object model,
+            ValidationStateDictionary? validationState,
+            string? prefix,
+            object? model,
             ModelMetadata metadata,
-            object container)
+            object? container)
         {
             var visitor = GetValidationVisitor(
                 actionContext,
@@ -124,6 +124,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             IModelValidatorProvider validatorProvider,
             ValidatorCache validatorCache,
             IModelMetadataProvider metadataProvider,
-            ValidationStateDictionary validationState);
+            ValidationStateDictionary? validationState);
     }
 }

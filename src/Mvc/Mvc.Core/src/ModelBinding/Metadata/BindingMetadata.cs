@@ -11,20 +11,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
     /// </summary>
     public class BindingMetadata
     {
-        private Type _binderType;
-        private DefaultModelBindingMessageProvider _messageProvider;
+        private Type? _binderType;
+        private DefaultModelBindingMessageProvider? _messageProvider;
 
         /// <summary>
         /// Gets or sets the <see cref="ModelBinding.BindingSource"/>.
         /// See <see cref="ModelMetadata.BindingSource"/>.
         /// </summary>
-        public BindingSource BindingSource { get; set; }
+        public BindingSource? BindingSource { get; set; }
 
         /// <summary>
         /// Gets or sets the binder model name. If <c>null</c> the property or parameter name will be used.
         /// See <see cref="ModelMetadata.BinderModelName"/>.
         /// </summary>
-        public string BinderModelName { get; set; }
+        public string? BinderModelName { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Type"/> of the <see cref="IModelBinder"/> implementation used to bind the
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Also set <see cref="BindingSource"/> if the specified <see cref="IModelBinder"/> implementation does not
         /// use values from form data, route values or the query string.
         /// </remarks>
-        public Type BinderType
+        public Type? BinderType
         {
             get => _binderType;
             set
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// </summary>
         public DefaultModelBindingMessageProvider ModelBindingMessageProvider
         {
-            get => _messageProvider;
+            get => _messageProvider!;
             set
             {
                 if (value == null)
@@ -96,6 +96,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Gets or sets the <see cref="ModelBinding.IPropertyFilterProvider"/>.
         /// See <see cref="ModelMetadata.PropertyFilterProvider"/>.
         /// </summary>
-        public IPropertyFilterProvider PropertyFilterProvider { get; set; }
+        public IPropertyFilterProvider? PropertyFilterProvider { get; set; }
     }
 }

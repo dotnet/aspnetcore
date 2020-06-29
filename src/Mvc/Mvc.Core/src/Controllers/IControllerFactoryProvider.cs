@@ -22,6 +22,6 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         /// </summary>
         /// <param name="descriptor">The <see cref="ControllerActionDescriptor"/>.</param>
         /// <returns>The delegate used to release the created controller.</returns>
-        Action<ControllerContext, object> CreateControllerReleaser(ControllerActionDescriptor descriptor);
+        Action<ControllerContext, object>? CreateControllerReleaser(ControllerActionDescriptor descriptor);
     }
 }

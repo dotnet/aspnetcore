@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public ParameterModel(
             ParameterInfo parameterInfo,
             IReadOnlyList<object> attributes)
-            : base(parameterInfo?.ParameterType, attributes)
+            : base(parameterInfo?.ParameterType!, attributes)
         {
             ParameterInfo = parameterInfo ?? throw new ArgumentNullException(nameof(parameterInfo));
         }
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             ParameterInfo = other.ParameterInfo;
         }
 
-        public ActionModel Action { get; set; }
+        public ActionModel Action { get; set; } = default!;
 
         public new IDictionary<object, object> Properties => base.Properties;
 

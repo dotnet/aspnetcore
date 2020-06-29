@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             OutputFormatterSelector formatterSelector,
             IHttpResponseStreamWriterFactory writerFactory,
             ILoggerFactory loggerFactory)
-            : this(formatterSelector, writerFactory, loggerFactory, mvcOptions: null)
+            : this(formatterSelector, writerFactory, loggerFactory, mvcOptions: null!)
         {
         }
 
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             await ExecuteAsyncCore(context, result, enumerated.GetType(), enumerated);
         }
 
-        private Task ExecuteAsyncCore(ActionContext context, ObjectResult result, Type objectType, object value)
+        private Task ExecuteAsyncCore(ActionContext context, ObjectResult result, Type? objectType, object? value)
         {
             var formatterContext = new OutputFormatterWriteContext(
                 context.HttpContext,
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, Exception> _bufferingAsyncEnumerable;
+            private static readonly Action<ILogger, string, Exception?> _bufferingAsyncEnumerable;
 
             static Log()
             {
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
 
             public static void BufferingAsyncEnumerable(ILogger logger, object asyncEnumerable)
-                => _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName, null);
+                => _bufferingAsyncEnumerable(logger, asyncEnumerable.GetType().FullName!, null);
         }
     }
 }

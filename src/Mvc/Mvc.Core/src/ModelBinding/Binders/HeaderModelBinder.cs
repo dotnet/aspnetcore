@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         // to enable unit testing
-        internal IModelBinder InnerModelBinder { get; }
+        internal IModelBinder? InnerModelBinder { get; }
 
         /// <inheritdoc />
         public async Task BindModelAsync(ModelBindingContext bindingContext)
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var headerName = bindingContext.FieldName;
             var request = bindingContext.HttpContext.Request;
 
-            object model;
+            object? model;
             if (bindingContext.ModelType == typeof(string))
             {
                 var value = request.Headers[headerName];
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             _logger.DoneAttemptingToBindModel(bindingContext);
         }
 
-        private static object GetCompatibleCollection(ModelBindingContext bindingContext, string[] values)
+        private static object? GetCompatibleCollection(ModelBindingContext bindingContext, string[] values)
         {
             // Almost-always success if IsTopLevelObject.
             if (!bindingContext.IsTopLevelObject && values.Length == 0)

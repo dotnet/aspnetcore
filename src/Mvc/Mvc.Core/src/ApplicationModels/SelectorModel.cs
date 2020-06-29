@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
         }
 
-        public AttributeRouteModel AttributeRouteModel { get; set; }
+        public AttributeRouteModel? AttributeRouteModel { get; set; }
 
         public IList<IActionConstraintMetadata> ActionConstraints { get; }
 

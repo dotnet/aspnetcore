@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc
         IApiDescriptionVisibilityProvider
     {
         /// <inheritdoc />
-        public string GroupName { get; set; }
+        public string? GroupName { get; set; }
 
         /// <inheritdoc />
         public bool IgnoreApi { get; set; }

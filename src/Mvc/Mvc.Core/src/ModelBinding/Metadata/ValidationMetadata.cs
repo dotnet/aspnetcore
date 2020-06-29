@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// Gets or sets an <see cref="IPropertyValidationFilter"/> implementation that indicates whether this model
         /// should be validated. See <see cref="ModelMetadata.PropertyValidationFilter"/>.
         /// </summary>
-        public IPropertyValidationFilter PropertyValidationFilter { get; set; }
+        public IPropertyValidationFilter? PropertyValidationFilter { get; set; }
 
         /// <summary>
         /// Gets or sets a value that indicates whether children of the model should be validated. If <c>null</c>

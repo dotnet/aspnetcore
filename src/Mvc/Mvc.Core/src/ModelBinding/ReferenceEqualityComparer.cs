@@ -13,12 +13,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         public static ReferenceEqualityComparer Instance { get; } = new ReferenceEqualityComparer();
 
-        public new bool Equals(object x, object y)
+        public new bool Equals(object? x, object? y)
         {
             return ReferenceEquals(x, y);
         }
 
-        public int GetHashCode(object obj)
+        public int GetHashCode(object? obj)
         {
             // RuntimeHelpers.GetHashCode sometimes crashes the runtime on Mono 4.0.4
             // See: https://github.com/aspnet/External/issues/45

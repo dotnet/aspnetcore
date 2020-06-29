@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     public interface IBindingModel
     {
-        BindingInfo BindingInfo { get; set; }
+        BindingInfo? BindingInfo { get; set; }
     }
 }

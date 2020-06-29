@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public sealed class FormFileValueProvider : IValueProvider
     {
         private readonly IFormFileCollection _files;
-        private PrefixContainer _prefixContainer;
+        private PrefixContainer? _prefixContainer;
 
         /// <summary>
         /// Creates a value provider for <see cref="IFormFileCollection"/>.

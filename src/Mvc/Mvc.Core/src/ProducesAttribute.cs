@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <inheritdoc />
-        public Type Type { get; set; }
+        public Type? Type { get; set; }
 
         /// <summary>
         /// Gets or sets the supported response content types. Used to set <see cref="ObjectResult.ContentTypes"/>.

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -710,7 +712,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             return logger.BeginScope(new ActionLogScope(action));
         }
-#nullable restore
+#nullable disable
 
         public static void ExecutingAction(this ILogger logger, ActionDescriptor action)
         {

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
             GetPropertiesToActivate;
         private object _initializeLock = new object();
         private bool _initialized;
-        private ConcurrentDictionary<Type, PropertyActivator<ControllerContext>[]> _activateActions;
+        private ConcurrentDictionary<Type, PropertyActivator<ControllerContext>[]>? _activateActions;
 
         public void Activate(ControllerContext context, object controller)
         {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                 ref _initializeLock);
 
             var controllerType = controller.GetType();
-            var propertiesToActivate = _activateActions.GetOrAdd(
+            var propertiesToActivate = _activateActions!.GetOrAdd(
                 controllerType,
                 _getPropertiesToActivate);
 

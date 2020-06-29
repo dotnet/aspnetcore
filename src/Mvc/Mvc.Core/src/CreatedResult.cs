@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="location">The location at which the content has been created.</param>
         /// <param name="value">The value to format in the entity body.</param>
-        public CreatedResult(string location, object value)
+        public CreatedResult(string location, object? value)
             : base(value)
         {
             if (location == null)
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(location));
             }
 
-            Location = location;
+            _location = location;
             StatusCode = DefaultStatusCode;
         }
 
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="location">The location at which the content has been created.</param>
         /// <param name="value">The value to format in the entity body.</param>
-        public CreatedResult(Uri location, object value)
+        public CreatedResult(Uri location, object? value)
             : base(value)
         {
             if (location == null)
@@ -52,11 +52,11 @@ namespace Microsoft.AspNetCore.Mvc
 
             if (location.IsAbsoluteUri)
             {
-                Location = location.AbsoluteUri;
+                _location = location.AbsoluteUri;
             }
             else
             {
-                Location = location.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
+                _location = location.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped);
             }
 
             StatusCode = DefaultStatusCode;

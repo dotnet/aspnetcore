@@ -35,15 +35,15 @@ namespace Microsoft.AspNetCore.Routing
         /// names from <c>RouteOptions</c>.
         /// </param>
         /// <returns>A URI with an absolute path, or <c>null</c> if a URI cannot be created.</returns>
-        public static string GetPathByPage(
+        public static string? GetPathByPage(
             this LinkGenerator generator,
             HttpContext httpContext,
-            string page = default,
-            string handler = default,
-            object values = default,
+            string? page = default,
+            string? handler = default,
+            object? values = default,
             PathString? pathBase = default,
             FragmentString fragment = default,
-            LinkOptions options = default)
+            LinkOptions? options = default)
         {
             if (generator == null)
             {
@@ -84,14 +84,14 @@ namespace Microsoft.AspNetCore.Routing
         /// names from <c>RouteOptions</c>.
         /// </param>
         /// <returns>A URI with an absolute path, or <c>null</c> if a URI cannot be created.</returns>
-        public static string GetPathByPage(
+        public static string? GetPathByPage(
             this LinkGenerator generator,
             string page,
-            string handler = default,
-            object values = default,
+            string? handler = default,
+            object? values = default,
             PathString pathBase = default,
             FragmentString fragment = default,
-            LinkOptions options = default)
+            LinkOptions? options = default)
         {
             if (generator == null)
             {
@@ -143,17 +143,18 @@ namespace Microsoft.AspNetCore.Routing
         /// your deployment environment.
         /// </para>
         /// </remarks>
-        public static string GetUriByPage(
+        public static string?
+            GetUriByPage(
             this LinkGenerator generator,
             HttpContext httpContext,
-            string page = default,
-            string handler = default,
-            object values = default,
-            string scheme = default,
+            string? page = default,
+            string? handler = default,
+            object? values = default,
+            string? scheme = default,
             HostString? host = default,
             PathString? pathBase = default,
             FragmentString fragment = default,
-            LinkOptions options = default)
+            LinkOptions? options = default)
         {
             if (generator == null)
             {
@@ -202,7 +203,7 @@ namespace Microsoft.AspNetCore.Routing
         /// your deployment environment.
         /// </para>
         /// </remarks>
-        public static string GetUriByPage(
+        public static string? GetUriByPage(
             this LinkGenerator generator,
             string page,
             string handler,
@@ -211,7 +212,7 @@ namespace Microsoft.AspNetCore.Routing
             HostString host,
             PathString pathBase = default,
             FragmentString fragment = default,
-            LinkOptions options = default)
+            LinkOptions? options = default)
         {
             if (generator == null)
             {
@@ -227,7 +228,7 @@ namespace Microsoft.AspNetCore.Routing
             return generator.GetUriByAddress<RouteValuesAddress>(address, address.ExplicitValues, scheme, host, pathBase, fragment, options);
         }
 
-        private static RouteValuesAddress CreateAddress(HttpContext httpContext, string page, string handler, object values)
+        private static RouteValuesAddress CreateAddress(HttpContext? httpContext, string? page, string? handler, object? values)
         {
             var explicitValues = new RouteValueDictionary(values);
             var ambientValues = GetAmbientValues(httpContext);
@@ -241,7 +242,7 @@ namespace Microsoft.AspNetCore.Routing
             };
         }
 
-        private static RouteValueDictionary GetAmbientValues(HttpContext httpContext)
+        private static RouteValueDictionary? GetAmbientValues(HttpContext? httpContext)
         {
             return httpContext?.Features.Get<IRouteValuesFeature>()?.RouteValues;
         }

@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             IValueProvider valueProvider,
             ParameterDescriptor parameter,
             ModelMetadata metadata,
-            object value)
+            object? value)
             => BindModelAsync(actionContext, modelBinder, valueProvider, parameter, metadata, value, container: null).AsTask();
 
         /// <summary>
@@ -108,8 +108,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             IValueProvider valueProvider,
             ParameterDescriptor parameter,
             ModelMetadata metadata,
-            object value,
-            object container)
+            object? value,
+            object? container)
         {
             if (actionContext == null)
             {
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             ModelMetadata metadata,
             ModelBindingContext modelBindingContext,
             ModelBindingResult modelBindingResult,
-            object container)
+            object? container)
         {
             RecalculateModelMetadata(parameter, modelBindingResult, ref metadata);
 

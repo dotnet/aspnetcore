@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
         }
 
-        private static BindingBehaviorAttribute FindBindingBehavior(BindingMetadataProviderContext context)
+        private static BindingBehaviorAttribute? FindBindingBehavior(BindingMetadataProviderContext context)
         {
             switch (context.Key.MetadataKind)
             {
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                     // attributes on the Property Type.
                     var matchingAttributes = context.PropertyAttributes.OfType<BindingBehaviorAttribute>();
                     return matchingAttributes.FirstOrDefault()
-                        ?? context.Key.ContainerType.GetTypeInfo()
+                        ?? context.Key.ContainerType!.GetTypeInfo()
                             .GetCustomAttributes(typeof(BindingBehaviorAttribute), inherit: true)
                             .OfType<BindingBehaviorAttribute>()
                             .FirstOrDefault();

@@ -88,9 +88,9 @@ namespace Microsoft.AspNetCore.Builder
             this IEndpointRouteBuilder endpoints,
             string name,
             string pattern,
-            object defaults = null,
-            object constraints = null,
-            object dataTokens = null)
+            object? defaults = null,
+            object? constraints = null,
+            object? dataTokens = null)
         {
             if (endpoints == null)
             {
@@ -137,9 +137,9 @@ namespace Microsoft.AspNetCore.Builder
             string name,
             string areaName,
             string pattern,
-            object defaults = null,
-            object constraints = null,
-            object dataTokens = null)
+            object? defaults = null,
+            object? constraints = null,
+            object? dataTokens = null)
         {
             if (endpoints == null)
             {
@@ -490,7 +490,7 @@ namespace Microsoft.AspNetCore.Builder
                 });
         }
 
-        private static DynamicControllerMetadata CreateDynamicControllerMetadata(string action, string controller, string area)
+        private static DynamicControllerMetadata CreateDynamicControllerMetadata(string action, string controller, string? area)
         {
             return new DynamicControllerMetadata(new RouteValueDictionary()
             {

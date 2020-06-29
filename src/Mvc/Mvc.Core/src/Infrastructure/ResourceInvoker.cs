@@ -1192,7 +1192,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             };
                         }
 
-                        _diagnosticListener.AfterOnResultExecution(_resultExecutedContext, filter);
+                        _diagnosticListener.AfterOnResultExecution(_resultExecutedContext!, filter);
                         _logger.AfterExecutingMethodOnFilter(
                             resultFilterKind,
                             nameof(IAsyncResultFilter.OnResultExecutionAsync),
@@ -1589,5 +1589,4 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             public AuthorizationFilterContextSealed(ActionContext actionContext, IList<IFilterMetadata> filters) : base(actionContext, filters) { }
         }
     }
-#nullable restore
 }

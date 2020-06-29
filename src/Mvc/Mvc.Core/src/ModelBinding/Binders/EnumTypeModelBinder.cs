@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         protected override void CheckModel(
             ModelBindingContext bindingContext,
             ValueProviderResult valueProviderResult,
-            object model)
+            object? model)
         {
             if (model == null)
             {

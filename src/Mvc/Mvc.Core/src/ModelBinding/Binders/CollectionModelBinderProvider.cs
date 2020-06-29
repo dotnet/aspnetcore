@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class CollectionModelBinderProvider : IModelBinderProvider
     {
         /// <inheritdoc />
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
             {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 elementBinder,
                 loggerFactory,
                 true /* allowValidatingTopLevelNodes */,
-                mvcOptions);
+                mvcOptions)!;
 
             return binder;
         }

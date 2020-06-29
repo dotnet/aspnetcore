@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
 
             var requestServices = bindingContext.HttpContext.RequestServices;
-            var binder = (IModelBinder)_factory(requestServices, arguments: null);
+            var binder = (IModelBinder)_factory(requestServices, arguments: null!);
 
             await binder.BindModelAsync(bindingContext);
         }

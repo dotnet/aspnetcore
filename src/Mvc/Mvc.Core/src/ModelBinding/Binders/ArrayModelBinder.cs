@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         /// <inheritdoc />
-        protected override object ConvertToCollectionType(Type targetType, IEnumerable<TElement> collection)
+        protected override object? ConvertToCollectionType(Type targetType, IEnumerable<TElement> collection)
         {
             Debug.Assert(targetType == typeof(TElement[]), "GenericModelBinder only creates this binder for arrays.");
 

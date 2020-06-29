@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the value for the Vary header in <see cref="Microsoft.AspNetCore.Http.HttpContext.Response" />.
         /// </summary>
-        public string VaryByHeader { get; set; }
+        public string? VaryByHeader { get; set; }
 
         /// <summary>
         /// Gets or sets the query keys to vary by.
@@ -43,6 +43,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// <see cref="VaryByQueryKeys"/> requires the response cache middleware.
         /// </remarks>
-        public string[] VaryByQueryKeys { get; set; }
+        public string[]? VaryByQueryKeys { get; set; }
     }
 }

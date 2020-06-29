@@ -39,9 +39,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="fileName">The path to the file. The path must be an absolute path.</param>
         /// <param name="contentType">The Content-Type header of the response.</param>
         public PhysicalFileResult(string fileName, MediaTypeHeaderValue contentType)
-            : base(contentType?.ToString())
+            : base(contentType?.ToString()!)
         {
-            FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
+            _fileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
         }
 
         /// <summary>

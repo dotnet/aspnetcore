@@ -11,17 +11,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets or sets the <see cref="ModelBinding.BindingInfo"/>.
         /// </summary>
-        public BindingInfo BindingInfo { get; set; }
+        public BindingInfo? BindingInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="ModelMetadata"/>.
         /// </summary>
-        public ModelMetadata Metadata { get; set; }
+        public ModelMetadata Metadata { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the cache token. If <c>non-null</c> the resulting <see cref="IModelBinder"/>
         /// will be cached.
         /// </summary>
-        public object CacheToken { get; set; }
+        public object? CacheToken { get; set; }
     }
 }

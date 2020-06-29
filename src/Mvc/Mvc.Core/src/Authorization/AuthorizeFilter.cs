@@ -87,12 +87,12 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         /// <summary>
         /// The <see cref="IAuthorizationPolicyProvider"/> to use to resolve policy names.
         /// </summary>
-        public IAuthorizationPolicyProvider PolicyProvider { get; }
+        public IAuthorizationPolicyProvider? PolicyProvider { get; }
 
         /// <summary>
         /// The <see cref="IAuthorizeData"/> to combine into an <see cref="IAuthorizeData"/>.
         /// </summary>
-        public IEnumerable<IAuthorizeData> AuthorizeData { get; }
+        public IEnumerable<IAuthorizeData>? AuthorizeData { get; }
 
         /// <summary>
         /// Gets the authorization policy to be used.
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         /// If<c>null</c>, the policy will be constructed using
         /// <see cref="AuthorizationPolicy.CombineAsync(IAuthorizationPolicyProvider, IEnumerable{IAuthorizeData})"/>.
         /// </remarks>
-        public AuthorizationPolicy Policy { get; }
+        public AuthorizationPolicy? Policy { get; }
 
         bool IFilterFactory.IsReusable => true;
 
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                         nameof(IAuthorizationPolicyProvider)));
             }
 
-            return AuthorizationPolicy.CombineAsync(PolicyProvider, AuthorizeData);
+            return AuthorizationPolicy.CombineAsync(PolicyProvider, AuthorizeData!)!;
         }
 
         internal async Task<AuthorizationPolicy> GetEffectivePolicyAsync(AuthorizationFilterContext context)

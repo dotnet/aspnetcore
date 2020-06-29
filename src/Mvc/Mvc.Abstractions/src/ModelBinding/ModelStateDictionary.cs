@@ -512,7 +512,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="attemptedValue">
         /// The values of <paramref name="rawValue"/> in a comma-separated <see cref="string"/>.
         /// </param>
-        public void SetModelValue(string key, object? rawValue, string attemptedValue)
+        public void SetModelValue(string key, object? rawValue, string? attemptedValue)
         {
             if (key == null)
             {

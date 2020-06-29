@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         /// <inheritdoc />
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
             {

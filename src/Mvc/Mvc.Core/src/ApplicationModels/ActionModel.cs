@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// Gets the action name.
         /// </summary>
-        public string ActionName { get; set; }
+        public string ActionName { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="ApiExplorerModel"/> for this action.
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <summary>
         /// Gets or sets the <see cref="ControllerModel"/>.
         /// </summary>
-        public ControllerModel Controller { get; set; }
+        public ControllerModel Controller { get; set; } = default!;
 
         /// <summary>
         /// Gets the <see cref="IFilterMetadata"/> instances associated with the action.
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// This feature only applies when using endpoint routing.
         /// </para>
         /// </remarks>
-        public IOutboundParameterTransformer RouteParameterTransformer { get; set; }
+        public IOutboundParameterTransformer? RouteParameterTransformer { get; set; }
 
         /// <summary>
         /// Gets a collection of route values that must be present in the 

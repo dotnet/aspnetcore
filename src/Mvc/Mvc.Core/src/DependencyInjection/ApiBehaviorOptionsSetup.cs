@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     internal class ApiBehaviorOptionsSetup : IConfigureOptions<ApiBehaviorOptions>
     {
-        private ProblemDetailsFactory _problemDetailsFactory;
+        private ProblemDetailsFactory? _problemDetailsFactory;
 
         public void Configure(ApiBehaviorOptions options)
         {

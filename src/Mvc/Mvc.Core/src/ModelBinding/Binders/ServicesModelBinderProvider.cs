@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private readonly ServicesModelBinder _modelBinder = new ServicesModelBinder();
 
         /// <inheritdoc />
-        public IModelBinder GetBinder(ModelBinderProviderContext context)
+        public IModelBinder? GetBinder(ModelBinderProviderContext context)
         {
             if (context == null)
             {

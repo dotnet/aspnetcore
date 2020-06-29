@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets or sets a value which represents the <see cref="ModelBinding.BindingSource"/> associated with the
         /// <see cref="Model"/>.
         /// </summary>
-        public abstract BindingSource BindingSource { get; set; }
+        public abstract BindingSource? BindingSource { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the current field being bound.
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// The <see cref="Model"/> will typically be set for a binding operation that works
         /// against a pre-existing model object to update certain properties.
         /// </remarks>
-        public abstract object Model { get; set; }
+        public abstract object? Model { get; set; }
 
         /// <summary>
         /// Gets or sets the metadata for the model associated with this context.
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets or sets a predicate which will be evaluated for each property to determine if the property
         /// is eligible for model binding.
         /// </summary>
-        public abstract Func<ModelMetadata, bool> PropertyFilter { get; set; }
+        public abstract Func<ModelMetadata, bool>? PropertyFilter { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="ValidationStateDictionary"/>. Used for tracking validation state to
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             ModelMetadata modelMetadata,
             string fieldName,
             string modelName,
-            object model);
+            object? model);
 
         /// <summary>
         /// Pushes a layer of state onto this context. <see cref="IModelBinder"/> implementations will call this as

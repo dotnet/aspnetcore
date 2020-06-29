@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public abstract class TextOutputFormatter : OutputFormatter
     {
-        private IDictionary<string, string> _outputMediaTypeCache;
+        private IDictionary<string, string>? _outputMediaTypeCache;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TextOutputFormatter"/> class.
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         internal static IList<StringWithQualityHeaderValue> GetAcceptCharsetHeaderValues(OutputFormatterWriteContext context)
         {
             var request = context.HttpContext.Request;
-            if (StringWithQualityHeaderValue.TryParseList(request.Headers[HeaderNames.AcceptCharset], out IList<StringWithQualityHeaderValue> result))
+            if (StringWithQualityHeaderValue.TryParseList(request.Headers[HeaderNames.AcceptCharset], out var result))
             {
                 return result;
             }
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             return MediaType.ReplaceEncoding(mediaType, encoding);
         }
 
-        private Encoding MatchAcceptCharacterEncoding(IList<StringWithQualityHeaderValue> acceptCharsetHeaders)
+        private Encoding? MatchAcceptCharacterEncoding(IList<StringWithQualityHeaderValue> acceptCharsetHeaders)
         {
             if (acceptCharsetHeaders != null && acceptCharsetHeaders.Count > 0)
             {

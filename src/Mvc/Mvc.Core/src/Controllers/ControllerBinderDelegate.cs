@@ -9,5 +9,5 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
     internal delegate Task ControllerBinderDelegate(
         ControllerContext controllerContext,
         object controller,
-        Dictionary<string, object> arguments);
+        Dictionary<string, object?> arguments);
 }

@@ -17,10 +17,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     {
         private static readonly IValueProvider EmptyValueProvider = new CompositeValueProvider();
 
-        private IValueProvider _originalValueProvider;
-        private ActionContext _actionContext;
-        private ModelStateDictionary _modelState;
-        private ValidationStateDictionary _validationState;
+        private IValueProvider? _originalValueProvider;
+        private ActionContext? _actionContext;
+        private ModelStateDictionary? _modelState;
+        private ValidationStateDictionary? _validationState;
         private int? _maxModelBindingRecursionDepth;
 
         private State _state;
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public override ActionContext ActionContext
         {
-            get { return _actionContext; }
+            get { return _actionContext!; }
             set
             {
                 if (value == null)
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public override object Model
+        public override object? Model
         {
             get { return _state.Model; }
             set { _state.Model = value; }
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public override ModelStateDictionary ModelState
         {
-            get { return _modelState; }
+            get { return _modelState!; }
             set
             {
                 if (value == null)
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public override BindingSource BindingSource
+        public override BindingSource? BindingSource
         {
             get { return _state.BindingSource; }
             set { _state.BindingSource = value; }
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         public IValueProvider OriginalValueProvider
         {
-            get { return _originalValueProvider; }
+            get { return _originalValueProvider!; }
             set
             {
                 if (value == null)
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <inheritdoc />
-        public override Func<ModelMetadata, bool> PropertyFilter
+        public override Func<ModelMetadata, bool>? PropertyFilter
         {
             get { return _state.PropertyFilter; }
             set { _state.PropertyFilter = value; }
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public override ValidationStateDictionary ValidationState
         {
-            get { return _validationState; }
+            get { return _validationState!; }
             set
             {
                 if (value == null)
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             ActionContext actionContext,
             IValueProvider valueProvider,
             ModelMetadata metadata,
-            BindingInfo bindingInfo,
+            BindingInfo? bindingInfo,
             string modelName)
         {
             if (actionContext == null)
@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             ModelMetadata modelMetadata,
             string fieldName,
             string modelName,
-            object model)
+            object? model)
         {
             if (modelMetadata == null)
             {
@@ -373,15 +373,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private struct State
         {
             public string FieldName;
-            public object Model;
+            public object? Model;
             public ModelMetadata ModelMetadata;
             public string ModelName;
 
             public IValueProvider ValueProvider;
-            public Func<ModelMetadata, bool> PropertyFilter;
+            public Func<ModelMetadata, bool>? PropertyFilter;
 
             public string BinderModelName;
-            public BindingSource BindingSource;
+            public BindingSource? BindingSource;
             public bool IsTopLevelObject;
 
             public ModelBindingResult Result;

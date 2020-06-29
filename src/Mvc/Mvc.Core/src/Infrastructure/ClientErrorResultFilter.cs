@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 return;
             }
 
-            _logger.TransformingClientError(context.Result.GetType(), result?.GetType(), clientError.StatusCode);
+            _logger.TransformingClientError(context.Result.GetType(), result.GetType(), clientError.StatusCode);
             context.Result = result;
         }
     }

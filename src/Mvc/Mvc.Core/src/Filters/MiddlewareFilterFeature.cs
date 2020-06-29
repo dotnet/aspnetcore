@@ -5,8 +5,8 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 {
     internal class MiddlewareFilterFeature : IMiddlewareFilterFeature
     {
-        public ResourceExecutingContext ResourceExecutingContext { get; set; }
+        public ResourceExecutingContext ResourceExecutingContext { get; set; } = default!;
 
-        public ResourceExecutionDelegate ResourceExecutionDelegate { get; set; }
+        public ResourceExecutionDelegate ResourceExecutionDelegate { get; set; } = default!;
     }
 }

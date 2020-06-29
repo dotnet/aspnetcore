@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     // to break the cycle. Later when the 'real' binder is created we set Inner to point to that.
     internal class PlaceholderBinder : IModelBinder
     {
-        public IModelBinder Inner { get; set; }
+        public IModelBinder Inner { get; set; } = default!;
 
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {

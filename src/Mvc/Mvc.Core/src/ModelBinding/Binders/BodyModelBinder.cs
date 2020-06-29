@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private readonly IList<IInputFormatter> _formatters;
         private readonly Func<Stream, Encoding, TextReader> _readerFactory;
         private readonly ILogger _logger;
-        private readonly MvcOptions _options;
+        private readonly MvcOptions? _options;
 
         /// <summary>
         /// Creates a new <see cref="BodyModelBinder"/>.
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// instances for reading the request body.
         /// </param>
         public BodyModelBinder(IList<IInputFormatter> formatters, IHttpRequestStreamReaderFactory readerFactory)
-            : this(formatters, readerFactory, loggerFactory: null)
+            : this(formatters, readerFactory, loggerFactory: NullLoggerFactory.Instance)
         {
         }
 
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             IList<IInputFormatter> formatters,
             IHttpRequestStreamReaderFactory readerFactory,
             ILoggerFactory loggerFactory,
-            MvcOptions options)
+            MvcOptions? options)
         {
             if (formatters == null)
             {
@@ -80,13 +81,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(readerFactory));
             }
 
+            if (loggerFactory is null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _formatters = formatters;
             _readerFactory = readerFactory.CreateReader;
-
-            if (loggerFactory != null)
-            {
-                _logger = loggerFactory.CreateLogger<BodyModelBinder>();
-            }
+            _logger = loggerFactory.CreateLogger<BodyModelBinder>();
 
             _options = options;
         }
@@ -126,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 _readerFactory,
                 AllowEmptyBody);
 
-            var formatter = (IInputFormatter)null;
+            var formatter = (IInputFormatter?)null;
             for (var i = 0; i < _formatters.Count; i++)
             {
                 if (_formatters[i].CanRead(formatterContext))

@@ -20,6 +20,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// The filtered value provider, or <c>null</c> if the value provider does not match
         /// <paramref name="bindingSource"/>.
         /// </returns>
-        IValueProvider Filter(BindingSource bindingSource);
+        IValueProvider? Filter(BindingSource bindingSource);
     }
 }

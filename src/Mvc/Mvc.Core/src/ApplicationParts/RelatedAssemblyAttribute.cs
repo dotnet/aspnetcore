@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 
             var assemblyName = assembly.GetName().Name;
             var assemblyLocation = assembly.Location;
-            var assemblyDirectory = Path.GetDirectoryName(assemblyLocation);
+            var assemblyDirectory = Path.GetDirectoryName(assemblyLocation)!;
 
             var relatedAssemblies = new List<Assembly>();
             for (var i = 0; i < attributes.Length; i++)
