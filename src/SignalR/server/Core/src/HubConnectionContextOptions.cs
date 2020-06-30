@@ -33,6 +33,6 @@ namespace Microsoft.AspNetCore.SignalR
 
         internal ISystemClock SystemClock { get; set; } = default!;
 
-        public int MaximumParallelInvocations { get; set; }
+        public int MaximumParallelInvocations { get; set; } = 1;
     }
 }
