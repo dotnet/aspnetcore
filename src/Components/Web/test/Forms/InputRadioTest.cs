@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             };
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => RenderAndGetTestInputComponentAsync(rootComponent));
-            Assert.Contains($"requires either an explicit 'name' attribute", ex.Message);
+            Assert.Contains($"requires either an explicit string attribute 'name' or an ancestor", ex.Message);
         }
 
         [Fact]
