@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components
         /// <inheritdoc />
         public object CreateInstance(Type componentType)
         {
-            return Activator.CreateInstance( componentType );
+            return Activator.CreateInstance(componentType);
         }
     }
 }
