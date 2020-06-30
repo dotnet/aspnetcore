@@ -7,7 +7,13 @@
 
 <Router AppAssembly="@typeof(BasicTestApp.Program).Assembly" AdditionalAssemblies="@lazyLoadedAssemblies" OnNavigate="@OnNavigate">
     <Found Context="routeData">
-        <RouteView RouteData="@routeData" />
+        @if (loading) {
+            <div style="padding: 20px;background-color:blue;color:white;" id="loading-banner" @onclick="HideLoadingBar">
+                <p>Loading the requested page...</p>
+            </div>
+        } else {
+            <RouteView RouteData="@routeData" />
+        }
     </Found>
     <NotFound>
         <LayoutView Layout="@typeof(RouterTestLayout)">
@@ -19,11 +25,21 @@
 @code {
     private List<Assembly> lazyLoadedAssemblies = new List<Assembly>();
 
-    public bool OnNavigate (string uri)
+    private bool loading = false;
+
+    private void OnNavigate (string uri)
     {
         Console.WriteLine($"Running OnNavigate for {uri}...");
         _ = LoadAssemblies(uri);
-        return false;
+    }
+
+    private void HideLoadingBar() {
+        loading = false;
+    }
+
+    private void ShowLoadingState() {
+        loading = true;
+        StateHasChanged();
     }
 
     private async Task LoadAssemblies(string uri)
@@ -34,6 +50,7 @@
             if (uri.EndsWith("WithLazyAssembly"))
             {
                 loadedAssemblies = true;
+                ShowLoadingState();
                 Console.WriteLine($"Loading assemblies for WithLazyAssembly...");
                 var assemblies = await lazyLoader.LoadAssembliesAsync(new List<string>(){ "Newtonsoft.Json.dll" });
                 lazyLoadedAssemblies.AddRange(assemblies);
@@ -43,7 +60,8 @@
         {
             Console.WriteLine($"Error when loading assemblies: {e}");
         }
-        finally {
+        finally
+        {
             if (loadedAssemblies)
             {
                 Console.WriteLine("Calling StateHasChanged...");

@@ -59,10 +59,9 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Parameter] public RenderFragment<RouteData> Found { get; set; }
 
         /// <summary>
-        /// Gets or sets a handler that should be called before navigating to a new page. Return <c>true</c>
-        /// if the route's component should be rendered following invocation. Return <c>false</c> otherwise.
+        /// Gets or sets a handler that should be called before navigating to a new page.
         /// </summary>
-        [Parameter] public Func<string, bool> OnNavigate { get; set; }
+        [Parameter] public Action<string> OnNavigate { get; set; }
 
         private RouteTable Routes { get; set; }
 
@@ -79,7 +78,6 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <inheritdoc />
         public Task SetParametersAsync(ParameterView parameters)
         {
-            Console.WriteLine("Inside SetParametersAsync");
             parameters.SetParameterProperties(this);
 
             if (AppAssembly == null)
@@ -182,11 +180,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             {
                 if (OnNavigate != null)
                 {
-                    var continueRender = OnNavigate(NavigationManager.ToBaseRelativePath(_locationAbsolute));
-                    if (!continueRender)
-                    {
-                        return;
-                    }
+                    OnNavigate(NavigationManager.ToBaseRelativePath(_locationAbsolute));
                 }
                 Refresh(args.IsNavigationIntercepted);
             }

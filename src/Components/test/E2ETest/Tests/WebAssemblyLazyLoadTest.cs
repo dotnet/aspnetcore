@@ -44,9 +44,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.False(HasLoadedAssembly("Newtonsoft.Json.dll"));
 
             // Visit the route for the lazy-loaded assembly
-            SetUrlViaPushState("/WithDynamicAssembly");
+            SetUrlViaPushState("/WithLazyAssembly");
 
             var button = app.FindElement(By.Id("use-package-button"));
+            var loadingBar = app.FindElement(By.Id("loading-banner"));
+
+            // We should show the loading bar
+            Assert.True(loadingBar.Displayed);
+
+            // Click to hide the loading bar
+            loadingBar.Click();
 
             // Now we should have requested the DLL
             Assert.True(HasLoadedAssembly("Newtonsoft.Json.dll"));
@@ -61,9 +68,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void CanLazyLoadOnFirstVisit()
         {
             // Navigate to a page with lazy loaded assemblies for the first time
-            SetUrlViaPushState("/WithDynamicAssembly");
+            SetUrlViaPushState("/WithLazyAssembly");
             var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
+
             var button = app.FindElement(By.Id("use-package-button"));
+            var loadingBar = app.FindElement(By.Id("loading-banner"));
+
+            // We should show the loading bar
+            Assert.True(loadingBar.Displayed);
+
+            // Click to hide the loading bar
+            loadingBar.Click();
 
             // We should have requested the DLL
             Assert.True(HasLoadedAssembly("Newtonsoft.Json.dll"));
