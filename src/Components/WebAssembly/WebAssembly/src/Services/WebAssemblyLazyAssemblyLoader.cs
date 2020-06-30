@@ -12,16 +12,16 @@ using Microsoft.JSInterop.WebAssembly;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly
 {
-    public class WebAssemblyDynamicAssemblyLoader
+    public class WebAssemblyLazyAssemblyLoader
     {
-        internal const string GetDynamicAssemblies = "window.Blazor._internal.getDynamicAssemblies";
-        internal const string ReadDynamicAssemblies = "window.Blazor._internal.readDynamicAssemblies";
+        internal const string GetDynamicAssemblies = "window.Blazor._internal.getLazyAssemblies";
+        internal const string ReadDynamicAssemblies = "window.Blazor._internal.readLazyAssemblies";
 
         private List<string> _loadedAssemblyCache = new List<string>();
 
         private readonly WebAssemblyJSRuntime _jsRuntime;
 
-        internal WebAssemblyDynamicAssemblyLoader(WebAssemblyJSRuntime jsRuntime)
+        internal WebAssemblyLazyAssemblyLoader(WebAssemblyJSRuntime jsRuntime)
         {
             _jsRuntime = jsRuntime;
         }

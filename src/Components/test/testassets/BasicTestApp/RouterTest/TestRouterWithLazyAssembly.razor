@@ -3,7 +3,7 @@
 @using System.Linq
 @using System.Reflection
 
-@inject WebAssemblyDynamicAssemblyLoader lazyLoader
+@inject WebAssemblyLazyAssemblyLoader lazyLoader
 
 <Router AppAssembly="@typeof(BasicTestApp.Program).Assembly" AdditionalAssemblies="@lazyLoadedAssemblies" OnNavigate="@OnNavigate">
     <Found Context="routeData">
@@ -31,10 +31,10 @@
         bool loadedAssemblies = false;
         try
         {
-            if (uri.EndsWith("WithDynamicAssembly"))
+            if (uri.EndsWith("WithLazyAssembly"))
             {
                 loadedAssemblies = true;
-                Console.WriteLine($"Loading assemblies for WithDynamicAssembly...");
+                Console.WriteLine($"Loading assemblies for WithLazyAssembly...");
                 var assemblies = await lazyLoader.LoadAssembliesAsync(new List<string>(){ "Newtonsoft.Json.dll" });
                 lazyLoadedAssemblies.AddRange(assemblies);
             }

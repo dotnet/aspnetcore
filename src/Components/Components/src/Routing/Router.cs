@@ -79,6 +79,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <inheritdoc />
         public Task SetParametersAsync(ParameterView parameters)
         {
+            Console.WriteLine("Inside SetParametersAsync");
             parameters.SetParameterProperties(this);
 
             if (AppAssembly == null)

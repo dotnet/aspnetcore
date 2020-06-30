@@ -294,20 +294,20 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       return BINDING.js_to_mono_obj(Promise.resolve(0));
     }
 
-    window['Blazor']._internal.getDynamicAssemblies = (assembliesToLoadDotNetArray: System_Array<System_String>) : System_Object =>  {
+    window['Blazor']._internal.getLazyAssemblies = (assembliesToLoadDotNetArray: System_Array<System_String>) : System_Object =>  {
       const assembliesToLoad = BINDING.mono_array_to_js_array<System_String, string>(assembliesToLoadDotNetArray);
-      const dynamicAssemblies = resourceLoader.bootConfig.resources.dynamicAssembly;
+      const lazyAssemblies = resourceLoader.bootConfig.resources.lazyAssembly;
 
-      if (dynamicAssemblies) {
+      if (lazyAssemblies) {
         const resourcePromises = Promise.all(assembliesToLoad
-            .filter(assembly => dynamicAssemblies.hasOwnProperty(assembly))
-            .map(assembly => resourceLoader.loadResource(assembly, `_framework/${assembly}`, dynamicAssemblies[assembly], 'assembly'))
+            .filter(assembly => lazyAssemblies.hasOwnProperty(assembly))
+            .map(assembly => resourceLoader.loadResource(assembly, `_framework/${assembly}`, lazyAssemblies[assembly], 'assembly'))
             .map(async resource => (await resource.response).arrayBuffer()));
 
         return BINDING.js_to_mono_obj(
           resourcePromises.then(resourcesToLoad => {
             if (resourcesToLoad.length) {
-              window['Blazor']._internal.readDynamicAssemblies = () => {
+              window['Blazor']._internal.readLazyAssemblies = () => {
                 const array = BINDING.mono_obj_array_new(resourcesToLoad.length);
                 for (var i = 0; i < resourcesToLoad.length; i++) {
                   BINDING.mono_obj_array_set(array, i, BINDING.js_typed_array_to_array(new Uint8Array(resourcesToLoad[i])));

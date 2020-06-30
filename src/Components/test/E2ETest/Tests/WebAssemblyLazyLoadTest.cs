@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         protected override void InitializeAsyncCore()
         {
             Navigate(ServerPathBase, noReload: false);
-            Browser.MountTestComponent<TestRouterWithDynamicAssembly>();
+            Browser.MountTestComponent<TestRouterWithLazyAssembly>();
             Browser.Exists(By.Id("blazor-error-ui"));
 
             var errorUi = Browser.FindElement(By.Id("blazor-error-ui"));
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             // Navigate to a page without any lazy-loaded dependencies
             SetUrlViaPushState("/");
-            var app = Browser.MountTestComponent<TestRouterWithDynamicAssembly>();
+            var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
 
             // Ensure that we haven't requested the lazy loaded assembly
             Assert.False(HasLoadedAssembly("Newtonsoft.Json.dll"));
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             // Navigate to a page with lazy loaded assemblies for the first time
             SetUrlViaPushState("/WithDynamicAssembly");
-            var app = Browser.MountTestComponent<TestRouterWithDynamicAssembly>();
+            var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
             var button = app.FindElement(By.Id("use-package-button"));
 
             // We should have requested the DLL

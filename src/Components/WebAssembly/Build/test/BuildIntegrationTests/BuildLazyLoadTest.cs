@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             var bootJson = ReadBootJsonData(result, Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json"));
 
             // And that it has been labelled as a dynamic assembly in the boot.json
-            var dynamicAssemblies = bootJson.resources.dynamicAssembly;
+            var dynamicAssemblies = bootJson.resources.lazyAssembly;
             var assemblies = bootJson.resources.assembly;
 
             Assert.NotNull(dynamicAssemblies);
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             var bootJson = ReadBootJsonData(result, Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json"));
 
             // And that it has been labelled as a dynamic assembly in the boot.json
-            var dynamicAssemblies = bootJson.resources.dynamicAssembly;
+            var dynamicAssemblies = bootJson.resources.lazyAssembly;
             var assemblies = bootJson.resources.assembly;
 
             Assert.NotNull(dynamicAssemblies);
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             var bootJson = ReadBootJsonData(result, Path.Combine(publishDirectory, "wwwroot", "_framework", "blazor.boot.json"));
 
             // And that it has been labelled as a dynamic assembly in the boot.json
-            var dynamicAssemblies = bootJson.resources.dynamicAssembly;
+            var dynamicAssemblies = bootJson.resources.lazyAssembly;
             var assemblies = bootJson.resources.assembly;
 
             Assert.NotNull(dynamicAssemblies);
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Build
             var bootJson = ReadBootJsonData(result, Path.Combine(publishDirectory, "wwwroot", "_framework", "blazor.boot.json"));
 
             // And that it has been labelled as a dynamic assembly in the boot.json
-            var dynamicAssemblies = bootJson.resources.dynamicAssembly;
+            var dynamicAssemblies = bootJson.resources.lazyAssembly;
             var assemblies = bootJson.resources.assembly;
 
             Assert.NotNull(dynamicAssemblies);
