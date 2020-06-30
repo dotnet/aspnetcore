@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.Profiling
             if (IsCapturing)
             {
                 InternalCalls.InvokeJSUnmarshalled<string, object, object, object>(
-                out _, "_blazorProfileEnd", name!, null!, null!);
+                    out _, "_blazorProfileEnd", name, null, null);
             }
         }
     }
