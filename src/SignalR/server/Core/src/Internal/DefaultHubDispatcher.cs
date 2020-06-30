@@ -148,6 +148,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             // Messages are dispatched sequentially and will stop other messages from being processed until they complete.
             // Streaming methods will run sequentially until they start streaming, then they will fire-and-forget allowing other messages to run.
+            // With parallel invokes enabled, messages run sequentially until they go async and then the next message will be allowed to start running.
 
             switch (hubMessage)
             {
