@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected override void OnParametersSet()
         {
             GroupName = AdditionalAttributes != null && AdditionalAttributes.TryGetValue("name", out var nameAttribute) ?
-                Convert.ToString(nameAttribute) :
+                nameAttribute as string :
                 CascadedRadioGroup?.GroupName;
 
             if (string.IsNullOrEmpty(GroupName))

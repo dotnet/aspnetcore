@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class InputRadioGroup : ComponentBase
     {
+        private readonly string _defaultGroupName = Guid.NewGuid().ToString("N");
+
         internal string? GroupName { get; private set; }
 
         /// <summary>
@@ -27,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
-            GroupName ??= !string.IsNullOrEmpty(Name) ? Name : Guid.NewGuid().ToString("N");
+            GroupName = !string.IsNullOrEmpty(Name) ? Name : _defaultGroupName;
         }
 
         /// <inheritdoc />
