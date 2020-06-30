@@ -28,6 +28,32 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
+        public void InstantiateComponent_CreatesInstance_WithActivator()
+        {
+            // Arrange
+            var componentType = typeof(EmptyComponent);
+            var factory = new ComponentFactory();
+
+            // Act
+            var instance = factory.InstantiateComponent(GetServiceProviderWithActivator(), componentType);
+
+            // Assert
+            Assert.NotNull(instance);
+            Assert.IsType<EmptyComponent>(instance);
+        }
+
+        [Fact]
+        public void InstantiateComponent_CreatesInstance_WithActivator_NonComponent()
+        {
+            // Arrange
+            var componentType = typeof(NonComponent);
+            var factory = new ComponentFactory();
+
+            // Assert
+            Assert.Throws<ArgumentException>(()=>factory.InstantiateComponent(GetServiceProviderWithActivator(), componentType));
+        }
+
+        [Fact]
         public void InstantiateComponent_AssignsPropertiesWithInjectAttribute()
         {
             // Arrange
@@ -96,6 +122,15 @@ namespace Microsoft.AspNetCore.Components
                 .BuildServiceProvider();
         }
 
+        private static IServiceProvider GetServiceProviderWithActivator()
+        {
+            return new ServiceCollection()
+                .AddTransient<TestService1>()
+                .AddTransient<TestService2>()
+                .AddSingleton<IComponentActivator, DefaultComponentActivator>()
+                .BuildServiceProvider();
+        }
+
         private class EmptyComponent : IComponent
         {
             public void Attach(RenderHandle renderHandle)
@@ -161,6 +196,8 @@ namespace Microsoft.AspNetCore.Components
             [Inject]
             public TestService2 Property5 { get; set; }
         }
+
+        private class NonComponent { }
 
         public class TestService1 { }
         public class TestService2 { }
