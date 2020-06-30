@@ -212,7 +212,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddScoped<NavigationManager, HttpNavigationManager>();
             services.TryAddScoped<IJSRuntime, UnsupportedJavaScriptRuntime>();
             services.TryAddScoped<INavigationInterception, UnsupportedNavigationInterception>();
-            services.TryAddScoped<IComponentActivator, ComponentActivator>();
+            services.TryAddScoped<IComponentActivator, DefaultComponentActivator>();
 
             services.TryAddTransient<ControllerSaveTempDataPropertyFilter>();
 

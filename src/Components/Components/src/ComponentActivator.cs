@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components
     /// <summary>
     /// Default implementation of component activator.
     /// </summary>
-    public class ComponentActivator : IComponentActivator
+    public class DefaultComponentActivator : IComponentActivator
     {
         /// <inheritdoc />
         public object CreateInstance(Type componentType)
