@@ -145,29 +145,28 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         public override Task DispatchMessageAsync(HubConnectionContext connection, HubMessage hubMessage)
         {
             connection.StopClientTimeout();
+
             // Messages are dispatched sequentially and will stop other messages from being processed until they complete.
             // Streaming methods will run sequentially until they start streaming, then they will fire-and-forget allowing other messages to run.
-
-            var tasks = connection.ActiveHubInvocations;
 
             switch (hubMessage)
             {
                 case InvocationBindingFailureMessage bindingFailureMessage:
-                    tasks.Add(ProcessInvocationBindingFailure(connection, bindingFailureMessage));
+                    _ = ProcessInvocationBindingFailure(connection, bindingFailureMessage);
                     break;
 
                 case StreamBindingFailureMessage bindingFailureMessage:
-                    tasks.Add(ProcessStreamBindingFailure(connection, bindingFailureMessage));
+                    _ = ProcessStreamBindingFailure(connection, bindingFailureMessage);
                     break;
 
                 case InvocationMessage invocationMessage:
                     Log.ReceivedHubInvocation(_logger, invocationMessage);
-                    tasks.Add(ProcessInvocation(connection, invocationMessage, isStreamResponse: false));
+                    _ = ProcessInvocation(connection, invocationMessage, isStreamResponse: false);
                     break;
 
                 case StreamInvocationMessage streamInvocationMessage:
                     Log.ReceivedStreamHubInvocation(_logger, streamInvocationMessage);
-                    tasks.Add(ProcessInvocation(connection, streamInvocationMessage, isStreamResponse: true));
+                    _ = ProcessInvocation(connection, streamInvocationMessage, isStreamResponse: true);
                     break;
 
                 case CancelInvocationMessage cancelInvocationMessage:
@@ -183,14 +182,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         // Stream can be canceled on the server while client is canceling stream.
                         Log.UnexpectedCancel(_logger);
                     }
-                    break;
+                    return Task.CompletedTask;
 
                 case PingMessage _:
                     connection.StartClientTimeout();
-                    break;
+                    return Task.CompletedTask;
 
                 case StreamItemMessage streamItem:
-                    tasks.Add(ProcessStreamItem(connection, streamItem));
+                    _ = ProcessStreamItem(connection, streamItem);
                     break;
 
                 case CompletionMessage streamCompleteMessage:
@@ -204,7 +203,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     {
                         Log.UnexpectedStreamCompletion(_logger);
                     }
-                    break;
+                    return Task.CompletedTask;
 
                 // Other kind of message we weren't expecting
                 default:
@@ -212,19 +211,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     throw new NotSupportedException($"Received unsupported message: {hubMessage}");
             }
 
-            var maxParallelOption = 2;
-            if (tasks.Count == maxParallelOption)
-            {
-                return WaitForSpace(tasks);
-            }
-
-            static async Task WaitForSpace(List<Task> tasks)
-            {
-                await Task.WhenAny(tasks);
-                tasks.RemoveAll(t => t.IsCompleted);
-            }
-
-            return Task.CompletedTask;
+            return connection.ActiveInvocationLimit.WaitAsync();
         }
 
         private Task ProcessInvocationBindingFailure(HubConnectionContext connection, InvocationBindingFailureMessage bindingFailureMessage)
@@ -233,7 +220,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             var errorMessage = ErrorMessageHelper.BuildErrorMessage($"Failed to invoke '{bindingFailureMessage.Target}' due to an error on the server.",
                 bindingFailureMessage.BindingFailure.SourceException, _enableDetailedErrors);
-            return SendInvocationError(bindingFailureMessage.InvocationId, connection, errorMessage);
+            var t = SendInvocationError(bindingFailureMessage.InvocationId, connection, errorMessage);
+            connection.ActiveInvocationLimit.Release();
+            return t;
         }
 
         private Task ProcessStreamBindingFailure(HubConnectionContext connection, StreamBindingFailureMessage bindingFailureMessage)
@@ -248,6 +237,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             // ignore failure, it means the client already completed the stream or the stream never existed on the server
             connection.StreamTracker.TryComplete(message);
 
+            connection.ActiveInvocationLimit.Release();
+
             // TODO: Send stream completion message to client when we add it
             return Task.CompletedTask;
         }
@@ -257,11 +248,24 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             if (!connection.StreamTracker.TryProcessItem(message, out var processTask))
             {
                 Log.UnexpectedStreamItem(_logger);
+                connection.ActiveInvocationLimit.Release();
                 return Task.CompletedTask;
             }
 
             Log.ReceivedStreamItem(_logger, message);
-            return processTask;
+            return ProcessTask(connection, processTask);
+
+            static async Task ProcessTask(HubConnectionContext connection, Task task)
+            {
+                try
+                {
+                    await task;
+                }
+                finally
+                {
+                    connection.ActiveInvocationLimit.Release();
+                }
+            }
         }
 
         private Task ProcessInvocation(HubConnectionContext connection,
@@ -271,8 +275,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 // Send an error to the client. Then let the normal completion process occur
                 Log.UnknownHubMethod(_logger, hubMethodInvocationMessage.Target);
-                return connection.WriteAsync(CompletionMessage.WithError(
+                var t = connection.WriteAsync(CompletionMessage.WithError(
                     hubMethodInvocationMessage.InvocationId, $"Unknown hub method '{hubMethodInvocationMessage.Target}'")).AsTask();
+
+                connection.ActiveInvocationLimit.Release();
+
+                return t;
             }
             else
             {
@@ -456,6 +464,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 {
                     await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
                 }
+
+                connection.ActiveInvocationLimit.Release();
             }
         }
 

@@ -73,6 +73,9 @@ namespace Microsoft.AspNetCore.SignalR
 
             _systemClock = contextOptions.SystemClock ?? new SystemClock();
             _lastSendTimeStamp = _systemClock.UtcNowTicks;
+
+            var maxInvokes = contextOptions.MaximumParallelInvocations;
+            ActiveInvocationLimit = new SemaphoreSlim(maxInvokes - 1, maxInvokes);
         }
 
         internal StreamTracker StreamTracker
@@ -95,6 +98,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         internal List<Task> ActiveHubInvocations { get; } = new List<Task>();
 
+        internal SemaphoreSlim ActiveInvocationLimit { get; }
 
         /// <summary>
         /// Gets a <see cref="CancellationToken"/> that notifies when the connection is aborted.

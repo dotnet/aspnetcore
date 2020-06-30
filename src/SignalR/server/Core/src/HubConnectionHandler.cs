@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly HubDispatcher<THub> _dispatcher;
         private readonly bool _enableDetailedErrors;
         private readonly long? _maximumMessageSize;
+        private readonly int _maxParallelInvokes;
 
         // Internal for testing
         internal ISystemClock SystemClock { get; set; } = new SystemClock();
@@ -70,6 +71,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 _maximumMessageSize = _hubOptions.MaximumReceiveMessageSize;
                 _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
+                _maxParallelInvokes = _hubOptions.MaxParallelInvocationsPerClient;
 
                 if (_hubOptions.HubFilters != null)
                 {
@@ -81,6 +83,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 _maximumMessageSize = _globalHubOptions.MaximumReceiveMessageSize;
                 _enableDetailedErrors = _globalHubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
+                _maxParallelInvokes = _globalHubOptions.MaxParallelInvocationsPerClient;
 
                 if (_globalHubOptions.HubFilters != null)
                 {
@@ -118,6 +121,7 @@ namespace Microsoft.AspNetCore.SignalR
                 StreamBufferCapacity = _hubOptions.StreamBufferCapacity ?? _globalHubOptions.StreamBufferCapacity ?? HubOptionsSetup.DefaultStreamBufferCapacity,
                 MaximumReceiveMessageSize = _maximumMessageSize,
                 SystemClock = SystemClock,
+                MaximumParallelInvocations = _maxParallelInvokes,
             };
 
             Log.ConnectedStarting(_logger);
@@ -236,7 +240,6 @@ namespace Microsoft.AspNetCore.SignalR
             var input = connection.Input;
             var protocol = connection.Protocol;
             connection.BeginClientTimeout();
-
 
             var binder = new HubConnectionBinder<THub>(_dispatcher, connection);
 
