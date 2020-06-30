@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.Components
     public class DefaultComponentActivator : IComponentActivator
     {
         /// <inheritdoc />
-        public IComponent CreateInstance(Type componentType)
+        public IComponent? CreateInstance(Type componentType)
         {
-            return Activator.CreateInstance(componentType);
+            return Activator.CreateInstance(componentType) as IComponent;
         }
     }
 }
