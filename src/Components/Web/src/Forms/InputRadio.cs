@@ -40,8 +40,8 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             if (string.IsNullOrEmpty(GroupName))
             {
-                throw new InvalidOperationException($"{GetType()} requires either an explicit 'name' attribute or " +
-                    $"a cascading parameter 'Name'. Normally this is provided by an ancestor {nameof(InputRadioGroup)}.");
+                throw new InvalidOperationException($"{GetType()} requires either an explicit string attribute 'name' or " +
+                    $"an ancestor {nameof(InputRadioGroup)}.");
             }
         }
 
