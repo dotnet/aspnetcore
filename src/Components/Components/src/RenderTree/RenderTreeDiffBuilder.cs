@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable warnings
+
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -915,7 +917,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         private static void InitializeNewElementReferenceCaptureFrame(ref DiffContext diffContext, ref RenderTreeFrame newFrame)
         {
-            var newElementReference = ElementReference.CreateWithUniqueId();
+            var newElementReference = ElementReference.CreateWithUniqueId(diffContext.Renderer.ElementReferenceContext);
             newFrame = newFrame.WithElementReferenceCaptureId(newElementReference.Id);
             newFrame.ElementReferenceCaptureAction(newElementReference);
         }

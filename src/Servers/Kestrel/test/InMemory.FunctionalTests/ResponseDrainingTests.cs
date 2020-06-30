@@ -39,12 +39,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 {
                     var transportConnection = connection.TransportConnection;
 
-                    var outputBufferedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var outputBufferedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
 #pragma warning disable 0618 // TODO: Repalce OnWriterCompleted
                     transportConnection.Output.OnWriterCompleted((ex, state) =>
                     {
-                        ((TaskCompletionSource<object>)state).SetResult(null);
+                        ((TaskCompletionSource)state).SetResult();
                     },
                     outputBufferedTcs);
 #pragma warning restore

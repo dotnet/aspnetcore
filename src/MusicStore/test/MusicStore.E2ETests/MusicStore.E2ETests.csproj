@@ -11,7 +11,6 @@
     <!-- https://github.com/dotnet/aspnetcore/issues/8343 -->
     <BuildHelixPayload>false</BuildHelixPayload>
     <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
-    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,7 +32,6 @@
     <Reference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.Extensions.Logging" />
 
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />

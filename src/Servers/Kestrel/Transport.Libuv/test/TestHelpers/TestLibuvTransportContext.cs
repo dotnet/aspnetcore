@@ -14,7 +14,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
 
             AppLifetime = new LifetimeNotImplemented();
             Log = new LibuvTrace(logger);
+#pragma warning disable CS0618
             Options = new LibuvTransportOptions { ThreadCount = 1 };
+#pragma warning restore CS0618
         }
     }
 }

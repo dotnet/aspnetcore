@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     var httpHandler = new TestHttpMessageHandler();
 
-                    var connectResponseTcs = new TaskCompletionSource<object>();
+                    var connectResponseTcs = new TaskCompletionSource();
                     httpHandler.OnGet("/?id=00000000-0000-0000-0000-000000000000", async (_, __) =>
                     {
                         await connectResponseTcs.Task;
@@ -374,7 +374,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             var startTask = connection.StartAsync();
                             Assert.False(connectResponseTcs.Task.IsCompleted);
                             Assert.False(startTask.IsCompleted);
-                            connectResponseTcs.TrySetResult(null);
+                            connectResponseTcs.TrySetResult();
                             await startTask.OrTimeout();
                         });
                 }
@@ -443,7 +443,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         })),
                         async (connection) =>
                         {
-                            // We aggregate failures that happen when we start the transport. The operation cancelled exception will
+                            // We aggregate failures that happen when we start the transport. The operation canceled exception will
                             // be an inner exception.
                             var ex = await Assert.ThrowsAsync<AggregateException>(async () => await connection.StartAsync(cts.Token)).OrTimeout();
                             Assert.Equal(3, ex.InnerExceptions.Count);
@@ -451,6 +451,29 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             var innerInnerEx = innerEx.InnerException;
                             Assert.IsType<OperationCanceledException>(innerInnerEx);
                         });
+                }
+            }
+
+            [Fact]
+            public async Task CanceledCancellationTokenPassedToStartThrows()
+            {
+                using (StartVerifiableLog())
+                {
+                    bool transportStartCalled = false;
+                    var httpHandler = new TestHttpMessageHandler();
+
+                    await WithConnectionAsync(
+                        CreateConnection(httpHandler,
+                        transport: new TestTransport(onTransportStart: () => {
+                            transportStartCalled = true;
+                            return Task.CompletedTask;
+                        })),
+                        async (connection) =>
+                        {
+                            await Assert.ThrowsAsync<TaskCanceledException>(async () => await connection.StartAsync(new CancellationToken(canceled: true))).OrTimeout();
+                        });
+
+                    Assert.False(transportStartCalled);
                 }
             }
 

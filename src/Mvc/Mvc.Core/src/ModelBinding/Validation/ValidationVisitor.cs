@@ -133,7 +133,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <param name="alwaysValidateAtTopLevel">If <c>true</c>, applies validation rules even if the top-level value is <c>null</c>.</param>
         /// <returns><c>true</c> if the object is valid, otherwise <c>false</c>.</returns>
         public virtual bool Validate(ModelMetadata metadata, string key, object model, bool alwaysValidateAtTopLevel)
+            => Validate(metadata, key, model, alwaysValidateAtTopLevel, container: null);
+
+        /// <summary>
+        /// Validates a object.
+        /// </summary>
+        /// <param name="metadata">The <see cref="ModelMetadata"/> associated with the model.</param>
+        /// <param name="key">The model prefix key.</param>
+        /// <param name="model">The model object.</param>
+        /// <param name="alwaysValidateAtTopLevel">If <c>true</c>, applies validation rules even if the top-level value is <c>null</c>.</param>
+        /// <param name="container">The model container.</param>
+        /// <returns><c>true</c> if the object is valid, otherwise <c>false</c>.</returns>
+        public virtual bool Validate(ModelMetadata metadata, string key, object model, bool alwaysValidateAtTopLevel, object container)
         {
+            if (container != null && metadata.MetadataKind != ModelMetadataKind.Property)
+            {
+                throw new ArgumentException(Resources.FormatValidationVisitor_ContainerCannotBeSpecified(metadata.MetadataKind));
+            }
+
             if (model == null && key != null && !alwaysValidateAtTopLevel)
             {
                 var entry = ModelState[key];
@@ -148,6 +165,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 return true;
             }
 
+            // Container is non-null only when validation top-level properties. Start off by treating "container" as the "Model" instance.
+            // Invoking StateManager.Recurse later in this invocation will result in it being correctly used as the container instance during the
+            // validation of "model".
+            Model = container;
             return Visit(metadata, key, model);
         }
 
@@ -223,12 +244,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 return true;
             }
 
+            bool result;
+            try
+            {
+                // Throws InvalidOperationException if the object graph is too deep
+                result = VisitImplementation(ref metadata, ref key, model);
+            }
+            finally
+            {
+                _currentPath.Pop(model);
+            }
+            return result;
+        }
+
+        private bool VisitImplementation(ref ModelMetadata metadata, ref string key, object model)
+        {
             if (MaxValidationDepth != null && _currentPath.Count > MaxValidationDepth)
             {
                 // Non cyclic but too deep an object graph.
-
-                // Pop the current model to make ValidationStack.Dispose happy
-                _currentPath.Pop(model);
 
                 string message;
                 switch (metadata.MetadataKind)
@@ -264,7 +297,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             {
                 // Use the key on the entry, because we might not have entries in model state.
                 SuppressValidation(entry.Key);
-                _currentPath.Pop(model);
                 return true;
             }
             // If the metadata indicates that no validators exist AND the aggregate state for the key says that the model graph
@@ -282,7 +314,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                     }
                 }
 
-                _currentPath.Pop(model);
                 return true;
             }
 
@@ -401,7 +432,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             private readonly string _key;
             private readonly ModelMetadata _metadata;
             private readonly object _model;
-            private readonly object _newModel;
             private readonly IValidationStrategy _strategy;
 
             public static StateManager Recurse(
@@ -411,7 +441,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 object model,
                 IValidationStrategy strategy)
             {
-                var recursifier = new StateManager(visitor, model);
+                var recursifier = new StateManager(visitor, null);
 
                 visitor.Container = visitor.Model;
                 visitor.Key = key;
@@ -425,7 +455,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             public StateManager(ValidationVisitor visitor, object newModel)
             {
                 _visitor = visitor;
-                _newModel = newModel;
 
                 _container = _visitor.Container;
                 _key = _visitor.Key;
@@ -441,8 +470,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 _visitor.Metadata = _metadata;
                 _visitor.Model = _model;
                 _visitor.Strategy = _strategy;
-
-                _visitor._currentPath.Pop(_newModel);
             }
         }
     }

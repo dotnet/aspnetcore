@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable warnings
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -73,6 +75,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// Gets the <see cref="Microsoft.AspNetCore.Components.Dispatcher" /> associated with this <see cref="Renderer" />.
         /// </summary>
         public abstract Dispatcher Dispatcher { get; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Components.ElementReferenceContext"/> associated with this <see cref="Renderer"/>,
+        /// if it exists.
+        /// </summary>
+        protected internal ElementReferenceContext? ElementReferenceContext { get; protected set; }
 
         /// <summary>
         /// Constructs a new component of the specified type.

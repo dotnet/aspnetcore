@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -21,7 +22,7 @@ namespace Templates.Test
         }
 
         [ConditionalTheory]
-        [SkipOnHelix("missing files")]
+        [QuarantinedTest]
         [InlineData("Web.ProjectTemplates")]
         [InlineData("Web.Spa.ProjectTemplates")]
         public void JSAndJSONInAllTemplates_ShouldNotContainBOM(string projectName)
@@ -63,7 +64,7 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
-        [SkipOnHelix("missing files")]
+        [QuarantinedTest]
         public void RazorFilesInWebProjects_ShouldContainBOM()
         {
             var projectName = "Web.ProjectTemplates";
@@ -71,6 +72,8 @@ namespace Templates.Test
             var projectTemplateDir = Directory.GetParent(currentDirectory).Parent.Parent.Parent.FullName;
             var path = Path.Combine(projectName, "content");
             var directories = Directory.GetDirectories(Path.Combine(projectTemplateDir, path), "*Sharp");
+
+            bool nonBOMFilesPresent = false;
 
             foreach (var directory in directories)
             {
@@ -86,11 +89,15 @@ namespace Templates.Test
 
                     // Check for UTF8 BOM 0xEF,0xBB,0xBF
                     var expectedBytes = Encoding.UTF8.GetPreamble();
-                    Assert.True(
-                        bytes[0] == expectedBytes[0] && bytes[1] == expectedBytes[1] && bytes[2] == expectedBytes[2],
-                        $"File {filePath} doesn't contains UTF-8 BOM characters.");
+                    if (bytes[0] != expectedBytes[0] || bytes[1] != expectedBytes[1] || bytes[2] != expectedBytes[2])
+                    {
+                        _output.WriteLine($"File {filePath} does not have UTF-8 BOM characters.");
+                        nonBOMFilesPresent = true;
+                    }
                 }
             }
+
+            Assert.False(nonBOMFilesPresent);
         }
     }
 }

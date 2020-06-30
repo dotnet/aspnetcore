@@ -51,11 +51,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            if (configure != null)
-            {
-                services.Configure(configure);
-            }
-
+            services.Configure(configure);
             return services.AddAuthorizationCore();
         }
     }

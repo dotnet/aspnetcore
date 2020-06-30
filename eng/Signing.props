@@ -1,6 +1,6 @@
 <Project>
-
   <!-- See https://github.com/dotnet/arcade/blob/master/Documentation/CorePackages/Signing.md for details. -->
+  <Import Project="Common.props" />
 
   <ItemGroup>
     <!-- Reset Arcade's defaults. -->
@@ -69,7 +69,6 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetRuntimeIdentifier Condition="'$(TargetRuntimeIdentifier)' == ''">$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
     <BaseRedistNetCorePath>$(ArtifactsObjDir)RedistSharedFx.Layout\$(Configuration)\</BaseRedistNetCorePath>
     <RedistNetCorePath>$(BaseRedistNetCorePath)$(TargetRuntimeIdentifier)\</RedistNetCorePath>
   </PropertyGroup>
@@ -93,9 +92,11 @@
     <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-x64\shared\Microsoft.NETCore.App\**\*.dll" CertificateName="None" />
     <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-x86\shared\Microsoft.NETCore.App\**\*.dll" CertificateName="None" />
     <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-arm\shared\Microsoft.NETCore.App\**\*.dll" CertificateName="None" />
+    <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-arm64\shared\Microsoft.NETCore.App\**\*.dll" CertificateName="None" />
     <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-x64\host\**\*.dll" CertificateName="None" />
     <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-x86\host\**\*.dll" CertificateName="None" />
     <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-arm\host\**\*.dll" CertificateName="None" />
+    <_DotNetFilesToExclude Include="$(BaseRedistNetCorePath)win-arm64\host\**\*.dll" CertificateName="None" />
     <_DotNetFilesToExclude Include="$(RedistNetCorePath)dotnet.exe" CertificateName="None" />
     <FileSignInfo Include="@(_DotNetFilesToExclude->'%(FileName)%(Extension)'->Distinct())" CertificateName="None" />
 

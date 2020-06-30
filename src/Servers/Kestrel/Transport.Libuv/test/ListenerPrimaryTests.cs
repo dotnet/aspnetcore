@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             }
 
             // Create a pipe connection and keep it open without sending any data
-            var connectTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var connectTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var connectionTrace = new LibuvTrace(new TestApplicationErrorLogger());
             var pipe = new UvPipeHandle(connectionTrace);
 
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                         }
                         else
                         {
-                            connectTcs.SetResult(null);
+                            connectTcs.SetResult();
                         }
                     },
                     null);

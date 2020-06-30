@@ -121,6 +121,37 @@ namespace Microsoft.AspNetCore.Authorization.Test
             Assert.True(chainedBuilder.TestProperty);
         }
 
+        [Fact]
+        public void AllowAnonymous_Default()
+        {
+            // Arrange
+            var builder = new TestEndpointConventionBuilder();
+
+            // Act
+            builder.AllowAnonymous();
+
+            // Assert
+            var convention = Assert.Single(builder.Conventions);
+
+            var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
+            convention(endpointModel);
+
+            Assert.IsAssignableFrom<IAllowAnonymous>(Assert.Single(endpointModel.Metadata));
+        }
+
+        [Fact]
+        public void AllowAnonymous_ChainedCall()
+        {
+            // Arrange
+            var builder = new TestEndpointConventionBuilder();
+
+            // Act
+            var chainedBuilder = builder.AllowAnonymous();
+
+            // Assert
+            Assert.True(chainedBuilder.TestProperty);
+        }
+
         private class TestEndpointConventionBuilder : IEndpointConventionBuilder
         {
             public IList<Action<EndpointBuilder>> Conventions { get; } = new List<Action<EndpointBuilder>>();

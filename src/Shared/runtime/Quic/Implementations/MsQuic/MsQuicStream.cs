@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -23,7 +24,7 @@ namespace System.Net.Quic.Implementations.MsQuic
         private GCHandle _handle;
 
         // Delegate that wraps the static function that will be called when receiving an event.
-        private StreamCallbackDelegate _callback;
+        private StreamCallbackDelegate? _callback;
 
         // Backing for StreamId
         private long _streamId = -1;
@@ -60,7 +61,7 @@ namespace System.Net.Quic.Implementations.MsQuic
         // Used by the class to indicate that the stream is writable.
         private readonly bool _canWrite;
 
-        private volatile bool _disposed = false;
+        private volatile bool _disposed;
 
         private List<QuicBuffer> _receiveQuicBuffers = new List<QuicBuffer>();
 
@@ -128,9 +129,9 @@ namespace System.Net.Quic.Implementations.MsQuic
 
             ThrowIfDisposed();
 
-            using CancellationTokenRegistration registration = await HandleWriteStartState(cancellationToken);
+            using CancellationTokenRegistration registration = await HandleWriteStartState(cancellationToken).ConfigureAwait(false);
 
-            await SendReadOnlySequenceAsync(buffers, endStream ? QUIC_SEND_FLAG.FIN : QUIC_SEND_FLAG.NONE);
+            await SendReadOnlySequenceAsync(buffers, endStream ? QUIC_SEND_FLAG.FIN : QUIC_SEND_FLAG.NONE).ConfigureAwait(false);
 
             HandleWriteCompletedState();
 
@@ -148,9 +149,9 @@ namespace System.Net.Quic.Implementations.MsQuic
 
             ThrowIfDisposed();
 
-            using CancellationTokenRegistration registration = await HandleWriteStartState(cancellationToken);
+            using CancellationTokenRegistration registration = await HandleWriteStartState(cancellationToken).ConfigureAwait(false);
 
-            await SendReadOnlyMemoryListAsync(buffers, endStream ? QUIC_SEND_FLAG.FIN : QUIC_SEND_FLAG.NONE);
+            await SendReadOnlyMemoryListAsync(buffers, endStream ? QUIC_SEND_FLAG.FIN : QUIC_SEND_FLAG.NONE).ConfigureAwait(false);
 
             HandleWriteCompletedState();
 
@@ -163,9 +164,9 @@ namespace System.Net.Quic.Implementations.MsQuic
 
             ThrowIfDisposed();
 
-            using CancellationTokenRegistration registration = await HandleWriteStartState(cancellationToken);
+            using CancellationTokenRegistration registration = await HandleWriteStartState(cancellationToken).ConfigureAwait(false);
 
-            await SendReadOnlyMemoryAsync(buffer, endStream ? QUIC_SEND_FLAG.FIN : QUIC_SEND_FLAG.NONE);
+            await SendReadOnlyMemoryAsync(buffer, endStream ? QUIC_SEND_FLAG.FIN : QUIC_SEND_FLAG.NONE).ConfigureAwait(false);
 
             HandleWriteCompletedState();
 
@@ -208,7 +209,7 @@ namespace System.Net.Quic.Implementations.MsQuic
             // Make sure start has completed
             if (!_started)
             {
-                await _sendResettableCompletionSource.GetTypelessValueTask();
+                await _sendResettableCompletionSource.GetTypelessValueTask().ConfigureAwait(false);
                 _started = true;
             }
 
@@ -276,7 +277,7 @@ namespace System.Net.Quic.Implementations.MsQuic
             // TODO there could potentially be a perf gain by storing the buffer from the inital read
             // This reduces the amount of async calls, however it makes it so MsQuic holds onto the buffers
             // longer than it needs to. We will need to benchmark this.
-            int length = (int)await _receiveResettableCompletionSource.GetValueTask();
+            int length = (int)await _receiveResettableCompletionSource.GetValueTask().ConfigureAwait(false);
 
             int actual = Math.Min(length, destination.Length);
 
@@ -424,7 +425,7 @@ namespace System.Net.Quic.Implementations.MsQuic
         {
             ThrowIfDisposed();
 
-            return default;
+            return default!;
         }
 
         public override ValueTask DisposeAsync()
@@ -500,7 +501,7 @@ namespace System.Net.Quic.Implementations.MsQuic
             ref StreamEvent streamEvent)
         {
             var handle = GCHandle.FromIntPtr(context);
-            var quicStream = (MsQuicStream)handle.Target;
+            var quicStream = (MsQuicStream)handle.Target!;
 
             return quicStream.HandleEvent(ref streamEvent);
         }

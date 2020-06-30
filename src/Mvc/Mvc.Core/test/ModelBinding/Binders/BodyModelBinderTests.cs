@@ -657,8 +657,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private static BodyModelBinder CreateBinder(IList<IInputFormatter> formatters, bool treatEmptyInputAsDefaultValueOption = false)
         {
-            var options = new MvcOptions { AllowEmptyInputInBodyModelBinding = treatEmptyInputAsDefaultValueOption };
-            return CreateBinder(formatters, options);
+            var options = new MvcOptions();
+            var binder = CreateBinder(formatters, options);
+            binder.AllowEmptyBody = treatEmptyInputAsDefaultValueOption;
+
+            return binder;
         }
 
         private static BodyModelBinder CreateBinder(IList<IInputFormatter> formatters, MvcOptions mvcOptions)

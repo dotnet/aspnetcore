@@ -20,7 +20,7 @@ namespace Microsoft.JSInterop
         /// If not set, the identifier is taken from the name of the method. In this case the
         /// method name must be unique within the assembly.
         /// </summary>
-        public string Identifier { get; }
+        public string? Identifier { get; }
 
         /// <summary>
         /// Constructs an instance of <see cref="JSInvokableAttribute"/> without setting

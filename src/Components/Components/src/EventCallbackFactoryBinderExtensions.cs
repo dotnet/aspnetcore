@@ -34,11 +34,11 @@ namespace Microsoft.AspNetCore.Components
         public static EventCallback<ChangeEventArgs> CreateBinder(
             this EventCallbackFactory factory,
             object receiver,
-            Action<string> setter,
+            Action<string?> setter,
             string existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
-            return CreateBinderCore<string>(factory, receiver, setter, culture, ConvertToString);
+            return CreateBinderCore<string?>(factory, receiver, setter, culture, ConvertToString);
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<bool> setter,
             bool existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<bool>(factory, receiver, setter, culture, ConvertToBool);
         }
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<bool?> setter,
             bool? existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<bool?>(factory, receiver, setter, culture, ConvertToNullableBool);
         }
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<int> setter,
             int existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<int>(factory, receiver, setter, culture, ConvertToInt);
         }
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<int?> setter,
             int? existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<int?>(factory, receiver, setter, culture, ConvertToNullableInt);
         }
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<long> setter,
             long existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<long>(factory, receiver, setter, culture, ConvertToLong);
         }
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<short> setter,
             short existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<short>(factory, receiver, setter, culture, ConvertToShort);
         }
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<long?> setter,
             long? existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<long?>(factory, receiver, setter, culture, ConvertToNullableLong);
         }
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<short?> setter,
             short? existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<short?>(factory, receiver, setter, culture, ConvertToNullableShort);
         }
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<float> setter,
             float existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<float>(factory, receiver, setter, culture, ConvertToFloat);
         }
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<float?> setter,
             float? existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<float?>(factory, receiver, setter, culture, ConvertToNullableFloat);
         }
@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<double> setter,
             double existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<double>(factory, receiver, setter, culture, ConvertToDoubleDelegate);
         }
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<double?> setter,
             double? existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<double?>(factory, receiver, setter, culture, ConvertToNullableDoubleDelegate);
         }
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<decimal> setter,
             decimal existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<decimal>(factory, receiver, setter, culture, ConvertToDecimal);
         }
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<decimal?> setter,
             decimal? existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<decimal?>(factory, receiver, setter, culture, ConvertToNullableDecimal);
         }
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<DateTime> setter,
             DateTime existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<DateTime>(factory, receiver, setter, culture, ConvertToDateTime);
         }
@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.Components
             Action<DateTime> setter,
             DateTime existingValue,
             string format,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<DateTime>(factory, receiver, setter, culture, format, ConvertToDateTimeWithFormat);
         }
@@ -361,7 +361,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<DateTime?> setter,
             DateTime? existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<DateTime?>(factory, receiver, setter, culture, ConvertToNullableDateTime);
         }
@@ -382,7 +382,7 @@ namespace Microsoft.AspNetCore.Components
             Action<DateTime?> setter,
             DateTime? existingValue,
             string format,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<DateTime?>(factory, receiver, setter, culture, format, ConvertToNullableDateTimeWithFormat);
         }
@@ -401,7 +401,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<DateTimeOffset> setter,
             DateTimeOffset existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<DateTimeOffset>(factory, receiver, setter, culture, ConvertToDateTimeOffset);
         }
@@ -422,7 +422,7 @@ namespace Microsoft.AspNetCore.Components
             Action<DateTimeOffset> setter,
             DateTimeOffset existingValue,
             string format,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<DateTimeOffset>(factory, receiver, setter, culture, format, ConvertToDateTimeOffsetWithFormat);
         }
@@ -441,7 +441,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<DateTimeOffset?> setter,
             DateTimeOffset? existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<DateTimeOffset?>(factory, receiver, setter, culture, ConvertToNullableDateTimeOffset);
         }
@@ -462,7 +462,7 @@ namespace Microsoft.AspNetCore.Components
             Action<DateTimeOffset?> setter,
             DateTimeOffset? existingValue,
             string format,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<DateTimeOffset?>(factory, receiver, setter, culture, format, ConvertToNullableDateTimeOffsetWithFormat);
         }
@@ -482,7 +482,7 @@ namespace Microsoft.AspNetCore.Components
             object receiver,
             Action<T> setter,
             T existingValue,
-            CultureInfo culture = null)
+            CultureInfo? culture = null)
         {
             return CreateBinderCore<T>(factory, receiver, setter, culture, ParserDelegateCache.Get<T>());
         }
@@ -491,7 +491,7 @@ namespace Microsoft.AspNetCore.Components
             this EventCallbackFactory factory,
             object receiver,
             Action<T> setter,
-            CultureInfo culture,
+            CultureInfo? culture,
             BindConverter.BindParser<T> converter)
         {
             Action<ChangeEventArgs> callback = e =>
@@ -520,11 +520,11 @@ namespace Microsoft.AspNetCore.Components
                 //   know that the data they are submitting is different from what they think they've typed
                 if (converted)
                 {
-                    setter(value);
+                    setter(value!);
                 }
                 else if (string.Empty.Equals(e.Value))
                 {
-                    setter(default);
+                    setter(default!);
                 }
             };
             return factory.Create<ChangeEventArgs>(receiver, callback);
@@ -534,7 +534,7 @@ namespace Microsoft.AspNetCore.Components
             this EventCallbackFactory factory,
             object receiver,
             Action<T> setter,
-            CultureInfo culture,
+            CultureInfo? culture,
             string format,
             BindConverter.BindParserWithFormat<T> converter)
         {
@@ -564,11 +564,11 @@ namespace Microsoft.AspNetCore.Components
                 //   know that the data they are submitting is different from what they think they've typed
                 if (converted)
                 {
-                    setter(value);
+                    setter(value!);
                 }
                 else if (string.Empty.Equals(e.Value))
                 {
-                    setter(default);
+                    setter(default!);
                 }
             };
             return factory.Create<ChangeEventArgs>(receiver, callback);

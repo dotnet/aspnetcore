@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             httpContext.Request.Headers.Add("header-name", "header-value");
 
             // Will not be accessed
-            httpContext.Request.Form = null;
+            httpContext.Request.Form = null!;
 
             var options = new AntiforgeryOptions
             {
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             httpContext.Request.ContentType = "application/json";
 
             // Will not be accessed
-            httpContext.Request.Form = null;
+            httpContext.Request.Form = null!;
 
             var options = new AntiforgeryOptions
             {
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.NotNull(cookies);
             Assert.Equal(_cookieName, cookies.Key);
             Assert.Equal("serialized-value", cookies.Value);
-            Assert.True(cookies.Options.HttpOnly);
+            Assert.True(cookies.Options!.HttpOnly);
             Assert.Equal(defaultCookieSecureValue, cookies.Options.Secure);
         }
 
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.NotNull(cookies);
             Assert.Equal(_cookieName, cookies.Key);
             Assert.Equal("serialized-value", cookies.Value);
-            Assert.True(cookies.Options.HttpOnly);
+            Assert.True(cookies.Options!.HttpOnly);
             Assert.Equal(expectedCookiePath, cookies.Options.Path);
         }
 
@@ -361,7 +361,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.NotNull(cookies);
             Assert.Equal(_cookieName, cookies.Key);
             Assert.Equal("serialized-value", cookies.Value);
-            Assert.True(cookies.Options.HttpOnly);
+            Assert.True(cookies.Options!.HttpOnly);
             Assert.Equal(expectedCookiePath, cookies.Options.Path);
         }
 
@@ -400,7 +400,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Assert.NotNull(cookies);
             Assert.Equal(_cookieName, cookies.Key);
             Assert.Equal("serialized-value", cookies.Value);
-            Assert.True(cookies.Options.HttpOnly);
+            Assert.True(cookies.Options!.HttpOnly);
             Assert.Equal("/vdir1", cookies.Options.Path);
             Assert.Equal(expectedCookieDomain, cookies.Options.Domain);
         }
@@ -421,9 +421,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
         private class MockResponseCookieCollection : IResponseCookies
         {
-            public string Key { get; set; }
-            public string Value { get; set; }
-            public CookieOptions Options { get; set; }
+            public string? Key { get; set; }
+            public string? Value { get; set; }
+            public CookieOptions? Options { get; set; }
             public int Count { get; set; }
 
             public void Append(string key, string value, CookieOptions options)

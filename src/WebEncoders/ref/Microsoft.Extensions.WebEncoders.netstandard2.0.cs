@@ -14,7 +14,7 @@ namespace Microsoft.Extensions.WebEncoders
     public sealed partial class WebEncoderOptions
     {
         public WebEncoderOptions() { }
-        public System.Text.Encodings.Web.TextEncoderSettings TextEncoderSettings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Text.Encodings.Web.TextEncoderSettings? TextEncoderSettings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
 }
 namespace Microsoft.Extensions.WebEncoders.Testing

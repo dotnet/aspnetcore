@@ -17,13 +17,13 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         public static readonly EventCallbackWorkItem Empty = new EventCallbackWorkItem(null);
 
-        private readonly MulticastDelegate _delegate;
+        private readonly MulticastDelegate? _delegate;
 
         /// <summary>
         /// Creates a new <see cref="EventCallbackWorkItem"/> with the provided <paramref name="delegate"/>.
         /// </summary>
         /// <param name="delegate">The callback delegate.</param>
-        public EventCallbackWorkItem(MulticastDelegate @delegate)
+        public EventCallbackWorkItem(MulticastDelegate? @delegate)
         {
             _delegate = @delegate;
         }
@@ -33,12 +33,12 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="arg">The argument to provide to the delegate. May be <c>null</c>.</param>
         /// <returns>A <see cref="Task"/> then will complete asynchronously once the delegate has completed.</returns>
-        public Task InvokeAsync(object arg)
+        public Task InvokeAsync(object? arg)
         {
-            return InvokeAsync<object>(_delegate, arg);
+            return InvokeAsync<object?>(_delegate, arg);
         }
 
-        internal static Task InvokeAsync<T>(MulticastDelegate @delegate, T arg)
+        internal static Task InvokeAsync<T>(MulticastDelegate? @delegate, T arg)
         {
             switch (@delegate)
             {
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Components
                             // Since we fell into the DynamicInvoke case, any exception will be wrapped
                             // in a TIE. We can expect this to be thrown synchronously, so it's low overhead
                             // to unwrap it.
-                            return Task.FromException(e.InnerException);
+                            return Task.FromException(e.InnerException!);
                         }
                     }
             }

@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Analyzers
         }
 
         [Theory]
-        [InlineData(nameof(StartupWithUseSignalR))]
         [InlineData(nameof(StartupWithMapHub))]
         [InlineData(nameof(StartupWithMapBlazorHub))]
         public async Task DetectFeaturesAsync_FindsSignalR(string source)

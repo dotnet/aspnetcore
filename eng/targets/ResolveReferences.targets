@@ -86,7 +86,8 @@
         @(AspNetCoreAppReferenceAndPackage);
         @(ExternalAspNetCoreAppReference);
         @(_CompilationOnlyReference);
-        @(Reference->WithMetadataValue('IsSharedSource', 'true'))" />
+        @(Reference->WithMetadataValue('IsSharedSource', 'true'));
+        @(Reference->WithMetadataValue('PrivateAssets', 'All'))" />
     <_OriginalReferences Include="@(Reference)" />
     <!--
       Turn Reference items into a ProjectReference when UseProjectReferences is true.
@@ -132,7 +133,9 @@
     This target resolves remaining Referene items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
     This executes on NuGet restore and during DesignTimeBuild. It should not run in the outer, cross-targeting build.
    -->
-  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences" Condition=" '$(TargetFramework)' != '' AND '$(EnableCustomReferenceResolution)' == 'true' ">
+  <Target Name="ResolveCustomReferences"
+      BeforeTargets="CheckForImplicitPackageReferenceOverrides;CollectPackageReferences;ResolvePackageAssets"
+      Condition=" '$(TargetFramework)' != '' AND '$(EnableCustomReferenceResolution)' == 'true' ">
     <ItemGroup>
       <!-- Ensure only content asset are consumed from .Sources packages -->
       <Reference>
@@ -144,41 +147,40 @@
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName);@(PackageReference)" />
       <!-- Only allow suppressing baseline changes in non-servicing builds. -->
       <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)" Condition="'$(IsServicingBuild)' != 'true'"/>
+    </ItemGroup>
 
-      <!--
-        MSBuild does not provide a way to join on matching identities in a Condition,
-        but you can do a cartesian product of two item groups and filter out mismatched id's in a second pass.
-      -->
-      <_LatestPackageReferenceWithVersion Include="@(Reference)" Condition=" '$(UseLatestPackageReferences)' == 'true' ">
-        <Id>%(LatestPackageReference.Identity)</Id>
-        <Version>%(LatestPackageReference.Version)</Version>
-      </_LatestPackageReferenceWithVersion>
-      <_LatestPackageReferenceWithVersion Remove="@(_LatestPackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
+    <JoinItems Left="@(Reference)" Right="@(LatestPackageReference)" LeftMetadata="*" RightMetadata="Version"
+        Condition=" '$(UseLatestPackageReferences)' == 'true' ">
+      <Output TaskParameter="JoinResult" ItemName="_LatestPackageReferenceWithVersion" />
+    </JoinItems>
 
+    <ItemGroup>
       <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
-      <Reference Remove="@(_LatestPackageReferenceWithVersion)" />
       <PackageReference Include="@(_LatestPackageReferenceWithVersion)" IsImplicitlyDefined="true" />
+      <Reference Remove="@(_LatestPackageReferenceWithVersion)" />
+    </ItemGroup>
 
-      <!-- Resolve references from BaselinePackageReference for servicing builds. -->
-      <_BaselinePackageReferenceWithVersion Include="@(Reference)" Condition=" '$(IsServicingBuild)' == 'true' OR '$(UseLatestPackageReferences)' != 'true' ">
-        <Id>%(BaselinePackageReference.Identity)</Id>
-        <Version>%(BaselinePackageReference.Version)</Version>
-      </_BaselinePackageReferenceWithVersion>
+    <!-- Resolve references from BaselinePackageReference for servicing builds in corner cases. May be unused. -->
+    <JoinItems Left="@(Reference)" Right="@(BaselinePackageReference)" LeftMetadata="*" RightMetadata="Version"
+          Condition=" '$(IsServicingBuild)' == 'true' OR '$(UseLatestPackageReferences)' != 'true' ">
+      <Output TaskParameter="JoinResult" ItemName="_BaselinePackageReferenceWithVersion" />
+    </JoinItems>
 
-      <_BaselinePackageReferenceWithVersion Remove="@(_BaselinePackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
-
+    <ItemGroup>
       <!-- Remove reference items that have been resolved to a BaselinePackageReference item. -->
       <PackageReference Include="@(_BaselinePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
       <Reference Remove="@(_BaselinePackageReferenceWithVersion)" />
+    </ItemGroup>
 
-      <!-- For PrivateAssets=All references, like .Sources packages, fallback to LatestPackageReferences. -->
-      <_PrivatePackageReferenceWithVersion Include="@(Reference->WithMetadataValue('PrivateAssets', 'All'))">
-        <Id>%(LatestPackageReference.Identity)</Id>
-        <Version>%(LatestPackageReference.Version)</Version>
-      </_PrivatePackageReferenceWithVersion>
+    <!-- For PrivateAssets=All references, like .Sources packages, fallback to LatestPackageReferences. -->
+    <JoinItems Left="@(Reference->WithMetadataValue('PrivateAssets', 'All'))"
+        Right="@(LatestPackageReference)"
+        LeftMetadata="*"
+        RightMetadata="Version">
+      <Output TaskParameter="JoinResult" ItemName="_PrivatePackageReferenceWithVersion" />
+    </JoinItems>
 
-      <_PrivatePackageReferenceWithVersion Remove="@(_PrivatePackageReferenceWithVersion)" Condition="'%(Id)' != '%(Identity)' " />
-
+    <ItemGroup>
       <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
       <PackageReference Include="@(_PrivatePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
       <Reference Remove="@(_PrivatePackageReferenceWithVersion)" />
@@ -216,16 +218,16 @@
         Condition=" '$(CompileUsingReferenceAssemblies)' != false AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">true</_CompileTfmUsingReferenceAssemblies>
   </PropertyGroup>
   <!--
-    If we have a ref/ assembly from Extensions for a package, use that when compiling. The build-only reference to
-    Microsoft.Internal.Extensions.Refs ensures package is installed and $(MicrosoftInternalExtensionsRefsPath) is set.
+    If we have a ref/ assembly from dotnet/runtime for an Extension package, use that when compiling but do not reference its assemblies.
   -->
   <ItemGroup
       Condition=" $(_CompileTfmUsingReferenceAssemblies) OR ('$(IsTargetingPackBuilding)' != 'false' AND '$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Ref') ">
-    <PackageReference Include="Microsoft.Internal.Extensions.Refs"
-        Version="$(MicrosoftInternalExtensionsRefsPackageVersion)"
+    <PackageReference Include="Microsoft.Extensions.Internal.Transport"
+        Version="$(MicrosoftExtensionsInternalTransportPackageVersion)"
         IsImplicitlyDefined="true"
-        IncludeAssets="Build"
-        PrivateAssets="All" />
+        IncludeAssets="Compile"
+        PrivateAssets="All"
+        GeneratePathProperty="true" />
   </ItemGroup>
 
   <!-- These targets are used to generate the map of assembly name to project files. See also the /t:GenerateProjectList target in build/repo.targets. -->

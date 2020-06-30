@@ -157,11 +157,11 @@ namespace Microsoft.AspNetCore.Hosting
             },
             applicationLifetime);
 
-            var waitForStop = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var waitForStop = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             applicationLifetime.ApplicationStopping.Register(obj =>
             {
-                var tcs = (TaskCompletionSource<object>)obj;
-                tcs.TrySetResult(null);
+                var tcs = (TaskCompletionSource)obj;
+                tcs.TrySetResult();
             }, waitForStop);
 
             await waitForStop.Task;

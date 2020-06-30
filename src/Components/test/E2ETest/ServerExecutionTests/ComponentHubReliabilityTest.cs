@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -14,6 +16,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19666")]
     public class ComponentHubReliabilityTest : IgnitorTest<ServerStartup>
     {
         public ComponentHubReliabilityTest(BasicTestAppServerSiteFixture<ServerStartup> serverFixture, ITestOutputHelper output)
@@ -21,8 +24,33 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
         }
 
+        protected override async Task InitializeAsync()
+        {
+            await base.InitializeAsync();
+
+            var rootUri = ServerFixture.RootUri;
+            var baseUri = new Uri(rootUri, "/subdir");
+            var client = new HttpClient();
+            for (var i = 0; i < 10; i++)
+            {
+                try
+                {
+                    var response = await client.GetAsync(baseUri + "/_negotiate");
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        break;
+                    }
+                }
+                catch
+                {
+                    await Task.Delay(500);
+                    throw;
+                }
+            }
+
+        }
+
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19414")]
         public async Task CannotStartMultipleCircuits()
         {
             // Arrange

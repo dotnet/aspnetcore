@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.Internal
 {
     internal class QuicStreamContext : TransportConnection, IStreamDirectionFeature, IProtocolErrorCodeFeature, IStreamIdFeature
     {
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
         private string _connectionId;
         private const int MinAllocBufferSize = 4096;
         private volatile Exception _shutdownReason;
-        private readonly TaskCompletionSource<object> _waitForConnectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly object _shutdownLock = new object();
 
         public QuicStreamContext(QuicStream stream, QuicConnectionContext connection, QuicTransportContext context)
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Internal
             {
                 state.CancelConnectionClosedToken();
 
-                state._waitForConnectionClosedTcs.TrySetResult(null);
+                state._waitForConnectionClosedTcs.TrySetResult();
             },
             this,
             preferLocal: false);

@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <UseBlazorWebAssembly>true</UseBlazorWebAssembly>
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
+    <ServiceWorkerAssetsManifest>custom-service-worker-assets.js</ServiceWorkerAssetsManifest>
+  </PropertyGroup>
+
+  <!-- Test Placeholder -->
+
+  <PropertyGroup Condition="'$(RunningAsTest)' == ''">
+    <!-- We don't want to run build server when not running as tests. -->
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(BinariesRoot)'==''">
+    <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
+    <BinariesRoot>$(RepoRoot)artifacts\bin\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\$(Configuration)\netstandard2.0\</BinariesRoot>
+  </PropertyGroup>
+
+  <!-- DO NOT add addition references here. This is meant to simulate a non-MVC library -->
+  <ItemGroup Condition="'$(BinariesRoot)'!=''">
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.ComponentShim.dll"/>
+    <ProjectReference Include="..\razorclasslibrary\RazorClassLibrary.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- These assets should be treated as static web assets for publish purposes -->
+    <Content Include="..\LinkBaseToWebRoot\**\*.js">
+      <LinkBase>wwwroot\</LinkBase>
+    </Content>
+
+    <!-- This asset should be ignored as a static web assets as it defines CopyToPublishDirectory="Never" -->
+    <Content Update="wwwroot\css\app.css" CopyToPublishDirectory="Never" />
+
+    <!-- This asset should be treated as a static web asset and copied into the right location defined by its link attribute. -->
+    <Content Include="LinkToWebRoot\css\app.css" Link="wwwroot\css\app.css" />
+
+    <!-- The content from my-prod-service-worker.js should be published under the name my-service-worker.js -->
+    <ServiceWorker Include="wwwroot\serviceworkers\my-service-worker.js" PublishedContent="wwwroot\serviceworkers\my-prod-service-worker.js" />
+  </ItemGroup>
+
+</Project>

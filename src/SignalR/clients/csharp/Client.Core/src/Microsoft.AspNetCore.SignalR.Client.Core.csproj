@@ -4,7 +4,6 @@
     <Description>Client for ASP.NET Core SignalR</Description>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <RootNamespace>Microsoft.AspNetCore.SignalR.Client</RootNamespace>
-    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

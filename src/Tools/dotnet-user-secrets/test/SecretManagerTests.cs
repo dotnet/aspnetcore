@@ -37,7 +37,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        [QuarantinedTest]
         public void Error_MissingId(string id)
         {
             var project = Path.Combine(_fixture.CreateProject(id), "TestProject.csproj");
@@ -83,7 +82,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        [QuarantinedTest]
         public void SetSecrets(bool fromCurrentDirectory)
         {
             var secrets = new KeyValuePair<string, string>[]
@@ -149,7 +147,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public void SetSecret_Update_Existing_Secret()
         {
             var projectPath = _fixture.GetTempSecretProject();
@@ -167,6 +164,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void SetSecret_With_Verbose_Flag()
         {
             string secretId;
@@ -187,7 +185,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public void Remove_Non_Existing_Secret()
         {
             var projectPath = _fixture.GetTempSecretProject();
@@ -201,19 +198,18 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         {
             var projectPath = _fixture.GetTempSecretProject();
             var secretManager = CreateProgram();
-            secretManager.RunInternal("set", "SeCreT1", "value", "-p", projectPath);
-            secretManager.RunInternal("list", "-p", projectPath);
+            secretManager.RunInternal("set", "SeCreT1", "value", "-p", projectPath, "--verbose");
+            secretManager.RunInternal("list", "-p", projectPath, "--verbose");
             Assert.Contains("SeCreT1 = value", _console.GetOutput());
-            secretManager.RunInternal("remove", "secret1", "-p", projectPath);
+            secretManager.RunInternal("remove", "secret1", "-p", projectPath, "--verbose");
 
             _console.ClearOutput();
-            secretManager.RunInternal("list", "-p", projectPath);
+            secretManager.RunInternal("list", "-p", projectPath, "--verbose");
 
             Assert.Contains(Resources.Error_No_Secrets_Found, _console.GetOutput());
         }
 
         [Fact]
-        [QuarantinedTest]
         public void List_Flattens_Nested_Objects()
         {
             string secretId;
@@ -263,7 +259,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public void List_Empty_Secrets_File()
         {
             var projectPath = _fixture.GetTempSecretProject();
@@ -272,7 +267,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             Assert.Contains(Resources.Error_No_Secrets_Found, _console.GetOutput());
         }
 
-        [QuarantinedTest]
         [Theory]
         [InlineData(true)]
         [InlineData(false)]

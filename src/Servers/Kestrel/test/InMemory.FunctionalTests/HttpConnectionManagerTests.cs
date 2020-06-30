@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             await using (var server = new TestServer(context =>
                 {
                     appStartedWh.Release();
-                    var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     return tcs.Task;
                 },
                 testContext))

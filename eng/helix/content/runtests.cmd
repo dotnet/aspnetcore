@@ -1,14 +1,20 @@
 @echo off
-REM Disable "!Foo!" expansions because they break the filter syntax
-setlocal disableextensions
+REM Need delayed expansion !PATH! so parens in the path don't mess up the parens for the if statements that use parens for blocks
+setlocal enabledelayedexpansion
 
 REM Use '$' as a variable name prefix to avoid MSBuild variable collisions with these variables
 set $target=%1
 set $sdkVersion=%2
 set $runtimeVersion=%3
-set $helixQueue=%4
+set $queue=%4
 set $arch=%5
 set $quarantined=%6
+set $ef=%7
+set $aspnetruntime=%8
+set $aspnetref=%9
+REM Batch only supports up to 9 arguments using the %# syntax, need to shift to get more
+shift
+set $helixTimeout=%9
 
 set DOTNET_HOME=%HELIX_CORRELATION_PAYLOAD%\sdk
 set DOTNET_ROOT=%DOTNET_HOME%\%$arch%
@@ -16,65 +22,19 @@ set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 set DOTNET_MULTILEVEL_LOOKUP=0
 set DOTNET_CLI_HOME=%HELIX_CORRELATION_PAYLOAD%\home
 
-set PATH=%DOTNET_ROOT%;%PATH%;%HELIX_CORRELATION_PAYLOAD%\node\bin
-
-powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %$arch% -Version %$sdkVersion% -InstallDir %DOTNET_ROOT%"
-powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %$arch% -Runtime dotnet -Version %$runtimeVersion% -InstallDir %DOTNET_ROOT%"
-
-if EXIST ".\Microsoft.AspNetCore.App" (
-    echo "Found Microsoft.AspNetCore.App, copying to %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%runtimeVersion%"
-    xcopy /i /y ".\Microsoft.AspNetCore.App" %DOTNET_ROOT%\shared\Microsoft.AspNetCore.App\%runtimeVersion%\
-)
-
-echo "Current Directory: %HELIX_WORKITEM_ROOT%"
-set HELIX=%$helixQueue%
-set HELIX_DIR=%HELIX_WORKITEM_ROOT%
-set NUGET_FALLBACK_PACKAGES=%HELIX_DIR%
-set NUGET_RESTORE=%HELIX_DIR%\nugetRestore
-echo "Setting HELIX_DIR: %HELIX_DIR%"
-echo Creating nuget restore directory: %NUGET_RESTORE%
-mkdir %NUGET_RESTORE%
-mkdir logs
-
-dir
-
-%DOTNET_ROOT%\dotnet vstest %$target% -lt >discovered.txt
-find /c "Exception thrown" discovered.txt
-REM "ERRORLEVEL is not %ERRORLEVEL%" https://blogs.msdn.microsoft.com/oldnewthing/20080926-00/?p=20743/
-if not errorlevel 1 (
-    echo Exception thrown during test discovery. 1>&2
-    type discovered.txt 1>&2
-    exit /b 1
-)
+set PATH=%DOTNET_ROOT%;!PATH!;%HELIX_CORRELATION_PAYLOAD%\node\bin
+echo Set path to: %PATH%
+echo "Invoking InstallDotNet.ps1 %$arch% %$sdkVersion% %$runtimeVersion% %DOTNET_ROOT%"
+powershell.exe -NoProfile -ExecutionPolicy unrestricted -file InstallDotNet.ps1 %$arch% %$sdkVersion% %$runtimeVersion% %DOTNET_ROOT%
 
 set exit_code=0
+echo "Restore: dotnet restore RunTests\RunTests.csproj --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --ignore-failed-sources..."
+dotnet restore RunTests\RunTests.csproj --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --ignore-failed-sources
 
-if %$quarantined%==True (
-    set %$quarantined=true
+echo "Running tests: dotnet run --project RunTests\RunTests.csproj -- --target %$target% --sdk %$sdkVersion% --runtime %$runtimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --aspnetruntime %$aspnetruntime% --aspnetref %$aspnetref% --helixTimeout %$helixTimeout%..."
+dotnet run --project RunTests\RunTests.csproj -- --target %$target% --sdk %$sdkVersion% --runtime %$runtimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --aspnetruntime %$aspnetruntime% --aspnetref %$aspnetref% --helixTimeout %$helixTimeout%
+if errorlevel neq 0 (
+    set exit_code=%errorlevel%
 )
-
-set NONQUARANTINE_FILTER="Quarantined!=true"
-set QUARANTINE_FILTER="Quarantined=true"
-if %$quarantined%==true (
-    echo Running quarantined tests.
-    %DOTNET_ROOT%\dotnet vstest %$target% --logger:xunit --TestCaseFilter:%QUARANTINE_FILTER%
-    if errorlevel 1 (
-        echo Failure in quarantined test 1>&2
-        REM DO NOT EXIT and DO NOT SET EXIT_CODE to 1
-    )
-) else (
-    REM Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
-    echo Running non-quarantined tests.
-    %DOTNET_ROOT%\dotnet vstest %$target% --logger:xunit --TestCaseFilter:%NONQUARANTINE_FILTER%
-    if errorlevel 1 (
-        echo Failure in non-quarantined test 1>&2
-        set exit_code=1
-        REM DO NOT EXIT
-    )
-)
-
-echo "Copying TestResults\TestResults.xml to ."
-copy TestResults\TestResults.xml testResults.xml
-
+echo "Finished running tests: exit_code=%exit_code%"
 exit /b %exit_code%
-

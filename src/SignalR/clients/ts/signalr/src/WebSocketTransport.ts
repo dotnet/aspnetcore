@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { HttpClient } from "./HttpClient";
+import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
 import { WebSocketConstructor } from "./Polyfills";
@@ -15,12 +16,13 @@ export class WebSocketTransport implements ITransport {
     private readonly webSocketConstructor: WebSocketConstructor;
     private readonly httpClient: HttpClient;
     private webSocket?: WebSocket;
+    private headers: MessageHeaders;
 
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((error?: Error) => void) | null;
 
     constructor(httpClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger,
-                logMessageContent: boolean, webSocketConstructor: WebSocketConstructor) {
+                logMessageContent: boolean, webSocketConstructor: WebSocketConstructor, headers: MessageHeaders) {
         this.logger = logger;
         this.accessTokenFactory = accessTokenFactory;
         this.logMessageContent = logMessageContent;
@@ -29,6 +31,7 @@ export class WebSocketTransport implements ITransport {
 
         this.onreceive = null;
         this.onclose = null;
+        this.headers = headers;
     }
 
     public async connect(url: string, transferFormat: TransferFormat): Promise<void> {
@@ -59,9 +62,9 @@ export class WebSocketTransport implements ITransport {
                     headers[`Cookie`] = `${cookies}`;
                 }
 
-                // Only pass cookies when in non-browser environments
+                // Only pass headers when in non-browser environments
                 webSocket = new this.webSocketConstructor(url, undefined, {
-                    headers,
+                    headers: { ...headers, ...this.headers },
                 });
             }
 

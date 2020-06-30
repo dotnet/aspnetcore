@@ -84,6 +84,30 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanArriveAtPageWithOptionalParametersProvided()
+        {
+            var testAge = 101;
+
+            SetUrlViaPushState($"/WithOptionalParameters/{testAge}");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            var expected = $"Your age is {testAge}.";
+
+            Assert.Equal(expected, app.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Fact]
+        public void CanArriveAtPageWithOptionalParametersNotProvided()
+        {
+            SetUrlViaPushState($"/WithOptionalParameters");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            var expected = $"Your age is .";
+
+            Assert.Equal(expected, app.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Fact]
         public void CanArriveAtNonDefaultPage()
         {
             SetUrlViaPushState("/Other");

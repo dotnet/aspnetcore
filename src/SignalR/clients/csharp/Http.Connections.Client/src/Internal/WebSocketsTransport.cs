@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
+using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private readonly ILogger _logger;
         private readonly TimeSpan _closeTimeout;
         private volatile bool _aborted;
+        private bool _isRunningInBrowser;
 
         private IDuplexPipe _transport;
 
@@ -93,6 +95,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             // Ignore the HttpConnectionOptions access token provider. We were given an updated delegate from the HttpConnection.
             _accessTokenProvider = accessTokenProvider;
+
+            _isRunningInBrowser = Utils.IsRunningInBrowser();
         }
 
         public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
@@ -119,7 +123,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 var accessToken = await _accessTokenProvider();
                 if (!string.IsNullOrEmpty(accessToken))
                 {
-                    _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {accessToken}");
+                    // We can't use request headers in the browser, so instead append the token as a query string in that case
+                    if (_isRunningInBrowser)
+                    {
+                        var accessTokenEncoded = UrlEncoder.Default.Encode(accessToken);
+                        accessTokenEncoded = "access_token=" + accessTokenEncoded;
+                        resolvedUrl = Utils.AppendQueryString(resolvedUrl, accessTokenEncoded);
+                    }
+                    else
+                    {
+                        _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {accessToken}");
+                    }
                 }
             }
 

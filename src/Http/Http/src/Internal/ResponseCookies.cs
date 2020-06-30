@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -19,8 +17,7 @@ namespace Microsoft.AspNetCore.Http
         /// Create a new wrapper.
         /// </summary>
         /// <param name="headers">The <see cref="IHeaderDictionary"/> for the response.</param>
-        /// <param name="builderPool">The <see cref="ObjectPool{T}"/>, if available.</param>
-        public ResponseCookies(IHeaderDictionary headers, ObjectPool<StringBuilder> builderPool)
+        public ResponseCookies(IHeaderDictionary headers)
         {
             if (headers == null)
             {

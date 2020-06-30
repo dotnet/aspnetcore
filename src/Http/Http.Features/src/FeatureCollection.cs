@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Http.Features
@@ -11,8 +12,8 @@ namespace Microsoft.AspNetCore.Http.Features
     public class FeatureCollection : IFeatureCollection
     {
         private static KeyComparer FeatureKeyComparer = new KeyComparer();
-        private readonly IFeatureCollection _defaults;
-        private IDictionary<Type, object> _features;
+        private readonly IFeatureCollection? _defaults;
+        private IDictionary<Type, object>? _features;
         private volatile int _containerRevision;
 
         public FeatureCollection()
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Http.Features
 
         public bool IsReadOnly { get { return false; } }
 
-        public object this[Type key]
+        public object? this[Type key]
         {
             get
             {
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.Http.Features
                     throw new ArgumentNullException(nameof(key));
                 }
 
-                object result;
+                object? result;
                 return _features != null && _features.TryGetValue(key, out result) ? result : _defaults?[key];
             }
             set
@@ -93,6 +94,7 @@ namespace Microsoft.AspNetCore.Http.Features
             }
         }
 
+        [return: MaybeNull]
         public TFeature Get<TFeature>()
         {
             return (TFeature)this[typeof(TFeature)];

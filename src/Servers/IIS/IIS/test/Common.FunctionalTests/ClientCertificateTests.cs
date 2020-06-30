@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp50)
+                .WithTfms(Tfm.Net50)
                 .WithAllApplicationTypes()
                 .WithAllHostingModels();
 
@@ -42,6 +42,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalTheory]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/22319")]
         [MemberData(nameof(TestVariants))]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public Task HttpsClientCert_GetCertInformation(TestVariant variant)
@@ -89,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Certificate is invalid. Issuer name: {cert.Issuer}");
+                Logger.LogError($"Certificate is invalid. Issuer name: {cert?.Issuer}");
                 using (var store = new X509Store(StoreName.Root, StoreLocation.LocalMachine))
                 {
                     Logger.LogError($"List of current certificates in root store:");

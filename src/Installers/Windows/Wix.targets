@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <GuidInputs>$(Version);$(Platform);$(VersionSuffix)</GuidInputs>
+    <GuidInputs>$(Version);$(Platform);$(VersionSuffix);$(_BuildNumberLabels)</GuidInputs>
   </PropertyGroup>
 
   <Target Name="GenerateGUIDs" BeforeTargets="BeforeBuild" DependsOnTargets="_GeneratePackageGuids;_GenerateBundleGuids" Condition=" '$(DisableGuidGeneration)' != 'true' " />
@@ -64,18 +64,12 @@
 
   <Target Name="CopyToArtifactsDirectory"
           Condition=" '$(IsShipping)' == 'true' AND '$(SkipCopyToArtifactsDirectory)' != 'true' "
-          AfterTargets="Build" BeforeTargets="GenerateChecksums">
+          BeforeTargets="Build">
     <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(InstallersOutputPath)$(PackageFileName)" />
     <ItemGroup>
       <_cabs Include="$(TargetDir)**/*.cab" />
     </ItemGroup>
     <Copy SourceFiles="@(_cabs)" DestinationFolder="$(InstallersOutputPath)" />
   </Target>
-
-  <ItemGroup Condition=" '$(IsShipping)' == 'true' AND '$(SkipCopyToArtifactsDirectory)' != 'true' ">
-    <GenerateChecksumItems Include="$(InstallersOutputPath)$(PackageFileName)">
-      <DestinationPath>$(InstallersOutputPath)$(PackageFileName)$(ChecksumExtension)</DestinationPath>
-    </GenerateChecksumItems>
-  </ItemGroup>
 
 </Project>

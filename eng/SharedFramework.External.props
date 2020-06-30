@@ -18,9 +18,8 @@
     <SystemWindowsExtensionsPackageVersion>$(SystemWindowsExtensionsPackageVersion.Split('.')[0]).$(SystemWindowsExtensionsPackageVersion.Split('.')[1]).0</SystemWindowsExtensionsPackageVersion>
   </PropertyGroup>
 
-
   <ItemGroup>
-    <!-- Dependencies from dotnet/extensions -->
+    <!-- Dependencies from dotnet/runtime -->
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Caching.Abstractions"                    Version="$(MicrosoftExtensionsCachingAbstractionsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Caching.Memory"                          Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Abstractions"              Version="$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)" />
@@ -54,8 +53,6 @@
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options.DataAnnotations"                 Version="$(MicrosoftExtensionsOptionsDataAnnotationsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options"                                 Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Primitives"                              Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
-
-    <!-- Dependencies from dotnet/corefx -->
     <ExternalAspNetCoreAppReference Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
 
