@@ -18,6 +18,7 @@ interface TraceEvent {
     tid: number; // Thread ID
 }
 
+let updateCapturingStateInHost: (isCapturing: boolean) => void;
 let captureStartTime = 0;
 const blazorProfilingEnabledKey = 'blazorProfilingEnabled';
 const profilingEnabled = !!localStorage[blazorProfilingEnabledKey];
@@ -33,10 +34,12 @@ export function setProfilingEnabled(enabled: boolean) {
     location.reload();
 }
 
-export function initializeProfiling() {
+export function initializeProfiling(setCapturingCallback: ((isCapturing: boolean) => void) | null) {
     if (!profilingEnabled) {
         return;
     }
+
+    updateCapturingStateInHost = setCapturingCallback || (() => {});
 
     // Attach hotkey (alt/cmd)+shift+p
     const altKeyName = navigator.platform.match(/^Mac/i) ? 'Cmd' : 'Alt';
@@ -78,6 +81,7 @@ function profileReset() {
     openRegionsStack.length = 0;
     entryLog.length = 0;
     captureStartTime = 0;
+    updateCapturingStateInHost(false);
 }
 
 function profileExport() {
@@ -100,8 +104,9 @@ function profileExport() {
 
 function toggleCaptureEnabled() {
     if (!captureStartTime) {
-        captureStartTime = performance.now();
         displayOverlayMessage('Started capturing performance profile...');
+        updateCapturingStateInHost(true);
+        captureStartTime = performance.now();
     } else {
         displayOverlayMessage('Finished capturing performance profile');
         profileExport();

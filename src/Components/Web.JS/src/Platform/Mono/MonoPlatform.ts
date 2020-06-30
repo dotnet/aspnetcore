@@ -35,7 +35,10 @@ export const monoPlatform: Platform = {
   start: function start(resourceLoader: WebAssemblyResourceLoader) {
     return new Promise<void>((resolve, reject) => {
       attachDebuggerHotkey(resourceLoader);
-      initializeProfiling();
+      initializeProfiling(isCapturing => {
+        const setCapturingMethod = bindStaticMethod('Microsoft.AspNetCore.Components', 'Microsoft.AspNetCore.Components.Profiling.WebAssemblyComponentsProfiling', 'SetCapturing');
+        setCapturingMethod(isCapturing);
+      });
 
       // dotnet.js assumes the existence of this
       window['Browser'] = {

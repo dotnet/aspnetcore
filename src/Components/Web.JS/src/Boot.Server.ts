@@ -22,7 +22,7 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
     throw new Error('Blazor has already started.');
   }
   started = true;
-  initializeProfiling();
+  initializeProfiling(null);
 
   // Establish options to be used
   const options = resolveOptions(userOptions);

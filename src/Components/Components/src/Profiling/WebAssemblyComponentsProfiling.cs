@@ -14,12 +14,17 @@ namespace Microsoft.AspNetCore.Components.Profiling
     internal class WebAssemblyComponentsProfiling : ComponentsProfiling
     {
         // When running on Blazor Server, the isCapturing flag will always be false, so the JS interop
-        // calls will not occur. This flag only gets set to true by blazor.webassembly.js.
-        static bool isCapturing = false;
+        // calls will not occur. This flag only gets set to true by a call from blazor.webassembly.js.
+        static bool IsCapturing = false;
+
+        public static void SetCapturing(bool isCapturing)
+        {
+            IsCapturing = isCapturing;
+        }
 
         public override void Start(string? name)
         {
-            if (isCapturing)
+            if (IsCapturing)
             {
                 InternalCalls.InvokeJSUnmarshalled<string, object, object, object>(
                     out _, "_blazorProfileStart", name!, null!, null!);
@@ -28,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.Profiling
 
         public override void End(string? name)
         {
-            if (isCapturing)
+            if (IsCapturing)
             {
                 InternalCalls.InvokeJSUnmarshalled<string, object, object, object>(
                 out _, "_blazorProfileEnd", name!, null!, null!);
