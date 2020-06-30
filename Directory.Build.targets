@@ -5,6 +5,17 @@
     <!-- Analyzer package are needed in source build for WebSDK -->
     <ExcludeFromSourceBuild
         Condition="'$(ExcludeFromSourceBuild)' == '' and '$(DotNetBuildFromSource)' == 'true' and '$(IsAspNetCoreApp)' != 'true' and '$(IsReferenceAssemblyProject)' != 'true' and '$(IsAnalyzersProject)' != 'true'">true</ExcludeFromSourceBuild>
+
+    <!-- If the user has specified that they want to skip building any test related projects with SkipTestBuild,
+     suppress all targets for TestProjects using ExcludeFromBuild. -->
+    <ExcludeFromBuild Condition="'$(IsPackable)' != 'true' and
+        '$(SkipTestBuild)' == 'true' and
+        ('$(IsTestProject)' == 'true' or
+         '$(IsUnitTestProject)' == 'true' or
+         '$(IsTestAssetProject)' == 'true' or
+         '$(IsBenchmarkProject)' == 'true' or
+         '$(IsSampleProject)' == 'true' or
+         '$(IsSpecificationTestProject)' == 'true')">true</ExcludeFromBuild>
   </PropertyGroup>
 
   <PropertyGroup Label="Resx settings">
@@ -104,6 +115,14 @@
     <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload>
     <SkipTests Condition="'$(SkipHelixReadyTests)' == 'true' AND '$(BuildHelixPayload)' == 'true'">true</SkipTests>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageThirdPartyNoticesFile Condition="'$(PackageThirdPartyNoticesFile)' == ''">$(RepoRoot)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <None Include="$(PackageThirdPartyNoticesFile)" Pack="true" PackagePath="." />
+  </ItemGroup>
 
   <ItemGroup Condition="'$(Language)' == 'C#' AND '$(IsReferenceAssemblyProject)' == 'true'">
     <Compile Include="$(SharedSourceRoot)ReferenceAssemblyInfo.cs" LinkBase="Properties" />

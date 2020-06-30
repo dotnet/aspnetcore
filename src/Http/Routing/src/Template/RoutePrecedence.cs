@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         // see description on ComputeInboundPrecedenceDigit(TemplateSegment segment)
         //
         // With a RoutePattern, parameters with a required value are treated as a literal segment
-        private static int ComputeInboundPrecedenceDigit(RoutePattern routePattern, RoutePatternPathSegment pathSegment)
+        internal static int ComputeInboundPrecedenceDigit(RoutePattern routePattern, RoutePatternPathSegment pathSegment)
         {
             if (pathSegment.Parts.Count > 1)
             {

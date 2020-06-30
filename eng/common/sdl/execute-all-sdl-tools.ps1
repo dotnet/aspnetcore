@@ -24,7 +24,8 @@ Param(
   [string] $TsaIterationPath,                                                                    # Optional: only needed if TsaOnboard is true; the iteration path where TSA will file bugs in AzDO; TSA is the automated framework used to upload test results as bugs.
   [string] $GuardianLoggerLevel='Standard',                                                      # Optional: the logger level for the Guardian CLI; options are Trace, Verbose, Standard, Warning, and Error
   [string[]] $CrScanAdditionalRunConfigParams,                                                   # Optional: Additional Params to custom build a CredScan run config in the format @("xyz:abc","sdf:1")
-  [string[]] $PoliCheckAdditionalRunConfigParams                                                 # Optional: Additional Params to custom build a Policheck run config in the format @("xyz:abc","sdf:1")
+  [string[]] $PoliCheckAdditionalRunConfigParams,                                                # Optional: Additional Params to custom build a Policheck run config in the format @("xyz:abc","sdf:1")
+  [bool] $BreakOnFailure=$False                                                                  # Optional: Fail the build if there were errors during the run
 )
 
 try {
@@ -33,6 +34,10 @@ try {
   $disableConfigureToolsetImport = $true
   $LASTEXITCODE = 0
 
+  # `tools.ps1` checks $ci to perform some actions. Since the SDL
+  # scripts don't necessarily execute in the same agent that run the
+  # build.ps1/sh script this variable isn't automatically set.
+  $ci = $true
   . $PSScriptRoot\..\tools.ps1
 
   #Replace repo names to the format of org/repo
@@ -101,6 +106,11 @@ try {
       Write-PipelineTelemetryError -Force -Category 'Sdl' -Message 'Could not publish to TSA -- not all required values ($TsaBranchName, $BuildNumber) were specified.'
       ExitWithExitCode 1
     }
+  }
+
+  if ($BreakOnFailure) {
+    Write-Host "Failing the build in case of breaking results..."
+    & $guardianCliLocation break
   }
 }
 catch {

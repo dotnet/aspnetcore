@@ -293,6 +293,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             IsUpgraded = true;
 
+            KestrelEventSource.Log.RequestUpgradedStart(this);
+
             ConnectionFeatures.Get<IDecrementConcurrentConnectionCountFeature>()?.ReleaseConnection();
 
             StatusCode = StatusCodes.Status101SwitchingProtocols;

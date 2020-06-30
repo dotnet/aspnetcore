@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Http
             return _formatting.Equals(other._formatting) && _data.Equals(other._data);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
             {

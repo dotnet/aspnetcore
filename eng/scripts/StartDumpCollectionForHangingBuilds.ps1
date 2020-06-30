@@ -81,7 +81,7 @@ Out-File -FilePath $sentinelFile -InputObject $JobName | Out-Null;
   [System.Diagnostics.Process []]$AliveProcesses = @();
   foreach ($candidate in $CandidateProcessNames) {
     try {
-      $candidateProcesses = Get-Process $candidate;
+      $candidateProcesses = Get-Process $candidate 2>$null
       $candidateProcesses | ForEach-Object { Write-Output "Found candidate process $candidate with PID '$($_.Id)'." };
       $AliveProcesses += $candidateProcesses;
     }

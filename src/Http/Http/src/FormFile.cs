@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets the header dictionary of the uploaded file.
         /// </summary>
-        public IHeaderDictionary Headers { get; set; }
+        public IHeaderDictionary Headers { get; set; } = default!;
 
         /// <summary>
         /// Gets the file length in bytes.

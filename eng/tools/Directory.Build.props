@@ -3,7 +3,6 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 </Project>

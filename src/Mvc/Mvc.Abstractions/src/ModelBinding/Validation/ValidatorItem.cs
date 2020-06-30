@@ -30,12 +30,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <summary>
         /// Gets the metadata associated with the <see cref="Validator"/>.
         /// </summary>
-        public object ValidatorMetadata { get; }
+        public object ValidatorMetadata { get; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="IModelValidator"/>.
         /// </summary>
-        public IModelValidator Validator { get; set; }
+        public IModelValidator Validator { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets a value indicating whether or not <see cref="Validator"/> can be reused across requests.

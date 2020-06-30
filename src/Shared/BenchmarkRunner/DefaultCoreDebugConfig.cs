@@ -13,11 +13,11 @@ namespace BenchmarkDotNet.Attributes
     {
         public DefaultCoreDebugConfig()
         {
-            Add(ConsoleLogger.Default);
-            Add(JitOptimizationsValidator.DontFailOnError);
+            AddLogger(ConsoleLogger.Default);
+            AddValidator(JitOptimizationsValidator.DontFailOnError);
 
-            Add(Job.InProcess
-                .With(RunStrategy.Throughput));
+            AddJob(Job.InProcess
+                .WithStrategy(RunStrategy.Throughput));
         }
     }
 }

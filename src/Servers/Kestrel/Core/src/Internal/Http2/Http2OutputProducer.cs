@@ -41,10 +41,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private bool _suffixSent;
         private bool _streamEnded;
         private bool _writerComplete;
-        private bool _disposed;
 
         // Internal for testing
         internal ValueTask _dataWriteProcessingTask;
+        internal bool _disposed;
 
         /// <summary>The core logic for the IValueTaskSource implementation.</summary>
         private ManualResetValueTaskSourceCore<FlushResult> _responseCompleteTaskSource = new ManualResetValueTaskSourceCore<FlushResult> { RunContinuationsAsynchronously = true }; // mutable struct, do not make this readonly
@@ -127,6 +127,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         void IHttpOutputAborter.Abort(ConnectionAbortedException abortReason)
         {
             _stream.ResetAndAbort(abortReason, Http2ErrorCode.INTERNAL_ERROR);
+        }
+
+        void IHttpOutputAborter.OnInputOrOutputCompleted()
+        {
+            _stream.ResetAndAbort(new ConnectionAbortedException($"{nameof(Http2OutputProducer)}.{nameof(ProcessDataWrites)} has completed."), Http2ErrorCode.INTERNAL_ERROR);
         }
 
         public ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken)
@@ -405,6 +410,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                     do
                     {
+                        var firstWrite = true;
+
                         readResult = await _pipeReader.ReadAsync();
 
                         if (readResult.IsCanceled)
@@ -420,7 +427,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             {
                                 // Only flush if required (i.e. content length exceeds flow control availability)
                                 // Writing remaining content without flushing allows content and trailers to be sent in the same packet
-                                await _frameWriter.WriteDataAsync(StreamId, _flowControl, readResult.Buffer, endStream: false, forceFlush: false);
+                                await _frameWriter.WriteDataAsync(StreamId, _flowControl, readResult.Buffer, endStream: false, firstWrite, forceFlush: false);
                             }
 
                             _stream.ResponseTrailers.SetReadOnly();
@@ -440,13 +447,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         else
                         {
                             var endStream = readResult.IsCompleted;
+
                             if (endStream)
                             {
                                 _stream.DecrementActiveClientStreamCount();
                             }
-                            flushResult = await _frameWriter.WriteDataAsync(StreamId, _flowControl, readResult.Buffer, endStream, forceFlush: true);
+
+                            flushResult = await _frameWriter.WriteDataAsync(StreamId, _flowControl, readResult.Buffer, endStream, firstWrite, forceFlush: true);
                         }
 
+                        firstWrite = false;
                         _pipeReader.AdvanceTo(readResult.Buffer.End);
                     } while (!readResult.IsCompleted);
                 }

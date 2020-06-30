@@ -24,6 +24,9 @@ parameters:
   enablePublishBuildAssets: false
   enablePublishTestResults: false
   enablePublishUsingPipelines: false
+  useBuildManifest: false
+  mergeTestResults: false
+  testRunTitle: ''
   name: ''
   preSteps: []
   runAsPublic: false
@@ -194,6 +197,8 @@ jobs:
         testResultsFormat: 'xUnit'
         testResultsFiles: '*.xml' 
         searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
+        testRunTitle: ${{ coalesce(parameters.testRunTitle, parameters.name, '$(System.JobName)') }}-xunit
+        mergeTestResults: ${{ parameters.mergeTestResults }}
       continueOnError: true
       condition: always()
     
@@ -214,3 +219,12 @@ jobs:
         ArtifactName: AssetManifests
       continueOnError: ${{ parameters.continueOnError }}
       condition: and(succeeded(), eq(variables['_DotNetPublishToBlobFeed'], 'true'))
+
+  - ${{ if eq(parameters.useBuildManifest, true) }}:
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Build Manifest
+      inputs:
+        PathToPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/manifest.props'
+        PublishLocation: Container
+        ArtifactName: BuildManifests
+      continueOnError: ${{ parameters.continueOnError }}

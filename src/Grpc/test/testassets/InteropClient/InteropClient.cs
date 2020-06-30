@@ -97,7 +97,11 @@ namespace InteropTestsClient
             services.AddLogging(configure =>
             {
                 configure.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
-                configure.AddConsole(loggerOptions => loggerOptions.IncludeScopes = true);
+                configure.AddConsole(loggerOptions =>
+                {
+                    loggerOptions.IncludeScopes = true;
+                    loggerOptions.DisableColors = true;
+                });
             });
 
             serviceProvider = services.BuildServiceProvider();
@@ -152,7 +156,7 @@ namespace InteropTestsClient
             }
 
             var httpClientHandler = new HttpClientHandler();
-            httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+            httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator!;
 
             if (options.UseTestCa ?? false)
             {

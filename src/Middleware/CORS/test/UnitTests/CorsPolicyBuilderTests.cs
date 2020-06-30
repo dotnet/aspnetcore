@@ -140,6 +140,28 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         [Fact]
+        public void WithOrigins_ThrowsIfArgumentNull()
+        {
+            // Arrange
+            var builder = new CorsPolicyBuilder();
+            string[] args = null;
+
+            // Act / Assert
+            Assert.Throws<ArgumentNullException>(() => builder.WithOrigins(args));
+        }
+
+        [Fact]
+        public void WithOrigins_ThrowsIfArgumentArrayContainsNull()
+        {
+            // Arrange
+            var builder = new CorsPolicyBuilder();
+            string[] args = new string[] { null };
+
+            // Act / Assert
+            Assert.Throws<ArgumentNullException>(() => builder.WithOrigins(args));
+        }
+
+        [Fact]
         public void AllowAnyOrigin_AllowsAny()
         {
             // Arrange
@@ -181,6 +203,20 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // Assert
             var corsPolicy = builder.Build();
             Assert.True(corsPolicy.IsOriginAllowed("http://test.example.com"));
+        }
+
+        [Fact]
+        public void SetIsOriginAllowedToAllowWildcardSubdomains_DoesNotAllowRootDomain()
+        {
+            // Arrange
+            var builder = new CorsPolicyBuilder("http://*.example.com");
+
+            // Act
+            builder.SetIsOriginAllowedToAllowWildcardSubdomains();
+
+            // Assert
+            var corsPolicy = builder.Build();
+            Assert.False(corsPolicy.IsOriginAllowed("http://example.com"));
         }
 
         [Fact]

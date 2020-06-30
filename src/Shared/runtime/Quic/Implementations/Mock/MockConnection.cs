@@ -14,13 +14,13 @@ namespace System.Net.Quic.Implementations.Mock
     internal sealed class MockConnection : QuicConnectionProvider
     {
         private readonly bool _isClient;
-        private bool _disposed = false;
+        private bool _disposed;
         private IPEndPoint? _remoteEndPoint;
         private IPEndPoint? _localEndPoint;
         private object _syncObject = new object();
-        private Socket? _socket = null;
-        private IPEndPoint? _peerListenEndPoint = null;
-        private TcpListener? _inboundListener = null;
+        private Socket? _socket;
+        private IPEndPoint? _peerListenEndPoint;
+        private TcpListener? _inboundListener;
         private long _nextOutboundBidirectionalStream;
         private long _nextOutboundUnidirectionalStream;
 

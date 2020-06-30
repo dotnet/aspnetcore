@@ -94,7 +94,7 @@ namespace Templates.Test
             }
         }
 
-        [ConditionalTheory(Skip = "This test run for over an hour")]
+        [ConditionalTheory]
         [InlineData(false)]
         [InlineData(true)]
         [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
@@ -214,7 +214,6 @@ namespace Templates.Test
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
         public async Task RazorPagesTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpages_rc", Output);

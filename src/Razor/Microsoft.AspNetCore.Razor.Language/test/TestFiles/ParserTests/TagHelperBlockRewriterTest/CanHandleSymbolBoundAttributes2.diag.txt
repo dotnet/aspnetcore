@@ -1,0 +1,5 @@
+(0,0): Error RZ3003: Invalid tag helper bound property '[item]' on tag helper 'CatchAllTagHelper'. Tag helpers cannot bind to HTML attributes with name '[item]' because the name contains a '[' character.
+(0,0): Error RZ3003: Invalid tag helper bound property '[item]' on tag helper 'CatchAllTagHelper'. Tag helpers cannot bind to HTML attributes with name '[item]' because the name contains a ']' character.
+(0,0): Error RZ3003: Invalid tag helper bound property '[(item)]' on tag helper 'CatchAllTagHelper'. Tag helpers cannot bind to HTML attributes with name '[(item)]' because the name contains a '[' character.
+(0,0): Error RZ3003: Invalid tag helper bound property '[(item)]' on tag helper 'CatchAllTagHelper'. Tag helpers cannot bind to HTML attributes with name '[(item)]' because the name contains a ']' character.
+(0,0): Error RZ3003: Invalid tag helper bound property '*something' on tag helper 'CatchAllTagHelper'. Tag helpers cannot bind to HTML attributes with name '*something' because the name contains a '*' character.

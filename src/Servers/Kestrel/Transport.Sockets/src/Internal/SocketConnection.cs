@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private volatile bool _socketDisposed;
         private volatile Exception _shutdownReason;
         private Task _processingTask;
-        private readonly TaskCompletionSource<object> _waitForConnectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         private bool _connectionClosed;
         private readonly bool _waitForData;
 
@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 state.CancelConnectionClosedToken();
 
-                state._waitForConnectionClosedTcs.TrySetResult(null);
+                state._waitForConnectionClosedTcs.TrySetResult();
             },
             this,
             preferLocal: false);

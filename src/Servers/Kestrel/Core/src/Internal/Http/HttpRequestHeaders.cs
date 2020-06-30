@@ -27,18 +27,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void OnHeadersComplete()
         {
-            var bitsToClear = _previousBits & ~_bits;
+            var newHeaderFlags = _bits;
+            var previousHeaderFlags = _previousBits;
             _previousBits = 0;
 
-            if (bitsToClear != 0)
+            var headersToClear = (~newHeaderFlags) & previousHeaderFlags;
+            if (headersToClear == 0)
             {
-                // Some previous headers were not reused or overwritten.
-
-                // While they cannot be accessed by the current request (as they were not supplied by it)
-                // there is no point in holding on to them, so clear them now,
-                // to allow them to get collected by the GC.
-                Clear(bitsToClear);
+                // All headers were resued.
+                return;
             }
+
+            // Some previous headers were not reused or overwritten.
+            // While they cannot be accessed by the current request (as they were not supplied by it)
+            // there is no point in holding on to them, so clear them now,
+            // to allow them to get collected by the GC.
+            Clear(headersToClear);
         }
 
         protected override void ClearFast()
@@ -65,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (!HeaderUtilities.TryParseNonNegativeInt64(value, out var parsed))
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value);
             }
 
             return parsed;
@@ -76,14 +80,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (_contentLength.HasValue)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.MultipleContentLengths);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.MultipleContentLengths);
             }
 
             if (!Utf8Parser.TryParse(value, out long parsed, out var consumed) ||
                 parsed < 0 ||
                 consumed != value.Length)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderStringNonNullCharacters(UseLatin1));
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value.GetRequestHeaderStringNonNullCharacters(UseLatin1));
             }
 
             _contentLength = parsed;

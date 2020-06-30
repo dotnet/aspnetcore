@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Internal;
 
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         public int GetHashCode(MemberExpressionCacheKey obj)
         {
-            var hashCodeCombiner = new HashCodeCombiner();
+            var hashCodeCombiner = new HashCode();
             hashCodeCombiner.Add(obj.ModelType);
 
             foreach (var member in obj)
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 hashCodeCombiner.Add(member);
             }
 
-            return hashCodeCombiner.CombinedHash;
+            return hashCodeCombiner.ToHashCode();
         }
     }
 }

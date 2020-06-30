@@ -10,6 +10,7 @@ using BasicTestApp.FormsTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Xunit;
@@ -93,16 +94,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("valid", () => nameInput.GetAttribute("class"));
             nameInput.SendKeys("Bert\t");
             Browser.Equal("modified valid", () => nameInput.GetAttribute("class"));
+            EnsureAttributeRendering(nameInput, "aria-invalid", false);
 
             // Can become invalid
             nameInput.SendKeys("01234567890123456789\t");
             Browser.Equal("modified invalid", () => nameInput.GetAttribute("class"));
+            EnsureAttributeRendering(nameInput, "aria-invalid");
             Browser.Equal(new[] { "That name is too long" }, messagesAccessor);
 
             // Can become valid
             nameInput.Clear();
             nameInput.SendKeys("Bert\t");
             Browser.Equal("modified valid", () => nameInput.GetAttribute("class"));
+            EnsureAttributeRendering(nameInput, "aria-invalid", false);
             Browser.Empty(messagesAccessor);
         }
 
@@ -190,6 +194,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/3615")]
         public void InputDateInteractsWithEditContext_NonNullableDateTime()
         {
             var appElement = MountTypicalValidationComponent();
@@ -432,6 +437,41 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("invalid", () => input.GetAttribute("class"));
         }
 
+        [Fact]
+        public void SelectComponentSupportsOptionsComponent() {
+            var appElement = Browser.MountTestComponent<SelectVariantsComponent>();
+            var input = appElement.FindElement(By.Id("input-value"));
+            var showAdditionalOptionButton = appElement.FindElement(By.Id("show-additional-option"));
+            var selectWithComponent = appElement.FindElement(By.Id("select-with-component"));
+            var selectWithoutComponent = appElement.FindElement(By.Id("select-without-component"));
+
+            // Select with custom options component and HTML component behave the
+            // same when the selectElement.value is provided
+            Browser.Equal("B", () => selectWithoutComponent.GetAttribute("value"));
+            Browser.Equal("B", () => selectWithComponent.GetAttribute("value"));
+
+            // Reset to a value that doesn't exist
+            input.Clear();
+            input.SendKeys("D\t");
+
+            // Confirm that both values are cleared
+            Browser.Equal("", () => selectWithComponent.GetAttribute("value"));
+            Browser.Equal("", () => selectWithoutComponent.GetAttribute("value"));
+
+            // Dynamically showing the fourth option updates the selected value
+            showAdditionalOptionButton.Click();
+
+            Browser.Equal("D", () => selectWithComponent.GetAttribute("value"));
+            Browser.Equal("D", () => selectWithoutComponent.GetAttribute("value"));
+
+            // Change the value to one that does really doesn't exist
+            input.Clear();
+            input.SendKeys("F\t");
+
+            Browser.Equal("", () => selectWithComponent.GetAttribute("value"));
+            Browser.Equal("", () => selectWithoutComponent.GetAttribute("value"));
+        }
+
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
         {
             return () => appElement.FindElements(By.ClassName("validation-message"))
@@ -453,6 +493,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 $"var elem = document.querySelector('{cssSelector}');"
                 + $"elem.value = {JsonSerializer.Serialize(invalidValue, TestJsonSerializerOptionsProvider.Options)};"
                 + "elem.dispatchEvent(new KeyboardEvent('change'));");
+        }
+
+        private void EnsureAttributeRendering(IWebElement element, string attributeName, bool shouldBeRendered = true)
+        {
+            Browser.Equal(shouldBeRendered, () => element.GetAttribute(attributeName) != null);
         }
     }
 }

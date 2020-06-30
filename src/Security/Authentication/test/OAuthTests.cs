@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 ".AspNetCore.Correlation.Weblie.correlationId=N");
 
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-            Assert.Equal("/access-denied?ReturnUrl=http%3A%2F%2Ftesthost%2Fredirect", transaction.Response.Headers.Location.ToString());
+            Assert.Equal("https://www.example.com/access-denied?ReturnUrl=http%3A%2F%2Ftesthost%2Fredirect", transaction.Response.Headers.Location.ToString());
         }
 
         [Fact]

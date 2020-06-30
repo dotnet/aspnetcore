@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
@@ -29,12 +30,12 @@ namespace Microsoft.Net.Http.Headers
         private static readonly char[] PeriodCharacterArray = new char[] { PeriodCharacter };
 
         private static readonly HttpHeaderParser<MediaTypeHeaderValue> SingleValueParser
-            = new GenericHeaderParser<MediaTypeHeaderValue>(false, GetMediaTypeLength);
+            = new GenericHeaderParser<MediaTypeHeaderValue>(false, GetMediaTypeLength!);
         private static readonly HttpHeaderParser<MediaTypeHeaderValue> MultipleValueParser
-            = new GenericHeaderParser<MediaTypeHeaderValue>(true, GetMediaTypeLength);
+            = new GenericHeaderParser<MediaTypeHeaderValue>(true, GetMediaTypeLength!);
 
         // Use a collection instead of a dictionary since we may have multiple parameters with the same name.
-        private ObjectCollection<NameValueHeaderValue> _parameters;
+        private ObjectCollection<NameValueHeaderValue>? _parameters;
         private StringSegment _mediaType;
         private bool _isReadOnly;
 
@@ -108,7 +109,7 @@ namespace Microsoft.Net.Http.Headers
         /// Gets or sets the value of the Encoding parameter. Setting the Encoding will set
         /// the <see cref="Charset"/> to <see cref="Encoding.WebName"/>.
         /// </summary>
-        public Encoding Encoding
+        public Encoding? Encoding
         {
             get
             {
@@ -205,7 +206,7 @@ namespace Microsoft.Net.Http.Headers
         /// </summary>
         public double? Quality
         {
-            get { return HeaderUtilities.GetQuality(_parameters); }
+            get => HeaderUtilities.GetQuality(_parameters);
             set
             {
                 HeaderUtilities.ThrowIfReadOnly(IsReadOnly);
@@ -444,7 +445,7 @@ namespace Microsoft.Net.Http.Headers
             return builder.ToString();
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as MediaTypeHeaderValue;
 
@@ -471,7 +472,7 @@ namespace Microsoft.Net.Http.Headers
         public static MediaTypeHeaderValue Parse(StringSegment input)
         {
             var index = 0;
-            return SingleValueParser.ParseValue(input, ref index);
+            return SingleValueParser.ParseValue(input, ref index)!;
         }
 
         /// <summary>
@@ -480,10 +481,10 @@ namespace Microsoft.Net.Http.Headers
         /// <param name="input">The <see cref="StringSegment"/> with the media type. The media type constructed here must not have an y</param>
         /// <param name="parsedValue">The parsed <see cref="MediaTypeHeaderValue"/></param>
         /// <returns>True if the value was successfully parsed.</returns>
-        public static bool TryParse(StringSegment input, out MediaTypeHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out MediaTypeHeaderValue? parsedValue)
         {
             var index = 0;
-            return SingleValueParser.TryParseValue(input, ref index, out parsedValue);
+            return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
         }
 
         /// <summary>
@@ -491,7 +492,7 @@ namespace Microsoft.Net.Http.Headers
         /// </summary>
         /// <param name="inputs">A list of media types</param>
         /// <returns>The parsed <see cref="MediaTypeHeaderValue"/>.</returns>
-        public static IList<MediaTypeHeaderValue> ParseList(IList<string> inputs)
+        public static IList<MediaTypeHeaderValue> ParseList(IList<string>? inputs)
         {
             return MultipleValueParser.ParseValues(inputs);
         }
@@ -502,7 +503,7 @@ namespace Microsoft.Net.Http.Headers
         /// </summary>
         /// <param name="inputs">A list of media types</param>
         /// <returns>The parsed <see cref="MediaTypeHeaderValue"/>.</returns>
-        public static IList<MediaTypeHeaderValue> ParseStrictList(IList<string> inputs)
+        public static IList<MediaTypeHeaderValue> ParseStrictList(IList<string>? inputs)
         {
             return MultipleValueParser.ParseStrictValues(inputs);
         }
@@ -513,7 +514,7 @@ namespace Microsoft.Net.Http.Headers
         /// <param name="inputs">A list of media types</param>
         /// <param name="parsedValues">The parsed <see cref="MediaTypeHeaderValue"/>.</param>
         /// <returns>True if the value was successfully parsed.</returns>
-        public static bool TryParseList(IList<string> inputs, out IList<MediaTypeHeaderValue> parsedValues)
+        public static bool TryParseList(IList<string>? inputs, [NotNullWhen(true)] out IList<MediaTypeHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseValues(inputs, out parsedValues);
         }
@@ -524,12 +525,12 @@ namespace Microsoft.Net.Http.Headers
         /// <param name="inputs">A list of media types</param>
         /// <param name="parsedValues">The parsed <see cref="MediaTypeHeaderValue"/>.</param>
         /// <returns>True if the value was successfully parsed.</returns>
-        public static bool TryParseStrictList(IList<string> inputs, out IList<MediaTypeHeaderValue> parsedValues)
+        public static bool TryParseStrictList(IList<string>? inputs, [NotNullWhen(true)] out IList<MediaTypeHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
         }
 
-        private static int GetMediaTypeLength(StringSegment input, int startIndex, out MediaTypeHeaderValue parsedValue)
+        private static int GetMediaTypeLength(StringSegment input, int startIndex, out MediaTypeHeaderValue? parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 
@@ -550,7 +551,7 @@ namespace Microsoft.Net.Http.Headers
 
             var current = startIndex + mediaTypeLength;
             current = current + HttpRuleParser.GetWhitespaceLength(input, current);
-            MediaTypeHeaderValue mediaTypeHeader = null;
+            MediaTypeHeaderValue? mediaTypeHeader = null;
 
             // If we're not done and we have a parameter delimiter, then we have a list of parameters.
             if ((current < input.Length) && (input[current] == ';'))
@@ -575,7 +576,7 @@ namespace Microsoft.Net.Http.Headers
 
         private static int GetMediaTypeExpressionLength(StringSegment input, int startIndex, out StringSegment mediaType)
         {
-            Contract.Requires((input != null) && (input.Length > 0) && (startIndex < input.Length));
+            Contract.Requires((input.Length > 0) && (startIndex < input.Length));
 
             // This method just parses the "type/subtype" string, it does not parse parameters.
             mediaType = null;

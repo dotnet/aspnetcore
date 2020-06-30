@@ -79,12 +79,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_ALREADY_EXISTS)
                 {
-                    throw new HttpSysException((int)statusCode, string.Format(Resources.Exception_PrefixAlreadyRegistered, uriPrefix));
+                    throw new HttpSysException((int)statusCode, Resources.FormatException_PrefixAlreadyRegistered(uriPrefix));
                 }
-                else
+                if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_ACCESS_DENIED)
                 {
-                    throw new HttpSysException((int)statusCode);
+                    throw new HttpSysException((int)statusCode, Resources.FormatException_AccessDenied(uriPrefix, Environment.UserDomainName + @"\" + Environment.UserName));
                 }
+                throw new HttpSysException((int)statusCode);
             }
         }
 

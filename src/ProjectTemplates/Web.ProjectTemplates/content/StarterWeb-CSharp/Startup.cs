@@ -108,13 +108,12 @@ namespace Company.WebApplication1
                 .AddAzureADB2C(options => Configuration.Bind("AzureAdB2C", options));
 #endif
 #if (OrganizationalAuth)
+            services.AddControllersWithViews();
 
-            services.AddControllersWithViews(options =>
+            services.AddAuthorization(options =>
             {
-                var policy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
-                options.Filters.Add(new AuthorizeFilter(policy));
+                // By default, all incoming requests will be authorized according to the default policy
+                options.FallbackPolicy = options.DefaultPolicy;
             });
 #else
             services.AddControllersWithViews();

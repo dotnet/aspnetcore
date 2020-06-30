@@ -1,0 +1,46 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    CSharpCode - 
+        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(@"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ViewComponentTagHelper.cshtml", typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper))]
+    NamespaceDeclaration -  - AspNetCore
+        UsingDirective - (1:0,1 [14] ) - System
+        UsingDirective - (16:1,1 [34] ) - System.Collections.Generic
+        UsingDirective - (51:2,1 [19] ) - System.Linq
+        UsingDirective - (71:3,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (102:4,1 [32] ) - Microsoft.AspNetCore.Mvc
+        UsingDirective - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
+        UsingDirective - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
+            FieldDeclaration -  - private - global::AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper.__Generated__TestViewComponentTagHelper - __TestViewComponentTagHelper
+            PreallocatedTagHelperPropertyValue -  - __tagHelperAttribute_0 - bar -  World - HtmlAttributeValueStyle.DoubleQuotes
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::AllTagHelper - __AllTagHelper
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
+                CSharpCode - (30:1,2 [26] ViewComponentTagHelper.cshtml)
+                    IntermediateToken - (30:1,2 [26] ViewComponentTagHelper.cshtml) - CSharp - \n    var foo = "Hello";\n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(59, 2, true);
+                HtmlContent - (59:4,0 [2] ViewComponentTagHelper.cshtml)
+                    IntermediateToken - (59:4,0 [2] ViewComponentTagHelper.cshtml) - Html - \n
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - BeginContext(61, 50, false);
+                TagHelper - (61:5,0 [50] ViewComponentTagHelper.cshtml) - vc:test - TagMode.StartTagAndEndTag
+                    DefaultTagHelperBody - 
+                    DefaultTagHelperCreate -  - AllTagHelper
+                    DefaultTagHelperCreate -  - AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper.__Generated__TestViewComponentTagHelper
+                    DefaultTagHelperProperty - (82:5,21 [4] ViewComponentTagHelper.cshtml) - first-name - string TestViewComponentTagHelper.firstName - HtmlAttributeValueStyle.DoubleQuotes
+                        CSharpExpression - (83:5,22 [3] ViewComponentTagHelper.cshtml)
+                            IntermediateToken - (83:5,22 [3] ViewComponentTagHelper.cshtml) - CSharp - foo
+                    PreallocatedTagHelperProperty - (93:5,32 [6] ViewComponentTagHelper.cshtml) - __tagHelperAttribute_0 - bar - Bar
+                    DefaultTagHelperExecute - 
+                CSharpCode - 
+                    IntermediateToken -  - CSharp - EndContext();
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            ViewComponentTagHelper - 

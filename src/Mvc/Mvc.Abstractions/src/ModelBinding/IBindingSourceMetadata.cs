@@ -15,6 +15,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// The <see cref="BindingSource"/> is metadata which can be used to determine which data
         /// sources are valid for model binding of a property or parameter.
         /// </remarks>
-        BindingSource BindingSource { get; }
+        BindingSource? BindingSource { get; }
     }
 }

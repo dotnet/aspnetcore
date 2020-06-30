@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         internal AuthenticationManager() { }
         public bool AllowAnonymous { get { throw null; } set { } }
+        public string AuthenticationDisplayName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public bool AutomaticAuthentication { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes Schemes { get { throw null; } set { } }
     }

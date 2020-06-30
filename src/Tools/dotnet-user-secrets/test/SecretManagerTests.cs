@@ -37,7 +37,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        [QuarantinedTest]
         public void Error_MissingId(string id)
         {
             var project = Path.Combine(_fixture.CreateProject(id), "TestProject.csproj");
@@ -83,7 +82,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        [QuarantinedTest]
         public void SetSecrets(bool fromCurrentDirectory)
         {
             var secrets = new KeyValuePair<string, string>[]
@@ -149,7 +147,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public void SetSecret_Update_Existing_Secret()
         {
             var projectPath = _fixture.GetTempSecretProject();
@@ -167,6 +164,7 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void SetSecret_With_Verbose_Flag()
         {
             string secretId;
@@ -187,7 +185,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public void Remove_Non_Existing_Secret()
         {
             var projectPath = _fixture.GetTempSecretProject();
@@ -197,7 +194,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public void Remove_Is_Case_Insensitive()
         {
             var projectPath = _fixture.GetTempSecretProject();
@@ -214,7 +210,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public void List_Flattens_Nested_Objects()
         {
             string secretId;
@@ -264,7 +259,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
         public void List_Empty_Secrets_File()
         {
             var projectPath = _fixture.GetTempSecretProject();
@@ -273,7 +267,6 @@ namespace Microsoft.Extensions.SecretManager.Tools.Tests
             Assert.Contains(Resources.Error_No_Secrets_Found, _console.GetOutput());
         }
 
-        [QuarantinedTest]
         [Theory]
         [InlineData(true)]
         [InlineData(false)]

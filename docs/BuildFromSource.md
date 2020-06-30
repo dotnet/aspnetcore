@@ -33,6 +33,9 @@ Building ASP.NET Core on Windows requires:
     ```
 
     However, the build should find any JDK 11 or newer installation on the machine.
+   * Set the `JAVA_HOME` environment variable with the path of the java installation directory if your installation did not do that automatically. (Gradle needs this for execution.)
+      * This will be `RepoRoot/.tools/jdk/win-x64/` if you used the `InstallJdk.ps1` script
+      * This will be `C:/Program FIles/Java/jdk<version>/` if you installed the JDK globally
 * Chrome - Selenium-based tests require a version of Chrome to be installed. Download and install it from <https://www.google.com/chrome>
 
 ### macOS/Linux
@@ -42,6 +45,7 @@ Building ASP.NET Core on macOS or Linux requires:
 * If using macOS, you need macOS Sierra or newer.
 * If using Linux, you need a machine with all .NET Core Linux prerequisites: <https://docs.microsoft.com/en-us/dotnet/core/linux-prerequisites>
 * At least 10 GB of disk space and a good internet connection (our build scripts download a lot of tools and dependencies)
+* curl <https://curl.haxx.se> or Wget <https://www.gnu.org/software/wget>
 * Git <https://git-scm.org>
 * NodeJS. LTS version of 10.14.2 or newer <https://nodejs.org>
 * Java Development Kit 11 or newer. Either:
@@ -63,6 +67,8 @@ To update an existing copy, run:
 ```ps1
 git submodule update --init --recursive
 ```
+
+**NOTE** some ISPs have been know to use web filtering software that has caused issues with git repository cloning, if you experience issues cloning this repo please review <https://help.github.com/en/github/authenticating-to-github/using-ssh-over-the-https-port>
 
 ## Building in Visual Studio
 
@@ -160,7 +166,7 @@ On macOS/Linux:
 ./build.sh
 ```
 
-By default, all of the C# projects are built. Some C# projects require NodeJS to be installed to compile JavaScript assets which are then checked in as source. If NodeJS is detected on the path, the NodeJS projects will be compiled as part of building C# projects. If NodeJS is not detected on the path, the JavaScript assets checked in previously will be used instead. To disable building NodeJS projects, specify /p:BuildNodeJs=false on the command line.
+By default, all of the C# projects are built. Some C# projects require NodeJS to be installed to compile JavaScript assets which are then checked in as source. If NodeJS is detected on the path, the NodeJS projects will be compiled as part of building C# projects. If NodeJS is not detected on the path, the JavaScript assets checked in previously will be used instead. To disable building NodeJS projects, specify `-noBuildNodeJS` or `--no-build-nodejs` on the command line.
 
 ### Using `dotnet` on command line in this repo
 

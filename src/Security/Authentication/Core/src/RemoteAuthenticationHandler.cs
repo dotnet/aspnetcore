@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Authentication
                 {
                     uri = QueryHelpers.AddQueryString(uri, context.ReturnUrlParameter, context.ReturnUrl);
                 }
-                Response.Redirect(uri);
+                Response.Redirect(BuildRedirectUri(uri));
 
                 return HandleRequestResult.Handle();
             }

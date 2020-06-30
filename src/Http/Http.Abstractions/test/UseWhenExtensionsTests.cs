@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Builder.Extensions
             var builder = CreateBuilder();
 
             // Act
-            Action nullPredicate = () => builder.UseWhen(null, app => { });
-            Action nullConfiguration = () => builder.UseWhen(TruePredicate, null);
+            Action nullPredicate = () => builder.UseWhen(null!, app => { });
+            Action nullConfiguration = () => builder.UseWhen(TruePredicate, null!);
 
             // Assert
             Assert.Throws<ArgumentNullException>(nullPredicate);
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
 
         private static ApplicationBuilder CreateBuilder()
         {
-            return new ApplicationBuilder(serviceProvider: null);
+            return new ApplicationBuilder(serviceProvider: null!);
         }
 
         private static bool TruePredicate(HttpContext context)
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Builder.Extensions
                     }
                 }
 
-                return terminate ? Task.FromResult<object>(null) : next();
+                return terminate ? Task.FromResult<object?>(null) : next();
             };
         }
 

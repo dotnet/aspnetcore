@@ -114,6 +114,47 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         }
 
         [Fact]
+        public async Task CheckAsync_TagsArePresentInHealthReportEntryIfExceptionOccurs()
+        {
+            const string ExceptionMessage = "exception-message";
+            const string OperationCancelledMessage = "operation-cancelled-message";
+            var exceptionTags = new[] { "unhealthy-check-tag" };
+            var operationExceptionTags = new[] { "degraded-check-tag" };
+
+            // Arrange
+            var service = CreateHealthChecksService(b =>
+            {
+                b.AddAsyncCheck("ExceptionCheck", _ => throw new Exception(ExceptionMessage), exceptionTags);
+                b.AddAsyncCheck("OperationExceptionCheck", _ => throw new OperationCanceledException(OperationCancelledMessage), operationExceptionTags);
+            });
+
+            // Act
+            var results = await service.CheckHealthAsync();
+
+            // Assert
+            Assert.Collection(
+                results.Entries.OrderBy(kvp => kvp.Key),
+                actual =>
+                {
+                    Assert.Equal("ExceptionCheck", actual.Key);
+                    Assert.Equal(ExceptionMessage, actual.Value.Description);
+                    Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
+                    Assert.Equal(ExceptionMessage, actual.Value.Exception!.Message);
+                    Assert.Empty(actual.Value.Data);
+                    Assert.Equal(actual.Value.Tags, exceptionTags);
+                },
+                actual =>
+                {
+                    Assert.Equal("OperationExceptionCheck", actual.Key);
+                    Assert.Equal("A timeout occurred while running check.", actual.Value.Description);
+                    Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
+                    Assert.Equal(OperationCancelledMessage, actual.Value.Exception!.Message);
+                    Assert.Empty(actual.Value.Data);
+                    Assert.Equal(actual.Value.Tags, operationExceptionTags);
+                });
+        }
+
+        [Fact]
         public async Task CheckAsync_RunsFilteredChecksAndAggregatesResultsAsync()
         {
             const string DataKey = "Foo";
@@ -202,7 +243,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         public async Task CheckHealthAsync_Cancellation_CanPropagate()
         {
             // Arrange
-            var insideCheck = new TaskCompletionSource<object>();
+            var insideCheck = new TaskCompletionSource<object?>();
 
             var service = CreateHealthChecksService(b =>
             {
@@ -387,10 +428,10 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         public async Task CheckHealthAsync_ChecksAreRunInParallel()
         {
             // Arrange
-            var input1 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var input2 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var output1 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var output2 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var input1 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var input2 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var output1 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var output2 = new TaskCompletionSource<object?>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var service = CreateHealthChecksService(b =>
             {

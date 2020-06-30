@@ -73,7 +73,7 @@ namespace BasicViews
                     _isSQLite = true;
                     services
                         .AddEntityFrameworkSqlite()
-                        .AddDbContextPool<BasicViewsContext>(options => options.UseSqlite("Data Source=BasicViews.db"));
+                        .AddDbContextPool<BasicViewsContext>(options => options.UseSqlite("Data Source=BasicViews.db;Cache=Shared"));
                     break;
 
                 case "SQLSERVER":

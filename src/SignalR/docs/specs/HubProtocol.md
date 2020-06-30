@@ -543,7 +543,7 @@ MessagePack uses different formats to encode values. Refer to the [MsgPack forma
 `Invocation` messages have the following structure:
 
 ```
-[1, Headers, InvocationId, NonBlocking, Target, [Arguments], [StreamIds]]
+[1, Headers, InvocationId, Target, [Arguments], [StreamIds]]
 ```
 
 * `1` - Message Type - `1` indicates this is an `Invocation` message.
@@ -941,7 +941,7 @@ VarInt encodes the most significant bit as a marker indicating whether the byte 
 
 Examples:
  * VarInt: `0x35` (`%00110101`) - the most significant bit is 0 so the value is %x0110101 i.e. 0x35 (53)
- * VarInt: `0x80 0x25` (`%10000000 %00101001`) - the most significant bit of the first byte is 1 so the remaining bits (%x0000000) are the lowest bits of the value. The most significant bit of the second byte is 0 meaning this is last byte of the VarInt. The actual value bits (%x0101001) need to be prepended to the bits we already read so the values is %01010010000000 i.e. 0x1480 (5248)
+ * VarInt: `0x80 0x29` (`%10000000 %00101001`) - the most significant bit of the first byte is 1 so the remaining bits (%x0000000) are the lowest bits of the value. The most significant bit of the second byte is 0 meaning this is last byte of the VarInt. The actual value bits (%x0101001) need to be prepended to the bits we already read so the values is %01010010000000 i.e. 0x1480 (5248)
 
 The biggest supported payloads are 2GB in size so the biggest number we need to support is 0x7fffffff which when encoded as VarInt is 0xFF 0xFF 0xFF 0xFF 0x07 - hence the maximum size of the length prefix is 5 bytes.
 

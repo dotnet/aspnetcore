@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Http
             return StringValues.Equals(_headers, other._headers);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
             {

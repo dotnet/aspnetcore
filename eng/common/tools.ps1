@@ -7,9 +7,11 @@
 # Build configuration. Common values include 'Debug' and 'Release', but the repository may use other names.
 [string]$configuration = if (Test-Path variable:configuration) { $configuration } else { 'Debug' }
 
+# Set to true to opt out of outputting binary log while running in CI
+[bool]$excludeCIBinarylog = if (Test-Path variable:excludeCIBinarylog) { $excludeCIBinarylog } else { $false }
+
 # Set to true to output binary log from msbuild. Note that emitting binary log slows down the build.
-# Binary log must be enabled on CI.
-[bool]$binaryLog = if (Test-Path variable:binaryLog) { $binaryLog } else { $ci }
+[bool]$binaryLog = if (Test-Path variable:binaryLog) { $binaryLog } else { $ci -and !$excludeCIBinarylog }
 
 # Set to true to use the pipelines logger which will enable Azure logging output.
 # https://github.com/Microsoft/azure-pipelines-tasks/blob/master/docs/authoring/commands.md
@@ -55,10 +57,8 @@ set-strictmode -version 2.0
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-function Create-Directory([string[]] $path) {
-  if (!(Test-Path $path)) {
-    New-Item -path $path -force -itemType 'Directory' | Out-Null
-  }
+function Create-Directory ([string[]] $path) {
+    New-Item -Path $path -Force -ItemType 'Directory' | Out-Null
 }
 
 function Unzip([string]$zipfile, [string]$outpath) {
@@ -124,7 +124,9 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
 
   # Find the first path on %PATH% that contains the dotnet.exe
   if ($useInstalledDotNetCli -and (-not $globalJsonHasRuntimes) -and ($env:DOTNET_INSTALL_DIR -eq $null)) {
-    $dotnetCmd = Get-Command 'dotnet.exe' -ErrorAction SilentlyContinue
+    $dotnetExecutable = GetExecutableFileName 'dotnet'
+    $dotnetCmd = Get-Command $dotnetExecutable -ErrorAction SilentlyContinue
+
     if ($dotnetCmd -ne $null) {
       $env:DOTNET_INSTALL_DIR = Split-Path $dotnetCmd.Path -Parent
     }
@@ -283,12 +285,19 @@ function InstallDotNet([string] $dotnetRoot,
 # Throws on failure.
 #
 function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements = $null) {
+  if (-not (IsWindowsPlatform)) {
+    throw "Cannot initialize Visual Studio on non-Windows"
+  }
+
   if (Test-Path variable:global:_MSBuildExe) {
     return $global:_MSBuildExe
   }
 
+  $vsMinVersionReqdStr = '16.5'
+  $vsMinVersionReqd = [Version]::new($vsMinVersionReqdStr)
+
   if (!$vsRequirements) { $vsRequirements = $GlobalJson.tools.vs }
-  $vsMinVersionStr = if ($vsRequirements.version) { $vsRequirements.version } else { '15.9' }
+  $vsMinVersionStr = if ($vsRequirements.version) { $vsRequirements.version } else { $vsMinVersionReqdStr }
   $vsMinVersion = [Version]::new($vsMinVersionStr)
 
   # Try msbuild command available in the environment.
@@ -321,8 +330,18 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
       $xcopyMSBuildVersion = $GlobalJson.tools.'xcopy-msbuild'
       $vsMajorVersion = $xcopyMSBuildVersion.Split('.')[0]
     } else {
-      $vsMajorVersion = $vsMinVersion.Major
-      $xcopyMSBuildVersion = "$vsMajorVersion.$($vsMinVersion.Minor).0-alpha"
+      #if vs version provided in global.json is incompatible then use the default version for xcopy msbuild download
+      if($vsMinVersion -lt $vsMinVersionReqd){
+        Write-Host "Using xcopy-msbuild version of $vsMinVersionReqdStr.0-alpha since VS version $vsMinVersionStr provided in global.json is not compatible"
+        $vsMajorVersion = $vsMinVersionReqd.Major
+        $vsMinorVersion = $vsMinVersionReqd.Minor
+      }
+      else{
+        $vsMajorVersion = $vsMinVersion.Major
+        $vsMinorVersion = $vsMinVersion.Minor
+      }
+
+      $xcopyMSBuildVersion = "$vsMajorVersion.$vsMinorVersion.0-alpha"
     }
 
     $vsInstallDir = $null
@@ -387,6 +406,10 @@ function InitializeXCopyMSBuild([string]$packageVersion, [bool]$install) {
 # or $null if no instance meeting the requirements is found on the machine.
 #
 function LocateVisualStudio([object]$vsRequirements = $null){
+  if (-not (IsWindowsPlatform)) {
+    throw "Cannot run vswhere on non-Windows platforms."
+  }
+
   if (Get-Member -InputObject $GlobalJson.tools -Name 'vswhere') {
     $vswhereVersion = $GlobalJson.tools.vswhere
   } else {
@@ -452,7 +475,8 @@ function InitializeBuildTool() {
       Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "/global.json must specify 'tools.dotnet'."
       ExitWithExitCode 1
     }
-    $buildTool = @{ Path = Join-Path $dotnetRoot 'dotnet.exe'; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'netcoreapp2.1' }
+    $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
+    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'netcoreapp2.1' }
   } elseif ($msbuildEngine -eq "vs") {
     try {
       $msbuildPath = InitializeVisualStudioMSBuild -install:$restore
@@ -488,10 +512,11 @@ function GetNuGetPackageCachePath() {
   if ($env:NUGET_PACKAGES -eq $null) {
     # Use local cache on CI to ensure deterministic build,
     # use global cache in dev builds to avoid cost of downloading packages.
+    # For directory normalization, see also: https://github.com/NuGet/Home/issues/7968
     if ($useGlobalNuGetCache) {
-      $env:NUGET_PACKAGES = Join-Path $env:UserProfile '.nuget\packages'
+      $env:NUGET_PACKAGES = Join-Path $env:UserProfile '.nuget\packages\'
     } else {
-      $env:NUGET_PACKAGES = Join-Path $RepoRoot '.packages'
+      $env:NUGET_PACKAGES = Join-Path $RepoRoot '.packages\'
     }
   }
 
@@ -546,7 +571,7 @@ function InitializeToolset() {
 
   MSBuild-Core $proj $bl /t:__WriteToolsetLocation /clp:ErrorsOnly`;NoSummary /p:__ToolsetLocationOutputFile=$toolsetLocationFile
 
-  $path = Get-Content $toolsetLocationFile -TotalCount 1
+  $path = Get-Content $toolsetLocationFile -Encoding UTF8 -TotalCount 1
   if (!(Test-Path $path)) {
     throw "Invalid toolset path: $path"
   }
@@ -604,8 +629,8 @@ function MSBuild() {
 #
 function MSBuild-Core() {
   if ($ci) {
-    if (!$binaryLog) {
-      Write-PipelineTelemetryError -Category 'Build' -Message 'Binary log must be enabled in CI build.'
+    if (!$binaryLog -and !$excludeCIBinarylog) {
+      Write-PipelineTelemetryError -Category 'Build' -Message 'Binary log must be enabled in CI build, or explicitly opted-out from with the -excludeCIBinarylog switch.'
       ExitWithExitCode 1
     }
 
@@ -631,6 +656,8 @@ function MSBuild-Core() {
       $cmdArgs += " `"$arg`""
     }
   }
+
+  $env:ARCADE_BUILD_TOOL_COMMAND = "$($buildTool.Path) $cmdArgs"
 
   $exitCode = Exec-Process $buildTool.Path $cmdArgs
 
@@ -661,6 +688,19 @@ function GetMSBuildBinaryLogCommandLineArgument($arguments) {
   }
 
   return $null
+}
+
+function GetExecutableFileName($baseName) {
+  if (IsWindowsPlatform) {
+    return "$baseName.exe"
+  }
+  else {
+    return $baseName
+  }
+}
+
+function IsWindowsPlatform() {
+  return [environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
 }
 
 . $PSScriptRoot\pipeline-logging-functions.ps1

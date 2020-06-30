@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 throw new ArgumentNullException(nameof(candidates));
             }
 
-            // We want to return a 415 iff we eliminated ALL of the currently valid endpoints due to content type
+            // We want to return a 415 if we eliminated ALL of the currently valid endpoints due to content type
             // mismatch.
             bool? needs415Endpoint = null;
 

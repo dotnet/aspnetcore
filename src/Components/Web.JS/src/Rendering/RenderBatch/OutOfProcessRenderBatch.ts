@@ -1,5 +1,6 @@
 import { RenderBatch, ArrayRange, RenderTreeDiff, ArrayValues, RenderTreeEdit, EditType, FrameType, RenderTreeFrame, RenderTreeDiffReader, RenderTreeFrameReader, RenderTreeEditReader, ArrayRangeReader, ArrayBuilderSegmentReader, ArrayBuilderSegment } from './RenderBatch';
-import { decodeUtf8 } from './Utf8Decoder';
+import { decodeUtf8 } from '../../Utf8Decoder';
+import { readInt32LE, readUint64LE, readLEB128, numLEB128Bytes } from '../../BinaryDecoder';
 
 const updatedComponentsEntryLength = 4; // Each is a single int32 giving the location of the data
 const referenceFramesEntryLength = 20; // 1 int for frame type, then 16 bytes for type-specific data
@@ -7,8 +8,6 @@ const disposedComponentIdsEntryLength = 4; // Each is an int32 giving the ID
 const disposedEventHandlerIdsEntryLength = 8; // Each is an int64 giving the ID
 const editsEntryLength = 16; // 4 ints
 const stringTableEntryLength = 4; // Each is an int32 giving the string data location, or -1 for null
-const uint64HighPartShift = Math.pow(2, 32);
-const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
 
 export class OutOfProcessRenderBatch implements RenderBatch {
   constructor(private batchData: Uint8Array) {
@@ -230,47 +229,4 @@ class OutOfProcessArrayBuilderSegmentReader implements ArrayBuilderSegmentReader
   }
 }
 
-function readInt32LE(buffer: Uint8Array, position: number): any {
-  return (buffer[position])
-    | (buffer[position + 1] << 8)
-    | (buffer[position + 2] << 16)
-    | (buffer[position + 3] << 24);
-}
 
-function readUint32LE(buffer: Uint8Array, position: number): any {
-  return (buffer[position])
-    + (buffer[position + 1] << 8)
-    + (buffer[position + 2] << 16)
-    + ((buffer[position + 3] << 24) >>> 0); // The >>> 0 coerces the value to unsigned
-}
-
-function readUint64LE(buffer: Uint8Array, position: number): any {
-  // This cannot be done using bit-shift operators in JavaScript, because
-  // those all implicitly convert to int32
-  const highPart = readUint32LE(buffer, position + 4);
-  if (highPart > maxSafeNumberHighPart) {
-    throw new Error(`Cannot read uint64 with high order part ${highPart}, because the result would exceed Number.MAX_SAFE_INTEGER.`);
-  }
-
-  return (highPart * uint64HighPartShift) + readUint32LE(buffer, position);
-}
-
-function readLEB128(buffer: Uint8Array, position: number) {
-  let result = 0;
-  let shift = 0;
-  for (let index = 0; index < 4; index++) {
-    const byte = buffer[position + index];
-    result |= (byte & 127) << shift;
-    if (byte < 128) {
-      break;
-    }
-    shift += 7;
-  }
-  return result;
-}
-
-function numLEB128Bytes(value: number) {
-  return value < 128 ? 1
-    : value < 16384 ? 2
-      : value < 2097152 ? 3 : 4;
-}

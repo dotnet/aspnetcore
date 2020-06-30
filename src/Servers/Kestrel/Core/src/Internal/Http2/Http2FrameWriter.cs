@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly ITimeoutControl _timeoutControl;
         private readonly MinDataRate _minResponseDataRate;
         private readonly TimingPipeFlusher _flusher;
+        private readonly HPackEncoder _hpackEncoder;
 
         private uint _maxFrameSize = Http2PeerSettings.MinAllowedMaxFrameSize;
         private byte[] _headerEncodingBuffer;
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             MinDataRate minResponseDataRate,
             string connectionId,
             MemoryPool<byte> memoryPool,
-            IKestrelTrace log)
+            ServiceContext serviceContext)
         {
             // Allow appending more data to the PipeWriter when a flush is pending.
             _outputWriter = new ConcurrentPipeWriter(outputPipeWriter, memoryPool, _writeLock);
@@ -63,12 +64,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _http2Connection = http2Connection;
             _connectionOutputFlowControl = connectionOutputFlowControl;
             _connectionId = connectionId;
-            _log = log;
+            _log = serviceContext.Log;
             _timeoutControl = timeoutControl;
             _minResponseDataRate = minResponseDataRate;
-            _flusher = new TimingPipeFlusher(_outputWriter, timeoutControl, log);
+            _flusher = new TimingPipeFlusher(_outputWriter, timeoutControl, serviceContext.Log);
             _outgoingFrame = new Http2Frame();
             _headerEncodingBuffer = new byte[_maxFrameSize];
+
+            _hpackEncoder = new HPackEncoder(serviceContext.ServerOptions.AllowResponseHeaderCompression);
+        }
+
+        public void UpdateMaxHeaderTableSize(uint maxHeaderTableSize)
+        {
+            lock (_writeLock)
+            {
+                _hpackEncoder.UpdateMaxHeaderTableSize(maxHeaderTableSize);
+            }
         }
 
         public void UpdateMaxFrameSize(uint maxFrameSize)
@@ -175,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _headersEnumerator.Initialize(headers);
                     _outgoingFrame.PrepareHeaders(headerFrameFlags, streamId);
                     var buffer = _headerEncodingBuffer.AsSpan();
-                    var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _headersEnumerator, buffer, out var payloadLength);
+                    var done = HPackHeaderWriter.BeginEncodeHeaders(statusCode, _hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
                     FinishWritingHeaders(streamId, payloadLength, done);
                 }
                 catch (HPackEncodingException hex)
@@ -201,7 +212,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _headersEnumerator.Initialize(headers);
                     _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.END_STREAM, streamId);
                     var buffer = _headerEncodingBuffer.AsSpan();
-                    var done = HPackHeaderWriter.BeginEncodeHeaders(_headersEnumerator, buffer, out var payloadLength);
+                    var done = HPackHeaderWriter.BeginEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out var payloadLength);
                     FinishWritingHeaders(streamId, payloadLength, done);
                 }
                 catch (HPackEncodingException hex)
@@ -230,7 +241,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 _outgoingFrame.PrepareContinuation(Http2ContinuationFrameFlags.NONE, streamId);
 
-                done = HPackHeaderWriter.ContinueEncodeHeaders(_headersEnumerator, buffer, out payloadLength);
+                done = HPackHeaderWriter.ContinueEncodeHeaders(_hpackEncoder, _headersEnumerator, buffer, out payloadLength);
                 _outgoingFrame.PayloadLength = payloadLength;
 
                 if (done)
@@ -243,7 +254,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public ValueTask<FlushResult> WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, in ReadOnlySequence<byte> data, bool endStream, bool forceFlush)
+        public ValueTask<FlushResult> WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, in ReadOnlySequence<byte> data, bool endStream, bool firstWrite, bool forceFlush)
         {
             // The Length property of a ReadOnlySequence can be expensive, so we cache the value.
             var dataLength = data.Length;
@@ -259,7 +270,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // https://httpwg.org/specs/rfc7540.html#rfc.section.6.9.1
                 if (dataLength != 0 && dataLength > flowControl.Available)
                 {
-                    return WriteDataAsync(streamId, flowControl, data, dataLength, endStream);
+                    return WriteDataAsync(streamId, flowControl, data, dataLength, endStream, firstWrite);
                 }
 
                 // This cast is safe since if dataLength would overflow an int, it's guaranteed to be greater than the available flow control window.
@@ -359,7 +370,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        private async ValueTask<FlushResult> WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, ReadOnlySequence<byte> data, long dataLength, bool endStream)
+        private async ValueTask<FlushResult> WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, ReadOnlySequence<byte> data, long dataLength, bool endStream, bool firstWrite)
         {
             FlushResult flushResult = default;
 
@@ -395,6 +406,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         // flow control induced backpressure below.
                         writeTask = _flusher.FlushAsync();
                     }
+                    else if (firstWrite)
+                    {
+                        // If we're facing flow control induced backpressure on the first write for a given stream's response body,
+                        // we make sure to flush the response headers immediately.
+                        writeTask = _flusher.FlushAsync();
+                    }
+
+                    firstWrite = false;
 
                     if (_minResponseDataRate != null)
                     {

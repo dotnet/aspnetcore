@@ -16,6 +16,10 @@ $disableConfigureToolsetImport = $true
 $LASTEXITCODE = 0
 
 try {
+  # `tools.ps1` checks $ci to perform some actions. Since the SDL
+  # scripts don't necessarily execute in the same agent that run the
+  # build.ps1/sh script this variable isn't automatically set.
+  $ci = $true
   . $PSScriptRoot\..\tools.ps1
 
   # We store config files in the r directory of .gdn
@@ -64,6 +68,6 @@ try {
 }
 catch {
   Write-Host $_.ScriptStackTrace
-  Write-PipelineTelemetryError -Category 'Sdl' -Message $_
+  Write-PipelineTelemetryError -Force -Category 'Sdl' -Message $_
   ExitWithExitCode 1
 }

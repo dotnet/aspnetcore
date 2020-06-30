@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.XPlat
     {
         public static void GenerateAspNetHttpsCertificate()
         {
-            var manager = new CertificateManager();
+            var manager = CertificateManager.Instance;
             var now = DateTimeOffset.Now;
             manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), isInteractive: false);
         }

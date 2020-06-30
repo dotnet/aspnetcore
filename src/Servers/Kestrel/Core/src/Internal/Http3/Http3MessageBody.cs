@@ -25,17 +25,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
             // Note ContentLength or MaxRequestBodySize may be null
             if (_context.RequestHeaders.ContentLength > _context.MaxRequestBodySize)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
         }
 
         protected override void OnReadStarted()
         {
-        }
-
-        protected override void OnDataRead(long bytesRead)
-        {
-            AddAndCheckConsumedBytes(bytesRead);
         }
 
         public static MessageBody For(Http3Stream context)
@@ -50,8 +45,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
-            OnAdvance(_readResult, consumed, examined);
+            var newlyExaminedBytes = TrackConsumedAndExaminedBytes(_readResult, consumed, examined);
+
             _context.RequestBodyPipe.Reader.AdvanceTo(consumed, examined);
+
+            AddAndCheckObservedBytes(newlyExaminedBytes);
         }
 
         public override bool TryRead(out ReadResult readResult)

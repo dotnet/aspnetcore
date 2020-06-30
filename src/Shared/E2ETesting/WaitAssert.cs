@@ -23,6 +23,9 @@ namespace Microsoft.AspNetCore.E2ETesting
         public static void Equal<T>(this IWebDriver driver, T expected, Func<T> actual)
             => WaitAssertCore(driver, () => Assert.Equal(expected, actual()));
 
+        public static void NotEqual<T>(this IWebDriver driver, T expected, Func<T> actual)
+            => WaitAssertCore(driver, () => Assert.NotEqual(expected, actual()));
+
         public static void True(this IWebDriver driver, Func<bool> actual)
             => WaitAssertCore(driver, () => Assert.True(actual()));
 
@@ -46,6 +49,9 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public static IWebElement Exists(this IWebDriver driver, By finder)
             => Exists(driver, finder, default);
+
+        public static TElement Exists<TElement>(this IWebDriver driver, Func<TElement> actual, TimeSpan timeout)
+            => WaitAssertCore(driver, actual, timeout);
 
         public static void DoesNotExist(this IWebDriver driver, By finder, TimeSpan timeout = default)
             => WaitAssertCore(driver, () =>
@@ -128,7 +134,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             try
             {
                 assertion();
-                throw new InvalidOperationException("The assertion succeded after the timeout.");
+                throw new InvalidOperationException("The assertion succeeded after the timeout.");
             }
             catch (Exception ex)
             {

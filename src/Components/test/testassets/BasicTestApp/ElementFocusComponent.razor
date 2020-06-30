@@ -1,0 +1,13 @@
+@using Microsoft.JSInterop
+
+<button id="focus-button" @onclick="FocusInput">Click to focus!</button>
+<input id="focus-input" @ref="inputReference" />
+
+@code {
+    private ElementReference inputReference;
+
+    private async Task FocusInput()
+    {
+        await inputReference.FocusAsync();
+    }
+}

@@ -48,10 +48,10 @@ try {
     if ($ci) {
         # Install dotnet.exe
         if ($DotNetRuntimeSourceFeed -or $DotNetRuntimeSourceFeedKey) {
-            & $repoRoot/restore.cmd -ci -NoBuildNodeJS -DotNetRuntimeSourceFeed $DotNetRuntimeSourceFeed -DotNetRuntimeSourceFeedKey $DotNetRuntimeSourceFeedKey
+            & $repoRoot/restore.cmd -ci -nobl -noBuildNodeJS -DotNetRuntimeSourceFeed $DotNetRuntimeSourceFeed -DotNetRuntimeSourceFeedKey $DotNetRuntimeSourceFeedKey
         }
         else{
-            & $repoRoot/restore.cmd -ci -NoBuildNodeJS
+            & $repoRoot/restore.cmd -ci -nobl -noBuildNodeJS
         }
     }
 
@@ -139,7 +139,7 @@ try {
         | ? {
             # These .sln files are used by the templating engine.
             ($_.Name -ne "BlazorServerWeb_CSharp.sln") -and
-            ($_.Name -ne "BlazorWasm-CSharp.sln")
+            ($_.Name -ne "ComponentsWebAssembly-CSharp.sln")
         } `
         | % {
         Write-Host "  Checking $(Split-Path -Leaf $_)"

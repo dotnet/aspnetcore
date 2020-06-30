@@ -45,7 +45,7 @@ namespace Microsoft.Extensions.DependencyInjection
             this IHealthChecksBuilder builder,
             string name,
             Func<HealthCheckResult> check,
-            IEnumerable<string> tags = null,
+            IEnumerable<string>? tags = null,
             TimeSpan? timeout = default)
         {
             if (builder == null)
@@ -80,7 +80,7 @@ namespace Microsoft.Extensions.DependencyInjection
             this IHealthChecksBuilder builder,
             string name,
             Func<CancellationToken, HealthCheckResult> check,
-            IEnumerable<string> tags)
+            IEnumerable<string>? tags)
         {
             return AddCheck(builder, name, check, tags, default);
         }
@@ -98,7 +98,7 @@ namespace Microsoft.Extensions.DependencyInjection
             this IHealthChecksBuilder builder,
             string name,
             Func<CancellationToken, HealthCheckResult> check,
-            IEnumerable<string> tags = null,
+            IEnumerable<string>? tags = null,
             TimeSpan? timeout = default)
         {
             if (builder == null)
@@ -151,7 +151,7 @@ namespace Microsoft.Extensions.DependencyInjection
             this IHealthChecksBuilder builder,
             string name,
             Func<Task<HealthCheckResult>> check,
-            IEnumerable<string> tags = null,
+            IEnumerable<string>? tags = null,
             TimeSpan? timeout = default)
         {
             if (builder == null)
@@ -204,7 +204,7 @@ namespace Microsoft.Extensions.DependencyInjection
             this IHealthChecksBuilder builder,
             string name,
             Func<CancellationToken, Task<HealthCheckResult>> check,
-            IEnumerable<string> tags = null,
+            IEnumerable<string>? tags = null,
             TimeSpan? timeout = default)
         {
             if (builder == null)

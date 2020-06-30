@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         private const string HWebCoreDll = "hwebcore.dll";
 
         internal static string HostableWebCoreLocation => Environment.ExpandEnvironmentVariables($@"%windir%\system32\inetsrv\{HWebCoreDll}");
-        internal static string BasePath => Path.Combine(Path.GetDirectoryName(new Uri(typeof(TestServer).Assembly.CodeBase).AbsolutePath),
+        internal static string BasePath => Path.Combine(Path.GetDirectoryName(typeof(TestServer).Assembly.Location),
                                                         "ANCM",
                                                         Environment.Is64BitProcess ? "x64" : "x86");
 
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         private readonly Action<IApplicationBuilder> _appBuilder;
         private readonly ILoggerFactory _loggerFactory;
         private readonly hostfxr_main_fn _hostfxrMainFn;
-        
+
         private Uri BaseUri => new Uri("http://localhost:" + _currentPort);
         public HttpClient HttpClient { get; private set; }
         public TestConnection CreateConnection() => new TestConnection(_currentPort);
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         {
             LoadLibrary(HostableWebCoreLocation);
             _appHostConfigPath = Path.GetTempFileName();
-            
+
             set_main_handler(_hostfxrMainFn);
 
             Retry(() =>
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             // WebCoreShutdown occasionally AVs
             // This causes the dotnet test process to crash
-            // To avoid this, we have to wait to shutdown 
+            // To avoid this, we have to wait to shutdown
             // and pass in true to immediately shutdown the hostable web core
             // Both of these seem to be required.
             Thread.Sleep(100);

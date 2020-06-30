@@ -1,5 +1,5 @@
 import { platform } from '../../Environment';
-import { RenderBatch, ArrayRange, ArrayRangeReader, ArrayBuilderSegment, RenderTreeDiff, RenderTreeEdit, RenderTreeFrame, ArrayValues, EditType, FrameType, RenderTreeFrameReader } from './RenderBatch';
+import { RenderBatch, ArrayRange, ArrayBuilderSegment, RenderTreeDiff, RenderTreeEdit, RenderTreeFrame, ArrayValues, EditType, FrameType, RenderTreeFrameReader } from './RenderBatch';
 import { Pointer, System_Array, System_Object } from '../../Platform/Platform';
 
 // Used when running on Mono WebAssembly for shared-memory interop. The code here encapsulates
@@ -107,7 +107,7 @@ const frameReader = {
   textContent: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16),
   markupContent: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16)!,
   attributeName: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16),
-  attributeValue: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 24),
+  attributeValue: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 24, true),
   attributeEventHandlerId: (frame: RenderTreeFrame) => platform.readUint64Field(frame as any, 8),
 };
 

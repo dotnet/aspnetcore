@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Internal;
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         // Used in tests
         internal static readonly string OriginHeader = "Origin";
         internal static readonly string AccessControlRequestMethod = "Access-Control-Request-Method";
-        internal static readonly string PreflightHttpMethod = "OPTIONS";
+        internal static readonly string PreflightHttpMethod = HttpMethods.Options;
 
         // Used in tests
         internal const string Http405EndpointDisplayName = "405 HTTP Method Not Supported";
@@ -133,7 +134,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 var httpMethod = httpContext.Request.Method;
                 var headers = httpContext.Request.Headers;
                 if (metadata.AcceptCorsPreflight &&
-                    string.Equals(httpMethod, PreflightHttpMethod, StringComparison.OrdinalIgnoreCase) &&
+                    HttpMethods.Equals(httpMethod, PreflightHttpMethod) &&
                     headers.ContainsKey(HeaderNames.Origin) &&
                     headers.TryGetValue(HeaderNames.AccessControlRequestMethod, out var accessControlRequestMethod) &&
                     !StringValues.IsNullOrEmpty(accessControlRequestMethod))
@@ -146,7 +147,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 for (var j = 0; j < metadata.HttpMethods.Count; j++)
                 {
                     var candidateMethod = metadata.HttpMethods[j];
-                    if (!string.Equals(httpMethod, candidateMethod, StringComparison.OrdinalIgnoreCase))
+                    if (!HttpMethods.Equals(httpMethod, candidateMethod))
                     {
                         methods = methods ?? new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                         methods.Add(candidateMethod);
@@ -396,9 +397,19 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private static bool ContainsHttpMethod(List<string> httpMethods, string httpMethod)
         {
-            for (var i = 0; i < httpMethods.Count; i++)
+            var methods = CollectionsMarshal.AsSpan(httpMethods);
+            for (var i = 0; i < methods.Length; i++)
             {
-                if (string.Equals(httpMethods[i], httpMethod, StringComparison.OrdinalIgnoreCase))
+                // This is a fast path for when everything is using static HttpMethods instances.
+                if (object.ReferenceEquals(methods[i], httpMethod))
+                {
+                    return true;
+                }
+            }
+
+            for (var i = 0; i < methods.Length; i++)
+            {
+                if (HttpMethods.Equals(methods[i], httpMethod))
                 {
                     return true;
                 }
@@ -437,7 +448,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 var httpMethod = httpContext.Request.Method;
                 var headers = httpContext.Request.Headers;
                 if (_supportsCorsPreflight &&
-                    string.Equals(httpMethod, PreflightHttpMethod, StringComparison.OrdinalIgnoreCase) &&
+                    HttpMethods.Equals(httpMethod, PreflightHttpMethod) &&
                     headers.ContainsKey(HeaderNames.Origin) &&
                     headers.TryGetValue(HeaderNames.AccessControlRequestMethod, out var accessControlRequestMethod) &&
                     !StringValues.IsNullOrEmpty(accessControlRequestMethod))
@@ -499,7 +510,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 return
                     IsCorsPreflightRequest == other.IsCorsPreflightRequest &&
-                    string.Equals(HttpMethod, other.HttpMethod, StringComparison.OrdinalIgnoreCase);
+                    HttpMethods.Equals(HttpMethod, other.HttpMethod);
             }
 
             public override bool Equals(object obj)
