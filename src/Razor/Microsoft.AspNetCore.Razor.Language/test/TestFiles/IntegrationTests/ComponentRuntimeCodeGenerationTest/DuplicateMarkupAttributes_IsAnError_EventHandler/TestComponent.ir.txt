@@ -9,8 +9,6 @@ Document -
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 MarkupElement - (44:1,0 [118] x:\dir\subdir\Test\TestComponent.cshtml) - div
-                    HtmlContent - (49:1,5 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                        LazyIntermediateToken - (49:1,5 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n  
                     MarkupElement - (53:2,2 [101] x:\dir\subdir\Test\TestComponent.cshtml) - a
                         HtmlContent - (93:2,42 [57] x:\dir\subdir\Test\TestComponent.cshtml)
                             LazyIntermediateToken - (93:2,42 [57] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Learn the ten cool tricks your compiler author will hate!
@@ -22,5 +20,3 @@ Document -
                                 IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
                                 LazyIntermediateToken - (83:2,32 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - () => {}
                                 IntermediateToken -  - CSharp - )
-                    HtmlContent - (154:2,103 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                        LazyIntermediateToken - (154:2,103 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n

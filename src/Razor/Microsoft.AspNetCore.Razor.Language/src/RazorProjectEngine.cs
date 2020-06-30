@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 NamespaceDirective.Register(builder);
                 AttributeDirective.Register(builder);
 
-                AddComponentFeatures(builder);
+                AddComponentFeatures(builder, configuration.LanguageVersion);
             }
 
             LoadExtensions(builder, configuration.Extensions);
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             });
         }
 
-        private static void AddComponentFeatures(RazorProjectEngineBuilder builder)
+        private static void AddComponentFeatures(RazorProjectEngineBuilder builder, RazorLanguageVersion razorLanguageVersion)
         {
             // Project Engine Features
             builder.Features.Add(new ComponentImportProjectFeature());
@@ -217,6 +217,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             ComponentLayoutDirective.Register(builder);
             ComponentPageDirective.Register(builder);
             ComponentTypeParamDirective.Register(builder);
+
+            if (razorLanguageVersion.CompareTo(RazorLanguageVersion.Version_5_0) >= 0)
+            {
+                ComponentPreserveWhitespaceDirective.Register(builder);
+            }
 
             // Document Classifier
             builder.Features.Add(new ComponentDocumentClassifierPass());

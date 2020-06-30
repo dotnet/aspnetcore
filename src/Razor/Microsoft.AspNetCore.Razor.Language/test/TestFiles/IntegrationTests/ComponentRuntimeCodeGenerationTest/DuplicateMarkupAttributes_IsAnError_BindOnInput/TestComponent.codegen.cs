@@ -21,10 +21,9 @@ using Microsoft.AspNetCore.Components.Web;
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
             __builder.OpenElement(0, "div");
-            __builder.AddMarkupContent(1, "\r\n  ");
-            __builder.OpenElement(2, "input");
-            __builder.AddAttribute(3, "type", "text");
-            __builder.AddAttribute(4, "oninput", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.ChangeEventArgs>(this, 
+            __builder.OpenElement(1, "input");
+            __builder.AddAttribute(2, "type", "text");
+            __builder.AddAttribute(3, "oninput", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.ChangeEventArgs>(this, 
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
                                                                                () => {}
@@ -33,7 +32,7 @@ using Microsoft.AspNetCore.Components.Web;
 #line hidden
 #nullable disable
             ));
-            __builder.AddAttribute(5, "value", Microsoft.AspNetCore.Components.BindConverter.FormatValue(
+            __builder.AddAttribute(4, "value", Microsoft.AspNetCore.Components.BindConverter.FormatValue(
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
                                    text
@@ -42,10 +41,9 @@ using Microsoft.AspNetCore.Components.Web;
 #line hidden
 #nullable disable
             ));
-            __builder.AddAttribute(6, "oninput", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => text = __value, text));
+            __builder.AddAttribute(5, "oninput", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => text = __value, text));
             __builder.SetUpdatesAttributeName("value");
             __builder.CloseElement();
-            __builder.AddMarkupContent(7, "\r\n");
             __builder.CloseElement();
         }
         #pragma warning restore 1998

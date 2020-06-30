@@ -2,7 +2,7 @@ Source Location: (54:3,7 [55] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public string ParentValue { get; set; } = "hi";
 |
-Generated Location: (1133:34,7 [55] )
+Generated Location: (1027:32,7 [55] )
 |
     public string ParentValue { get; set; } = "hi";
 |

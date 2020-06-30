@@ -1322,7 +1322,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             if (tokenDescriptor.Kind == DirectiveTokenKind.Member ||
                                 tokenDescriptor.Kind == DirectiveTokenKind.Namespace ||
                                 tokenDescriptor.Kind == DirectiveTokenKind.Type ||
-                                tokenDescriptor.Kind == DirectiveTokenKind.Attribute)
+                                tokenDescriptor.Kind == DirectiveTokenKind.Attribute ||
+                                tokenDescriptor.Kind == DirectiveTokenKind.Boolean)
                             {
                                 SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
                                 SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Whitespace;
@@ -1417,6 +1418,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     return;
                                 }
                                 break;
+
+                            case DirectiveTokenKind.Boolean:
+                                if (AtBooleanLiteral() && !CurrentToken.ContainsDiagnostics)
+                                {
+                                    AcceptAndMoveNext();
+                                }
+                                else
+                                {
+                                    Context.ErrorSink.OnError(
+                                        RazorDiagnosticFactory.CreateParsing_DirectiveExpectsBooleanLiteral(
+                                            new SourceSpan(CurrentStart, CurrentToken.Content.Length), descriptor.Directive));
+                                    builder.Add(BuildDirective());
+                                    return;
+                                }
+                                break;
+
                             case DirectiveTokenKind.Attribute:
                                 if (At(SyntaxKind.LeftBracket))
                                 {
@@ -1697,6 +1714,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             return false;
+        }
+
+        private bool AtBooleanLiteral()
+        {
+            var result = CSharpTokenizer.GetTokenKeyword(CurrentToken);
+            return result.HasValue && (result.Value == CSharpKeyword.True || result.Value == CSharpKeyword.False);
         }
 
         private void SetupExpressionParsers()

@@ -19,11 +19,7 @@ Document -
                     LazyIntermediateToken - (93:1,89 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ;\n
                 Component - (99:3,0 [49] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentChildContent -  - ChildContent - context
-                        HtmlContent - (112:3,13 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                            LazyIntermediateToken - (112:3,13 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                         CSharpExpression - (116:4,2 [15] x:\dir\subdir\Test\TestComponent.cshtml)
                             LazyIntermediateToken - (116:4,2 [15] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "hello, world!"
-                        HtmlContent - (132:4,18 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                            LazyIntermediateToken - (132:4,18 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (159:7,7 [76] x:\dir\subdir\Test\TestComponent.cshtml)
                 LazyIntermediateToken - (159:7,7 [76] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n

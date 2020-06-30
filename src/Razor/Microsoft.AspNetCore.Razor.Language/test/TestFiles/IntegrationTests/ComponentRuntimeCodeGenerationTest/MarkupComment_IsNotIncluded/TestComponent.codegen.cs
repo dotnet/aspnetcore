@@ -31,7 +31,6 @@ namespace Test
 #line hidden
 #nullable disable
             );
-            __builder.AddMarkupContent(2, "  ");
             __builder.CloseElement();
         }
         #pragma warning restore 1998

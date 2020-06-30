@@ -9,8 +9,6 @@ Document -
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 MarkupElement - (44:1,0 [69] x:\dir\subdir\Test\TestComponent.cshtml) - div
-                    HtmlContent - (49:1,5 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                        LazyIntermediateToken - (49:1,5 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n  
                     MarkupElement - (53:2,2 [52] x:\dir\subdir\Test\TestComponent.cshtml) - input
                         HtmlAttribute -  - type=" - "
                             HtmlAttributeValue - (66:2,15 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
@@ -28,7 +26,5 @@ Document -
                                 IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => text = __value, 
                                 IntermediateToken -  - CSharp - text
                                 IntermediateToken -  - CSharp - )
-                    HtmlContent - (105:2,54 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                        LazyIntermediateToken - (105:2,54 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (127:4,12 [35] x:\dir\subdir\Test\TestComponent.cshtml)
                 LazyIntermediateToken - (127:4,12 [35] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private string text = "hi";\n

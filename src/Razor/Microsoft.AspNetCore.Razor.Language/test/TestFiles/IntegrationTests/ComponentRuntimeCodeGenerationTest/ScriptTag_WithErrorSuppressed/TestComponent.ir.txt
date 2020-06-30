@@ -8,8 +8,6 @@ Document -
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 MarkupElement - (0:0,0 [144] x:\dir\subdir\Test\TestComponent.cshtml) - div
-                    HtmlContent - (5:0,5 [6] x:\dir\subdir\Test\TestComponent.cshtml)
-                        LazyIntermediateToken - (5:0,5 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    
                     MarkupElement - (11:1,4 [125] x:\dir\subdir\Test\TestComponent.cshtml) - script
                         HtmlAttribute - (18:1,11 [18] x:\dir\subdir\Test\TestComponent.cshtml) -  src=' - '
                             HtmlAttributeValue - (24:1,17 [11] x:\dir\subdir\Test\TestComponent.cshtml) - 
@@ -17,5 +15,3 @@ Document -
                         HtmlAttribute - (36:1,29 [17] x:\dir\subdir\Test\TestComponent.cshtml) -  anotherattribute - 
                         HtmlContent - (78:1,71 [49] x:\dir\subdir\Test\TestComponent.cshtml)
                             LazyIntermediateToken - (78:1,71 [49] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n        some text\n        some more text\n    
-                    HtmlContent - (136:4,13 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                        LazyIntermediateToken - (136:4,13 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
