@@ -252,7 +252,7 @@ class MessagePackHubProtocol implements HubProtocol {
     }
     
     private String writeStreamItemMessage(StreamItem message) throws IOException {
-    	MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
+    MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
         
         packer.packArrayHeader(4);
         packer.packInt(message.getMessageType().value);
@@ -270,7 +270,7 @@ class MessagePackHubProtocol implements HubProtocol {
     }
     
     private String writeCompletionMessage(CompletionMessage message) throws IOException {
-    	MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
+    MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
         int resultKind =
             message.getError() != null ? ERROR_RESULT :
             message.getResult() != null ? NON_VOID_RESULT :
@@ -300,7 +300,7 @@ class MessagePackHubProtocol implements HubProtocol {
     }
     
     private String writeStreamInvocationMessage(StreamInvocationMessage message) throws IOException {
-    	MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
+    MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
         
         packer.packArrayHeader(6);
         packer.packInt(message.getMessageType().value);
@@ -326,7 +326,7 @@ class MessagePackHubProtocol implements HubProtocol {
     }
     
     private String writeCancelInvocationMessage(CancelInvocationMessage message) throws IOException {
-    	MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
+    MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
         
         packer.packArrayHeader(3);
         packer.packInt(message.getMessageType().value);
@@ -342,7 +342,7 @@ class MessagePackHubProtocol implements HubProtocol {
     }
     
     private String writePingMessage(PingMessage message) throws IOException {
-    	MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
+    MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
         
         packer.packArrayHeader(1);
         packer.packInt(message.getMessageType().value);
@@ -354,7 +354,7 @@ class MessagePackHubProtocol implements HubProtocol {
     }
     
     private String writeCloseMessage(CloseMessage message) throws IOException {
-    	MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
+    MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
         
         packer.packArrayHeader(3);
         packer.packInt(message.getMessageType().value);

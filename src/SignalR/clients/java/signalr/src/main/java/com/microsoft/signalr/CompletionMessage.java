@@ -13,13 +13,13 @@ final class CompletionMessage extends HubMessage {
     private final String error;
 
     public CompletionMessage(String invocationId, Object result, String error) {
-    	this(null, invocationId, result, error);
+        this(null, invocationId, result, error);
     }
     
     public CompletionMessage(Map<String, String> headers, String invocationId, Object result, String error) {
-    	if (headers != null && !headers.isEmpty()) {
-    		this.headers = headers;
-    	}
+        if (headers != null && !headers.isEmpty()) {
+            this.headers = headers;
+        }
         if (error != null && result != null) {
             throw new IllegalArgumentException("Expected either 'error' or 'result' to be provided, but not both.");
         }
@@ -29,7 +29,7 @@ final class CompletionMessage extends HubMessage {
     }
     
     public Map<String, String> getHeaders() {
-    	return headers;
+        return headers;
     }
 
     public Object getResult() {

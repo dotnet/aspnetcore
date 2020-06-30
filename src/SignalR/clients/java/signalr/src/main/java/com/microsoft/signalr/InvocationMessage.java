@@ -55,7 +55,7 @@ class InvocationMessage extends HubMessage {
     }
     
     public Collection<String> getStreamIds() {
-    	return streamIds;
+        return streamIds;
     }
 
     @Override
