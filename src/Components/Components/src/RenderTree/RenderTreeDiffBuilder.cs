@@ -5,6 +5,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Profiling;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -47,7 +49,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             int oldStartIndex, int oldEndIndexExcl,
             int newStartIndex, int newEndIndexExcl)
         {
-            ComponentsProfiling.Instance.Start();
+            ProfilingStart();
             // This is deliberately a very large method. Parts of it could be factored out
             // into other private methods, but doing so comes at a consequential perf cost,
             // because it involves so much parameter passing. You can think of the code here
@@ -298,12 +300,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     diffContext.KeyedItemInfoDictionaryPool.Return(keyedItemInfos);
                 }
             }
-            ComponentsProfiling.Instance.End();
+            ProfilingEnd();
         }
 
         private static Dictionary<object, KeyedItemInfo> BuildKeyToInfoLookup(DiffContext diffContext, int oldStartIndex, int oldEndIndexExcl, int newStartIndex, int newEndIndexExcl)
         {
-            ComponentsProfiling.Instance.Start();
+            ProfilingStart();
             var result = diffContext.KeyedItemInfoDictionaryPool.Get();
             var oldTree = diffContext.OldTree;
             var newTree = diffContext.NewTree;
@@ -349,7 +351,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 newStartIndex = NextSiblingIndex(frame, newStartIndex);
             }
 
-            ComponentsProfiling.Instance.End();
+            ProfilingEnd();
             return result;
         }
 
@@ -382,7 +384,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             int oldStartIndex, int oldEndIndexExcl,
             int newStartIndex, int newEndIndexExcl)
         {
-            ComponentsProfiling.Instance.Start();
+            ProfilingStart();
             // The overhead of the dictionary used by AppendAttributeDiffEntriesForRangeSlow is
             // significant, so we want to try and do a merge-join if possible, but fall back to
             // a hash-join if not. We'll do a merge join until we hit a case we can't handle and
@@ -431,7 +433,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                             ref diffContext,
                             oldStartIndex, oldEndIndexExcl,
                             newStartIndex, newEndIndexExcl);
-                        ComponentsProfiling.Instance.End();
+                        ProfilingEnd();
                         return;
                     }
 
@@ -457,12 +459,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                         ref diffContext,
                         oldStartIndex, oldEndIndexExcl,
                         newStartIndex, newEndIndexExcl);
-                    ComponentsProfiling.Instance.End();
+                    ProfilingEnd();
                     return;
                 }
             }
 
-            ComponentsProfiling.Instance.End();
+            ProfilingEnd();
         }
 
         private static void AppendAttributeDiffEntriesForRangeSlow(
@@ -470,7 +472,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             int oldStartIndex, int oldEndIndexExcl,
             int newStartIndex, int newEndIndexExcl)
         {
-            ComponentsProfiling.Instance.Start();
+            ProfilingStart();
             var oldTree = diffContext.OldTree;
             var newTree = diffContext.NewTree;
 
@@ -509,7 +511,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             // We should have processed any additions at this point. Reset for the next batch.
             diffContext.AttributeDiffSet.Clear();
-            ComponentsProfiling.Instance.End();
+            ProfilingEnd();
         }
 
         private static void UpdateRetainedChildComponent(
@@ -517,7 +519,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             int oldComponentIndex,
             int newComponentIndex)
         {
-            ComponentsProfiling.Instance.Start();
+            ProfilingStart();
             var oldTree = diffContext.OldTree;
             var newTree = diffContext.NewTree;
             ref var oldComponentFrame = ref oldTree[oldComponentIndex];
@@ -545,7 +547,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 componentState.SetDirectParameters(newParameters);
             }
 
-            ComponentsProfiling.Instance.End();
+            ProfilingEnd();
         }
 
         private static int NextSiblingIndex(in RenderTreeFrame frame, int frameIndex)
@@ -568,7 +570,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             int oldFrameIndex,
             int newFrameIndex)
         {
-            ComponentsProfiling.Instance.Start();
+            ProfilingStart();
             var oldTree = diffContext.OldTree;
             var newTree = diffContext.NewTree;
             ref var oldFrame = ref oldTree[oldFrameIndex];
@@ -581,7 +583,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 InsertNewFrame(ref diffContext, newFrameIndex);
                 RemoveOldFrame(ref diffContext, oldFrameIndex);
-                ComponentsProfiling.Instance.End();
+                ProfilingEnd();
                 return;
             }
 
@@ -708,7 +710,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     throw new NotImplementedException($"Encountered unsupported frame type during diffing: {newTree[newFrameIndex].FrameType}");
             }
 
-            ComponentsProfiling.Instance.End();
+            ProfilingEnd();
         }
 
         // This should only be called for attributes that have the same name. This is an
@@ -718,7 +720,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             int oldFrameIndex,
             int newFrameIndex)
         {
-            ComponentsProfiling.Instance.Start();
+            ProfilingStart();
             var oldTree = diffContext.OldTree;
             var newTree = diffContext.NewTree;
             ref var oldFrame = ref oldTree[oldFrameIndex];
@@ -748,12 +750,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 newFrame = oldFrame;
             }
 
-            ComponentsProfiling.Instance.End();
+            ProfilingEnd();
         }
 
         private static void InsertNewFrame(ref DiffContext diffContext, int newFrameIndex)
         {
-            ComponentsProfiling.Instance.Start();
+            ProfilingStart();
             var newTree = diffContext.NewTree;
             ref var newFrame = ref newTree[newFrameIndex];
             switch (newFrame.FrameType)
@@ -806,12 +808,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 default:
                     throw new NotImplementedException($"Unexpected frame type during {nameof(InsertNewFrame)}: {newFrame.FrameType}");
             }
-            ComponentsProfiling.Instance.End();
+            ProfilingEnd();
         }
 
         private static void RemoveOldFrame(ref DiffContext diffContext, int oldFrameIndex)
         {
-            ComponentsProfiling.Instance.Start();
+            ProfilingStart();
             var oldTree = diffContext.OldTree;
             ref var oldFrame = ref oldTree[oldFrameIndex];
             switch (oldFrame.FrameType)
@@ -853,7 +855,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 default:
                     throw new NotImplementedException($"Unexpected frame type during {nameof(RemoveOldFrame)}: {oldFrame.FrameType}");
             }
-            ComponentsProfiling.Instance.End();
+            ProfilingEnd();
         }
 
         private static int GetAttributesEndIndexExclusive(RenderTreeFrame[] tree, int rootIndex)
@@ -887,7 +889,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         private static void InitializeNewSubtree(ref DiffContext diffContext, int frameIndex)
         {
-            ComponentsProfiling.Instance.Start();
+            ProfilingStart();
             var frames = diffContext.NewTree;
             var endIndexExcl = frameIndex + frames[frameIndex].ElementSubtreeLength;
             for (var i = frameIndex; i < endIndexExcl; i++)
@@ -909,12 +911,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                         break;
                 }
             }
-            ComponentsProfiling.Instance.End();
+            ProfilingEnd();
         }
 
         private static void InitializeNewComponentFrame(ref DiffContext diffContext, int frameIndex)
         {
-            ComponentsProfiling.Instance.Start();
+            ProfilingStart();
             var frames = diffContext.NewTree;
             ref var frame = ref frames[frameIndex];
 
@@ -931,7 +933,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var initialParametersLifetime = new ParameterViewLifetime(diffContext.BatchBuilder);
             var initialParameters = new ParameterView(initialParametersLifetime, frames, frameIndex);
             childComponentState.SetDirectParameters(initialParameters);
-            ComponentsProfiling.Instance.End();
+            ProfilingEnd();
         }
 
         private static void InitializeNewAttributeFrame(ref DiffContext diffContext, ref RenderTreeFrame newFrame)
@@ -976,7 +978,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         private static void DisposeFramesInRange(RenderBatchBuilder batchBuilder, RenderTreeFrame[] frames, int startIndex, int endIndexExcl)
         {
-            ComponentsProfiling.Instance.Start();
+            ProfilingStart();
             for (var i = startIndex; i < endIndexExcl; i++)
             {
                 ref var frame = ref frames[i];
@@ -989,7 +991,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     batchBuilder.DisposedEventHandlerIds.Append(frame.AttributeEventHandlerId);
                 }
             }
-            ComponentsProfiling.Instance.End();
+            ProfilingEnd();
         }
 
         /// <summary>
@@ -1031,5 +1033,18 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 SiblingIndex = 0;
             }
         }
+
+        // Having too many calls to ComponentsProfiling.Instance.Start/End has a measurable perf impact
+        // even when capturing is disabled. So, to enable detailed profiling for this class, define the
+        // Profile_RenderTreeDiffBuilder compiler symbol, otherwise the calls are compiled out entirely.
+        // Enabling detailed profiling adds about 5% to rendering benchmark times.
+
+        [Conditional("Profile_RenderTreeDiffBuilder")]
+        private static void ProfilingStart([CallerMemberName] string? name = null)
+            => ComponentsProfiling.Instance.Start(name);
+
+        [Conditional("Profile_RenderTreeDiffBuilder")]
+        private static void ProfilingEnd([CallerMemberName] string? name = null)
+            => ComponentsProfiling.Instance.End(name);
     }
 }
