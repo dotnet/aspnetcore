@@ -230,6 +230,16 @@ TargetOsName             | The base runtime identifier to build for (win, linux,
 After building ASP.NET Core from source, you will need to install and use your local version of ASP.NET Core.
 See ["Artifacts"](./Artifacts.md) for more explanation of the different folders produced by a build.
 
+Building installers does not run as part of `build.cmd` run without parameters, so you should opt-in for building them: 
+
+```ps1
+.\build.cmd -all -pack -arch x64
+.\build.cmd -all -pack -arch x86 -noBuildJava
+.\build.cmd -buildInstallers
+```
+
+*Note*: Additional build steps listed above aren't necessary on Linux or macOS.
+
 * Run the installers produced in `artifacts/installers/{Debug, Release}/` for your platform.
 * Add a NuGet.Config to your project directory with the following content:
 
