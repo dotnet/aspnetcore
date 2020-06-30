@@ -92,6 +92,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!--
       Calculates the outputs and the paths for Blazor WASM. This target is invoked frequently and should perform minimal work.
     -->
+
     <ItemGroup>
       <_BlazorJSFile Include="$(BlazorWebAssemblyJSPath)" />
       <_BlazorJSFile Include="$(BlazorWebAssemblyJSMapPath)" Condition="Exists('$(BlazorWebAssemblyJSMapPath)')" />
@@ -140,7 +141,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="SatelliteAssembly" ItemName="_BlazorReadSatelliteAssembly" />
     </BlazorReadSatelliteAssemblyFile>
 
-    <ItemGroup >
+    <ItemGroup>
       <!-- We've imported a previously Cacheed file. Let's turn in to a _BlazorOutputWithTargetPath -->
       <_BlazorOutputWithTargetPath
         Include="@(_BlazorReadSatelliteAssembly)"
@@ -161,6 +162,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Retarget ReferenceCopyLocalPaths to copy to the wwwroot directory -->
       <ReferenceCopyLocalPaths DestinationSubDirectory="$(_BlazorOutputPath)%(ReferenceCopyLocalPaths.DestinationSubDirectory)" />
     </ItemGroup>
+
+    <!-- A missing blazor.webassembly.js is our packaging error. Produce an error so it's discovered early. -->
+    <Error
+      Text="Unable to find BlazorWebAssembly JS files. This usually indicates a packaging error."
+      Code="RAZORSDK1007"
+      Condition="'@(_BlazorJSFile->Count())' == '0'" />
 
     <!--
       When building with BuildingProject=false, satellite assemblies do not get resolved (the ones for the current project and the one for
