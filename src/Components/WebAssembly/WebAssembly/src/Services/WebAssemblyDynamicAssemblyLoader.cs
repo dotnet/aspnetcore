@@ -10,23 +10,23 @@ using System.Threading.Tasks;
 using System.Runtime.Loader;
 using Microsoft.JSInterop.WebAssembly;
 
-namespace Microsoft.AspNetCore.Components.WebAssembly.Services
+namespace Microsoft.AspNetCore.Components.WebAssembly
 {
-    public class WebAssemblyDynamicResourceLoader
+    public class WebAssemblyDynamicAssemblyLoader
     {
         internal const string GetDynamicAssemblies = "window.Blazor._internal.getDynamicAssemblies";
         internal const string ReadDynamicAssemblies = "window.Blazor._internal.readDynamicAssemblies";
 
-        private static List<string> _loadedAssemblyCache = new List<string>();
+        private List<string> _loadedAssemblyCache = new List<string>();
 
         private readonly WebAssemblyJSRuntime _jsRuntime;
 
-        internal WebAssemblyDynamicResourceLoader(WebAssemblyJSRuntime jsRuntime)
+        internal WebAssemblyDynamicAssemblyLoader(WebAssemblyJSRuntime jsRuntime)
         {
             _jsRuntime = jsRuntime;
         }
 
-        public async Task<IEnumerable<Assembly>> LoadDynamicAssemblies(IEnumerable<string> assembliesToLoad)
+        public async Task<IEnumerable<Assembly>> LoadAssembliesAsync(IEnumerable<string> assembliesToLoad)
         {
             // Only load assemblies that haven't already been lazily-loaded
             var newAssembliesToLoad = assembliesToLoad.Where(assembly => !_loadedAssemblyCache.Contains(assembly));

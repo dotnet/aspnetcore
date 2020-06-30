@@ -59,7 +59,8 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Parameter] public RenderFragment<RouteData> Found { get; set; }
 
         /// <summary>
-        /// Gets or sets a handler that should be called before navigating to a new page.
+        /// Gets or sets a handler that should be called before navigating to a new page. Return <c>true</c>
+        /// if the route's component should be rendered following invocation. Return <c>false</c> otherwise.
         /// </summary>
         [Parameter] public Func<string, bool> OnNavigate { get; set; }
 
@@ -107,13 +108,13 @@ namespace Microsoft.AspNetCore.Components.Routing
             // we need to call the `OnNavigate` handler to ensure that pre-processing
             // steps are completed before rendering the route. This way, it will work
             // if you navigate to /PageWithLazyLoadedAssemblies or visit it for the first time.
-            if (OnNavigate != null && !initialOnNavigateCalled) {
+            if (OnNavigate != null && !initialOnNavigateCalled)
+            {
                 OnNavigate(NavigationManager.ToBaseRelativePath(_locationAbsolute));
                 initialOnNavigateCalled = true;
             }
 
             Refresh(isNavigationIntercepted: false);
-
 
             return Task.CompletedTask;
         }
@@ -178,9 +179,11 @@ namespace Microsoft.AspNetCore.Components.Routing
             _locationAbsolute = args.Location;
             if (_renderHandle.IsInitialized && Routes != null)
             {
-                if (OnNavigate != null) {
+                if (OnNavigate != null)
+                {
                     var continueRender = OnNavigate(NavigationManager.ToBaseRelativePath(_locationAbsolute));
-                    if (!continueRender) {
+                    if (!continueRender)
+                    {
                         return;
                     }
                 }

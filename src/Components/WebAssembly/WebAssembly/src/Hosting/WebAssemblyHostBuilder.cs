@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
             Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
             Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
-            Services.AddSingleton<WebAssemblyDynamicResourceLoader>(new WebAssemblyDynamicResourceLoader(DefaultWebAssemblyJSRuntime.Instance));
+            Services.AddSingleton<WebAssemblyDynamicAssemblyLoader>(new WebAssemblyDynamicAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
             Services.AddLogging(builder => {
                 builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
             });
