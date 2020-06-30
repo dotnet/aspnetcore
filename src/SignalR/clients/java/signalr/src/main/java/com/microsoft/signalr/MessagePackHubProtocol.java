@@ -3,19 +3,17 @@
 
 package com.microsoft.signalr;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.msgpack.core.MessageBufferPacker;
 import org.msgpack.core.MessageFormat;
 import org.msgpack.core.MessagePack;
 import org.msgpack.core.MessagePackException;
@@ -222,8 +220,7 @@ class MessagePackHubProtocol implements HubProtocol {
     }
     
     private String writeInvocationMessage(InvocationMessage message) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        MessagePacker packer = MessagePack.newDefaultPacker(out);
+        MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
         
         packer.packArrayHeader(6);
         packer.packInt(message.getMessageType().value);
@@ -249,14 +246,13 @@ class MessagePackHubProtocol implements HubProtocol {
         writeStreamIds(message.getStreamIds(), packer);
         
         packer.flush();
-        String content = out.toString(StandardCharsets.ISO_8859_1);
-        out.close();
+        String content = new String(packer.toByteArray(), StandardCharsets.ISO_8859_1);
+        packer.close();
         return content;
     }
     
     private String writeStreamItemMessage(StreamItem message) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        MessagePacker packer = MessagePack.newDefaultPacker(out);
+    	MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
         
         packer.packArrayHeader(4);
         packer.packInt(message.getMessageType().value);
@@ -268,14 +264,13 @@ class MessagePackHubProtocol implements HubProtocol {
         writeValue(message.getItem(), packer);
         
         packer.flush();
-        String content = out.toString(StandardCharsets.ISO_8859_1);
-        out.close();
+        String content = new String(packer.toByteArray(), StandardCharsets.ISO_8859_1);
+        packer.close();
         return content;
     }
     
     private String writeCompletionMessage(CompletionMessage message) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        MessagePacker packer = MessagePack.newDefaultPacker(out);
+    	MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
         int resultKind =
             message.getError() != null ? ERROR_RESULT :
             message.getResult() != null ? NON_VOID_RESULT :
@@ -298,14 +293,14 @@ class MessagePackHubProtocol implements HubProtocol {
             break;
         }
         
-        String content = out.toString(StandardCharsets.ISO_8859_1);
-        out.close();
+        packer.flush();
+        String content = new String(packer.toByteArray(), StandardCharsets.ISO_8859_1);
+        packer.close();
         return content;
     }
     
     private String writeStreamInvocationMessage(StreamInvocationMessage message) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        MessagePacker packer = MessagePack.newDefaultPacker(out);
+    	MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
         
         packer.packArrayHeader(6);
         packer.packInt(message.getMessageType().value);
@@ -325,14 +320,13 @@ class MessagePackHubProtocol implements HubProtocol {
         writeStreamIds(message.getStreamIds(), packer);
         
         packer.flush();
-        String content = out.toString(StandardCharsets.ISO_8859_1);
-        out.close();
+        String content = new String(packer.toByteArray(), StandardCharsets.ISO_8859_1);
+        packer.close();
         return content;
     }
     
     private String writeCancelInvocationMessage(CancelInvocationMessage message) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        MessagePacker packer = MessagePack.newDefaultPacker(out);
+    	MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
         
         packer.packArrayHeader(3);
         packer.packInt(message.getMessageType().value);
@@ -342,27 +336,25 @@ class MessagePackHubProtocol implements HubProtocol {
         packer.packString(message.getInvocationId());
         
         packer.flush();
-        String content = out.toString(StandardCharsets.ISO_8859_1);
-        out.close();
+        String content = new String(packer.toByteArray(), StandardCharsets.ISO_8859_1);
+        packer.close();
         return content;
     }
     
     private String writePingMessage(PingMessage message) throws IOException {
-        OutputStream out = new ByteArrayOutputStream();
-        MessagePacker packer = MessagePack.newDefaultPacker(out);
+    	MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
         
         packer.packArrayHeader(1);
         packer.packInt(message.getMessageType().value);
         
         packer.flush();
-        String content = out.toString();
-        out.close();
+        String content = new String(packer.toByteArray(), StandardCharsets.ISO_8859_1);
+        packer.close();
         return content;
     }
     
     private String writeCloseMessage(CloseMessage message) throws IOException {
-        OutputStream out = new ByteArrayOutputStream();
-        MessagePacker packer = MessagePack.newDefaultPacker(out);
+    	MessageBufferPacker packer = MessagePack.newDefaultBufferPacker();
         
         packer.packArrayHeader(3);
         packer.packInt(message.getMessageType().value);
@@ -377,8 +369,8 @@ class MessagePackHubProtocol implements HubProtocol {
         packer.packBoolean(message.getAllowReconnect());
         
         packer.flush();
-        String content = out.toString();
-        out.close();
+        String content = new String(packer.toByteArray(), StandardCharsets.ISO_8859_1);
+        packer.close();
         return content;
     }
     
