@@ -220,6 +220,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// </returns>
         public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo fieldInfo, EventArgs eventArgs)
         {
+            WebAssemblyProfiling.Start();
             Dispatcher.AssertAccess();
 
             if (!_eventBindings.TryGetValue(eventHandlerId, out var callback))
@@ -247,6 +248,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             catch (Exception e)
             {
                 HandleException(e);
+                WebAssemblyProfiling.End();
                 return Task.CompletedTask;
             }
             finally
@@ -260,7 +262,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             // Task completed synchronously or is still running. We already processed all of the rendering
             // work that was queued so let our error handler deal with it.
-            return GetErrorHandledTask(task);
+            var result = GetErrorHandledTask(task);
+            WebAssemblyProfiling.End();
+            return result;
         }
 
         internal void InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
@@ -410,6 +414,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         private void ProcessRenderQueue()
         {
+            WebAssemblyProfiling.Start();
             Dispatcher.AssertAccess();
 
             if (_isBatchInProgress)
@@ -424,6 +429,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 if (_batchBuilder.ComponentRenderQueue.Count == 0)
                 {
+                    WebAssemblyProfiling.End();
                     return;
                 }
 
@@ -435,7 +441,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 }
 
                 var batch = _batchBuilder.ToBatch();
+                WebAssemblyProfiling.Start(nameof(UpdateDisplayAsync));
                 updateDisplayTask = UpdateDisplayAsync(batch);
+                WebAssemblyProfiling.End(nameof(UpdateDisplayAsync));
 
                 // Fire off the execution of OnAfterRenderAsync, but don't wait for it
                 // if there is async work to be done.
@@ -445,6 +453,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 // Ensure we catch errors while running the render functions of the components.
                 HandleException(e);
+                WebAssemblyProfiling.End();
                 return;
             }
             finally
@@ -462,6 +471,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 ProcessRenderQueue();
             }
+            WebAssemblyProfiling.End();
         }
 
         private Task InvokeRenderCompletedCalls(ArrayRange<RenderTreeDiff> updatedComponents, Task updateDisplayTask)

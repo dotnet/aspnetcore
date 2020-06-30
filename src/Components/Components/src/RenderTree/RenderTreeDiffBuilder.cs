@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             ArrayRange<RenderTreeFrame> oldTree,
             ArrayRange<RenderTreeFrame> newTree)
         {
+            WebAssemblyProfiling.Start();
             var editsBuffer = batchBuilder.EditsBuffer;
             var editsBufferStartLength = editsBuffer.Count;
 
@@ -32,7 +33,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             AppendDiffEntriesForRange(ref diffContext, 0, oldTree.Count, 0, newTree.Count);
 
             var editsSegment = editsBuffer.ToSegment(editsBufferStartLength, editsBuffer.Count);
-            return new RenderTreeDiff(componentId, editsSegment);
+            var result = new RenderTreeDiff(componentId, editsSegment);
+            WebAssemblyProfiling.End();
+            return result;
         }
 
         public static void DisposeFrames(RenderBatchBuilder batchBuilder, ArrayRange<RenderTreeFrame> frames)
