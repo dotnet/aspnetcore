@@ -35,3 +35,6 @@ indent_size = 4
 [*.sh]
 indent_size = 4
 end_of_line = lf
+
+[*.{razor,cshtml}]
+charset = utf-8-bom
