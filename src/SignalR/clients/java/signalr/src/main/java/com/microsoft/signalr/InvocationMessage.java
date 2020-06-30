@@ -27,7 +27,7 @@ class InvocationMessage extends HubMessage {
     }
     
     public InvocationMessage(Map<String, String> headers, String invocationId, String target, Object[] args, Collection<String> streamIds) {
-        if (headers != null & !headers.isEmpty()) {
+        if (headers != null && !headers.isEmpty()) {
             this.headers = headers;
         }
         this.invocationId = invocationId;
@@ -52,6 +52,10 @@ class InvocationMessage extends HubMessage {
 
     public Object[] getArguments() {
         return arguments;
+    }
+    
+    public Collection<String> getStreamIds() {
+    	return streamIds;
     }
 
     @Override

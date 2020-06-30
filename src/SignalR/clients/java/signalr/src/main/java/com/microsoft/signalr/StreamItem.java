@@ -16,7 +16,7 @@ final class StreamItem extends HubMessage {
     }
     
     public StreamItem(Map<String, String> headers, String invocationId, Object item) {
-        if (headers != null & !headers.isEmpty()) {
+        if (headers != null && !headers.isEmpty()) {
             this.headers = headers;
         }
         this.invocationId = invocationId;

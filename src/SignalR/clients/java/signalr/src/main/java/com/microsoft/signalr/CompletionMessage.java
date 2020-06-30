@@ -17,7 +17,7 @@ final class CompletionMessage extends HubMessage {
     }
     
     public CompletionMessage(Map<String, String> headers, String invocationId, Object result, String error) {
-    	if (headers != null & !headers.isEmpty()) {
+    	if (headers != null && !headers.isEmpty()) {
     		this.headers = headers;
     	}
         if (error != null && result != null) {
