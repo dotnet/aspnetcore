@@ -20,6 +20,7 @@
 
     <!-- Don't produce rzc.exe -->
     <UseAppHost>false</UseAppHost>
+    <RuntimeIdentifier />
 
     <!-- Need to build this project in source build -->
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
