@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Http.Features
 {
     public class ServiceProvidersFeature : IServiceProvidersFeature
     {
-        public IServiceProvider RequestServices { get; set; }
+        public IServiceProvider RequestServices { get; set; } = default!;
     }
 }

@@ -1,3 +1,5 @@
+import { DotNet } from '@microsoft/dotnet-js-interop';
+
 export function applyCaptureIdToElement(element: Element, referenceCaptureId: string) {
   element.setAttribute(getCaptureIdAttributeName(referenceCaptureId), '');
 }

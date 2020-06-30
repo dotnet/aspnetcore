@@ -6,7 +6,7 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
 {
     internal sealed class MsQuicSession : IDisposable
     {
-        private bool _disposed = false;
+        private bool _disposed;
         private IntPtr _nativeObjPtr;
         private bool _opened;
 
@@ -22,7 +22,7 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
         {
             if (!_opened)
             {
-                OpenSession(options.ClientAuthenticationOptions.ApplicationProtocols[0].Protocol.ToArray(),
+                OpenSession(options.ClientAuthenticationOptions!.ApplicationProtocols![0].Protocol.ToArray(),
                     (ushort)options.MaxBidirectionalStreams,
                     (ushort)options.MaxUnidirectionalStreams);
             }
@@ -50,7 +50,7 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
         {
             if (!_opened)
             {
-                OpenSession(options.ServerAuthenticationOptions.ApplicationProtocols[0].Protocol.ToArray(),
+                OpenSession(options.ServerAuthenticationOptions!.ApplicationProtocols![0].Protocol.ToArray(),
                                     (ushort)options.MaxBidirectionalStreams,
                                     (ushort)options.MaxUnidirectionalStreams);
             }

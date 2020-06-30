@@ -652,6 +652,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     [System.Diagnostics.DebuggerDisplayAttribute("{DebuggerToString()}")]
     public partial class TagBuilder : Microsoft.AspNetCore.Html.IHtmlContent
     {
+        public TagBuilder(Microsoft.AspNetCore.Mvc.Rendering.TagBuilder tagBuilder) { }
         public TagBuilder(string tagName) { }
         public Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary Attributes { get { throw null; } }
         public bool HasInnerHtml { get { throw null; } }

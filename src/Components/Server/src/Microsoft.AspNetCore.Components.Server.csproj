@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Runtime server features for ASP.NET Core Components.</Description>
@@ -10,6 +10,7 @@
     <DefineConstants>$(DefineConstants);ENABLE_UNSAFE_MSGPACK;SPAN_BUILTIN;MESSAGEPACK_INTERNAL;COMPONENTS_SERVER</DefineConstants>
     <IsPackable>false</IsPackable>
     <EmbeddedFilesManifestFileName>Microsoft.Extensions.FileProviders.Embedded.Manifest.xml</EmbeddedFilesManifestFileName>
+    <Nullable>annotations</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -61,6 +62,7 @@
     <Compile Include="$(RepoRoot)src\SignalR\common\Shared\BinaryMessageFormatter.cs" LinkBase="BlazorPack" />
     <Compile Include="$(RepoRoot)src\SignalR\common\Shared\BinaryMessageParser.cs" LinkBase="BlazorPack" />
     <Compile Include="$(RepoRoot)src\SignalR\common\Shared\MemoryBufferWriter.cs" LinkBase="BlazorPack" />
+    <Compile Include="$(RepoRoot)src\SignalR\common\Protocols.MessagePack\src\Protocol\MessagePackHubProtocolWorker.cs" LinkBase="BlazorPack" />
 
     <!-- MessagePack -->
     <Compile Include="$(MessagePackRoot)BufferWriter.cs" LinkBase="BlazorPack\MessagePack" />

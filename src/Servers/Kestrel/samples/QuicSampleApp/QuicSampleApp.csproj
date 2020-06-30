@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <IsPackable>false</IsPackable>
     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
     <GenerateRazorAssemblyInfo>false</GenerateRazorAssemblyInfo>
   </PropertyGroup>
@@ -10,7 +9,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Quic" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">

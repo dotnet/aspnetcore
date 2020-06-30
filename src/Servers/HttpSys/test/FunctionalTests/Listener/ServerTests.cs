@@ -9,7 +9,9 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.Listener
@@ -121,6 +123,20 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var response = await responseTask;
                 Assert.Equal(string.Empty, response);
             }
+        }
+
+        [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/pull/20718#issuecomment-618758634")]
+        public void Server_RegisterUnavailablePrefix_ThrowsActionableHttpSysException()
+        {
+            var options = new HttpSysOptions();
+            options.UrlPrefixes.Add(UrlPrefix.Create("http", "example.org", "8080", ""));
+            var listener = new HttpSysListener(options, new LoggerFactory());
+
+            var exception = Assert.Throws<HttpSysException>(() => listener.Start());
+
+            Assert.Equal((int)UnsafeNclNativeMethods.ErrorCodes.ERROR_ACCESS_DENIED, exception.ErrorCode);
+            Assert.Contains($@"netsh http add urlacl url=http://example.org:8080/ user={Environment.UserDomainName}\{Environment.UserName}", exception.Message);
         }
 
         [ConditionalFact]

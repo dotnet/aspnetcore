@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 Assert.Equal(read0 + read1, stream.Position);
                 Assert.False(stream.InMemory);
                 Assert.NotNull(stream.TempFileName);
-                tempFileName = stream.TempFileName;
+                tempFileName = stream.TempFileName!;
                 Assert.True(File.Exists(tempFileName));
 
                 var read2 = stream.Read(bytes, 0, bytes.Length);
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 Assert.Equal(read0 + read1, stream.Position);
                 Assert.False(stream.InMemory);
                 Assert.NotNull(stream.TempFileName);
-                tempFileName = stream.TempFileName;
+                tempFileName = stream.TempFileName!;
                 Assert.True(File.Exists(tempFileName));
 
                 var exception = Assert.Throws<IOException>(() => stream.Read(bytes, 0, bytes.Length));
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 Assert.Equal(read0 + read1, stream.Position);
                 Assert.False(stream.InMemory);
                 Assert.NotNull(stream.TempFileName);
-                tempFileName = stream.TempFileName;
+                tempFileName = stream.TempFileName!;
                 Assert.True(File.Exists(tempFileName));
 
                 var read2 = await stream.ReadAsync(bytes, 0, bytes.Length);
@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 Assert.Equal(read0 + read1, stream.Position);
                 Assert.False(stream.InMemory);
                 Assert.NotNull(stream.TempFileName);
-                tempFileName = stream.TempFileName;
+                tempFileName = stream.TempFileName!;
                 Assert.True(File.Exists(tempFileName));
 
                 var exception = await Assert.ThrowsAsync<IOException>(() => stream.ReadAsync(bytes, 0, bytes.Length));
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 stream.Read(new byte[4]);
                 Assert.True(File.Exists(stream.TempFileName), "tempFile should be created");
-                tempFileName = stream.TempFileName;
+                tempFileName = stream.TempFileName!;
 
                 arrayPool.Verify(v => v.Rent(It.IsAny<int>()), Times.Once());
                 arrayPool.Verify(v => v.Return(It.IsAny<byte[]>(), It.IsAny<bool>()), Times.Once());
@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 await stream.ReadAsync(new byte[4]);
                 Assert.True(File.Exists(stream.TempFileName), "tempFile should be created");
-                tempFileName = stream.TempFileName;
+                tempFileName = stream.TempFileName!;
 
                 arrayPool.Verify(v => v.Rent(It.IsAny<int>()), Times.Once());
                 arrayPool.Verify(v => v.Return(It.IsAny<byte[]>(), It.IsAny<bool>()), Times.Once());

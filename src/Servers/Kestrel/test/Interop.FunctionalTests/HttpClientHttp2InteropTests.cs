@@ -42,7 +42,7 @@ namespace Interop.FunctionalTests
                     new[] { "http" }
                 };
 
-                if (Utilities.CurrentPlatformSupportsAlpn())
+                if (Utilities.CurrentPlatformSupportsHTTP2OverTls())
                 {
                     list.Add(new[] { "https" });
                 }
@@ -1118,7 +1118,7 @@ namespace Interop.FunctionalTests
                 Assert.Equal(oneKbString + i, response.Headers.GetValues("header" + i).Single());
             }
 
-            Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("sending HEADERS frame for stream ID 1 with length 15612 and flags END_STREAM")));
+            Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("sending HEADERS frame for stream ID 1 with length 15610 and flags END_STREAM")));
             Assert.Equal(2, TestSink.Writes.Where(context => context.Message.Contains("sending CONTINUATION frame for stream ID 1 with length 15585 and flags NONE")).Count());
             Assert.Single(TestSink.Writes.Where(context => context.Message.Contains("sending CONTINUATION frame for stream ID 1 with length 14546 and flags END_HEADERS")));
 
@@ -1251,6 +1251,7 @@ namespace Interop.FunctionalTests
         }
 
         [Theory]
+        [QuarantinedTest]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxConcurrentStreamsPost_Server(string scheme)
         {
@@ -1414,6 +1415,7 @@ namespace Interop.FunctionalTests
         // Settings_InitialWindowSize_Lower_Client - Not configurable.
 
         [Theory]
+        [QuarantinedTest]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_InitialWindowSize_Server(string scheme)
         {
@@ -1493,6 +1495,7 @@ namespace Interop.FunctionalTests
 
         [Theory]
         [MemberData(nameof(SupportedSchemes))]
+        [QuarantinedTest]
         public async Task ConnectionWindowSize_Server(string scheme)
         {
             var requestFinished = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);

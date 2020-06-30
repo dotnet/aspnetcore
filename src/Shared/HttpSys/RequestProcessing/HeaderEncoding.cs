@@ -3,19 +3,24 @@
 
 using System;
 using System.Text;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal static class HeaderEncoding
     {
-        // It should just be ASCII or ANSI, but they break badly with un-expected values. We use UTF-8 because it's the same for
-        // ASCII, and because some old client would send UTF8 Host headers and expect UTF8 Location responses
-        // (e.g. IE and HttpWebRequest on intranets).
-        private static Encoding Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: false);
+        private static readonly Encoding Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: false);
 
-        internal static unsafe string GetString(byte* pBytes, int byteCount)
+        internal static unsafe string GetString(byte* pBytes, int byteCount, bool useLatin1)
         {
-            return Encoding.GetString(new ReadOnlySpan<byte>(pBytes, byteCount));
+            if (useLatin1)
+            {
+                return new ReadOnlySpan<byte>(pBytes, byteCount).GetLatin1StringNonNullCharacters();
+            }
+            else
+            {
+                return new ReadOnlySpan<byte>(pBytes, byteCount).GetAsciiOrUTF8StringNonNullCharacters(Encoding);
+            }
         }
 
         internal static byte[] GetBytes(string myString)

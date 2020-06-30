@@ -3,12 +3,14 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefaultNetCoreTargetFramework)</TargetFrameworks>
+    <Nullable>annotations</Nullable>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.Extensions.Diagnostics.HealthChecks.netstandard2.0.cs" />
     <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <InternalsVisibleTo Include="Microsoft.Extensions.Diagnostics.HealthChecks.Tests" Key="" />
   </ItemGroup>
 <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
@@ -16,6 +18,7 @@
     <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <InternalsVisibleTo Include="Microsoft.Extensions.Diagnostics.HealthChecks.Tests" Key="" />
   </ItemGroup>
 </Project>

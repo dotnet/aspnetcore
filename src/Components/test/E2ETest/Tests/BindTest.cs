@@ -219,6 +219,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // https://github.com/dotnet/aspnetcore/issues/17735
             target.SelectByText("Empty value");
             Browser.Equal(string.Empty, () => boundValue.Text);
+            Browser.Equal("Empty value", () => target.SelectedOption.Text);
         }
 
         [Fact]
@@ -237,6 +238,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // https://github.com/dotnet/aspnetcore/issues/17735
             target.SelectByText("Empty value");
             Browser.Equal(string.Empty, () => boundValue.Text);
+            Browser.Equal("Empty value", () => target.SelectedOption.Text);
         }
 
         [Fact]

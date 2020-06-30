@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public FileBufferingWriteStream(
             int memoryThreshold = DefaultMemoryThreshold,
             long? bufferLimit = null,
-            Func<string> tempFileDirectoryAccessor = null)
+            Func<string>? tempFileDirectoryAccessor = null)
         {
             if (memoryThreshold < 0)
             {
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         internal PagedByteBuffer PagedByteBuffer { get; }
 
-        internal FileStream FileStream { get; private set; }
+        internal FileStream? FileStream { get; private set; }
 
         internal bool Disposed { get; private set; }
 
@@ -184,9 +185,14 @@ namespace Microsoft.AspNetCore.WebUtilities
             // unspooled content. Copy the FileStream content first when available.
             if (FileStream != null)
             {
-                FileStream.Position = 0;
-                await FileStream.CopyToAsync(destination, cancellationToken);
+                await FileStream.FlushAsync(cancellationToken);
 
+                // We make a new stream for async reads from disk and async writes to the destination
+                await using var readStream = new FileStream(FileStream.Name, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.ReadWrite, bufferSize: 1, useAsync: true);
+
+                await readStream.CopyToAsync(destination, cancellationToken);
+
+                // This is created with delete on close
                 await FileStream.DisposeAsync();
                 FileStream = null;
             }
@@ -218,6 +224,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
+        [MemberNotNull(nameof(FileStream))]
         private void EnsureFileStream()
         {
             if (FileStream == null)
@@ -227,10 +234,10 @@ namespace Microsoft.AspNetCore.WebUtilities
                 FileStream = new FileStream(
                     tempFileName,
                     FileMode.Create,
-                    FileAccess.ReadWrite,
-                    FileShare.Delete,
+                    FileAccess.Write,
+                    FileShare.Delete | FileShare.ReadWrite,
                     bufferSize: 1,
-                    FileOptions.Asynchronous | FileOptions.SequentialScan | FileOptions.DeleteOnClose);
+                    FileOptions.SequentialScan | FileOptions.DeleteOnClose);
             }
         }
 

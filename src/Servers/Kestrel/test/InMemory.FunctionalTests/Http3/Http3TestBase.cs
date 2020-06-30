@@ -355,13 +355,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public void OnStaticIndexedHeader(int index)
             {
-                var knownHeader = H3StaticTable.Instance[index];
+                var knownHeader = H3StaticTable.GetHeaderFieldAt(index);
                 _decodedHeaders[((Span<byte>)knownHeader.Name).GetAsciiStringNonNullCharacters()] = HttpUtilities.GetAsciiOrUTF8StringNonNullCharacters(knownHeader.Value);
             }
 
             public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
             {
-                _decodedHeaders[((Span<byte>)H3StaticTable.Instance[index].Name).GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
+                _decodedHeaders[((Span<byte>)H3StaticTable.GetHeaderFieldAt(index).Name).GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
             }
 
             internal async Task WaitForStreamErrorAsync(Http3ErrorCode protocolError, string expectedErrorMessage)

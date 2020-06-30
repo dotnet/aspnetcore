@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.ConcurrencyLimiter
                 LoggerMessage.Define<int>(LogLevel.Debug, new EventId(3, "RequestRunImmediately"), "Below MaxConcurrentRequests limit, running request immediately. Current active requests: {ActiveRequests}");
 
             private static readonly Action<ILogger, Exception> _requestRejectedQueueFull =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(4, "RequestRejectedQueueFull"), "Currently at the 'RequestQueueLimit', rejecting this request with a '503 server not availible' error");
+                LoggerMessage.Define(LogLevel.Debug, new EventId(4, "RequestRejectedQueueFull"), "Currently at the 'RequestQueueLimit', rejecting this request with a '503 server not available' error");
 
             internal static void RequestEnqueued(ILogger logger, int activeRequests)
             {

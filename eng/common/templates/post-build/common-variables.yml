@@ -9,8 +9,8 @@ variables:
   - name: PublicDevRelease_31_Channel_Id
     value: 128
 
-  # .NET Core 5 Dev
-  - name: NetCore_5_Dev_Channel_Id
+  # .NET 5 Dev
+  - name: Net_5_Dev_Channel_Id
     value: 131
 
   # .NET Eng - Validation
@@ -63,7 +63,7 @@ variables:
   - name: MaestroApiAccessToken
     value: $(MaestroAccessToken)
   - name: MaestroApiVersion
-    value: "2019-01-16"
+    value: "2020-02-20"
 
   - name: SourceLinkCLIVersion
     value: 3.0.0
@@ -90,3 +90,10 @@ variables:
     value: https://dotnetclimsrc.blob.core.windows.net/dotnet/index.json
   - name: InternalInstallersBlobFeedKey
     value: $(dotnetclimsrc-access-key)
+
+  # Skip component governance and codesign validation for SDL. These jobs
+  # create no content.
+  - name: skipComponentGovernanceDetection
+    value: true
+  - name: runCodesignValidationInjection
+    value: false

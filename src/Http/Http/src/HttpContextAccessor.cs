@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Http
         private static AsyncLocal<HttpContextHolder> _httpContextCurrent = new AsyncLocal<HttpContextHolder>();
 
         /// <inheritdoc/>
-        public HttpContext HttpContext
+        public HttpContext? HttpContext
         {
             get
             {
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Http
 
         private class HttpContextHolder
         {
-            public HttpContext Context;
+            public HttpContext? Context;
         }
     }
 }

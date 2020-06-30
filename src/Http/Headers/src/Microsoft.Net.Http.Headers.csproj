@@ -9,6 +9,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>http</PackageTags>
     <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

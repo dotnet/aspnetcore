@@ -21,7 +21,6 @@ namespace Interop.FunctionalTests
     {
         [ConditionalTheory]
         [MemberData(nameof(H2SpecTestCases))]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2225")]
         public async Task RunIndividualTestCase(H2SpecTestCase testCase)
         {
             var hostBuilder = new WebHostBuilder()
@@ -56,7 +55,7 @@ namespace Interop.FunctionalTests
                 var dataset = new TheoryData<H2SpecTestCase>();
                 var toSkip = new string[] { /*"http2/5.1/8"*/ };
 
-                var supportsAlpn = Utilities.CurrentPlatformSupportsAlpn();
+                var supportsAlpn = Utilities.CurrentPlatformSupportsHTTP2OverTls();
 
                 foreach (var testcase in H2SpecCommands.EnumerateTestCases())
                 {

@@ -84,8 +84,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task RequestBodyReadAsyncCanBeCancelled()
         {
-            var helloTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var readTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var helloTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var readTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var cts = new CancellationTokenSource();
 
             await using (var server = new TestServer(async context =>
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     Assert.Equal("Hello ", Encoding.ASCII.GetString(buffer, 0, 6));
 
-                    helloTcs.TrySetResult(null);
+                    helloTcs.TrySetResult();
                 }
                 catch (Exception ex)
                 {
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 try
                 {
                     var task = context.Request.Body.ReadAsync(buffer, 0, buffer.Length, cts.Token);
-                    readTcs.TrySetResult(null);
+                    readTcs.TrySetResult();
                     await task;
 
                     context.Response.ContentLength = 12;
@@ -283,6 +283,264 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                 }
             }
+        }
+
+        [Fact]
+        public async Task ExecutionContextMutationsOfValueTypeDoNotLeakAcrossRequestsOnSameConnection()
+        {
+            var local = new AsyncLocal<int>();
+
+            // It's important this method isn't async as that will revert the ExecutionContext
+            Task ExecuteApplication(HttpContext context)
+            {
+                var value = local.Value;
+                Assert.Equal(0, value);
+
+                context.Response.OnStarting(() =>
+                {
+                    local.Value++;
+                    return Task.CompletedTask;
+                });
+
+                context.Response.OnCompleted(() =>
+                {
+                    local.Value++;
+                    return Task.CompletedTask;
+                });
+
+                local.Value++;
+                context.Response.ContentLength = 1;
+                return context.Response.WriteAsync($"{value}");
+            }
+
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            await using var server = new TestServer(ExecuteApplication, testContext);
+            await TestAsyncLocalValues(testContext, server);
+        }
+
+        [Fact]
+        public async Task ExecutionContextMutationsOfReferenceTypeDoNotLeakAcrossRequestsOnSameConnection()
+        {
+            var local = new AsyncLocal<IntAsClass>();
+
+            // It's important this method isn't async as that will revert the ExecutionContext
+            Task ExecuteApplication(HttpContext context)
+            {
+                Assert.Null(local.Value);
+                local.Value = new IntAsClass();
+
+                var value = local.Value.Value;
+                Assert.Equal(0, value);
+
+                context.Response.OnStarting(() =>
+                {
+                    local.Value.Value++;
+                    return Task.CompletedTask;
+                });
+
+                context.Response.OnCompleted(() =>
+                {
+                    local.Value.Value++;
+                    return Task.CompletedTask;
+                });
+
+                local.Value.Value++;
+                context.Response.ContentLength = 1;
+                return context.Response.WriteAsync($"{value}");
+            }
+
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            await using var server = new TestServer(ExecuteApplication, testContext);
+            await TestAsyncLocalValues(testContext, server);
+        }
+
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        [Fact]
+        public async Task ExecutionContextMutationsDoNotLeakAcrossAwaits()
+        {
+            var local = new AsyncLocal<int>();
+
+            // It's important this method isn't async as that will revert the ExecutionContext
+            Task ExecuteApplication(HttpContext context)
+            {
+                var value = local.Value;
+                Assert.Equal(0, value);
+
+                context.Response.OnStarting(async () =>
+                {
+                    local.Value++;
+                    Assert.Equal(1, local.Value);
+                });
+
+                context.Response.OnCompleted(async () =>
+                {
+                    local.Value++;
+                    Assert.Equal(1, local.Value);
+                });
+
+                context.Response.ContentLength = 1;
+                return context.Response.WriteAsync($"{value}");
+            }
+
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            await using var server = new TestServer(ExecuteApplication, testContext);
+            await TestAsyncLocalValues(testContext, server);
+        }
+
+        [Fact]
+        public async Task ExecutionContextMutationsOfValueTypeFlowIntoButNotOutOfAsyncEvents()
+        {
+            var local = new AsyncLocal<int>();
+
+            async Task ExecuteApplication(HttpContext context)
+            {
+                var value = local.Value;
+                Assert.Equal(0, value);
+
+                context.Response.OnStarting(async () =>
+                {
+                    local.Value++;
+                    Assert.Equal(2, local.Value);
+                });
+
+                context.Response.OnCompleted(async () =>
+                {
+                    local.Value++;
+                    Assert.Equal(2, local.Value);
+                });
+
+                local.Value++;
+                Assert.Equal(1, local.Value);
+
+                context.Response.ContentLength = 1;
+                await context.Response.WriteAsync($"{value}");
+
+                local.Value++;
+                Assert.Equal(2, local.Value);
+            }
+
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            await using var server = new TestServer(ExecuteApplication, testContext);
+            await TestAsyncLocalValues(testContext, server);
+        }
+
+        [Fact]
+        public async Task ExecutionContextMutationsOfReferenceTypeFlowThroughAsyncEvents()
+        {
+            var local = new AsyncLocal<IntAsClass>();
+
+            async Task ExecuteApplication(HttpContext context)
+            {
+                Assert.Null(local.Value);
+                local.Value = new IntAsClass();
+
+                var value = local.Value.Value;
+                Assert.Equal(0, value); // Start
+
+                context.Response.OnStarting(async () =>
+                {
+                    local.Value.Value++;
+                    Assert.Equal(2, local.Value.Value); // Second
+                });
+
+                context.Response.OnCompleted(async () =>
+                {
+                    local.Value.Value++;
+                    Assert.Equal(4, local.Value.Value); // Fourth
+                });
+
+                local.Value.Value++;
+                Assert.Equal(1, local.Value.Value); // First
+
+                context.Response.ContentLength = 1;
+                await context.Response.WriteAsync($"{value}");
+
+                local.Value.Value++;
+                Assert.Equal(3, local.Value.Value); // Third
+            }
+
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            await using var server = new TestServer(ExecuteApplication, testContext);
+            await TestAsyncLocalValues(testContext, server);
+        }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+
+        [Fact]
+        public async Task ExecutionContextMutationsOfValueTypeFlowIntoButNotOutOfNonAsyncEvents()
+        {
+            var local = new AsyncLocal<int>();
+
+            async Task ExecuteApplication(HttpContext context)
+            {
+                var value = local.Value;
+                Assert.Equal(0, value);
+
+                context.Response.OnStarting(() =>
+                {
+                    local.Value++;
+                    Assert.Equal(2, local.Value);
+
+                    return Task.CompletedTask;
+                });
+
+                context.Response.OnCompleted(() =>
+                {
+                    local.Value++;
+                    Assert.Equal(2, local.Value);
+
+                    return Task.CompletedTask;
+                });
+
+                local.Value++;
+                Assert.Equal(1, local.Value);
+
+                context.Response.ContentLength = 1;
+                await context.Response.WriteAsync($"{value}");
+
+                local.Value++;
+                Assert.Equal(2, local.Value);
+            }
+
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            await using var server = new TestServer(ExecuteApplication, testContext);
+            await TestAsyncLocalValues(testContext, server);
+        }
+
+        private static async Task TestAsyncLocalValues(TestServiceContext testContext, TestServer server)
+        {
+            using var connection = server.CreateConnection();
+
+            await connection.Send(
+                "GET / HTTP/1.1",
+                "Host:",
+                "",
+                "");
+
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                $"Date: {testContext.DateHeaderValue}",
+                "Content-Length: 1",
+                "",
+                "0");
+
+            await connection.Send(
+                "GET / HTTP/1.1",
+                "Host:",
+                "",
+                "");
+
+            await connection.Receive(
+                "HTTP/1.1 200 OK",
+                $"Date: {testContext.DateHeaderValue}",
+                "Content-Length: 1",
+                "",
+                "0");
         }
 
         [Fact]
@@ -790,23 +1048,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task ContentLengthReadAsyncSingleBytesAtATime()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var tcs = new TaskCompletionSource<object>();
-            var tcs2 = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
+            var tcs2 = new TaskCompletionSource();
             await using (var server = new TestServer(async httpContext =>
             {
                 var readResult = await httpContext.Request.BodyReader.ReadAsync();
                 Assert.Equal(3, readResult.Buffer.Length);
-                tcs.SetResult(null);
+                tcs.SetResult();
 
                 httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
 
                 readResult = await httpContext.Request.BodyReader.ReadAsync();
                 httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
-                tcs2.SetResult(null);
+                tcs2.SetResult();
 
                 readResult = await httpContext.Request.BodyReader.ReadAsync();
                 Assert.Equal(5, readResult.Buffer.Length);
@@ -1236,8 +1493,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task DoesNotEnforceRequestBodyMinimumDataRateOnUpgradedRequest()
         {
-            var appEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var delayEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var delayEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var serviceContext = new TestServiceContext(LoggerFactory);
             var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
 
@@ -1248,7 +1505,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 using (var stream = await context.Features.Get<IHttpUpgradeFeature>().UpgradeAsync())
                 {
-                    appEvent.SetResult(null);
+                    appEvent.SetResult();
 
                     // Read once to go through one set of TryPauseTimingReads()/TryResumeTimingReads() calls
                     await stream.ReadAsync(new byte[1], 0, 1);
@@ -1278,7 +1535,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     serviceContext.MockSystemClock.UtcNow += TimeSpan.FromSeconds(5);
                     heartbeatManager.OnHeartbeat(serviceContext.SystemClock.UtcNow);
 
-                    delayEvent.SetResult(null);
+                    delayEvent.SetResult();
 
                     await connection.Send("b");
 
@@ -1508,7 +1765,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task ContentLengthRequestCallCancelPendingReadWorks()
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             var testContext = new TestServiceContext(LoggerFactory);
 
             await using (var server = new TestServer(async httpContext =>
@@ -1527,7 +1784,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 Assert.True((await requestTask).IsCanceled);
 
-                tcs.SetResult(null);
+                tcs.SetResult();
 
                 response.Headers["Content-Length"] = new[] { "11" };
 
@@ -1605,7 +1862,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             await using (var server = new TestServer(async httpContext =>
             {
                 var request = httpContext.Request;
@@ -1615,7 +1872,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 httpContext.Request.BodyReader.Complete();
 
-                tcs.SetResult(null);
+                tcs.SetResult();
 
             }, testContext))
             {
@@ -1644,7 +1901,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task ContentLengthCallCompleteWithExceptionCauses500()
         {
-            var tcs = new TaskCompletionSource<object>();
             var testContext = new TestServiceContext(LoggerFactory);
 
             await using (var server = new TestServer(async httpContext =>
@@ -1680,6 +1936,61 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Content-Length: 0",
                         "",
                         "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ReuseRequestHeaderStrings()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            string customHeaderValue = null;
+            string contentTypeHeaderValue = null;
+
+            await using (var server = new TestServer(context =>
+            {
+                customHeaderValue = context.Request.Headers["X-CustomHeader"];
+                contentTypeHeaderValue = context.Request.ContentType;
+                return Task.CompletedTask;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    // First request
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "Content-Type: application/test",
+                        "X-CustomHeader: customvalue",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+
+                    var initialCustomHeaderValue = customHeaderValue;
+                    var initialContentTypeValue = contentTypeHeaderValue;
+
+                    // Second request
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "Content-Type: application/test",
+                        "X-CustomHeader: customvalue",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+
+                    Assert.NotSame(initialCustomHeaderValue, customHeaderValue);
+                    Assert.Same(initialContentTypeValue, contentTypeHeaderValue);
                 }
             }
         }
@@ -1748,5 +2059,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         public static TheoryData<string, string> HostHeaderData => HttpParsingData.HostHeaderData;
+
+        private class IntAsClass
+        {
+            public int Value;
+        }
     }
 }

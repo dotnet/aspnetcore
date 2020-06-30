@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.TestHost
             var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
             {
                 context.Response.Headers["TestHeader"] = "TestValue";
-                context.Response.Body.Flush();
+                await context.Response.Body.FlushAsync();
                 await block.Task;
                 await context.Response.WriteAsync("BodyFinished");
             }));
@@ -305,11 +305,11 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task ClientDisposalCloses()
         {
             var block = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
+            var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
             {
                 context.Response.Headers["TestHeader"] = "TestValue";
-                context.Response.Body.Flush();
-                return block.Task;
+                await context.Response.Body.FlushAsync();
+                await block.Task;
             }));
             var httpClient = new HttpClient(handler);
             HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",
@@ -327,11 +327,11 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task ClientCancellationAborts()
         {
             var block = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
+            var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
             {
                 context.Response.Headers["TestHeader"] = "TestValue";
-                context.Response.Body.Flush();
-                return block.Task;
+                await context.Response.Body.FlushAsync();
+                await block.Task;
             }));
             var httpClient = new HttpClient(handler);
             HttpResponseMessage response = await httpClient.GetAsync("https://example.com/",

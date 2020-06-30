@@ -12,6 +12,6 @@ namespace Microsoft.AspNetCore.Http.Features
             Items = new ItemsDictionary();
         }
 
-        public IDictionary<object, object> Items { get; set; }
+        public IDictionary<object, object?> Items { get; set; }
     }
 }

@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// is <c>null</c>, then <see cref="F:Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy" /> will be reported.
         /// </param>
         /// <param name="tags">A list of tags that can be used for filtering health checks.</param>
-        public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string> tags)
+        public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string>? tags)
             : this(name, instance, failureStatus, tags, default)
         {
         }
@@ -52,7 +52,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// </param>
         /// <param name="tags">A list of tags that can be used for filtering health checks.</param>
         /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
-        public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string> tags, TimeSpan? timeout)
+        public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string>? tags, TimeSpan? timeout)
         {
             if (name == null)
             {
@@ -69,10 +69,10 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 throw new ArgumentOutOfRangeException(nameof(timeout));
             }
 
-            Name = name;
+            _name = name;
             FailureStatus = failureStatus ?? HealthStatus.Unhealthy;
             Tags = new HashSet<string>(tags ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
-            Factory = (_) => instance;
+            _factory = (_) => instance;
             Timeout = timeout ?? System.Threading.Timeout.InfiniteTimeSpan;
         }
 
@@ -90,7 +90,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             string name,
             Func<IServiceProvider, IHealthCheck> factory,
             HealthStatus? failureStatus,
-            IEnumerable<string> tags)
+            IEnumerable<string>? tags)
             : this(name, factory, failureStatus, tags, default)
         {
         }
@@ -110,7 +110,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             string name,
             Func<IServiceProvider, IHealthCheck> factory,
             HealthStatus? failureStatus,
-            IEnumerable<string> tags,
+            IEnumerable<string>? tags,
             TimeSpan? timeout)
         {
             if (name == null)
@@ -128,10 +128,10 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 throw new ArgumentOutOfRangeException(nameof(timeout));
             }
 
-            Name = name;
+            _name = name;
             FailureStatus = failureStatus ?? HealthStatus.Unhealthy;
             Tags = new HashSet<string>(tags ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
-            Factory = factory;
+            _factory = factory;
             Timeout = timeout ?? System.Threading.Timeout.InfiniteTimeSpan;
         }
 

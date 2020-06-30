@@ -92,7 +92,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_state != HttpStreamState.Closed)
             {
                 _state = HttpStreamState.Aborted;
-                if (error != null)
+
+                if (error is object && _error is null)
                 {
                     _error = ExceptionDispatchInfo.Capture(error);
                 }
@@ -113,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             else
             {
-                if (_error != null)
+                if (_error is object)
                 {
                     _error.Throw();
                 }

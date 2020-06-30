@@ -160,6 +160,8 @@ class LongPollingTransport implements Transport {
                 CompletableSubject stopCompletableSubject = CompletableSubject.create();
                 return this.receiveLoop.andThen(Completable.defer(() -> {
                     logger.info("LongPolling transport stopped.");
+                    this.onReceiveThread.shutdown();
+                    this.threadPool.shutdown();
                     this.onClose.invoke(this.closeError);
                     return Completable.complete();
                 })).subscribeWith(stopCompletableSubject);

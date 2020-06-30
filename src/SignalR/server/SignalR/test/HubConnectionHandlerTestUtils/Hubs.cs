@@ -221,7 +221,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-
         public async Task<int> StreamingSum(ChannelReader<int> source)
         {
             var total = 0;
@@ -321,6 +320,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 tcs.TrySetResult(42);
             }
+        }
+
+        public async Task BlockingMethod()
+        {
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            Context.ConnectionAborted.Register(state => ((TaskCompletionSource<object>)state).SetResult(null), tcs);
+
+            await tcs.Task;
         }
     }
 
@@ -510,7 +517,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         public override Task OnConnectedAsync()
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             tcs.SetException(new InvalidOperationException("Hub OnConnected failed."));
             return tcs.Task;
         }
@@ -520,7 +527,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             tcs.SetException(new InvalidOperationException("Hub OnDisconnected failed."));
             return tcs.Task;
         }
@@ -1048,8 +1055,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
     public class TcsService
     {
-        public TaskCompletionSource<object> StartedMethod = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-        public TaskCompletionSource<object> EndMethod = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource<object> StartedMethod;
+        public TaskCompletionSource<object> EndMethod;
+
+        public TcsService()
+        {
+            Reset();
+        }
+
+        public void Reset()
+        {
+            StartedMethod = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            EndMethod = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
     }
 
     public interface ITypedHubClient

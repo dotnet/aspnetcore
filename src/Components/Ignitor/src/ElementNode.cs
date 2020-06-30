@@ -88,7 +88,7 @@ namespace Ignitor
             return DispatchEventCore(connection, Serialize(webEventDescriptor), Serialize(args));
         }
 
-        internal Task ClickAsync(HubConnection connection)
+        public Task ClickAsync(HubConnection connection)
         {
             if (!Events.TryGetValue("click", out var clickEventDescriptor))
             {

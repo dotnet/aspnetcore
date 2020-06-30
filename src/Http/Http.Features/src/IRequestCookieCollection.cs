@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.Http
         /// <exception cref="System.ArgumentNullException">
         ///     key is null.
         /// </exception>
-        bool TryGetValue(string key, out string value);
+        bool TryGetValue(string key, [MaybeNullWhen(false)] out string? value);
 
         /// <summary>
         ///     Gets the value with the specified key.
@@ -82,6 +83,6 @@ namespace Microsoft.AspNetCore.Http
         ///     <see cref="IDictionary{TKey, TValue}" />, as it will return <c>string.Empty</c> for missing entries
         ///     rather than throwing an Exception.
         /// </remarks>
-        string this[string key] { get; }
+        string? this[string key] { get; }
     }
 }

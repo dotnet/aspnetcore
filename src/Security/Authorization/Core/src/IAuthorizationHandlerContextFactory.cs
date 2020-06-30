@@ -21,6 +21,6 @@ namespace Microsoft.AspNetCore.Authorization
         /// If a resource is not required for policy evaluation you may pass null as the value.
         /// </param>
         /// <returns>The <see cref="AuthorizationHandlerContext"/>.</returns>
-        AuthorizationHandlerContext CreateContext(IEnumerable<IAuthorizationRequirement> requirements, ClaimsPrincipal user, object resource);
+        AuthorizationHandlerContext CreateContext(IEnumerable<IAuthorizationRequirement> requirements, ClaimsPrincipal user, object? resource);
     }
 }

@@ -23,7 +23,7 @@ stages:
   - job: publish_symbols
     displayName: Symbol Publishing
     dependsOn: setupMaestroVars
-    condition: or(contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', ${{ parameters.channelId }} )), eq(dependencies.setupMaestroVars.outputs['setReleaseVars.PromoteToMaestroChannelId'], ${{ parameters.channelId }}))
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.TargetChannels'], format('[{0}]', ${{ parameters.channelId }} ))
     variables:
       - group: DotNet-Symbol-Server-Pats
       - name: AzDOProjectName
@@ -96,7 +96,7 @@ stages:
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOPipelineId'] ]
       - name: AzDOBuildId
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
-    condition: or(contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', ${{ parameters.channelId }} )), eq(dependencies.setupMaestroVars.outputs['setReleaseVars.PromoteToMaestroChannelId'], ${{ parameters.channelId }}))
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.TargetChannels'], format('[{0}]', ${{ parameters.channelId }} ))
     pool:
       vmImage: 'windows-2019'
     steps:

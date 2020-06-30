@@ -170,12 +170,12 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
                 return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(), props, "simple")));
             }
 
-            public Task ChallengeAsync(AuthenticationProperties properties)
+            public Task ChallengeAsync(AuthenticationProperties? properties)
             {
                 throw new NotImplementedException();
             }
 
-            public Task ForbidAsync(AuthenticationProperties properties)
+            public Task ForbidAsync(AuthenticationProperties? properties)
             {
                 throw new NotImplementedException();
             }

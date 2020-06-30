@@ -37,6 +37,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return true;
         }
 
+        public bool TryPeek(out Http2Stream result)
+        {
+            int size = _size - 1;
+            Http2StreamAsValueType[] array = _array;
+
+            if ((uint)size >= (uint)array.Length)
+            {
+                result = default;
+                return false;
+            }
+
+            result = array[size];
+            return true;
+        }
+
         // Pushes an item to the top of the stack.
         public void Push(Http2Stream item)
         {

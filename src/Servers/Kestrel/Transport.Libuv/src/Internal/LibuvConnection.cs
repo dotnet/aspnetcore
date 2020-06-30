@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private MemoryHandle _bufferHandle;
         private Task _processingTask;
-        private readonly TaskCompletionSource<object> _waitForConnectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _waitForConnectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         private bool _connectionClosed;
 
         public LibuvConnection(UvStreamHandle socket,
@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             {
                 state.CancelConnectionClosedToken();
 
-                state._waitForConnectionClosedTcs.TrySetResult(null);
+                state._waitForConnectionClosedTcs.TrySetResult();
             },
             this,
             preferLocal: false);

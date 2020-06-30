@@ -62,7 +62,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 PipeScheduler.ThreadPool,
                 _trace,
                 _options.MaxReadBufferSize,
-                _options.MaxWriteBufferSize);
+                _options.MaxWriteBufferSize,
+                _options.WaitForDataBeforeAllocatingBuffer);
 
             socketConnection.Start();
             return socketConnection;

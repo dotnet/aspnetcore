@@ -19,30 +19,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal class AddressBinder
     {
-        public static async Task BindAsync(IServerAddressesFeature addresses,
-            KestrelServerOptions serverOptions,
-            ILogger logger,
-            Func<ListenOptions, Task> createBinding)
+        public static async Task BindAsync(IEnumerable<ListenOptions> listenOptions, AddressBindContext context)
         {
-            var listenOptions = serverOptions.ListenOptions;
             var strategy = CreateStrategy(
                 listenOptions.ToArray(),
-                addresses.Addresses.ToArray(),
-                addresses.PreferHostingUrls);
-
-            var context = new AddressBindContext
-            {
-                Addresses = addresses.Addresses,
-                ListenOptions = listenOptions,
-                ServerOptions = serverOptions,
-                Logger = logger,
-                CreateBinding = createBinding
-            };
+                context.Addresses.ToArray(),
+                context.ServerAddressesFeature.PreferHostingUrls);
 
             // reset options. The actual used options and addresses will be populated
             // by the address binding feature
-            listenOptions.Clear();
-            addresses.Addresses.Clear();
+            context.ServerOptions.OptionsInUse.Clear();
+            context.Addresses.Clear();
 
             await strategy.BindAsync(context).ConfigureAwait(false);
         }
@@ -109,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 throw new IOException(CoreStrings.FormatEndpointAlreadyInUse(endpoint), ex);
             }
 
-            context.ListenOptions.Add(endpoint);
+            context.ServerOptions.OptionsInUse.Add(endpoint);
         }
 
         internal static ListenOptions ParseAddress(string address, out bool https)

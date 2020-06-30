@@ -266,10 +266,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var testConnection = new TestConnection();
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
-                    var closed = new TaskCompletionSource<object>();
+                    var closed = new TaskCompletionSource();
                     connection.Closed += exception =>
                     {
-                        closed.TrySetResult(null);
+                        closed.TrySetResult();
                         Assert.Equal(HubConnectionState.Disconnected, connection.State);
                         return Task.CompletedTask;
                     };
@@ -335,15 +335,35 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
+            public async Task StopAsyncOnInactiveConnectionDoesNotAffectNextStartAsync()
+            {
+                // Regression test:
+                // If there wasn't an active underlying connection, StopAsync would leave a CTS canceled which would cause the next StartAsync to fail
+                var testConnection = new TestConnection();
+                await AsyncUsing(CreateHubConnection(testConnection), async connection =>
+                {
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
+
+                    await connection.StopAsync().OrTimeout();
+                    Assert.False(testConnection.Disposed.IsCompleted);
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
+
+                    await connection.StartAsync().OrTimeout();
+                    Assert.True(testConnection.Started.IsCompleted);
+                    Assert.Equal(HubConnectionState.Connected, connection.State);
+                });
+            }
+
+            [Fact]
             public async Task CompletingTheTransportSideMarksConnectionAsClosed()
             {
                 var testConnection = new TestConnection();
-                var closed = new TaskCompletionSource<object>();
+                var closed = new TaskCompletionSource();
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
                     connection.Closed += (e) =>
                     {
-                        closed.TrySetResult(null);
+                        closed.TrySetResult();
                         return Task.CompletedTask;
                     };
                     await connection.StartAsync().OrTimeout();
@@ -363,13 +383,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             public async Task TransportCompletionWhileShuttingDownIsNoOp()
             {
                 var testConnection = new TestConnection();
-                var testConnectionClosed = new TaskCompletionSource<object>();
-                var connectionClosed = new TaskCompletionSource<object>();
+                var connectionClosed = new TaskCompletionSource();
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
                     connection.Closed += (e) =>
                     {
-                        connectionClosed.TrySetResult(null);
+                        connectionClosed.TrySetResult();
                         return Task.CompletedTask;
                     };
 
@@ -403,12 +422,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             public async Task StopAsyncDuringUnderlyingConnectionCloseWaitsAndNoOps()
             {
                 var testConnection = new TestConnection();
-                var connectionClosed = new TaskCompletionSource<object>();
+                var connectionClosed = new TaskCompletionSource();
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
                     connection.Closed += (e) =>
                     {
-                        connectionClosed.TrySetResult(null);
+                        connectionClosed.TrySetResult();
                         return Task.CompletedTask;
                     };
 
@@ -521,7 +540,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
                     try
                     {
-                        await Assert.ThrowsAsync<OperationCanceledException>(() => hubConnection.StartAsync(new CancellationToken(canceled: true))).OrTimeout();
+                        await Assert.ThrowsAsync<TaskCanceledException>(() => hubConnection.StartAsync(new CancellationToken(canceled: true))).OrTimeout();
                         Assert.False(onStartCalled);
                     }
                     finally

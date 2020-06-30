@@ -55,7 +55,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// yielding a <see cref="HealthReport"/> containing the results.
         /// </returns>
         public abstract Task<HealthReport> CheckHealthAsync(
-            Func<HealthCheckRegistration, bool> predicate,
+            Func<HealthCheckRegistration, bool>? predicate,
             CancellationToken cancellationToken = default);
     }
 }

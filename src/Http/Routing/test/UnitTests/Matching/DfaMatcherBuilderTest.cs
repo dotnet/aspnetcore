@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -459,6 +459,403 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.Same(catchAll, catchAll.CatchAll);
         }
 
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/16579
+        //
+        // This case behaves the same for all combinations.
+        [Fact]
+        public void BuildDfaTree_MultipleEndpoint_ParameterAndCatchAll_OnSameNode_Order1_CorrectBehavior()
+        {
+            var builder = CreateDfaMatcherBuilder();
+            builder.UseCorrectCatchAllBehavior = true;
+            BuildDfaTree_MultipleEndpoint_ParameterAndCatchAll_OnSameNode_Order1_Core(builder);
+        }
+
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/16579
+        //
+        // This case behaves the same for all combinations.
+        [Fact]
+        public void BuildDfaTree_MultipleEndpoint_ParameterAndCatchAll_OnSameNode_Order1_DefaultBehavior()
+        {
+            var builder = CreateDfaMatcherBuilder();
+            BuildDfaTree_MultipleEndpoint_ParameterAndCatchAll_OnSameNode_Order1_Core(builder);
+        }
+
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/16579
+        //
+        // This case behaves the same for all combinations.
+        [Fact]
+        public void BuildDfaTree_MultipleEndpoint_ParameterAndCatchAll_OnSameNode_Order1_LegacyBehavior()
+        {
+            var builder = CreateDfaMatcherBuilder();
+            builder.UseCorrectCatchAllBehavior = false;
+            BuildDfaTree_MultipleEndpoint_ParameterAndCatchAll_OnSameNode_Order1_Core(builder);
+        }
+
+        private void BuildDfaTree_MultipleEndpoint_ParameterAndCatchAll_OnSameNode_Order1_Core(DfaMatcherBuilder builder)
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint("a/{b}", order: 0);
+            builder.AddEndpoint(endpoint1);
+
+            var endpoint2 = CreateEndpoint("a/{*b}", order: 1);
+            builder.AddEndpoint(endpoint2);
+
+            // Act
+            var root = builder.BuildDfaTree();
+
+            // Assert
+            Assert.Null(root.Matches);
+            Assert.Null(root.Parameters);
+
+            var next = Assert.Single(root.Literals);
+            Assert.Equal("a", next.Key);
+
+            var a = next.Value;
+            Assert.Same(endpoint2, Assert.Single(a.Matches));
+            Assert.Null(a.Literals);
+
+            var b = a.Parameters;
+            Assert.Collection(
+                b.Matches,
+                e => Assert.Same(endpoint1, e),
+                e => Assert.Same(endpoint2, e));
+            Assert.Null(b.Literals);
+            Assert.Null(b.Parameters);
+            Assert.NotNull(b.CatchAll);
+
+            var catchAll = b.CatchAll;
+            Assert.Same(endpoint2, Assert.Single(catchAll.Matches));
+            Assert.Null(catchAll.Literals);
+            Assert.Same(catchAll, catchAll.Parameters);
+            Assert.Same(catchAll, catchAll.CatchAll);
+        }
+
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/16579
+        [Fact]
+        public void BuildDfaTree_MultipleEndpoint_ParameterAndCatchAll_OnSameNode_Order2_CorrectBehavior()
+        {
+            var builder = CreateDfaMatcherBuilder();
+            builder.UseCorrectCatchAllBehavior = true;
+            BuildDfaTree_MultipleEndpoint_ParameterAndCatchAll_OnSameNode_Order2_CorrectBehavior_Core(builder);
+        }
+
+        [Fact]
+        public void BuildDfaTree_MultipleEndpoint_ParameterAndCatchAll_OnSameNode_Order2_DefaultBehavior()
+        {
+            var builder = CreateDfaMatcherBuilder();
+            BuildDfaTree_MultipleEndpoint_ParameterAndCatchAll_OnSameNode_Order2_LegacyBehavior_Core(builder);
+        }
+
+        [Fact]
+        public void BuildDfaTree_MultipleEndpoint_ParameterAndCatchAll_OnSameNode_Order2_LegacyBehavior()
+        {
+            var builder = CreateDfaMatcherBuilder();
+            builder.UseCorrectCatchAllBehavior = false;
+            BuildDfaTree_MultipleEndpoint_ParameterAndCatchAll_OnSameNode_Order2_LegacyBehavior_Core(builder);
+        }
+
+        private void BuildDfaTree_MultipleEndpoint_ParameterAndCatchAll_OnSameNode_Order2_CorrectBehavior_Core(DfaMatcherBuilder builder)
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint("a/{*b}", order: 0);
+            builder.AddEndpoint(endpoint1);
+
+            var endpoint2 = CreateEndpoint("a/{b}", order: 1);
+            builder.AddEndpoint(endpoint2);
+
+            // Act
+            var root = builder.BuildDfaTree();
+
+            // Assert
+            Assert.Null(root.Matches);
+            Assert.Null(root.Parameters);
+
+            var next = Assert.Single(root.Literals);
+            Assert.Equal("a", next.Key);
+
+            var a = next.Value;
+            Assert.Same(endpoint1, Assert.Single(a.Matches));
+            Assert.Null(a.Literals);
+
+            var b = a.Parameters;
+            Assert.Collection(
+                b.Matches,
+                e => Assert.Same(endpoint1, e),
+                e => Assert.Same(endpoint2, e));
+            Assert.Null(b.Literals);
+            Assert.Null(b.Parameters);
+            Assert.NotNull(b.CatchAll);
+
+            var catchAll = b.CatchAll;
+            Assert.Same(endpoint1, Assert.Single(catchAll.Matches));
+            Assert.Null(catchAll.Literals);
+            Assert.Same(catchAll, catchAll.Parameters);
+            Assert.Same(catchAll, catchAll.CatchAll);
+        }
+
+        private void BuildDfaTree_MultipleEndpoint_ParameterAndCatchAll_OnSameNode_Order2_LegacyBehavior_Core(DfaMatcherBuilder builder)
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint("a/{*b}", order: 0);
+            builder.AddEndpoint(endpoint1);
+
+            var endpoint2 = CreateEndpoint("a/{b}", order: 1);
+            builder.AddEndpoint(endpoint2);
+
+            // Act
+            var root = builder.BuildDfaTree();
+
+            // Assert
+            Assert.Null(root.Matches);
+            Assert.Null(root.Parameters);
+
+            var next = Assert.Single(root.Literals);
+            Assert.Equal("a", next.Key);
+
+            var a = next.Value;
+            Assert.Same(endpoint1, Assert.Single(a.Matches));
+            Assert.Null(a.Literals);
+
+            var b = a.Parameters;
+            Assert.Same(endpoint1, Assert.Single(a.Matches));
+            Assert.Null(b.Literals);
+            Assert.Null(b.Parameters);
+            Assert.Null(b.CatchAll);
+
+            var catchAll = a.CatchAll;
+            Assert.Same(endpoint1, Assert.Single(catchAll.Matches));
+            Assert.Null(catchAll.Literals);
+            Assert.Same(catchAll, catchAll.Parameters);
+            Assert.Same(catchAll, catchAll.CatchAll);
+        }
+
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/18677
+        [Fact]
+        public void BuildDfaTree_MultipleEndpoint_CatchAllWithHigherPrecedenceThanParameter_Order1_CorrectBehavior()
+        {
+            // Arrange
+            var builder = CreateDfaMatcherBuilder();
+            builder.UseCorrectCatchAllBehavior = true;
+
+            var endpoint1 = CreateEndpoint("{a}/{b}", order: 0);
+            builder.AddEndpoint(endpoint1);
+
+            var endpoint2 = CreateEndpoint("a/{*b}", order: 1);
+            builder.AddEndpoint(endpoint2);
+
+            // Act
+            var root = builder.BuildDfaTree();
+
+            // Assert
+            Assert.Null(root.Matches);
+
+            var next = Assert.Single(root.Literals);
+            Assert.Equal("a", next.Key);
+
+            var a1 = next.Value;
+            Assert.Same(endpoint2, Assert.Single(a1.Matches));
+            Assert.Null(a1.Literals);
+
+            var b1 = a1.Parameters;
+            Assert.Collection(
+                b1.Matches,
+                e => Assert.Same(endpoint1, e),
+                e => Assert.Same(endpoint2, e));
+            Assert.Null(b1.Literals);
+            Assert.Null(b1.Parameters);
+            Assert.NotNull(b1.CatchAll);
+
+            var catchAll1 = b1.CatchAll;
+            Assert.Same(endpoint2, Assert.Single(catchAll1.Matches));
+            Assert.Null(catchAll1.Literals);
+            Assert.Same(catchAll1, catchAll1.Parameters);
+            Assert.Same(catchAll1, catchAll1.CatchAll);
+
+            var a2 = root.Parameters;
+            Assert.Null(a2.Matches);
+            Assert.Null(a2.Literals);
+
+            var b2 = a2.Parameters;
+            Assert.Collection(
+                b2.Matches,
+                e => Assert.Same(endpoint1, e));
+            Assert.Null(b2.Literals);
+            Assert.Null(b2.Parameters);
+            Assert.Null(b2.CatchAll);
+        }
+
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/18677
+        [Fact]
+        public void BuildDfaTree_MultipleEndpoint_CatchAllWithHigherPrecedenceThanParameter_Order2_CorrectBehavior()
+        {
+            // Arrange
+            var builder = CreateDfaMatcherBuilder();
+            builder.UseCorrectCatchAllBehavior = true;
+
+            var endpoint1 = CreateEndpoint("a/{*b}", order: 0);
+            builder.AddEndpoint(endpoint1);
+
+            var endpoint2 = CreateEndpoint("{a}/{b}", order: 1);
+            builder.AddEndpoint(endpoint2);
+
+            // Act
+            var root = builder.BuildDfaTree();
+
+            // Assert
+            Assert.Null(root.Matches);
+
+            var next = Assert.Single(root.Literals);
+            Assert.Equal("a", next.Key);
+
+            var a1 = next.Value;
+            Assert.Same(endpoint1, Assert.Single(a1.Matches));
+            Assert.Null(a1.Literals);
+
+            var b1 = a1.Parameters;
+            Assert.Collection(
+                b1.Matches,
+                e => Assert.Same(endpoint1, e),
+                e => Assert.Same(endpoint2, e));
+            Assert.Null(b1.Literals);
+            Assert.Null(b1.Parameters);
+            Assert.NotNull(b1.CatchAll);
+
+            var catchAll1 = b1.CatchAll;
+            Assert.Same(endpoint1, Assert.Single(catchAll1.Matches));
+            Assert.Null(catchAll1.Literals);
+            Assert.Same(catchAll1, catchAll1.Parameters);
+            Assert.Same(catchAll1, catchAll1.CatchAll);
+
+            var a2 = root.Parameters;
+            Assert.Null(a2.Matches);
+            Assert.Null(a2.Literals);
+
+            var b2 = a2.Parameters;
+            Assert.Collection(
+                b2.Matches,
+                e => Assert.Same(endpoint2, e));
+            Assert.Null(b2.Literals);
+            Assert.Null(b2.Parameters);
+            Assert.Null(b2.CatchAll);
+        }
+
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/18677
+        [Fact]
+        public void BuildDfaTree_MultipleEndpoint_CatchAllWithHigherPrecedenceThanParameter_Order1_DefaultBehavior()
+        {
+            var builder = CreateDfaMatcherBuilder();
+            BuildDfaTree_MultipleEndpoint_CatchAllWithHigherPrecedenceThanParameter_Order1_Legacy30Behavior_Core(builder);
+        }
+
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/18677
+        [Fact]
+        public void BuildDfaTree_MultipleEndpoint_CatchAllWithHigherPrecedenceThanParameter_Order1_Legacy30Behavior()
+        {
+            var builder = CreateDfaMatcherBuilder();
+            builder.UseCorrectCatchAllBehavior = false;
+            BuildDfaTree_MultipleEndpoint_CatchAllWithHigherPrecedenceThanParameter_Order1_Legacy30Behavior_Core(builder);
+        }
+
+        private void BuildDfaTree_MultipleEndpoint_CatchAllWithHigherPrecedenceThanParameter_Order1_Legacy30Behavior_Core(DfaMatcherBuilder builder)
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint("{a}/{b}", order: 0);
+            builder.AddEndpoint(endpoint1);
+
+            var endpoint2 = CreateEndpoint("a/{*b}", order: 1);
+            builder.AddEndpoint(endpoint2);
+
+            // Act
+            var root = builder.BuildDfaTree();
+
+            // Assert
+            Assert.Null(root.Matches);
+
+            var next = Assert.Single(root.Literals);
+            Assert.Equal("a", next.Key);
+
+            var a1 = next.Value;
+            Assert.Same(endpoint2, Assert.Single(a1.Matches));
+            Assert.Null(a1.Literals);
+            Assert.Null(a1.Parameters);
+
+            var catchAll1 = a1.CatchAll;
+            Assert.Same(endpoint2, Assert.Single(catchAll1.Matches));
+            Assert.Null(catchAll1.Literals);
+            Assert.Same(catchAll1, catchAll1.Parameters);
+            Assert.Same(catchAll1, catchAll1.CatchAll);
+
+            var a2 = root.Parameters;
+            Assert.Null(a2.Matches);
+            Assert.Null(a2.Literals);
+
+            var b2 = a2.Parameters;
+            Assert.Collection(
+                b2.Matches,
+                e => Assert.Same(endpoint1, e));
+            Assert.Null(b2.Literals);
+            Assert.Null(b2.Parameters);
+            Assert.Null(b2.CatchAll);
+        }
+
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/18677
+        [Fact]
+        public void BuildDfaTree_MultipleEndpoint_CatchAllWithHigherPrecedenceThanParameter_Order2_DefaultBehavior()
+        {
+            var builder = CreateDfaMatcherBuilder();
+            BuildDfaTree_MultipleEndpoint_CatchAllWithHigherPrecedenceThanParameter_Order2_Legacy30Behavior_Core(builder);
+        }
+
+        // Regression test for https://github.com/dotnet/aspnetcore/issues/18677
+        [Fact]
+        public void BuildDfaTree_MultipleEndpoint_CatchAllWithHigherPrecedenceThanParameter_Order2_Legacy30Behavior()
+        {
+            var builder = CreateDfaMatcherBuilder();
+            builder.UseCorrectCatchAllBehavior = false;
+            BuildDfaTree_MultipleEndpoint_CatchAllWithHigherPrecedenceThanParameter_Order2_Legacy30Behavior_Core(builder);
+        }
+
+        private void BuildDfaTree_MultipleEndpoint_CatchAllWithHigherPrecedenceThanParameter_Order2_Legacy30Behavior_Core(DfaMatcherBuilder builder)
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint("a/{*b}", order: 0);
+            builder.AddEndpoint(endpoint1);
+
+            var endpoint2 = CreateEndpoint("{a}/{b}", order: 1);
+            builder.AddEndpoint(endpoint2);
+
+            // Act
+            var root = builder.BuildDfaTree();
+
+            // Assert
+            Assert.Null(root.Matches);
+
+            var next = Assert.Single(root.Literals);
+            Assert.Equal("a", next.Key);
+
+            var a1 = next.Value;
+            Assert.Same(endpoint1, Assert.Single(a1.Matches));
+            Assert.Null(a1.Literals);
+
+            var b1 = a1.Parameters;
+            Assert.Same(endpoint2, Assert.Single(b1.Matches));
+            Assert.Null(b1.Literals);
+            Assert.Null(b1.Parameters);
+            Assert.Null(b1.CatchAll);
+
+            var a2 = root.Parameters;
+            Assert.Null(a2.Matches);
+            Assert.Null(a2.Literals);
+
+            var b2 = a2.Parameters;
+            Assert.Collection(
+                b2.Matches,
+                e => Assert.Same(endpoint2, e));
+            Assert.Null(b2.Literals);
+            Assert.Null(b2.Parameters);
+            Assert.Null(b2.CatchAll);
+        }
+
         [Fact]
         public void BuildDfaTree_WithPolicies()
         {
@@ -727,6 +1124,50 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.Equal(new[] { endpoint1, endpoint2, endpoint3, }, a.Matches);
             Assert.Null(a.NodeBuilder);
             Assert.Null(a.PolicyEdges);
+        }
+
+        // Verifies that we sort the endpoints before calling into policies.
+        //
+        // The builder uses a different sort order when building the tree, vs when building the policy nodes. Policy
+        // nodes should see an "absolute" order.
+        [Fact]
+        public void BuildDfaTree_WithPolicies_SortedAccordingToScore()
+        {
+            // Arrange
+            //
+            // These cases where chosen where the absolute order incontrolled explicitly by setting .Order, but
+            // the precedence of segments is different, so these will be sorted into different orders when building
+            // the tree.
+            var policies = new MatcherPolicy[]
+            {
+                new TestMetadata1MatcherPolicy(),
+                new TestMetadata2MatcherPolicy(),
+            };
+
+            var comparer = new EndpointComparer(policies.OrderBy(p => p.Order).OfType<IEndpointComparerPolicy>().ToArray());
+
+            var builder = CreateDfaMatcherBuilder(policies);
+
+            ((TestMetadata1MatcherPolicy)policies[0]).OnGetEdges = VerifyOrder;
+            ((TestMetadata2MatcherPolicy)policies[1]).OnGetEdges = VerifyOrder;
+
+            var endpoint1 = CreateEndpoint("/a/{**b}", order: -1, metadata: new object[] { new TestMetadata1(0), new TestMetadata2(true), });
+            builder.AddEndpoint(endpoint1);
+
+            var endpoint2 = CreateEndpoint("/a/{b}/{**c}", order: 0, metadata: new object[] { new TestMetadata1(1), new TestMetadata2(true), });
+            builder.AddEndpoint(endpoint2);
+
+            var endpoint3 = CreateEndpoint("/a/b/{c}", order: 1, metadata: new object[] { new TestMetadata1(1), new TestMetadata2(false), });
+            builder.AddEndpoint(endpoint3);
+
+            // Act & Assert
+            _ = builder.BuildDfaTree();
+
+            void VerifyOrder(IReadOnlyList<Endpoint> endpoints)
+            {
+                // The list should already be in sorted order, every time build is called.
+                Assert.Equal(endpoints, endpoints.OrderBy(e => e, comparer));
+            }
         }
 
         [Fact]
@@ -1281,9 +1722,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
             object defaults = null,
             object constraints = null,
             object requiredValues = null,
+            int order = 0,
             params object[] metadata)
         {
-            return EndpointFactory.CreateRouteEndpoint(template, defaults, constraints, requiredValues, metadata: metadata);
+            return EndpointFactory.CreateRouteEndpoint(template, defaults, constraints, requiredValues, order: order, metadata: metadata);
         }
 
         private class TestMetadata1
@@ -1306,6 +1748,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public IComparer<Endpoint> Comparer => EndpointMetadataComparer<TestMetadata1>.Default;
 
+            public Action<IReadOnlyList<Endpoint>> OnGetEdges { get; set; }
+
             public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
             {
                 return endpoints.Any(e => e.Metadata.GetMetadata<TestMetadata1>() != null);
@@ -1318,6 +1762,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public IReadOnlyList<PolicyNodeEdge> GetEdges(IReadOnlyList<Endpoint> endpoints)
             {
+                OnGetEdges?.Invoke(endpoints);
                 return endpoints
                     .GroupBy(e => e.Metadata.GetMetadata<TestMetadata1>().State)
                     .Select(g => new PolicyNodeEdge(g.Key, g.ToArray()))
@@ -1345,6 +1790,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public IComparer<Endpoint> Comparer => EndpointMetadataComparer<TestMetadata2>.Default;
 
+            public Action<IReadOnlyList<Endpoint>> OnGetEdges { get; set; }
+
+
             public bool AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
             {
                 return endpoints.Any(e => e.Metadata.GetMetadata<TestMetadata2>() != null);
@@ -1357,6 +1805,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public IReadOnlyList<PolicyNodeEdge> GetEdges(IReadOnlyList<Endpoint> endpoints)
             {
+                OnGetEdges?.Invoke(endpoints);
                 return endpoints
                     .GroupBy(e => e.Metadata.GetMetadata<TestMetadata2>().State)
                     .Select(g => new PolicyNodeEdge(g.Key, g.ToArray()))

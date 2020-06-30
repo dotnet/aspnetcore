@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
     public class CookieAuthenticationHandler : SignInAuthenticationHandler<CookieAuthenticationOptions>
     {
         private const string HeaderValueNoCache = "no-cache";
+        private const string HeaderValueNoCacheNoStore = "no-cache,no-store";
         private const string HeaderValueEpocDate = "Thu, 01 Jan 1970 00:00:00 GMT";
         private const string SessionIdClaim = "Microsoft.AspNetCore.Authentication.Cookies-SessionId";
 
@@ -140,12 +141,13 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 {
                     return AuthenticateResult.Fail("SessionId missing");
                 }
-                _sessionKey = claim.Value;
-                ticket = await Options.SessionStore.RetrieveAsync(_sessionKey);
+                // Only store _sessionKey if it matches an existing session. Otherwise we'll create a new one.
+                ticket = await Options.SessionStore.RetrieveAsync(claim.Value);
                 if (ticket == null)
                 {
                     return AuthenticateResult.Fail("Identity missing in session store");
                 }
+                _sessionKey = claim.Value;
             }
 
             var currentUtc = Clock.UtcNow;
@@ -303,9 +305,14 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 if (_sessionKey != null)
                 {
-                    await Options.SessionStore.RemoveAsync(_sessionKey);
+                    // Renew the ticket in cases of multiple requests see: https://github.com/dotnet/aspnetcore/issues/22135
+                    await Options.SessionStore.RenewAsync(_sessionKey, ticket);
                 }
-                _sessionKey = await Options.SessionStore.StoreAsync(ticket);
+                else
+                {
+                    _sessionKey = await Options.SessionStore.StoreAsync(ticket);
+                }
+
                 var principal = new ClaimsPrincipal(
                     new ClaimsIdentity(
                         new[] { new Claim(SessionIdClaim, _sessionKey, ClaimValueTypes.String, Options.ClaimsIssuer) },
@@ -374,7 +381,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
         private async Task ApplyHeaders(bool shouldRedirectToReturnUrl, AuthenticationProperties properties)
         {
-            Response.Headers[HeaderNames.CacheControl] = HeaderValueNoCache;
+            Response.Headers[HeaderNames.CacheControl] = HeaderValueNoCacheNoStore;
             Response.Headers[HeaderNames.Pragma] = HeaderValueNoCache;
             Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
 

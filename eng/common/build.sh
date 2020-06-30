@@ -32,6 +32,7 @@ usage()
   echo "Advanced settings:"
   echo "  --projects <value>       Project or solution file(s) to build"
   echo "  --ci                     Set when running on CI server"
+  echo "  --excludeCIBinarylog     Don't output binary log (short: -nobl)"
   echo "  --prepareMachine         Prepare machine for CI run, clean up processes after build"
   echo "  --nodeReuse <value>      Sets nodereuse msbuild parameter ('true' or 'false')"
   echo "  --warnAsError <value>    Sets warnaserror msbuild parameter ('true' or 'false')"
@@ -68,6 +69,7 @@ clean=false
 warn_as_error=true
 node_reuse=true
 binary_log=false
+exclude_ci_binary_log=false
 pipelines_log=false
 
 projects=''
@@ -97,6 +99,9 @@ while [[ $# > 0 ]]; do
       ;;
     -binarylog|-bl)
       binary_log=true
+      ;;
+    -excludeCIBinarylog|-nobl)
+      exclude_ci_binary_log=true
       ;;
     -pipelineslog|-pl)
       pipelines_log=true
@@ -156,8 +161,10 @@ done
 
 if [[ "$ci" == true ]]; then
   pipelines_log=true
-  binary_log=true
   node_reuse=false
+  if [[ "$exclude_ci_binary_log" == false ]]; then
+    binary_log=true
+  fi
 fi
 
 . "$scriptroot/tools.sh"

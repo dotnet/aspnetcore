@@ -104,6 +104,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".eps", "application/postscript" },
                 { ".etx", "text/x-setext" },
                 { ".evy", "application/envoy" },
+                { ".exe", "application/vnd.microsoft.portable-executable" }, // https://www.iana.org/assignments/media-types/application/vnd.microsoft.portable-executable
                 { ".fdf", "application/vnd.fdf" },
                 { ".fif", "application/fractals" },
                 { ".fla", "application/octet-stream" },
@@ -343,6 +344,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".wcm", "application/vnd.ms-works" },
                 { ".wdb", "application/vnd.ms-works" },
                 { ".webm", "video/webm" },
+                { ".webmanifest", "application/manifest+json" }, // https://w3c.github.io/manifest/#media-type-registration
                 { ".webp", "image/webp" },
                 { ".wks", "application/vnd.ms-works" },
                 { ".wm", "video/x-ms-wm" },

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly Http2Stream _context;
         private ReadResult _readResult;
 
-        private Http2MessageBody(Http2Stream context)
+        public Http2MessageBody(Http2Stream context)
             : base(context)
         {
             _context = context;
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // Note ContentLength or MaxRequestBodySize may be null
             if (_context.RequestHeaders.ContentLength > _context.MaxRequestBodySize)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
         }
 
@@ -39,21 +39,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        protected override void OnDataRead(long bytesRead)
+        public override void Reset()
         {
-            // The HTTP/2 flow control window cannot be larger than 2^31-1 which limits bytesRead.
-            _context.OnDataRead((int)bytesRead);
-            AddAndCheckConsumedBytes(bytesRead);
-        }
-
-        public static MessageBody For(Http2Stream context)
-        {
-            if (context.ReceivedEmptyRequestBody)
-            {
-                return ZeroContentLengthClose;
-            }
-
-            return new Http2MessageBody(context);
+            base.Reset();
+            _readResult = default;
         }
 
         public override void AdvanceTo(SequencePosition consumed)
@@ -63,8 +52,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
-            OnAdvance(_readResult, consumed, examined);
+            var newlyExaminedBytes = TrackConsumedAndExaminedBytes(_readResult, consumed, examined);
+
+            // Ensure we consume data from the RequestBodyPipe before sending WINDOW_UPDATES to the client.
             _context.RequestBodyPipe.Reader.AdvanceTo(consumed, examined);
+
+            // The HTTP/2 flow control window cannot be larger than 2^31-1 which limits bytesRead.
+            _context.OnDataRead((int)newlyExaminedBytes);
+            AddAndCheckObservedBytes(newlyExaminedBytes);
         }
 
         public override bool TryRead(out ReadResult readResult)

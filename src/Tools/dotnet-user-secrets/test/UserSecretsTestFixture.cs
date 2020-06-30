@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.Configuration.UserSecrets.Tests
         private const string ProjectTemplate = @"<Project ToolsVersion=""15.0"" Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp5.0</TargetFrameworks>
+    <TargetFrameworks>net5.0</TargetFrameworks>
     {0}
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>

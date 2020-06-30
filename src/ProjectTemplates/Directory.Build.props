@@ -4,8 +4,13 @@
   <PropertyGroup>
     <!-- The .csproj files in this folder do not actually produce .dll's. They are only present to produce .nupkgs and enable Visual Studio support -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
   <Import Project="TemplateProjects.props" Condition="'$(IsTestProject)' != 'true' AND '$(IsTestAssetProject)' != 'true'" />
+
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <Content Include="$(MSBuildThisFileDirectory)xunit.runner.json" Link="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

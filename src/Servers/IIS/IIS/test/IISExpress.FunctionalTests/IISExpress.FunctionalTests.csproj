@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="../FunctionalTest.props" />
 
@@ -28,8 +28,8 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="System.Diagnostics.EventLog" />
+    <Reference Include="System.Net.Http.WinHttpHandler" />
   </ItemGroup>
 
 </Project>

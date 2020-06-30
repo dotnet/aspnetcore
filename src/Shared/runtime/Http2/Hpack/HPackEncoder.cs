@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace System.Net.Http.HPack
 {
-    internal static class HPackEncoder
+    internal partial class HPackEncoder
     {
         // Things we should add:
         // * Huffman encoding
@@ -52,7 +54,7 @@ namespace System.Net.Http.HPack
                 case 404:
                 case 500:
                     // Status codes which exist in the HTTP/2 StaticTable.
-                    return EncodeIndexedHeaderField(H2StaticTable.StatusIndex[statusCode], destination, out bytesWritten);
+                    return EncodeIndexedHeaderField(H2StaticTable.GetStatusIndex(statusCode), destination, out bytesWritten);
                 default:
                     // If the status code doesn't have a static index then we need to include the full value.
                     // Write a status index and then the number bytes as a string literal.
@@ -107,6 +109,70 @@ namespace System.Net.Http.HPack
             return false;
         }
 
+        /// <summary>Encodes a "Literal Header Field never Indexing".</summary>
+        public static bool EncodeLiteralHeaderFieldNeverIndexing(int index, string value, Span<byte> destination, out int bytesWritten)
+        {
+            // From https://tools.ietf.org/html/rfc7541#section-6.2.3
+            // ------------------------------------------------------
+            //   0   1   2   3   4   5   6   7
+            // +---+---+---+---+---+---+---+---+
+            // | 0 | 0 | 0 | 1 |  Index (4+)   |
+            // +---+---+-----------------------+
+            // | H |     Value Length (7+)     |
+            // +---+---------------------------+
+            // | Value String (Length octets)  |
+            // +-------------------------------+
+
+            if ((uint)destination.Length >= 2)
+            {
+                destination[0] = 0x10;
+                if (IntegerEncoder.Encode(index, 4, destination, out int indexLength))
+                {
+                    Debug.Assert(indexLength >= 1);
+                    if (EncodeStringLiteral(value, destination.Slice(indexLength), out int nameLength))
+                    {
+                        bytesWritten = indexLength + nameLength;
+                        return true;
+                    }
+                }
+            }
+
+            bytesWritten = 0;
+            return false;
+        }
+
+        /// <summary>Encodes a "Literal Header Field with Indexing".</summary>
+        public static bool EncodeLiteralHeaderFieldIndexing(int index, string value, Span<byte> destination, out int bytesWritten)
+        {
+            // From https://tools.ietf.org/html/rfc7541#section-6.2.2
+            // ------------------------------------------------------
+            //   0   1   2   3   4   5   6   7
+            // +---+---+---+---+---+---+---+---+
+            // | 0 | 1 |      Index (6+)       |
+            // +---+---+-----------------------+
+            // | H |     Value Length (7+)     |
+            // +---+---------------------------+
+            // | Value String (Length octets)  |
+            // +-------------------------------+
+
+            if ((uint)destination.Length >= 2)
+            {
+                destination[0] = 0x40;
+                if (IntegerEncoder.Encode(index, 6, destination, out int indexLength))
+                {
+                    Debug.Assert(indexLength >= 1);
+                    if (EncodeStringLiteral(value, destination.Slice(indexLength), out int nameLength))
+                    {
+                        bytesWritten = indexLength + nameLength;
+                        return true;
+                    }
+                }
+            }
+
+            bytesWritten = 0;
+            return false;
+        }
+
         /// <summary>
         /// Encodes a "Literal Header Field without Indexing", but only the index portion;
         /// a subsequent call to <c>EncodeStringLiteral</c> must be used to encode the associated value.
@@ -142,6 +208,27 @@ namespace System.Net.Http.HPack
             return false;
         }
 
+        /// <summary>Encodes a "Literal Header Field with Indexing - New Name".</summary>
+        public static bool EncodeLiteralHeaderFieldIndexingNewName(string name, string value, Span<byte> destination, out int bytesWritten)
+        {
+            // From https://tools.ietf.org/html/rfc7541#section-6.2.2
+            // ------------------------------------------------------
+            //   0   1   2   3   4   5   6   7
+            // +---+---+---+---+---+---+---+---+
+            // | 0 | 1 |           0           |
+            // +---+---+-----------------------+
+            // | H |     Name Length (7+)      |
+            // +---+---------------------------+
+            // |  Name String (Length octets)  |
+            // +---+---------------------------+
+            // | H |     Value Length (7+)     |
+            // +---+---------------------------+
+            // | Value String (Length octets)  |
+            // +-------------------------------+
+
+            return EncodeLiteralHeaderNewNameCore(0x40, name, value, destination, out bytesWritten);
+        }
+
         /// <summary>Encodes a "Literal Header Field without Indexing - New Name".</summary>
         public static bool EncodeLiteralHeaderFieldWithoutIndexingNewName(string name, string value, Span<byte> destination, out int bytesWritten)
         {
@@ -160,9 +247,35 @@ namespace System.Net.Http.HPack
             // | Value String (Length octets)  |
             // +-------------------------------+
 
+            return EncodeLiteralHeaderNewNameCore(0, name, value, destination, out bytesWritten);
+        }
+
+        /// <summary>Encodes a "Literal Header Field never Indexing - New Name".</summary>
+        public static bool EncodeLiteralHeaderFieldNeverIndexingNewName(string name, string value, Span<byte> destination, out int bytesWritten)
+        {
+            // From https://tools.ietf.org/html/rfc7541#section-6.2.3
+            // ------------------------------------------------------
+            //   0   1   2   3   4   5   6   7
+            // +---+---+---+---+---+---+---+---+
+            // | 0 | 0 | 0 | 1 |       0       |
+            // +---+---+-----------------------+
+            // | H |     Name Length (7+)      |
+            // +---+---------------------------+
+            // |  Name String (Length octets)  |
+            // +---+---------------------------+
+            // | H |     Value Length (7+)     |
+            // +---+---------------------------+
+            // | Value String (Length octets)  |
+            // +-------------------------------+
+
+            return EncodeLiteralHeaderNewNameCore(0x10, name, value, destination, out bytesWritten);
+        }
+
+        private static bool EncodeLiteralHeaderNewNameCore(byte mask, string name, string value, Span<byte> destination, out int bytesWritten)
+        {
             if ((uint)destination.Length >= 3)
             {
-                destination[0] = 0;
+                destination[0] = mask;
                 if (EncodeLiteralHeaderName(name, destination.Slice(1), out int nameLength) &&
                     EncodeStringLiteral(value, destination.Slice(1 + nameLength), out int valueLength))
                 {
@@ -370,7 +483,26 @@ namespace System.Net.Http.HPack
             return false;
         }
 
-        public static bool EncodeStringLiterals(ReadOnlySpan<string> values, string separator, Span<byte> destination, out int bytesWritten)
+        public static bool EncodeDynamicTableSizeUpdate(int value, Span<byte> destination, out int bytesWritten)
+        {
+            // From https://tools.ietf.org/html/rfc7541#section-6.3
+            // ----------------------------------------------------
+            //   0   1   2   3   4   5   6   7
+            // +---+---+---+---+---+---+---+---+
+            // | 0 | 0 | 1 |   Max size (5+)   |
+            // +---+---------------------------+
+
+            if (destination.Length != 0)
+            {
+                destination[0] = 0x20;
+                return IntegerEncoder.Encode(value, 5, destination, out bytesWritten);
+            }
+
+            bytesWritten = 0;
+            return false;
+        }
+
+        public static bool EncodeStringLiterals(ReadOnlySpan<string> values, string? separator, Span<byte> destination, out int bytesWritten)
         {
             bytesWritten = 0;
 
@@ -393,6 +525,7 @@ namespace System.Net.Http.HPack
                     valueLength = checked((int)(valueLength + part.Length));
                 }
 
+                Debug.Assert(separator != null);
                 valueLength = checked((int)(valueLength + (values.Length - 1) * separator.Length));
 
                 destination[0] = 0;

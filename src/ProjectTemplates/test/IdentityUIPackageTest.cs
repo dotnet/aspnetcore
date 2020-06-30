@@ -120,7 +120,8 @@ namespace Templates.Test
 
         [ConditionalTheory]
         [MemberData(nameof(MSBuildIdentityUIPackageOptions))]
-        [SkipOnHelix("ef restore no worky")]
+        [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
         public async Task IdentityUIPackage_WorksWithDifferentOptions(IDictionary<string, string> packageOptions, string versionValidator, string[] expectedFiles)
         {
             Project = await ProjectFactory.GetOrCreateProject("identityuipackage" + string.Concat(packageOptions.Values), Output);
