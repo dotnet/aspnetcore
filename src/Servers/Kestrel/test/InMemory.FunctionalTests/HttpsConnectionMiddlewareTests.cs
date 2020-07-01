@@ -21,7 +21,11 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Testing;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
@@ -37,6 +41,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             void ConfigureListenOptions(ListenOptions listenOptions)
             {
                 listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+            };
+
+            await using (var server = new TestServer(App, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+            {
+                var result = await server.HttpClientSlim.PostAsync($"https://localhost:{server.Port}/",
+                    new FormUrlEncodedContent(new[] {
+                        new KeyValuePair<string, string>("content", "Hello World?")
+                    }),
+                    validateCertificate: false);
+
+                Assert.Equal("content=Hello+World%3F", result);
+            }
+        }
+
+        [Fact]
+        public async Task CanReadAndWriteWithHttpsConnectionMiddlewareWithPemCertificate()
+        {
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
+            {
+                ["Certificates:Default:Path"] = Path.Combine("shared", "TestCertificates", "https-aspnet.crt"),
+                ["Certificates:Default:KeyPath"] = Path.Combine("shared", "TestCertificates", "https-aspnet.key"),
+                ["Certificates:Default:Password"] = "aspnetcore",
+            }).Build();
+
+            var options = new KestrelServerOptions();
+            var env = new Mock<IHostEnvironment>();
+            env.SetupGet(e => e.ContentRootPath).Returns(Directory.GetCurrentDirectory());
+
+            options.ApplicationServices = new ServiceCollection().AddSingleton(env.Object).AddLogging().BuildServiceProvider();
+            var loader = new KestrelConfigurationLoader(options, configuration, reloadOnChange: false);
+            loader.Load();
+            void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.KestrelServerOptions = options;
+                listenOptions.UseHttps();
             };
 
             await using (var server = new TestServer(App, new TestServiceContext(LoggerFactory), ConfigureListenOptions))

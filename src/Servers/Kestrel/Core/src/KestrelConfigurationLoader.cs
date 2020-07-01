@@ -436,52 +436,65 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
             else if (certInfo.IsFileCert)
             {
-                var env = Options.ApplicationServices.GetRequiredService<IHostEnvironment>();
+                var environment = Options.ApplicationServices.GetRequiredService<IHostEnvironment>();
                 if (certInfo.KeyPath != null)
                 {
-                    if (TryReadPemRSAKey(certInfo, out var rsaKey))
+                    X509Certificate2 certificate = null;
+                    if (TryReadPemRSAKey(certInfo, environment, out var rsaKey))
                     {
-                        var publicCertificate = new X509Certificate2(Path.Combine(env.ContentRootPath, certInfo.Path));
-                        var fullCertificate =  publicCertificate.CopyWithPrivateKey(rsaKey);
-                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                        {
-                            // We need to force the key to be persisted.
-                            // See https://github.com/dotnet/runtime/issues/23749
-                            var certificateBytes = fullCertificate.Export(X509ContentType.Pkcs12, "");
-                            return new X509Certificate2(certificateBytes, "", X509KeyStorageFlags.DefaultKeySet);
-                        }
+                        var publicCertificate = new X509Certificate2(Path.Combine(environment.ContentRootPath, certInfo.Path));
+                        certificate =  publicCertificate.CopyWithPrivateKey(rsaKey);
                     }
 
-                    if (TryReadPemDSAKey(certInfo, out var dsaKey))
+                    if (TryReadPemDSAKey(certInfo, environment, out var dsaKey))
                     {
-                        var publicCertificate = new X509Certificate2(Path.Combine(env.ContentRootPath, certInfo.Path));
-                        return publicCertificate.CopyWithPrivateKey(dsaKey);
+                        var publicCertificate = new X509Certificate2(Path.Combine(environment.ContentRootPath, certInfo.Path));
+                        certificate = publicCertificate.CopyWithPrivateKey(dsaKey);
+                    }
+
+                    if (certificate != null)
+                    {
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        {
+                            return PersistKey(certificate);
+                        }
+
+                        return certificate;
                     }
 
                     throw new InvalidOperationException(CoreStrings.InvalidPemKey);
                 }
 
-                return new X509Certificate2(Path.Combine(env.ContentRootPath, certInfo.Path), certInfo.Password);
+                return new X509Certificate2(Path.Combine(environment.ContentRootPath, certInfo.Path), certInfo.Password);
             }
             else if (certInfo.IsStoreCert)
             {
                 return LoadFromStoreCert(certInfo);
             }
             return null;
+
+            static X509Certificate2 PersistKey(X509Certificate2 fullCertificate)
+            {
+                // We need to force the key to be persisted.
+                // See https://github.com/dotnet/runtime/issues/23749
+                var certificateBytes = fullCertificate.Export(X509ContentType.Pkcs12, "");
+                return new X509Certificate2(certificateBytes, "", X509KeyStorageFlags.DefaultKeySet);
+            }
         }
 
-        private static bool TryReadPemRSAKey(CertificateConfig certInfo, out RSA key)
+        private static bool TryReadPemRSAKey(CertificateConfig certInfo, IHostEnvironment environment, out RSA key)
         {
             try
             {
+                var keyPath = Path.Combine(environment.ContentRootPath, certInfo.KeyPath);
                 var rsaKey = RSA.Create();
                 if (certInfo.Password == null)
                 {
-                    rsaKey.ImportFromPem(File.ReadAllText(certInfo.KeyPath));
+                    rsaKey.ImportFromPem(File.ReadAllText(keyPath));
                 }
                 else
                 {
-                    rsaKey.ImportFromEncryptedPem(File.ReadAllText(certInfo.KeyPath), certInfo.Password);
+                    rsaKey.ImportFromEncryptedPem(File.ReadAllText(keyPath), certInfo.Password);
                 }
                 key = rsaKey;
                 return true;
@@ -493,18 +506,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
         }
 
-        private static bool TryReadPemDSAKey(CertificateConfig certInfo, out DSA dsaKey)
+        private static bool TryReadPemDSAKey(CertificateConfig certInfo, IHostEnvironment environment, out DSA dsaKey)
         {
             try
             {
+                var keyPath = Path.Combine(environment.ContentRootPath, certInfo.KeyPath);
                 var dsa = DSA.Create();
                 if (certInfo.Password == null)
                 {
-                    dsa.ImportFromPem(File.ReadAllText(certInfo.KeyPath));
+                    dsa.ImportFromPem(File.ReadAllText(keyPath));
                 }
                 else
                 {
-                    dsa.ImportFromEncryptedPem(File.ReadAllText(certInfo.KeyPath), certInfo.Password);
+                    dsa.ImportFromEncryptedPem(File.ReadAllText(keyPath), certInfo.Password);
                 }
                 dsaKey = dsa;
                 return true;
