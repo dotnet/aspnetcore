@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Certificates.Generation
 {
-    public enum CertificateKeyExportFormat
+    internal enum CertificateKeyExportFormat
     {
         Pfx,
         Pem,

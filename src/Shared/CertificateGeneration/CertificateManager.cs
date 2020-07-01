@@ -402,7 +402,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                     switch (format)
                     {
                         case CertificateKeyExportFormat.Pfx:
-                            bytes = includePrivateKey ? certificate.Export(X509ContentType.Pkcs12, password) : certificate.Export(X509ContentType.Cert);
+                            bytes = certificate.Export(X509ContentType.Pkcs12, password);
                             break;
                         case CertificateKeyExportFormat.Pem:
                             var key = certificate.GetRSAPrivateKey();
