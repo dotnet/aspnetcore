@@ -23,6 +23,27 @@ namespace Microsoft.AspNetCore.Components
         public WebElementReferenceContext(Microsoft.JSInterop.IJSRuntime jsRuntime) { }
     }
 }
+namespace Microsoft.AspNetCore.Components.Extensions
+{
+    public abstract partial class ProtectedBrowserStorage
+    {
+        protected ProtectedBrowserStorage(string storeName, Microsoft.JSInterop.IJSRuntime jsRuntime, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtectionProvider) { }
+        public System.Threading.Tasks.ValueTask DeleteAsync(string key) { throw null; }
+        public System.Threading.Tasks.ValueTask<T> GetAsync<T>(string key) { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public System.Threading.Tasks.ValueTask<T> GetAsync<T>(string purpose, string key) { throw null; }
+        public System.Threading.Tasks.ValueTask SetAsync(string key, object value) { throw null; }
+        public System.Threading.Tasks.ValueTask SetAsync(string purpose, string key, object value) { throw null; }
+    }
+    public partial class ProtectedLocalStorage : Microsoft.AspNetCore.Components.Extensions.ProtectedBrowserStorage
+    {
+        public ProtectedLocalStorage(Microsoft.JSInterop.IJSRuntime jsRuntime, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtectionProvider) : base (default(string), default(Microsoft.JSInterop.IJSRuntime), default(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider)) { }
+    }
+    public partial class ProtectedSessionStorage : Microsoft.AspNetCore.Components.Extensions.ProtectedBrowserStorage
+    {
+        public ProtectedSessionStorage(Microsoft.JSInterop.IJSRuntime jsRuntime, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtectionProvider) : base (default(string), default(Microsoft.JSInterop.IJSRuntime), default(Microsoft.AspNetCore.DataProtection.IDataProtectionProvider)) { }
+    }
+}
 namespace Microsoft.AspNetCore.Components.Forms
 {
     public static partial class EditContextFieldClassExtensions
@@ -441,5 +462,12 @@ namespace Microsoft.AspNetCore.Components.Web
         public double DeltaX { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public double DeltaY { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public double DeltaZ { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+    }
+}
+namespace Microsoft.Extensions.DependencyInjection
+{
+    public static partial class ProtectedBrowserStorageServiceCollectionExtensions
+    {
+        public static void AddProtectedBrowserStorage(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) { }
     }
 }

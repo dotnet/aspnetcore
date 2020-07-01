@@ -1,0 +1,44 @@
+@page "/local-storage"
+@using Microsoft.AspNetCore.Components.Extensions
+@inject ProtectedLocalStorage ProtectedLocalStore
+
+<h1>Local storage</h1>
+
+<p>
+    This page demonstrates how data can be stored in the browser's <code>localStorage</code>
+    collection. This data is scoped to your browser. So, if you set a value on the
+    counter then reload, your data will be retained. If you open multiple browser tabs,
+    each one will overwrite the data for the others, as they are all sharing the same
+    storage slot. If you close and reopen the entire browser, your data will still be restored next time you come back here.
+</p>
+
+<p>
+    Tip: In many cases, it's safer to use <a href="">session storage</a> because with local
+    storage, if a user opens multiple tabs, you may have bugs or confusing user experience
+    because the tabs will overwrite each other's data. Which is the right choice depends on
+    whether tabs should be independent, and whether you need to store the data across browser
+    application restarts.
+</p>
+
+<fieldset>
+    @if (currentCount.HasValue)
+    {
+        <p>Current count: <strong>@currentCount</strong></p>
+        <button @onclick="@IncrementCount">Increment</button>
+    }
+</fieldset>
+
+@functions {
+    int? currentCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentCount = await ProtectedLocalStore.GetAsync<int>("localCount");
+    }
+
+    async Task IncrementCount()
+    {
+        currentCount++;
+        await ProtectedLocalStore.SetAsync("localCount", currentCount);
+    }
+}

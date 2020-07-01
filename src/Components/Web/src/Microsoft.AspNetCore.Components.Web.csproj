@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;$(DefaultNetCoreTargetFramework)</TargetFrameworks>
@@ -13,8 +13,13 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components" />
     <Reference Include="Microsoft.AspNetCore.Components.Forms" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.JSInterop" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Extensions\" />
   </ItemGroup>
 
 </Project>

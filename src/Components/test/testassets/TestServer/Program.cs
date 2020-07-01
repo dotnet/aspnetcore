@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Components.TestServer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -28,7 +29,8 @@ namespace TestServer
                 ["Globalization + Localization (Server-side)"] = (BuildWebHost<InternationalizationStartup>(CreateAdditionalArgs(args)), "/subdir"),
                 ["Server-side blazor"] = (BuildWebHost<ServerStartup>(CreateAdditionalArgs(args)), "/subdir"),
                 ["Hosted client-side blazor"] = (BuildWebHost<ClientStartup>(CreateAdditionalArgs(args)), "/subdir"),
-                ["Dev server client-side blazor"] = CreateDevServerHost(CreateAdditionalArgs(args))
+                ["Dev server client-side blazor"] = CreateDevServerHost(CreateAdditionalArgs(args)),
+                ["Protected browser storage"] = (BuildWebHost<ProtectedBrowserStorageStartup>(CreateAdditionalArgs(args)), "/subdir")
             };
 
             var mainHost = BuildWebHost(args);

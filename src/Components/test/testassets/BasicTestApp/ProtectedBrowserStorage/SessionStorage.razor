@@ -1,0 +1,36 @@
+@page "/"
+@using Microsoft.AspNetCore.Components.Extensions
+@inject ProtectedSessionStorage ProtectedSessionStore
+
+<h1>Session storage</h1>
+
+<p>
+    This page demonstrates how data can be stored in the browser's <code>sessionStorage</code>
+    collection. This data is scoped to your current browser tab. So, if you set a value on the
+    counter then reload, your data will be retained. If you open multiple browser tabs, each
+    one will persist its own independent value for the count across reloads, even though the
+    code uses the same storage key for them all.
+</p>
+
+<fieldset>
+    @if (currentCount.HasValue)
+    {
+        <p>Current count: <strong>@currentCount</strong></p>
+        <button @onclick="@IncrementCount">Increment</button>
+    }
+</fieldset>
+
+@functions {
+    int? currentCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        currentCount = await ProtectedSessionStore.GetAsync<int>("sessionCount");
+    }
+
+    async Task IncrementCount()
+    {
+        currentCount++;
+        await ProtectedSessionStore.SetAsync("sessionCount", currentCount);
+    }
+}

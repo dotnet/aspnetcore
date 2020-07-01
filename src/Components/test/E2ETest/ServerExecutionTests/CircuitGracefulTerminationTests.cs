@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
         public TaskCompletionSource<object> GracefulDisconnectCompletionSource { get; private set; }
         public TestSink Sink { get; private set; }
-        public List<(Extensions.Logging.LogLevel level, string eventIdName)> Messages { get; private set; }
+        public List<(Microsoft.Extensions.Logging.LogLevel level, string eventIdName)> Messages { get; private set; }
 
         public override async Task InitializeAsync()
         {
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             GracefulDisconnectCompletionSource = new TaskCompletionSource<object>(TaskContinuationOptions.RunContinuationsAsynchronously);
             Sink = _serverFixture.Host.Services.GetRequiredService<TestSink>();
-            Messages = new List<(Extensions.Logging.LogLevel level, string eventIdName)>();
+            Messages = new List<(Microsoft.Extensions.Logging.LogLevel level, string eventIdName)>();
             Sink.MessageLogged += Log;
         }
 
@@ -61,8 +61,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
 
             // Assert
-            Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully"), Messages);
-            Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages);
+            Assert.Contains((Microsoft.Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully"), Messages);
+            Assert.Contains((Microsoft.Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages);
         }
 
         [Fact]
@@ -73,8 +73,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
 
             // Assert
-            Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully"), Messages);
-            Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages);
+            Assert.Contains((Microsoft.Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully"), Messages);
+            Assert.Contains((Microsoft.Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages);
         }
 
         [Fact]
@@ -86,13 +86,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
 
             // Assert
-            Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully"), Messages);
-            Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages);
+            Assert.Contains((Microsoft.Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully"), Messages);
+            Assert.Contains((Microsoft.Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages);
         }
 
         private void Log(WriteContext wc)
         {
-            if ((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully") == (wc.LogLevel, wc.EventId.Name))
+            if ((Microsoft.Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully") == (wc.LogLevel, wc.EventId.Name))
             {
                 GracefulDisconnectCompletionSource.TrySetResult(null);
             }

@@ -1,4 +1,5 @@
 import { navigateTo, internalFunctions as navigationManagerInternalFunctions } from './Services/NavigationManager';
+import { protectedBrowserStorage } from './Services/ProtectedBrowserStorage';
 import { attachRootComponentToElement } from './Rendering/Renderer';
 import { domFunctions } from './DomWrapper';
 
@@ -9,6 +10,7 @@ window['Blazor'] = {
   _internal: {
     attachRootComponentToElement,
     navigationManager: navigationManagerInternalFunctions,
+    protectedBrowserStorage,
     domWrapper: domFunctions,
   },
 };
