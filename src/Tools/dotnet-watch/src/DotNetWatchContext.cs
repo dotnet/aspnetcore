@@ -18,5 +18,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         public string ChangedFile { get; set; }
 
         public bool RequiresMSBuildRevaluation { get; set; }
+
+        public bool SuppresMSBuildIncrementalism { get; set; }
     }
 }

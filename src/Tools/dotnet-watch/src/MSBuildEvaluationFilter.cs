@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,11 +13,17 @@ namespace Microsoft.DotNet.Watcher.Tools
     public class MSBuildEvaluationFilter : IWatchFilter
     {
         // File types that require an MSBuild re-evaluation
-        private static readonly HashSet<string> _msBuildFileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        private static readonly string[] _msBuildFileExtensions = new[]
         {
-            ".props", ".targets", ".csproj", ".fsproj", ".vbproj",
+            ".csproj", ".props", ".targets", ".fsproj", ".vbproj", ".vcxproj",
         };
+        private static readonly int[] _msBuildFileExtensionHashes = _msBuildFileExtensions
+            .Select(e => e.GetHashCode(StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
         private readonly IFileSetFactory _factory;
+
+        private List<(string fileName, DateTime lastWriteTimeUtc)> _msbuildFileTimestamps;
 
         public MSBuildEvaluationFilter(IFileSetFactory factory)
         {
@@ -25,7 +32,14 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public async ValueTask ProcessAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
-            if (context.Iteration == 0 || RequiresMSBuildRevaluation(context.ChangedFile))
+            if (context.SuppresMSBuildIncrementalism)
+            {
+                context.RequiresMSBuildRevaluation = true;
+                context.FileSet = await _factory.CreateAsync(cancellationToken);
+                return;
+            }
+
+            if (context.Iteration == 0 || RequiresMSBuildRevaluation(context))
             {
                 context.RequiresMSBuildRevaluation = true;
             }
@@ -33,19 +47,78 @@ namespace Microsoft.DotNet.Watcher.Tools
             if (context.RequiresMSBuildRevaluation)
             {
                 context.Reporter.Verbose("Evaluating dotnet-watch file set.");
+
                 context.FileSet = await _factory.CreateAsync(cancellationToken);
+                _msbuildFileTimestamps = GetMSBuildFileTimeStamps(context);
             }
         }
 
-        private static bool RequiresMSBuildRevaluation(string changedFile)
+        private bool RequiresMSBuildRevaluation(DotNetWatchContext context)
         {
-            if (string.IsNullOrEmpty(changedFile))
+            var changedFile = context.ChangedFile;
+            if (!string.IsNullOrEmpty(changedFile) && IsMsBuildFileExtension(changedFile))
             {
-                return false;
+                return true;
             }
 
-            var extension = Path.GetExtension(changedFile);
-            return !string.IsNullOrEmpty(extension) && _msBuildFileExtensions.Contains(extension);
+            // The filewatcher may miss changes to files. For msbuild files, we can verify that they haven't been modified
+            // since the previous iteration.
+            // We do not have a way to identify renames or new additions that the file watcher did not pick up,
+            // without performing an evaluation. We will start off by keeping it simple and comparing the timestamps
+            // of known MSBuild files from previous run. This should cover the vast majority of cases.
+
+            foreach (var (file, lastWriteTimeUtc) in _msbuildFileTimestamps)
+            {
+                if (GetLastWriteTimeUtcSafely(file) != lastWriteTimeUtc)
+                {
+                    context.Reporter.Verbose($"Re-evaluation needed due to changes in {file}.");
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private List<(string fileName, DateTime lastModifiedUtc)> GetMSBuildFileTimeStamps(DotNetWatchContext context)
+        {
+            var msbuildFiles = new List<(string fileName, DateTime lastModifiedUtc)>();
+            foreach (var file in context.FileSet)
+            {
+                if (!string.IsNullOrEmpty(file) && IsMsBuildFileExtension(file))
+                {
+                    msbuildFiles.Add((file, GetLastWriteTimeUtcSafely(file)));
+                }
+            }
+
+            return msbuildFiles;
+        }
+
+        protected virtual DateTime GetLastWriteTimeUtcSafely(string file)
+        {
+            try
+            {
+                return File.GetLastWriteTimeUtc(file);
+            }
+            catch
+            {
+                return DateTime.UtcNow;
+            }
+        }
+
+        static bool IsMsBuildFileExtension(string fileName)
+        {
+            var extension = Path.GetExtension(fileName.AsSpan());
+            var hashCode = string.GetHashCode(extension, StringComparison.OrdinalIgnoreCase);
+            for (var i = 0; i < _msBuildFileExtensionHashes.Length; i++)
+            {
+                if (_msBuildFileExtensionHashes[i] == hashCode && extension.Equals(_msBuildFileExtensions[i], StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

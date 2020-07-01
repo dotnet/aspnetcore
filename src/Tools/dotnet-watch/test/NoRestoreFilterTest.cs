@@ -59,6 +59,33 @@ namespace Microsoft.DotNet.Watcher.Tools
         }
 
         [Fact]
+        public async Task ProcessAsync_LeavesArgumentsUnchangedIfOptimizationIsSuppressed()
+        {
+            // Arrange
+            var filter = new NoRestoreFilter();
+
+            var context = new DotNetWatchContext
+            {
+                Iteration = 0,
+                ProcessSpec = new ProcessSpec
+                {
+                    Arguments = _arguments,
+                },
+                SuppresMSBuildIncrementalism = true,
+            };
+            await filter.ProcessAsync(context, default);
+
+            context.ChangedFile = "Program.cs";
+            context.Iteration++;
+
+            // Act
+            await filter.ProcessAsync(context, default);
+
+            // Assert
+            Assert.Same(_arguments, context.ProcessSpec.Arguments);
+        }
+
+        [Fact]
         public async Task ProcessAsync_AddsNoRestoreSwitch()
         {
             // Arrange

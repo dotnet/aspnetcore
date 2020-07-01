@@ -43,12 +43,19 @@ namespace Microsoft.DotNet.Watcher
                 cancelledTaskSource);
 
             var initialArguments = processSpec.Arguments.ToArray();
+            var suppressMSBuildIncrementalism = Environment.GetEnvironmentVariable("DOTNET_WATCH_SUPPRESS_MSBUILD_INCREMENTALISM");
             var context = new DotNetWatchContext
             {
                 Iteration = -1,
                 ProcessSpec = processSpec,
                 Reporter = _reporter,
+                SuppresMSBuildIncrementalism = suppressMSBuildIncrementalism == "1" || suppressMSBuildIncrementalism == "true",
             };
+
+            if (context.SuppresMSBuildIncrementalism)
+            {
+                _reporter.Verbose("MSBuild incremental optimizations suppressed.");
+            }
 
             while (true)
             {

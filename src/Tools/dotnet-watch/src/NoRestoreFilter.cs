@@ -17,6 +17,11 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public ValueTask ProcessAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
+            if (context.SuppresMSBuildIncrementalism)
+            {
+                return default;
+            }
+
             if (context.Iteration == 0)
             {
                 var arguments = context.ProcessSpec.Arguments;
@@ -36,7 +41,6 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
                 else
                 {
-
                     context.Reporter.Verbose("Modifying command to use --no-restore");
                     context.ProcessSpec.Arguments = _noRestoreArguments;
                 }
