@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms
@@ -10,14 +11,13 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// <summary>
     /// Groups child <see cref="InputRadio{TValue}"/> components.
     /// </summary>
-    public class InputRadioGroup : ComponentBase
+    public class InputRadioGroup<TValue> : InputBase<TValue>
     {
         private readonly string _defaultGroupName = Guid.NewGuid().ToString("N");
-
-        internal string? GroupName { get; private set; }
+        private InputRadioContext? _context;
 
         /// <summary>
-        /// Gets or sets the child content to be rendering inside the <see cref="InputRadioGroup"/>.
+        /// Gets or sets the child content to be rendering inside the <see cref="InputRadioGroup{TValue}"/>.
         /// </summary>
         [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -26,22 +26,35 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         [Parameter] public string? Name { get; set; }
 
+        [CascadingParameter] private InputRadioContext? CascadedContext { get; set; }
+
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
-            GroupName = !string.IsNullOrEmpty(Name) ? Name : _defaultGroupName;
+            var changeEventCallback = EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString);
+            var groupName = !string.IsNullOrEmpty(Name) ? Name : _defaultGroupName;
+
+            _context = new InputRadioContext(CascadedContext, groupName, CurrentValue, changeEventCallback);
         }
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            Debug.Assert(GroupName != null);
+            Debug.Assert(_context != null);
 
-            builder.OpenComponent<CascadingValue<InputRadioGroup>>(0);
-            builder.AddAttribute(1, "IsFixed", true);
-            builder.AddAttribute(2, "Value", this);
-            builder.AddAttribute(3, "ChildContent", ChildContent);
+            builder.OpenElement(0, "div");
+            builder.AddMultipleAttributes(1, AdditionalAttributes);
+            builder.AddAttribute(2, "class", CssClass);
+            builder.OpenComponent<CascadingValue<InputRadioContext>>(3);
+            builder.AddAttribute(4, "IsFixed", true);
+            builder.AddAttribute(5, "Value", _context);
+            builder.AddAttribute(6, "ChildContent", ChildContent);
             builder.CloseComponent();
+            builder.CloseElement();
         }
+
+        /// <inheritdoc />
+        protected override bool TryParseValueFromString(string? value, [MaybeNull] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
+            => this.TryParseSelectableValueFromString(value, out result, out validationErrorMessage);
     }
 }

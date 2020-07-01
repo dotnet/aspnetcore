@@ -100,7 +100,15 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected override string? FormatValueAsString([System.Diagnostics.CodeAnalysis.AllowNullAttribute] TValue value) { throw null; }
         protected override bool TryParseValueFromString(string? value, [System.Diagnostics.CodeAnalysis.MaybeNullAttribute] out TValue result, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(false)] out string? validationErrorMessage) { throw null; }
     }
-    public partial class InputRadioGroup : Microsoft.AspNetCore.Components.ComponentBase
+    public partial class InputRadioContext
+    {
+        public InputRadioContext(Microsoft.AspNetCore.Components.Forms.InputRadioContext? parentContext, string groupName, object? currentValue, Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> changeEventCallback) { }
+        public Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> ChangeEventCallback { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public object? CurrentValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string GroupName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Components.Forms.InputRadioContext? FindContextInAncestors(string groupName) { throw null; }
+    }
+    public partial class InputRadioGroup<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
     {
         public InputRadioGroup() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
@@ -109,18 +117,22 @@ namespace Microsoft.AspNetCore.Components.Forms
         public string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         protected override void OnParametersSet() { }
+        protected override bool TryParseValueFromString(string? value, [System.Diagnostics.CodeAnalysis.MaybeNullAttribute] out TValue result, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(false)] out string? validationErrorMessage) { throw null; }
     }
-    public partial class InputRadio<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
+    public partial class InputRadio<TValue> : Microsoft.AspNetCore.Components.ComponentBase
     {
         public InputRadio() { }
-        protected string? GroupName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute(CaptureUnmatchedValues=true)]
+        public System.Collections.Generic.IReadOnlyDictionary<string, object>? AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        protected Microsoft.AspNetCore.Components.Forms.InputRadioContext? Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         [System.Diagnostics.CodeAnalysis.MaybeNullAttribute]
         [System.Diagnostics.CodeAnalysis.AllowNullAttribute]
-        public TValue SelectedValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public TValue Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
         protected override void OnParametersSet() { }
-        protected override bool TryParseValueFromString(string? value, [System.Diagnostics.CodeAnalysis.MaybeNullAttribute] out TValue result, [System.Diagnostics.CodeAnalysis.NotNullWhenAttribute(false)] out string? validationErrorMessage) { throw null; }
     }
     public partial class InputSelect<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
     {

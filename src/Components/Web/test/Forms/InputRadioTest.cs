@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     public class InputRadioTest
     {
         [Fact]
-        public async Task ThrowsOnFirstRenderIfInvalidNameSuppliedWithoutGroup()
+        public async Task ThrowsOnFirstRenderIfInputRadioHasNoGroup()
         {
             var model = new TestModel();
             var rootComponent = new TestInputRadioHostComponent<TestEnum>
@@ -26,11 +26,11 @@ namespace Microsoft.AspNetCore.Components.Forms
             };
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => RenderAndGetTestInputComponentAsync(rootComponent));
-            Assert.Contains($"requires either an explicit string attribute 'name' or an ancestor", ex.Message);
+            Assert.Contains($"must have an ancestor", ex.Message);
         }
 
         [Fact]
-        public async Task GeneratesNameGuidWhenInvalidNameSuppliedWithGroup()
+        public async Task GroupGeneratesNameGuidWhenInvalidNameSupplied()
         {
             var model = new TestModel();
             var rootComponent = new TestInputRadioHostComponent<TestEnum>
@@ -45,23 +45,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         [Fact]
-        public async Task NameAttributeExistsWhenValidNameSupplied_WithoutGroup()
-        {
-            var groupName = "group";
-            var model = new TestModel();
-            var rootComponent = new TestInputRadioHostComponent<TestEnum>
-            {
-                EditContext = new EditContext(model),
-                InnerContent = RadioButtonsWithoutGroup(groupName, () => model.TestEnum)
-            };
-
-            var inputRadioComponents = await RenderAndGetTestInputComponentAsync(rootComponent);
-
-            Assert.All(inputRadioComponents, inputRadio => Assert.Equal(groupName, inputRadio.GroupName));
-        }
-
-        [Fact]
-        public async Task NameAttributeExistsWhenValidNameSupplied_WithGroup()
+        public async Task RadioInputContextExistsWhenValidNameSupplied()
         {
             var groupName = "group";
             var model = new TestModel();
@@ -80,31 +64,26 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         private static readonly InputRadioGenerator RadioButtonsWithoutGroup = (name, valueExpression) => (builder) =>
         {
-            int sequence = 0;
-
             foreach (var selectedValue in (TestEnum[])Enum.GetValues(typeof(TestEnum)))
             {
-                builder.OpenComponent<TestInputRadio>(sequence++);
-                builder.AddAttribute(sequence++, "name", name);
-                builder.AddAttribute(sequence++, "SelectedValue", selectedValue);
-                builder.AddAttribute(sequence++, "ValueExpression", valueExpression);
+                builder.OpenComponent<TestInputRadio>(0);
+                builder.AddAttribute(1, "Name", name);
+                builder.AddAttribute(2, "Value", selectedValue);
                 builder.CloseComponent();
             }
         };
 
         private static readonly InputRadioGenerator RadioButtonsWithGroup = (name, valueExpression) => (builder) =>
         {
-            builder.OpenComponent<InputRadioGroup>(0);
+            builder.OpenComponent<InputRadioGroup<TestEnum>>(0);
             builder.AddAttribute(1, "Name", name);
+            builder.AddAttribute(2, "ValueExpression", valueExpression);
             builder.AddAttribute(2, "ChildContent", new RenderFragment((childBuilder) =>
             {
-                int sequence = 0;
-
-                foreach (var selectedValue in (TestEnum[])Enum.GetValues(typeof(TestEnum)))
+                foreach (var value in (TestEnum[])Enum.GetValues(typeof(TestEnum)))
                 {
-                    childBuilder.OpenComponent<TestInputRadio>(sequence++);
-                    childBuilder.AddAttribute(sequence++, "SelectedValue", selectedValue);
-                    childBuilder.AddAttribute(sequence++, "ValueExpression", valueExpression);
+                    childBuilder.OpenComponent<TestInputRadio>(0);
+                    childBuilder.AddAttribute(1, "Value", value);
                     childBuilder.CloseComponent();
                 }
             }));
@@ -140,7 +119,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         private class TestInputRadio : InputRadio<TestEnum>
         {
-            public new string GroupName => base.GroupName;
+            public string GroupName => Context.GroupName;
         }
 
         private class TestInputRadioHostComponent<TValue> : AutoRenderComponent

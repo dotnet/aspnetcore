@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -11,58 +12,58 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// <summary>
     /// An input component used for selecting a value from a group of choices.
     /// </summary>
-    public class InputRadio<TValue> : InputBase<TValue>
+    public class InputRadio<TValue> : ComponentBase
     {
         /// <summary>
-        /// Gets the name of this <see cref="InputRadio{TValue}"/> group.
+        /// Gets context for this <see cref="InputRadio{TValue}"/>.
         /// </summary>
-        protected string? GroupName { get; private set; }
+        protected InputRadioContext? Context { get; private set; }
 
         /// <summary>
-        /// Gets or sets the value that will be bound when this radio input is selected.
+        /// Gets or sets a collection of additional attributes that will be applied to the input element.
+        /// </summary>
+        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value of this input.
         /// </summary>
         [AllowNull]
         [MaybeNull]
         [Parameter]
-        public TValue SelectedValue { get; set; } = default;
+        public TValue Value { get; set; } = default;
 
         /// <summary>
-        /// Gets or sets group name inherited from an ancestor <see cref="InputRadioGroup"/>.
+        /// Gets or sets the name of the parent input radio group.
         /// </summary>
-        [CascadingParameter] InputRadioGroup? CascadedRadioGroup { get; set; }
+        [Parameter] public string? Name { get; set; }
+
+        [CascadingParameter] private InputRadioContext? CascadedContext { get; set; }
 
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
-            GroupName = AdditionalAttributes != null && AdditionalAttributes.TryGetValue("name", out var nameAttribute) ?
-                nameAttribute as string :
-                CascadedRadioGroup?.GroupName;
+            Context = string.IsNullOrEmpty(Name) ? CascadedContext : CascadedContext?.FindContextInAncestors(Name);
 
-            if (string.IsNullOrEmpty(GroupName))
+            if (Context == null)
             {
-                throw new InvalidOperationException($"{GetType()} requires either an explicit string attribute 'name' or " +
-                    $"an ancestor {nameof(InputRadioGroup)}.");
+                throw new InvalidOperationException($"{GetType()} must have an ancestor {typeof(InputRadioGroup<TValue>)} " +
+                    $"with a matching 'Name' property, if specified.");
             }
         }
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            Debug.Assert(GroupName != null);
+            Debug.Assert(Context != null);
 
             builder.OpenElement(0, "input");
             builder.AddMultipleAttributes(1, AdditionalAttributes);
             builder.AddAttribute(2, "type", "radio");
-            builder.AddAttribute(3, "class", CssClass);
-            builder.AddAttribute(4, "name", GroupName);
-            builder.AddAttribute(5, "value", BindConverter.FormatValue(FormatValueAsString(SelectedValue)));
-            builder.AddAttribute(6, "checked", SelectedValue?.Equals(CurrentValue));
-            builder.AddAttribute(7, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+            builder.AddAttribute(3, "name", Context.GroupName);
+            builder.AddAttribute(4, "value", BindConverter.FormatValue(Value?.ToString()));
+            builder.AddAttribute(5, "checked", Context.CurrentValue?.Equals(Value));
+            builder.AddAttribute(6, "onchange", Context.ChangeEventCallback!);
             builder.CloseElement();
         }
-
-        /// <inheritdoc />
-        protected override bool TryParseValueFromString(string? value, [MaybeNull] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
-            => this.TryParseSelectableValueFromString(value, out result, out validationErrorMessage);
     }
 }

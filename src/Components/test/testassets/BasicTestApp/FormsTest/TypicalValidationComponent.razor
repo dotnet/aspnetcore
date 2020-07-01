@@ -41,25 +41,29 @@
         <span id="selected-ticket-class">@person.TicketClass</span>
     </p>
     <p class="airline">
-        Airline:
-        <br>
-        @foreach (var airline in (Airline[])Enum.GetValues(typeof(Airline)))
-        {
-            <InputRadio name="airline" extra="additional" SelectedValue="airline" @bind-Value="person.Airline" />
-            @airline.ToString();
+        <InputRadioGroup @bind-Value="person.Airline" id="airline-group">
+            Airline:
             <br>
-        }
-    </p>
-    <p class="star-rating">
-        Star rating:
-        <br>
-        <InputRadioGroup>
-            @foreach (var starRating in (StarRating[])Enum.GetValues(typeof(StarRating)))
+            @foreach (var airline in (Airline[])Enum.GetValues(typeof(Airline)))
             {
-                <InputRadio SelectedValue="starRating" @bind-Value="person.StarRating" />
-                @starRating.ToString()
+                <InputRadio Value="airline" extra="additional" />
+                @airline.ToString();
                 <br>
             }
+        </InputRadioGroup>
+    </p>
+    <p class="nested-radio-group">
+        Pick one color and one country:
+        <InputRadioGroup Name="country" @bind-Value="person.Country" id="country-group">
+            <InputRadioGroup Name="color" @bind-Value="person.FavoriteColor" id="color-group">
+                <InputRadio Name="color" Value="Color.Red" />red<br>
+                <InputRadio Name="country" Value="Country.Japan" />japan<br>
+                <InputRadio Name="color" Value="Color.Green" />green<br>
+                <InputRadio Name="country" Value="Country.Yemen" />yemen<br>
+                <InputRadio Name="color" Value="Color.Blue" />blue<br>
+                <InputRadio Name="country" Value="Country.Latvia" />latvia<br>
+                <InputRadio Name="color" Value="Color.Orange" />orange<br>
+            </InputRadioGroup>
         </InputRadioGroup>
     </p>
     <p class="accepts-terms">
@@ -135,8 +139,11 @@
         [Range(typeof(Airline), nameof(Airline.BestAirline), nameof(Airline.NoNameAirline), ErrorMessage = "Pick a valid airline.")]
         public Airline Airline { get; set; } = Airline.Unknown;
 
-        [Required, EnumDataType(typeof(StarRating))]
-        public StarRating? StarRating { get; set; } = null;
+        [Required, EnumDataType(typeof(Color))]
+        public Color? FavoriteColor { get; set; } = null;
+
+        [Required, EnumDataType(typeof(Country))]
+        public Country? Country { get; set; } = null;
 
         public string Username { get; set; }
     }
@@ -145,7 +152,9 @@
 
     enum Airline { BestAirline, CoolAirline, NoNameAirline, Unknown }
 
-    enum StarRating { One, Two, Three, Four, Five }
+    enum Color { Red, Green, Blue, Orange }
+
+    enum Country { Japan, Yemen, Latvia }
 
     List<string> submissionLog = new List<string>(); // So we can assert about the callbacks
 
