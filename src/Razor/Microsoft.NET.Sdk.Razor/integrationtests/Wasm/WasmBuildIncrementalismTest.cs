@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     public class WasmBuildIncrementalismTest
     {
         [Fact]
-        public async Task Build_WithLinker_IsIncremental()
+        public async Task Build_IsIncremental()
         {
             // Arrange
             using var project = ProjectDirectory.Create("blazorwasm", additionalProjects: new[] { "razorclasslibrary" });
@@ -32,6 +32,37 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Assert.BuildPassed(result);
 
                 var newThumbPrint = FileThumbPrint.CreateFolderThumbprint(project, project.BuildOutputDirectory);
+                Assert.Equal(thumbPrint.Count, newThumbPrint.Count);
+                for (var j = 0; j < thumbPrint.Count; j++)
+                {
+                    Assert.Equal(thumbPrint[j], newThumbPrint[j]);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task Build_GzipCompression_IsIncremental()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorwasm", additionalProjects: new[] { "razorclasslibrary" });
+            var result = await MSBuildProcessManager.DotnetMSBuild(project);
+
+            Assert.BuildPassed(result);
+
+            var gzipCompressionDirectory = Path.Combine(project.IntermediateOutputDirectory, "build-gz");
+
+            Assert.DirectoryExists(result, gzipCompressionDirectory);
+
+            // Act
+            var thumbPrint = FileThumbPrint.CreateFolderThumbprint(project, gzipCompressionDirectory);
+
+            // Assert
+            for (var i = 0; i < 3; i++)
+            {
+                result = await MSBuildProcessManager.DotnetMSBuild(project);
+                Assert.BuildPassed(result);
+
+                var newThumbPrint = FileThumbPrint.CreateFolderThumbprint(project, gzipCompressionDirectory);
                 Assert.Equal(thumbPrint.Count, newThumbPrint.Count);
                 for (var j = 0; j < thumbPrint.Count; j++)
                 {
