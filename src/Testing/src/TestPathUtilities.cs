@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Testing
 
             do
             {
-                var projectFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, $"{solution}.sln"));
+                var projectFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, $"{solution}.slnf"));
                 if (projectFileInfo.Exists)
                 {
                     return projectFileInfo.DirectoryName;
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Testing
             }
             while (directoryInfo.Parent != null);
 
-            throw new Exception($"Solution file {solution}.sln could not be found in {applicationBasePath} or its parent directories.");
+            throw new Exception($"Solution file {solution}.slnf could not be found in {applicationBasePath} or its parent directories.");
         }
     }
 }
