@@ -28,8 +28,6 @@ param(
 
 & $PSScriptRoot\Download.ps1 "https://dot.net/v1/dotnet-install.ps1" $PSScriptRoot\dotnet-install.ps1
 Write-Host "Download of dotnet-install.ps1 complete..."
-Write-Host "Installing SDK...& $PSScriptRoot\dotnet-install.ps1 -Architecture $arch -Version $sdkVersion -InstallDir $installDir"
-Invoke-Expression "& $PSScriptRoot\dotnet-install.ps1 -Architecture $arch -Version $sdkVersion -InstallDir $installDir"
 Write-Host "Installing Runtime...& $PSScriptRoot\dotnet-install.ps1 -Architecture $arch -Runtime dotnet -Version $runtimeVersion -InstallDir $installDir"
 Invoke-Expression "& $PSScriptRoot\dotnet-install.ps1 -Architecture $arch -Runtime dotnet -Version $runtimeVersion -InstallDir $installDir"
 Write-Host "InstallDotNet.ps1 complete..." 
