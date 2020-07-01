@@ -77,7 +77,6 @@ namespace Microsoft.AspNetCore.Http.Json
             options ??= ResolveSerializerOptions(response.HttpContext);
 
             response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
-            response.StatusCode = StatusCodes.Status200OK;
             return JsonSerializer.SerializeAsync<TValue>(response.Body, value!, options, cancellationToken);
         }
 
@@ -150,7 +149,6 @@ namespace Microsoft.AspNetCore.Http.Json
             options ??= ResolveSerializerOptions(response.HttpContext);
 
             response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
-            response.StatusCode = StatusCodes.Status200OK;
             return JsonSerializer.SerializeAsync(response.Body, value, type, options, cancellationToken);
         }
 
