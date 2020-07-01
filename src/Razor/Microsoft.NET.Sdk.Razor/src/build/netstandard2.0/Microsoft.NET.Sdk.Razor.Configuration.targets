@@ -69,6 +69,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Determine the default Razor configuration
   -->
   <PropertyGroup Condition="'$(RazorDefaultConfiguration)'==''">
+    <!-- For 5.0, we're not introducing any new language features for MVC. We can continue using the 3.0 configuration \ extension for MVC support. -->
     <RazorDefaultConfiguration Condition="'$(AddRazorSupportForMvc)'=='true'">MVC-3.0</RazorDefaultConfiguration>
     <RazorDefaultConfiguration Condition="'$(RazorDefaultConfiguration)'==''">Default</RazorDefaultConfiguration>
   </PropertyGroup>
@@ -80,7 +81,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       the project's runtime.
     -->
     <RazorConfiguration Include="Default" />
-    <RazorConfiguration Include="MVC-3.0" >
+    <RazorConfiguration Include="MVC-3.0">
       <Extensions>MVC-3.0;$(CustomRazorExtension)</Extensions>
     </RazorConfiguration>
   </ItemGroup>

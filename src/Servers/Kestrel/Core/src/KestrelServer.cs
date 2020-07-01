@@ -35,12 +35,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         private IDisposable _configChangedRegistration;
 
-        public KestrelServer(IOptions<KestrelServerOptions> options, IEnumerable<IConnectionListenerFactory> transportFactories, ILoggerFactory loggerFactory)
+        public KestrelServer(
+            IOptions<KestrelServerOptions> options,
+            IEnumerable<IConnectionListenerFactory> transportFactories,
+            ILoggerFactory loggerFactory)
             : this(transportFactories, null, CreateServiceContext(options, loggerFactory))
         {
         }
 
-        public KestrelServer(IOptions<KestrelServerOptions> options, IEnumerable<IConnectionListenerFactory> transportFactories, IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories, ILoggerFactory loggerFactory)
+        public KestrelServer(
+            IOptions<KestrelServerOptions> options,
+            IEnumerable<IConnectionListenerFactory> transportFactories,
+            IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories,
+            ILoggerFactory loggerFactory)
             : this(transportFactories, multiplexedFactories, CreateServiceContext(options, loggerFactory))
         {
         }
@@ -52,7 +59,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         // For testing
-        internal KestrelServer(IEnumerable<IConnectionListenerFactory> transportFactories, IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories, ServiceContext serviceContext)
+        internal KestrelServer(
+            IEnumerable<IConnectionListenerFactory> transportFactories,
+            IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories,
+            ServiceContext serviceContext)
         {
             if (transportFactories == null)
             {
