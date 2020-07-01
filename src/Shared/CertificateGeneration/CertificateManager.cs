@@ -296,6 +296,53 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return result;
         }
 
+        internal ImportCertificateResult ImportCertificate(string certificatePath, string password)
+        {
+            if (!File.Exists(certificatePath))
+            {
+                Log.ImportCertificateMissingFile(certificatePath);
+                return ImportCertificateResult.CertificateFileMissing;
+            }
+
+            var certificates = ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false, requireExportable: false);
+            if (certificates.Any())
+            {
+                Log.ImportCertificateExistingCertificates(ToCertificateDescription(certificates));
+                return ImportCertificateResult.ExistingCertificatesPresent;
+            }
+
+            X509Certificate2 certificate;
+            try
+            {
+                Log.LoadCertificateStart(certificatePath);
+                certificate = new X509Certificate2(certificatePath, password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.EphemeralKeySet);
+                Log.LoadCertificateEnd(GetDescription(certificate));
+            }
+            catch (Exception e)
+            {
+                Log.LoadCertificateError(e.ToString());
+                return ImportCertificateResult.InvalidCertificate;
+            }
+
+            if (!IsHttpsDevelopmentCertificate(certificate))
+            {
+                Log.NoHttpsDevelopmentCertificate(GetDescription(certificate));
+                return ImportCertificateResult.NoDevelopmentHttpsCertificate;
+            }
+
+            try
+            {
+                SaveCertificate(certificate);
+            }
+            catch (Exception e)
+            {
+                Log.SaveCertificateInStoreError(e.ToString());
+                return ImportCertificateResult.ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore;
+            }
+
+            return ImportCertificateResult.Succeeded;
+        }
+
         public void CleanupHttpsCertificates()
         {
             // On OS X we don't have a good way to manage trusted certificates in the system keychain
@@ -816,6 +863,24 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
             [Event(58, Level = EventLevel.Error)]
             public void WritePemKeyToDiskError(string ex) => WriteEvent(58, $"An error has ocurred while writing the certificate to disk: {ex}.");
+
+            [Event(59, Level = EventLevel.Error)]
+            internal void ImportCertificateMissingFile(string certificatePath) => WriteEvent(59, $"The file '{certificatePath}' does not exist.");
+
+            [Event(60, Level = EventLevel.Error)]
+            internal void ImportCertificateExistingCertificates(string certificateDescription) => WriteEvent(60, $"One or more HTTPS certificates exist '{certificateDescription}'.");
+
+            [Event(61, Level = EventLevel.Verbose)]
+            internal void LoadCertificateStart(string certificatePath) => WriteEvent(61, $"Loading certificate from path '{certificatePath}'.");
+
+            [Event(62, Level = EventLevel.Verbose)]
+            internal void LoadCertificateEnd(string description) => WriteEvent(62, $"The certificate '{description}' has been loaded successfully.");
+
+            [Event(63, Level = EventLevel.Error)]
+            internal void LoadCertificateError(string ex) => WriteEvent(63, $"An error has ocurred while loading the certificate from disk: {ex}.");
+
+            [Event(64, Level = EventLevel.Error)]
+            internal void NoHttpsDevelopmentCertificate(string description) => WriteEvent(64, $"The provided certificate '{description}' is not a valid ASP.NET Core HTTPS development certificate.");            
         }
 
         internal class UserCancelledTrustException : Exception

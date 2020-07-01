@@ -27,6 +27,11 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
         private const int ErrorCleaningUpCertificates = 8;
         private const int InvalidCertificateState = 9;
         private const int InvalidKeyExportFormat = 10;
+        private const int ErrorImportingCertificate = 11;
+        private const int MissingCertificateFile = 12;
+        private const int FailedToLoadCertificate = 13;
+        private const int NoDevelopmentHttpsCertificate = 14;
+        private const int ExistingCertificatesPresent = 15;
 
         public static readonly TimeSpan HttpsCertificateValidity = TimeSpan.FromDays(365);
 
@@ -68,6 +73,11 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                         "Cleans all HTTPS development certificates from the machine.",
                         CommandOptionType.NoValue);
 
+                    var import = c.Option(
+                        "-i|--import",
+                        "Imports the provided HTTPS development certificate into the machine. All other HTTPS developer certificates will be cleared out",
+                        CommandOptionType.SingleValue);
+
                     var keyFormat = c.Option(
                         "--key-format",
                         "Export the certificate key in the given format. Valid values are Pfx and Pem. Pfx is the default.",
@@ -94,12 +104,14 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                     c.OnExecute(() =>
                     {
                         var reporter = new ConsoleReporter(PhysicalConsole.Singleton, verbose.HasValue(), quiet.HasValue());
-                        if ((clean.HasValue() && (exportPath.HasValue() || password.HasValue() || trust?.HasValue() == true || keyFormat.HasValue())) ||
+                        if ((clean.HasValue() && !import.HasValue() && (exportPath.HasValue() || password.HasValue() || trust?.HasValue() == true || keyFormat.HasValue())) ||
+                            (clean.HasValue() && import.HasValue() && (exportPath.HasValue() || trust?.HasValue() == true || keyFormat.HasValue())) ||
                             (check.HasValue() && (exportPath.HasValue() || password.HasValue() || clean.HasValue() || keyFormat.HasValue())))
                         {
                             reporter.Error(@"Incompatible set of flags. Sample usages
 'dotnet dev-certs https'
 'dotnet dev-certs https --clean'
+'dotnet dev-certs https --clean --import ./certificate.pfx -p password'
 'dotnet dev-certs https --check --trust'
 'dotnet dev-certs https -ep ./certificate.pfx -p password --trust'
 'dotnet dev-certs https -ep ./certificate.crt --trust --key-format Pem'
@@ -113,7 +125,13 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
 
                         if (clean.HasValue())
                         {
-                            return CleanHttpsCertificates(reporter);
+                            var clean = CleanHttpsCertificates(reporter);
+                            if (clean != Success || !import.HasValue())
+                            {
+                                return clean;
+                            }
+
+                            return ImportCertificate(import, password, reporter);
                         }
 
                         return EnsureHttpsCertificate(exportPath, password, trust, keyFormat, reporter);
@@ -134,6 +152,44 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             {
                 return CriticalError;
             }
+        }
+
+        private static int ImportCertificate(CommandOption import, CommandOption password, ConsoleReporter reporter)
+        {
+            var manager = CertificateManager.Instance;
+            try
+            {
+                var result = manager.ImportCertificate(import.Value(), password.Value());
+                switch (result)
+                {
+                    case ImportCertificateResult.Succeeded:
+                        reporter.Output("The certificate was successfully imported.");
+                        break;
+                    case ImportCertificateResult.CertificateFileMissing:
+                        reporter.Error($"The certificate file '{import.Value()}' does not exist.");
+                        return MissingCertificateFile;
+                    case ImportCertificateResult.InvalidCertificate:
+                        reporter.Error($"The provided certificate file '{import.Value()}' is not a valid PFX file or the password is incorrect.");
+                        return FailedToLoadCertificate;
+                    case ImportCertificateResult.NoDevelopmentHttpsCertificate:
+                        reporter.Error($"The certificate at '{import.Value()}' is not a valid ASP.NET Core HTTPS development certificate.");
+                        return NoDevelopmentHttpsCertificate;
+                    case ImportCertificateResult.ExistingCertificatesPresent:
+                        reporter.Error($"There are one or more ASP.NET Core HTTPS development certificates present in the environment. Remove them before importing the given certificate.");
+                        return ExistingCertificatesPresent;
+                    case ImportCertificateResult.ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore:
+                        reporter.Error("There was an error saving the HTTPS developer certificate to the current user personal certificate store.");
+                        return ErrorSavingTheCertificate;
+                    default:
+                        break;
+                }
+            }
+            catch (Exception)
+            {
+                return ErrorImportingCertificate;
+            }
+
+            return Success;
         }
 
         private static int CleanHttpsCertificates(IReporter reporter)
