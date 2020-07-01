@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.TestHost
         public static IWebHostBuilder UseSolutionRelativeContentRoot(
             this IWebHostBuilder builder,
             string solutionRelativePath,
-            string solutionName = "*.slnf")
+            string solutionName = "*.sln")
         {
             return builder.UseSolutionRelativeContentRoot(solutionRelativePath, AppContext.BaseDirectory, solutionName);
         }
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.TestHost
             this IWebHostBuilder builder,
             string solutionRelativePath,
             string applicationBasePath,
-            string solutionName = "*.slnf")
+            string solutionName = "*.sln")
         {
             if (solutionRelativePath == null)
             {
