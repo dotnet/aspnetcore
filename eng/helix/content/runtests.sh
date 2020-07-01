@@ -47,20 +47,6 @@ fi
 # Call "sync" between "chmod" and execution to prevent "text file busy" error in Docker (aufs)
 chmod +x "dotnet-install.sh"; sync
 
-./dotnet-install.sh --version $dotnet_sdk_version --install-dir "$DOTNET_ROOT"
-if [ $? -ne 0 ]; then
-    sdk_retries=3
-    while [ $sdk_retries -gt 0 ]; do
-        ./dotnet-install.sh --version $dotnet_sdk_version --install-dir "$DOTNET_ROOT"
-        if [ $? -ne 0 ]; then
-            let sdk_retries=sdk_retries-1
-            echo -e "${YELLOW}Failed to install .NET Core SDK $version. Retries left: $sdk_retries.${RESET}"
-        else
-            sdk_retries=0
-        fi
-    done
-fi
-
 ./dotnet-install.sh --runtime dotnet --version $dotnet_runtime_version --install-dir "$DOTNET_ROOT"
 if [ $? -ne 0 ]; then
     runtime_retries=3
