@@ -11,6 +11,7 @@ import { WebAssemblyConfigLoader } from './Platform/WebAssemblyConfigLoader';
 import { BootConfigResult } from './Platform/BootConfig';
 import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
+import { profileStart, profileEnd } from './Platform/Profiling';
 
 let started = false;
 
@@ -27,7 +28,9 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   const platform = Environment.setPlatform(monoPlatform);
   window['Blazor'].platform = platform;
   window['Blazor']._internal.renderBatch = (browserRendererId: number, batchAddress: Pointer) => {
+    profileStart('renderBatch');
     renderBatch(browserRendererId, new SharedMemoryRenderBatch(batchAddress));
+    profileEnd('renderBatch');
   };
 
   // Configure navigation via JS Interop

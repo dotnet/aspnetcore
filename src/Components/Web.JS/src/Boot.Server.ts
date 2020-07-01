@@ -12,6 +12,7 @@ import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
 import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { attachRootComponentToLogicalElement } from './Rendering/Renderer';
+import { initializeProfiling } from './Platform/Profiling';
 
 let renderingFailed = false;
 let started = false;
@@ -21,6 +22,7 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
     throw new Error('Blazor has already started.');
   }
   started = true;
+  initializeProfiling(null);
 
   // Establish options to be used
   const options = resolveOptions(userOptions);
