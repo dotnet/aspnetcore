@@ -436,6 +436,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             else if (certInfo.IsFileCert)
             {
                 var env = Options.ApplicationServices.GetRequiredService<IHostEnvironment>();
+                if (certInfo.KeyPath != null)
+                {
+                    if (TryReadPemRSAKey(certInfo, out var rsaKey))
+                    {
+                        var publicCertificate = new X509Certificate2(Path.Combine(env.ContentRootPath, certInfo.Path));
+                        return publicCertificate.CopyWithPrivateKey(rsaKey);
+                    }
+
+                    if (TryReadPemDSAKey(certInfo, out var dsaKey))
+                    {
+                        var publicCertificate = new X509Certificate2(Path.Combine(env.ContentRootPath, certInfo.Path));
+                        return publicCertificate.CopyWithPrivateKey(dsaKey);
+                    }
+
+                    throw new InvalidOperationException(CoreStrings.InvalidPemKey);
+                }
+
                 return new X509Certificate2(Path.Combine(env.ContentRootPath, certInfo.Path), certInfo.Password);
             }
             else if (certInfo.IsStoreCert)
@@ -443,6 +460,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 return LoadFromStoreCert(certInfo);
             }
             return null;
+        }
+
+        private static bool TryReadPemRSAKey(CertificateConfig certInfo, out RSA key)
+        {
+            try
+            {
+                var rsaKey = RSA.Create();
+                if (certInfo.Password == null)
+                {
+                    rsaKey.ImportFromPem(File.ReadAllText(certInfo.KeyPath));
+                }
+                else
+                {
+                    rsaKey.ImportFromEncryptedPem(File.ReadAllText(certInfo.KeyPath), certInfo.Password);
+                }
+                key = rsaKey;
+                return true;
+            }
+            catch
+            {
+                key = null;
+                return false;
+            }
+        }
+
+        private static bool TryReadPemDSAKey(CertificateConfig certInfo, out DSA dsaKey)
+        {
+            try
+            {
+                var dsa = DSA.Create();
+                if (certInfo.Password == null)
+                {
+                    dsa.ImportFromPem(File.ReadAllText(certInfo.KeyPath));
+                }
+                else
+                {
+                    dsa.ImportFromEncryptedPem(File.ReadAllText(certInfo.KeyPath), certInfo.Password);
+                }
+                dsaKey = dsa;
+                return true;
+            }
+            catch
+            {
+                dsaKey = null;
+                return false;
+            }
         }
 
         private static X509Certificate2 LoadFromStoreCert(CertificateConfig certInfo)
