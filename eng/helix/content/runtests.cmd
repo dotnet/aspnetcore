@@ -22,6 +22,8 @@ set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 set DOTNET_MULTILEVEL_LOOKUP=0
 set DOTNET_CLI_HOME=%HELIX_CORRELATION_PAYLOAD%\home
 
+echo Original path %PATH%
+setlocal
 set PATH=%DOTNET_ROOT%;!PATH!;%HELIX_CORRELATION_PAYLOAD%\node\bin
 echo Set path to: %PATH%
 echo "Invoking InstallDotNet.ps1 %$arch% %$sdkVersion% %$runtimeVersion% %DOTNET_ROOT%"
@@ -37,4 +39,6 @@ if errorlevel neq 0 (
     set exit_code=%errorlevel%
 )
 echo "Finished running tests: exit_code=%exit_code%"
+endlocal
+echo Final path %PATH%
 exit /b %exit_code%
