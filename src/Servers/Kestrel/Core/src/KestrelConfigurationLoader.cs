@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -441,7 +442,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     if (TryReadPemRSAKey(certInfo, out var rsaKey))
                     {
                         var publicCertificate = new X509Certificate2(Path.Combine(env.ContentRootPath, certInfo.Path));
-                        return publicCertificate.CopyWithPrivateKey(rsaKey);
+                        var fullCertificate =  publicCertificate.CopyWithPrivateKey(rsaKey);
+                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                        {
+                            // We need to force the key to be persisted.
+                            // See https://github.com/dotnet/runtime/issues/23749
+                            var certificateBytes = fullCertificate.Export(X509ContentType.Pkcs12, "");
+                            return new X509Certificate2(certificateBytes, "", X509KeyStorageFlags.DefaultKeySet);
+                        }
                     }
 
                     if (TryReadPemDSAKey(certInfo, out var dsaKey))
