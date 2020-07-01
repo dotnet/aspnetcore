@@ -20,6 +20,77 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 {
     public class Http2Tests
     {
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
+        public async Task EmptyResponse_200()
+        {
+            using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
+            {
+                // Default 200
+                return Task.CompletedTask;
+            });
+
+            await new HostBuilder()
+                .UseHttp2Cat(address, async h2Connection =>
+                {
+                    await h2Connection.InitializeConnectionAsync();
+
+                    h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
+
+                    await h2Connection.StartStreamAsync(1, Http2Utilities.BrowserRequestHeaders, endStream: true);
+
+                    await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
+                    {
+                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    });
+
+                    var dataFrame = await h2Connection.ReceiveFrameAsync();
+                    // TODO: Why are we receiving a blank data frame after headers?
+                    // https://github.com/dotnet/aspnetcore/issues/23164#issuecomment-652646163
+                    Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: false, length: 0);
+
+                    dataFrame = await h2Connection.ReceiveFrameAsync();
+                    Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
+
+                    h2Connection.Logger.LogInformation("Connection stopped.");
+                })
+                .Build().RunAsync();
+        }
+
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
+        public async Task ResponseWithData_Success()
+        {
+            using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
+            {
+                return httpContext.Response.WriteAsync("Hello World");
+            });
+
+            await new HostBuilder()
+                .UseHttp2Cat(address, async h2Connection =>
+                {
+                    await h2Connection.InitializeConnectionAsync();
+
+                    h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
+
+                    await h2Connection.StartStreamAsync(1, Http2Utilities.BrowserRequestHeaders, endStream: true);
+
+                    await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
+                    {
+                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    });
+
+                    var dataFrame = await h2Connection.ReceiveFrameAsync();
+                    Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: false, length: 11);
+
+                    dataFrame = await h2Connection.ReceiveFrameAsync();
+                    Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
+
+                    h2Connection.Logger.LogInformation("Connection stopped.");
+                })
+                .Build().RunAsync();
+        }
+
         [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/17420")]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_19H1, SkipReason = "This is last version without GoAway support")]
@@ -95,6 +166,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     });
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
+                    // TODO: Why the extra data frame?
+                    // https://github.com/dotnet/aspnetcore/issues/23164#issuecomment-652646163
+                    Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: false, length: 0);
+
+                    dataFrame = await h2Connection.ReceiveFrameAsync();
                     Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
 
                     // Http.Sys doesn't send a final GoAway unless we ignore the first one and send 200 additional streams.
@@ -135,6 +211,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     });
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
+                    // TODO: Why the empty data frame?
+                    // https://github.com/dotnet/aspnetcore/issues/23164#issuecomment-652646163
+                    Http2Utilities.VerifyDataFrame(dataFrame, streamId, endOfStream: false, length: 0);
+
+                    dataFrame = await h2Connection.ReceiveFrameAsync();
                     Http2Utilities.VerifyDataFrame(dataFrame, streamId, endOfStream: true, length: 0);
 
                     // Http.Sys doesn't send a final GoAway unless we ignore the first one and send 200 additional streams.
@@ -150,6 +231,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                             Assert.False(decodedHeaders.ContainsKey(HeaderNames.Connection));
                             Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
                         });
+
+                        dataFrame = await h2Connection.ReceiveFrameAsync();
+                        // TODO: Why the empty data frame?
+                        // https://github.com/dotnet/aspnetcore/issues/23164#issuecomment-652646163
+                        Http2Utilities.VerifyDataFrame(dataFrame, streamId, endOfStream: false, length: 0);
 
                         dataFrame = await h2Connection.ReceiveFrameAsync();
                         Http2Utilities.VerifyDataFrame(dataFrame, streamId, endOfStream: true, length: 0);
@@ -171,6 +257,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     });
 
                     dataFrame = await h2Connection.ReceiveFrameAsync();
+                    // TODO: Why the empty data frame?
+                    // https://github.com/dotnet/aspnetcore/issues/23164#issuecomment-652646163
+                    Http2Utilities.VerifyDataFrame(dataFrame, streamId, endOfStream: false, length: 0);
+
+                    dataFrame = await h2Connection.ReceiveFrameAsync();
                     Http2Utilities.VerifyDataFrame(dataFrame, streamId, endOfStream: true, length: 0);
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
@@ -180,7 +271,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
         [ConditionalFact]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
-        public async Task AppException_BeforeHeaders_500()
+        public async Task AppException_BeforeResponseHeaders_500()
         {
             using var server = Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
             {
@@ -202,6 +293,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     });
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
+                    // TODO: Why are we receiving a blank data frame after headers?
+                    // https://github.com/dotnet/aspnetcore/issues/23164#issuecomment-652646163
+                    Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: false, length: 0);
+
+                    dataFrame = await h2Connection.ReceiveFrameAsync();
                     Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
@@ -265,6 +361,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     {
                         Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
                     });
+
+                    // TODO: Why does flushing the headers produce an empty data frame? Seems to be coming from Http.Sys.
+                    // https://github.com/dotnet/aspnetcore/issues/23164#issuecomment-652646163
+                    var dataFrame = await h2Connection.ReceiveFrameAsync();
+                    Http2Utilities.VerifyDataFrame(dataFrame, expectedStreamId: 1, endOfStream: false, length: 0);
 
                     var resetFrame = await h2Connection.ReceiveFrameAsync();
                     Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, Http2ErrorCode.INTERNAL_ERROR);
@@ -394,6 +495,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     {
                         Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
                     });
+
+                    var dataFrame = await h2Connection.ReceiveFrameAsync();
+                    Http2Utilities.VerifyDataFrame(dataFrame, expectedStreamId: 1, endOfStream: false, length: 0);
 
                     var resetFrame = await h2Connection.ReceiveFrameAsync();
                     Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, expectedErrorCode: (Http2ErrorCode)1111);
@@ -648,6 +752,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                     });
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
+                    // TODO: Why the extra data frame?
+                    // https://github.com/dotnet/aspnetcore/issues/23164#issuecomment-652646163
+                    Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: false, length: 0);
+
+                    dataFrame = await h2Connection.ReceiveFrameAsync();
                     Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
 
                     var resetFrame = await h2Connection.ReceiveFrameAsync();
