@@ -24,7 +24,7 @@
     <HelixAccessToken Condition="'$(_UseHelixOpenQueues)' != 'true'">$(HelixApiAccessToken)</HelixAccessToken>
     <IncludeDotNetCli>true</IncludeDotNetCli>
     <DotNetCliPackageType>sdk</DotNetCliPackageType>
-    <DotNetCliVersion>$(NETCoreSdkVersion)</DotNetCliVersion>
+    <DotNetCliVersion>5.0.100-preview.6.20310.4</DotNetCliVersion>
     
     <!-- Copied from Microsoft.NET.DefaultOutputPaths.targets in the .NET SDK. The Helix SDK contains nothing similar. -->
     <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">bin\</BaseOutputPath>
