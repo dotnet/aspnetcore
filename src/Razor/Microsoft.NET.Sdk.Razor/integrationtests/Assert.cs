@@ -519,7 +519,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             using (var file = File.OpenRead(assemblyPath))
             {
-                var peReader = new PEReader(file);
+                using var peReader = new PEReader(file);
                 var metadataReader = peReader.GetMetadataReader();
                 return metadataReader.TypeDefinitions.Where(t => !t.IsNil).Select(t =>
                 {

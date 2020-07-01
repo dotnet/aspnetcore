@@ -18,9 +18,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.CreateBlazorTrimmerRootDescriptorFile" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
 
   <PropertyGroup>
-    <PublishTrimmed Condition="'$(PublishTrimmed)' == ''">true</PublishTrimmed>
     <SelfContained>true</SelfContained>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+    <!-- Trimmer defaults -->
+    <PublishTrimmed Condition="'$(PublishTrimmed)' == ''">true</PublishTrimmed>
+    <TrimMode Condition="'$(TrimMode)' == ''">link</TrimMode>
 
     <StaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">/</StaticWebAssetBasePath>
     <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
@@ -45,14 +48,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <FrameworkReference Remove="Microsoft.AspNetCore.App" />
     <KnownFrameworkReference Remove="Microsoft.AspNetCore.App" />
   </ItemGroup>
-
-  <!-- Temporary workaround until ILLink.targets are updated -->
-  <PropertyGroup Condition=" '$(PublishTrimmed)' == 'true' ">
-    <IntermediateLinkDir Condition=" '$(IntermediateLinkDir)' == '' ">$(IntermediateOutputPath)linked\</IntermediateLinkDir>
-    <IntermediateLinkDir Condition=" !HasTrailingSlash('$(IntermediateLinkDir)') ">$(IntermediateLinkDir)\</IntermediateLinkDir>
-    <!-- Used to enable incremental build for the linker target. -->
-    <_LinkSemaphore>$(IntermediateOutputPath)Link.semaphore</_LinkSemaphore>
-  </PropertyGroup>
 
   <Import Project="Microsoft.NET.Sdk.Razor.Components.ServiceWorkerAssetsManifest.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
 
@@ -312,18 +307,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Copy>
   </Target>
 
-  <Target Name="_CreateBlazorTrimmerRootDescriptorFiles" BeforeTargets="ILLink" AfterTargets="ComputeResolvedFilesToPublishList">
+  <Target Name="_BlazorWasmPrepareForLink" BeforeTargets="PrepareForILLink">
     <PropertyGroup>
       <_BlazorTypeGranularTrimmerDescriptorFile>$(IntermediateOutputPath)typegranularity.trimmerdescriptor.xml</_BlazorTypeGranularTrimmerDescriptorFile>
     </PropertyGroup>
 
     <ItemGroup>
       <_BlazorTypeGranularAssembly
-          Include="@(ResolvedFileToPublish)"
+          Include="@(ManagedAssemblyToLink)"
           Condition="'%(Extension)' == '.dll' AND ($([System.String]::Copy('%(Filename)').StartsWith('Microsoft.AspNetCore.')) or $([System.String]::Copy('%(Filename)').StartsWith('Microsoft.Extensions.')))">
         <Required>false</Required>
         <Preserve>all</Preserve>
       </_BlazorTypeGranularAssembly>
+
+      <ManagedAssemblyToLink
+        IsTrimmable="true"
+        Condition="'%(Extension)' == '.dll' AND ($([System.String]::Copy('%(Filename)').StartsWith('Microsoft.AspNetCore.')) or $([System.String]::Copy('%(Filename)').StartsWith('Microsoft.Extensions.')))" />
     </ItemGroup>
 
     <CreateBlazorTrimmerRootDescriptorFile
