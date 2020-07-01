@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             var tmpFile = Path.GetTempFileName();
             try
             {
-                ExportCertificate(publicCertificate, tmpFile, includePrivateKey: false, password: null);
+                ExportCertificate(publicCertificate, tmpFile, includePrivateKey: false, password: null, CertificateKeyExportFormat.Pfx);
                 Log.MacOSTrustCommandStart($"{MacOSTrustCertificateCommandLine} {MacOSTrustCertificateCommandLineArguments}{tmpFile}");
                 using (var process = Process.Start(MacOSTrustCertificateCommandLine, MacOSTrustCertificateCommandLineArguments + tmpFile))
                 {

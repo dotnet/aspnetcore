@@ -153,6 +153,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             bool trust = false,
             bool includePrivateKey = false,
             string password = null,
+            CertificateKeyExportFormat keyExportFormat = CertificateKeyExportFormat.Pfx,
             bool isInteractive = true)
         {
             var result = EnsureCertificateResult.Succeeded;
@@ -260,15 +261,15 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             {
                 try
                 {
-                    ExportCertificate(certificate, path, includePrivateKey, password);
+                    ExportCertificate(certificate, path, includePrivateKey, password, keyExportFormat);
                 }
                 catch (Exception e)
                 {
                     Log.ExportCertificateError(e.ToString());
                     // We don't want to mask the original source of the error here.
-                    result = result != EnsureCertificateResult.Succeeded || result != EnsureCertificateResult.ValidCertificatePresent ?
-                        result :
-                        EnsureCertificateResult.ErrorExportingTheCertificate;
+                    result = result == EnsureCertificateResult.Succeeded || result == EnsureCertificateResult.ValidCertificatePresent ?
+                        EnsureCertificateResult.ErrorExportingTheCertificate :
+                        result;
 
                     return result;
                 }
@@ -329,7 +330,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         protected abstract IList<X509Certificate2> GetCertificatesToRemove(StoreName storeName, StoreLocation storeLocation);
 
-        internal void ExportCertificate(X509Certificate2 certificate, string path, bool includePrivateKey, string password)
+        internal void ExportCertificate(X509Certificate2 certificate, string path, bool includePrivateKey, string password, CertificateKeyExportFormat format)
         {
             Log.ExportCertificateStart(GetDescription(certificate), path, includePrivateKey);
             if (includePrivateKey && password == null)
@@ -345,9 +346,56 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
 
             byte[] bytes;
+            byte[] keyBytes;
+            byte[] pemEnvelope = null;
             try
             {
-                bytes = includePrivateKey ? certificate.Export(X509ContentType.Pkcs12, password) : certificate.Export(X509ContentType.Cert);
+                if (includePrivateKey)
+                {
+                    switch (format)
+                    {
+                        case CertificateKeyExportFormat.Pfx:
+                            bytes = includePrivateKey ? certificate.Export(X509ContentType.Pkcs12, password) : certificate.Export(X509ContentType.Cert);
+                            break;
+                        case CertificateKeyExportFormat.Pem:
+                            var key = certificate.GetRSAPrivateKey();
+
+                            char[] pem;
+                            if (password != null)
+                            {
+                                keyBytes = key.ExportEncryptedPkcs8PrivateKey(password, new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA256, 100000));
+                                pem = PemEncoding.Write("ENCRYPTED PRIVATE KEY", keyBytes);
+                                pemEnvelope = Encoding.ASCII.GetBytes(pem);
+                            }
+                            else
+                            {
+                                // Export the key first to an encrypted PEM to avoid issues with System.Security.Cryptography.Cng indicating that the operation is not supported.
+                                // This is likely by design to avoid exporting the key by mistake.
+                                // To bypass it, we export the certificate to pem temporarily and then we import it and export it as unprotected PEM.
+                                keyBytes = key.ExportEncryptedPkcs8PrivateKey("", new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA256, 1));
+                                pem = PemEncoding.Write("ENCRYPTED PRIVATE KEY", keyBytes);
+                                key = RSA.Create();
+                                key.ImportFromEncryptedPem(pem, "");
+                                Array.Clear(keyBytes, 0, keyBytes.Length);
+                                Array.Clear(pem, 0, pem.Length);
+                                keyBytes = key.ExportPkcs8PrivateKey();
+                                pem = PemEncoding.Write("PRIVATE KEY", keyBytes);
+                                pemEnvelope = Encoding.ASCII.GetBytes(pem);
+                            }
+
+                            Array.Clear(keyBytes, 0, keyBytes.Length);
+                            Array.Clear(pem, 0, pem.Length);
+
+                            bytes = certificate.Export(X509ContentType.Cert);
+                            break;
+                        default:
+                            throw new InvalidOperationException("Unknown format.");
+                    }
+                }
+                else
+                {
+                    bytes = certificate.Export(X509ContentType.Cert);
+                }
             }
             catch (Exception e)
             {
@@ -368,6 +416,22 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             finally
             {
                 Array.Clear(bytes, 0, bytes.Length);
+            }
+
+            try
+            {
+                var keyPath = Path.ChangeExtension(path, ".key");
+                Log.WritePemKeyToDisk(keyPath);
+                File.WriteAllBytes(keyPath, pemEnvelope);
+            }
+            catch (Exception ex)
+            {
+                Log.WritePemKeyToDiskError(ex.ToString());
+                throw;
+            }
+            finally
+            {
+                Array.Clear(pemEnvelope, 0, pemEnvelope.Length);
             }
         }
 
@@ -745,6 +809,13 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
             [Event(56, Level = EventLevel.Error)]
             internal void MacOSAddCertificateToKeyChainError(int exitCode) => WriteEvent(56, $"An error has ocurred while importing the certificate to the keychain: {exitCode}.");
+
+
+            [Event(57, Level = EventLevel.Verbose)]
+            public void WritePemKeyToDisk(string path) => WriteEvent(57, $"Writing the certificate to: {path}.");
+
+            [Event(58, Level = EventLevel.Error)]
+            public void WritePemKeyToDiskError(string ex) => WriteEvent(58, $"An error has ocurred while writing the certificate to disk: {ex}.");
         }
 
         internal class UserCancelledTrustException : Exception
