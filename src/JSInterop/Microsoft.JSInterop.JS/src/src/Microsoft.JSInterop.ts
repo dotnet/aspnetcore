@@ -234,7 +234,7 @@ export module DotNet {
   }
 
   function findJSFunction(identifier: string): Function {
-    if (cachedJSFunctions.hasOwnProperty(identifier)) {
+    if (Object.prototype.hasOwnProperty.call(cachedJSFunctions, identifier)) {
       return cachedJSFunctions[identifier];
     }
 
