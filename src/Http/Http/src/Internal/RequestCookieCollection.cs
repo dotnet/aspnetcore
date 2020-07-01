@@ -57,6 +57,9 @@ namespace Microsoft.AspNetCore.Http
         }
 
         public static RequestCookieCollection Parse(IList<string> values)
+            => ParseInternal(values, AppContext.TryGetSwitch(ResponseCookies.EnableCookieNameEncoding, out var enabled) && enabled);
+
+        internal static RequestCookieCollection ParseInternal(IList<string> values, bool enableCookieNameEncoding)
         {
             if (values.Count == 0)
             {
@@ -75,7 +78,7 @@ namespace Microsoft.AspNetCore.Http
                 for (var i = 0; i < cookies.Count; i++)
                 {
                     var cookie = cookies[i];
-                    var name = Uri.UnescapeDataString(cookie.Name.Value);
+                    var name = enableCookieNameEncoding ? Uri.UnescapeDataString(cookie.Name.Value) : cookie.Name.Value;
                     var value = Uri.UnescapeDataString(cookie.Value.Value);
                     store[name] = value;
                 }

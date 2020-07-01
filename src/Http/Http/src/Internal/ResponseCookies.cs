@@ -13,6 +13,9 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     internal class ResponseCookies : IResponseCookies
     {
+        internal const string EnableCookieNameEncoding = "Microsoft.AspNetCore.Http.EnableCookieNameEncoding";
+        internal bool _enableCookieNameEncoding = AppContext.TryGetSwitch(EnableCookieNameEncoding, out var enabled) && enabled;
+
         /// <summary>
         /// Create a new wrapper.
         /// </summary>
@@ -33,7 +36,7 @@ namespace Microsoft.AspNetCore.Http
         public void Append(string key, string value)
         {
             var setCookieHeaderValue = new SetCookieHeaderValue(
-                Uri.EscapeDataString(key),
+                _enableCookieNameEncoding ? Uri.EscapeDataString(key) : key,
                 Uri.EscapeDataString(value))
             {
                 Path = "/"
@@ -52,7 +55,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             var setCookieHeaderValue = new SetCookieHeaderValue(
-                Uri.EscapeDataString(key),
+                _enableCookieNameEncoding ? Uri.EscapeDataString(key) : key,
                 Uri.EscapeDataString(value))
             {
                 Domain = options.Domain,
@@ -83,7 +86,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var encodedKeyPlusEquals = Uri.EscapeDataString(key) + "=";
+            var encodedKeyPlusEquals = (_enableCookieNameEncoding ? Uri.EscapeDataString(key) : key) + "=";
             bool domainHasValue = !string.IsNullOrEmpty(options.Domain);
             bool pathHasValue = !string.IsNullOrEmpty(options.Path);
 
