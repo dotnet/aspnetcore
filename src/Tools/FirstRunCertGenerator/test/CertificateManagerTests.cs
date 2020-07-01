@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Abstractions;
@@ -152,6 +153,138 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             Assert.True(exportedCertificate.HasPrivateKey);
 
 
+            Assert.Equal(httpsCertificate.GetCertHashString(), exportedCertificate.GetCertHashString());
+        }
+
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        public void EnsureCreateHttpsCertificate_CanExportTheCertInPemFormat()
+        {
+            // Arrange
+            var message = "plaintext";
+            const string CertificateName = nameof(EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates) + ".pfx";
+            var certificatePassword = Guid.NewGuid().ToString();
+
+            _fixture.CleanupCertificates();
+
+            var now = DateTimeOffset.UtcNow;
+            now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
+            var creation = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+            Output.WriteLine(creation.ToString());
+            ListCertificates();
+
+            var httpsCertificate = _manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false).Single(c => c.Subject == TestCertificateSubject);
+
+            // Act
+            var result = _manager
+                .EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, includePrivateKey: true, password: certificatePassword, keyExportFormat: CertificateKeyExportFormat.Pem, isInteractive: false);
+
+            // Assert
+            Assert.Equal(EnsureCertificateResult.ValidCertificatePresent, result);
+            Assert.True(File.Exists(CertificateName));
+
+            var key = RSA.Create();
+            key.ImportFromEncryptedPem(File.ReadAllText(Path.ChangeExtension(CertificateName, "key")), certificatePassword);
+            var exportedCertificate = new X509Certificate2(File.ReadAllBytes(CertificateName));
+            exportedCertificate = exportedCertificate.CopyWithPrivateKey(key);
+            Assert.NotNull(exportedCertificate);
+            Assert.True(exportedCertificate.HasPrivateKey);
+
+            Assert.Equal("plaintext", Encoding.ASCII.GetString(exportedCertificate.GetRSAPrivateKey().Decrypt(exportedCertificate.GetRSAPrivateKey().Encrypt(Encoding.ASCII.GetBytes(message), RSAEncryptionPadding.OaepSHA256), RSAEncryptionPadding.OaepSHA256)));
+            Assert.Equal(httpsCertificate.GetCertHashString(), exportedCertificate.GetCertHashString());
+        }
+
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        public void EnsureCreateHttpsCertificate_CanImport_ExportedPfx()
+        {
+            // Arrange
+            const string CertificateName = nameof(EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates) + ".pfx";
+            var certificatePassword = Guid.NewGuid().ToString();
+
+            _fixture.CleanupCertificates();
+
+            var now = DateTimeOffset.UtcNow;
+            now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
+            var creation = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+            Output.WriteLine(creation.ToString());
+            ListCertificates();
+
+            var httpsCertificate = _manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false).Single(c => c.Subject == TestCertificateSubject);
+
+            _manager
+                .EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, includePrivateKey: true, password: certificatePassword, isInteractive: false);
+
+            _manager.CleanupHttpsCertificates();
+
+            // Act
+            var result = _manager.ImportCertificate(CertificateName, certificatePassword);
+
+            // Assert
+            Assert.Equal(ImportCertificateResult.Succeeded, result);
+            var importedCertificate = Assert.Single(_manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false));
+
+            Assert.Equal(httpsCertificate.GetCertHashString(), importedCertificate.GetCertHashString());
+        }
+
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        public void EnsureCreateHttpsCertificate_CanImport_ExportedPfx_FailsIfThereAreCertificatesPresent()
+        {
+            // Arrange
+            const string CertificateName = nameof(EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates) + ".pfx";
+            var certificatePassword = Guid.NewGuid().ToString();
+
+            _fixture.CleanupCertificates();
+
+            var now = DateTimeOffset.UtcNow;
+            now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
+            var creation = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+            Output.WriteLine(creation.ToString());
+            ListCertificates();
+
+            var httpsCertificate = _manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false).Single(c => c.Subject == TestCertificateSubject);
+
+            _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, includePrivateKey: true, password: certificatePassword, isInteractive: false);
+
+            // Act
+            var result = _manager.ImportCertificate(CertificateName, certificatePassword);
+
+            // Assert
+            Assert.Equal(ImportCertificateResult.ExistingCertificatesPresent, result);
+        }
+
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        public void EnsureCreateHttpsCertificate_CanExportTheCertInPemFormat_WithoutPassword()
+        {
+            // Arrange
+            var message = "plaintext";
+            const string CertificateName = nameof(EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates) + ".pfx";
+            _fixture.CleanupCertificates();
+
+            var now = DateTimeOffset.UtcNow;
+            now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
+            var creation = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+            Output.WriteLine(creation.ToString());
+            ListCertificates();
+
+            var httpsCertificate = _manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false).Single(c => c.Subject == TestCertificateSubject);
+            // Act
+            var result = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, includePrivateKey: true, password: null, keyExportFormat: CertificateKeyExportFormat.Pem, isInteractive: false);
+
+            // Assert
+            Assert.Equal(EnsureCertificateResult.ValidCertificatePresent, result);
+            Assert.True(File.Exists(CertificateName));
+
+            var key = RSA.Create();
+            key.ImportFromPem(File.ReadAllText(Path.ChangeExtension(CertificateName, "key")));
+            var exportedCertificate = new X509Certificate2(File.ReadAllBytes(CertificateName));
+            exportedCertificate = exportedCertificate.CopyWithPrivateKey(key);
+            Assert.NotNull(exportedCertificate);
+            Assert.True(exportedCertificate.HasPrivateKey);
+
+            Assert.Equal("plaintext", Encoding.ASCII.GetString(exportedCertificate.GetRSAPrivateKey().Decrypt(exportedCertificate.GetRSAPrivateKey().Encrypt(Encoding.ASCII.GetBytes(message), RSAEncryptionPadding.OaepSHA256), RSAEncryptionPadding.OaepSHA256)));
             Assert.Equal(httpsCertificate.GetCertHashString(), exportedCertificate.GetCertHashString());
         }
 

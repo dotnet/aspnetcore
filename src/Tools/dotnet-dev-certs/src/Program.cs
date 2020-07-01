@@ -33,6 +33,15 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
         private const int NoDevelopmentHttpsCertificate = 14;
         private const int ExistingCertificatesPresent = 15;
 
+        private const string InvalidUsageErrorMessage = @"Incompatible set of flags. Sample usages
+'dotnet dev-certs https'
+'dotnet dev-certs https --clean'
+'dotnet dev-certs https --clean --import ./certificate.pfx -p password'
+'dotnet dev-certs https --check --trust'
+'dotnet dev-certs https -ep ./certificate.pfx -p password --trust'
+'dotnet dev-certs https -ep ./certificate.crt --trust --key-format Pem'
+'dotnet dev-certs https -ep ./certificate.crt -p password --trust --key-format Pem'";
+
         public static readonly TimeSpan HttpsCertificateValidity = TimeSpan.FromDays(365);
 
         public static int Main(string[] args)
@@ -62,6 +71,11 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                     var password = c.Option("-p|--password",
                         "Password to use when exporting the certificate with the private key into a pfx file or to encrypt the Pem exported key",
                         CommandOptionType.SingleValue);
+
+                    // We want to force generating a key without a password to not be an accident.
+                    var noPassword = c.Option("-np|--no-password",
+                        "Explicitly request that you don't use a password for the key when exporting a certificate to a PEM format",
+                        CommandOptionType.NoValue);
 
                     var check = c.Option(
                         "-c|--check",
@@ -104,18 +118,46 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                     c.OnExecute(() =>
                     {
                         var reporter = new ConsoleReporter(PhysicalConsole.Singleton, verbose.HasValue(), quiet.HasValue());
-                        if ((clean.HasValue() && !import.HasValue() && (exportPath.HasValue() || password.HasValue() || trust?.HasValue() == true || keyFormat.HasValue())) ||
-                            (clean.HasValue() && import.HasValue() && (exportPath.HasValue() || trust?.HasValue() == true || keyFormat.HasValue())) ||
-                            (check.HasValue() && (exportPath.HasValue() || password.HasValue() || clean.HasValue() || keyFormat.HasValue())))
+
+                        if (clean.HasValue())
                         {
-                            reporter.Error(@"Incompatible set of flags. Sample usages
-'dotnet dev-certs https'
-'dotnet dev-certs https --clean'
-'dotnet dev-certs https --clean --import ./certificate.pfx -p password'
-'dotnet dev-certs https --check --trust'
-'dotnet dev-certs https -ep ./certificate.pfx -p password --trust'
-'dotnet dev-certs https -ep ./certificate.crt --trust --key-format Pem'
-'dotnet dev-certs https -ep ./certificate.crt -p password --trust --key-format Pem'");
+                            if (exportPath.HasValue() || trust?.HasValue() == true || keyFormat.HasValue() || noPassword.HasValue() || check.HasValue() ||
+                               (!import.HasValue() && password.HasValue()) ||
+                               (import.HasValue() && !password.HasValue()))
+                            {
+                                reporter.Error(InvalidUsageErrorMessage);
+                                return CriticalError;
+                            }
+                        }
+
+                        if (check.HasValue())
+                        {
+                            if (exportPath.HasValue() || password.HasValue() || noPassword.HasValue() || clean.HasValue() || keyFormat.HasValue() || import.HasValue())
+                            {
+                                reporter.Error(InvalidUsageErrorMessage);
+                                return CriticalError;
+                            }
+                        }
+
+                        if (!clean.HasValue() && !check.HasValue())
+                        {
+                            if (password.HasValue() && noPassword.HasValue())
+                            {
+                                reporter.Error(InvalidUsageErrorMessage);
+                                return CriticalError;
+                            }
+
+                            if (noPassword.HasValue() && !(keyFormat.HasValue() && string.Equals(keyFormat.Value(), "PEM", StringComparison.OrdinalIgnoreCase)))
+                            {
+                                reporter.Error(InvalidUsageErrorMessage);
+                                return CriticalError;
+                            }
+
+                            if (import.HasValue())
+                            {
+                                reporter.Error(InvalidUsageErrorMessage);
+                                return CriticalError;
+                            }
                         }
 
                         if (check.HasValue())
@@ -134,7 +176,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                             return ImportCertificate(import, password, reporter);
                         }
 
-                        return EnsureHttpsCertificate(exportPath, password, trust, keyFormat, reporter);
+                        return EnsureHttpsCertificate(exportPath, password, noPassword, trust, keyFormat, reporter);
                     });
                 });
 
@@ -267,7 +309,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             return Success;
         }
 
-        private static int EnsureHttpsCertificate(CommandOption exportPath, CommandOption password, CommandOption trust, CommandOption keyFormat, IReporter reporter)
+        private static int EnsureHttpsCertificate(CommandOption exportPath, CommandOption password, CommandOption noPassword, CommandOption trust, CommandOption keyFormat, IReporter reporter)
         {
             var now = DateTimeOffset.Now;
             var manager = CertificateManager.Instance;
@@ -317,7 +359,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 now.Add(HttpsCertificateValidity),
                 exportPath.Value(),
                 trust == null ? false : trust.HasValue(),
-                password.HasValue() || format == CertificateKeyExportFormat.Pem,
+                password.HasValue() || (noPassword.HasValue() && format == CertificateKeyExportFormat.Pem),
                 password.Value(),
                 keyFormat.HasValue() ? format : CertificateKeyExportFormat.Pfx);
 
