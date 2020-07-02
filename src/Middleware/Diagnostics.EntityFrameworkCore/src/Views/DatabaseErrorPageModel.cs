@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
 {
     internal class DatabaseErrorPageModel
     {
+        [Obsolete("This is obsolete and will be removed in a future version.")]
         public DatabaseErrorPageModel(
             Type contextType,
             Exception exception,
@@ -30,6 +31,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
         public virtual bool DatabaseExists { get; }
         public virtual bool PendingModelChanges { get; }
         public virtual IEnumerable<string> PendingMigrations { get; }
+        [Obsolete("This is obsolete and will be removed in a future version.")]
         public virtual DatabaseErrorPageOptions Options { get; }
     }
 }

@@ -11,7 +11,10 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.H
     {
         public static string GetResourceString(string stringName, params object[] parameters)
         {
-            var strings = typeof(DatabaseErrorPageMiddleware).GetTypeInfo().Assembly.GetType("Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Strings").GetTypeInfo();
+#pragma warning disable CS0618 // Type or member is obsolete
+            var strings = typeof(DatabaseErrorPageMiddleware).GetTypeInfo().Assembly.GetType
+#pragma warning restore CS0618 // Type or member is obsolete
+                ("Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Strings").GetTypeInfo();
 
             if (parameters.Length > 0)
             {

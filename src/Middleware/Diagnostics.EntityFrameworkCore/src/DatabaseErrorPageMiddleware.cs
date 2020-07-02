@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
     ///     Captures synchronous and asynchronous database related exceptions from the pipeline that may be resolved using Entity Framework
     ///     migrations. When these exceptions occur an HTML response with details of possible actions to resolve the issue is generated.
     /// </summary>
+    [Obsolete("This is obsolete and will be removed in a future version. Use DatabaseErrorPageHandler instead.")]
     public class DatabaseErrorPageMiddleware : IObserver<DiagnosticListener>, IObserver<KeyValuePair<string, object>>
     {
         private static readonly AsyncLocal<DiagnosticHolder> _localDiagnostic = new AsyncLocal<DiagnosticHolder>();

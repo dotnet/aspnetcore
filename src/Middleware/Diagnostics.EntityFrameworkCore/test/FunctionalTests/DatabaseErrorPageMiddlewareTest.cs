@@ -27,8 +27,10 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [Fact]
         public async Task Successful_requests_pass_thru()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var builder = new WebHostBuilder().Configure(app => app
                 .UseDatabaseErrorPage()
+#pragma warning restore CS0618 // Type or member is obsolete
                 .UseMiddleware<SuccessMiddleware>());
             var server = new TestServer(builder);
 
@@ -53,8 +55,10 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [Fact]
         public async Task Non_database_exceptions_pass_thru()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var builder = new WebHostBuilder().Configure(app => app
                 .UseDatabaseErrorPage()
+#pragma warning restore CS0618 // Type or member is obsolete
                 .UseMiddleware<ExceptionMiddleware>());
             var server = new TestServer(builder);
 
@@ -241,96 +245,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        public async Task Error_page_then_apply_migrations()
-        {
-            using (var database = SqlTestStore.CreateScratch())
-            {
-                TestServer server = SetupTestServer<BloggingContextWithMigrations, ApplyMigrationsMiddleware>(database);
-                var client = server.CreateClient();
-
-                var expectedMigrationsEndpoint = "/ApplyDatabaseMigrations";
-                var expectedContextType = typeof(BloggingContextWithMigrations).AssemblyQualifiedName;
-
-                // Step One: Initial request with database failure
-                HttpResponseMessage response = await client.GetAsync("http://localhost/");
-                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-                var content = await response.Content.ReadAsStringAsync();
-
-                // Ensure the url we're going to test is what the page is using in it's JavaScript
-                var javaScriptEncoder = JavaScriptEncoder.Default;
-                Assert.Contains("req.open(\"POST\", \"" + JavaScriptEncode(expectedMigrationsEndpoint) + "\", true);", content);
-                Assert.Contains("var formBody = \"context=" + JavaScriptEncode(UrlEncode(expectedContextType)) + "\";", content);
-
-                // Step Two: Request to migrations endpoint
-                var formData = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
-                {
-                    new KeyValuePair<string, string>("context", expectedContextType)
-                });
-
-                response = await client.PostAsync("http://localhost" + expectedMigrationsEndpoint, formData);
-                content = await response.Content.ReadAsStringAsync();
-                Console.WriteLine(content);
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-
-                // Step Three: Successful request after migrations applied
-                response = await client.GetAsync("http://localhost/");
-                content = await response.Content.ReadAsStringAsync();
-                Assert.Equal("Saved a Blog", content);
-            }
-        }
-
-        class ApplyMigrationsMiddleware
-        {
-            public ApplyMigrationsMiddleware(RequestDelegate next)
-            { }
-
-            public virtual async Task Invoke(HttpContext context)
-            {
-                var db = context.RequestServices.GetService<BloggingContextWithMigrations>();
-                db.Blogs.Add(new Blog());
-                db.SaveChanges();
-                await context.Response.WriteAsync("Saved a Blog");
-            }
-        }
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        public async Task Customize_migrations_end_point()
-        {
-            var migrationsEndpoint = "/MyCustomEndPoints/ApplyMyMigrationsHere";
-
-            using (var database = SqlTestStore.CreateScratch())
-            {
-                var builder = new WebHostBuilder()
-                    .Configure(app =>
-                    {
-                        app.UseDatabaseErrorPage(new DatabaseErrorPageOptions
-                        {
-                            MigrationsEndPointPath = new PathString(migrationsEndpoint)
-                        });
-
-                        app.UseMiddleware<PendingMigrationsMiddleware>();
-                    })
-                    .ConfigureServices(services =>
-                    {
-                        services.AddDbContext<BloggingContextWithMigrations>(
-                            optionsBuilder => optionsBuilder.UseSqlite(database.ConnectionString));
-                    });
-                var server = new TestServer(builder);
-
-                HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
-
-                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-
-                var content = await response.Content.ReadAsStringAsync();
-                Assert.Contains("req.open(\"POST\", \"" + JavaScriptEncode(migrationsEndpoint) + "\", true);", content);
-            }
-        }
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task Pass_thru_when_context_not_in_services()
         {
             var logProvider = new TestLoggerProvider();
@@ -338,7 +252,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     app.UseDatabaseErrorPage();
+#pragma warning restore CS0618 // Type or member is obsolete
                     app.UseMiddleware<ContextNotRegisteredInServicesMiddleware>();
 #pragma warning disable CS0618 // Type or member is obsolete
                     app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
@@ -467,7 +383,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     app.UseDatabaseErrorPage();
+#pragma warning restore CS0618 // Type or member is obsolete
 
                     app.UseMiddleware<TMiddleware>();
 

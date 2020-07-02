@@ -11,7 +11,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests.Helpers
     {
         public static string GetResourceString(string stringName, params object[] parameters)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var strings = typeof(DatabaseErrorPageMiddleware).GetTypeInfo().Assembly.GetType("Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Strings").GetTypeInfo();
+#pragma warning restore CS0618 // Type or member is obsolete
             var method = strings.GetDeclaredMethods(stringName).Single();
             return (string)method.Invoke(null, parameters);
         }

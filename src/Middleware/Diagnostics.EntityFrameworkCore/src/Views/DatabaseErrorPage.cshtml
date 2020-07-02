@@ -1,4 +1,4 @@
-﻿@using System
+@using System
 @using System.Linq
 @using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 @using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
@@ -10,16 +10,6 @@
 @functions
 {
     public DatabaseErrorPageModel Model { get; set; }
-
-    public string UrlEncode(string content)
-    {
-        return UrlEncoder.Encode(content);
-    }
-
-    public string JavaScriptEncode(string content)
-    {
-        return JavaScriptEncoder.Encode(content);
-    }
 }
 <!DOCTYPE html>
 
@@ -67,45 +57,6 @@
                     <li>@migration</li>
                 }
             </ul>
-
-            <p>
-                <button id="applyMigrations" onclick="ApplyMigrations()">@Strings.DatabaseErrorPage_ApplyMigrationsButton</button>
-                <span id="applyMigrationsError" class="error"></span>
-                <span id="applyMigrationsSuccess"></span>
-            </p>
-            <script>
-                function ApplyMigrations() {
-                    applyMigrations.disabled = true;
-                    applyMigrationsError.innerHTML = "";
-                    applyMigrations.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsButtonRunning)";
-
-                    var req = new XMLHttpRequest();
-
-                    req.onload = function (e) {
-                        if (req.status === 204) {
-                            applyMigrations.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsButtonDone)";
-                            applyMigrationsSuccess.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_MigrationsAppliedRefresh)";
-                        } else {
-                            ErrorApplyingMigrations();
-                        }
-                    };
-
-                    req.onerror = function (e) {
-                        ErrorApplyingMigrations();
-                    };
-
-                    var formBody = "context=@JavaScriptEncode(UrlEncode(Model.ContextType.AssemblyQualifiedName))";
-                    req.open("POST", "@JavaScriptEncode(Model.Options.MigrationsEndPointPath.Value)", true);
-                    req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-                    req.send(formBody);
-                }
-
-                function ErrorApplyingMigrations() {
-                    applyMigrations.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsButton)";
-                    applyMigrationsError.innerHTML = "@JavaScriptEncode(Strings.DatabaseErrorPage_ApplyMigrationsFailed)";
-                    applyMigrations.disabled = false;
-                }
-            </script>
 
             <p>@Strings.DatabaseErrorPage_HowToApplyFromPMC</p>
             <code>@Strings.DatabaseErrorPage_ApplyMigrationsCommandPMC</code>

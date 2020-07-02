@@ -18,7 +18,9 @@ namespace DatabaseErrorPageSample
         public void Configure(IApplicationBuilder app)
         {
             app.UseDeveloperExceptionPage();
+#pragma warning disable CS0618 // Type or member is obsolete
             app.UseDatabaseErrorPage();
+#pragma warning restore CS0618 // Type or member is obsolete
             app.Run(context =>
             {
                 context.RequestServices.GetService<MyContext>().Blog.FirstOrDefault();

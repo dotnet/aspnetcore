@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// <see cref="IApplicationBuilder"/> extension methods for the <see cref="MigrationsEndPointMiddleware"/>.
     /// </summary>
+    [Obsolete("This is obsolete and will be removed in a future version. Use the Package Manager Console in Visual Studio or dotnet-ef tool on the command line to apply migrations.", error: true)]
     public static class MigrationsEndPointExtensions
     {
         /// <summary>
@@ -18,6 +19,7 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> to register the middleware with.</param>
         /// <returns>The same <see cref="IApplicationBuilder"/> instance so that multiple calls can be chained.</returns>
+        [Obsolete("This is obsolete and will be removed in a future version. Use the Package Manager Console in Visual Studio or dotnet-ef tool on the command line to apply migrations.", error: true)]
         public static IApplicationBuilder UseMigrationsEndPoint(this IApplicationBuilder app)
         {
             if (app == null)
@@ -34,6 +36,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="app">The <see cref="IApplicationBuilder"/> to register the middleware with.</param>
         /// <param name="options">An action to set the options for the middleware.</param>
         /// <returns>The same <see cref="IApplicationBuilder"/> instance so that multiple calls can be chained.</returns>
+        [Obsolete("This is obsolete and will be removed in a future version. Use the Package Manager Console in Visual Studio or dotnet-ef tool on the command line to apply migrations.", error: true)]
         public static IApplicationBuilder UseMigrationsEndPoint(this IApplicationBuilder app, MigrationsEndPointOptions options)
         {
             if (app == null)

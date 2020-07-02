@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [Fact]
         public async Task No_database_or_migrations_only_displays_scaffold_first_migration()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var options = new DatabaseErrorPageOptions();
 
             var model = new DatabaseErrorPageModel(
@@ -29,6 +30,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 pendingModelChanges: false,
                 pendingMigrations: new string[] { },
                 options: options);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var content = await ExecutePage(options, model);
 
@@ -40,6 +42,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [Fact]
         public async Task No_database_with_migrations_only_displays_apply_migrations()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var options = new DatabaseErrorPageOptions();
 
             var model = new DatabaseErrorPageModel(
@@ -49,6 +52,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 pendingModelChanges: false,
                 pendingMigrations: new[] { "111_MigrationOne" },
                 options: options);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var content = await ExecutePage(options, model);
 
@@ -60,6 +64,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [Fact]
         public async Task Existing_database_with_migrations_only_displays_apply_migrations()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var options = new DatabaseErrorPageOptions();
 
             var model = new DatabaseErrorPageModel(
@@ -69,6 +74,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 pendingModelChanges: false,
                 pendingMigrations: new[] { "111_MigrationOne" },
                 options: options);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var content = await ExecutePage(options, model);
 
@@ -80,6 +86,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [Fact]
         public async Task Existing_database_with_migrations_and_pending_model_changes_only_displays_apply_migrations()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var options = new DatabaseErrorPageOptions();
 
             var model = new DatabaseErrorPageModel(
@@ -89,6 +96,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 pendingModelChanges: true,
                 pendingMigrations: new[] { "111_MigrationOne" },
                 options: options);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var content = await ExecutePage(options, model);
 
@@ -100,6 +108,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [Fact]
         public async Task Pending_model_changes_only_displays_scaffold_next_migration()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var options = new DatabaseErrorPageOptions();
 
             var model = new DatabaseErrorPageModel(
@@ -109,6 +118,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 pendingModelChanges: true,
                 pendingMigrations: new string[] { },
                 options: options);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var content = await ExecutePage(options, model);
 
@@ -120,6 +130,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [Fact]
         public async Task Exception_details_are_displayed()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var options = new DatabaseErrorPageOptions();
 
             var model = new DatabaseErrorPageModel(
@@ -129,6 +140,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 pendingModelChanges: false,
                 pendingMigrations: new string[] { },
                 options: options);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var content = await ExecutePage(options, model);
 
@@ -138,6 +150,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [Fact]
         public async Task Inner_exception_details_are_displayed()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var options = new DatabaseErrorPageOptions();
 
             var model = new DatabaseErrorPageModel(
@@ -147,6 +160,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 pendingModelChanges: false,
                 pendingMigrations: new string[] { },
                 options: options);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var content = await ExecutePage(options, model);
 
@@ -154,27 +168,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             Assert.Contains("Because something more badder happened", content);
         }
 
-        [Fact]
-        public async Task MigrationsEndPointPath_is_respected()
-        {
-            var options = new DatabaseErrorPageOptions();
-            options.MigrationsEndPointPath = "/HitThisEndPoint";
-
-            var model = new DatabaseErrorPageModel(
-               contextType: typeof(BloggingContext),
-               exception: new Exception(),
-               databaseExists: true,
-               pendingModelChanges: false,
-               pendingMigrations: new[] { "111_MigrationOne" },
-               options: options);
-
-            var content = await ExecutePage(options, model);
-
-            Assert.Contains(options.MigrationsEndPointPath.Value, content);
-        }
-
-
+#pragma warning disable CS0618 // Type or member is obsolete
         private static async Task<string> ExecutePage(DatabaseErrorPageOptions options, DatabaseErrorPageModel model)
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             var page = new DatabaseErrorPage();
             var context = new Mock<HttpContext>();

@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// <see cref="IApplicationBuilder"/> extension methods for the <see cref="DatabaseErrorPageMiddleware"/>.
     /// </summary>
+    [Obsolete("This is obsolete and will be removed in a future version. Use UseDatabaseErrorPageHandler instead.")]
     public static class DatabaseErrorPageExtensions
     {
         /// <summary>
@@ -19,6 +20,7 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> to register the middleware with.</param>
         /// <returns>The same <see cref="IApplicationBuilder"/> instance so that multiple calls can be chained.</returns>
+        [Obsolete("This is obsolete and will be removed in a future version. Use UseDatabaseErrorPageHandler instead.")]
         public static IApplicationBuilder UseDatabaseErrorPage(this IApplicationBuilder app)
         {
             if (app == null)
@@ -36,6 +38,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="app">The <see cref="IApplicationBuilder"/> to register the middleware with.</param>
         /// <param name="options">A <see cref="DatabaseErrorPageOptions"/> that specifies options for the middleware.</param>
         /// <returns>The same <see cref="IApplicationBuilder"/> instance so that multiple calls can be chained.</returns>
+        [Obsolete("This is obsolete and will be removed in a future version. Use UseDatabaseErrorPageHandler instead.")]
         public static IApplicationBuilder UseDatabaseErrorPage(
             this IApplicationBuilder app, DatabaseErrorPageOptions options)
         {
@@ -50,11 +53,6 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             app = app.UseMiddleware<DatabaseErrorPageMiddleware>(Options.Create(options));
-
-            app.UseMigrationsEndPoint(new MigrationsEndPointOptions
-            {
-                Path = options.MigrationsEndPointPath
-            });
 
             return app;
         }
