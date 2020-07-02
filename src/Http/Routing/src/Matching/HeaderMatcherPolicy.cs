@@ -13,16 +13,11 @@ namespace Microsoft.AspNetCore.Routing
 {
     public sealed class HeaderMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, IEndpointSelectorPolicy
     {
-        private readonly IOptionsMonitor<HeaderMatcherPolicyOptions> options;
+        private readonly IOptionsMonitor<HeaderMatcherPolicyOptions> _options;
 
         public HeaderMatcherPolicy(IOptionsMonitor<HeaderMatcherPolicyOptions> options)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            this.options = options;
+            _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
         /// <inheritdoc/>
@@ -62,6 +57,7 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(candidates));
             }
 
+            int maxRequestHeadersToInspect = _options.CurrentValue.MaximumRequestHeaderValuesToInspect;
             for (int i = 0; i < candidates.Count; i++)
             {
                 if (!candidates.IsValidCandidate(i))
@@ -70,13 +66,13 @@ namespace Microsoft.AspNetCore.Routing
                 }
 
                 var metadata = candidates[i].Endpoint.Metadata.GetMetadata<IHeaderMetadata>();
-                string metadataHeaderName = metadata?.HeaderName;
-                if (string.IsNullOrEmpty(metadataHeaderName))
+                if (metadata == null)
                 {
                     // Can match any request
                     continue;
                 }
 
+                string metadataHeaderName = metadata.HeaderName;
                 var metadataHeaderValues = metadata.HeaderValues;
 
                 bool matched = false;
@@ -84,14 +80,13 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     if (metadataHeaderValues.Count == 0)
                     {
-                        // Match as long as header exists, and header *does* exist
+                        // We were asked to match as long as the header exists, and it *does* exist
                         matched = true;
                     }
                     else
                     {
                         var comparisonFunc = GetComparisonFunc(metadata.HeaderValueMatchMode);
                         var stringComparison = metadata.HeaderValueStringComparison;
-                        int maxRequestHeadersToInspect = this.options.CurrentValue.MaximumRequestHeaderValuesToInspect;
                         for (int j = 0; j < metadataHeaderValues.Count; j++)
                         {
                             for (int k = 0; k < requestHeaderValues.Count && k < maxRequestHeadersToInspect; k++)

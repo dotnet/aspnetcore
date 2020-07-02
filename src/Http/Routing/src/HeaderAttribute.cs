@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Routing
@@ -10,6 +11,7 @@ namespace Microsoft.AspNetCore.Routing
     /// <summary>
     /// Attribute for providing request header metdata that is used during routing.
     /// </summary>
+    [DebuggerDisplay("{DebuggerToString(),nq}")]
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     public sealed class HeaderAttribute : Attribute, IHeaderMetadata
     {
@@ -49,13 +51,10 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentException(nameof(headerName));
             }
 
-            if (headerValues == null)
-            {
-                throw new ArgumentNullException(nameof(headerValues));
-            }
+            _ = headerValues ?? throw new ArgumentNullException(nameof(headerValues));
 
-            this.HeaderName = headerName;
-            this.HeaderValues = headerValues.ToArray();
+            HeaderName = headerName;
+            HeaderValues = headerValues.ToArray();
         }
 
         /// <inheritdoc/>
@@ -69,5 +68,14 @@ namespace Microsoft.AspNetCore.Routing
 
         /// <inheritdoc/>
         public StringComparison HeaderValueStringComparison { get; set; } = StringComparison.Ordinal;
+
+        private string DebuggerToString()
+        {
+            var valuesDisplay = (HeaderValues.Count == 0)
+                ? "*"
+                : string.Join(",", HeaderValues.Select(v => $"\"{v}\""));
+
+            return $"Header {HeaderName} = {valuesDisplay} ({HeaderValueMatchMode}, {HeaderValueStringComparison})";
+        }
     }
 }

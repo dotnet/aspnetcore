@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Routing
     {
         private const int DefaultMaximumRequestHeaderValuesToInspect = 1;
 
-        private int maximumRequestHeaderValuesToInspect = DefaultMaximumRequestHeaderValuesToInspect;
+        private int _maximumRequestHeaderValuesToInspect = DefaultMaximumRequestHeaderValuesToInspect;
 
         /// <summary>
         /// Specifies the maximum number of incoming header values to inspect
@@ -21,15 +21,15 @@ namespace Microsoft.AspNetCore.Routing
         /// </remarks>
         public int MaximumRequestHeaderValuesToInspect
         {
-            get => this.maximumRequestHeaderValuesToInspect;
+            get => _maximumRequestHeaderValuesToInspect;
             set
             {
-                if (value < 1)
+                if (value <= 0)
                 {
                     throw new ArgumentOutOfRangeException(nameof(value), $"${nameof(value)} must be positive.");
                 }
 
-                this.maximumRequestHeaderValuesToInspect = value;
+                _maximumRequestHeaderValuesToInspect = value;
             }
         }
     }

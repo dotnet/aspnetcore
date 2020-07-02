@@ -75,7 +75,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddTransient<DataSourceDependentMatcher.Lifetime>();
             services.TryAddSingleton<EndpointMetadataComparer>(services =>
             {
-                // This has no public constructor. 
+                // This has no public constructor.
                 return new EndpointMetadataComparer(services);
             });
 
@@ -91,6 +91,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<EndpointSelector, DefaultEndpointSelector>();
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HttpMethodMatcherPolicy>());
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HostMatcherPolicy>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HeaderMatcherPolicy>());
 
             //
             // Misc infrastructure
