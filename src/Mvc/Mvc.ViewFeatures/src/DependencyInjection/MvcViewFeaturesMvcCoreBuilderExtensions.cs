@@ -212,13 +212,12 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddScoped<NavigationManager, HttpNavigationManager>();
             services.TryAddScoped<IJSRuntime, UnsupportedJavaScriptRuntime>();
             services.TryAddScoped<INavigationInterception, UnsupportedNavigationInterception>();
-            
+
             services.TryAddTransient<ControllerSaveTempDataPropertyFilter>();
 
             // This does caching so it should stay singleton
             services.TryAddSingleton<ITempDataProvider, CookieTempDataProvider>();
             services.TryAddSingleton<TempDataSerializer, DefaultTempDataSerializer>();
-            services.TryAddSingleton<IComponentActivator, DefaultComponentActivator>();
 
             //
             // Antiforgery

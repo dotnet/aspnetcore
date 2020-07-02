@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Profiling;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
@@ -29,6 +30,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private readonly Dictionary<ulong, EventCallback> _eventBindings = new Dictionary<ulong, EventCallback>();
         private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
         private readonly ILogger<Renderer> _logger;
+        private readonly ComponentFactory _componentFactory;
 
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
         private bool _isBatchInProgress;
@@ -70,6 +72,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             _serviceProvider = serviceProvider;
             _logger = loggerFactory.CreateLogger<Renderer>();
+
+            var componentActivator = serviceProvider.GetService<IComponentActivator>()
+                ?? DefaultComponentActivator.Instance;
+            _componentFactory = new ComponentFactory(componentActivator);
         }
 
         /// <summary>
@@ -89,7 +95,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="componentType">The type of the component to instantiate.</param>
         /// <returns>The component instance.</returns>
         protected IComponent InstantiateComponent(Type componentType)
-            => ComponentFactory.Instance.InstantiateComponent(_serviceProvider, componentType);
+            => _componentFactory.InstantiateComponent(_serviceProvider, componentType);
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning

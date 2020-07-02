@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -17,7 +16,7 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange
             var componentType = typeof(EmptyComponent);
-            var factory = new ComponentFactory();
+            var factory = new ComponentFactory(new DefaultComponentActivator());
 
             // Act
             var instance = factory.InstantiateComponent(GetServiceProvider(), componentType);
@@ -28,44 +27,31 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
-        public void InstantiateComponent_CreatesInstance_WithActivator()
+        public void InstantiateComponent_CreatesInstance_NonComponent()
+        {
+            // Arrange
+            var componentType = typeof(List<string>);
+            var factory = new ComponentFactory(new DefaultComponentActivator());
+
+            // Assert
+            var ex = Assert.Throws<ArgumentException>(() => factory.InstantiateComponent(GetServiceProvider(), componentType));
+            Assert.StartsWith($"The type {componentType.FullName} does not implement {nameof(IComponent)}.", ex.Message);
+        }
+
+        [Fact]
+        public void InstantiateComponent_CreatesInstance_WithCustomActivator()
         {
             // Arrange
             var componentType = typeof(EmptyComponent);
-            var factory = new ComponentFactory();
-
-            // Act
-            var instance = factory.InstantiateComponent(GetServiceProviderWithActivator(), componentType);
-
-            // Assert
-            Assert.NotNull(instance);
-            Assert.IsType<EmptyComponent>(instance);
-        }
-
-        [Fact]
-        public void InstantiateComponent_CreatesInstance_WithActivator_NonComponent()
-        {
-            // Arrange
-            var componentType = typeof(NonComponent);
-            var factory = new ComponentFactory();
-
-            // Assert
-            Assert.Throws<ArgumentException>(()=>factory.InstantiateComponent(GetServiceProviderWithActivator(), componentType));
-        }
-
-        [Fact]
-        public void InstantiateComponent_AssignsPropertiesWithInjectAttribute()
-        {
-            // Arrange
-            var componentType = typeof(ComponentWithInjectProperties);
-            var factory = new ComponentFactory();
+            var factory = new ComponentFactory(new CustomComponentActivator<ComponentWithInjectProperties>());
 
             // Act
             var instance = factory.InstantiateComponent(GetServiceProvider(), componentType);
 
             // Assert
             Assert.NotNull(instance);
-            var component = Assert.IsType<ComponentWithInjectProperties>(instance);
+            var component = Assert.IsType<ComponentWithInjectProperties>(instance); // Custom activator returns a different type
+
             // Public, and non-public properties, and properties with non-public setters should get assigned
             Assert.NotNull(component.Property1);
             Assert.NotNull(component.GetProperty2());
@@ -74,11 +60,23 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
+        public void InstantiateComponent_ThrowsForNullInstance()
+        {
+            // Arrange
+            var componentType = typeof(EmptyComponent);
+            var factory = new ComponentFactory(new NullResultComponentActivator());
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => factory.InstantiateComponent(GetServiceProvider(), componentType));
+            Assert.Equal($"The component activator returned a null value for a component of type {componentType.FullName}.", ex.Message);
+        }
+
+        [Fact]
         public void InstantiateComponent_AssignsPropertiesWithInjectAttributeOnBaseType()
         {
             // Arrange
             var componentType = typeof(DerivedComponent);
-            var factory = new ComponentFactory();
+            var factory = new ComponentFactory(new CustomComponentActivator<DerivedComponent>());
 
             // Act
             var instance = factory.InstantiateComponent(GetServiceProvider(), componentType);
@@ -101,7 +99,7 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange
             var componentType = typeof(ComponentWithNonInjectableProperties);
-            var factory = new ComponentFactory();
+            var factory = new ComponentFactory(new DefaultComponentActivator());
 
             // Act
             var instance = factory.InstantiateComponent(GetServiceProvider(), componentType);
@@ -119,15 +117,6 @@ namespace Microsoft.AspNetCore.Components
             return new ServiceCollection()
                 .AddTransient<TestService1>()
                 .AddTransient<TestService2>()
-                .BuildServiceProvider();
-        }
-
-        private static IServiceProvider GetServiceProviderWithActivator()
-        {
-            return new ServiceCollection()
-                .AddTransient<TestService1>()
-                .AddTransient<TestService2>()
-                .AddSingleton<IComponentActivator, DefaultComponentActivator>()
                 .BuildServiceProvider();
         }
 
@@ -197,9 +186,23 @@ namespace Microsoft.AspNetCore.Components
             public TestService2 Property5 { get; set; }
         }
 
-        private class NonComponent { }
-
         public class TestService1 { }
         public class TestService2 { }
+
+        private class CustomComponentActivator<TResult> : IComponentActivator where TResult : IComponent, new()
+        {
+            public IComponent CreateInstance(Type componentType)
+            {
+                return new TResult();
+            }
+        }
+
+        private class NullResultComponentActivator : IComponentActivator
+        {
+            public IComponent CreateInstance(Type componentType)
+            {
+                return null;
+            }
+        }
     }
 }

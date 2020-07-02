@@ -88,8 +88,8 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
             return task;
         }
 
-        public T InstantiateComponent<T>() where T : IComponent
-            => (T)InstantiateComponent(typeof(T));
+        public IComponent InstantiateComponent<T>()
+            => InstantiateComponent(typeof(T));
 
         protected override void HandleException(Exception exception)
         {

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components
 
             var counter = serviceProvider.GetRequiredService<Counter>();
             var renderer = new TestRenderer(serviceProvider);
-            var component1 = renderer.InstantiateComponent<MyOwningComponent>();
+            var component1 = (MyOwningComponent)renderer.InstantiateComponent<MyOwningComponent>();
 
             Assert.NotNull(component1.MyService);
             Assert.Equal(1, counter.CreatedCount);

@@ -74,7 +74,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<IJSRuntime, RemoteJSRuntime>();
             services.AddScoped<INavigationInterception, RemoteNavigationInterception>();
             services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
-            services.AddScoped<IComponentActivator, DefaultComponentActivator>();
 
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJSInteropDetailedErrorsConfiguration>());
 
