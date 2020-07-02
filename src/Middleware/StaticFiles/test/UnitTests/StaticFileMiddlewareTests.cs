@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Moq;
 using Xunit;
 
@@ -26,14 +27,24 @@ namespace Microsoft.AspNetCore.StaticFiles
         [Fact]
         public async Task ReturnsNotFoundWithoutWwwroot()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app => app.UseStaticFiles());
-            var server = new TestServer(builder);
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app => app.UseStaticFiles());
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync("/ranges.txt");
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             Assert.Null(response.Headers.ETag);
+
+            await host.StopAsync();
         }
 
         [ConditionalFact]
@@ -47,15 +58,25 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             try
             {
-                var builder = new WebHostBuilder()
+                var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
                     .Configure(app => app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true }))
                     .UseWebRoot(AppContext.BaseDirectory);
-                var server = new TestServer(builder);
+                }).Build();
+
+                await host.StartAsync();
+
+                var server = host.GetTestServer();
 
                 var response = await server.CreateClient().GetAsync(Path.GetFileName(badLink));
 
                 Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
                 Assert.Null(response.Headers.ETag);
+
+                await host.StopAsync();
             }
             finally
             {
@@ -70,23 +91,33 @@ namespace Microsoft.AspNetCore.StaticFiles
             mockSendFile.Setup(m => m.SendFileAsync(It.IsAny<string>(), It.IsAny<long>(), It.IsAny<long?>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new FileNotFoundException());
             mockSendFile.Setup(m => m.Stream).Returns(Stream.Null);
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.Use(async (ctx, next) =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        ctx.Features.Set(mockSendFile.Object);
-                        await next();
-                    });
-                    app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
-                })
-                .UseWebRoot(AppContext.BaseDirectory);
-            var server = new TestServer(builder);
+                        app.Use(async (ctx, next) =>
+                        {
+                            ctx.Features.Set(mockSendFile.Object);
+                            await next();
+                        });
+                        app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
+                    })
+                    .UseWebRoot(AppContext.BaseDirectory);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync("TestDocument.txt");
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             Assert.Null(response.Headers.ETag);
+
+            await host.StopAsync();
         }
 
         [Fact]

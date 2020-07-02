@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.StaticFiles
 {
@@ -23,11 +24,18 @@ namespace Microsoft.AspNetCore.StaticFiles
                     new KeyValuePair<string, string>("webroot", ".")
                 })
                 .Build();
-            var builder = new WebHostBuilder()
-                .UseConfiguration(configuration)
-                .Configure(configureApp)
-                .ConfigureServices(configureServices ?? defaultConfigureServices);
-            return new TestServer(builder);
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .UseConfiguration(configuration)
+                    .Configure(configureApp)
+                    .ConfigureServices(configureServices ?? defaultConfigureServices);
+                }).Build();
+
+            host.Start();
+            return host.GetTestServer();
         }
     }
 }
