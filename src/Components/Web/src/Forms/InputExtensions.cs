@@ -11,16 +11,9 @@ namespace Microsoft.AspNetCore.Components.Forms
     {
         public static bool TryParseSelectableValueFromString<TValue>(this InputBase<TValue> input, string? value, [MaybeNull] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
         {
-            if (typeof(TValue) == typeof(string))
+            try
             {
-                result = (TValue)(object?)value;
-                validationErrorMessage = null;
-                return true;
-            }
-            else if (typeof(TValue).IsEnum || (Nullable.GetUnderlyingType(typeof(TValue))?.IsEnum ?? false))
-            {
-                var success = BindConverter.TryConvertTo<TValue>(value, CultureInfo.CurrentCulture, out var parsedValue);
-                if (success)
+                if (BindConverter.TryConvertTo<TValue>(value, CultureInfo.CurrentCulture, out var parsedValue))
                 {
                     result = parsedValue;
                     validationErrorMessage = null;
@@ -33,8 +26,10 @@ namespace Microsoft.AspNetCore.Components.Forms
                     return false;
                 }
             }
-
-            throw new InvalidOperationException($"{input.GetType()} does not support the type '{typeof(TValue)}'.");
+            catch (InvalidOperationException ex)
+            {
+                throw new InvalidOperationException($"{input.GetType()} does not support the type '{typeof(TValue)}'.", ex);
+            }
         }
     }
 }

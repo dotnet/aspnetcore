@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             var rootComponent = new TestInputRadioHostComponent<TestEnum>
             {
                 EditContext = new EditContext(model),
-                InnerContent = RadioButtonsWithoutGroup(null, () => model.TestEnum)
+                InnerContent = RadioButtonsWithoutGroup(null)
             };
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => RenderAndGetTestInputComponentAsync(rootComponent));
@@ -60,9 +60,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             Assert.All(inputRadioComponents, inputRadio => Assert.Equal(groupName, inputRadio.GroupName));
         }
 
-        private delegate RenderFragment InputRadioGenerator(string name, Expression<Func<TestEnum>> valueExpression);
-
-        private static readonly InputRadioGenerator RadioButtonsWithoutGroup = (name, valueExpression) => (builder) =>
+        private static RenderFragment RadioButtonsWithoutGroup(string name) => (builder) =>
         {
             foreach (var selectedValue in (TestEnum[])Enum.GetValues(typeof(TestEnum)))
             {
@@ -73,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         };
 
-        private static readonly InputRadioGenerator RadioButtonsWithGroup = (name, valueExpression) => (builder) =>
+        private static RenderFragment RadioButtonsWithGroup(string name, Expression<Func<TestEnum>> valueExpression) => (builder) =>
         {
             builder.OpenComponent<InputRadioGroup<TestEnum>>(0);
             builder.AddAttribute(1, "Name", name);
