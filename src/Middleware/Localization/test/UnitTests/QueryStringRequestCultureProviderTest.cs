@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.Extensions.Localization
@@ -17,282 +18,354 @@ namespace Microsoft.Extensions.Localization
         [Fact]
         public async Task GetCultureInfoFromQueryString()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRequestLocalization(new RequestLocalizationOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        DefaultRequestCulture = new RequestCulture("en-US"),
-                        SupportedCultures = new List<CultureInfo>
+                        app.UseRequestLocalization(new RequestLocalizationOptions
                         {
-                            new CultureInfo("ar-SA")
-                        },
-                        SupportedUICultures = new List<CultureInfo>
+                            DefaultRequestCulture = new RequestCulture("en-US"),
+                            SupportedCultures = new List<CultureInfo>
+                            {
+                                new CultureInfo("ar-SA")
+                            },
+                            SupportedUICultures = new List<CultureInfo>
+                            {
+                                new CultureInfo("ar-YE")
+                            }
+                        });
+                        app.Run(context =>
                         {
-                            new CultureInfo("ar-YE")
-                        }
+                            var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
+                            var requestCulture = requestCultureFeature.RequestCulture;
+                            Assert.Equal("ar-SA", requestCulture.Culture.Name);
+                            Assert.Equal("ar-YE", requestCulture.UICulture.Name);
+                            return Task.FromResult(0);
+                        });
                     });
-                    app.Run(context =>
-                    {
-                        var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
-                        var requestCulture = requestCultureFeature.RequestCulture;
-                        Assert.Equal("ar-SA", requestCulture.Culture.Name);
-                        Assert.Equal("ar-YE", requestCulture.UICulture.Name);
-                        return Task.FromResult(0);
-                    });
-                });
+                }).Build();
 
-            using (var server = new TestServer(builder))
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/page?culture=ar-SA&ui-culture=ar-YE");
             }
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task GetDefaultCultureInfoIfCultureKeysAreMissing()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRequestLocalization(new RequestLocalizationOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        DefaultRequestCulture = new RequestCulture("en-US")
+                        app.UseRequestLocalization(new RequestLocalizationOptions
+                        {
+                            DefaultRequestCulture = new RequestCulture("en-US")
+                        });
+                        app.Run(context =>
+                        {
+                            var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
+                            var requestCulture = requestCultureFeature.RequestCulture;
+                            Assert.Equal("en-US", requestCulture.Culture.Name);
+                            Assert.Equal("en-US", requestCulture.UICulture.Name);
+                            return Task.FromResult(0);
+                        });
                     });
-                    app.Run(context =>
-                    {
-                        var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
-                        var requestCulture = requestCultureFeature.RequestCulture;
-                        Assert.Equal("en-US", requestCulture.Culture.Name);
-                        Assert.Equal("en-US", requestCulture.UICulture.Name);
-                        return Task.FromResult(0);
-                    });
-                });
+                }).Build();
 
-            using (var server = new TestServer(builder))
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/page");
             }
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task GetDefaultCultureInfoIfCultureIsInSupportedCultureList()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRequestLocalization(new RequestLocalizationOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        DefaultRequestCulture = new RequestCulture("en-US"),
-                        SupportedCultures = new List<CultureInfo>
+                        app.UseRequestLocalization(new RequestLocalizationOptions
                         {
-                            new CultureInfo("ar-SA")
-                        },
-                        SupportedUICultures = new List<CultureInfo>
+                            DefaultRequestCulture = new RequestCulture("en-US"),
+                            SupportedCultures = new List<CultureInfo>
+                            {
+                                new CultureInfo("ar-SA")
+                            },
+                            SupportedUICultures = new List<CultureInfo>
+                            {
+                                new CultureInfo("ar-SA")
+                            }
+                        });
+                        app.Run(context =>
                         {
-                            new CultureInfo("ar-SA")
-                        }
+                            var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
+                            var requestCulture = requestCultureFeature.RequestCulture;
+                            Assert.Equal("en-US", requestCulture.Culture.Name);
+                            return Task.FromResult(0);
+                        });
                     });
-                    app.Run(context =>
-                    {
-                        var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
-                        var requestCulture = requestCultureFeature.RequestCulture;
-                        Assert.Equal("en-US", requestCulture.Culture.Name);
-                        return Task.FromResult(0);
-                    });
-                });
+                }).Build();
 
-            using (var server = new TestServer(builder))
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/page?culture=ar-XY&ui-culture=ar-SA");
             }
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task GetDefaultCultureInfoIfUICultureIsNotInSupportedList()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRequestLocalization(new RequestLocalizationOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        DefaultRequestCulture = new RequestCulture("en-US"),
-                        SupportedCultures = new List<CultureInfo>
+                        app.UseRequestLocalization(new RequestLocalizationOptions
                         {
-                            new CultureInfo("ar-SA")
-                        },
-                        SupportedUICultures = new List<CultureInfo>
+                            DefaultRequestCulture = new RequestCulture("en-US"),
+                            SupportedCultures = new List<CultureInfo>
+                            {
+                                new CultureInfo("ar-SA")
+                            },
+                            SupportedUICultures = new List<CultureInfo>
+                            {
+                                new CultureInfo("ar-SA")
+                            }
+                        });
+                        app.Run(context =>
                         {
-                            new CultureInfo("ar-SA")
-                        }
+                            var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
+                            var requestCulture = requestCultureFeature.RequestCulture;
+                            Assert.Equal("en-US", requestCulture.UICulture.Name);
+                            return Task.FromResult(0);
+                        });
                     });
-                    app.Run(context =>
-                    {
-                        var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
-                        var requestCulture = requestCultureFeature.RequestCulture;
-                        Assert.Equal("en-US", requestCulture.UICulture.Name);
-                        return Task.FromResult(0);
-                    });
-                });
+                }).Build();
 
-            using (var server = new TestServer(builder))
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/page?culture=ar-SA&ui-culture=ar-XY");
             }
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task GetSameCultureInfoIfCultureKeyIsMissing()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRequestLocalization(new RequestLocalizationOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        DefaultRequestCulture = new RequestCulture("en-US"),
-                        SupportedCultures = new List<CultureInfo>
+                        app.UseRequestLocalization(new RequestLocalizationOptions
                         {
-                            new CultureInfo("ar-SA")
-                        },
-                        SupportedUICultures = new List<CultureInfo>
+                            DefaultRequestCulture = new RequestCulture("en-US"),
+                            SupportedCultures = new List<CultureInfo>
+                            {
+                                new CultureInfo("ar-SA")
+                            },
+                            SupportedUICultures = new List<CultureInfo>
+                            {
+                                new CultureInfo("ar-SA")
+                            }
+                        });
+                        app.Run(context =>
                         {
-                            new CultureInfo("ar-SA")
-                        }
+                            var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
+                            var requestCulture = requestCultureFeature.RequestCulture;
+                            Assert.Equal("ar-SA", requestCulture.Culture.Name);
+                            Assert.Equal("ar-SA", requestCulture.UICulture.Name);
+                            return Task.FromResult(0);
+                        });
                     });
-                    app.Run(context =>
-                    {
-                        var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
-                        var requestCulture = requestCultureFeature.RequestCulture;
-                        Assert.Equal("ar-SA", requestCulture.Culture.Name);
-                        Assert.Equal("ar-SA", requestCulture.UICulture.Name);
-                        return Task.FromResult(0);
-                    });
-                });
+                }).Build();
 
-            using (var server = new TestServer(builder))
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/page?ui-culture=ar-SA");
             }
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task GetSameCultureInfoIfUICultureKeyIsMissing()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRequestLocalization(new RequestLocalizationOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        DefaultRequestCulture = new RequestCulture("en-US"),
-                        SupportedCultures = new List<CultureInfo>
+                        app.UseRequestLocalization(new RequestLocalizationOptions
                         {
-                            new CultureInfo("ar-SA")
-                        },
-                        SupportedUICultures = new List<CultureInfo>
+                            DefaultRequestCulture = new RequestCulture("en-US"),
+                            SupportedCultures = new List<CultureInfo>
+                            {
+                                new CultureInfo("ar-SA")
+                            },
+                            SupportedUICultures = new List<CultureInfo>
+                            {
+                                new CultureInfo("ar-SA")
+                            }
+                        });
+                        app.Run(context =>
                         {
-                            new CultureInfo("ar-SA")
-                        }
+                            var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
+                            var requestCulture = requestCultureFeature.RequestCulture;
+                            Assert.Equal("ar-SA", requestCulture.Culture.Name);
+                            Assert.Equal("ar-SA", requestCulture.UICulture.Name);
+                            return Task.FromResult(0);
+                        });
                     });
-                    app.Run(context =>
-                    {
-                        var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
-                        var requestCulture = requestCultureFeature.RequestCulture;
-                        Assert.Equal("ar-SA", requestCulture.Culture.Name);
-                        Assert.Equal("ar-SA", requestCulture.UICulture.Name);
-                        return Task.FromResult(0);
-                    });
-                });
+                }).Build();
 
-            using (var server = new TestServer(builder))
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/page?culture=ar-SA");
             }
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task GetCultureInfoFromQueryStringWithCustomKeys()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    var options = new RequestLocalizationOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        DefaultRequestCulture = new RequestCulture("en-US"),
-                        SupportedCultures = new List<CultureInfo>
+                        var options = new RequestLocalizationOptions
                         {
-                            new CultureInfo("ar-SA")
-                        },
-                        SupportedUICultures = new List<CultureInfo>
+                            DefaultRequestCulture = new RequestCulture("en-US"),
+                            SupportedCultures = new List<CultureInfo>
+                            {
+                                new CultureInfo("ar-SA")
+                            },
+                            SupportedUICultures = new List<CultureInfo>
+                            {
+                                new CultureInfo("ar-YE")
+                            }
+                        };
+                        var provider = new QueryStringRequestCultureProvider();
+                        provider.QueryStringKey = "c";
+                        provider.UIQueryStringKey = "uic";
+                        options.RequestCultureProviders.Insert(0, provider);
+                        app.UseRequestLocalization(options);
+                        app.Run(context =>
                         {
-                            new CultureInfo("ar-YE")
-                        }
-                    };
-                    var provider = new QueryStringRequestCultureProvider();
-                    provider.QueryStringKey = "c";
-                    provider.UIQueryStringKey = "uic";
-                    options.RequestCultureProviders.Insert(0, provider);
-                    app.UseRequestLocalization(options);
-                    app.Run(context =>
-                    {
-                        var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
-                        var requestCulture = requestCultureFeature.RequestCulture;
-                        Assert.Equal("ar-SA", requestCulture.Culture.Name);
-                        Assert.Equal("ar-YE", requestCulture.UICulture.Name);
-                        return Task.FromResult(0);
+                            var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
+                            var requestCulture = requestCultureFeature.RequestCulture;
+                            Assert.Equal("ar-SA", requestCulture.Culture.Name);
+                            Assert.Equal("ar-YE", requestCulture.UICulture.Name);
+                            return Task.FromResult(0);
+                        });
                     });
-                });
+                }).Build();
 
-            using (var server = new TestServer(builder))
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/page?c=ar-SA&uic=ar-YE");
             }
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task GetTheRightCultureInfoRegardlessOfCultureNameCasing()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    var options = new RequestLocalizationOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        DefaultRequestCulture = new RequestCulture("en-US"),
-                        SupportedCultures = new List<CultureInfo>
+                        var options = new RequestLocalizationOptions
                         {
-                            new CultureInfo("FR")
-                        },
-                        SupportedUICultures = new List<CultureInfo>
-                        {
-                            new CultureInfo("FR")
-                        }
-                    };
-                    var provider = new QueryStringRequestCultureProvider();
+                            DefaultRequestCulture = new RequestCulture("en-US"),
+                            SupportedCultures = new List<CultureInfo>
+                            {
+                                new CultureInfo("FR")
+                            },
+                            SupportedUICultures = new List<CultureInfo>
+                            {
+                                new CultureInfo("FR")
+                            }
+                        };
+                        var provider = new QueryStringRequestCultureProvider();
 
-                    provider.QueryStringKey = "c";
-                    provider.UIQueryStringKey = "uic";
-                    options.RequestCultureProviders.Insert(0, provider);
-                    app.UseRequestLocalization(options);
-                    app.Run(context =>
-                    {
-                        var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
-                        var requestCulture = requestCultureFeature.RequestCulture;
-                        Assert.Equal("fr", requestCulture.Culture.ToString());
-                        Assert.Equal("fr", requestCulture.UICulture.ToString());
-                        return Task.FromResult(0);
+                        provider.QueryStringKey = "c";
+                        provider.UIQueryStringKey = "uic";
+                        options.RequestCultureProviders.Insert(0, provider);
+                        app.UseRequestLocalization(options);
+                        app.Run(context =>
+                        {
+                            var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
+                            var requestCulture = requestCultureFeature.RequestCulture;
+                            Assert.Equal("fr", requestCulture.Culture.ToString());
+                            Assert.Equal("fr", requestCulture.UICulture.ToString());
+                            return Task.FromResult(0);
+                        });
                     });
-                });
+                }).Build();
 
-            using (var server = new TestServer(builder))
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/page?c=FR&uic=FR");
             }
+
+            await host.StopAsync();
         }
     }
 }
