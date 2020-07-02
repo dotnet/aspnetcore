@@ -16,6 +16,9 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
+    <None Include="MSN.cshtml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="taghelpers.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="BlazorServerTagHelpers.razor" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
