@@ -1,0 +1,44 @@
+@using Microsoft.AspNetCore.Components.Extensions
+@inject ProtectedLocalStorage ProtectedLocalStore
+@inject ProtectedSessionStorage ProtectedSessionStore
+
+<a target="_blank" href="" id="new-tab">New tab (needed for tests)</a>
+
+<fieldset>
+    @if (localCount.HasValue)
+    {
+        <p>Local count: <strong id="local-count">@localCount</strong></p>
+        <button @onclick="@IncrementLocalCount" id="increment-local">Increment</button>
+    }
+</fieldset>
+
+<fieldset>
+    @if (sessionCount.HasValue)
+    {
+        <p>Session count: <strong id="session-count">@sessionCount</strong></p>
+        <button @onclick="@IncrementSessionCount" id="increment-session">Increment</button>
+    }
+</fieldset>
+
+@code {
+    int? localCount;
+    int? sessionCount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        localCount = await ProtectedLocalStore.GetAsync<int>("localCount");
+        sessionCount = await ProtectedSessionStore.GetAsync<int>("sessionCount");
+    }
+
+    private async Task IncrementLocalCount()
+    {
+        await ProtectedLocalStore.SetAsync("localCount", localCount + 1);
+        localCount = await ProtectedLocalStore.GetAsync<int>("localCount");
+    }
+
+    private async Task IncrementSessionCount()
+    {
+        await ProtectedSessionStore.SetAsync("sessionCount", sessionCount + 1);
+        sessionCount = await ProtectedSessionStore.GetAsync<int>("sessionCount");
+    }
+}
