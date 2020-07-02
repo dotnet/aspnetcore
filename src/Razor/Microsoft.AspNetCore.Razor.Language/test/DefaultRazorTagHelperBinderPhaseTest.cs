@@ -1354,8 +1354,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void TrySplitNamespaceAndType_WorksAsExpected(string fullTypeName, bool expectedResult, string expectedNamespace, string expectedTypeName)
         {
             // Arrange & Act
-            var result = DefaultRazorTagHelperBinderPhase.ComponentDirectiveVisitor.TrySplitNamespaceAndType(
-                fullTypeName, out var @namespace, out var typeName);
+            var result = RazorCSharpUtilities.TrySplitNamespaceAndType(fullTypeName, out var @namespace, out var typeName);
 
             // Assert
             Assert.Equal(expectedResult, result);
