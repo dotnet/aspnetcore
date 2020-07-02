@@ -357,6 +357,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task Publish_HostedApp_WithSatelliteAssemblies()
         {
             // Arrange
