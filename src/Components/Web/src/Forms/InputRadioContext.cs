@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// <summary>
     /// Describes context for an <see cref="InputRadio{TValue}"/> component.
     /// </summary>
-    public class InputRadioContext
+    internal class InputRadioContext
     {
         private readonly InputRadioContext? _parentContext;
 
@@ -21,6 +21,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         public object? CurrentValue { get; }
 
         /// <summary>
+        /// Gets a css class indicating the validation state of input radio elements.
+        /// </summary>
+        public string FieldClass { get; }
+
+        /// <summary>
         /// Gets the event callback to be invoked when the selected value is changed.
         /// </summary>
         public EventCallback<ChangeEventArgs> ChangeEventCallback { get; }
@@ -31,17 +36,20 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="parentContext">The parent <see cref="InputRadioContext" />.</param>
         /// <param name="groupName">The name of the input radio group.</param>
         /// <param name="currentValue">The current selected value in the input radio group.</param>
+        /// <param name="fieldClass">The css class indicating the validation state of input radio elements.</param>
         /// <param name="changeEventCallback">The event callback to be invoked when the selected value is changed.</param>
         public InputRadioContext(
             InputRadioContext? parentContext,
             string groupName,
             object? currentValue,
+            string fieldClass,
             EventCallback<ChangeEventArgs> changeEventCallback)
         {
             _parentContext = parentContext;
 
             GroupName = groupName;
             CurrentValue = currentValue;
+            FieldClass = fieldClass;
             ChangeEventCallback = changeEventCallback;
         }
 

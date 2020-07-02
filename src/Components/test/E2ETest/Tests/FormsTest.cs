@@ -305,8 +305,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void InputRadioGroupWithoutNameInteractsWithEditContext()
         {
             var appElement = MountTypicalValidationComponent();
-            var airlineGroup = appElement.FindElement(By.Id("airline-group"));
-            var airlineInputs = airlineGroup.FindElements(By.TagName("input"));
+            var airlineInputs = appElement.FindElement(By.ClassName("airline")).FindElements(By.TagName("input"));
             var unknownAirlineInput = airlineInputs.First(i => i.GetAttribute("value").Equals("Unknown"));
             var bestAirlineInput = airlineInputs.First(i => i.GetAttribute("value").Equals("BestAirline"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
@@ -321,13 +320,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.True(() => unknownAirlineInput.GetAttribute("extra").Equals("additional"));
 
             // Validates on edit
-            Browser.Equal("valid", () => airlineGroup.GetAttribute("class"));
+            Assert.All(airlineInputs, i => Browser.Equal("valid", () => i.GetAttribute("class")));
             bestAirlineInput.Click();
-            Browser.Equal("modified valid", () => airlineGroup.GetAttribute("class"));
+            Assert.All(airlineInputs, i => Browser.Equal("modified valid", () => i.GetAttribute("class")));
 
             // Can become invalid
             unknownAirlineInput.Click();
-            Browser.Equal("modified invalid", () => airlineGroup.GetAttribute("class"));
+            Assert.All(airlineInputs, i => Browser.Equal("modified invalid", () => i.GetAttribute("class")));
             Browser.Equal(new[] { "Pick a valid airline." }, messagesAccessor);
         }
 
@@ -336,10 +335,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var appElement = MountTypicalValidationComponent();
             var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
-            var countryGroup = appElement.FindElement(By.Id("country-group"));
-            var colorGroup = appElement.FindElement(By.Id("color-group"));
-            var countryInputs = countryGroup.FindElements(By.Name("country"));
-            var colorInputs = colorGroup.FindElements(By.Name("color"));
+            var group = appElement.FindElement(By.ClassName("nested-radio-group"));
+            var countryInputs = group.FindElements(By.Name("country"));
+            var colorInputs = group.FindElements(By.Name("color"));
 
             // Validate group counts
             Assert.Equal(3, countryInputs.Count);
@@ -350,19 +348,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.All(colorInputs, i => Browser.False(() => i.Selected));
 
             // Invalidates on submit
-            Browser.Equal("valid", () => countryGroup.GetAttribute("class"));
-            Browser.Equal("valid", () => colorGroup.GetAttribute("class"));
+            Assert.All(countryInputs, i => Browser.Equal("valid", () => i.GetAttribute("class")));
+            Assert.All(colorInputs, i => Browser.Equal("valid", () => i.GetAttribute("class")));
             submitButton.Click();
-            Browser.Equal("invalid", () => countryGroup.GetAttribute("class"));
-            Browser.Equal("invalid", () => colorGroup.GetAttribute("class"));
+            Assert.All(countryInputs, i => Browser.Equal("invalid", () => i.GetAttribute("class")));
+            Assert.All(colorInputs, i => Browser.Equal("invalid", () => i.GetAttribute("class")));
 
             // Validates on edit
             countryInputs.First().Click();
-            Browser.Equal("modified valid", () => countryGroup.GetAttribute("class"));
-            Browser.Equal("invalid", () => colorGroup.GetAttribute("class"));
+            Assert.All(countryInputs, i => Browser.Equal("modified valid", () => i.GetAttribute("class")));
+            Assert.All(colorInputs, i => Browser.Equal("invalid", () => i.GetAttribute("class")));
 
             colorInputs.First().Click();
-            Browser.Equal("modified valid", () => colorGroup.GetAttribute("class"));
+            Assert.All(colorInputs, i => Browser.Equal("modified valid", () => i.GetAttribute("class")));
         }
 
         [Fact]

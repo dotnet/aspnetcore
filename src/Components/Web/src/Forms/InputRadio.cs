@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets context for this <see cref="InputRadio{TValue}"/>.
         /// </summary>
-        protected InputRadioContext? Context { get; private set; }
+        internal InputRadioContext? Context { get; private set; }
 
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be applied to the input element.
@@ -39,6 +39,18 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         [CascadingParameter] private InputRadioContext? CascadedContext { get; set; }
 
+        private string GetCssClass(string fieldClass)
+        {
+            if (AdditionalAttributes != null &&
+                AdditionalAttributes.TryGetValue("class", out var @class) &&
+                !string.IsNullOrEmpty(Convert.ToString(@class)))
+            {
+                return $"{@class} {fieldClass}";
+            }
+
+            return fieldClass;
+        }
+
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
@@ -58,11 +70,12 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             builder.OpenElement(0, "input");
             builder.AddMultipleAttributes(1, AdditionalAttributes);
-            builder.AddAttribute(2, "type", "radio");
-            builder.AddAttribute(3, "name", Context.GroupName);
-            builder.AddAttribute(4, "value", BindConverter.FormatValue(Value?.ToString()));
-            builder.AddAttribute(5, "checked", Context.CurrentValue?.Equals(Value));
-            builder.AddAttribute(6, "onchange", Context.ChangeEventCallback!);
+            builder.AddAttribute(2, "class", GetCssClass(Context.FieldClass));
+            builder.AddAttribute(3, "type", "radio");
+            builder.AddAttribute(4, "name", Context.GroupName);
+            builder.AddAttribute(5, "value", BindConverter.FormatValue(Value?.ToString()));
+            builder.AddAttribute(6, "checked", Context.CurrentValue?.Equals(Value));
+            builder.AddAttribute(7, "onchange", Context.ChangeEventCallback);
             builder.CloseElement();
         }
     }

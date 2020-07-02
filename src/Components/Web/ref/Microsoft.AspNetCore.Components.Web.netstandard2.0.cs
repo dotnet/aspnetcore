@@ -96,14 +96,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected override string? FormatValueAsString(TValue value) { throw null; }
         protected override bool TryParseValueFromString(string? value, out TValue result, out string? validationErrorMessage) { throw null; }
     }
-    public partial class InputRadioContext
-    {
-        public InputRadioContext(Microsoft.AspNetCore.Components.Forms.InputRadioContext? parentContext, string groupName, object? currentValue, Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> changeEventCallback) { }
-        public Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.ChangeEventArgs> ChangeEventCallback { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public object? CurrentValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public string GroupName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public Microsoft.AspNetCore.Components.Forms.InputRadioContext? FindContextInAncestors(string groupName) { throw null; }
-    }
     public partial class InputRadioGroup<TValue> : Microsoft.AspNetCore.Components.Forms.InputBase<TValue>
     {
         public InputRadioGroup() { }
@@ -120,7 +112,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         public InputRadio() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute(CaptureUnmatchedValues=true)]
         public System.Collections.Generic.IReadOnlyDictionary<string, object>? AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
-        protected Microsoft.AspNetCore.Components.Forms.InputRadioContext? Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]

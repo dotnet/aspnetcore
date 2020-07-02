@@ -41,7 +41,7 @@
         <span id="selected-ticket-class">@person.TicketClass</span>
     </p>
     <p class="airline">
-        <InputRadioGroup @bind-Value="person.Airline" id="airline-group">
+        <InputRadioGroup @bind-Value="person.Airline">
             Airline:
             <br>
             @foreach (var airline in (Airline[])Enum.GetValues(typeof(Airline)))
@@ -54,8 +54,8 @@
     </p>
     <p class="nested-radio-group">
         Pick one color and one country:
-        <InputRadioGroup Name="country" @bind-Value="person.Country" id="country-group">
-            <InputRadioGroup Name="color" @bind-Value="person.FavoriteColor" id="color-group">
+        <InputRadioGroup Name="country" @bind-Value="person.Country">
+            <InputRadioGroup Name="color" @bind-Value="person.FavoriteColor">
                 <InputRadio Name="color" Value="Color.Red" />red<br>
                 <InputRadio Name="country" Value="Country.Japan" />japan<br>
                 <InputRadio Name="color" Value="Color.Green" />green<br>

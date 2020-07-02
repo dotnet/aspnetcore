@@ -31,10 +31,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
-            var changeEventCallback = EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString);
             var groupName = !string.IsNullOrEmpty(Name) ? Name : _defaultGroupName;
+            var fieldClass = EditContext.FieldCssClass(FieldIdentifier);
+            var changeEventCallback = EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString);
 
-            _context = new InputRadioContext(CascadedContext, groupName, CurrentValue, changeEventCallback);
+            _context = new InputRadioContext(CascadedContext, groupName, CurrentValue, fieldClass, changeEventCallback);
         }
 
         /// <inheritdoc />
@@ -42,15 +43,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             Debug.Assert(_context != null);
 
-            builder.OpenElement(0, "div");
-            builder.AddMultipleAttributes(1, AdditionalAttributes);
-            builder.AddAttribute(2, "class", CssClass);
-            builder.OpenComponent<CascadingValue<InputRadioContext>>(3);
-            builder.AddAttribute(4, "IsFixed", true);
-            builder.AddAttribute(5, "Value", _context);
-            builder.AddAttribute(6, "ChildContent", ChildContent);
+            builder.OpenComponent<CascadingValue<InputRadioContext>>(2);
+            builder.AddAttribute(3, "IsFixed", true);
+            builder.AddAttribute(4, "Value", _context);
+            builder.AddAttribute(5, "ChildContent", ChildContent);
             builder.CloseComponent();
-            builder.CloseElement();
         }
 
         /// <inheritdoc />
