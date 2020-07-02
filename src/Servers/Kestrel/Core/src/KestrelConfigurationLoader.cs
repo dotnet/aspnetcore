@@ -441,15 +441,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 if (certInfo.KeyPath != null)
                 {
                     var certificateKeyPath = Path.Combine(environment.ContentRootPath, certInfo.KeyPath);
-                    X509Certificate2 certificate = GetCertificate(certInfo, certificatePath, certificateKeyPath);
-
-                    if (!certificate.HasPrivateKey)
-                    {
-                        certificate = LoadCertificateKey(certificate, certificateKeyPath, certInfo.Password);
-                    }
+                    var certificate = GetCertificate(certInfo, certificatePath, certificateKeyPath);
 
                     if (certificate != null)
                     {
+                        certificate = LoadCertificateKey(certificate, certificateKeyPath, certInfo.Password);
+
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         {
                             return PersistKey(certificate);
@@ -487,14 +484,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
             static X509Certificate2 GetCertificate(CertificateConfig certInfo, string certificatePath, string certificateKeyPath)
             {
-                if (X509Certificate2.GetCertContentType(certificatePath) != X509ContentType.Unknown)
+                if (X509Certificate2.GetCertContentType(certificatePath) == X509ContentType.Cert)
                 {
                     return new X509Certificate2(certificatePath);
                 }
 
-                return certInfo.Password != null ?
-                    X509Certificate2.CreateFromEncryptedPemFile(certificatePath, certInfo.Password, certificateKeyPath) :
-                    X509Certificate2.CreateFromPemFile(certificatePath, certificateKeyPath);
+                return null;
             }
         }
 

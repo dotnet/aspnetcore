@@ -289,10 +289,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         [InlineData("https-ecdsa.pem", "https-ecdsa-protected.key", "aspnetcore")]
         [InlineData("https-ecdsa.crt", "https-ecdsa.key", null)]
         [InlineData("https-ecdsa.crt", "https-ecdsa-protected.key", "aspnetcore")]
-        //[InlineData("https-dsa.pem", "https-dsa.key", null)]
-        //[InlineData("https-dsa.pem", "https-dsa-protected.key", "aspnetcore")]
-        //[InlineData("https-dsa.crt", "https-dsa.key", null)]
-        //[InlineData("https-dsa.crt", "https-dsa-protected.key", "aspnetcore")]
+        [InlineData("https-dsa.pem", "https-dsa.key", null)]
+        [InlineData("https-dsa.pem", "https-dsa-protected.key", "test")]
+        [InlineData("https-dsa.crt", "https-dsa.key", null)]
+        [InlineData("https-dsa.crt", "https-dsa-protected.key", "test")]
         public void ConfigureEndpoint_CanLoadPemCertificates(string certificateFile, string certificateKey, string password)
         {
             var serverOptions = CreateServerOptions();
