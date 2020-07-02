@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
@@ -134,24 +135,31 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [Fact]
         public async Task GZipCompressionProvider_OptionsSetInDI_Compress()
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.NoCompression);
-                    services.AddResponseCompression();
-                })
-                .Configure(app =>
-                {
-                    app.UseResponseCompression();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
-                        context.Response.ContentType = TextPlain;
-                        return context.Response.WriteAsync(new string('a', 100));
+                        services.Configure<GzipCompressionProviderOptions>(options => options.Level = CompressionLevel.NoCompression);
+                        services.AddResponseCompression();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseResponseCompression();
+                        app.Run(context =>
+                        {
+                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.ContentType = TextPlain;
+                            return context.Response.WriteAsync(new string('a', 100));
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -160,6 +168,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var response = await client.SendAsync(request);
 
             CheckResponseCompressed(response, expectedBodyLength: 133, expectedEncoding: "gzip");
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -286,23 +296,30 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [InlineData("text/plain2")]
         public async Task NoBody_NotCompressed(string contentType)
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddResponseCompression();
-                })
-                .Configure(app =>
-                {
-                    app.UseResponseCompression();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
-                        context.Response.ContentType = contentType;
-                        return Task.FromResult(0);
+                        services.AddResponseCompression();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseResponseCompression();
+                        app.Run(context =>
+                        {
+                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.ContentType = contentType;
+                            return Task.FromResult(0);
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -311,6 +328,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var response = await client.SendAsync(request);
 
             CheckResponseNotCompressed(response, expectedBodyLength: 0, sendVaryHeader: false);
+
+            await host.StopAsync();
         }
 
         [Fact]
@@ -413,30 +432,35 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 TestSink.EnableWithTypeName<ResponseCompressionProvider>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddSingleton<ILoggerFactory>(loggerFactory);
-                    services.AddResponseCompression(options =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        options.EnableForHttps = enableHttps;
-                        options.MimeTypes = new[] { TextPlain };
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.UseResponseCompression();
-                    app.Run(context =>
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+                        services.AddResponseCompression(options =>
+                        {
+                            options.EnableForHttps = enableHttps;
+                            options.MimeTypes = new[] { TextPlain };
+                        });
+                    })
+                    .Configure(app =>
                     {
-                        context.Response.ContentType = TextPlain;
-                        return context.Response.WriteAsync(new string('a', 100));
+                        app.UseResponseCompression();
+                        app.Run(context =>
+                        {
+                            context.Response.ContentType = TextPlain;
+                            return context.Response.WriteAsync(new string('a', 100));
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder)
-            {
-                BaseAddress = new Uri("https://localhost/")
-            };
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+            server.BaseAddress = new Uri("https://localhost/");
 
             var client = server.CreateClient();
 
@@ -456,6 +480,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             {
                 AssertLog(logMessages.Skip(1).Single(), LogLevel.Debug, "No response compression available for HTTPS requests. See ResponseCompressionOptions.EnableForHttps.");
             }
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -469,32 +495,37 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 TestSink.EnableWithTypeName<ResponseCompressionProvider>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddSingleton<ILoggerFactory>(loggerFactory);
-                    services.AddResponseCompression(options =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        options.EnableForHttps = false;
-                        options.MimeTypes = new[] { TextPlain };
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.UseResponseCompression();
-                    app.Run(context =>
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+                        services.AddResponseCompression(options =>
+                        {
+                            options.EnableForHttps = false;
+                            options.MimeTypes = new[] { TextPlain };
+                        });
+                    })
+                    .Configure(app =>
                     {
-                        var feature = context.Features.Get<IHttpsCompressionFeature>();
-                        feature.Mode = mode;
-                        context.Response.ContentType = TextPlain;
-                        return context.Response.WriteAsync(new string('a', 100));
+                        app.UseResponseCompression();
+                        app.Run(context =>
+                        {
+                            var feature = context.Features.Get<IHttpsCompressionFeature>();
+                            feature.Mode = mode;
+                            context.Response.ContentType = TextPlain;
+                            return context.Response.WriteAsync(new string('a', 100));
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder)
-            {
-                BaseAddress = new Uri("https://localhost/")
-            };
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+            server.BaseAddress = new Uri("https://localhost/");
 
             var client = server.CreateClient();
 
@@ -514,6 +545,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             {
                 AssertLog(logMessages.Skip(1).Single(), LogLevel.Debug, "No response compression available for HTTPS requests. See ResponseCompressionOptions.EnableForHttps.");
             }
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -527,32 +560,37 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 TestSink.EnableWithTypeName<ResponseCompressionProvider>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddSingleton<ILoggerFactory>(loggerFactory);
-                    services.AddResponseCompression(options =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        options.EnableForHttps = true;
-                        options.MimeTypes = new[] { TextPlain };
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.UseResponseCompression();
-                    app.Run(context =>
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+                        services.AddResponseCompression(options =>
+                        {
+                            options.EnableForHttps = true;
+                            options.MimeTypes = new[] { TextPlain };
+                        });
+                    })
+                    .Configure(app =>
                     {
-                        var feature = context.Features.Get<IHttpsCompressionFeature>();
-                        feature.Mode = mode;
-                        context.Response.ContentType = TextPlain;
-                        return context.Response.WriteAsync(new string('a', 100));
+                        app.UseResponseCompression();
+                        app.Run(context =>
+                        {
+                            var feature = context.Features.Get<IHttpsCompressionFeature>();
+                            feature.Mode = mode;
+                            context.Response.ContentType = TextPlain;
+                            return context.Response.WriteAsync(new string('a', 100));
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder)
-            {
-                BaseAddress = new Uri("https://localhost/")
-            };
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+            server.BaseAddress = new Uri("https://localhost/");
 
             var client = server.CreateClient();
 
@@ -572,6 +610,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             {
                 AssertCompressedWithLog(logMessages, "gzip");
             }
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -580,28 +620,33 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddResponseCompression();
-                })
-                .Configure(app =>
-                {
-                    app.UseResponseCompression();
-                    app.Run(async context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
-                        context.Response.ContentType = TextPlain;
-                        context.Response.Body.Flush();
-                        await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
-                        await context.Response.WriteAsync(new string('a', 100));
+                        services.AddResponseCompression();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseResponseCompression();
+                        app.Run(async context =>
+                        {
+                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.ContentType = TextPlain;
+                            context.Response.Body.Flush();
+                            await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
+                            await context.Response.WriteAsync(new string('a', 100));
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder)
-            {
-                AllowSynchronousIO = true // needed for synchronous flush
-            };
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+            server.AllowSynchronousIO = true; // needed for synchronous flush
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -613,6 +658,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             await response.Content.LoadIntoBufferAsync();
 
             CheckResponseCompressed(response, expectedBodyLength, encoding);
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -621,25 +668,32 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddResponseCompression();
-                })
-                .Configure(app =>
-                {
-                    app.UseResponseCompression();
-                    app.Run(async context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
-                        context.Response.ContentType = TextPlain;
-                        await context.Response.Body.FlushAsync();
-                        await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
-                        await context.Response.WriteAsync(new string('a', 100));
+                        services.AddResponseCompression();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseResponseCompression();
+                        app.Run(async context =>
+                        {
+                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.ContentType = TextPlain;
+                            await context.Response.Body.FlushAsync();
+                            await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
+                            await context.Response.WriteAsync(new string('a', 100));
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -651,6 +705,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             await response.Content.LoadIntoBufferAsync();
 
             CheckResponseCompressed(response, expectedBodyLength, encoding);
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -659,32 +715,39 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddResponseCompression();
-                })
-                .Configure(app =>
-                {
-                    app.UseResponseCompression();
-                    app.Run(async context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        var feature = context.Features.Get<IHttpBodyControlFeature>();
-                        if (feature != null)
+                        services.AddResponseCompression();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseResponseCompression();
+                        app.Run(async context =>
                         {
-                            feature.AllowSynchronousIO = true;
-                        }
+                            var feature = context.Features.Get<IHttpBodyControlFeature>();
+                            if (feature != null)
+                            {
+                                feature.AllowSynchronousIO = true;
+                            }
 
-                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
-                        context.Response.ContentType = TextPlain;
-                        context.Response.Body.Write(new byte[10], 0, 10);
-                        context.Response.Body.Flush();
-                        await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
-                        context.Response.Body.Write(new byte[90], 0, 90);
+                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.ContentType = TextPlain;
+                            context.Response.Body.Write(new byte[10], 0, 10);
+                            context.Response.Body.Flush();
+                            await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
+                            context.Response.Body.Write(new byte[90], 0, 90);
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -703,6 +766,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             read = await body.ReadAsync(new byte[100], 0, 100);
             Assert.True(read > 0);
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -711,26 +776,33 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddResponseCompression();
-                })
-                .Configure(app =>
-                {
-                    app.UseResponseCompression();
-                    app.Run(async context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
-                        context.Response.ContentType = TextPlain;
-                        await context.Response.WriteAsync(new string('a', 10));
-                        await context.Response.Body.FlushAsync();
-                        await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
-                        await context.Response.WriteAsync(new string('a', 90));
+                        services.AddResponseCompression();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseResponseCompression();
+                        app.Run(async context =>
+                        {
+                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.ContentType = TextPlain;
+                            await context.Response.WriteAsync(new string('a', 10));
+                            await context.Response.Body.FlushAsync();
+                            await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
+                            await context.Response.WriteAsync(new string('a', 90));
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -749,6 +821,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             read = await body.ReadAsync(new byte[100], 0, 100);
             Assert.True(read > 0);
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -764,36 +838,43 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
             };
 
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddResponseCompression();
-                })
-                .Configure(app =>
-                {
-                    app.UseResponseCompression();
-                    app.Run(async context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
-                        context.Response.ContentType = TextPlain;
-                        context.Features.Get<IHttpResponseBodyFeature>().DisableBuffering();
-
-                        var feature = context.Features.Get<IHttpBodyControlFeature>();
-                        if (feature != null)
+                        services.AddResponseCompression();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseResponseCompression();
+                        app.Run(async context =>
                         {
-                            feature.AllowSynchronousIO = true;
-                        }
+                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.ContentType = TextPlain;
+                            context.Features.Get<IHttpResponseBodyFeature>().DisableBuffering();
 
-                        foreach (var signal in responseReceived)
-                        {
-                            context.Response.Body.Write(new byte[1], 0, 1);
-                            context.Response.Body.Flush();
-                            await signal.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
-                        }
+                            var feature = context.Features.Get<IHttpBodyControlFeature>();
+                            if (feature != null)
+                            {
+                                feature.AllowSynchronousIO = true;
+                            }
+
+                            foreach (var signal in responseReceived)
+                            {
+                                context.Response.Body.Write(new byte[1], 0, 1);
+                                context.Response.Body.Flush();
+                                await signal.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
+                            }
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -812,6 +893,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
                 signal.SetResult(0);
             }
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -827,30 +910,37 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
             };
 
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddResponseCompression();
-                })
-                .Configure(app =>
-                {
-                    app.UseResponseCompression();
-                    app.Run(async context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
-                        context.Response.ContentType = TextPlain;
-                        context.Features.Get<IHttpResponseBodyFeature>().DisableBuffering();
-
-                        foreach (var signal in responseReceived)
+                        services.AddResponseCompression();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseResponseCompression();
+                        app.Run(async context =>
                         {
-                            await context.Response.WriteAsync("a");
-                            await context.Response.Body.FlushAsync();
-                            await signal.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
-                        }
-                    });
-                });
+                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.ContentType = TextPlain;
+                            context.Features.Get<IHttpResponseBodyFeature>().DisableBuffering();
 
-            var server = new TestServer(builder);
+                            foreach (var signal in responseReceived)
+                            {
+                                await context.Response.WriteAsync("a");
+                                await context.Response.Body.FlushAsync();
+                                await signal.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
+                            }
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -869,6 +959,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
                 signal.SetResult(0);
             }
+
+            await host.StopAsync();
         }
 
         [Fact]
@@ -876,32 +968,39 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             FakeSendFileFeature fakeSendFile = null;
 
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddResponseCompression();
-                })
-                .Configure(app =>
-                {
-                    app.Use((context, next) =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        fakeSendFile = new FakeSendFileFeature(context.Features.Get<IHttpResponseBodyFeature>());
-                        context.Features.Set<IHttpResponseBodyFeature>(fakeSendFile);
-                        return next();
-                    });
-                    app.UseResponseCompression();
-                    app.Run(context =>
+                        services.AddResponseCompression();
+                    })
+                    .Configure(app =>
                     {
-                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
-                        context.Response.ContentType = "custom/type";
-                        context.Response.ContentLength = 1024;
-                        var sendFile = context.Features.Get<IHttpResponseBodyFeature>();
-                        Assert.NotNull(sendFile);
-                        return sendFile.SendFileAsync("testfile1kb.txt", 0, null, CancellationToken.None);
+                        app.Use((context, next) =>
+                        {
+                            fakeSendFile = new FakeSendFileFeature(context.Features.Get<IHttpResponseBodyFeature>());
+                            context.Features.Set<IHttpResponseBodyFeature>(fakeSendFile);
+                            return next();
+                        });
+                        app.UseResponseCompression();
+                        app.Run(context =>
+                        {
+                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.ContentType = "custom/type";
+                            context.Response.ContentLength = 1024;
+                            var sendFile = context.Features.Get<IHttpResponseBodyFeature>();
+                            Assert.NotNull(sendFile);
+                            return sendFile.SendFileAsync("testfile1kb.txt", 0, null, CancellationToken.None);
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -912,6 +1011,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             CheckResponseNotCompressed(response, expectedBodyLength: 1024, sendVaryHeader: false);
 
             Assert.True(fakeSendFile.SendFileInvoked);
+
+            await host.StopAsync();
         }
 
         [Fact]
@@ -919,32 +1020,39 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             FakeSendFileFeature fakeSendFile = null;
 
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddResponseCompression();
-                })
-                .Configure(app =>
-                {
-                    app.Use((context, next) =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        fakeSendFile = new FakeSendFileFeature(context.Features.Get<IHttpResponseBodyFeature>());
-                        context.Features.Set<IHttpResponseBodyFeature>(fakeSendFile);
-                        return next();
-                    });
-                    app.UseResponseCompression();
-                    app.Run(context =>
+                        services.AddResponseCompression();
+                    })
+                    .Configure(app =>
                     {
-                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
-                        context.Response.ContentType = TextPlain;
-                        context.Response.ContentLength = 1024;
-                        var sendFile = context.Features.Get<IHttpResponseBodyFeature>();
-                        Assert.NotNull(sendFile);
-                        return sendFile.SendFileAsync("testfile1kb.txt", 0, null, CancellationToken.None);
+                        app.Use((context, next) =>
+                        {
+                            fakeSendFile = new FakeSendFileFeature(context.Features.Get<IHttpResponseBodyFeature>());
+                            context.Features.Set<IHttpResponseBodyFeature>(fakeSendFile);
+                            return next();
+                        });
+                        app.UseResponseCompression();
+                        app.Run(context =>
+                        {
+                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.ContentType = TextPlain;
+                            context.Response.ContentLength = 1024;
+                            var sendFile = context.Features.Get<IHttpResponseBodyFeature>();
+                            Assert.NotNull(sendFile);
+                            return sendFile.SendFileAsync("testfile1kb.txt", 0, null, CancellationToken.None);
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -955,6 +1063,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             CheckResponseCompressed(response, expectedBodyLength: 34, expectedEncoding: "gzip");
 
             Assert.False(fakeSendFile.SendFileInvoked);
+
+            await host.StartAsync();
         }
 
         [Fact]
@@ -962,32 +1072,39 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             FakeSendFileFeature fakeSendFile = null;
 
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddResponseCompression();
-                })
-                .Configure(app =>
-                {
-                    app.Use((context, next) =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        fakeSendFile = new FakeSendFileFeature(context.Features.Get<IHttpResponseBodyFeature>());
-                        context.Features.Set<IHttpResponseBodyFeature>(fakeSendFile);
-                        return next();
-                    });
-                    app.UseResponseCompression();
-                    app.Run(async context =>
+                        services.AddResponseCompression();
+                    })
+                    .Configure(app =>
                     {
-                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
-                        context.Response.ContentType = TextPlain;
-                        var feature = context.Features.Get<IHttpResponseBodyFeature>();
+                        app.Use((context, next) =>
+                        {
+                            fakeSendFile = new FakeSendFileFeature(context.Features.Get<IHttpResponseBodyFeature>());
+                            context.Features.Set<IHttpResponseBodyFeature>(fakeSendFile);
+                            return next();
+                        });
+                        app.UseResponseCompression();
+                        app.Run(async context =>
+                        {
+                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.ContentType = TextPlain;
+                            var feature = context.Features.Get<IHttpResponseBodyFeature>();
 
-                        await context.Response.WriteAsync(new string('a', 100));
-                        await feature.SendFileAsync("testfile1kb.txt", 0, null, CancellationToken.None);
+                            await context.Response.WriteAsync(new string('a', 100));
+                            await feature.SendFileAsync("testfile1kb.txt", 0, null, CancellationToken.None);
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -998,6 +1115,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             CheckResponseCompressed(response, expectedBodyLength: 46, expectedEncoding: "gzip");
 
             Assert.False(fakeSendFile.SendFileInvoked);
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -1006,31 +1125,38 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddResponseCompression();
-                })
-                .Configure(app =>
-                {
-                    app.Use((context, next) =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        context.Response.Body = new NoSyncWrapperStream(context.Response.Body);
-                        return next();
-                    });
-                    app.UseResponseCompression();
-                    app.Run(async context =>
+                        services.AddResponseCompression();
+                    })
+                    .Configure(app =>
                     {
-                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
-                        context.Response.ContentType = TextPlain;
-                        await context.Response.WriteAsync(new string('a', 10));
-                        await context.Response.Body.FlushAsync();
-                        await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
-                        await context.Response.WriteAsync(new string('a', 90));
+                        app.Use((context, next) =>
+                        {
+                            context.Response.Body = new NoSyncWrapperStream(context.Response.Body);
+                            return next();
+                        });
+                        app.UseResponseCompression();
+                        app.Run(async context =>
+                        {
+                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.ContentType = TextPlain;
+                            await context.Response.WriteAsync(new string('a', 10));
+                            await context.Response.Body.FlushAsync();
+                            await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
+                            await context.Response.WriteAsync(new string('a', 90));
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -1049,6 +1175,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             read = await body.ReadAsync(new byte[100], 0, 100);
             Assert.True(read > 0);
+
+            await host.StopAsync();
         }
 
         private async Task<(HttpResponseMessage, List<WriteContext>)> InvokeMiddleware(
@@ -1063,25 +1191,32 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 TestSink.EnableWithTypeName<ResponseCompressionProvider>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddResponseCompression(configure ?? (_ => { }));
-                    services.AddSingleton<ILoggerFactory>(loggerFactory);
-                })
-                .Configure(app =>
-                {
-                    app.UseResponseCompression();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
-                        context.Response.ContentType = responseType;
-                        addResponseAction?.Invoke(context.Response);
-                        return context.Response.WriteAsync(new string('a', uncompressedBodyLength));
+                        services.AddResponseCompression(configure ?? (_ => { }));
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseResponseCompression();
+                        app.Run(context =>
+                        {
+                            context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                            context.Response.ContentType = responseType;
+                            addResponseAction?.Invoke(context.Response);
+                            return context.Response.WriteAsync(new string('a', uncompressedBodyLength));
+                        });
                     });
-                });
+                }).Build();
 
-            var server = new TestServer(builder);
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -1090,7 +1225,11 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 request.Headers.AcceptEncoding.Add(System.Net.Http.Headers.StringWithQualityHeaderValue.Parse(requestAcceptEncodings[i]));
             }
 
-            return (await client.SendAsync(request), sink.Writes.ToList());
+            var response = await client.SendAsync(request);
+
+            await host.StopAsync();
+
+            return (response, sink.Writes.ToList());
         }
 
         private void CheckResponseCompressed(HttpResponseMessage response, int expectedBodyLength, string expectedEncoding)
