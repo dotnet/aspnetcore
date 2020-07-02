@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.HeaderPropagation.Tests
@@ -24,34 +25,41 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             // Arrange
             Exception captured = null;
 
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddHttpClient("test").AddHeaderPropagation();
-                    services.AddHeaderPropagation(options =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        options.Headers.Add("X-TraceId");
-                    });
-                })
-                .Configure(app =>
-                {
-                    // note: no header propagation middleware
-
-                    app.Run(async context =>
+                        services.AddHttpClient("test").AddHeaderPropagation();
+                        services.AddHeaderPropagation(options =>
+                        {
+                            options.Headers.Add("X-TraceId");
+                        });
+                    })
+                    .Configure(app =>
                     {
-                        try
-                        {
-                            var client = context.RequestServices.GetRequiredService<IHttpClientFactory>().CreateClient("test");
-                            await client.GetAsync("http://localhost/"); // will throw
-                        }
-                        catch (Exception ex)
-                        {
-                            captured = ex;
-                        }
-                    });
-                });
+                        // note: no header propagation middleware
 
-            var server = new TestServer(builder);
+                        app.Run(async context =>
+                        {
+                            try
+                            {
+                                var client = context.RequestServices.GetRequiredService<IHttpClientFactory>().CreateClient("test");
+                                await client.GetAsync("http://localhost/"); // will throw
+                            }
+                            catch (Exception ex)
+                            {
+                                captured = ex;
+                            }
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage();
@@ -67,6 +75,8 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
                 "by adding 'app.UseHeaderPropagation()' in the 'Configure(...)' method. Header propagation can only be used within " +
                 "the context of an HTTP request.",
                 captured.Message);
+
+            await host.StopAsync();
         }
 
         [Fact]
@@ -96,10 +106,10 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         {
             // Arrange
             var handler = new SimpleHandler();
-            var builder = CreateBuilder(c =>
+            var host = await CreateHost(c =>
                 c.Headers.Add("in", "out"),
                 handler);
-            var server = new TestServer(builder);
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage();
@@ -112,6 +122,8 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.True(handler.Headers.Contains("out"));
             Assert.Equal(new[] { "test" }, handler.Headers.GetValues("out"));
+
+            await host.StopAsync();
         }
 
         [Fact]
@@ -119,13 +131,13 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         {
             // Arrange
             var handler = new SimpleHandler();
-            var builder = CreateBuilder(c =>
+            var host = await CreateHost(c =>
                 {
                     c.Headers.Add("first");
                     c.Headers.Add("second");
                 },
                 handler);
-            var server = new TestServer(builder);
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage();
@@ -141,18 +153,25 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Assert.Equal(new[] { "value" }, handler.Headers.GetValues("first"));
             Assert.True(handler.Headers.Contains("second"));
             Assert.Equal(new[] { "other" }, handler.Headers.GetValues("second"));
+
+            await host.StopAsync();
         }
 
         [Fact]
-        public void Builder_UseHeaderPropagation_Without_AddHeaderPropagation_Throws()
+        public async Task Builder_UseHeaderPropagation_Without_AddHeaderPropagation_Throws()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseHeaderPropagation();
-                });
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseHeaderPropagation();
+                    });
+                }).Build();
 
-            var exception = Assert.Throws<InvalidOperationException>(() => new TestServer(builder));
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => host.StartAsync());
             Assert.Equal(
                 "Unable to find the required services. Please add all the required services by calling 'IServiceCollection.AddHeaderPropagation' inside the call to 'ConfigureServices(...)' in the application startup code.",
                 exception.Message);
@@ -163,11 +182,11 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         {
             // Arrange
             var handler = new SimpleHandler();
-            var builder = CreateBuilder(
+            var host = await CreateHost(
                 c => c.Headers.Add("in", "out"),
                 handler,
                 c => c.Headers.Add("out", "different"));
-            var server = new TestServer(builder);
+            var server = host.GetTestServer();
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage();
@@ -180,34 +199,45 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.True(handler.Headers.Contains("different"));
             Assert.Equal(new[] { "test" }, handler.Headers.GetValues("different"));
+
+            await host.StopAsync();
         }
 
-        private IWebHostBuilder CreateBuilder(Action<HeaderPropagationOptions> configure, HttpMessageHandler primaryHandler, Action<HeaderPropagationMessageHandlerOptions> configureClient = null)
+        private async Task<IHost> CreateHost(Action<HeaderPropagationOptions> configure, HttpMessageHandler primaryHandler, Action<HeaderPropagationMessageHandlerOptions> configureClient = null)
         {
-            return new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseHeaderPropagation();
-                    app.UseMiddleware<SimpleMiddleware>();
-                })
-                .ConfigureServices(services =>
-                {
-                    services.AddHeaderPropagation(configure);
-                    var client = services.AddHttpClient("example.com", c => c.BaseAddress = new Uri("http://example.com"))
-                        .ConfigureHttpMessageHandlerBuilder(b =>
-                        {
-                            b.PrimaryHandler = primaryHandler;
-                        });
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseHeaderPropagation();
+                        app.UseMiddleware<SimpleMiddleware>();
+                    })
+                    .ConfigureServices(services =>
+                    {
+                        services.AddHeaderPropagation(configure);
+                        var client = services.AddHttpClient("example.com", c => c.BaseAddress = new Uri("http://example.com"))
+                            .ConfigureHttpMessageHandlerBuilder(b =>
+                            {
+                                b.PrimaryHandler = primaryHandler;
+                            });
 
-                    if (configureClient != null)
-                    {
-                        client.AddHeaderPropagation(configureClient);
-                    }
-                    else
-                    {
-                        client.AddHeaderPropagation();
-                    }
-                });
+                        if (configureClient != null)
+                        {
+                            client.AddHeaderPropagation(configureClient);
+                        }
+                        else
+                        {
+                            client.AddHeaderPropagation();
+                        }
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            return host;
         }
 
         private class SimpleHandler : DelegatingHandler
