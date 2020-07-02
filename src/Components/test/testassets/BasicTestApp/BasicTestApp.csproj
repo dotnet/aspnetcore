@@ -31,6 +31,7 @@
 
   <ItemGroup>
     <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json" />
+    <BlazorWebAssemblyLazyLoad Include="TestContentPackage" />
   </ItemGroup>
 
 </Project>

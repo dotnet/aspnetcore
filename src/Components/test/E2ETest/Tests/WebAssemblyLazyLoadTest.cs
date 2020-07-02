@@ -47,13 +47,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             SetUrlViaPushState("/WithLazyAssembly");
 
             var button = app.FindElement(By.Id("use-package-button"));
-            var loadingBar = app.FindElement(By.Id("loading-banner"));
-
-            // We should show the loading bar
-            Assert.True(loadingBar.Displayed);
-
-            // Click to hide the loading bar
-            loadingBar.Click();
 
             // Now we should have requested the DLL
             Assert.True(HasLoadedAssembly("Newtonsoft.Json.dll"));
@@ -72,13 +65,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
 
             var button = app.FindElement(By.Id("use-package-button"));
-            var loadingBar = app.FindElement(By.Id("loading-banner"));
-
-            // We should show the loading bar
-            Assert.True(loadingBar.Displayed);
-
-            // Click to hide the loading bar
-            loadingBar.Click();
 
             // We should have requested the DLL
             Assert.True(HasLoadedAssembly("Newtonsoft.Json.dll"));
@@ -87,6 +73,30 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // We shouldn't get any errors about assemblies not being available
             AssertLogDoesNotContainCriticalMessages("Could not load file or assembly 'Newtonsoft.Json");
+        }
+
+        [Fact]
+        public void CanLazyLoadAssemblyWithRoutes()
+        {
+            // Navigate to a page without any lazy-loaded dependencies
+            SetUrlViaPushState("/");
+            var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
+
+            // Ensure that we haven't requested the lazy loaded assembly
+            Assert.False(HasLoadedAssembly("TestContentPackage.dll"));
+
+            // Navigate to the designated route
+            SetUrlViaPushState("/WithLazyLoadedRoutes");
+
+            // Now the assembly has been loaded
+            Assert.True(HasLoadedAssembly("TestContentPackage.dll"));
+
+            var button = app.FindElement(By.Id("go-to-lazy-route"));
+            button.Click();
+
+            // Navigating the lazy-loaded route should show its content
+            var renderedElement = app.FindElement(By.ClassName("special-style"));
+            Assert.True(renderedElement.Displayed);
         }
 
         private string SetUrlViaPushState(string relativeUri)

@@ -5,15 +5,14 @@
 
 @inject WebAssemblyLazyAssemblyLoader lazyLoader
 
-<Router AppAssembly="@typeof(BasicTestApp.Program).Assembly" AdditionalAssemblies="@lazyLoadedAssemblies" OnNavigate="@OnNavigate">
+<Router AppAssembly="@typeof(BasicTestApp.Program).Assembly" AdditionalAssemblies="@lazyLoadedAssemblies" OnNavigateAsync="@OnNavigateAsync">
+    <Loading>
+        <div style="padding: 20px;background-color:blue;color:white;" id="loading-banner">
+            <p>Loading the requested page...</p>
+        </div>
+    </Loading>
     <Found Context="routeData">
-        @if (loading) {
-            <div style="padding: 20px;background-color:blue;color:white;" id="loading-banner" @onclick="HideLoadingBar">
-                <p>Loading the requested page...</p>
-            </div>
-        } else {
-            <RouteView RouteData="@routeData" />
-        }
+        <RouteView RouteData="@routeData" />
     </Found>
     <NotFound>
         <LayoutView Layout="@typeof(RouterTestLayout)">
@@ -25,50 +24,36 @@
 @code {
     private List<Assembly> lazyLoadedAssemblies = new List<Assembly>();
 
-    private bool loading = false;
-
-    private void OnNavigate (string uri)
+    private async Task<bool> OnNavigateAsync(string uri)
     {
         Console.WriteLine($"Running OnNavigate for {uri}...");
-        _ = LoadAssemblies(uri);
+        return await LoadAssemblies(uri);
     }
 
-    private void HideLoadingBar() {
-        loading = false;
-    }
-
-    private void ShowLoadingState() {
-        loading = true;
-        StateHasChanged();
-    }
-
-    private async Task LoadAssemblies(string uri)
+    private async Task<bool> LoadAssemblies(string uri)
     {
-        bool loadedAssemblies = false;
         try
         {
             if (uri.EndsWith("WithLazyAssembly"))
             {
-                loadedAssemblies = true;
-                ShowLoadingState();
                 Console.WriteLine($"Loading assemblies for WithLazyAssembly...");
                 var assemblies = await lazyLoader.LoadAssembliesAsync(new List<string>(){ "Newtonsoft.Json.dll" });
                 lazyLoadedAssemblies.AddRange(assemblies);
+                return false;
+            }
+
+            if (uri.EndsWith("WithLazyLoadedRoutes"))
+            {
+                Console.WriteLine($"Loading assemblies for WithLazyAssembly...");
+                var assemblies = await lazyLoader.LoadAssembliesAsync(new List<string>() { "TestContentPackage.dll" });
+                lazyLoadedAssemblies.AddRange(assemblies);
+                return true;
             }
         }
         catch (Exception e)
         {
             Console.WriteLine($"Error when loading assemblies: {e}");
         }
-        finally
-        {
-            if (loadedAssemblies)
-            {
-                Console.WriteLine("Calling StateHasChanged...");
-                StateHasChanged();
-            }
-        }
-
-        return;
+        return false;
     }
 }
