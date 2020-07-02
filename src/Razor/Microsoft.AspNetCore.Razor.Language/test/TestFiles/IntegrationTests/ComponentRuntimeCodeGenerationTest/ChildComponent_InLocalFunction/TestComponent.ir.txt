@@ -10,14 +10,8 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - (54:1,2 [42] x:\dir\subdir\Test\TestComponent.cshtml)
                     LazyIntermediateToken - (54:1,2 [42] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    void RenderChildComponent()\n    {\n
-                HtmlContent - (96:4,0 [8] x:\dir\subdir\Test\TestComponent.cshtml)
-                    LazyIntermediateToken - (96:4,0 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html -         
                 Component - (104:4,8 [15] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                HtmlContent - (119:4,23 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    LazyIntermediateToken - (119:4,23 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 CSharpCode - (121:5,0 [7] x:\dir\subdir\Test\TestComponent.cshtml)
                     LazyIntermediateToken - (121:5,0 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -     }\n
-                HtmlContent - (131:7,0 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    LazyIntermediateToken - (131:7,0 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 CSharpCode - (135:8,2 [25] x:\dir\subdir\Test\TestComponent.cshtml)
                     LazyIntermediateToken - (135:8,2 [25] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderChildComponent(); 

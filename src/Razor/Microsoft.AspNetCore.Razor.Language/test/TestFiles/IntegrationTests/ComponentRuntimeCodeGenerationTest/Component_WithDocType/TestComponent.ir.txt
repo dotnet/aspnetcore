@@ -7,6 +7,4 @@ Document -
         UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                HtmlContent - (0:0,0 [17] x:\dir\subdir\Test\TestComponent.cshtml)
-                    LazyIntermediateToken - (0:0,0 [17] x:\dir\subdir\Test\TestComponent.cshtml) - Html - <!DOCTYPE html>\n
-                MarkupBlock -  - <div>\n</div>
+                MarkupBlock -  - <!DOCTYPE html>\n<div></div>

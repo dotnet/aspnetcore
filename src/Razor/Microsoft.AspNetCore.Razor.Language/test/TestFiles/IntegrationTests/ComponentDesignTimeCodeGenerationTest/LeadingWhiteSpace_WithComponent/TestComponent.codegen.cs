@@ -21,6 +21,20 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
             __builder.AddAttribute(-1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
+#nullable restore
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+                    __o = DateTime.Now;
+
+#line default
+#line hidden
+#nullable disable
+#nullable restore
+#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+        __o = "good";
+
+#line default
+#line hidden
+#nullable disable
             }
             ));
 #nullable restore

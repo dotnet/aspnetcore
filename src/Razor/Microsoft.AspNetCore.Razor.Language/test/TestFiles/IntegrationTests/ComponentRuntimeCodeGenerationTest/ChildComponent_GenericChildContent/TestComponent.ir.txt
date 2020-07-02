@@ -9,13 +9,9 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [90] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentChildContent -  - ChildContent - context
-                        HtmlContent - (41:0,41 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                            LazyIntermediateToken - (41:0,41 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n  
                         MarkupElement - (45:1,2 [29] x:\dir\subdir\Test\TestComponent.cshtml) - div
                             CSharpExpression - (51:1,8 [17] x:\dir\subdir\Test\TestComponent.cshtml)
                                 LazyIntermediateToken - (51:1,8 [17] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - context.ToLower()
-                        HtmlContent - (74:1,31 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                            LazyIntermediateToken - (74:1,31 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                     ComponentTypeArgument - (19:0,19 [6] x:\dir\subdir\Test\TestComponent.cshtml) - TItem
                         LazyIntermediateToken - (19:0,19 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - string
                     ComponentAttribute - (32:0,32 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Item - Item - AttributeStructure.DoubleQuotes

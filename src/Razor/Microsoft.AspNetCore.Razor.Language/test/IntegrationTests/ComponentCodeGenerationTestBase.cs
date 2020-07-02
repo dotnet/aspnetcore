@@ -2081,6 +2081,69 @@ namespace AnotherTest
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void Component_WithPreserveWhitespaceDirective_True()
+        {
+            // Arrange / Act
+            var generated = CompileToCSharp(@"
+@preservewhitespace true
+
+<ul>
+    @foreach (var item in Enumerable.Range(1, 100))
+    {
+        <li>
+            @item
+        </li>
+    }
+</ul>
+
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_WithPreserveWhitespaceDirective_False()
+        {
+            // Arrange / Act
+            var generated = CompileToCSharp(@"
+@preservewhitespace false
+
+<ul>
+    @foreach (var item in Enumerable.Range(1, 100))
+    {
+        <li>
+            @item
+        </li>
+    }
+</ul>
+
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_WithPreserveWhitespaceDirective_Invalid()
+        {
+            // Arrange / Act
+            var generated = CompileToCSharp(@"
+@preservewhitespace someVariable
+@code {
+    bool someVariable = false;
+}
+", throwOnFailure: false);
+
+            // Assert
+            Assert.Collection(generated.Diagnostics, d => { Assert.Equal("RZ1038", d.Id); });
+        }
+
         #endregion
 
         #region EventCallback
@@ -4506,13 +4569,17 @@ namespace Test
 {
     public class SomeOtherComponent : ComponentBase
     {
+        [Parameter] public RenderFragment ChildContent { get; set; }
     }
 }
 "));
 
             // Act
             var generated = CompileToCSharp(@"
-<SomeOtherComponent />
+<SomeOtherComponent>
+    <h1>Child content at @DateTime.Now</h1>
+    <p>Very @(""good"")</p>
+</SomeOtherComponent>
 
 <h1>Hello</h1>");
 
@@ -4611,6 +4678,32 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"<div class=""first second"">Hello</div>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void WhiteSpace_WithPreserveWhitespace()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+
+@preservewhitespace true
+
+    <elem attr=@Foo>
+        <child />
+    </elem>
+
+    @code {
+        int Foo = 18;
+    }
+
+");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -4753,6 +4846,58 @@ namespace New.Test
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
             CompileToAssembly(generated);
         }
+
+        [Fact]
+        public void Component_PreserveWhitespaceDirective_InImports()
+        {
+            // Arrange
+            var importContent = @"
+@preservewhitespace true
+";
+            var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
+            ImportItems.Add(importItem);
+
+            // Act
+            var generated = CompileToCSharp(@"
+
+<parent>
+    <child> @DateTime.Now </child>
+</parent>
+
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_PreserveWhitespaceDirective_OverrideImports()
+        {
+            // Arrange
+            var importContent = @"
+@preservewhitespace true
+";
+            var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
+            ImportItems.Add(importItem);
+
+            // Act
+            var generated = CompileToCSharp(@"
+@preservewhitespace false
+
+<parent>
+    <child> @DateTime.Now </child>
+</parent>
+
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         #endregion
 
         #region Misc

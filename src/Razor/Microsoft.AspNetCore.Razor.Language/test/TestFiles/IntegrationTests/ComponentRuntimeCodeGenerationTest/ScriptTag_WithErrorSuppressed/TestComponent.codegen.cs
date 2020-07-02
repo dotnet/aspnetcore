@@ -14,13 +14,11 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
             __builder.OpenElement(0, "div");
-            __builder.AddMarkupContent(1, "\r\n    ");
-            __builder.OpenElement(2, "script");
-            __builder.AddAttribute(3, "src", "some/url.js");
-            __builder.AddAttribute(4, "anotherattribute", true);
-            __builder.AddMarkupContent(5, "\r\n        some text\r\n        some more text\r\n    ");
+            __builder.OpenElement(1, "script");
+            __builder.AddAttribute(2, "src", "some/url.js");
+            __builder.AddAttribute(3, "anotherattribute", true);
+            __builder.AddMarkupContent(4, "\r\n        some text\r\n        some more text\r\n    ");
             __builder.CloseElement();
-            __builder.AddMarkupContent(6, "\r\n");
             __builder.CloseElement();
         }
         #pragma warning restore 1998

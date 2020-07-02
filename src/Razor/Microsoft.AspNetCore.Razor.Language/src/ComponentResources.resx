@@ -201,6 +201,15 @@
   <data name="PageDirective_RouteToken_Name" xml:space="preserve">
     <value>route template</value>
   </data>
+  <data name="PreserveWhitespaceDirective_BooleanToken_Description" xml:space="preserve">
+    <value>True if whitespace should be preserved, otherwise false.</value>
+  </data>
+  <data name="PreserveWhitespaceDirective_BooleanToken_Name" xml:space="preserve">
+    <value>Preserve</value>
+  </data>
+  <data name="PreserveWhitespaceDirective_Description" xml:space="preserve">
+    <value>Specifies whether or not whitespace should be preserved exactly. Defaults to false for better performance.</value>
+  </data>
   <data name="RefTagHelper_Documentation" xml:space="preserve">
     <value>Populates the specified field or property with a reference to the element or component.</value>
   </data>

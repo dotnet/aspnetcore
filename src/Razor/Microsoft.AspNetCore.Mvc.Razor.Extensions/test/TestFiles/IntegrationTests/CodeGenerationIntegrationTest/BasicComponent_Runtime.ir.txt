@@ -16,7 +16,5 @@ Document -
                         LazyIntermediateToken - (74:3,0 [4] BasicComponent.cshtml) - Html -     
                     CSharpExpression - (79:3,5 [29] BasicComponent.cshtml)
                         LazyIntermediateToken - (79:3,5 [29] BasicComponent.cshtml) - CSharp - string.Format("{0}", "Hello")
-                    HtmlContent - (108:3,34 [2] BasicComponent.cshtml)
-                        LazyIntermediateToken - (108:3,34 [2] BasicComponent.cshtml) - Html - \n
             CSharpCode - (132:6,12 [37] BasicComponent.cshtml)
                 LazyIntermediateToken - (132:6,12 [37] BasicComponent.cshtml) - CSharp - \n    void IDisposable.Dispose(){ }\n

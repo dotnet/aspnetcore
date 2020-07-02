@@ -10,14 +10,10 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - (56:2,2 [134] x:\dir\subdir\Test\TestComponent.cshtml)
                     LazyIntermediateToken - (56:2,2 [134] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    var output = string.Empty;\n    if (__builder == null) output = "Builder is null!";\n    else output = "Builder is not null!";\n
-                HtmlContent - (190:6,0 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                    LazyIntermediateToken - (190:6,0 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html -     
                 MarkupElement - (194:6,4 [22] x:\dir\subdir\Test\TestComponent.cshtml) - p
                     HtmlContent - (197:6,7 [8] x:\dir\subdir\Test\TestComponent.cshtml)
                         LazyIntermediateToken - (197:6,7 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Output: 
                     CSharpExpression - (206:6,16 [6] x:\dir\subdir\Test\TestComponent.cshtml)
                         LazyIntermediateToken - (206:6,16 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - output
-                HtmlContent - (216:6,26 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    LazyIntermediateToken - (216:6,26 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 CSharpCode - (218:7,0 [0] x:\dir\subdir\Test\TestComponent.cshtml)
                     LazyIntermediateToken - (218:7,0 [0] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 

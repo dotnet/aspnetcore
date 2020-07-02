@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
   <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
@@ -29,6 +29,14 @@
     <EmbeddedResource Include="template-baselines.json" />
     <Compile Include="$(SharedSourceRoot)Process\*.cs" LinkBase="shared\Process" />
     <Compile Include="..\Shared\**" LinkBase="Helpers" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- We need the actual templates in the output directory for tests to verify file encodings. -->
+    <Content Include="..\Web.ProjectTemplates\**" LinkBase="Assets\Web.ProjectTemplates" />
+    <Content Include="..\Web.Spa.ProjectTemplates\**" LinkBase="Assets\Web.Spa.ProjectTemplates" />
+    <Content Include="..\Web.ItemTemplates\**" LinkBase="Assets\Web.ItemTemplates" />
+    <Content Include="..\Web.Client.ItemTemplates\**" LinkBase="Assets\Web.Client.ItemTemplates" />
   </ItemGroup>
 
   <ItemGroup>
