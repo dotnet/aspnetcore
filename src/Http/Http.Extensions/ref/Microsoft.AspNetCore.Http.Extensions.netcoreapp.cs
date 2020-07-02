@@ -13,12 +13,9 @@ namespace Microsoft.AspNetCore.Http
     {
         public static string GetServerVariable(this Microsoft.AspNetCore.Http.HttpContext context, string variableName) { throw null; }
     }
-    public static partial class HttpRequestExtensions
-    {
-        public static bool HasJsonContentType(this Microsoft.AspNetCore.Http.HttpRequest request) { throw null; }
-    }
     public static partial class HttpRequestJsonExtensions
     {
+        public static bool HasJsonContentType(this Microsoft.AspNetCore.Http.HttpRequest request) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public static System.Threading.Tasks.ValueTask<object?> ReadFromJsonAsync(this Microsoft.AspNetCore.Http.HttpRequest request, System.Type type, System.Text.Json.JsonSerializerOptions? options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public static System.Threading.Tasks.ValueTask<object?> ReadFromJsonAsync(this Microsoft.AspNetCore.Http.HttpRequest request, System.Type type, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
