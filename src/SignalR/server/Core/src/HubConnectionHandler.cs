@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.SignalR
                             while (protocol.TryParseMessage(ref buffer, binder, out var message))
                             {
                                 messageReceived = true;
-                                await _dispatcher.DispatchMessageAsync(connection, message);
+                                await DispatchMessage(connection, _dispatcher, message);
                             }
 
                             if (messageReceived)
@@ -291,8 +291,7 @@ namespace Microsoft.AspNetCore.SignalR
                                 if (protocol.TryParseMessage(ref segment, binder, out var message))
                                 {
                                     messageReceived = true;
-
-                                    await _dispatcher.DispatchMessageAsync(connection, message);
+                                    await DispatchMessage(connection, _dispatcher, message);
                                 }
                                 else if (overLength)
                                 {
@@ -330,6 +329,25 @@ namespace Microsoft.AspNetCore.SignalR
                     // We mark examined as buffer.End so that if we didn't receive a full frame, we'll wait for more data
                     // before yielding the read again.
                     input.AdvanceTo(buffer.Start, buffer.End);
+                }
+
+                static async Task DispatchMessage(HubConnectionContext connection, HubDispatcher<THub> dispatcher, HubMessage message)
+                {
+                    connection.StopClientTimeout();
+                    _ = ProcessTask(connection, dispatcher.DispatchMessageAsync(connection, message));
+                    await connection.ActiveInvocationLimit.WaitAsync();
+                }
+
+                static async Task ProcessTask(HubConnectionContext connection, Task task)
+                {
+                    try
+                    {
+                        await task;
+                    }
+                    finally
+                    {
+                        connection.ActiveInvocationLimit.Release();
+                    }
                 }
             }
         }

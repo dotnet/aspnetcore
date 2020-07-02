@@ -144,8 +144,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public override Task DispatchMessageAsync(HubConnectionContext connection, HubMessage hubMessage)
         {
-            connection.StopClientTimeout();
-
             // Messages are dispatched sequentially and will stop other messages from being processed until they complete.
             // Streaming methods will run sequentially until they start streaming, then they will fire-and-forget allowing other messages to run.
             // With parallel invokes enabled, messages run sequentially until they go async and then the next message will be allowed to start running.
@@ -153,22 +151,18 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             switch (hubMessage)
             {
                 case InvocationBindingFailureMessage bindingFailureMessage:
-                    _ = ProcessTask(connection, ProcessInvocationBindingFailure(connection, bindingFailureMessage));
-                    break;
+                    return ProcessInvocationBindingFailure(connection, bindingFailureMessage);
 
                 case StreamBindingFailureMessage bindingFailureMessage:
-                    _ = ProcessTask(connection, ProcessStreamBindingFailure(connection, bindingFailureMessage));
-                    break;
+                    return ProcessStreamBindingFailure(connection, bindingFailureMessage);
 
                 case InvocationMessage invocationMessage:
                     Log.ReceivedHubInvocation(_logger, invocationMessage);
-                    _ = ProcessTask(connection, ProcessInvocation(connection, invocationMessage, isStreamResponse: false));
-                    break;
+                    return ProcessInvocation(connection, invocationMessage, isStreamResponse: false);
 
                 case StreamInvocationMessage streamInvocationMessage:
                     Log.ReceivedStreamHubInvocation(_logger, streamInvocationMessage);
-                    _ = ProcessTask(connection, ProcessInvocation(connection, streamInvocationMessage, isStreamResponse: true));
-                    break;
+                    return ProcessInvocation(connection, streamInvocationMessage, isStreamResponse: true);
 
                 case CancelInvocationMessage cancelInvocationMessage:
                     // Check if there is an associated active stream and cancel it if it exists.
@@ -183,15 +177,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         // Stream can be canceled on the server while client is canceling stream.
                         Log.UnexpectedCancel(_logger);
                     }
-                    return Task.CompletedTask;
+                    break;
 
                 case PingMessage _:
                     connection.StartClientTimeout();
-                    return Task.CompletedTask;
+                    break;
 
                 case StreamItemMessage streamItem:
-                    _ = ProcessTask(connection, ProcessStreamItem(connection, streamItem));
-                    break;
+                    return ProcessStreamItem(connection, streamItem);
 
                 case CompletionMessage streamCompleteMessage:
                     // closes channels, removes from Lookup dict
@@ -204,7 +197,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     {
                         Log.UnexpectedStreamCompletion(_logger);
                     }
-                    return Task.CompletedTask;
+                    break;
 
                 // Other kind of message we weren't expecting
                 default:
@@ -212,19 +205,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     throw new NotSupportedException($"Received unsupported message: {hubMessage}");
             }
 
-            return connection.ActiveInvocationLimit.WaitAsync();
-
-            static async Task ProcessTask(HubConnectionContext connection, Task task)
-            {
-                try
-                {
-                    await task;
-                }
-                finally
-                {
-                    connection.ActiveInvocationLimit.Release();
-                }
-            }
+            return Task.CompletedTask;
         }
 
         private Task ProcessInvocationBindingFailure(HubConnectionContext connection, InvocationBindingFailureMessage bindingFailureMessage)

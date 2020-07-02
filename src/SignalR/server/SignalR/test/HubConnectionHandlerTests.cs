@@ -3079,7 +3079,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifiableLog())
             {
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR(options =>
+                    {
+                        options.MaxParallelInvocationsPerClient = 1;
+                    });
+                }, LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
 
                 using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
@@ -3201,6 +3207,76 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var firstResult = await client.ReadAsync().OrTimeout();
 
                     var longRunningCompletion = Assert.IsType<CompletionMessage>(firstResult);
+                    Assert.Equal(12L, longRunningCompletion.Result);
+
+                    // Shut down
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task PendingInvocationUnblockedWhenBlockingMethodCompletesWithParallelism()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+                {
+                    builder.AddSingleton(tcsService);
+
+                    builder.AddSignalR(options =>
+                    {
+                        options.MaxParallelInvocationsPerClient = 2;
+                    });
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
+
+                // Because we use PipeScheduler.Inline the hub invocations will run inline until they wait, which happens inside the LongRunningMethod call
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                    // Long running hub invocation to test that other invocations will not run until it is completed
+                    await client.SendInvocationAsync(nameof(LongRunningHub.LongRunningMethod), nonBlocking: false).OrTimeout();
+                    // Wait for the long running method to start
+                    await tcsService.StartedMethod.Task.OrTimeout();
+                    // Grab the tcs before resetting to use in the second long running method
+                    var endTcs = tcsService.EndMethod;
+
+                    tcsService.Reset();
+                    // Long running hub invocation to test that other invocations will not run until it is completed
+                    await client.SendInvocationAsync(nameof(LongRunningHub.LongRunningMethod), nonBlocking: false).OrTimeout();
+                    // Wait for the long running method to start
+                    await tcsService.StartedMethod.Task.OrTimeout();
+
+                    // Invoke another hub method which will wait for the first method to finish
+                    await client.SendInvocationAsync(nameof(LongRunningHub.SimpleMethod), nonBlocking: false).OrTimeout();
+                    // Both invocations should be waiting now
+                    Assert.Null(client.TryRead());
+
+                    // Release the second long running hub method
+                    tcsService.EndMethod.TrySetResult(null);
+
+                    // Long running hub method result
+                    var firstResult = await client.ReadAsync().OrTimeout();
+
+                    var longRunningCompletion = Assert.IsType<CompletionMessage>(firstResult);
+                    Assert.Equal(12L, longRunningCompletion.Result);
+
+                    // simple hub method result
+                    var secondResult = await client.ReadAsync().OrTimeout();
+
+                    var simpleCompletion = Assert.IsType<CompletionMessage>(secondResult);
+                    Assert.Equal(21L, simpleCompletion.Result);
+
+                    // Release the first long running hub method
+                    endTcs.TrySetResult(null);
+
+                    firstResult = await client.ReadAsync().OrTimeout();
+                    longRunningCompletion = Assert.IsType<CompletionMessage>(firstResult);
                     Assert.Equal(12L, longRunningCompletion.Result);
 
                     // Shut down
