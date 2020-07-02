@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             // Verify compression works
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm.br");
-            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br"); // 
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br"); //
 
             // Verify static assets are in the publish directory
             Assert.FileExists(result, blazorPublishDirectory, "index.html");
@@ -549,6 +549,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         // Regression test to verify satellite assemblies from the blazor app are copied to the published app's wwwroot output directory as
         // part of publishing in VS
         [Fact]
+        [QuarantinedTest]
         public async Task Publish_HostedApp_VisualStudio_WithSatelliteAssemblies()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
