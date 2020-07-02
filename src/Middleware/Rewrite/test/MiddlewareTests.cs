@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
@@ -18,76 +19,116 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRewritePath()
         {
             var options = new RewriteOptions().AddRewrite("(.*)", "http://example.com/$1", skipRemainingRules: false);
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                    app.Run(context => context.Response.WriteAsync(
-                        context.Request.Scheme +
-                        "://" +
-                        context.Request.Host +
-                        context.Request.Path +
-                        context.Request.QueryString));
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                        app.Run(context => context.Response.WriteAsync(
+                            context.Request.Scheme +
+                            "://" +
+                            context.Request.Host +
+                            context.Request.Path +
+                            context.Request.QueryString));
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetStringAsync("foo");
 
             Assert.Equal("http://example.com/foo", response);
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task CheckRedirectPath()
         {
             var options = new RewriteOptions().AddRedirect("(.*)", "http://example.com/$1", statusCode: StatusCodes.Status301MovedPermanently);
-            var builder = new WebHostBuilder()
-            .Configure(app =>
-            {
-                app.UseRewriter(options);
-            });
-            var server = new TestServer(builder);
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync("foo");
 
             Assert.Equal("http://example.com/foo", response.Headers.Location.OriginalString);
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task RewriteRulesCanComeFromConfigureOptions()
         {
-            var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
-            {
-                services.Configure<RewriteOptions>(options =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.AddRedirect("(.*)", "http://example.com/$1", statusCode: StatusCodes.Status301MovedPermanently);
-                });
-            })
-            .Configure(app =>
-            {
-                app.UseRewriter();
-            });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.Configure<RewriteOptions>(options =>
+                        {
+                            options.AddRedirect("(.*)", "http://example.com/$1", statusCode: StatusCodes.Status301MovedPermanently);
+                        });
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseRewriter();
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync("foo");
 
             Assert.Equal("http://example.com/foo", response.Headers.Location.OriginalString);
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task CheckRedirectPathWithQueryString()
         {
             var options = new RewriteOptions().AddRedirect("(.*)", "http://example.com/$1", statusCode: StatusCodes.Status301MovedPermanently);
-            var builder = new WebHostBuilder()
-            .Configure(app =>
-            {
-                app.UseRewriter(options);
-            });
-            var server = new TestServer(builder);
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync("foo?bar=1");
 
             Assert.Equal("http://example.com/foo?bar=1", response.Headers.Location.OriginalString);
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -98,34 +139,54 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRedirectToHttps(int statusCode)
         {
             var options = new RewriteOptions().AddRedirectToHttps(statusCode: statusCode);
-            var builder = new WebHostBuilder()
-            .Configure(app =>
-            {
-                app.UseRewriter(options);
-            });
-            var server = new TestServer(builder);
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync(new Uri("http://example.com"));
 
             Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
             Assert.Equal(statusCode, (int)response.StatusCode);
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task CheckPermanentRedirectToHttps()
         {
             var options = new RewriteOptions().AddRedirectToHttpsPermanent();
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync(new Uri("http://example.com"));
 
             Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
             Assert.Equal(StatusCodes.Status301MovedPermanently, (int)response.StatusCode);
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -134,17 +195,27 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRedirectToHttpsWithSslPort(int sslPort, string expected)
         {
             var options = new RewriteOptions().AddRedirectToHttps(statusCode: StatusCodes.Status301MovedPermanently, sslPort: sslPort);
-            var builder = new WebHostBuilder()
-            .Configure(app =>
-            {
-                app.UseRewriter(options);
-            });
-            var server = new TestServer(builder);
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync(new Uri("http://example.com"));
 
             Assert.Equal(expected, response.Headers.Location.OriginalString);
             Assert.Equal(StatusCodes.Status301MovedPermanently, (int)response.StatusCode);
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -155,17 +226,27 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRedirectToWwwWithStatusCode(int statusCode)
         {
             var options = new RewriteOptions().AddRedirectToWww(statusCode: statusCode);
-            var builder = new WebHostBuilder()
-            .Configure(app =>
-            {
-                app.UseRewriter(options);
-            });
-            var server = new TestServer(builder);
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync(new Uri("https://example.com"));
 
             Assert.Equal("https://www.example.com/", response.Headers.Location.OriginalString);
             Assert.Equal(statusCode, (int)response.StatusCode);
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -176,34 +257,54 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRedirectToWww(string requestUri, string redirectUri)
         {
             var options = new RewriteOptions().AddRedirectToWww();
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync(new Uri(requestUri));
 
             Assert.Equal(redirectUri, response.Headers.Location.OriginalString);
             Assert.Equal(StatusCodes.Status307TemporaryRedirect, (int)response.StatusCode);
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task CheckPermanentRedirectToWww()
         {
             var options = new RewriteOptions().AddRedirectToWwwPermanent();
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync(new Uri("https://example.com"));
 
             Assert.Equal("https://www.example.com/", response.Headers.Location.OriginalString);
             Assert.Equal(StatusCodes.Status308PermanentRedirect, (int)response.StatusCode);
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -220,16 +321,26 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckNoRedirectToWww(string requestUri)
         {
             var options = new RewriteOptions().AddRedirectToWww();
-            var builder = new WebHostBuilder()
-            .Configure(app =>
-            {
-                app.UseRewriter(options);
-            });
-            var server = new TestServer(builder);
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync(new Uri(requestUri));
 
             Assert.Null(response.Headers.Location);
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -240,17 +351,27 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRedirectToNonWwwWithStatusCode(int statusCode)
         {
             var options = new RewriteOptions().AddRedirectToNonWww(statusCode: statusCode);
-            var builder = new WebHostBuilder()
-            .Configure(app =>
-            {
-                app.UseRewriter(options);
-            });
-            var server = new TestServer(builder);
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync(new Uri("https://www.example.com"));
 
             Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
             Assert.Equal(statusCode, (int)response.StatusCode);
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -261,87 +382,138 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRedirectToNonWww(string requestUri, string redirectUri)
         {
             var options = new RewriteOptions().AddRedirectToNonWww();
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync(new Uri(requestUri));
 
             Assert.Equal(redirectUri, response.Headers.Location.OriginalString);
             Assert.Equal(StatusCodes.Status307TemporaryRedirect, (int)response.StatusCode);
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task CheckPermanentRedirectToNonWww()
         {
             var options = new RewriteOptions().AddRedirectToNonWwwPermanent();
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync(new Uri("https://www.example.com"));
 
             Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
             Assert.Equal(StatusCodes.Status308PermanentRedirect, (int)response.StatusCode);
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task CheckIfEmptyStringRedirectCorrectly()
         {
             var options = new RewriteOptions().AddRedirect("(.*)", "$1", statusCode: StatusCodes.Status301MovedPermanently);
-            var builder = new WebHostBuilder()
-            .Configure(app =>
-            {
-                app.UseRewriter(options);
-            });
-            var server = new TestServer(builder);
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync("");
             Assert.Equal("/", response.Headers.Location.OriginalString);
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task CheckIfEmptyStringRewriteCorrectly()
         {
             var options = new RewriteOptions().AddRewrite("(.*)", "$1", skipRemainingRules: false);
-            var builder = new WebHostBuilder()
-            .Configure(app =>
-            {
-                app.UseRewriter(options);
-                app.Run(context => context.Response.WriteAsync(
-                        context.Request.Path +
-                        context.Request.QueryString));
-            });
-            var server = new TestServer(builder);
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                        app.Run(context => context.Response.WriteAsync(
+                                context.Request.Path +
+                                context.Request.QueryString));
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetStringAsync("");
 
             Assert.Equal("/", response);
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task SettingPathBase()
         {
             var options = new RewriteOptions().AddRedirect("(.*)", "$1");
-            var builder = new WebHostBuilder()
-            .Configure(app =>
-            {
-                app.UseRewriter(options);
-                app.Run(context => context.Response.WriteAsync(
-                        context.Request.Path +
-                        context.Request.QueryString));
-            });
-            var server = new TestServer(builder) { BaseAddress = new Uri("http://localhost:5000/foo") };
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                        app.Run(context => context.Response.WriteAsync(
+                                context.Request.Path +
+                                context.Request.QueryString));
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+            server.BaseAddress = new Uri("http://localhost:5000/foo");
 
             var response = await server.CreateClient().GetAsync("");
 
             Assert.Equal("/foo", response.Headers.Location.OriginalString);
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -353,16 +525,26 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckNoRedirectToWwwInNonWhitelistedDomains(string requestUri)
         {
             var options = new RewriteOptions().AddRedirectToWww("example2.com");
-            var builder = new WebHostBuilder()
-            .Configure(app =>
-            {
-                app.UseRewriter(options);
-            });
-            var server = new TestServer(builder);
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync(new Uri(requestUri));
 
             Assert.Null(response.Headers.Location);
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -373,34 +555,54 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRedirectToWwwInWhitelistedDomains(string requestUri, string redirectUri)
         {
             var options = new RewriteOptions().AddRedirectToWww("example.com");
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync(new Uri(requestUri));
 
             Assert.Equal(redirectUri, response.Headers.Location.OriginalString);
             Assert.Equal(StatusCodes.Status307TemporaryRedirect, (int)response.StatusCode);
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task CheckPermanentRedirectToWwwInWhitelistedDomains()
         {
             var options = new RewriteOptions().AddRedirectToWwwPermanent("example.com");
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync(new Uri("https://example.com"));
 
             Assert.Equal("https://www.example.com/", response.Headers.Location.OriginalString);
             Assert.Equal(StatusCodes.Status308PermanentRedirect, (int)response.StatusCode);
+
+            await host.StopAsync();
         }
 
         [Theory]
@@ -411,17 +613,27 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRedirectToWwwWithStatusCodeInWhitelistedDomains(int statusCode)
         {
             var options = new RewriteOptions().AddRedirectToWww(statusCode: statusCode, "example.com");
-            var builder = new WebHostBuilder()
-            .Configure(app =>
-            {
-                app.UseRewriter(options);
-            });
-            var server = new TestServer(builder);
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync(new Uri("https://example.com"));
 
             Assert.Equal("https://www.example.com/", response.Headers.Location.OriginalString);
             Assert.Equal(statusCode, (int)response.StatusCode);
+
+            await host.StopAsync();
         }
 
     }
