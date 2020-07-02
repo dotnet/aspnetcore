@@ -27,10 +27,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [Fact]
         public async Task Successful_requests_pass_thru()
         {
-#pragma warning disable CS0618 // Type or member is obsolete
             var builder = new WebHostBuilder().Configure(app => app
                 .UseDatabaseErrorPage()
-#pragma warning restore CS0618 // Type or member is obsolete
                 .UseMiddleware<SuccessMiddleware>());
             var server = new TestServer(builder);
 
@@ -55,10 +53,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [Fact]
         public async Task Non_database_exceptions_pass_thru()
         {
-#pragma warning disable CS0618 // Type or member is obsolete
             var builder = new WebHostBuilder().Configure(app => app
                 .UseDatabaseErrorPage()
-#pragma warning restore CS0618 // Type or member is obsolete
                 .UseMiddleware<ExceptionMiddleware>());
             var server = new TestServer(builder);
 
@@ -252,9 +248,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
                     app.UseDatabaseErrorPage();
-#pragma warning restore CS0618 // Type or member is obsolete
                     app.UseMiddleware<ContextNotRegisteredInServicesMiddleware>();
 #pragma warning disable CS0618 // Type or member is obsolete
                     app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
@@ -383,9 +377,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
                     app.UseDatabaseErrorPage();
-#pragma warning restore CS0618 // Type or member is obsolete
 
                     app.UseMiddleware<TMiddleware>();
 

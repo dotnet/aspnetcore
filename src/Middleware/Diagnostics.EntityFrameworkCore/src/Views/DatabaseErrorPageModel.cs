@@ -9,6 +9,20 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
 {
     internal class DatabaseErrorPageModel
     {
+        public DatabaseErrorPageModel(
+            Type contextType,
+            Exception exception,
+            bool databaseExists,
+            bool pendingModelChanges,
+            IEnumerable<string> pendingMigrations)
+        {
+            ContextType = contextType;
+            Exception = exception;
+            DatabaseExists = databaseExists;
+            PendingModelChanges = pendingModelChanges;
+            PendingMigrations = pendingMigrations;
+        }
+
         [Obsolete("This is obsolete and will be removed in a future version.")]
         public DatabaseErrorPageModel(
             Type contextType,

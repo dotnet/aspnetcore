@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
     ///     Captures synchronous and asynchronous database related exceptions from the pipeline that may be resolved using Entity Framework
     ///     migrations. When these exceptions occur an HTML response with details of possible actions to resolve the issue is generated.
     /// </summary>
-    [Obsolete("This is obsolete and will be removed in a future version. Use DatabaseErrorPageHandler instead.")]
     public class DatabaseErrorPageMiddleware : IObserver<DiagnosticListener>, IObserver<KeyValuePair<string, object>>
     {
         private static readonly AsyncLocal<DiagnosticHolder> _localDiagnostic = new AsyncLocal<DiagnosticHolder>();
@@ -45,7 +44,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         }
 
         private readonly RequestDelegate _next;
-        private readonly DatabaseErrorPageOptions _options;
         private readonly ILogger _logger;
 
         /// <summary>
@@ -60,7 +58,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         public DatabaseErrorPageMiddleware(
             RequestDelegate next,
             ILoggerFactory loggerFactory,
+#pragma warning disable CS0618
             IOptions<DatabaseErrorPageOptions> options)
+#pragma warning restore CS0618
         {
             if (next == null)
             {
@@ -72,13 +72,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
             _next = next;
-            _options = options.Value;
             _logger = loggerFactory.CreateLogger<DatabaseErrorPageMiddleware>();
 
             // Note: this currently leaks if the server hosting this middleware is disposed.
@@ -184,7 +178,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                                     var page = new DatabaseErrorPage
                                     {
                                         Model = new DatabaseErrorPageModel(
-                                            contextType, exception, databaseExists, pendingModelChanges, pendingMigrations, _options)
+                                            contextType, exception, databaseExists, pendingModelChanges, pendingMigrations)
                                     };
 
                                     await page.ExecuteAsync(httpContext);
