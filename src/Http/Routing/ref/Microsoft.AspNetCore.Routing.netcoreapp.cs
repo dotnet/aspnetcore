@@ -90,6 +90,36 @@ namespace Microsoft.AspNetCore.Routing
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false, Inherited=false)]
     [System.Diagnostics.DebuggerDisplayAttribute("{DebuggerToString(),nq}")]
+    public sealed partial class HeaderAttribute : System.Attribute, Microsoft.AspNetCore.Routing.IHeaderMetadata
+    {
+        public HeaderAttribute(string headerName) { }
+        public HeaderAttribute(string headerName, string headerValue) { }
+        public HeaderAttribute(string headerName, string[] headerValues) { }
+        public string HeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Routing.HeaderValueMatchMode HeaderValueMatchMode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IReadOnlyList<string> HeaderValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.StringComparison HeaderValueStringComparison { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+    }
+    public sealed partial class HeaderMatcherPolicy : Microsoft.AspNetCore.Routing.MatcherPolicy, Microsoft.AspNetCore.Routing.Matching.IEndpointComparerPolicy, Microsoft.AspNetCore.Routing.Matching.IEndpointSelectorPolicy
+    {
+        public HeaderMatcherPolicy(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Routing.HeaderMatcherPolicyOptions> options) { }
+        public System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint> Comparer { get { throw null; } }
+        public override int Order { get { throw null; } }
+        public System.Threading.Tasks.Task ApplyAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.Matching.CandidateSet candidates) { throw null; }
+        bool Microsoft.AspNetCore.Routing.Matching.IEndpointSelectorPolicy.AppliesToEndpoints(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> endpoints) { throw null; }
+    }
+    public sealed partial class HeaderMatcherPolicyOptions
+    {
+        public HeaderMatcherPolicyOptions() { }
+        public int MaximumRequestHeaderValuesToInspect { get { throw null; } set { } }
+    }
+    public enum HeaderValueMatchMode
+    {
+        Exact = 0,
+        Prefix = 1,
+    }
+    [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false, Inherited=false)]
+    [System.Diagnostics.DebuggerDisplayAttribute("{DebuggerToString(),nq}")]
     public sealed partial class HostAttribute : System.Attribute, Microsoft.AspNetCore.Routing.IHostMetadata
     {
         public HostAttribute(string host) { }
@@ -125,6 +155,13 @@ namespace Microsoft.AspNetCore.Routing
         System.Collections.Generic.ICollection<Microsoft.AspNetCore.Routing.EndpointDataSource> DataSources { get; }
         System.IServiceProvider ServiceProvider { get; }
         Microsoft.AspNetCore.Builder.IApplicationBuilder CreateApplicationBuilder();
+    }
+    public partial interface IHeaderMetadata
+    {
+        string HeaderName { get; }
+        Microsoft.AspNetCore.Routing.HeaderValueMatchMode HeaderValueMatchMode { get; }
+        System.Collections.Generic.IReadOnlyList<string> HeaderValues { get; }
+        System.StringComparison HeaderValueStringComparison { get; }
     }
     public partial interface IHostMetadata
     {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information
 
 using System;
@@ -30,13 +30,10 @@ namespace Microsoft.AspNetCore.Routing
         /// <inheritdoc/>
         bool IEndpointSelectorPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
         {
-            if (endpoints == null)
-            {
-                throw new ArgumentNullException(nameof(endpoints));
-            }
+            _ = endpoints ?? throw new ArgumentNullException(nameof(endpoints));
 
             // When the node contains dynamic endpoints we can't make any assumptions.
-            if (MatcherPolicy.ContainsDynamicEndpoints(endpoints))
+            if (ContainsDynamicEndpoints(endpoints))
             {
                 return true;
             }
@@ -47,15 +44,8 @@ namespace Microsoft.AspNetCore.Routing
         /// <inheritdoc/>
         public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
         {
-            if (httpContext == null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
-
-            if (candidates == null)
-            {
-                throw new ArgumentNullException(nameof(candidates));
-            }
+            _ = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
+            _ = candidates ?? throw new ArgumentNullException(nameof(candidates));
 
             int maxRequestHeadersToInspect = _options.CurrentValue.MaximumRequestHeaderValuesToInspect;
             for (int i = 0; i < candidates.Count; i++)
@@ -72,10 +62,10 @@ namespace Microsoft.AspNetCore.Routing
                     continue;
                 }
 
-                string metadataHeaderName = metadata.HeaderName;
+                var metadataHeaderName = metadata.HeaderName;
                 var metadataHeaderValues = metadata.HeaderValues;
 
-                bool matched = false;
+                var matched = false;
                 if (httpContext.Request.Headers.TryGetValue(metadataHeaderName, out var requestHeaderValues))
                 {
                     if (metadataHeaderValues.Count == 0)
@@ -140,8 +130,8 @@ namespace Microsoft.AspNetCore.Routing
         {
             protected override int CompareMetadata(IHeaderMetadata x, IHeaderMetadata y)
             {
-                bool xPresent = !string.IsNullOrEmpty(x?.HeaderName);
-                bool yPresent = !string.IsNullOrEmpty(y?.HeaderName);
+                var xPresent = !string.IsNullOrEmpty(x?.HeaderName);
+                var yPresent = !string.IsNullOrEmpty(y?.HeaderName);
                 if (!xPresent && yPresent)
                 {
                     // y is more specific
@@ -158,8 +148,8 @@ namespace Microsoft.AspNetCore.Routing
                     return 0;
                 }
 
-                int xCount = x.HeaderValues?.Count ?? 0;
-                int yCount = y.HeaderValues?.Count ?? 0;
+                var xCount = x.HeaderValues?.Count ?? 0;
+                var yCount = y.HeaderValues?.Count ?? 0;
 
                 if (xCount == 0 && yCount > 0)
                 {
