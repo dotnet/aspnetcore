@@ -100,12 +100,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             var result = await DotnetMSBuild(
                 "Build",
-                "/p:_RazorForceBuildServer=true /p:RazorLangVersion=5.0");
+                "/p:_RazorForceBuildServer=true /p:RazorLangVersion=99.0");
 
             Assert.BuildFailed(result);
             Assert.BuildOutputContainsLine(
                 result,
-                $"Invalid option 5.0 for Razor language version --version; must be Latest or a valid version in range 1.0 to 3.0.");
+                $"Invalid option 99.0 for Razor language version --version; must be Latest or a valid version in range 1.0 to 5.0.");
 
             // Compilation failed without creating the views assembly
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");

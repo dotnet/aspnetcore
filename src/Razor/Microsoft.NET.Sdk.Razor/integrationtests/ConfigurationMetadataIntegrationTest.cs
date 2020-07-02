@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileContainsLine(
                 result,
                 razorAssemblyInfo,
-                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute(\"3.0\")]");
+                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute(\"5.0\")]");
             Assert.FileContainsLine(
                 result,
                 razorAssemblyInfo,

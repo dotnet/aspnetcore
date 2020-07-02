@@ -696,6 +696,7 @@ namespace Interop.FunctionalTests
 
         [Theory]
         [MemberData(nameof(SupportedSchemes))]
+        [QuarantinedTest]
         public async Task ServerReset_BeforeRequestBody_ClientBodyThrows(string scheme)
         {
             var clientEcho = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);

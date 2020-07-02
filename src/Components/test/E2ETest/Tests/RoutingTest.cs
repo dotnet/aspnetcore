@@ -9,6 +9,7 @@ using BasicTestApp.RouterTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using Xunit;
@@ -479,14 +480,18 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal(0, () => BrowserScrollY);
         }
 
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23596")]
+        public void PreventDefault_CanBlockNavigation_ForInternalNavigation_PreventDefaultTarget()
+            => PreventDefault_CanBlockNavigation("internal", "target");
+
         [Theory]
         [InlineData("external", "ancestor")]
         [InlineData("external", "target")]
         [InlineData("external", "descendant")]
         [InlineData("internal", "ancestor")]
-        [InlineData("internal", "target")]
         [InlineData("internal", "descendant")]
-        public void PreventDefault_CanBlockNavigation(string navigationType, string whereToPreventDefault)
+        public virtual void PreventDefault_CanBlockNavigation(string navigationType, string whereToPreventDefault)
         {
             SetUrlViaPushState("/PreventDefaultCases");
             var app = Browser.MountTestComponent<TestRouter>();

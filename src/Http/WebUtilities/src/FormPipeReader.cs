@@ -47,8 +47,10 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public FormPipeReader(PipeReader pipeReader, Encoding encoding)
         {
+#pragma warning disable CS0618, MSLIB0001 // Type or member is obsolete
             if (encoding == Encoding.UTF7)
             {
+#pragma warning restore CS0618, MSLIB0001 // Type or member is obsolete
                 throw new ArgumentException("UTF7 is unsupported and insecure. Please select a different encoding.");
             }
 

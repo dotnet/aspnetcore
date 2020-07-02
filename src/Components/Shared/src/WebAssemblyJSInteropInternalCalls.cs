@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 namespace WebAssembly.JSInterop
@@ -21,6 +22,6 @@ namespace WebAssembly.JSInterop
         public static extern string InvokeJSMarshalled(out string exception, ref long asyncHandle, string functionIdentifier, string argsJson);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern TRes InvokeJSUnmarshalled<T0, T1, T2, TRes>(out string exception, string functionIdentifier, T0 arg0, T1 arg1, T2 arg2);
+        public static extern TRes InvokeJSUnmarshalled<T0, T1, T2, TRes>(out string exception, string functionIdentifier, [AllowNull] T0 arg0, [AllowNull] T1 arg1, [AllowNull] T2 arg2);
     }
 }

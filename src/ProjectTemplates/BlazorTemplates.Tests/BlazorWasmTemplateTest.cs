@@ -333,7 +333,7 @@ namespace Templates.Test
         public async Task BlazorWasmStandaloneTemplate_IndividualAuth_Works()
         {
             var project = await ProjectFactory.GetOrCreateProject("blazorstandaloneindividual", Output);
-            project.TargetFramework = "netstandard2.1";
+            project.RuntimeIdentifier = "browser-wasm";
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] {
                 "-au",

@@ -2000,7 +2000,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            testContext.ServerOptions.Latin1RequestHeaders = true;
+            testContext.ServerOptions.RequestHeaderEncodingSelector = _ => Encoding.Latin1;
 
             await using (var server = new TestServer(context =>
             {
@@ -2050,6 +2050,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.ReceiveEnd(
                         "HTTP/1.1 400 Bad Request",
                         "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CustomRequestHeaderEncodingSelectorCanBeConfigured()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            testContext.ServerOptions.RequestHeaderEncodingSelector = _ => Encoding.UTF32;
+
+            await using (var server = new TestServer(context =>
+            {
+                Assert.Equal("£", context.Request.Headers["X-Test"]);
+                return Task.CompletedTask;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "X-Test: ");
+
+                    await connection.Stream.WriteAsync(Encoding.UTF32.GetBytes("£")).DefaultTimeout();
+
+                    await connection.Send("",
+                        "",
+                        "");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
                         "",

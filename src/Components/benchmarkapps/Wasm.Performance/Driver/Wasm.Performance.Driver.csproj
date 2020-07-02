@@ -8,8 +8,7 @@
     <!-- WebDriver is not strong-named, so this test project cannot be strong named either. -->
     <SignAssembly>false</SignAssembly>
     <IsTestAssetProject>true</IsTestAssetProject>
-    <!-- We are unable to specify a RID via the commandline. Workaround by assuming linux-x64 when building in release. -->
-    <RuntimeIdentifier Condition="'$(Configuration)' == 'Release'">linux-x64</RuntimeIdentifier>
+    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Profiling;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Rendering
@@ -56,6 +57,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         public void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment)
         {
+            ComponentsProfiling.Instance.Start();
             // A component might be in the render queue already before getting disposed by an
             // earlier entry in the render queue. In that case, rendering is a no-op.
             if (_componentWasDisposed)
@@ -67,7 +69,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
             (CurrentRenderTree, _renderTreeBuilderPrevious) = (_renderTreeBuilderPrevious, CurrentRenderTree);
 
             CurrentRenderTree.Clear();
+            ComponentsProfiling.Instance.Start("BuildRenderTree");
             renderFragment(CurrentRenderTree);
+            ComponentsProfiling.Instance.End("BuildRenderTree");
 
             var diff = RenderTreeDiffBuilder.ComputeDiff(
                 _renderer,
@@ -77,6 +81,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 CurrentRenderTree.GetFrames());
             batchBuilder.UpdatedComponentDiffs.Append(diff);
             batchBuilder.InvalidateParameterViews();
+            ComponentsProfiling.Instance.End();
         }
 
         public bool TryDisposeInBatch(RenderBatchBuilder batchBuilder, [NotNullWhen(false)] out Exception? exception)
