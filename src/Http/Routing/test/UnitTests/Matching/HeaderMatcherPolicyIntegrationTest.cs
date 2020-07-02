@@ -117,10 +117,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         [Fact]
-        public async Task Match_SingleValue_CustomStringComparison()
+        public async Task Match_SingleValue_IgnoreCase()
         {
             // Arrange
-            var endpoint = CreateEndpoint("/hello", headerAttribute: new HeaderAttribute("some-header", "abc") { HeaderValueStringComparison = StringComparison.OrdinalIgnoreCase });
+            var endpoint = CreateEndpoint("/hello", headerAttribute: new HeaderAttribute("some-header", "abc") { ValueIgnoresCase = true });
 
             var matcher = CreateMatcher(endpoint);
             var httpContext = CreateContext("/hello", new[] { KeyValuePair.Create("some-header", "aBC") });
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public async Task Match_SingleValue_Prefix(string requestHeaderValue)
         {
             // Arrange
-            var endpoint = CreateEndpoint("/hello", headerAttribute: new HeaderAttribute("some-header", "abc") { HeaderValueMatchMode = HeaderValueMatchMode.Prefix });
+            var endpoint = CreateEndpoint("/hello", headerAttribute: new HeaderAttribute("some-header", "abc") { ValueMatchMode = HeaderValueMatchMode.Prefix });
 
             var matcher = CreateMatcher(endpoint);
             var httpContext = CreateContext("/hello", new[] { KeyValuePair.Create("some-header", requestHeaderValue) });
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public async Task Match_SingleValue_Prefix_NoMatch(string requestHeaderValue)
         {
             // Arrange
-            var endpoint = CreateEndpoint("/hello", headerAttribute: new HeaderAttribute("some-header", "abc") { HeaderValueMatchMode = HeaderValueMatchMode.Prefix });
+            var endpoint = CreateEndpoint("/hello", headerAttribute: new HeaderAttribute("some-header", "abc") { ValueMatchMode = HeaderValueMatchMode.Prefix });
 
             var matcher = CreateMatcher(endpoint);
             var httpContext = CreateContext("/hello", new[] { KeyValuePair.Create("some-header", requestHeaderValue) });
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public async Task Match_MultiValues_Matches(string requestHeaderValue)
         {
             // Arrange
-            var endpoint = CreateEndpoint("/hello", headerAttribute: new HeaderAttribute("some-header", new[] { "abc", "def" }));
+            var endpoint = CreateEndpoint("/hello", headerAttribute: new HeaderAttribute("some-header", "abc", "def"));
 
             var matcher = CreateMatcher(endpoint);
             var httpContext = CreateContext("/hello", new[] { KeyValuePair.Create("some-header", requestHeaderValue) });
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public async Task Match_MultiValues_NoMatch(string requestHeaderValue)
         {
             // Arrange
-            var endpoint = CreateEndpoint("/hello", headerAttribute: new HeaderAttribute("some-header", new[] { "abc", "def" }));
+            var endpoint = CreateEndpoint("/hello", headerAttribute: new HeaderAttribute("some-header", "abc", "def"));
 
             var matcher = CreateMatcher(endpoint);
             var httpContext = CreateContext("/hello", new[] { KeyValuePair.Create("some-header", requestHeaderValue) });
@@ -203,6 +203,23 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             // Assert
             MatcherAssert.AssertNotMatch(httpContext);
+        }
+
+        [Fact]
+        public async Task Match_Specificity_PicksMoreSpecific()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint("/hello", headerAttribute: new HeaderAttribute("some-header1"));
+            var endpoint2 = CreateEndpoint("/hello", headerAttribute: new HeaderAttribute("some-header1", "abc"));
+
+            var matcher = CreateMatcher(endpoint1, endpoint2);
+            var httpContext = CreateContext("/hello", new[] { KeyValuePair.Create("some-header1", "abc") });
+
+            // Act
+            await matcher.MatchAsync(httpContext);
+
+            // Assert
+            MatcherAssert.AssertMatch(httpContext, endpoint2);
         }
 
         private static Matcher CreateMatcher(params RouteEndpoint[] endpoints)

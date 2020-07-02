@@ -14,60 +14,62 @@ namespace Microsoft.AspNetCore.Routing.Matching
 {
     public class HeaderMatcherPolicyTests
     {
-        private readonly HeaderMatcherPolicyOptions options;
-        private readonly HeaderMatcherPolicy sut;
-
-        public HeaderMatcherPolicyTests()
-        {
-            this.options = new HeaderMatcherPolicyOptions();
-            var optionMonitorsMock = new Mock<IOptionsMonitor<HeaderMatcherPolicyOptions>>();
-            optionMonitorsMock.SetupGet(o => o.CurrentValue).Returns(this.options);
-            this.sut = new HeaderMatcherPolicy(optionMonitorsMock.Object);
-        }
-
         [Fact]
-        public void Comparer_DifferentSpecificities()
+        public void Comparer_SortOrder()
         {
             // Arrange
-            var scenarios = new[]
+            var endpoints = new[]
             {
-                Tuple.Create(Endpoint("org-id", new string[0]), Endpoint(null, null)),
-                Tuple.Create(Endpoint("org-id", new[] { "abc" }), Endpoint(null, null)),
-                Tuple.Create(Endpoint("org-id", new[] { "abc" }), Endpoint(string.Empty, null)),
-                Tuple.Create(Endpoint("org-id", new[] { "abc" }), Endpoint("org-id", new string[0])),
+                (0, Endpoint("header", new[] { "abc" }, HeaderValueMatchMode.Exact)),
+                (0, Endpoint("header", new[] { "abc", "def" }, HeaderValueMatchMode.Exact)),
+                (0, Endpoint("header2", new[] { "abc", "def" }, HeaderValueMatchMode.Exact)),
+
+                (1, Endpoint("header", new[] { "abc" }, HeaderValueMatchMode.Exact, maxValuesToInspect: 2)),
+
+                (2, Endpoint("header", new[] { "abc" }, HeaderValueMatchMode.Exact, maxValuesToInspect: 3)),
+
+                (3, Endpoint("header", new[] { "abc" }, HeaderValueMatchMode.Exact, valueIgnoresCase: true)),
+
+                (4, Endpoint("header", new[] { "abc" }, HeaderValueMatchMode.Exact, valueIgnoresCase: true, maxValuesToInspect: 2)),
+
+                (5, Endpoint("header", new[] { "abc" }, HeaderValueMatchMode.Prefix)),
+                (5, Endpoint("header", new[] { "abc", "def" }, HeaderValueMatchMode.Prefix)),
+                (5, Endpoint("header2", new[] { "abc", "def" }, HeaderValueMatchMode.Prefix)),
+
+                (6, Endpoint("header", new[] { "abc" }, HeaderValueMatchMode.Prefix, maxValuesToInspect: 2)),
+
+                (7, Endpoint("header", new[] { "abc" }, HeaderValueMatchMode.Prefix, valueIgnoresCase: true)),
+
+                (8, Endpoint("header", new[] { "abc" }, HeaderValueMatchMode.Prefix, valueIgnoresCase: true, maxValuesToInspect: 2)),
+
+                (9, Endpoint("header", new string[0], HeaderValueMatchMode.Exact)),
+                (9, Endpoint("header", new string[0], HeaderValueMatchMode.Exact, valueIgnoresCase: true)),
+                (9, Endpoint("header", new string[0], HeaderValueMatchMode.Prefix)),
+                (9, Endpoint("header", new string[0], HeaderValueMatchMode.Prefix, valueIgnoresCase: true)),
+                (9, Endpoint("header", new string[0], maxValuesToInspect: 2)),
+
+                (10, Endpoint(string.Empty, null)),
+                (10, Endpoint(null, null)),
             };
+            var sut = new HeaderMatcherPolicy();
 
             // Act
-            for (int i = 0; i < scenarios.Length; i++)
+            for (int i = 0; i < endpoints.Length; i++)
             {
-                int result1 = this.sut.Comparer.Compare(scenarios[i].Item1, scenarios[i].Item2);
-                int result2 = this.sut.Comparer.Compare(scenarios[i].Item2, scenarios[i].Item1);
-                Assert.Equal(-1, result1);
-                Assert.Equal(1, result2);
-            }
-        }
+                for (int j = 0; j < endpoints.Length; j++)
+                {
+                    var a = endpoints[i];
+                    var b = endpoints[j];
 
-        [Fact]
-        public void Comparer_SameSpecificities()
-        {
-            // Arrange
-            var scenarios = new[]
-            {
-                Tuple.Create(Endpoint(null, null), Endpoint(null, null)),
-                Tuple.Create(Endpoint(string.Empty, null), Endpoint(null, null)),
-                Tuple.Create(Endpoint("org-id", null), Endpoint("tenant-id", null)),
-                Tuple.Create(Endpoint("org-id", null), Endpoint("tenant-id", new string[0])),
-                Tuple.Create(Endpoint("org-id", new string[0]), Endpoint("tenant-id", new string[0])),
-                Tuple.Create(Endpoint("org-id", new[] { "abc" }), Endpoint("tenant-id", new[] { "abc", "def" })),
-            };
-
-            // Act
-            for (int i = 0; i < scenarios.Length; i++)
-            {
-                int result1 = this.sut.Comparer.Compare(scenarios[i].Item1, scenarios[i].Item2);
-                int result2 = this.sut.Comparer.Compare(scenarios[i].Item2, scenarios[i].Item1);
-                Assert.Equal(0, result1);
-                Assert.Equal(0, result2);
+                    var actual = sut.Comparer.Compare(a.Item2, b.Item2);
+                    var expected =
+                        a.Item1 < b.Item1 ? -1 :
+                        a.Item1 > b.Item1 ? 1 : 0;
+                    if (actual != expected)
+                    {
+                        Assert.True(false, $"Error comparing [{i}] to [{j}], expected {expected}, found {actual}.");
+                    }
+                }
             }
         }
 
@@ -86,7 +88,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 Endpoint("org-id", new[] { "abc" }, isDynamic: true),
                 Endpoint(null, null, isDynamic: true),
             };
-            var endpointSelectorPolicy = (IEndpointSelectorPolicy)this.sut;
+            var sut = new HeaderMatcherPolicy();
+            var endpointSelectorPolicy = (IEndpointSelectorPolicy)sut;
 
             // Act
             for (int i = 0; i < scenarios.Length; i++)
@@ -107,7 +110,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 Endpoint(string.Empty, new string[0]),
                 Endpoint(string.Empty, new[] { "abc" }),
             };
-            var endpointSelectorPolicy = (IEndpointSelectorPolicy)this.sut;
+            var sut = new HeaderMatcherPolicy();
+            var endpointSelectorPolicy = (IEndpointSelectorPolicy)sut;
 
             // Act
             for (int i = 0; i < scenarios.Length; i++)
@@ -132,41 +136,42 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var endpoint = Endpoint("org-id", new string[0]);
             var candidates = new CandidateSet(new[] { endpoint }, new RouteValueDictionary[1], new int[1]);
+            var sut = new HeaderMatcherPolicy();
 
             // Act
-            await this.sut.ApplyAsync(context, candidates);
+            await sut.ApplyAsync(context, candidates);
 
             // Assert
             Assert.Equal(shouldMatch, candidates.IsValidCandidate(0));
         }
 
         [Theory]
-        [InlineData("abc", HeaderValueMatchMode.Exact, StringComparison.Ordinal, null, false)]
-        [InlineData("abc", HeaderValueMatchMode.Exact, StringComparison.Ordinal, "", false)]
-        [InlineData("abc", HeaderValueMatchMode.Exact, StringComparison.Ordinal, "abc", true)]
-        [InlineData("abc", HeaderValueMatchMode.Exact, StringComparison.Ordinal, "aBC", false)]
-        [InlineData("abc", HeaderValueMatchMode.Exact, StringComparison.Ordinal, "abcd", false)]
-        [InlineData("abc", HeaderValueMatchMode.Exact, StringComparison.Ordinal, "ab", false)]
-        [InlineData("abc", HeaderValueMatchMode.Exact, StringComparison.OrdinalIgnoreCase, "", false)]
-        [InlineData("abc", HeaderValueMatchMode.Exact, StringComparison.OrdinalIgnoreCase, "abc", true)]
-        [InlineData("abc", HeaderValueMatchMode.Exact, StringComparison.OrdinalIgnoreCase, "aBC", true)]
-        [InlineData("abc", HeaderValueMatchMode.Exact, StringComparison.OrdinalIgnoreCase, "abcd", false)]
-        [InlineData("abc", HeaderValueMatchMode.Exact, StringComparison.OrdinalIgnoreCase, "ab", false)]
-        [InlineData("abc", HeaderValueMatchMode.Prefix, StringComparison.Ordinal, "", false)]
-        [InlineData("abc", HeaderValueMatchMode.Prefix, StringComparison.Ordinal, "abc", true)]
-        [InlineData("abc", HeaderValueMatchMode.Prefix, StringComparison.Ordinal, "aBC", false)]
-        [InlineData("abc", HeaderValueMatchMode.Prefix, StringComparison.Ordinal, "abcd", true)]
-        [InlineData("abc", HeaderValueMatchMode.Prefix, StringComparison.Ordinal, "ab", false)]
-        [InlineData("abc", HeaderValueMatchMode.Prefix, StringComparison.OrdinalIgnoreCase, "", false)]
-        [InlineData("abc", HeaderValueMatchMode.Prefix, StringComparison.OrdinalIgnoreCase, "abc", true)]
-        [InlineData("abc", HeaderValueMatchMode.Prefix, StringComparison.OrdinalIgnoreCase, "aBC", true)]
-        [InlineData("abc", HeaderValueMatchMode.Prefix, StringComparison.OrdinalIgnoreCase, "abcd", true)]
-        [InlineData("abc", HeaderValueMatchMode.Prefix, StringComparison.OrdinalIgnoreCase, "aBCd", true)]
-        [InlineData("abc", HeaderValueMatchMode.Prefix, StringComparison.OrdinalIgnoreCase, "ab", false)]
+        [InlineData("abc", HeaderValueMatchMode.Exact, false, null, false)]
+        [InlineData("abc", HeaderValueMatchMode.Exact, false, "", false)]
+        [InlineData("abc", HeaderValueMatchMode.Exact, false, "abc", true)]
+        [InlineData("abc", HeaderValueMatchMode.Exact, false, "aBC", false)]
+        [InlineData("abc", HeaderValueMatchMode.Exact, false, "abcd", false)]
+        [InlineData("abc", HeaderValueMatchMode.Exact, false, "ab", false)]
+        [InlineData("abc", HeaderValueMatchMode.Exact, true, "", false)]
+        [InlineData("abc", HeaderValueMatchMode.Exact, true, "abc", true)]
+        [InlineData("abc", HeaderValueMatchMode.Exact, true, "aBC", true)]
+        [InlineData("abc", HeaderValueMatchMode.Exact, true, "abcd", false)]
+        [InlineData("abc", HeaderValueMatchMode.Exact, true, "ab", false)]
+        [InlineData("abc", HeaderValueMatchMode.Prefix, false, "", false)]
+        [InlineData("abc", HeaderValueMatchMode.Prefix, false, "abc", true)]
+        [InlineData("abc", HeaderValueMatchMode.Prefix, false, "aBC", false)]
+        [InlineData("abc", HeaderValueMatchMode.Prefix, false, "abcd", true)]
+        [InlineData("abc", HeaderValueMatchMode.Prefix, false, "ab", false)]
+        [InlineData("abc", HeaderValueMatchMode.Prefix, true, "", false)]
+        [InlineData("abc", HeaderValueMatchMode.Prefix, true, "abc", true)]
+        [InlineData("abc", HeaderValueMatchMode.Prefix, true, "aBC", true)]
+        [InlineData("abc", HeaderValueMatchMode.Prefix, true, "abcd", true)]
+        [InlineData("abc", HeaderValueMatchMode.Prefix, true, "aBCd", true)]
+        [InlineData("abc", HeaderValueMatchMode.Prefix, true, "ab", false)]
         public async Task ApplyAsync_MatchingScenarios_OneHeaderValue(
             string headerValue,
             HeaderValueMatchMode headerValueMatchMode,
-            StringComparison headerValueStringComparison,
+            bool valueIgnoresCase,
             string incomingHeaderValue,
             bool shouldMatch)
         {
@@ -177,62 +182,64 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 context.Request.Headers.Add("org-id", incomingHeaderValue);
             }
 
-            var endpoint = Endpoint("org-id", new[] { headerValue }, headerValueMatchMode, headerValueStringComparison);
+            var endpoint = Endpoint("org-id", new[] { headerValue }, headerValueMatchMode, valueIgnoresCase);
             var candidates = new CandidateSet(new[] { endpoint }, new RouteValueDictionary[1], new int[1]);
+            var sut = new HeaderMatcherPolicy();
 
             // Act
-            await this.sut.ApplyAsync(context, candidates);
+            await sut.ApplyAsync(context, candidates);
 
             // Assert
             Assert.Equal(shouldMatch, candidates.IsValidCandidate(0));
         }
 
         [Theory]
-        [InlineData("abc", "def", HeaderValueMatchMode.Exact, StringComparison.Ordinal, null, false)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Exact, StringComparison.Ordinal, "", false)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Exact, StringComparison.Ordinal, "abc", true)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Exact, StringComparison.Ordinal, "abcd", false)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Exact, StringComparison.Ordinal, "def", true)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Exact, StringComparison.Ordinal, "defg", false)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Exact, StringComparison.OrdinalIgnoreCase, null, false)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Exact, StringComparison.OrdinalIgnoreCase, "", false)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Exact, StringComparison.OrdinalIgnoreCase, "abc", true)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Exact, StringComparison.OrdinalIgnoreCase, "aBC", true)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Exact, StringComparison.OrdinalIgnoreCase, "aBCd", false)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Exact, StringComparison.OrdinalIgnoreCase, "def", true)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Exact, StringComparison.OrdinalIgnoreCase, "DEFg", false)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, StringComparison.Ordinal, null, false)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, StringComparison.Ordinal, "", false)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, StringComparison.Ordinal, "abc", true)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, StringComparison.Ordinal, "abcd", true)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, StringComparison.Ordinal, "def", true)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, StringComparison.Ordinal, "defg", true)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, StringComparison.Ordinal, "aabc", false)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, StringComparison.OrdinalIgnoreCase, null, false)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, StringComparison.OrdinalIgnoreCase, "", false)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, StringComparison.OrdinalIgnoreCase, "abc", true)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, StringComparison.OrdinalIgnoreCase, "aBC", true)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, StringComparison.OrdinalIgnoreCase, "aBCd", true)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, StringComparison.OrdinalIgnoreCase, "def", true)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, StringComparison.OrdinalIgnoreCase, "DEFg", true)]
-        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, StringComparison.OrdinalIgnoreCase, "aabc", false)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Exact, false, null, false)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Exact, false, "", false)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Exact, false, "abc", true)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Exact, false, "abcd", false)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Exact, false, "def", true)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Exact, false, "defg", false)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Exact, true, null, false)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Exact, true, "", false)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Exact, true, "abc", true)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Exact, true, "aBC", true)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Exact, true, "aBCd", false)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Exact, true, "def", true)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Exact, true, "DEFg", false)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, false, null, false)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, false, "", false)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, false, "abc", true)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, false, "abcd", true)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, false, "def", true)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, false, "defg", true)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, false, "aabc", false)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, true, null, false)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, true, "", false)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, true, "abc", true)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, true, "aBC", true)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, true, "aBCd", true)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, true, "def", true)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, true, "DEFg", true)]
+        [InlineData("abc", "def", HeaderValueMatchMode.Prefix, true, "aabc", false)]
         public async Task ApplyAsync_MatchingScenarios_TwoHeaderValues(
             string header1Value,
             string header2Value,
             HeaderValueMatchMode headerValueMatchMode,
-            StringComparison headerValueStringComparison,
+            bool valueIgnoresCase,
             string incomingHeaderValue,
             bool shouldMatch)
         {
             // Arrange
             var context = new DefaultHttpContext();
             context.Request.Headers.Add("org-id", incomingHeaderValue);
-            var endpoint = Endpoint("org-id", new[] { header1Value, header2Value }, headerValueMatchMode, headerValueStringComparison);
+            var endpoint = Endpoint("org-id", new[] { header1Value, header2Value }, headerValueMatchMode, valueIgnoresCase);
 
             var candidates = new CandidateSet(new[] { endpoint }, new RouteValueDictionary[1], new int[1]);
+            var sut = new HeaderMatcherPolicy();
 
             // Act
-            await this.sut.ApplyAsync(context, candidates);
+            await sut.ApplyAsync(context, candidates);
 
             // Assert
             Assert.Equal(shouldMatch, candidates.IsValidCandidate(0));
@@ -242,37 +249,41 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public async Task ApplyAsync_RespectsMaxHeadersToInspect()
         {
             // Arrange
-            this.options.MaximumRequestHeaderValuesToInspect = 2;
             var context = new DefaultHttpContext();
             context.Request.Headers.Add("org-id", new[] { "abc1", "abc2", "abc3" });
-            var endpoint1 = Endpoint("org-id", new[] { "abc1" });
-            var endpoint2 = Endpoint("org-id", new[] { "abc2" });
-            var endpoint3 = Endpoint("org-id", new[] { "abc3" });
+            var endpoint1 = Endpoint("org-id", new[] { "abc1" }, maxValuesToInspect: 2);
+            var endpoint2 = Endpoint("org-id", new[] { "abc2" }, maxValuesToInspect: 2);
+            var endpoint3 = Endpoint("org-id", new[] { "abc3" }, maxValuesToInspect: 2);
+            var endpoint4 = Endpoint("org-id", new[] { "abc3" }, maxValuesToInspect: 3);
 
-            var candidates = new CandidateSet(new[] { endpoint1, endpoint2, endpoint3 }, new RouteValueDictionary[3], new int[3]);
+            var candidates = new CandidateSet(new[] { endpoint1, endpoint2, endpoint3, endpoint4 }, new RouteValueDictionary[4], new int[4]);
+            var sut = new HeaderMatcherPolicy();
 
             // Act
-            await this.sut.ApplyAsync(context, candidates);
+            await sut.ApplyAsync(context, candidates);
 
             // Assert
             Assert.True(candidates.IsValidCandidate(0));
             Assert.True(candidates.IsValidCandidate(1));
             Assert.False(candidates.IsValidCandidate(2));
+            Assert.True(candidates.IsValidCandidate(3));
         }
 
         private static Endpoint Endpoint(
             string headerName,
             string[] headerValues,
             HeaderValueMatchMode headerValueMatchMode = HeaderValueMatchMode.Exact,
-            StringComparison headerValueStringComparison = StringComparison.Ordinal,
+            bool valueIgnoresCase = false,
+            int maxValuesToInspect = 1,
             bool isDynamic = false)
         {
             var builder = new RouteEndpointBuilder(_ => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
             var metadata = new Mock<IHeaderMetadata>();
             metadata.SetupGet(m => m.HeaderName).Returns(headerName);
             metadata.SetupGet(m => m.HeaderValues).Returns(headerValues);
-            metadata.SetupGet(m => m.HeaderValueMatchMode).Returns(headerValueMatchMode);
-            metadata.SetupGet(m => m.HeaderValueStringComparison).Returns(headerValueStringComparison);
+            metadata.SetupGet(m => m.ValueMatchMode).Returns(headerValueMatchMode);
+            metadata.SetupGet(m => m.ValueIgnoresCase).Returns(valueIgnoresCase);
+            metadata.SetupGet(m => m.MaximumValuesToInspect).Returns(maxValuesToInspect);
 
             builder.Metadata.Add(metadata.Object);
             if (isDynamic)

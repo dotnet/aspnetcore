@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert
             Assert.Equal("some-header", sut.HeaderName);
-            Assert.Equal(HeaderValueMatchMode.Exact, sut.HeaderValueMatchMode);
-            Assert.Equal(StringComparison.Ordinal, sut.HeaderValueStringComparison);
+            Assert.Equal(HeaderValueMatchMode.Exact, sut.ValueMatchMode);
+            Assert.False(sut.ValueIgnoresCase);
         }
 
         [Fact]
@@ -26,13 +26,13 @@ namespace Microsoft.AspNetCore.Routing
             // Act
             var sut = new HeaderAttribute("some-header", "abc")
             {
-                HeaderValueMatchMode = HeaderValueMatchMode.Prefix,
-                HeaderValueStringComparison = StringComparison.OrdinalIgnoreCase,
+                ValueMatchMode = HeaderValueMatchMode.Prefix,
+                ValueIgnoresCase = true,
             };
 
             // Assert
-            Assert.Equal(HeaderValueMatchMode.Prefix, sut.HeaderValueMatchMode);
-            Assert.Equal(StringComparison.OrdinalIgnoreCase, sut.HeaderValueStringComparison);
+            Assert.Equal(HeaderValueMatchMode.Prefix, sut.ValueMatchMode);
+            Assert.True(sut.ValueIgnoresCase);
         }
 
         [Fact]

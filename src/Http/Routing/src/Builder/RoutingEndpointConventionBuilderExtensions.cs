@@ -41,6 +41,57 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
+        /// Requires that endpoints match the specified header during routing.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointConventionBuilder"/> to add the metadata to.</param>
+        /// <param name="headerName">Header name to match.</param>
+        /// <param name="headerValues">
+        /// Acceptable header values that should match.
+        /// An empty collection means any value will be accepted as long as the header is present.
+        /// </param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        public static TBuilder RequireHeader<TBuilder>(this TBuilder builder, string headerName, params string[] headerValues) where TBuilder : IEndpointConventionBuilder
+        {
+            return RequireHeader(builder, headerName, HeaderValueMatchMode.Exact, false, headerValues);
+        }
+
+        /// <summary>
+        /// Requires that endpoints match the specified header during routing.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointConventionBuilder"/> to add the metadata to.</param>
+        /// <param name="headerName">Header name to match.</param>
+        /// <param name="valueMatchMode">Specifies how header values should be compared (e.g. exact matches Vs. by prefix).</param>
+        /// <param name="valueIgnoresCase">Specifies whether header value comparisons should ignore case.</param>
+        /// <param name="headerValues">
+        /// Acceptable header values that should match.
+        /// An empty collection means any value will be accepted as long as the header is present.
+        /// </param>
+        /// <returns>A reference to this instance after the operation has completed.</returns>
+        public static TBuilder RequireHeader<TBuilder>(this TBuilder builder, string headerName, HeaderValueMatchMode valueMatchMode, bool valueIgnoresCase, params string[] headerValues) where TBuilder : IEndpointConventionBuilder
+        {
+            if (headerName == null)
+            {
+                throw new ArgumentNullException(nameof(headerName));
+            }
+
+            if (headerValues == null)
+            {
+                throw new ArgumentNullException(nameof(headerValues));
+            }
+
+            builder.Add(endpointBuilder =>
+            {
+                endpointBuilder.Metadata.Add(
+                    new HeaderAttribute(headerName, headerValues)
+                    {
+                        ValueMatchMode = valueMatchMode,
+                        ValueIgnoresCase = valueIgnoresCase,
+                    });
+            });
+            return builder;
+        }
+
+        /// <summary>
         /// Sets the <see cref="EndpointBuilder.DisplayName"/> to the provided <paramref name="displayName"/> for all
         /// builders created by <paramref name="builder"/>.
         /// </summary>

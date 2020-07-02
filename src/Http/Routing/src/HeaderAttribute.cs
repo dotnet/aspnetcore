@@ -15,36 +15,24 @@ namespace Microsoft.AspNetCore.Routing
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     public sealed class HeaderAttribute : Attribute, IHeaderMetadata
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HeaderAttribute"/> class.
-        /// Requests having the specified header <paramref name="headerName"/>, with any value, will match.
-        /// </summary>
-        public HeaderAttribute(string headerName)
-            : this(headerName, Array.Empty<string>())
-        {
-        }
+        private const int DefaultMaximumValuesToInspect = 1;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HeaderAttribute"/> class.
-        /// Requests having the specified header <paramref name="headerName"/>
-        /// with a value that matches <paramref name="headerValue"/> will match.
-        /// Properties <see cref="HeaderValueMatchMode"/> and <see cref="HeaderValueStringComparison"/>
-        /// provide additional string matching options.
-        /// </summary>
-        public HeaderAttribute(string headerName, string headerValue)
-            : this(headerName, new[] { headerValue })
-        {
-        }
+        private int _maximumValuesToInspect = DefaultMaximumValuesToInspect;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HeaderAttribute"/> class.
         /// Requests having the specified header <paramref name="headerName"/>
         /// with a value that matches any of the values in <paramref name="headerValues"/>
         /// will match.
-        /// Properties <see cref="HeaderValueMatchMode"/> and <see cref="HeaderValueStringComparison"/>
-        /// provide additional string matching options.
+        /// Properties <see cref="ValueMatchMode"/> and <see cref="ValueIgnoresCase"/>
+        /// provide additional string matching options for header values.
         /// </summary>
-        public HeaderAttribute(string headerName, string[] headerValues)
+        /// <param name="headerName">Header name to match.</param>
+        /// <param name="headerValues">
+        /// Acceptable header values that should match.
+        /// An empty collection means any value will be accepted as long as the header is present.
+        /// </param>
+        public HeaderAttribute(string headerName, params string[] headerValues)
         {
             if (string.IsNullOrEmpty(headerName))
             {
@@ -64,10 +52,25 @@ namespace Microsoft.AspNetCore.Routing
         public IReadOnlyList<string> HeaderValues { get; }
 
         /// <inheritdoc/>
-        public HeaderValueMatchMode HeaderValueMatchMode { get; set; } = HeaderValueMatchMode.Exact;
+        public HeaderValueMatchMode ValueMatchMode { get; set; } = HeaderValueMatchMode.Exact;
 
         /// <inheritdoc/>
-        public StringComparison HeaderValueStringComparison { get; set; } = StringComparison.Ordinal;
+        public bool ValueIgnoresCase { get; set; }
+
+        /// <inheritdoc/>
+        public int MaximumValuesToInspect
+        {
+            get => _maximumValuesToInspect;
+            set
+            {
+                if (value <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), $"${nameof(value)} must be positive.");
+                }
+
+                _maximumValuesToInspect = value;
+            }
+        }
 
         private string DebuggerToString()
         {
@@ -75,7 +78,7 @@ namespace Microsoft.AspNetCore.Routing
                 ? "*"
                 : string.Join(",", HeaderValues.Select(v => $"\"{v}\""));
 
-            return $"Header {HeaderName} = {valuesDisplay} ({HeaderValueMatchMode}, {HeaderValueStringComparison})";
+            return $"Header {HeaderName} = {valuesDisplay} ({nameof(ValueMatchMode)}={ValueMatchMode}, {nameof(ValueIgnoresCase)}={ValueIgnoresCase}, {nameof(MaximumValuesToInspect)}={MaximumValuesToInspect})";
         }
     }
 }

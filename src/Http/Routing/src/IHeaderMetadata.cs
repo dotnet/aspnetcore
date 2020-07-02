@@ -23,15 +23,26 @@ namespace Microsoft.AspNetCore.Routing
         IReadOnlyList<string> HeaderValues { get; }
 
         /// <summary>
-        /// Specifies how header values should be compared as exact matches or by prefix.
+        /// Specifies how header values should be compared (e.g. exact matches Vs. by prefix).
         /// Defaults to <see cref="HeaderValueMatchMode.Exact"/>.
         /// </summary>
-        HeaderValueMatchMode HeaderValueMatchMode { get; }
+        HeaderValueMatchMode ValueMatchMode { get; }
 
         /// <summary>
-        /// Specifies string comparison rules, including whether matches are case sensitive or not.
-        /// Defaults to <see cref="StringComparison.Ordinal"/>.
+        /// Specifies whether header value comparisons should ignore case.
+        /// When <c>false</c>, <see cref="StringComparison.Ordinal" /> is used.
+        /// When <c>true</c>, <see cref="StringComparison.OrdinalIgnoreCase" /> is used.
+        /// Defaults to <c>false</c>.
         /// </summary>
-        StringComparison HeaderValueStringComparison { get; }
+        bool ValueIgnoresCase { get; }
+
+        /// <summary>
+        /// Specifies the maximum number of incoming header values to inspect when evaluating each <see cref="HeaderValues"/>.
+        /// </summary>
+        /// <remarks>
+        /// Since header-based routing is commonly used in scenarios where a single header value is expected,
+        /// this helps us bail out early for unexpected requests.
+        /// </remarks>
+        int MaximumValuesToInspect { get; }
     }
 }

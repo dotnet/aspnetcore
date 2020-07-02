@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information
 
 using System;
@@ -11,15 +11,8 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public sealed class HeaderMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, IEndpointSelectorPolicy
+    internal sealed class HeaderMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, IEndpointSelectorPolicy
     {
-        private readonly IOptionsMonitor<HeaderMatcherPolicyOptions> _options;
-
-        public HeaderMatcherPolicy(IOptionsMonitor<HeaderMatcherPolicyOptions> options)
-        {
-            _options = options ?? throw new ArgumentNullException(nameof(options));
-        }
-
         /// <inheritdoc/>
         // Run after HttpMethodMatcherPolicy (-1000) and HostMatcherPolicy (-100), but before default (0)
         public override int Order => -50;
@@ -47,7 +40,6 @@ namespace Microsoft.AspNetCore.Routing
             _ = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
             _ = candidates ?? throw new ArgumentNullException(nameof(candidates));
 
-            int maxRequestHeadersToInspect = _options.CurrentValue.MaximumRequestHeaderValuesToInspect;
             for (int i = 0; i < candidates.Count; i++)
             {
                 if (!candidates.IsValidCandidate(i))
@@ -56,30 +48,31 @@ namespace Microsoft.AspNetCore.Routing
                 }
 
                 var metadata = candidates[i].Endpoint.Metadata.GetMetadata<IHeaderMetadata>();
-                if (metadata == null)
+                var metadataHeaderName = metadata?.HeaderName;
+                if (string.IsNullOrEmpty(metadataHeaderName))
                 {
                     // Can match any request
                     continue;
                 }
 
-                var metadataHeaderName = metadata.HeaderName;
                 var metadataHeaderValues = metadata.HeaderValues;
+                int maxValuesToInspect = metadata.MaximumValuesToInspect;
 
                 var matched = false;
                 if (httpContext.Request.Headers.TryGetValue(metadataHeaderName, out var requestHeaderValues))
                 {
-                    if (metadataHeaderValues.Count == 0)
+                    if (metadataHeaderValues?.Count == 0)
                     {
                         // We were asked to match as long as the header exists, and it *does* exist
                         matched = true;
                     }
                     else
                     {
-                        var comparisonFunc = GetComparisonFunc(metadata.HeaderValueMatchMode);
-                        var stringComparison = metadata.HeaderValueStringComparison;
+                        var comparisonFunc = GetComparisonFunc(metadata.ValueMatchMode);
+                        var stringComparison = metadata.ValueIgnoresCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
                         for (int j = 0; j < metadataHeaderValues.Count; j++)
                         {
-                            for (int k = 0; k < requestHeaderValues.Count && k < maxRequestHeadersToInspect; k++)
+                            for (int k = 0; k < requestHeaderValues.Count && k < maxValuesToInspect; k++)
                             {
                                 if (comparisonFunc(requestHeaderValues[k], metadataHeaderValues[j], stringComparison))
                                 {
@@ -132,6 +125,8 @@ namespace Microsoft.AspNetCore.Routing
             {
                 var xPresent = !string.IsNullOrEmpty(x?.HeaderName);
                 var yPresent = !string.IsNullOrEmpty(y?.HeaderName);
+
+                // 1. First, sort by presence of metadata
                 if (!xPresent && yPresent)
                 {
                     // y is more specific
@@ -148,6 +143,7 @@ namespace Microsoft.AspNetCore.Routing
                     return 0;
                 }
 
+                // 2. Then, by whether we seek specific header values or just header presence
                 var xCount = x.HeaderValues?.Count ?? 0;
                 var yCount = y.HeaderValues?.Count ?? 0;
 
@@ -159,6 +155,47 @@ namespace Microsoft.AspNetCore.Routing
                 else if (xCount > 0 && yCount == 0)
                 {
                     // x is more specific, as *only it* looks for specific header values
+                    return -1;
+                }
+                else if (xCount == 0 && yCount == 0)
+                {
+                    // Same specificity, they both only check eader presence
+                    return 0;
+                }
+
+                // 3. Then, by value match mode (Exact Vs. Prefix)
+                if (x.ValueMatchMode != HeaderValueMatchMode.Exact && y.ValueMatchMode == HeaderValueMatchMode.Exact)
+                {
+                    // y is more specific, as *only it* does exact match
+                    return 1;
+                }
+                else if (x.ValueMatchMode == HeaderValueMatchMode.Exact && y.ValueMatchMode != HeaderValueMatchMode.Exact)
+                {
+                    // x is more specific, as *only it* does exact match
+                    return -1;
+                }
+
+                // 4. Then, by case sensitivity
+                if (x.ValueIgnoresCase && !y.ValueIgnoresCase)
+                {
+                    // y is more specific, as *only it* is case sensitive
+                    return 1;
+                }
+                else if (!x.ValueIgnoresCase && y.ValueIgnoresCase)
+                {
+                    // x is more specific, as *only it* is case sensitive
+                    return -1;
+                }
+
+                // 5. then, by how many headers are inspected
+                if (x.MaximumValuesToInspect > y.MaximumValuesToInspect)
+                {
+                    // y is more specific, as it needs a match among a smaller number of incoming headers.
+                    return 1;
+                }
+                else if (x.MaximumValuesToInspect < y.MaximumValuesToInspect)
+                {
+                    // x is more specific, as it needs a match among a smaller number of incoming headers.
                     return -1;
                 }
 

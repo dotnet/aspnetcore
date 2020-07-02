@@ -29,6 +29,46 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
+        public void RequireHeader_AddsHeaderMetadata()
+        {
+            // Arrange
+            var builder = CreateBuilder();
+
+            // Act
+            builder.RequireHeader("some-header", "abc", "def");
+
+            // Assert
+            var endpoint = builder.Build();
+
+            var metadata = endpoint.Metadata.GetMetadata<IHeaderMetadata>();
+            Assert.NotNull(metadata);
+            Assert.Equal("some-header", metadata.HeaderName);
+            Assert.Equal(new[] { "abc", "def" }, metadata.HeaderValues);
+            Assert.Equal(HeaderValueMatchMode.Exact, metadata.ValueMatchMode);
+            Assert.False(metadata.ValueIgnoresCase);
+        }
+
+        [Fact]
+        public void RequireHeader_AddsHeaderMetadata_CustomMatchOptions()
+        {
+            // Arrange
+            var builder = CreateBuilder();
+
+            // Act
+            builder.RequireHeader("some-header", HeaderValueMatchMode.Prefix, true, "abc", "def");
+
+            // Assert
+            var endpoint = builder.Build();
+
+            var metadata = endpoint.Metadata.GetMetadata<IHeaderMetadata>();
+            Assert.NotNull(metadata);
+            Assert.Equal("some-header", metadata.HeaderName);
+            Assert.Equal(new[] { "abc", "def" }, metadata.HeaderValues);
+            Assert.Equal(HeaderValueMatchMode.Prefix, metadata.ValueMatchMode);
+            Assert.True(metadata.ValueIgnoresCase);
+        }
+
+        [Fact]
         public void RequireHost_ChainedCall_ReturnedBuilderIsDerivedType()
         {
             // Arrange
