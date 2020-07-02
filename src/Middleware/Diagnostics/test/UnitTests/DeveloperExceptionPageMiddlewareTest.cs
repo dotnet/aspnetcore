@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics
@@ -22,17 +23,25 @@ namespace Microsoft.AspNetCore.Diagnostics
         {
             // Arrange
             DiagnosticListener diagnosticListener = null;
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
-                    app.UseDeveloperExceptionPage();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        throw new Exception("Test exception");
+                        diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
+                        app.UseDeveloperExceptionPage();
+                        app.Run(context =>
+                        {
+                            throw new Exception("Test exception");
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var listener = new TestDiagnosticListener();
             diagnosticListener.SubscribeWithAdapter(listener);
 
@@ -44,22 +53,32 @@ namespace Microsoft.AspNetCore.Diagnostics
             Assert.NotNull(listener.DiagnosticUnhandledException?.Exception);
             Assert.Null(listener.DiagnosticHandledException?.HttpContext);
             Assert.Null(listener.DiagnosticHandledException?.Exception);
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task ErrorPageWithAcceptHeaderForHtmlReturnsHtml()
         {
             // Arrange
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseDeveloperExceptionPage();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        throw new Exception("Test exception");
+                        app.UseDeveloperExceptionPage();
+                        app.Run(context =>
+                        {
+                            throw new Exception("Test exception");
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             // Act
             var client = server.CreateClient();
@@ -71,22 +90,32 @@ namespace Microsoft.AspNetCore.Diagnostics
             Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
             Assert.Contains("<html", responseText);
             Assert.Contains("Test exception", responseText);
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task ErrorPageWithoutAcceptHeaderForHtmlReturnsPlainText()
         {
             // Arrange
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseDeveloperExceptionPage();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        throw new Exception("Test exception");
+                        app.UseDeveloperExceptionPage();
+                        app.Run(context =>
+                        {
+                            throw new Exception("Test exception");
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             // Act
             var response = await server.CreateClient().GetAsync("/path");
@@ -96,88 +125,120 @@ namespace Microsoft.AspNetCore.Diagnostics
             Assert.Equal("text/plain", response.Content.Headers.ContentType.MediaType);
             Assert.Contains("Test exception", responseText);
             Assert.DoesNotContain("<html", responseText);
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task ExceptionPageFiltersAreApplied()
         {
             // Arrange
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddSingleton<IDeveloperPageExceptionFilter, ExceptionMessageFilter>();
-                })
-                .Configure(app =>
-                {
-                    app.UseDeveloperExceptionPage();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        throw new Exception("Test exception");
+                        services.AddSingleton<IDeveloperPageExceptionFilter, ExceptionMessageFilter>();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseDeveloperExceptionPage();
+                        app.Run(context =>
+                        {
+                            throw new Exception("Test exception");
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             // Act
             var response = await server.CreateClient().GetAsync("/path");
 
             // Assert
             Assert.Equal("Test exception", await response.Content.ReadAsStringAsync());
+
+            await host.StopAsync();
         }
 
         [Fact]
         public async Task ExceptionFilterCallingNextWorks()
         {
             // Arrange
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddSingleton<IDeveloperPageExceptionFilter, PassThroughExceptionFilter>();
-                    services.AddSingleton<IDeveloperPageExceptionFilter, AlwaysBadFormatExceptionFilter>();
-                    services.AddSingleton<IDeveloperPageExceptionFilter, ExceptionMessageFilter>();
-                })
-                .Configure(app =>
-                {
-                    app.UseDeveloperExceptionPage();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        throw new Exception("Test exception");
+                        services.AddSingleton<IDeveloperPageExceptionFilter, PassThroughExceptionFilter>();
+                        services.AddSingleton<IDeveloperPageExceptionFilter, AlwaysBadFormatExceptionFilter>();
+                        services.AddSingleton<IDeveloperPageExceptionFilter, ExceptionMessageFilter>();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseDeveloperExceptionPage();
+                        app.Run(context =>
+                        {
+                            throw new Exception("Test exception");
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             // Act
             var response = await server.CreateClient().GetAsync("/path");
 
             // Assert
             Assert.Equal("Bad format exception!", await response.Content.ReadAsStringAsync());
+
+            await host.StartAsync();
         }
 
         [Fact]
         public async Task ExceptionPageFiltersAreAppliedInOrder()
         {
             // Arrange
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    services.AddSingleton<IDeveloperPageExceptionFilter, AlwaysThrowSameMessageFilter>();
-                    services.AddSingleton<IDeveloperPageExceptionFilter, ExceptionMessageFilter>();
-                    services.AddSingleton<IDeveloperPageExceptionFilter, ExceptionToStringFilter>();
-                })
-                .Configure(app =>
-                {
-                    app.UseDeveloperExceptionPage();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
                     {
-                        throw new Exception("Test exception");
+                        services.AddSingleton<IDeveloperPageExceptionFilter, AlwaysThrowSameMessageFilter>();
+                        services.AddSingleton<IDeveloperPageExceptionFilter, ExceptionMessageFilter>();
+                        services.AddSingleton<IDeveloperPageExceptionFilter, ExceptionToStringFilter>();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseDeveloperExceptionPage();
+                        app.Run(context =>
+                        {
+                            throw new Exception("Test exception");
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             // Act
             var response = await server.CreateClient().GetAsync("/path");
 
             // Assert
             Assert.Equal("An error occurred", await response.Content.ReadAsStringAsync());
+
+            await host.StopAsync();
         }
 
         public static TheoryData CompilationExceptionData
@@ -241,17 +302,25 @@ namespace Microsoft.AspNetCore.Diagnostics
         {
             // Arrange
             DiagnosticListener diagnosticListener = null;
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
-                    app.UseDeveloperExceptionPage();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        throw new CustomCompilationException(failures);
+                        diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
+                        app.UseDeveloperExceptionPage();
+                        app.Run(context =>
+                        {
+                            throw new CustomCompilationException(failures);
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
             var listener = new TestDiagnosticListener();
             diagnosticListener.SubscribeWithAdapter(listener);
 
@@ -263,6 +332,8 @@ namespace Microsoft.AspNetCore.Diagnostics
             Assert.NotNull(listener.DiagnosticUnhandledException?.Exception);
             Assert.Null(listener.DiagnosticHandledException?.HttpContext);
             Assert.Null(listener.DiagnosticHandledException?.Exception);
+
+            await host.StopAsync();
         }
 
         public class CustomCompilationException : Exception, ICompilationException

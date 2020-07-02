@@ -1,10 +1,12 @@
 using System;
 using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Hosting;
 
 namespace ExceptionHandlerSample
 {
@@ -56,15 +58,19 @@ namespace ExceptionHandlerSample
             });
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseIISIntegration()
-                .UseStartup<Startup>()
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseKestrel()
+                    .UseIISIntegration()
+                    .UseStartup<Startup>();
+                })
                 .Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }
