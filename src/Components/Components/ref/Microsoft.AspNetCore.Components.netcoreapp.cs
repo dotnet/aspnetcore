@@ -107,6 +107,11 @@ namespace Microsoft.AspNetCore.Components
         protected virtual bool ShouldRender() { throw null; }
         protected void StateHasChanged() { }
     }
+    public partial class DefaultComponentActivator : Microsoft.AspNetCore.Components.IComponentActivator
+    {
+        public DefaultComponentActivator() { }
+        public Microsoft.AspNetCore.Components.IComponent CreateInstance(System.Type componentType) { throw null; }
+    }
     public abstract partial class Dispatcher
     {
         protected Dispatcher() { }
@@ -233,6 +238,10 @@ namespace Microsoft.AspNetCore.Components
     {
         void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle);
         System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters);
+    }
+    public partial interface IComponentActivator
+    {
+        Microsoft.AspNetCore.Components.IComponent CreateInstance(System.Type componentType);
     }
     public partial interface IHandleAfterRender
     {

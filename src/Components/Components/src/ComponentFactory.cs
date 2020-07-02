@@ -6,14 +6,9 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components
 {
-    /// <remarks>
-    /// The <see cref="Instance"/> property on this type is used as a static global cache. Ensure any changes to this type
-    /// are thread safe and can be safely cached statically.
-    /// </remarks>
     internal class ComponentFactory
     {
         private static readonly BindingFlags _injectablePropertyBindingFlags
@@ -22,19 +17,20 @@ namespace Microsoft.AspNetCore.Components
         private readonly ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>> _cachedInitializers
             = new ConcurrentDictionary<Type, Action<IServiceProvider, IComponent>>();
 
-        public static readonly ComponentFactory Instance = new ComponentFactory();
+        private readonly IComponentActivator _componentActivator;
+
+        public ComponentFactory(IComponentActivator componentActivator)
+        {
+            _componentActivator = componentActivator ?? throw new ArgumentNullException(nameof(componentActivator));
+        }
 
         public IComponent InstantiateComponent(IServiceProvider serviceProvider, Type componentType)
         {
-            var activator = serviceProvider.GetService<IComponentActivator>();
-
-            var instance = activator != null
-                ? activator.CreateInstance(componentType)
-                : Activator.CreateInstance(componentType);
-
-            if (!(instance is IComponent component))
+            var component = _componentActivator.CreateInstance(componentType);
+            if (component is null)
             {
-                throw new ArgumentException($"The type {componentType.FullName} does not implement {nameof(IComponent)}.", nameof(componentType));
+                // The default activator will never do this, but an externally-supplied one might
+                throw new InvalidOperationException($"The component activator returned a null value for a component of type {componentType.FullName}.");
             }
 
             PerformPropertyInjection(serviceProvider, component);
