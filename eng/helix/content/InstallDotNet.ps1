@@ -5,8 +5,6 @@
      Installs dotnet sdk and runtime using https://dot.net/v1/dotnet-install.ps1
 .PARAMETER arch
     The architecture to install.
-.PARAMETER sdkVersion
-    The sdk version to install
 .PARAMETER runtimeVersion
     The runtime version to install
 .PARAMETER installDir
@@ -16,9 +14,6 @@ param(
     [Parameter(Mandatory = $true)]
     $arch,
 
-    [Parameter(Mandatory = $true)]
-    $sdkVersion,
-    
     [Parameter(Mandatory = $true)]
     $runtimeVersion,
     
