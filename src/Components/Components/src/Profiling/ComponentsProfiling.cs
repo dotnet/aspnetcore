@@ -13,14 +13,9 @@ namespace Microsoft.AspNetCore.Components.Profiling
         // is so that if we later have two different implementations (one for WebAssembly, one for
         // Server), the execution characteristics of calling Start/End will be unchanged and historical
         // perf data will still be comparable to newer data.
-        public static readonly ComponentsProfiling Instance;
-
-        static ComponentsProfiling()
-        {
-            Instance = RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER"))
-                ? new WebAssemblyComponentsProfiling()
-                : (ComponentsProfiling)new NoOpComponentsProfiling();
-        }
+        public static readonly ComponentsProfiling Instance = PlatformInfo.IsWebAssembly
+            ? new WebAssemblyComponentsProfiling()
+            : (ComponentsProfiling)new NoOpComponentsProfiling();
 
         public abstract void Start([CallerMemberName] string? name = null);
         public abstract void End([CallerMemberName] string? name = null);
