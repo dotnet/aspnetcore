@@ -267,9 +267,9 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 {
                     Log.ExportCertificateError(e.ToString());
                     // We don't want to mask the original source of the error here.
-                    result = result == EnsureCertificateResult.Succeeded || result == EnsureCertificateResult.ValidCertificatePresent ?
-                        EnsureCertificateResult.ErrorExportingTheCertificate :
-                        result;
+                    result = result != EnsureCertificateResult.Succeeded && result != EnsureCertificateResult.ValidCertificatePresent ?
+                        result :
+                        EnsureCertificateResult.ErrorExportingTheCertificate;
 
                     return result;
                 }
@@ -465,20 +465,23 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 Array.Clear(bytes, 0, bytes.Length);
             }
 
-            try
+            if (includePrivateKey && format == CertificateKeyExportFormat.Pem)
             {
-                var keyPath = Path.ChangeExtension(path, ".key");
-                Log.WritePemKeyToDisk(keyPath);
-                File.WriteAllBytes(keyPath, pemEnvelope);
-            }
-            catch (Exception ex)
-            {
-                Log.WritePemKeyToDiskError(ex.ToString());
-                throw;
-            }
-            finally
-            {
-                Array.Clear(pemEnvelope, 0, pemEnvelope.Length);
+                try
+                {
+                    var keyPath = Path.ChangeExtension(path, ".key");
+                    Log.WritePemKeyToDisk(keyPath);
+                    File.WriteAllBytes(keyPath, pemEnvelope);
+                }
+                catch (Exception ex)
+                {
+                    Log.WritePemKeyToDiskError(ex.ToString());
+                    throw;
+                }
+                finally
+                {
+                    Array.Clear(pemEnvelope, 0, pemEnvelope.Length);
+                }
             }
         }
 
@@ -880,7 +883,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             internal void LoadCertificateError(string ex) => WriteEvent(63, $"An error has ocurred while loading the certificate from disk: {ex}.");
 
             [Event(64, Level = EventLevel.Error)]
-            internal void NoHttpsDevelopmentCertificate(string description) => WriteEvent(64, $"The provided certificate '{description}' is not a valid ASP.NET Core HTTPS development certificate.");            
+            internal void NoHttpsDevelopmentCertificate(string description) => WriteEvent(64, $"The provided certificate '{description}' is not a valid ASP.NET Core HTTPS development certificate.");
         }
 
         internal class UserCancelledTrustException : Exception
