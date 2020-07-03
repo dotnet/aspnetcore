@@ -107,11 +107,6 @@ namespace Microsoft.AspNetCore.Components
         protected virtual bool ShouldRender() { throw null; }
         protected void StateHasChanged() { }
     }
-    public partial class DefaultComponentActivator : Microsoft.AspNetCore.Components.IComponentActivator
-    {
-        public DefaultComponentActivator() { }
-        public Microsoft.AspNetCore.Components.IComponent CreateInstance(System.Type componentType) { throw null; }
-    }
     public abstract partial class Dispatcher
     {
         protected Dispatcher() { }
