@@ -301,10 +301,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Perf", "Perf", "{4623F52E-2
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ResponseCaching.Microbenchmarks", "perf\ResponseCaching.Microbenchmarks\Microsoft.AspNetCore.ResponseCaching.Microbenchmarks.csproj", "{80C8E810-1206-482E-BE17-961DD2EBFB11}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{E290ACDD-314A-4F00-A050-6B0ED8F82CA2}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplication", "Diagnostics.EntityFrameworkCore\sample\WebApplication\WebApplication.csproj", "{1E64A44C-92AB-4474-BD53-F5E5952D566B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1647,18 +1643,6 @@ Global
 		{80C8E810-1206-482E-BE17-961DD2EBFB11}.Release|x64.Build.0 = Release|Any CPU
 		{80C8E810-1206-482E-BE17-961DD2EBFB11}.Release|x86.ActiveCfg = Release|Any CPU
 		{80C8E810-1206-482E-BE17-961DD2EBFB11}.Release|x86.Build.0 = Release|Any CPU
-		{1E64A44C-92AB-4474-BD53-F5E5952D566B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1E64A44C-92AB-4474-BD53-F5E5952D566B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1E64A44C-92AB-4474-BD53-F5E5952D566B}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{1E64A44C-92AB-4474-BD53-F5E5952D566B}.Debug|x64.Build.0 = Debug|Any CPU
-		{1E64A44C-92AB-4474-BD53-F5E5952D566B}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{1E64A44C-92AB-4474-BD53-F5E5952D566B}.Debug|x86.Build.0 = Debug|Any CPU
-		{1E64A44C-92AB-4474-BD53-F5E5952D566B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1E64A44C-92AB-4474-BD53-F5E5952D566B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1E64A44C-92AB-4474-BD53-F5E5952D566B}.Release|x64.ActiveCfg = Release|Any CPU
-		{1E64A44C-92AB-4474-BD53-F5E5952D566B}.Release|x64.Build.0 = Release|Any CPU
-		{1E64A44C-92AB-4474-BD53-F5E5952D566B}.Release|x86.ActiveCfg = Release|Any CPU
-		{1E64A44C-92AB-4474-BD53-F5E5952D566B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1788,8 +1772,6 @@ Global
 		{C4D624B3-749E-41D8-A43B-B304BC3885EA} = {4623F52E-2070-4631-8DEE-7D2F48733FFD}
 		{8A9C1F6C-3A47-4868-AA95-3EBE0260F5A0} = {D6FA4ABE-E685-4EDD-8B06-D8777E76B472}
 		{80C8E810-1206-482E-BE17-961DD2EBFB11} = {4623F52E-2070-4631-8DEE-7D2F48733FFD}
-		{E290ACDD-314A-4F00-A050-6B0ED8F82CA2} = {7FB67FE0-AC08-4C33-9904-8D33CE4D84F7}
-		{1E64A44C-92AB-4474-BD53-F5E5952D566B} = {E290ACDD-314A-4F00-A050-6B0ED8F82CA2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {83786312-A93B-4BB4-AB06-7C6913A59AFA}
