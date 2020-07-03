@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
     /// <see cref="IEndpointComparerPolicy" />. The implementation can be retrieved from the service
     /// provider and provided to <see cref="CandidateSet.ExpandEndpoint(int, IReadOnlyList{Endpoint}, IComparer{Endpoint})"/>.
     /// </summary>
-    public sealed class EndpointMetadataComparer : IComparer<Endpoint?>
+    public sealed class EndpointMetadataComparer : IComparer<Endpoint>
     {
         private IServiceProvider _services;
         private IComparer<Endpoint>[]? _comparers;
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
-        int IComparer<Endpoint?>.Compare(Endpoint? x, Endpoint? y)
+        int IComparer<Endpoint>.Compare(Endpoint? x, Endpoint? y)
         {
             if (x == null)
             {
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
     }
 
     /// <summary>
-    /// A base class for <see cref="IComparer{Endpoint}"/> implementations that use 
+    /// A base class for <see cref="IComparer{Endpoint}"/> implementations that use
     /// a specific type of metadata from <see cref="Endpoint.Metadata"/> for comparison.
     /// Useful for implementing <see cref="IEndpointComparerPolicy.Comparer"/>.
     /// </summary>
@@ -85,19 +85,19 @@ namespace Microsoft.AspNetCore.Routing.Matching
     /// The type of metadata to compare. Typically this is a type of metadata related
     /// to the application concern being handled.
     /// </typeparam>
-    public abstract class EndpointMetadataComparer<TMetadata> : IComparer<Endpoint?> where TMetadata : class
+    public abstract class EndpointMetadataComparer<TMetadata> : IComparer<Endpoint> where TMetadata : class
     {
         public static readonly EndpointMetadataComparer<TMetadata> Default = new DefaultComparer<TMetadata>();
 
         /// <summary>
-        /// Compares two objects and returns a value indicating whether one is less than, equal to, 
+        /// Compares two objects and returns a value indicating whether one is less than, equal to,
         /// or greater than the other.
         /// </summary>
         /// <param name="x">The first object to compare.</param>
         /// <param name="y">The second object to compare.</param>
         /// <returns>
-        /// An implementation of this method must return a value less than zero if 
-        /// x is less than y, zero if x is equal to y, or a value greater than zero if x is 
+        /// An implementation of this method must return a value less than zero if
+        /// x is less than y, zero if x is equal to y, or a value greater than zero if x is
         /// greater than y.
         /// </returns>
         public int Compare(Endpoint? x, Endpoint? y)
@@ -131,8 +131,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// <param name="x">The first object to compare.</param>
         /// <param name="y">The second object to compare.</param>
         /// <returns>
-        /// An implementation of this method must return a value less than zero if 
-        /// x is less than y, zero if x is equal to y, or a value greater than zero if x is 
+        /// An implementation of this method must return a value less than zero if
+        /// x is less than y, zero if x is equal to y, or a value greater than zero if x is
         /// greater than y.
         /// </returns>
         /// <remarks>

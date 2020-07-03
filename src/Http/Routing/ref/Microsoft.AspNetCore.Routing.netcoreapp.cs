@@ -519,12 +519,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public int Score { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Routing.RouteValueDictionary Values { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
-    public sealed partial class EndpointMetadataComparer : System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint?>
+    public sealed partial class EndpointMetadataComparer : System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint>
     {
         internal EndpointMetadataComparer() { }
-        int System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint?>.Compare(Microsoft.AspNetCore.Http.Endpoint? x, Microsoft.AspNetCore.Http.Endpoint? y) { throw null; }
+        int System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint>.Compare(Microsoft.AspNetCore.Http.Endpoint? x, Microsoft.AspNetCore.Http.Endpoint? y) { throw null; }
     }
-    public abstract partial class EndpointMetadataComparer<TMetadata> : System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint?> where TMetadata : class
+    public abstract partial class EndpointMetadataComparer<TMetadata> : System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint> where TMetadata : class
     {
         public static readonly Microsoft.AspNetCore.Routing.Matching.EndpointMetadataComparer<TMetadata> Default;
         protected EndpointMetadataComparer() { }
@@ -734,17 +734,17 @@ namespace Microsoft.AspNetCore.Routing.Template
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.Template.TemplatePart> Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.Template.TemplateSegment> Segments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string TemplateText { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public Microsoft.AspNetCore.Routing.Template.TemplatePart GetParameter(string name) { throw null; }
-        public Microsoft.AspNetCore.Routing.Template.TemplateSegment GetSegment(int index) { throw null; }
+        public Microsoft.AspNetCore.Routing.Template.TemplatePart? GetParameter(string name) { throw null; }
+        public Microsoft.AspNetCore.Routing.Template.TemplateSegment? GetSegment(int index) { throw null; }
         public Microsoft.AspNetCore.Routing.Patterns.RoutePattern ToRoutePattern() { throw null; }
     }
     public partial class TemplateBinder
     {
         internal TemplateBinder() { }
-        public string BindValues(Microsoft.AspNetCore.Routing.RouteValueDictionary acceptedValues) { throw null; }
-        public Microsoft.AspNetCore.Routing.Template.TemplateValuesResult GetValues(Microsoft.AspNetCore.Routing.RouteValueDictionary ambientValues, Microsoft.AspNetCore.Routing.RouteValueDictionary values) { throw null; }
-        public static bool RoutePartsEqual(object a, object b) { throw null; }
-        public bool TryProcessConstraints(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.RouteValueDictionary combinedValues, out string parameterName, out Microsoft.AspNetCore.Routing.IRouteConstraint constraint) { throw null; }
+        public string? BindValues(Microsoft.AspNetCore.Routing.RouteValueDictionary acceptedValues) { throw null; }
+        public Microsoft.AspNetCore.Routing.Template.TemplateValuesResult? GetValues(Microsoft.AspNetCore.Routing.RouteValueDictionary? ambientValues, Microsoft.AspNetCore.Routing.RouteValueDictionary values) { throw null; }
+        public static bool RoutePartsEqual(object? a, object? b) { throw null; }
+        public bool TryProcessConstraints(Microsoft.AspNetCore.Http.HttpContext? httpContext, Microsoft.AspNetCore.Routing.RouteValueDictionary combinedValues, out string? parameterName, out Microsoft.AspNetCore.Routing.IRouteConstraint? constraint) { throw null; }
     }
     public abstract partial class TemplateBinderFactory
     {
