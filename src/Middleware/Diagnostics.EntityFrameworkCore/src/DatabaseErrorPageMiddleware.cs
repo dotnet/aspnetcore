@@ -45,6 +45,35 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="DatabaseErrorPageMiddleware" /> class
+        /// </summary>
+        /// <param name="next">Delegate to execute the next piece of middleware in the request pipeline.</param>
+        /// <param name="loggerFactory">
+        ///     The <see cref="ILoggerFactory" /> for the application. This middleware both produces logging messages and
+        ///     consumes them to detect database related exception.
+        /// </param>
+        public DatabaseErrorPageMiddleware(
+            RequestDelegate next,
+            ILoggerFactory loggerFactory)
+        {
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            _next = next;
+            _logger = loggerFactory.CreateLogger<DatabaseErrorPageMiddleware>();
+
+            // Note: this currently leaks if the server hosting this middleware is disposed.
+            // See aspnet/Home #2825
+            DiagnosticListener.AllListeners.Subscribe(this);
+        }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="DatabaseErrorPageMiddleware" /> class
@@ -55,6 +84,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         ///     consumes them to detect database related exception.
         /// </param>
         /// <param name="options">The options to control what information is displayed on the error page.</param>
+        [Obsolete("This is obsolete and will be removed in a future version.")]
         public DatabaseErrorPageMiddleware(
             RequestDelegate next,
             ILoggerFactory loggerFactory,

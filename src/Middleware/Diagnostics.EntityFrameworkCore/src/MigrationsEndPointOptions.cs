@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// The default value for <see cref="Path"/>.
         /// </summary>
+        [Obsolete("This is obsolete and will be removed in a future version. Use the Package Manager Console in Visual Studio or dotnet-ef tool on the command line to apply migrations.", error: true)]
         public static PathString DefaultPath = new PathString("/ApplyDatabaseMigrations");
 
         /// <summary>

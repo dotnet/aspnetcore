@@ -23,29 +23,10 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
             PendingMigrations = pendingMigrations;
         }
 
-        [Obsolete("This is obsolete and will be removed in a future version.")]
-        public DatabaseErrorPageModel(
-            Type contextType,
-            Exception exception,
-            bool databaseExists,
-            bool pendingModelChanges,
-            IEnumerable<string> pendingMigrations,
-            DatabaseErrorPageOptions options)
-        {
-            ContextType = contextType;
-            Exception = exception;
-            DatabaseExists = databaseExists;
-            PendingModelChanges = pendingModelChanges;
-            PendingMigrations = pendingMigrations;
-            Options = options;
-        }
-
         public virtual Type ContextType { get; }
         public virtual Exception Exception { get; }
         public virtual bool DatabaseExists { get; }
         public virtual bool PendingModelChanges { get; }
         public virtual IEnumerable<string> PendingMigrations { get; }
-        [Obsolete("This is obsolete and will be removed in a future version.")]
-        public virtual DatabaseErrorPageOptions Options { get; }
     }
 }

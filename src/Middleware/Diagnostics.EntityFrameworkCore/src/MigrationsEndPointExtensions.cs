@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.AspNetCore.Builder
@@ -22,12 +21,7 @@ namespace Microsoft.AspNetCore.Builder
         [Obsolete("This is obsolete and will be removed in a future version. Use the Package Manager Console in Visual Studio or dotnet-ef tool on the command line to apply migrations.", error: true)]
         public static IApplicationBuilder UseMigrationsEndPoint(this IApplicationBuilder app)
         {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-
-            return app.UseMigrationsEndPoint(new MigrationsEndPointOptions());
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -39,16 +33,7 @@ namespace Microsoft.AspNetCore.Builder
         [Obsolete("This is obsolete and will be removed in a future version. Use the Package Manager Console in Visual Studio or dotnet-ef tool on the command line to apply migrations.", error: true)]
         public static IApplicationBuilder UseMigrationsEndPoint(this IApplicationBuilder app, MigrationsEndPointOptions options)
         {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            return app.UseMiddleware<MigrationsEndPointMiddleware>(Options.Create(options));
+            throw new NotImplementedException();
         }
     }
 }
