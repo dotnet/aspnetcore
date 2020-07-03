@@ -100,5 +100,55 @@ namespace Microsoft.AspNetCore.Razor.Tools
     }
 ", result);
         }
+
+        [Fact]
+        public void AddsScopeToKeyframeNames()
+        {
+            // Arrange/act
+            var result = RewriteCssCommand.AddScopeToSelectors(@"
+    @keyframes my-animation { /* whatever */ }
+", "TestScope");
+
+            // Assert
+            Assert.Equal(@"
+    @keyframes my-animation-TestScope { /* whatever */ }
+", result);
+        }
+
+        [Fact]
+        public void RewritesAnimationNamesWhenMatchingKnownKeyframes()
+        {
+            // Arrange/act
+            var result = RewriteCssCommand.AddScopeToSelectors(@"
+    .myclass {
+        color: red;
+        animation: /* ignore comment */ my-animation 1s infinite;
+    }
+
+    .another-thing { animation-name: different-animation; }
+
+    h1 { animation: unknown-animation; } /* Should not be scoped */
+
+    @keyframes my-animation { /* whatever */ }
+    @keyframes different-animation { /* whatever */ }
+    @keyframes unused-animation { /* whatever */ }
+", "TestScope");
+
+            // Assert
+            Assert.Equal(@"
+    .myclass[TestScope] {
+        color: red;
+        animation: /* ignore comment */ my-animation-TestScope 1s infinite;
+    }
+
+    .another-thing[TestScope] { animation-name: different-animation-TestScope; }
+
+    h1[TestScope] { animation: unknown-animation; } /* Should not be scoped */
+
+    @keyframes my-animation-TestScope { /* whatever */ }
+    @keyframes different-animation-TestScope { /* whatever */ }
+    @keyframes unused-animation-TestScope { /* whatever */ }
+", result);
+        }
     }
 }
