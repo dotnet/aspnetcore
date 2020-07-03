@@ -1,8 +1,8 @@
  <# 
  .SYNOPSIS 
-     Installs dotnet sdk and runtime using https://dot.net/v1/dotnet-install.ps1
+     Installs dotnet runtime using https://dot.net/v1/dotnet-install.ps1
  .DESCRIPTION
-     Installs dotnet sdk and runtime using https://dot.net/v1/dotnet-install.ps1
+     Installs dotnet runtime using https://dot.net/v1/dotnet-install.ps1
 .PARAMETER arch
     The architecture to install.
 .PARAMETER runtimeVersion
