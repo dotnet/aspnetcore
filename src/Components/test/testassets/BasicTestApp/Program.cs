@@ -18,6 +18,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.JSInterop;
+using Microsoft.AspNetCore.Components.Extensions;
 
 namespace BasicTestApp
 {
@@ -38,11 +39,15 @@ namespace BasicTestApp
                     policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
             });
 
+            builder.Services.AddDataProtection();
+
+            builder.Services.AddTransient<ProtectedLocalStorage>();
+            builder.Services.AddTransient<ProtectedSessionStorage>();
+
             builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 
             builder.Logging.Services.AddSingleton<ILoggerProvider, PrependMessageLoggerProvider>(s =>
                 new PrependMessageLoggerProvider(builder.Configuration["Logging:PrependMessage:Message"], s.GetService<IJSRuntime>()));
-
 
             var host = builder.Build();
             ConfigureCulture(host);

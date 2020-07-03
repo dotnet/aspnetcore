@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
@@ -47,6 +48,11 @@ namespace Microsoft.AspNetCore.Components.Extensions
         /// <param name="dataProtectionProvider">The <see cref="IDataProtectionProvider"/>.</param>
         protected ProtectedBrowserStorage(string storeName, IJSRuntime jsRuntime, IDataProtectionProvider dataProtectionProvider)
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Browser))
+            {
+                throw new InvalidOperationException($"{GetType()} cannot be used when running in WebAssembly.");
+            }
+
             if (string.IsNullOrEmpty(storeName))
             {
                 throw new ArgumentException("The value cannot be null or empty", nameof(storeName));

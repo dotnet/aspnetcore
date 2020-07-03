@@ -17,9 +17,9 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    public class ProtectedBrowserStorageBrowserTest : ServerTestBase<BasicTestAppServerSiteFixture<ProtectedBrowserStorageStartup>>
+    public class ProtectedBrowserStorageUsageTest : ServerTestBase<BasicTestAppServerSiteFixture<ProtectedBrowserStorageStartup>>
     {
-        public ProtectedBrowserStorageBrowserTest(
+        public ProtectedBrowserStorageUsageTest(
             BrowserFixture browserFixture,
             BasicTestAppServerSiteFixture<ProtectedBrowserStorageStartup> serverFixture,
             ITestOutputHelper output)
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         protected override void InitializeAsyncCore()
         {
             Navigate(ServerPathBase);
-            Browser.MountTestComponent<ProtectedBrowserStorageComponent>();
+            Browser.MountTestComponent<ProtectedBrowserStorageUsageComponent>();
         }
 
         [Fact]
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             // Local storage persists on refresh
             Browser.Navigate().Refresh();
-            Browser.MountTestComponent<ProtectedBrowserStorageComponent>();
+            Browser.MountTestComponent<ProtectedBrowserStorageUsageComponent>();
 
             localCount = Browser.FindElement(By.Id("local-count"));
             Browser.Equal("1", () => localCount.Text);
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             // Session storage persists on refresh
             Browser.Navigate().Refresh();
-            Browser.MountTestComponent<ProtectedBrowserStorageComponent>();
+            Browser.MountTestComponent<ProtectedBrowserStorageUsageComponent>();
 
             sessionCount = Browser.FindElement(By.Id("session-count"));
             Browser.Equal("1", () => sessionCount.Text);
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.SwitchTo().Window(Browser.WindowHandles.Last());
 
             Navigate(ServerPathBase);
-            Browser.MountTestComponent<ProtectedBrowserStorageComponent>();
+            Browser.MountTestComponent<ProtectedBrowserStorageUsageComponent>();
         }
     }
 }
