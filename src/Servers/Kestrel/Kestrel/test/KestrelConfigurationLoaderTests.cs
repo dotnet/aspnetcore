@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         }
 
         [Fact]
-        public void ConfigureEndpoint_ThrowsWhen_TheKeyCannotBeRead()
+        public void ConfigureEndpoint_ThrowsWhen_The_PasswordIsMissing()
         {
             var serverOptions = CreateServerOptions();
             var certificate = new X509Certificate2(TestResources.GetCertPath("https-aspnet.crt"));
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
                     new KeyValuePair<string, string>("Certificates:Default:KeyPath", Path.Combine("shared", "TestCertificates", "https-aspnet.key"))
                 }).Build();
 
-            var ex = Assert.Throws<InvalidOperationException>(() =>
+            var ex = Assert.Throws<ArgumentException>(() =>
             {
                 serverOptions
                     .Configure(config)
@@ -277,7 +277,56 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
                         Assert.True(opt.IsHttps);
                     }).Load();
             });
-            Assert.Equal(CoreStrings.InvalidPemKey, ex.Message);
+        }
+
+        [Fact]
+        public void ConfigureEndpoint_ThrowsWhen_TheKeyDoesntMatchTheCertificateKey()
+        {
+            var serverOptions = CreateServerOptions();
+            var certificate = new X509Certificate2(TestResources.GetCertPath("https-aspnet.crt"));
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                    new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+                    new KeyValuePair<string, string>("Certificates:Default:Path", Path.Combine("shared", "TestCertificates", "https-aspnet.crt")),
+                    new KeyValuePair<string, string>("Certificates:Default:KeyPath", Path.Combine("shared", "TestCertificates", "https-ecdsa.key")),
+                    new KeyValuePair<string, string>("Certificates:Default:Password", "aspnetcore")
+                }).Build();
+
+            var ex = Assert.Throws<ArgumentException>(() =>
+            {
+                serverOptions
+                    .Configure(config)
+                    .Endpoint("End1", opt =>
+                    {
+                        Assert.True(opt.IsHttps);
+                    }).Load();
+            });
+        }
+
+        [Fact]
+        public void ConfigureEndpoint_ThrowsWhen_The_PasswordIsIncorrect()
+        {
+            var serverOptions = CreateServerOptions();
+            var certificate = new X509Certificate2(TestResources.GetCertPath("https-aspnet.crt"));
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                    new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+                    new KeyValuePair<string, string>("Certificates:Default:Path", Path.Combine("shared", "TestCertificates", "https-aspnet.crt")),
+                    new KeyValuePair<string, string>("Certificates:Default:KeyPath", Path.Combine("shared", "TestCertificates", "https-aspnet.key")),
+                    new KeyValuePair<string, string>("Certificates:Default:Password", "abcde"),
+                }).Build();
+
+            var ex = Assert.Throws<CryptographicException>(() =>
+            {
+                serverOptions
+                    .Configure(config)
+                    .Endpoint("End1", opt =>
+                    {
+                        Assert.True(opt.IsHttps);
+                    }).Load();
+            });
         }
 
         [Theory]

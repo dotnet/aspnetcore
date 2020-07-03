@@ -430,6 +430,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
         private X509Certificate2 LoadCertificate(CertificateConfig certInfo, string endpointName)
         {
+            var logger = Options.ApplicationServices.GetRequiredService<ILogger<KestrelConfigurationLoader>>();
             if (certInfo.IsFileCert && certInfo.IsStoreCert)
             {
                 throw new InvalidOperationException(CoreStrings.FormatMultipleCertificateSources(endpointName));
@@ -441,18 +442,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 if (certInfo.KeyPath != null)
                 {
                     var certificateKeyPath = Path.Combine(environment.ContentRootPath, certInfo.KeyPath);
-                    var certificate = GetCertificate(certInfo, certificatePath, certificateKeyPath);
+                    var certificate = GetCertificate(certificatePath);
 
                     if (certificate != null)
                     {
                         certificate = LoadCertificateKey(certificate, certificateKeyPath, certInfo.Password);
+                    }
+                    else
+                    {
+                        logger.FailedToLoadCertificate(certificateKeyPath);
+                    }
 
+                    if (certificate != null)
+                    {
                         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                         {
                             return PersistKey(certificate);
                         }
 
                         return certificate;
+                    }
+                    else
+                    {
+                        logger.FailedToLoadCertificateKey(certificateKeyPath);
                     }
 
                     throw new InvalidOperationException(CoreStrings.InvalidPemKey);
@@ -476,13 +488,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
             static X509Certificate2 LoadCertificateKey(X509Certificate2 certificate, string keyPath, string password)
             {
+                // OIDs for the certificate key types.
+                const string RSAOid = "1.2.840.113549.1.1.1";
+                const string DSAOid = "1.2.840.10040.4.1";
+                const string ECDsaOid = "1.2.840.10045.2.1";
+
                 var keyText = File.ReadAllText(keyPath);
-                return TryAttachPemRSAKey(certificate, keyText, password) ??
-                    TryAttachPemDSAKey(certificate, keyText, password) ??
-                    TryAttachPemECDSAKey(certificate, keyText, password);
+                return certificate.PublicKey.Oid.Value switch
+                {
+                    RSAOid => AttachPemRSAKey(certificate, keyText, password),
+                    ECDsaOid => AttachPemECDSAKey(certificate, keyText, password),
+                    DSAOid => AttachPemDSAKey(certificate, keyText, password),
+                    _ => throw new InvalidOperationException(string.Format(CoreStrings.UnrecognizedCertificateKeyOid, certificate.PublicKey.Oid.Value))
+                };
             }
 
-            static X509Certificate2 GetCertificate(CertificateConfig certInfo, string certificatePath, string certificateKeyPath)
+            static X509Certificate2 GetCertificate(string certificatePath)
             {
                 if (X509Certificate2.GetCertContentType(certificatePath) == X509ContentType.Cert)
                 {
@@ -493,67 +514,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
         }
 
-        private static X509Certificate2 TryAttachPemRSAKey(X509Certificate2 certificate, string keyText, string password)
+        private static X509Certificate2 AttachPemRSAKey(X509Certificate2 certificate, string keyText, string password)
         {
-            const string RSAOid = "1.2.840.113549.1.1.1";
-            if (string.Equals(RSAOid, certificate.PublicKey.Oid.Value, StringComparison.Ordinal))
+            using var rsa = RSA.Create();
+            if (password == null)
             {
-                using var rsa = RSA.Create();
-                if (password == null)
-                {
-                    rsa.ImportFromPem(keyText);
-                }
-                else
-                {
-                    rsa.ImportFromEncryptedPem(keyText, password);
-                }
-
-                return certificate.CopyWithPrivateKey(rsa);
+                rsa.ImportFromPem(keyText);
+            }
+            else
+            {
+                rsa.ImportFromEncryptedPem(keyText, password);
             }
 
-            return null;
+            return certificate.CopyWithPrivateKey(rsa);
         }
 
-        private static X509Certificate2 TryAttachPemDSAKey(X509Certificate2 certificate, string keyText, string password)
+        private static X509Certificate2 AttachPemDSAKey(X509Certificate2 certificate, string keyText, string password)
         {
-            const string DSAOid = "1.2.840.10040.4.1";
-            if (string.Equals(DSAOid, certificate.PublicKey.Oid.Value, StringComparison.Ordinal))
+            using var dsa = DSA.Create();
+            if (password == null)
             {
-                using var dsa = DSA.Create();
-                if (password == null)
-                {
-                    dsa.ImportFromPem(keyText);
-                }
-                else
-                {
-                    dsa.ImportFromEncryptedPem(keyText, password);
-                }
-
-                return certificate.CopyWithPrivateKey(dsa);
+                dsa.ImportFromPem(keyText);
+            }
+            else
+            {
+                dsa.ImportFromEncryptedPem(keyText, password);
             }
 
-            return null;
+            return certificate.CopyWithPrivateKey(dsa);
         }
 
-        private static X509Certificate2 TryAttachPemECDSAKey(X509Certificate2 certificate, string keyText, string password)
+        private static X509Certificate2 AttachPemECDSAKey(X509Certificate2 certificate, string keyText, string password)
         {
-            const string ECDsaOid = "1.2.840.10045.2.1";
-            if (string.Equals(ECDsaOid, certificate.PublicKey.Oid.Value, StringComparison.Ordinal))
+            using var ecdsa = ECDsa.Create();
+            if (password == null)
             {
-                using var ecdsa = ECDsa.Create();
-                if (password == null)
-                {
-                    ecdsa.ImportFromPem(keyText);
-                }
-                else
-                {
-                    ecdsa.ImportFromEncryptedPem(keyText, password);
-                }
-
-                return certificate.CopyWithPrivateKey(ecdsa);
+                ecdsa.ImportFromPem(keyText);
+            }
+            else
+            {
+                ecdsa.ImportFromEncryptedPem(keyText, password);
             }
 
-            return null;
+            return certificate.CopyWithPrivateKey(ecdsa);
         }
 
         private static X509Certificate2 LoadFromStoreCert(CertificateConfig certInfo)
