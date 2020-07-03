@@ -38,6 +38,7 @@
 
   <ItemGroup>
     <Reference Include="Newtonsoft.Json" Version="$(Razor_NewtonsoftJsonPackageVersion)" />
+    <Reference Include="Microsoft.Css.Parser" Version="$(MicrosoftCssParserPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
