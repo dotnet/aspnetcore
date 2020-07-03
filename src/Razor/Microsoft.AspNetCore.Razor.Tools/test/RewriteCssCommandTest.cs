@@ -150,5 +150,25 @@ namespace Microsoft.AspNetCore.Razor.Tools
     @keyframes unused-animation-TestScope { /* whatever */ }
 ", result);
         }
+
+        [Fact]
+        public void RewritesMultipleAnimationNames()
+        {
+            // Arrange/act
+            var result = RewriteCssCommand.AddScopeToSelectors(@"
+    .myclass1 { animation-name: my-animation , different-animation }
+    .myclass2 { animation: 4s linear 0s alternate my-animation infinite, different-animation 0s }
+    @keyframes my-animation { }
+    @keyframes different-animation { }
+", "TestScope");
+
+            // Assert
+            Assert.Equal(@"
+    .myclass1[TestScope] { animation-name: my-animation-TestScope , different-animation-TestScope }
+    .myclass2[TestScope] { animation: 4s linear 0s alternate my-animation-TestScope infinite, different-animation-TestScope 0s }
+    @keyframes my-animation-TestScope { }
+    @keyframes different-animation-TestScope { }
+", result);
+        }
     }
 }

@@ -101,6 +101,23 @@ namespace Microsoft.AspNetCore.Razor.Tools
             return resultBuilder.ToString();
         }
 
+        private static bool TryFindKeyframesIdentifier(AtDirective atDirective, out ParseItem identifier)
+        {
+            var keyword = atDirective.Keyword;
+            if (string.Equals(keyword?.Text, "keyframes", StringComparison.OrdinalIgnoreCase))
+            {
+                var nextSiblingText = keyword.NextSibling?.Text;
+                if (!string.IsNullOrEmpty(nextSiblingText))
+                {
+                    identifier = keyword.NextSibling;
+                    return true;
+                }
+            }
+
+            identifier = null;
+            return false;
+        }
+
         private enum ScopeInsertionType
         {
             Selector,
@@ -139,7 +156,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             protected override void VisitAtDirective(AtDirective item)
             {
                 // Whenever we see "@keyframes something { ... }", we want to insert right after "something"
-                if (FindKeyframesIdentifiersVisitor.TryFindKeyframesIdentifier(item, out var identifier))
+                if (TryFindKeyframesIdentifier(item, out var identifier))
                 {
                     InsertionPositions.Add((identifier.AfterEnd, ScopeInsertionType.KeyframesName));
                 }
@@ -155,29 +172,22 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 {
                     case "animation":
                     case "animation-name":
-                        // Examples:
-                        //   animation: some-name 1s
-                        //   animation-name: some-name
-                        // In both cases we're looking for a particular sequence of tokens [identifier, colon, identifier]
-                        // and will be inserting after the second identifier (ignoring subsequent ones).
-                        if (item.Children.Count >= 3
-                            && item.Children[0] is TokenItem token0
-                            && item.Children[1] is TokenItem token1
-                            && item.Children[2] is TokenItem token2
-                            && token0.TokenType == CssTokenType.Identifier
-                            && token1.TokenType == CssTokenType.Colon
-                            && token2.TokenType == CssTokenType.Identifier)
+                        // The first two tokens are <propertyname> and <colon> (otherwise we wouldn't be here).
+                        // After that, any of the subsequent tokens might be the animation name.
+                        // Unfortunately the rules for determining which token is the animation name are very
+                        // complex - https://developer.mozilla.org/en-US/docs/Web/CSS/animation#Syntax
+                        // Fortunately we only want to rewrite animation names that are explicitly declared in
+                        // the same document (we don't want to add scopes to references to global keyframes)
+                        // so it's sufficient just to match known animation names.
+                        var animationNameTokens = item.Children.Skip(2).OfType<TokenItem>()
+                            .Where(x => x.TokenType == CssTokenType.Identifier && _keyframeIdentifiers.Contains(x.Text));
+                        foreach (var token in animationNameTokens)
                         {
-                            // We only want to match keyframes defined in the same document, otherwise you wouldn't be
-                            // able to reference global keyframes
-                            if (_keyframeIdentifiers.Contains(token2.Text))
-                            {
-                                InsertionPositions.Add((token2.AfterEnd, ScopeInsertionType.KeyframesName));
-                            }
+                            InsertionPositions.Add((token.AfterEnd, ScopeInsertionType.KeyframesName));
                         }
                         break;
                     default:
-                        base.VisitDeclaration(item);
+                        // We don't need to do anything else with other declaration types
                         break;
                 }
             }
@@ -201,23 +211,6 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 {
                     VisitDefault(item);
                 }
-            }
-
-            public static bool TryFindKeyframesIdentifier(AtDirective atDirective, out ParseItem identifier)
-            {
-                var keyword = atDirective.Keyword;
-                if (string.Equals(keyword?.Text, "keyframes", StringComparison.OrdinalIgnoreCase))
-                {
-                    var nextSiblingText = keyword.NextSibling?.Text;
-                    if (!string.IsNullOrEmpty(nextSiblingText))
-                    {
-                        identifier = keyword.NextSibling;
-                        return true;
-                    }
-                }
-
-                identifier = null;
-                return false;
             }
         }
 
