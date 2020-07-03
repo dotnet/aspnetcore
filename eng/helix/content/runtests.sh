@@ -71,6 +71,9 @@ fi
 # dontet-install.sh seems to affect the Linux filesystem and causes test flakiness unless we sync the filesystem before running tests
 sync
 
+$DOTNET_ROOT/dotnet --list-sdks
+$DOTNET_ROOT/dotnet --list-runtimes
+
 exit_code=0
 echo "Restore: $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources..."
 $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources
