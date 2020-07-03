@@ -43,8 +43,7 @@ namespace Test
                 __builder2.CloseElement();
             }
             , 6, (item) => (__builder2) => {
-                __builder2.AddMarkupContent(7, "\r\n  ");
-                __builder2.AddContent(8, 
+                __builder2.AddContent(7, 
 #nullable restore
 #line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
    System.Math.Max(0, item.Item)
@@ -53,7 +52,7 @@ namespace Test
 #line hidden
 #nullable disable
                 );
-                __builder2.AddMarkupContent(9, ";\r\n");
+                __builder2.AddMarkupContent(8, ";\r\n");
             }
             );
         }

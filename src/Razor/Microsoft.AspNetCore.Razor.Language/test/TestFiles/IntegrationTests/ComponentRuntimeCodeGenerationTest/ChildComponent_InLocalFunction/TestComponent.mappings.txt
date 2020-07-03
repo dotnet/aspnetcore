@@ -12,12 +12,12 @@ Generated Location: (757:24,2 [42] )
 Source Location: (121:5,0 [7] x:\dir\subdir\Test\TestComponent.cshtml)
 |    }
 |
-Generated Location: (1121:37,0 [7] )
+Generated Location: (1019:35,0 [7] )
 |    }
 |
 
 Source Location: (135:8,2 [25] x:\dir\subdir\Test\TestComponent.cshtml)
 | RenderChildComponent(); |
-Generated Location: (1302:45,2 [25] )
+Generated Location: (1148:42,2 [25] )
 | RenderChildComponent(); |
 

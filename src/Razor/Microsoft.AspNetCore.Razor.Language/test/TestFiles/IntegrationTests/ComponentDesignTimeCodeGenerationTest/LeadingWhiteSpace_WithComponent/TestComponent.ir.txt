@@ -14,9 +14,26 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                Component - (0:0,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - SomeOtherComponent
-                HtmlContent - (22:0,22 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                    LazyIntermediateToken - (22:0,22 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-                MarkupElement - (26:2,0 [14] x:\dir\subdir\Test\TestComponent.cshtml) - h1
-                    HtmlContent - (30:2,4 [5] x:\dir\subdir\Test\TestComponent.cshtml)
-                        LazyIntermediateToken - (30:2,4 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
+                Component - (0:0,0 [115] x:\dir\subdir\Test\TestComponent.cshtml) - SomeOtherComponent
+                    ComponentChildContent -  - ChildContent - context
+                        HtmlContent - (20:0,20 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+                            LazyIntermediateToken - (20:0,20 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    
+                        MarkupElement - (26:1,4 [39] x:\dir\subdir\Test\TestComponent.cshtml) - h1
+                            HtmlContent - (30:1,8 [17] x:\dir\subdir\Test\TestComponent.cshtml)
+                                LazyIntermediateToken - (30:1,8 [17] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Child content at 
+                            CSharpExpression - (48:1,26 [12] x:\dir\subdir\Test\TestComponent.cshtml)
+                                LazyIntermediateToken - (48:1,26 [12] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - DateTime.Now
+                        HtmlContent - (65:1,43 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+                            LazyIntermediateToken - (65:1,43 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    
+                        MarkupElement - (71:2,4 [21] x:\dir\subdir\Test\TestComponent.cshtml) - p
+                            HtmlContent - (74:2,7 [5] x:\dir\subdir\Test\TestComponent.cshtml)
+                                LazyIntermediateToken - (74:2,7 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Very 
+                            CSharpExpression - (81:2,14 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+                                LazyIntermediateToken - (81:2,14 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - "good"
+                        HtmlContent - (92:2,25 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                            LazyIntermediateToken - (92:2,25 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                HtmlContent - (115:3,21 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (115:3,21 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                MarkupElement - (119:5,0 [14] x:\dir\subdir\Test\TestComponent.cshtml) - h1
+                    HtmlContent - (123:5,4 [5] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (123:5,4 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello

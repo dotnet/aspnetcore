@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Tasks;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
-using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<string, string>;
 using static Microsoft.AspNetCore.Razor.Design.IntegrationTests.ServiceWorkerAssert;
+using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
@@ -60,6 +60,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
                 serviceWorkerContent: "// This is the production service worker",
                 assetsManifestPath: "custom-service-worker-assets.js");
+
+            VerifyTypeGranularTrimming(result, blazorPublishDirectory);
         }
 
         [Fact]
@@ -223,6 +225,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
                 serviceWorkerContent: "// This is the production service worker",
                 assetsManifestPath: "custom-service-worker-assets.js");
+
+            // Verify assemblies are not trimmed
+            var loggingAssemblyPath = Path.Combine(blazorPublishDirectory, "_framework", "Microsoft.Extensions.Logging.Abstractions.dll");
+            Assert.AssemblyContainsType(result, loggingAssemblyPath, "Microsoft.Extensions.Logging.Abstractions.NullLogger");
         }
 
         [Fact]
@@ -309,6 +315,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
                 serviceWorkerContent: "// This is the production service worker",
                 assetsManifestPath: "custom-service-worker-assets.js");
+
+            VerifyTypeGranularTrimming(result, blazorPublishDirectory);
         }
 
         [Fact]
@@ -693,6 +701,21 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Assert.StartsWith("sha256-", webFormattedHash);
                 return webFormattedHash.Substring(7);
             }
+        }
+
+
+        private void VerifyTypeGranularTrimming(MSBuildResult result, string blazorPublishDirectory)
+        {
+            var loggingAssemblyPath = Path.Combine(blazorPublishDirectory, "_framework", "Microsoft.Extensions.Logging.Abstractions.dll");
+            Assert.FileExists(result, loggingAssemblyPath);
+
+            // ILogger is referenced by the app, so we expect it to be preserved
+            Assert.AssemblyContainsType(result, loggingAssemblyPath, "Microsoft.Extensions.Logging.ILogger");
+            // LogLevel is referenced by ILogger and therefore must be preserved.
+            Assert.AssemblyContainsType(result, loggingAssemblyPath, "Microsoft.Extensions.Logging.LogLevel");
+
+            // NullLogger is not referenced by the app, and should be trimmed.
+            Assert.AssemblyDoesNotContainType(result, loggingAssemblyPath, "Microsoft.Extensions.Logging.Abstractions.NullLogger");
         }
 
         private static BootJsonData ReadBootJsonData(MSBuildResult result, string path)
