@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -18,10 +19,10 @@ namespace Microsoft.Extensions.ObjectPool
         private protected readonly ObjectWrapper[] _items;
         private protected readonly IPooledObjectPolicy<T> _policy;
         private protected readonly bool _isDefaultPolicy;
-        private protected T _firstItem;
+        private protected T? _firstItem;
 
         // This class was introduced in 2.1 to avoid the interface call where possible
-        private protected readonly PooledObjectPolicy<T> _fastPolicy;
+        private protected readonly PooledObjectPolicy<T>? _fastPolicy;
 
         /// <summary>
         /// Creates an instance of <see cref="DefaultObjectPool{T}"/>.
@@ -97,7 +98,7 @@ namespace Microsoft.Extensions.ObjectPool
         [DebuggerDisplay("{Element}")]
         private protected struct ObjectWrapper
         {
-            public T Element;
+            public T? Element;
         }
     }
 }

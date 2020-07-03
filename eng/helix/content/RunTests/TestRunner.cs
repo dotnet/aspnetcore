@@ -272,7 +272,7 @@ namespace RunTests
 
                     // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
                     var result = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                        commonTestArgs + " --TestCaseFilter:\"Quarantined!=true\"",
+                        commonTestArgs + " --TestCaseFilter:\"Quarantined!=true|Quarantined=false\"",
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
                         errorDataReceived: Console.Error.WriteLine,
@@ -309,6 +309,11 @@ namespace RunTests
             }
 
             var HELIX_WORKITEM_UPLOAD_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+            if (string.IsNullOrEmpty(HELIX_WORKITEM_UPLOAD_ROOT))
+            {
+                Console.WriteLine("No HELIX_WORKITEM_UPLOAD_ROOT specified, skipping log copy");
+                return;
+            }
             Console.WriteLine($"Copying artifacts/log/ to {HELIX_WORKITEM_UPLOAD_ROOT}/");
             if (Directory.Exists("artifacts/log"))
             {

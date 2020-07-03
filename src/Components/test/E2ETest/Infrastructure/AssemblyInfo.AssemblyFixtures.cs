@@ -6,3 +6,4 @@ using Xunit;
 
 [assembly: TestFramework("Microsoft.AspNetCore.E2ETesting.XunitTestFrameworkWithAssemblyFixture", "Microsoft.AspNetCore.Components.E2ETests")]
 [assembly: AssemblyFixture(typeof(SeleniumStandaloneServer))]
+[assembly: AssemblyFixture(typeof(SauceConnectServer))]

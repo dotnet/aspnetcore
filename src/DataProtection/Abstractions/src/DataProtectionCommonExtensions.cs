@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.DataProtection
             // because we don't want the code provider.CreateProtector() [parameterless] to inadvertently compile.
             // The actual signature for this method forces at least one purpose to be provided at the call site.
 
-            IDataProtector protector = provider.CreateProtector(purpose);
+            IDataProtector? protector = provider.CreateProtector(purpose);
             if (subPurposes != null && subPurposes.Length > 0)
             {
                 protector = protector?.CreateProtector((IEnumerable<string>)subPurposes);
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
             // We have our own implementation of GetRequiredService<T> since we don't want to
             // take a dependency on DependencyInjection.Interfaces.
-            IDataProtectionProvider provider = (IDataProtectionProvider)services.GetService(typeof(IDataProtectionProvider));
+            var provider = (IDataProtectionProvider?)services.GetService(typeof(IDataProtectionProvider));
             if (provider == null)
             {
                 throw new InvalidOperationException(Resources.FormatDataProtectionExtensions_NoService(typeof(IDataProtectionProvider).FullName));

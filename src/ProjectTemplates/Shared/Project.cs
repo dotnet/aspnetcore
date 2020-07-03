@@ -39,9 +39,10 @@ namespace Templates.Test.Helpers
         public string ProjectGuid { get; set; }
         public string TemplateOutputDir { get; set; }
         public string TargetFramework { get; set; } = GetAssemblyMetadata("Test.DefaultTargetFramework");
+        public string RuntimeIdentifier { get; set; } = string.Empty;
 
-        public string TemplateBuildDir => Path.Combine(TemplateOutputDir, "bin", "Debug", TargetFramework);
-        public string TemplatePublishDir => Path.Combine(TemplateOutputDir, "bin", "Release", TargetFramework, "publish");
+        public string TemplateBuildDir => Path.Combine(TemplateOutputDir, "bin", "Debug", TargetFramework, RuntimeIdentifier);
+        public string TemplatePublishDir => Path.Combine(TemplateOutputDir, "bin", "Release", TargetFramework, RuntimeIdentifier, "publish");
 
         public ITestOutputHelper Output { get; set; }
         public IMessageSink DiagnosticsMessageSink { get; set; }
@@ -211,6 +212,31 @@ namespace Templates.Test.Helpers
                 }
 
                 using var result = ProcessEx.Run(Output, TemplateOutputDir, command, args);
+                await result.Exited;
+                return new ProcessResult(result);
+            }
+            finally
+            {
+                DotNetNewLock.Release();
+            }
+        }
+
+        internal async Task<ProcessResult> RunDotNetEfUpdateDatabaseAsync()
+        {
+            var assembly = typeof(ProjectFactoryFixture).Assembly;
+
+            var dotNetEfFullPath = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .First(attribute => attribute.Key == "DotNetEfFullPath")
+                .Value;
+
+            var args = $"\"{dotNetEfFullPath}\" --verbose --no-build database update";
+
+            // Only run one instance of 'dotnet new' at once, as a workaround for
+            // https://github.com/aspnet/templating/issues/63
+            await DotNetNewLock.WaitAsync();
+            try
+            {
+                using var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args);
                 await result.Exited;
                 return new ProcessResult(result);
             }

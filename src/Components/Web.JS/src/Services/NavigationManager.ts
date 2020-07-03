@@ -72,12 +72,12 @@ export function attachToEventDelegator(eventDelegator: EventDelegator) {
   });
 }
 
-export function navigateTo(uri: string, forceLoad: boolean) {
+export function navigateTo(uri: string, forceLoad: boolean, replace: boolean = false) {
   const absoluteUri = toAbsoluteUri(uri);
 
   if (!forceLoad && isWithinBaseUriSpace(absoluteUri)) {
     // It's an internal URL, so do client-side navigation
-    performInternalNavigation(absoluteUri, false);
+    performInternalNavigation(absoluteUri, false, replace);
   } else if (forceLoad && location.href === uri) {
     // Force-loading the same URL you're already on requires special handling to avoid
     // triggering browser-specific behavior issues.
@@ -85,13 +85,15 @@ export function navigateTo(uri: string, forceLoad: boolean) {
     const temporaryUri = uri + '?';
     history.replaceState(null, '', temporaryUri);
     location.replace(uri);
+  } else if (replace){
+    history.replaceState(null, '', absoluteUri)
   } else {
     // It's either an external URL, or forceLoad is requested, so do a full page load
     location.href = uri;
   }
 }
 
-function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean) {
+function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean = false) {
   // Since this was *not* triggered by a back/forward gesture (that goes through a different
   // code path starting with a popstate event), we don't want to preserve the current scroll
   // position, so reset it.
@@ -99,7 +101,11 @@ function performInternalNavigation(absoluteInternalHref: string, interceptedLink
   // we render the new page. As a best approximation, wait until the next batch.
   resetScrollAfterNextBatch();
 
-  history.pushState(null, /* ignored title */ '', absoluteInternalHref);
+  if(!replace){
+    history.pushState(null, /* ignored title */ '', absoluteInternalHref);
+  }else{
+    history.replaceState(null, /* ignored title */ '', absoluteInternalHref);
+  }
   notifyLocationChanged(interceptedLink);
 }
 
@@ -110,7 +116,7 @@ async function notifyLocationChanged(interceptedLink: boolean) {
 }
 
 let testAnchor: HTMLAnchorElement;
-function toAbsoluteUri(relativeUri: string) {
+export function toAbsoluteUri(relativeUri: string) {
   testAnchor = testAnchor || document.createElement('a');
   testAnchor.href = relativeUri;
   return testAnchor.href;

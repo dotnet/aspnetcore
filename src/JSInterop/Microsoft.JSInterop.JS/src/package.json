@@ -5,6 +5,7 @@
   "main": "dist/Microsoft.JSInterop.js",
   "types": "dist/Microsoft.JSInterop.d.ts",
   "scripts": {
+    "preclean": "yarn install",
     "clean": "node node_modules/rimraf/bin.js ./dist",
     "build": "npm run clean && npm run build:esm",
     "build:lint": "node node_modules/tslint/bin/tslint -p ./tsconfig.json",
@@ -17,9 +18,9 @@
   "author": "Microsoft",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/dotnet/extensions/issues"
+    "url": "https://github.com/dotnet/aspnetcore/issues"
   },
-  "homepage": "https://github.com/dotnet/extensions/tree/master/src/JSInterop#readme",
+  "homepage": "https://github.com/dotnet/aspnetcore/tree/master/src/JSInterop",
   "files": [
     "dist/**"
   ],

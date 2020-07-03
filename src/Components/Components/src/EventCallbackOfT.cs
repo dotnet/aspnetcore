@@ -16,15 +16,15 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         public static readonly EventCallback<TValue> Empty = new EventCallback<TValue>(null, (Action)(() => { }));
 
-        internal readonly MulticastDelegate Delegate;
-        internal readonly IHandleEvent Receiver;
+        internal readonly MulticastDelegate? Delegate;
+        internal readonly IHandleEvent? Receiver;
 
         /// <summary>
         /// Creates the new <see cref="EventCallback{TValue}"/>.
         /// </summary>
         /// <param name="receiver">The event receiver.</param>
         /// <param name="delegate">The delegate to bind.</param>
-        public EventCallback(IHandleEvent receiver, MulticastDelegate @delegate)
+        public EventCallback(IHandleEvent? receiver, MulticastDelegate? @delegate)
         {
             Receiver = receiver;
             Delegate = @delegate;
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components
             return new EventCallback(Receiver ?? Delegate?.Target as IHandleEvent, Delegate);
         }
 
-        object IEventCallback.UnpackForRenderTree()
+        object? IEventCallback.UnpackForRenderTree()
         {
             return RequiresExplicitReceiver ? (object)AsUntyped() : Delegate;
         }

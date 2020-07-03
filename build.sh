@@ -306,10 +306,6 @@ restore=$run_restore
 nodeReuse=false
 export MSBUILDDISABLENODEREUSE=1
 
-# Our build often has warnings that we can't fix
-# Fixing this is tracked by https://github.com/dotnet/aspnetcore-internal/issues/601
-warn_as_error=false
-
 # Ensure passing neither --bl nor --nobl on CI avoids errors in tools.sh. This is needed because we set both variables
 # to false by default i.e. they always exist. (We currently avoid binary logs but that is made visible in the YAML.)
 if [[ "$ci" == true && "$exclude_ci_binary_log" == false ]]; then
@@ -338,6 +334,9 @@ if [[ "$binary_log" == true ]]; then
     if [[ "$found" == false ]]; then
         msbuild_args[${#msbuild_args[*]}]="/bl:$log_dir/Build.binlog"
     fi
+elif [[ "$ci" == true ]]; then
+    # Ensure the artifacts/log directory isn't empty to avoid warnings.
+    touch "$log_dir/empty.log"
 fi
 
 # Capture MSBuild crash logs

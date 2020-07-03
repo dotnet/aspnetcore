@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.Http
     internal sealed class DefaultHttpResponse : HttpResponse
     {
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
-        private readonly static Func<IFeatureCollection, IHttpResponseFeature> _nullResponseFeature = f => null;
-        private readonly static Func<IFeatureCollection, IHttpResponseBodyFeature> _nullResponseBodyFeature = f => null;
-        private readonly static Func<IFeatureCollection, IResponseCookiesFeature> _newResponseCookiesFeature = f => new ResponseCookiesFeature(f);
+        private readonly static Func<IFeatureCollection, IHttpResponseFeature?> _nullResponseFeature = f => null;
+        private readonly static Func<IFeatureCollection, IHttpResponseBodyFeature?> _nullResponseBodyFeature = f => null;
+        private readonly static Func<IFeatureCollection, IResponseCookiesFeature?> _newResponseCookiesFeature = f => new ResponseCookiesFeature(f);
 
         private readonly DefaultHttpContext _context;
         private FeatureReferences<FeatureInterfaces> _features;
@@ -43,13 +43,13 @@ namespace Microsoft.AspNetCore.Http
         }
 
         private IHttpResponseFeature HttpResponseFeature =>
-            _features.Fetch(ref _features.Cache.Response, _nullResponseFeature);
+            _features.Fetch(ref _features.Cache.Response, _nullResponseFeature)!;
 
         private IHttpResponseBodyFeature HttpResponseBodyFeature =>
-            _features.Fetch(ref _features.Cache.ResponseBody, _nullResponseBodyFeature);
+            _features.Fetch(ref _features.Cache.ResponseBody, _nullResponseBodyFeature)!;
 
         private IResponseCookiesFeature ResponseCookiesFeature =>
-            _features.Fetch(ref _features.Cache.Cookies, _newResponseCookiesFeature);
+            _features.Fetch(ref _features.Cache.Cookies, _newResponseCookiesFeature)!;
 
         public override HttpContext HttpContext { get { return _context; } }
 
@@ -176,9 +176,9 @@ namespace Microsoft.AspNetCore.Http
 
         struct FeatureInterfaces
         {
-            public IHttpResponseFeature Response;
-            public IHttpResponseBodyFeature ResponseBody;
-            public IResponseCookiesFeature Cookies;
+            public IHttpResponseFeature? Response;
+            public IHttpResponseBodyFeature? ResponseBody;
+            public IResponseCookiesFeature? Cookies;
         }
     }
 }

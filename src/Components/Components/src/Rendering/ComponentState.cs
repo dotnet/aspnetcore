@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Profiling;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Rendering
@@ -17,9 +19,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
     {
         private readonly Renderer _renderer;
         private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
+        private readonly bool _hasCascadingParameters;
         private readonly bool _hasAnyCascadingParameterSubscriptions;
         private RenderTreeBuilder _renderTreeBuilderPrevious;
-        private ArrayBuilder<RenderTreeFrame> _latestDirectParametersSnapshot; // Lazily instantiated
+        private ArrayBuilder<RenderTreeFrame>? _latestDirectParametersSnapshot; // Lazily instantiated
         private bool _componentWasDisposed;
 
         /// <summary>
@@ -39,8 +42,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
             CurrentRenderTree = new RenderTreeBuilder();
             _renderTreeBuilderPrevious = new RenderTreeBuilder();
 
-            if (_cascadingParameters != null)
+            if (_cascadingParameters.Count != 0)
             {
+                _hasCascadingParameters = true;
                 _hasAnyCascadingParameterSubscriptions = AddCascadingParameterSubscriptions();
             }
         }
@@ -53,6 +57,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         public void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment)
         {
+            ComponentsProfiling.Instance.Start();
             // A component might be in the render queue already before getting disposed by an
             // earlier entry in the render queue. In that case, rendering is a no-op.
             if (_componentWasDisposed)
@@ -64,7 +69,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
             (CurrentRenderTree, _renderTreeBuilderPrevious) = (_renderTreeBuilderPrevious, CurrentRenderTree);
 
             CurrentRenderTree.Clear();
+            ComponentsProfiling.Instance.Start("BuildRenderTree");
             renderFragment(CurrentRenderTree);
+            ComponentsProfiling.Instance.End("BuildRenderTree");
 
             var diff = RenderTreeDiffBuilder.ComputeDiff(
                 _renderer,
@@ -74,9 +81,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 CurrentRenderTree.GetFrames());
             batchBuilder.UpdatedComponentDiffs.Append(diff);
             batchBuilder.InvalidateParameterViews();
+            ComponentsProfiling.Instance.End();
         }
 
-        public bool TryDisposeInBatch(RenderBatchBuilder batchBuilder, out Exception exception)
+        public bool TryDisposeInBatch(RenderBatchBuilder batchBuilder, [NotNullWhen(false)] out Exception? exception)
         {
             _componentWasDisposed = true;
             exception = null;
@@ -149,7 +157,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 parameters.CaptureSnapshot(_latestDirectParametersSnapshot);
             }
 
-            if (_cascadingParameters != null)
+            if (_hasCascadingParameters)
             {
                 parameters = parameters.WithCascadingParameters(_cascadingParameters);
             }
@@ -162,7 +170,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             var directParams = _latestDirectParametersSnapshot != null
                 ? new ParameterView(lifetime, _latestDirectParametersSnapshot.Buffer, 0)
                 : ParameterView.Empty;
-            var allParams = directParams.WithCascadingParameters(_cascadingParameters);
+            var allParams = directParams.WithCascadingParameters(_cascadingParameters!);
             var task = Component.SetParametersAsync(allParams);
             _renderer.AddToPendingTasks(task);
         }
@@ -170,7 +178,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private bool AddCascadingParameterSubscriptions()
         {
             var hasSubscription = false;
-            var numCascadingParameters = _cascadingParameters.Count;
+            var numCascadingParameters = _cascadingParameters!.Count;
 
             for (var i = 0; i < numCascadingParameters; i++)
             {
@@ -187,7 +195,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         private void RemoveCascadingParameterSubscriptions()
         {
-            var numCascadingParameters = _cascadingParameters.Count;
+            var numCascadingParameters = _cascadingParameters!.Count;
             for (var i = 0; i < numCascadingParameters; i++)
             {
                 var supplier = _cascadingParameters[i].ValueSupplier;

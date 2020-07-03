@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly IEnumerator<KeyValuePair<string, string>> EmptyIEnumeratorType = EmptyEnumerator;
         private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
 
-        private Dictionary<string, string> Store { get; set; }
+        private Dictionary<string, string>? Store { get; set; }
 
         public RequestCookieCollection()
         {
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Http
             Store = new Dictionary<string, string>(capacity, StringComparer.OrdinalIgnoreCase);
         }
 
-        public string this[string key]
+        public string? this[string key]
         {
             get
             {
@@ -47,8 +48,7 @@ namespace Microsoft.AspNetCore.Http
                     return null;
                 }
 
-                string value;
-                if (TryGetValue(key, out value))
+                if (TryGetValue(key, out var value))
                 {
                     return value;
                 }
@@ -57,14 +57,16 @@ namespace Microsoft.AspNetCore.Http
         }
 
         public static RequestCookieCollection Parse(IList<string> values)
+            => ParseInternal(values, AppContext.TryGetSwitch(ResponseCookies.EnableCookieNameEncoding, out var enabled) && enabled);
+
+        internal static RequestCookieCollection ParseInternal(IList<string> values, bool enableCookieNameEncoding)
         {
             if (values.Count == 0)
             {
                 return Empty;
             }
 
-            IList<CookieHeaderValue> cookies;
-            if (CookieHeaderValue.TryParseList(values, out cookies))
+            if (CookieHeaderValue.TryParseList(values, out var cookies))
             {
                 if (cookies.Count == 0)
                 {
@@ -72,11 +74,11 @@ namespace Microsoft.AspNetCore.Http
                 }
 
                 var collection = new RequestCookieCollection(cookies.Count);
-                var store = collection.Store;
+                var store = collection.Store!;
                 for (var i = 0; i < cookies.Count; i++)
                 {
                     var cookie = cookies[i];
-                    var name = Uri.UnescapeDataString(cookie.Name.Value);
+                    var name = enableCookieNameEncoding ? Uri.UnescapeDataString(cookie.Name.Value) : cookie.Name.Value;
                     var value = Uri.UnescapeDataString(cookie.Value.Value);
                     store[name] = value;
                 }
@@ -119,7 +121,7 @@ namespace Microsoft.AspNetCore.Http
             return Store.ContainsKey(key);
         }
 
-        public bool TryGetValue(string key, out string value)
+        public bool TryGetValue(string key, [MaybeNullWhen(false)] out string? value)
         {
             if (Store == null)
             {

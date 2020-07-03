@@ -42,7 +42,7 @@
   <Target Name="Restore">
     <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Restore" />
     <Message Importance="High" Text="Running yarn install on $(MSBuildProjectFullPath)" />
-    <Yarn Command="install --mutex network $(InstallArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
+    <Yarn Command="install --mutex network $(InstallArgs)" StandardOutputImportance="High" StandardErrorImportance="High" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
   </Target>
 
   <Target Name="PrepareForBuild">

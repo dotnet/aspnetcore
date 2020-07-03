@@ -3,7 +3,7 @@
   "isRoot": true,
   "tools": {
     "dotnet-serve": {
-      "version": "1.5.0",
+      "version": "1.7.125",
       "commands": [
         "dotnet-serve"
       ]

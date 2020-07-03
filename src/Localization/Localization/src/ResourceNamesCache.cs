@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Localization
     /// </summary>
     public class ResourceNamesCache : IResourceNamesCache
     {
-        private readonly ConcurrentDictionary<string, IList<string>> _cache = new ConcurrentDictionary<string, IList<string>>();
+        private readonly ConcurrentDictionary<string, IList<string>?> _cache = new ConcurrentDictionary<string, IList<string>?>();
 
         /// <summary>
         /// Creates a new <see cref="ResourceNamesCache" />
@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.Localization
         }
 
         /// <inheritdoc />
-        public IList<string> GetOrAdd(string name, Func<string, IList<string>> valueFactory)
+        public IList<string>? GetOrAdd(string name, Func<string, IList<string>?> valueFactory)
         {
             return _cache.GetOrAdd(name, valueFactory);
         }

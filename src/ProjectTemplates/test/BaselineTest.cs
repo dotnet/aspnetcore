@@ -91,7 +91,13 @@ namespace Templates.Test
                     relativePath.EndsWith(".props", StringComparison.Ordinal) ||
                     relativePath.EndsWith(".targets", StringComparison.Ordinal) ||
                     relativePath.StartsWith("bin/", StringComparison.Ordinal) ||
-                    relativePath.StartsWith("obj/", StringComparison.Ordinal))
+                    relativePath.StartsWith("obj/", StringComparison.Ordinal) ||
+                    relativePath.EndsWith(".sln", StringComparison.Ordinal) ||
+                    relativePath.EndsWith(".targets", StringComparison.Ordinal) ||
+                    relativePath.StartsWith("bin/", StringComparison.Ordinal) ||
+                    relativePath.StartsWith("obj/", StringComparison.Ordinal) ||
+                    relativePath.Contains("/bin/", StringComparison.Ordinal) ||
+                    relativePath.Contains("/obj/", StringComparison.Ordinal))
                 {
                     continue;
                 }
@@ -115,6 +121,16 @@ namespace Templates.Test
             if (arguments.Contains("--support-pages-and-views true"))
             {
                 text += "supportpagesandviewstrue";
+            }
+
+            if (arguments.Contains("-ho"))
+            {
+                text += "hosted";
+            }
+
+            if (arguments.Contains("--pwa"))
+            {
+                text += "pwa";
             }
 
             return text;

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     public readonly struct ArrayBuilderSegment<T> : IEnumerable<T>
     {
         // The following fields are memory mapped to the WASM client. Do not re-order or use auto-properties.
-        private readonly ArrayBuilder<T> _builder;
+        private readonly ArrayBuilder<T>? _builder;
         private readonly int _offset;
         private readonly int _count;
 
@@ -35,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <summary>
         /// Gets the current underlying array holding the segment's elements.
         /// </summary>
-        public T[] Array => _builder?.Buffer;
+        public T[] Array => _builder?.Buffer ?? System.Array.Empty<T>();
 
         /// <summary>
         /// Gets the offset into the underlying array holding the segment's elements.
@@ -53,13 +55,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="index">The index into the segment.</param>
         /// <returns>The array entry at the specified index within the segment.</returns>
         public T this[int index]
-            => _builder.Buffer[_offset + index];
+            => Array[_offset + index];
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
-            => ((IEnumerable<T>)new ArraySegment<T>(_builder.Buffer, _offset, _count)).GetEnumerator();
+            => ((IEnumerable<T>)new ArraySegment<T>(Array, _offset, _count)).GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator()
-            => ((IEnumerable)new ArraySegment<T>(_builder.Buffer, _offset, _count)).GetEnumerator();
+            => ((IEnumerable)new ArraySegment<T>(Array, _offset, _count)).GetEnumerator();
 
         // TODO: If this assembly later moves to netstandard2.1, consider adding a public
         // GetEnumerator method that returns ArraySegment.Enumerator to avoid boxing.

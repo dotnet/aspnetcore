@@ -8,8 +8,8 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, string, Exception> _userAuthorizationFailed;
-        private static Action<ILogger, Exception> _userAuthorizationSucceeded;
+        private static Action<ILogger, string, Exception?> _userAuthorizationFailed;
+        private static Action<ILogger, Exception?> _userAuthorizationSucceeded;
 
         static LoggingExtensions()
         {

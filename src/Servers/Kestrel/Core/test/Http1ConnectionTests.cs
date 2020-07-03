@@ -807,6 +807,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task RequestAbortedTokenIsFiredAfterTransportReturnsCompletedFlushResult()
+        {
+            var originalToken = _http1Connection.RequestAborted;
+
+            // Ensure the next call to _transport.Output.FlushAsync() returns a completed FlushResult.
+            _application.Input.Complete();
+
+            await _http1Connection.WritePipeAsync(ReadOnlyMemory<byte>.Empty, default).DefaultTimeout();
+
+            Assert.True(originalToken.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
+            Assert.True(_http1Connection.RequestAborted.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
+        }
+
+        [Fact]
         public async Task ExceptionDetailNotIncludedWhenLogLevelInformationNotEnabled()
         {
             var previousLog = _serviceContext.Log;

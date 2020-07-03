@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 case 404:
                 case 500:
                     // Status codes which exist in the HTTP/2 StaticTable.
-                    return HPackEncoder.EncodeIndexedHeaderField(H2StaticTable.StatusIndex[statusCode], buffer, out length);
+                    return HPackEncoder.EncodeIndexedHeaderField(H2StaticTable.GetStatusIndex(statusCode), buffer, out length);
                 default:
                     const string name = ":status";
                     var value = StatusCodes.ToStatusString(statusCode);

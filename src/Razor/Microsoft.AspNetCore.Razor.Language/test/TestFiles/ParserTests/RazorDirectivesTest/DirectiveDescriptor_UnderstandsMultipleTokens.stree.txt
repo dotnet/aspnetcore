@@ -1,0 +1,32 @@
+RazorDocument - [0..64)::64 - [@custom System.Text.Encoding.ASCIIEncoding Some_Member "AString"]
+    MarkupBlock - [0..64)::64
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..64)::64
+            RazorDirective - [0..64)::64 - Directive:{custom;SingleLine;Unrestricted}
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                RazorDirectiveBody - [1..64)::63
+                    RazorMetaCode - [1..7)::6 - Gen<None> - SpanEditHandler;Accepts:None
+                        Identifier;[custom];
+                    CSharpCodeBlock - [7..64)::57
+                        CSharpStatementLiteral - [7..8)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[ ];
+                        CSharpStatementLiteral - [8..42)::34 - [System.Text.Encoding.ASCIIEncoding] - Gen<DirectiveToken {;Type;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            Identifier;[System];
+                            Dot;[.];
+                            Identifier;[Text];
+                            Dot;[.];
+                            Identifier;[Encoding];
+                            Dot;[.];
+                            Identifier;[ASCIIEncoding];
+                        CSharpStatementLiteral - [42..43)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[ ];
+                        CSharpStatementLiteral - [43..54)::11 - [Some_Member] - Gen<DirectiveToken {;Member;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            Identifier;[Some_Member];
+                        MarkupEphemeralTextLiteral - [54..55)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[ ];
+                        CSharpStatementLiteral - [55..64)::9 - ["AString"] - Gen<DirectiveToken {;String;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            StringLiteral;["AString"];
+        MarkupTextLiteral - [64..64)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

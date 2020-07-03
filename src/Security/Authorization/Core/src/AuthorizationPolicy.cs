@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// A new <see cref="AuthorizationPolicy"/> which represents the combination of the
         /// authorization policies provided by the specified <paramref name="policyProvider"/>.
         /// </returns>
-        public static async Task<AuthorizationPolicy> CombineAsync(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizeData> authorizeData)
+        public static async Task<AuthorizationPolicy?> CombineAsync(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizeData> authorizeData)
         {
             if (policyProvider == null)
             {
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Authorization
                 skipEnumeratingData = dataList.Count == 0;
             }
 
-            AuthorizationPolicyBuilder policyBuilder = null;
+            AuthorizationPolicyBuilder? policyBuilder = null;
             if (!skipEnumeratingData)
             {
                 foreach (var authorizeDatum in authorizeData)

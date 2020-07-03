@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [ConditionalFact]
         [HostNameIsReachable]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/7267")]
+        [QuarantinedTest]
         public async Task RegisterAddresses_HostName_Success()
         {
             var hostName = Dns.GetHostName();
@@ -100,7 +100,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(IPEndPointRegistrationDataDynamicPort))]
         [IPv6SupportedCondition]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2074")]
         public async Task RegisterIPEndPoint_DynamicPort_Success(IPEndPoint endPoint, string testUrl)
         {
             await RegisterIPEndPoint_Success(endPoint, testUrl);
@@ -345,7 +344,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [ConditionalFact]
         [HostNameIsReachable]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/7267")]
+        [QuarantinedTest]
         public async Task ListenAnyIP_HostName_Success()
         {
             var hostName = Dns.GetHostName();

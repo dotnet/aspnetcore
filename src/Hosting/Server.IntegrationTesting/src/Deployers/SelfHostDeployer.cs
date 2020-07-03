@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 AddEnvironmentVariablesToProcess(startInfo, DeploymentParameters.EnvironmentVariables);
 
                 Uri actualUrl = null;
-                var started = new TaskCompletionSource<object>();
+                var started = new TaskCompletionSource();
 
                 HostProcess = new Process() { StartInfo = startInfo };
                 HostProcess.EnableRaisingEvents = true;
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 {
                     if (string.Equals(dataArgs.Data, ApplicationStartedMessage))
                     {
-                        started.TrySetResult(null);
+                        started.TrySetResult();
                     }
                     else if (!string.IsNullOrEmpty(dataArgs.Data))
                     {

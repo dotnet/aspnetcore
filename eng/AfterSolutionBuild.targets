@@ -5,7 +5,8 @@
   <Import Project="SharedFramework.Local.props" />
 
   <!-- This is temporary until we can use FrameworkReference to build our own packages. -->
-  <Target Name="RemoveSharedFrameworkOnlyRefsFromNuspec" AfterTargets="Pack">
+  <Target Name="RemoveSharedFrameworkOnlyRefsFromNuspec" AfterTargets="Pack"
+      Condition=" '$(MSBuildRuntimeType)' == 'core' ">
     <ItemGroup>
       <_BuildOutput Include="$(ArtifactsShippingPackagesDir)*.nupkg"
                     Exclude="$(ArtifactsShippingPackagesDir)*.symbols.nupkg" />

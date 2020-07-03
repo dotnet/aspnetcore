@@ -4,7 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
+using Microsoft.Extensions.Primitives;
+using Moq;
 using Xunit;
 
 namespace Microsoft.Net.Http.Headers
@@ -24,9 +27,11 @@ namespace Microsoft.Net.Http.Headers
                     HttpOnly = true,
                     MaxAge = TimeSpan.FromDays(1),
                     Path = "path1",
-                    Secure = true
+                    Secure = true,
                 };
-                dataset.Add(header1, "name1=n1=v1&n2=v2&n3=v3; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite=strict; httponly");
+                header1.Extensions.Add("extension1");
+                header1.Extensions.Add("extension2=value");
+                dataset.Add(header1, "name1=n1=v1&n2=v2&n3=v3; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite=strict; httponly; extension1; extension2=value");
 
                 var header2 = new SetCookieHeaderValue("name2", "");
                 dataset.Add(header2, "name2=");
@@ -59,6 +64,10 @@ namespace Microsoft.Net.Http.Headers
                 };
                 dataset.Add(header7, "name7=value7; samesite=none");
 
+                var header8 = new SetCookieHeaderValue("name8", "value8");
+                header8.Extensions.Add("extension1");
+                header8.Extensions.Add("extension2=value");
+                dataset.Add(header8, "name8=value8; extension1; extension2=value");
 
                 return dataset;
             }
@@ -111,11 +120,11 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        public static TheoryData<IList<SetCookieHeaderValue>, string[]> ListOfSetCookieHeaderDataSet
+        public static TheoryData<IList<SetCookieHeaderValue>, string?[]> ListOfSetCookieHeaderDataSet
         {
             get
             {
-                var dataset = new TheoryData<IList<SetCookieHeaderValue>, string[]>();
+                var dataset = new TheoryData<IList<SetCookieHeaderValue>, string?[]>();
                 var header1 = new SetCookieHeaderValue("name1", "n1=v1&n2=v2&n3=v3")
                 {
                     Domain = "domain1",
@@ -126,7 +135,10 @@ namespace Microsoft.Net.Http.Headers
                     Path = "path1",
                     Secure = true
                 };
-                var string1 = "name1=n1=v1&n2=v2&n3=v3; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite=strict; httponly";
+                header1.Extensions.Add("extension1");
+                header1.Extensions.Add("extension2=value");
+
+                var string1 = "name1=n1=v1&n2=v2&n3=v3; expires=Sun, 06 Nov 1994 08:49:37 GMT; max-age=86400; domain=domain1; path=path1; secure; samesite=strict; httponly; extension1; extension2=value";
 
                 var header2 = new SetCookieHeaderValue("name2", "value2");
                 var string2 = "name2=value2";
@@ -170,6 +182,12 @@ namespace Microsoft.Net.Http.Headers
                 var string8a = "name8=value8; samesite";
                 var string8b = "name8=value8; samesite=invalid";
 
+                var header9 = new SetCookieHeaderValue("name9", "value9");
+                header9.Extensions.Add("extension1");
+                header9.Extensions.Add("extension2=value");
+                var string9 = "name9=value9; extension1; extension2=value";
+
+
                 dataset.Add(new[] { header1 }.ToList(), new[] { string1 });
                 dataset.Add(new[] { header1, header1 }.ToList(), new[] { string1, string1 });
                 dataset.Add(new[] { header1, header1 }.ToList(), new[] { string1, null, "", " ", ",", " , ", string1 });
@@ -185,16 +203,32 @@ namespace Microsoft.Net.Http.Headers
                 dataset.Add(new[] { header7 }.ToList(), new[] { string7 });
                 dataset.Add(new[] { header8 }.ToList(), new[] { string8a });
                 dataset.Add(new[] { header8 }.ToList(), new[] { string8b });
+                dataset.Add(new[] { header9 }.ToList(), new[] { string9 });
+
+                foreach (var item1 in SetCookieHeaderDataSet)
+                {
+                    var pair_cookie1 = (SetCookieHeaderValue)item1[0];
+                    var pair_string1 = item1[1].ToString();
+
+                    foreach (var item2 in SetCookieHeaderDataSet)
+                    {
+                        var pair_cookie2 = (SetCookieHeaderValue)item2[0];
+                        var pair_string2 = item2[1].ToString();
+
+                        dataset.Add(new[] { pair_cookie1, pair_cookie2 }.ToList(), new[] { string.Join(", ", pair_string1, pair_string2) });
+
+                    }
+                }
 
                 return dataset;
             }
         }
 
-        public static TheoryData<IList<SetCookieHeaderValue>, string[]> ListWithInvalidSetCookieHeaderDataSet
+        public static TheoryData<IList<SetCookieHeaderValue>?, string?[]> ListWithInvalidSetCookieHeaderDataSet
         {
             get
             {
-                var dataset = new TheoryData<IList<SetCookieHeaderValue>, string[]>();
+                var dataset = new TheoryData<IList<SetCookieHeaderValue>?, string?[]>();
                 var header1 = new SetCookieHeaderValue("name1", "n1=v1&n2=v2&n3=v3")
                 {
                     Domain = "domain1",
@@ -341,7 +375,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.True(SetCookieHeaderValue.TryParse(expectedValue, out var header));
 
             Assert.Equal(cookie, header);
-            Assert.Equal(expectedValue, header.ToString());
+            Assert.Equal(expectedValue, header!.ToString());
         }
 
         [Theory]
@@ -378,15 +412,15 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
-        public void SetCookieHeaderValue_TryParse_SkipExtensionValues()
+        public void SetCookieHeaderValue_TryParse_ExtensionOrderDoesntMatter()
         {
-            string cookieHeaderValue = "cookiename=value; extensionname=value;";
+            string cookieHeaderValue1 = "cookiename=value; extensionname1=value; extensionname2=value;";
+            string cookieHeaderValue2 = "cookiename=value; extensionname2=value; extensionname1=value;";
 
-            SetCookieHeaderValue setCookieHeaderValue;
+            SetCookieHeaderValue.TryParse(cookieHeaderValue1, out var setCookieHeaderValue1);
+            SetCookieHeaderValue.TryParse(cookieHeaderValue2, out var setCookieHeaderValue2);
 
-            SetCookieHeaderValue.TryParse(cookieHeaderValue, out setCookieHeaderValue);
-
-            Assert.Equal("value", setCookieHeaderValue.Value);
+            Assert.Equal(setCookieHeaderValue1, setCookieHeaderValue2);
         }
 
         [Theory]
@@ -430,7 +464,7 @@ namespace Microsoft.Net.Http.Headers
         [MemberData(nameof(ListWithInvalidSetCookieHeaderDataSet))]
         public void SetCookieHeaderValue_ParseStrictList_ThrowsForAnyInvalidValues(
 #pragma warning disable xUnit1026 // Theory methods should use all of their parameters
-            IList<SetCookieHeaderValue> cookies, 
+            IList<SetCookieHeaderValue> cookies,
 #pragma warning restore xUnit1026 // Theory methods should use all of their parameters
             string[] input)
         {

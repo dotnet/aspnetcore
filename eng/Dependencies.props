@@ -20,13 +20,10 @@ and are generated based on the last package release.
   </ItemDefinitionGroup>
 
   <ItemGroup Label=".NET team dependencies">
-    <LatestPackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="$(MicrosoftAspNetCoreRazorLanguagePackageVersion)" />
     <LatestPackageReference Include="Microsoft.Azure.SignalR" Version="$(MicrosoftAzureSignalRPackageVersion)" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisCommonPackageVersion)" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.CodeAnalysis.Razor" Version="$(MicrosoftCodeAnalysisRazorPackageVersion)" />
     <LatestPackageReference Include="Microsoft.CSharp" Version="$(MicrosoftCSharpPackageVersion)" />
     <LatestPackageReference Include="Microsoft.DotNet.GenAPI" Version="$(MicrosoftDotNetGenApiPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="$(MicrosoftExtensionsCachingAbstractionsPackageVersion)" />
@@ -49,6 +46,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="$(MicrosoftExtensionsFileProvidersCompositePackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="$(MicrosoftExtensionsFileProvidersPhysicalPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.HostFactoryResolver.Sources" Version="$(MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(MicrosoftExtensionsHostingAbstractionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsHostingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsHttpPackageVersion)"  />
@@ -71,10 +69,12 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.CommandLine.Experimental" Version="$(SystemCommandlineExperimentalPackageVersion)" />
     <LatestPackageReference Include="System.ComponentModel" Version="$(SystemComponentModelPackageVersion)" />
     <LatestPackageReference Include="System.ComponentModel.Annotations" Version="$(SystemComponentModelAnnotationsPackageVersion)" />
+    <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" Version="$(SystemDiagnosticsEventLogPackageVersion)" />
     <LatestPackageReference Include="System.Drawing.Common" Version="$(SystemDrawingCommonPackageVersion)" />
     <LatestPackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
     <LatestPackageReference Include="System.Net.Http" Version="$(SystemNetHttpPackageVersion)" />
+    <LatestPackageReference Include="System.Net.Http.Json" Version="$(SystemNetHttpJsonPackageVersion)" />
     <LatestPackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataPackageVersion)" />
     <LatestPackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" Version="$(SystemRuntimeInteropServicesRuntimeInformationPackageVersion)" />
@@ -108,7 +108,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.2" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion)" />
-    <LatestPackageReference Include="Microsoft.AspNetCore.Blazor.Mono" Version="$(MicrosoftAspNetCoreBlazorMonoPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion)" />
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(MicrosoftEntityFrameworkCoreInMemoryPackageVersion)" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(MicrosoftEntityFrameworkCoreRelationalPackageVersion)" />

@@ -26,6 +26,7 @@
        <PrecompiledHeader>Use</PrecompiledHeader>
        <TreatWarningAsError Condition="'$(TreatWarningsAsErrors)' != ''">true</TreatWarningAsError>
        <SDLCheck>true</SDLCheck>
+       <ControlFlowGuard>Guard</ControlFlowGuard>
        <StringPooling>true</StringPooling>
      </ClCompile>
      <Link>

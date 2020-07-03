@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -399,7 +399,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetAsync("article/23?p1=123&p2=abc");
 
-            Assert.Equal("/blogposts/article/abc", response.Headers.Location.OriginalString);
+            Assert.Equal("/blogposts/article/abc?p1=123&p2=abc", response.Headers.Location.OriginalString);
         }
 
         [Fact]
@@ -427,7 +427,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             var response = await server.CreateClient().GetAsync("article/23?p1=123&p2=abc");
 
-            Assert.Equal("/blog/article/23/abc", response.Headers.Location.OriginalString);
+            Assert.Equal("/blog/article/23/abc?p1=123&p2=abc", response.Headers.Location.OriginalString);
         }
 
         [Fact]

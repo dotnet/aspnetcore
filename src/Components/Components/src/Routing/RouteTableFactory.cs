@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Components
                 Assemblies = assemblies;
             }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 return obj is Key other ? base.Equals(other) : false;
             }
@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Components
                 {
                     return true;
                 }
-                else if (Assemblies == null ^ other.Assemblies == null)
+                else if ((Assemblies == null) || (other.Assemblies == null))
                 {
                     return false;
                 }
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Components
 
             public override int GetHashCode()
             {
-                var hash = new HashCodeCombiner();
+                var hash = new HashCode();
 
                 if (Assemblies != null)
                 {
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Components
                     }
                 }
 
-                return hash;
+                return hash.ToHashCode();
             }
         }
     }

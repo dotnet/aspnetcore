@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Text;
 using Microsoft.Extensions.Primitives;
@@ -83,37 +84,37 @@ namespace Microsoft.Net.Http.Headers
         public static CookieHeaderValue Parse(StringSegment input)
         {
             var index = 0;
-            return SingleValueParser.ParseValue(input, ref index);
+            return SingleValueParser.ParseValue(input, ref index)!;
         }
 
-        public static bool TryParse(StringSegment input, out CookieHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out CookieHeaderValue? parsedValue)
         {
             var index = 0;
-            return SingleValueParser.TryParseValue(input, ref index, out parsedValue);
+            return SingleValueParser.TryParseValue(input, ref index, out parsedValue!);
         }
 
-        public static IList<CookieHeaderValue> ParseList(IList<string> inputs)
+        public static IList<CookieHeaderValue> ParseList(IList<string>? inputs)
         {
             return MultipleValueParser.ParseValues(inputs);
         }
 
-        public static IList<CookieHeaderValue> ParseStrictList(IList<string> inputs)
+        public static IList<CookieHeaderValue> ParseStrictList(IList<string>? inputs)
         {
             return MultipleValueParser.ParseStrictValues(inputs);
         }
 
-        public static bool TryParseList(IList<string> inputs, out IList<CookieHeaderValue> parsedValues)
+        public static bool TryParseList(IList<string>? inputs, [NotNullWhen(true)] out IList<CookieHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseValues(inputs, out parsedValues);
         }
 
-        public static bool TryParseStrictList(IList<string> inputs, out IList<CookieHeaderValue> parsedValues)
+        public static bool TryParseStrictList(IList<string>? inputs, [NotNullWhen(true)] out IList<CookieHeaderValue>? parsedValues)
         {
             return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
         }
 
         // name=value; name="value"
-        internal static bool TryGetCookieLength(StringSegment input, ref int offset, out CookieHeaderValue parsedValue)
+        internal static bool TryGetCookieLength(StringSegment input, ref int offset, [NotNullWhen(true)] out CookieHeaderValue? parsedValue)
         {
             Contract.Requires(offset >= 0);
 
@@ -158,7 +159,6 @@ namespace Microsoft.Net.Http.Headers
         //                     ; US-ASCII characters excluding CTLs, whitespace DQUOTE, comma, semicolon, and backslash
         internal static StringSegment GetCookieValue(StringSegment input, ref int offset)
         {
-            Contract.Requires(input != null);
             Contract.Requires(offset >= 0);
             Contract.Ensures((Contract.Result<int>() >= 0) && (Contract.Result<int>() <= (input.Length - offset)));
 
@@ -256,7 +256,7 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as CookieHeaderValue;
 

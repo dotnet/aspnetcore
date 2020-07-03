@@ -15,10 +15,12 @@ namespace Microsoft.AspNetCore.Components.Reflection
         {
             var dictionary = new Dictionary<string, List<PropertyInfo>>();
 
-            while (type != null)
+            Type? currentType = type;
+
+            while (currentType != null)
             {
-                var properties = type.GetProperties(bindingFlags)
-                    .Where(prop => prop.DeclaringType == type);
+                var properties = currentType.GetProperties(bindingFlags)
+                    .Where(prop => prop.DeclaringType == currentType);
                 foreach (var property in properties)
                 {
                     if (!dictionary.TryGetValue(property.Name, out var others))
@@ -37,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                     others.Add(property);
                 }
 
-                type = type.BaseType;
+                currentType = currentType.BaseType;
             }
 
             return dictionary.Values.SelectMany(p => p);
@@ -55,10 +57,10 @@ namespace Microsoft.AspNetCore.Components.Reflection
             return (IPropertySetter)Activator.CreateInstance(
                 typeof(PropertySetter<,>).MakeGenericType(targetType, property.PropertyType),
                 property.SetMethod,
-                cascading);
+                cascading)!;
         }
 
-        class PropertySetter<TTarget, TValue> : IPropertySetter
+        class PropertySetter<TTarget, TValue> : IPropertySetter where TTarget : notnull
         {
             private readonly Action<TTarget, TValue> _setterDelegate;
 
@@ -75,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
             {
                 if (value == null)
                 {
-                    _setterDelegate((TTarget)target, default);
+                    _setterDelegate((TTarget)target, default!);
                 }
                 else
                 {

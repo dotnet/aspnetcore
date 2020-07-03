@@ -1,0 +1,52 @@
+@inject IJSRuntime JSRuntime
+
+<div class="person">
+    <h2>
+        @Person.Name
+        @if (Person.IsAdmin)
+        {
+            <span>[Administrator]</span>
+        }
+    </h2>
+
+    Salary: $<h3 class="salary">@Person.Salary</h3>
+
+    <EditForm Model="Person">
+        <div>
+            <label>Salary</label>
+            <InputNumber @bind-Value="Person.Salary" />
+        </div>
+
+        <div>
+            <label>Adminstrator: </label>
+            <InputCheckbox @bind-Value="Person.IsAdmin" />
+        </div>
+    </EditForm>
+
+    <ul>
+        @foreach (var kvp in Person.SecurityClearances)
+        {
+            <li>@kvp.Key: @kvp.Value</li>
+        }
+    </ul>
+</div>
+
+
+@foreach (var person in Person.Subordinates)
+{
+    <ul>
+        <li>
+            <PersonDisplay Person="person" />
+        </li>
+    </ul>
+}
+
+@code
+{
+    [Parameter] public Person Person { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        BenchmarkEvent.Send(JSRuntime, "Finished PersonDisplay rendering");
+    }
+}

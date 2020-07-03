@@ -6,7 +6,6 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
@@ -14,7 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    internal partial class Http1Connection : HttpProtocol, IRequestProcessor
+    internal partial class Http1Connection : HttpProtocol, IRequestProcessor, IHttpOutputAborter
     {
         private const byte ByteAsterisk = (byte)'*';
         private const byte ByteForwardSlash = (byte)'/';
@@ -27,7 +26,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected readonly long _keepAliveTicks;
         private readonly long _requestHeadersTimeoutTicks;
 
-        private int _requestAborted;
         private volatile bool _requestTimedOut;
         private uint _requestCount;
 
@@ -56,10 +54,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _context.Transport.Output,
                 _context.ConnectionId,
                 _context.ConnectionContext,
+                _context.MemoryPool,
                 _context.ServiceContext.Log,
                 _context.TimeoutControl,
-                this,
-                _context.MemoryPool);
+                minResponseDataRateFeature: this,
+                outputAborter: this);
 
             Input = _context.Transport.Input;
             Output = _http1Output;
@@ -94,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public void OnInputOrOutputCompleted()
         {
             _http1Output.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByClient));
-            AbortRequest();
+            CancelRequestAbortedToken();
         }
 
         /// <summary>
@@ -102,16 +101,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         /// </summary>
         public void Abort(ConnectionAbortedException abortReason)
         {
-            if (Interlocked.Exchange(ref _requestAborted, 1) != 0)
-            {
-                return;
-            }
-
             _http1Output.Abort(abortReason);
-
-            AbortRequest();
-
-            PoisonRequestBodyStream(abortReason);
+            CancelRequestAbortedToken();
+            PoisonBody(abortReason);
         }
 
         protected override void ApplicationAbort()

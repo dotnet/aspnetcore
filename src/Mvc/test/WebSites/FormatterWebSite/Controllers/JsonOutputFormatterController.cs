@@ -44,12 +44,12 @@ namespace FormatterWebSite.Controllers
                 ["Key3"] = null,
             };
 
-        [HttpGet("{size:int}")]
-        public ActionResult<SimpleModel> LargeObjectResult(int size) =>
+        [HttpGet]
+        public ActionResult<SimpleModel> LargeObjectResult() =>
             new SimpleModel
             {
                 Id = 10,
-                Name = "This is long so we can test large objects " + new string('a', size),
+                Name = "This is long so we can test large objects " + new string('a', 1024 * 65),
             };
 
         [HttpGet]

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http
     [Obsolete("This is obsolete and will be removed in a future version. Use DefaultHttpContextFactory instead.")]
     public class HttpContextFactory : IHttpContextFactory
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpContextAccessor? _httpContextAccessor;
         private readonly FormOptions _formOptions;
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="formOptions">Options to set when instantianting the HTTP context object.</param>
         public HttpContextFactory(IOptions<FormOptions> formOptions)
-            : this(formOptions, serviceScopeFactory: null)
+            : this(formOptions, serviceScopeFactory: null!)
         {
         }
 
@@ -42,8 +42,8 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="formOptions">Options to set when instantianting the HTTP context object.</param>
         /// <param name="httpContextAccessor">Object to be used to access the HTTP context instance.</param>
-        public HttpContextFactory(IOptions<FormOptions> formOptions, IHttpContextAccessor httpContextAccessor)
-            : this(formOptions, serviceScopeFactory: null, httpContextAccessor: httpContextAccessor)
+        public HttpContextFactory(IOptions<FormOptions> formOptions, IHttpContextAccessor? httpContextAccessor)
+            : this(formOptions, serviceScopeFactory: null!, httpContextAccessor: httpContextAccessor)
         {
         }
 
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="formOptions">Options to set when instantianting the HTTP context object.</param>
         /// <param name="serviceScopeFactory">Factory object used to create the service scope for the HTTP context.</param>
         /// <param name="httpContextAccessor">Options to set when instantianting the Default HTTP context object.</param>
-        public HttpContextFactory(IOptions<FormOptions> formOptions, IServiceScopeFactory serviceScopeFactory, IHttpContextAccessor httpContextAccessor)
+        public HttpContextFactory(IOptions<FormOptions> formOptions, IServiceScopeFactory serviceScopeFactory, IHttpContextAccessor? httpContextAccessor)
         {
             if (formOptions == null)
             {

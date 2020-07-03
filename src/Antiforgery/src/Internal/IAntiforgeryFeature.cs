@@ -1,8 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.AspNetCore.Antiforgery
 {
     internal interface IAntiforgeryFeature
     {
-        AntiforgeryToken CookieToken { get; set; }
+        AntiforgeryToken? CookieToken { get; set; }
 
         bool HaveDeserializedCookieToken { get; set; }
 
@@ -12,14 +14,14 @@ namespace Microsoft.AspNetCore.Antiforgery
 
         bool HaveStoredNewCookieToken { get; set; }
 
-        AntiforgeryToken NewCookieToken { get; set; }
+        AntiforgeryToken? NewCookieToken { get; set; }
 
-        string NewCookieTokenString { get; set; }
+        string? NewCookieTokenString { get; set; }
 
-        AntiforgeryToken NewRequestToken { get; set; }
+        AntiforgeryToken? NewRequestToken { get; set; }
 
-        string NewRequestTokenString { get; set; }
+        string? NewRequestTokenString { get; set; }
 
-        AntiforgeryToken RequestToken { get; set; }
+        AntiforgeryToken? RequestToken { get; set; }
     }
 }

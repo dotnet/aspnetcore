@@ -4,7 +4,7 @@
     <HelixPreCommand Condition="'$(IsWindowsHelixQueue)' != 'true' AND '$(IsMacHelixQueue)' != 'true'" Include="./installjdk.sh 10.0.2 x64 &amp;&amp; if [ &quot;%24JAVA_HOME&quot; = &quot;&quot; ]%3B then export JAVA_HOME=%24PWD/java%3B fi" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TestDependsOnMssql)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
+  <ItemGroup Condition="'$(TestDependsOnMssql)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true' AND '$(TargetArchitecture)' != 'arm64'">
     <HelixPreCommand Include="call RunPowershell.cmd mssql\InstallSqlServerLocalDB.ps1 || exit /b 1" />
   </ItemGroup>
 
@@ -27,6 +27,7 @@
   <!-- Item group has to be defined here becasue Helix.props is evaluated before xunit.runner.console.props  -->
   <ItemGroup Condition="$(BuildHelixPayload)">
     <Content Include="@(HelixContent)" />
+    <Content Include="$(RepoRoot)eng\scripts\Download.ps1" />
   </ItemGroup>
 
 <!--
@@ -80,6 +81,7 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
     <PropertyGroup>
       <BuildHelixPayload Condition="'@(_HelixApplicableTargetQueue->Count())' == '0'">false</BuildHelixPayload>
       <BuildHelixPayload Condition="'$(TargetArchitecture)' == 'arm64' AND '$(SkipHelixArm)' == 'true'">false</BuildHelixPayload>
+      <BuildHelixPayload Condition="$(SkipHelixQueues.Contains('$(HelixTargetQueue)'))">false</BuildHelixPayload>
     </PropertyGroup>
   </Target>
 

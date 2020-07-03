@@ -15,6 +15,6 @@ namespace Microsoft.AspNetCore.Antiforgery
         /// </summary>
         /// <param name="claimsPrincipal">The <see cref="ClaimsPrincipal"/>.</param>
         /// <returns>The claims identifier.</returns>
-        string ExtractClaimUid(ClaimsPrincipal claimsPrincipal);
+        string? ExtractClaimUid(ClaimsPrincipal claimsPrincipal);
     }
 }
