@@ -48,13 +48,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private static readonly Action<ILogger, string, Exception> _failedToLoadCertificate =
             LoggerMessage.Define<string>(
-                LogLevel.Warning,
+                LogLevel.Error,
                 new EventId(6, "MissingOrInvalidCertificateFile"),
                 "The certificate file at '{CertificateFilePath}' can not be found, contains malformed data or does not contain a certificate.");
 
         private static readonly Action<ILogger, string, Exception> _failedToLoadCertificateKey =
             LoggerMessage.Define<string>(
-            LogLevel.Warning,
+            LogLevel.Error,
             new EventId(7, "MissingOrInvalidCertificateKeyFile"),
             "The certificate key file at '{CertificateKeyFilePath}' can not be found, contains malformed data or does not contain a PEM encoded key in PKCS8 format.");
 
