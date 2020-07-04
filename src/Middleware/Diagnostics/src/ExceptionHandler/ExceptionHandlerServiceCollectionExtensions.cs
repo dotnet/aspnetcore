@@ -19,6 +19,15 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IServiceCollection AddExceptionHandler(this IServiceCollection services, Action<ExceptionHandlerOptions> configureOptions)
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+            
             return services.Configure(configureOptions);
         }
 
@@ -30,6 +39,15 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IServiceCollection AddExceptionHandler<TService>(this IServiceCollection services, Action<ExceptionHandlerOptions, TService> configureOptions) where TService : class
         {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+            
             services.AddOptions<ExceptionHandlerOptions>().Configure(configureOptions);
             return services;
         }
