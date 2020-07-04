@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.Internal
 #endif
     static class WebEncoders
     {
-        private static readonly byte[] EmptyBytes = new byte[0];
+        private static readonly byte[] EmptyBytes = Array.Empty<byte>();
 
         /// <summary>
         /// Decodes a base64url-encoded string.
