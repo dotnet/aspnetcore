@@ -331,10 +331,10 @@ namespace Microsoft.AspNetCore.Identity
     {
         public PasswordValidator(Microsoft.AspNetCore.Identity.IdentityErrorDescriber errors = null) { }
         public Microsoft.AspNetCore.Identity.IdentityErrorDescriber Describer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
-        public virtual bool IsDigit(char c) { throw null; }
-        public virtual bool IsLetterOrDigit(char c) { throw null; }
-        public virtual bool IsLower(char c) { throw null; }
-        public virtual bool IsUpper(char c) { throw null; }
+        public bool IsDigit(char c) { throw null; }
+        public bool IsLetterOrDigit(char c) { throw null; }
+        public bool IsLower(char c) { throw null; }
+        public bool IsUpper(char c) { throw null; }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult> ValidateAsync(Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user, string password) { throw null; }
     }
     public enum PasswordVerificationResult
