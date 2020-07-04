@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="c">The character to check if it is a digit.</param>
         /// <returns>True if the character is a digit, otherwise false.</returns>
-        public virtual bool IsDigit(char c)
+        public bool IsDigit(char c)
         {
             return c >= '0' && c <= '9';
         }
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="c">The character to check if it is a lower case unicode letter.</param>
         /// <returns>True if the character is a lower case unicode letter, otherwise false.</returns>
-        public virtual bool IsLower(char c)
+        public bool IsLower(char c)
         {
             return char.IsLower(c);
         }
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="c">The character to check if it is an upper case unicode letter.</param>
         /// <returns>True if the character is an upper case unicode letter, otherwise false.</returns>
-        public virtual bool IsUpper(char c)
+        public bool IsUpper(char c)
         {
             return char.IsUpper(c);
         }
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="c">The character to check if it is an unicode letter or digit.</param>
         /// <returns>True if the character is an unicode letter or digit, otherwise false.</returns>
-        public virtual bool IsLetterOrDigit(char c)
+        public bool IsLetterOrDigit(char c)
         {
             return IsUpper(c) || IsLower(c) || IsDigit(c);
         }
