@@ -190,7 +190,7 @@
     <comment>Error when passwords do not have a digit</comment>
   </data>
   <data name="PasswordRequiresLower" xml:space="preserve">
-    <value>Passwords must have at least one lowercase ('a'-'z').</value>
+    <value>Passwords must have at least one lowercase.</value>
     <comment>Error when passwords do not have a lowercase letter</comment>
   </data>
   <data name="PasswordRequiresNonAlphanumeric" xml:space="preserve">
@@ -198,7 +198,7 @@
     <comment>Error when password does not have enough non alphanumeric characters</comment>
   </data>
   <data name="PasswordRequiresUpper" xml:space="preserve">
-    <value>Passwords must have at least one uppercase ('A'-'Z').</value>
+    <value>Passwords must have at least one uppercase.</value>
     <comment>Error when passwords do not have an uppercase letter</comment>
   </data>
   <data name="PasswordTooShort" xml:space="preserve">
