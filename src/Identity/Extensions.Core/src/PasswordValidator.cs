@@ -89,30 +89,30 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Returns a flag indicating whether the supplied character is a lower case ASCII letter.
+        /// Returns a flag indicating whether the supplied character is a lower case unicode letter.
         /// </summary>
-        /// <param name="c">The character to check if it is a lower case ASCII letter.</param>
-        /// <returns>True if the character is a lower case ASCII letter, otherwise false.</returns>
+        /// <param name="c">The character to check if it is a lower case unicode letter.</param>
+        /// <returns>True if the character is a lower case unicode letter, otherwise false.</returns>
         public virtual bool IsLower(char c)
         {
-            return c >= 'a' && c <= 'z';
+            return char.IsLower(c);
         }
 
         /// <summary>
-        /// Returns a flag indicating whether the supplied character is an upper case ASCII letter.
+        /// Returns a flag indicating whether the supplied character is an upper case unicode letter.
         /// </summary>
-        /// <param name="c">The character to check if it is an upper case ASCII letter.</param>
-        /// <returns>True if the character is an upper case ASCII letter, otherwise false.</returns>
+        /// <param name="c">The character to check if it is an upper case unicode letter.</param>
+        /// <returns>True if the character is an upper case unicode letter, otherwise false.</returns>
         public virtual bool IsUpper(char c)
         {
-            return c >= 'A' && c <= 'Z';
+            return char.IsUpper(c);
         }
 
         /// <summary>
-        /// Returns a flag indicating whether the supplied character is an ASCII letter or digit.
+        /// Returns a flag indicating whether the supplied character is an unicode letter or digit.
         /// </summary>
-        /// <param name="c">The character to check if it is an ASCII letter or digit.</param>
-        /// <returns>True if the character is an ASCII letter or digit, otherwise false.</returns>
+        /// <param name="c">The character to check if it is an unicode letter or digit.</param>
+        /// <returns>True if the character is an unicode letter or digit, otherwise false.</returns>
         public virtual bool IsLetterOrDigit(char c)
         {
             return IsUpper(c) || IsLower(c) || IsDigit(c);
