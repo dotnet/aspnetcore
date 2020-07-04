@@ -142,11 +142,12 @@ namespace Microsoft.AspNetCore.Identity.Test
         [InlineData("a_b9de", Errors.Upper)]
         [InlineData("abcd@e!ld!kaj9Fd", Errors.None)]
         [InlineData("aB1@df", Errors.None)]
+        [InlineData("aÜ1@df", Errors.None)]
         public async Task UberMixedRequiredTests(string input, Errors errorMask)
         {
             const string alphaError = "Passwords must have at least one non alphanumeric character.";
-            const string upperError = "Passwords must have at least one uppercase ('A'-'Z').";
-            const string lowerError = "Passwords must have at least one lowercase ('a'-'z').";
+            const string upperError = "Passwords must have at least one uppercase.";
+            const string lowerError = "Passwords must have at least one lowercase.";
             const string digitError = "Passwords must have at least one digit ('0'-'9').";
             const string lengthError = "Passwords must be at least 6 characters.";
             var manager = MockHelpers.TestUserManager<PocoUser>();
