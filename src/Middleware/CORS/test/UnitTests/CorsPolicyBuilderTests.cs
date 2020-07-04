@@ -206,6 +206,20 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         [Fact]
+        public void SetIsOriginAllowedToAllowWildcardSubdomains_DoesNotAllowRootDomain()
+        {
+            // Arrange
+            var builder = new CorsPolicyBuilder("http://*.example.com");
+
+            // Act
+            builder.SetIsOriginAllowedToAllowWildcardSubdomains();
+
+            // Assert
+            var corsPolicy = builder.Build();
+            Assert.False(corsPolicy.IsOriginAllowed("http://example.com"));
+        }
+
+        [Fact]
         public void WithMethods_AddsMethods()
         {
             // Arrange

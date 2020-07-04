@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly HttpProtocol _context;
 
         private bool _send100Continue = true;
-        private long _consumedBytes;
+        private long _observedBytes;
         private bool _stopped;
 
         protected bool _timingEnabled;
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public virtual void Reset()
         {
             _send100Continue = true;
-            _consumedBytes = 0;
+            _observedBytes = 0;
             _stopped = false;
             _timingEnabled = false;
             _backpressure = false;
@@ -160,15 +160,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
         }
 
-        protected virtual void OnDataRead(long bytesRead)
+        protected void AddAndCheckObservedBytes(long observedBytes)
         {
-        }
+            _observedBytes += observedBytes;
 
-        protected void AddAndCheckConsumedBytes(long consumedBytes)
-        {
-            _consumedBytes += consumedBytes;
-
-            if (_consumedBytes > _context.MaxRequestBodySize)
+            if (_observedBytes > _context.MaxRequestBodySize)
             {
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
@@ -209,7 +205,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        protected long OnAdvance(ReadResult readResult, SequencePosition consumed, SequencePosition examined)
+        protected long TrackConsumedAndExaminedBytes(ReadResult readResult, SequencePosition consumed, SequencePosition examined)
         {
             // This code path is fairly hard to understand so let's break it down with an example
             // ReadAsync returns a ReadResult of length 50.
@@ -252,18 +248,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 totalLength = readResult.Buffer.Length;
             }
 
-            var newlyExamined = examinedLength - _examinedUnconsumedBytes;
-
-            if (newlyExamined > 0)
-            {
-                OnDataRead(newlyExamined);
-                _examinedUnconsumedBytes += newlyExamined;
-            }
-
-            _examinedUnconsumedBytes -= consumedLength;
+            var newlyExaminedBytes = examinedLength - _examinedUnconsumedBytes;
+            _examinedUnconsumedBytes += newlyExaminedBytes - consumedLength;
             _alreadyTimedBytes = totalLength - consumedLength;
 
-            return newlyExamined;
+            return newlyExaminedBytes;
         }
     }
 }

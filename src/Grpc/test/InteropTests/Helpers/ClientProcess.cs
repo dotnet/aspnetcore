@@ -3,6 +3,8 @@
 
 using System;
 using System.Diagnostics;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
 using Xunit.Abstractions;
@@ -14,9 +16,13 @@ namespace InteropTests.Helpers
         private readonly Process _process;
         private readonly ProcessEx _processEx;
         private readonly TaskCompletionSource<object> _startTcs;
+        private readonly StringBuilder _output;
+        private readonly object _outputLock = new object();
 
         public ClientProcess(ITestOutputHelper output, string path, string serverPort, string testCase)
         {
+            _output = new StringBuilder();
+
             _process = new Process();
             _process.StartInfo = new ProcessStartInfo
             {
@@ -27,20 +33,26 @@ namespace InteropTests.Helpers
             };
             _process.EnableRaisingEvents = true;
             _process.OutputDataReceived += Process_OutputDataReceived;
+            _process.ErrorDataReceived += Process_ErrorDataReceived;
             _process.Start();
 
-            _processEx = new ProcessEx(output, _process);
+            _processEx = new ProcessEx(output, _process, timeout: Timeout.InfiniteTimeSpan);
 
             _startTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         }
 
-        public Task WaitForReady()
-        {
-            return _startTcs.Task;
-        }
-
+        public Task WaitForReadyAsync() => _startTcs.Task;
+        public Task WaitForExitAsync() => _processEx.Exited;
         public int ExitCode => _process.ExitCode;
-        public Task Exited => _processEx.Exited;
+        public bool IsReady => _startTcs.Task.IsCompletedSuccessfully;
+
+        public string GetOutput()
+        {
+            lock (_outputLock)
+            {
+                return _output.ToString();
+            }
+        }
 
         private void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
@@ -50,6 +62,23 @@ namespace InteropTests.Helpers
                 if (data.Contains("Application started."))
                 {
                     _startTcs.TrySetResult(null);
+                }
+
+                lock (_outputLock)
+                {
+                    _output.AppendLine(data);
+                }
+            }
+        }
+
+        private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            var data = e.Data;
+            if (data != null)
+            {
+                lock (_outputLock)
+                {
+                    _output.AppendLine("ERROR: " + data);
                 }
             }
         }

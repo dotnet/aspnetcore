@@ -427,10 +427,10 @@ safer-buffer@^2.0.2, safer-buffer@^2.1.0, safer-buffer@~2.1.0:
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
   integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
 
-selenium-standalone@^6.15.4:
-  version "6.15.6"
-  resolved "https://registry.yarnpkg.com/selenium-standalone/-/selenium-standalone-6.15.6.tgz#55cc610e405dd74e312c77f3ac7336795ca2cd0c"
-  integrity sha512-iQJbjJyGY4+n9voj+QIxkjEKmk9csPL91pxjqYyX5/1jjJDw7ce0ZuTnLeNaFmFdjY/nAwcoMRvqpDPmmmyr5A==
+selenium-standalone@^6.17.0:
+  version "6.17.0"
+  resolved "https://registry.yarnpkg.com/selenium-standalone/-/selenium-standalone-6.17.0.tgz#0f24b691836205ee9bc3d7a6f207ebcb28170cd9"
+  integrity sha512-5PSnDHwMiq+OCiAGlhwQ8BM9xuwFfvBOZ7Tfbw+ifkTnOy0PWbZmI1B9gPGuyGHpbQ/3J3CzIK7BYwrQ7EjtWQ==
   dependencies:
     async "^2.6.2"
     commander "^2.19.0"

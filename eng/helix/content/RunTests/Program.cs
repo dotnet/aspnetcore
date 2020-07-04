@@ -2,10 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.CommandLine;
-using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace RunTests
@@ -14,11 +10,15 @@ namespace RunTests
     {
         static async Task Main(string[] args)
         {
-            try 
+            try
             {
                 var runner = new TestRunner(RunTestsOptions.Parse(args));
 
                 var keepGoing = runner.SetupEnvironment();
+                if (keepGoing)
+                {
+                    keepGoing = await runner.InstallDotnetDump();
+                }
                 if (keepGoing)
                 {
                     keepGoing = await runner.InstallAspNetAppIfNeededAsync();

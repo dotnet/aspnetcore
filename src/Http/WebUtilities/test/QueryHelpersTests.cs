@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         [Fact]
         public void AddQueryStringWithNullValueThrows()
         {
-            Assert.Throws<ArgumentNullException>("value" ,() => QueryHelpers.AddQueryString("http://contoso.com/", "hello", null));
+            Assert.Throws<ArgumentNullException>("value" ,() => QueryHelpers.AddQueryString("http://contoso.com/", "hello", null!));
         }
 
         [Theory]
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             "http://contoso.com/someaction?hello=world&some=text&another=#name#something")]
         public void AddQueryStringWithDictionary(string uri, string expectedUri)
         {
-            var queryStrings = new Dictionary<string, string>()
+            var queryStrings = new Dictionary<string, string?>()
                         {
                             { "hello", "world" },
                             { "some", "text" },

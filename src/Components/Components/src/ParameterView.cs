@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -21,24 +22,24 @@ namespace Microsoft.AspNetCore.Components
             RenderTreeFrame.Element(0, string.Empty).WithComponentSubtreeLength(1)
         };
 
-        private static readonly ParameterView _empty = new ParameterView(ParameterViewLifetime.Unbound, _emptyFrames, 0, null);
+        private static readonly ParameterView _empty = new ParameterView(ParameterViewLifetime.Unbound, _emptyFrames, 0, Array.Empty<CascadingParameterState>());
 
         private readonly ParameterViewLifetime _lifetime;
         private readonly RenderTreeFrame[] _frames;
         private readonly int _ownerIndex;
-        private readonly IReadOnlyList<CascadingParameterState> _cascadingParametersOrNull;
+        private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
 
         internal ParameterView(in ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex)
-            : this(lifetime, frames, ownerIndex, null)
+            : this(lifetime, frames, ownerIndex, Array.Empty<CascadingParameterState>())
         {
         }
 
-        private ParameterView(in ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState> cascadingParametersOrNull)
+        private ParameterView(in ParameterViewLifetime lifetime, RenderTreeFrame[] frames, int ownerIndex, IReadOnlyList<CascadingParameterState> cascadingParameters)
         {
             _lifetime = lifetime;
             _frames = frames;
             _ownerIndex = ownerIndex;
-            _cascadingParametersOrNull = cascadingParametersOrNull;
+            _cascadingParameters = cascadingParameters;
         }
 
         /// <summary>
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Components
         public Enumerator GetEnumerator()
         {
             _lifetime.AssertNotExpired();
-            return new Enumerator(_frames, _ownerIndex, _cascadingParametersOrNull);
+            return new Enumerator(_frames, _ownerIndex, _cascadingParameters);
         }
 
         /// <summary>
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="parameterName">The name of the parameter.</param>
         /// <param name="result">Receives the result, if any.</param>
         /// <returns>True if a matching parameter was found; false otherwise.</returns>
-        public bool TryGetValue<TValue>(string parameterName, out TValue result)
+        public bool TryGetValue<TValue>(string parameterName, [MaybeNullWhen(false)] out TValue result)
         {
             foreach (var entry in this)
             {
@@ -87,8 +88,9 @@ namespace Microsoft.AspNetCore.Components
         /// <typeparam name="TValue">The type of the value.</typeparam>
         /// <param name="parameterName">The name of the parameter.</param>
         /// <returns>The parameter value if found; otherwise the default value for the specified type.</returns>
+        [return: MaybeNull]
         public TValue GetValueOrDefault<TValue>(string parameterName)
-            => GetValueOrDefault<TValue>(parameterName, default);
+            => GetValueOrDefault<TValue>(parameterName, default!);
 
         /// <summary>
         /// Gets the value of the parameter with the specified name, or a specified default value
@@ -350,19 +352,13 @@ namespace Microsoft.AspNetCore.Components
 
             public bool MoveNext()
             {
-                // Bail out early if there are no cascading parameters
-                if (_cascadingParameters == null)
-                {
-                    return false;
-                }
-
                 var nextIndex = _currentIndex + 1;
                 if (nextIndex < _cascadingParameters.Count)
                 {
                     _currentIndex = nextIndex;
 
                     var state = _cascadingParameters[_currentIndex];
-                    _current = new ParameterValue(state.LocalValueName, state.ValueSupplier.CurrentValue, true);
+                    _current = new ParameterValue(state.LocalValueName, state.ValueSupplier.CurrentValue!, true);
                     return true;
                 }
                 else

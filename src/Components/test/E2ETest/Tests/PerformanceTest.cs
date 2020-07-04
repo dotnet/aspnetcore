@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
@@ -35,6 +36,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23366")]
         public void BenchmarksRunWithoutError()
         {
             // In CI, we only verify that the benchmarks run without throwing any

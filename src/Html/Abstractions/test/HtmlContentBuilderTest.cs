@@ -256,7 +256,7 @@ namespace Microsoft.Extensions.Internal
                 return _content.GetHashCode();
             }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 var other = obj as TestHtmlContent;
                 if (other != null)
@@ -267,9 +267,9 @@ namespace Microsoft.Extensions.Internal
                 return base.Equals(obj);
             }
 
-            public bool Equals(TestHtmlContent other)
+            public bool Equals(TestHtmlContent? other)
             {
-                return string.Equals(_content, other._content);
+                return other != null && string.Equals(_content, other._content);
             }
         }
     }

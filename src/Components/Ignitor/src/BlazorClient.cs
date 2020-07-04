@@ -359,7 +359,19 @@ namespace Ignitor
             HubConnection.On<string>("JS.Error", OnError);
             HubConnection.Closed += OnClosedAsync;
 
-            await HubConnection.StartAsync(CancellationToken);
+            for (var i = 0; i < 10; i++)
+            {
+                try
+                {
+                    await HubConnection.StartAsync(CancellationToken);
+                    break;
+                }
+                catch
+                {
+                    await Task.Delay(500);
+                    // Retry 10 times
+                }
+            }
 
             if (!connectAutomatically)
             {

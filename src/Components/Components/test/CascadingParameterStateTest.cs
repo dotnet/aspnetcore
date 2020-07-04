@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Test
     public class CascadingParameterStateTest
     {
         [Fact]
-        public void FindCascadingParameters_IfHasNoParameters_ReturnsNull()
+        public void FindCascadingParameters_IfHasNoParameters_ReturnsEmpty()
         {
             // Arrange
             var componentState = CreateComponentState(new ComponentWithNoParams());
@@ -24,11 +24,11 @@ namespace Microsoft.AspNetCore.Components.Test
             var result = CascadingParameterState.FindCascadingParameters(componentState);
 
             // Assert
-            Assert.Null(result);
+            Assert.Empty(result);
         }
 
         [Fact]
-        public void FindCascadingParameters_IfHasNoCascadingParameters_ReturnsNull()
+        public void FindCascadingParameters_IfHasNoCascadingParameters_ReturnsEmpty()
         {
             // Arrange
             var componentState = CreateComponentState(new ComponentWithNoCascadingParams());
@@ -37,11 +37,11 @@ namespace Microsoft.AspNetCore.Components.Test
             var result = CascadingParameterState.FindCascadingParameters(componentState);
 
             // Assert
-            Assert.Null(result);
+            Assert.Empty(result);
         }
 
         [Fact]
-        public void FindCascadingParameters_IfHasNoAncestors_ReturnsNull()
+        public void FindCascadingParameters_IfHasNoAncestors_ReturnsEmpty()
         {
             // Arrange
             var componentState = CreateComponentState(new ComponentWithCascadingParams());
@@ -50,11 +50,11 @@ namespace Microsoft.AspNetCore.Components.Test
             var result = CascadingParameterState.FindCascadingParameters(componentState);
 
             // Assert
-            Assert.Null(result);
+            Assert.Empty(result);
         }
 
         [Fact]
-        public void FindCascadingParameters_IfHasNoMatchesInAncestors_ReturnsNull()
+        public void FindCascadingParameters_IfHasNoMatchesInAncestors_ReturnsEmpty()
         {
             // Arrange: Build the ancestry list
             var states = CreateAncestry(
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var result = CascadingParameterState.FindCascadingParameters(states.Last());
 
             // Assert
-            Assert.Null(result);
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void FindCascadingParameters_ComponentRequestsDerivedType_ReturnsNull()
+        public void FindCascadingParameters_ComponentRequestsDerivedType_ReturnsEmpty()
         {
             // Arrange
             var states = CreateAncestry(
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var result = CascadingParameterState.FindCascadingParameters(states.Last());
 
             // Assert
-            Assert.Null(result);
+            Assert.Empty(result);
         }
 
         [Fact]
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void FindCascadingParameters_TypeAssignmentIsInvalidForNullValue_ReturnsNull()
+        public void FindCascadingParameters_TypeAssignmentIsInvalidForNullValue_ReturnsEmpty()
         {
             // Arrange
             var states = CreateAncestry(
@@ -222,11 +222,11 @@ namespace Microsoft.AspNetCore.Components.Test
             var result = CascadingParameterState.FindCascadingParameters(states.Last());
 
             // Assert
-            Assert.Null(result);
+            Assert.Empty(result);
         }
 
         [Fact]
-        public void FindCascadingParameters_SupplierSpecifiesNameButConsumerDoesNot_ReturnsNull()
+        public void FindCascadingParameters_SupplierSpecifiesNameButConsumerDoesNot_ReturnsEmpty()
         {
             // Arrange
             var states = CreateAncestry(
@@ -237,11 +237,11 @@ namespace Microsoft.AspNetCore.Components.Test
             var result = CascadingParameterState.FindCascadingParameters(states.Last());
 
             // Assert
-            Assert.Null(result);
+            Assert.Empty(result);
         }
 
         [Fact]
-        public void FindCascadingParameters_ConsumerSpecifiesNameButSupplierDoesNot_ReturnsNull()
+        public void FindCascadingParameters_ConsumerSpecifiesNameButSupplierDoesNot_ReturnsEmpty()
         {
             // Arrange
             var states = CreateAncestry(
@@ -252,11 +252,11 @@ namespace Microsoft.AspNetCore.Components.Test
             var result = CascadingParameterState.FindCascadingParameters(states.Last());
 
             // Assert
-            Assert.Null(result);
+            Assert.Empty(result);
         }
 
         [Fact]
-        public void FindCascadingParameters_MismatchingNameButMatchingType_ReturnsNull()
+        public void FindCascadingParameters_MismatchingNameButMatchingType_ReturnsEmpty()
         {
             // Arrange
             var states = CreateAncestry(
@@ -267,11 +267,11 @@ namespace Microsoft.AspNetCore.Components.Test
             var result = CascadingParameterState.FindCascadingParameters(states.Last());
 
             // Assert
-            Assert.Null(result);
+            Assert.Empty(result);
         }
 
         [Fact]
-        public void FindCascadingParameters_MatchingNameButMismatchingType_ReturnsNull()
+        public void FindCascadingParameters_MatchingNameButMismatchingType_ReturnsEmpty()
         {
             // Arrange
             var states = CreateAncestry(
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var result = CascadingParameterState.FindCascadingParameters(states.Last());
 
             // Assert
-            Assert.Null(result);
+            Assert.Empty(result);
         }
 
         [Fact]

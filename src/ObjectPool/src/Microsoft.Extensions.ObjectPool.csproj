@@ -6,8 +6,8 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>pooling</PackageTags>
-    <IsPackable>true</IsPackable>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

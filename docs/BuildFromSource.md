@@ -33,6 +33,9 @@ Building ASP.NET Core on Windows requires:
     ```
 
     However, the build should find any JDK 11 or newer installation on the machine.
+   * Set the `JAVA_HOME` environment variable with the path of the java installation directory if your installation did not do that automatically. (Gradle needs this for execution.)
+      * This will be `RepoRoot/.tools/jdk/win-x64/` if you used the `InstallJdk.ps1` script
+      * This will be `C:/Program FIles/Java/jdk<version>/` if you installed the JDK globally
 * Chrome - Selenium-based tests require a version of Chrome to be installed. Download and install it from <https://www.google.com/chrome>
 
 ### macOS/Linux
@@ -42,6 +45,7 @@ Building ASP.NET Core on macOS or Linux requires:
 * If using macOS, you need macOS Sierra or newer.
 * If using Linux, you need a machine with all .NET Core Linux prerequisites: <https://docs.microsoft.com/en-us/dotnet/core/linux-prerequisites>
 * At least 10 GB of disk space and a good internet connection (our build scripts download a lot of tools and dependencies)
+* curl <https://curl.haxx.se> or Wget <https://www.gnu.org/software/wget>
 * Git <https://git-scm.org>
 * NodeJS. LTS version of 10.14.2 or newer <https://nodejs.org>
 * Java Development Kit 11 or newer. Either:
@@ -63,6 +67,8 @@ To update an existing copy, run:
 ```ps1
 git submodule update --init --recursive
 ```
+
+**NOTE** some ISPs have been know to use web filtering software that has caused issues with git repository cloning, if you experience issues cloning this repo please review <https://help.github.com/en/github/authenticating-to-github/using-ssh-over-the-https-port>
 
 ## Building in Visual Studio
 
@@ -223,6 +229,16 @@ TargetOsName             | The base runtime identifier to build for (win, linux,
 
 After building ASP.NET Core from source, you will need to install and use your local version of ASP.NET Core.
 See ["Artifacts"](./Artifacts.md) for more explanation of the different folders produced by a build.
+
+Building installers does not run as part of `build.cmd` run without parameters, so you should opt-in for building them: 
+
+```ps1
+.\build.cmd -all -pack -arch x64
+.\build.cmd -all -pack -arch x86 -noBuildJava
+.\build.cmd -buildInstallers
+```
+
+*Note*: Additional build steps listed above aren't necessary on Linux or macOS.
 
 * Run the installers produced in `artifacts/installers/{Debug, Release}/` for your platform.
 * Add a NuGet.Config to your project directory with the following content:

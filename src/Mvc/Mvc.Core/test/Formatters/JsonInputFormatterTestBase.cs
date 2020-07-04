@@ -111,6 +111,28 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
+        public async Task JsonFormatterReadsNonUtf8Content()
+        {
+            // Arrange
+            var content = "☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☚☛☜☝☞☟☠☡☢☣☤☥☦☧☨☩☪☫☬☮☯☰☱☲☳☴☵☶☷☸";
+            var formatter = GetInputFormatter();
+
+            var contentBytes = Encoding.Unicode.GetBytes($"\"{content}\"");
+            var httpContext = GetHttpContext(contentBytes, "application/json;charset=utf-16");
+
+            var formatterContext = CreateInputFormatterContext(typeof(string), httpContext);
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            Assert.False(result.HasError);
+            var stringValue = Assert.IsType<string>(result.Model);
+            Assert.Equal(content, stringValue);
+            Assert.True(httpContext.Request.Body.CanRead, "Verify that the request stream hasn't been disposed");
+        }
+
+        [Fact]
         public virtual async Task JsonFormatter_EscapedKeys_Bracket()
         {
             var expectedKey = JsonFormatter_EscapedKeys_Bracket_Expected;

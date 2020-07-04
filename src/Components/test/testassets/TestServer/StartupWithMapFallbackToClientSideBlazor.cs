@@ -1,11 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using BasicTestApp;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -34,49 +31,43 @@ namespace TestServer
             }
 
             // The client-side files middleware needs to be here because the base href in hardcoded to /subdir/
-            app.Map("/subdir", app =>
+            app.Map("/subdir", subApp =>
             {
-                app.UseClientSideBlazorFiles<BasicTestApp.Startup>();
-            });
+                subApp.UseBlazorFrameworkFiles();
+                subApp.UseStaticFiles();
 
-            // The calls to `Map` allow us to test each of these overloads, while keeping them isolated.
-            app.Map("/filepath", app =>
-            {
-                app.UseRouting();
-
-                app.UseEndpoints(endpoints =>
+                // The calls to `Map` allow us to test each of these overloads, while keeping them isolated.
+                subApp.Map("/filepath", filepath =>
                 {
-                    endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Startup>("index.html");
+                    filepath.UseRouting();
+                    filepath.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapFallbackToFile("index.html");
+                    });
                 });
-            });
-
-            app.Map("/pattern_filepath", app =>
-            {
-                app.UseRouting();
-
-                app.UseEndpoints(endpoints =>
+                subApp.Map("/pattern_filepath", patternFilePath =>
                 {
-                    endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Startup>("test/{*path:nonfile}", "index.html");
+                    patternFilePath.UseRouting();
+                    patternFilePath.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapFallbackToFile("test/{*path:nonfile}", "index.html");
+                    });
                 });
-            });
-
-            app.Map("/assemblypath_filepath", app =>
-            {
-                app.UseRouting();
-
-                app.UseEndpoints(endpoints =>
+                subApp.Map("/assemblypath_filepath", assemblyPathFilePath =>
                 {
-                    endpoints.MapFallbackToClientSideBlazor(typeof(BasicTestApp.Startup).Assembly.Location, "index.html");
+                    assemblyPathFilePath.UseRouting();
+                    assemblyPathFilePath.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapFallbackToFile("index.html");
+                    });
                 });
-            });
-
-            app.Map("/assemblypath_pattern_filepath", app =>
-            {
-                app.UseRouting();
-
-                app.UseEndpoints(endpoints =>
+                subApp.Map("/assemblypath_pattern_filepath", assemblyPatternFilePath =>
                 {
-                    endpoints.MapFallbackToClientSideBlazor(typeof(BasicTestApp.Startup).Assembly.Location, "test/{*path:nonfile}", "index.html");
+                    assemblyPatternFilePath.UseRouting();
+                    assemblyPatternFilePath.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapFallbackToFile("test/{*path:nonfile}", "index.html");
+                    });
                 });
             });
         }

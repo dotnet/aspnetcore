@@ -17,6 +17,6 @@ namespace Microsoft.Extensions.Localization
         /// <param name="name">The resource name to add string names for.</param>
         /// <param name="valueFactory">The function used to generate the string names for the resource.</param>
         /// <returns>The string names for the resource.</returns>
-        IList<string> GetOrAdd(string name, Func<string, IList<string>> valueFactory);
+        IList<string>? GetOrAdd(string name, Func<string, IList<string>?> valueFactory);
     }
 }

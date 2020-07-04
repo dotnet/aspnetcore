@@ -86,7 +86,8 @@
         @(AspNetCoreAppReferenceAndPackage);
         @(ExternalAspNetCoreAppReference);
         @(_CompilationOnlyReference);
-        @(Reference->WithMetadataValue('IsSharedSource', 'true'))" />
+        @(Reference->WithMetadataValue('IsSharedSource', 'true'));
+        @(Reference->WithMetadataValue('PrivateAssets', 'All'))" />
     <_OriginalReferences Include="@(Reference)" />
     <!--
       Turn Reference items into a ProjectReference when UseProjectReferences is true.
@@ -132,7 +133,9 @@
     This target resolves remaining Referene items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
     This executes on NuGet restore and during DesignTimeBuild. It should not run in the outer, cross-targeting build.
    -->
-  <Target Name="ResolveCustomReferences" BeforeTargets="CollectPackageReferences;ResolveAssemblyReferencesDesignTime;ResolveAssemblyReferences" Condition=" '$(TargetFramework)' != '' AND '$(EnableCustomReferenceResolution)' == 'true' ">
+  <Target Name="ResolveCustomReferences"
+      BeforeTargets="CheckForImplicitPackageReferenceOverrides;CollectPackageReferences;ResolvePackageAssets"
+      Condition=" '$(TargetFramework)' != '' AND '$(EnableCustomReferenceResolution)' == 'true' ">
     <ItemGroup>
       <!-- Ensure only content asset are consumed from .Sources packages -->
       <Reference>

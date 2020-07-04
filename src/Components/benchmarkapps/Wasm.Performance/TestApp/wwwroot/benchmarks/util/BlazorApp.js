@@ -12,7 +12,7 @@ export class BlazorApp {
 
   async start() {
     this._frame.src = 'blazor-frame.html';
-    await receiveEvent('Rendered index.cshtml');
+    await receiveEvent('Rendered Index.razor');
   }
 
   navigateTo(url) {

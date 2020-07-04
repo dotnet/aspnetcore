@@ -88,8 +88,12 @@ sync
 exit_code=0
 echo "Restore: $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources..."
 $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources
-echo "Running tests: $DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --sdk $2 --runtime $3 --queue $4 --arch $5 --quarantined $6 --ef $7 --aspnetruntime $8 --aspnetref $9..."
-$DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --sdk $2 --runtime $3 --queue $4 --arch $5 --quarantined $6 --ef $7 --aspnetruntime $8 --aspnetref $9
+echo "Running tests: $DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --sdk $2 --runtime $3 --queue $4 --arch $5 --quarantined $6 --ef $7 --aspnetruntime $8 --aspnetref $9 --helixTimeout ${10}..."
+$DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --sdk $2 --runtime $3 --queue $4 --arch $5 --quarantined $6 --ef $7 --aspnetruntime $8 --aspnetref $9 --helixTimeout ${10}
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
+
+# dotnet-install.sh leaves the temporary SDK archive on the helix machine which slowly fills the disk, we'll be nice and clean it until the script fixes the issue
+rm -r -f ${TMPDIR:-/tmp}/dotnet.*
+
 exit $exit_code

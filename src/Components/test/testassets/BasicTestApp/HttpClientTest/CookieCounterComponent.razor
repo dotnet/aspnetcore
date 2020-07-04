@@ -1,3 +1,5 @@
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Http
+@using System.Net.Http
 @inject System.Net.Http.HttpClient Http
 
 <h1>Cookie counter</h1>
@@ -32,7 +34,11 @@
     async Task DoRequest(string url)
     {
         requestInProgress = true;
-        responseText = await Http.GetStringAsync(testServerBaseUrl + url);
+        var request = new HttpRequestMessage(HttpMethod.Get, testServerBaseUrl + url);
+        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+        using var response = await Http.SendAsync(request);
+
+        responseText = await response.Content.ReadAsStringAsync();
         requestInProgress = false;
     }
 }

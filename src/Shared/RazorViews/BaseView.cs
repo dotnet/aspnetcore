@@ -69,7 +69,7 @@ namespace Microsoft.Extensions.RazorViews
             Output = new StreamWriter(buffer, UTF8NoBOM, 4096, leaveOpen: true);
             await ExecuteAsync();
             await Output.FlushAsync();
-            Output.Dispose();
+            await Output.DisposeAsync();
             buffer.Seek(0, SeekOrigin.Begin);
             await buffer.CopyToAsync(stream);
         }
@@ -87,7 +87,7 @@ namespace Microsoft.Extensions.RazorViews
             Output = new StreamWriter(buffer, UTF8NoBOM, 4096, leaveOpen: true);
             await ExecuteAsync();
             await Output.FlushAsync();
-            Output.Dispose();
+            await Output.DisposeAsync();
             buffer.Seek(0, SeekOrigin.Begin);
             await buffer.CopyToAsync(Response.Body);
         }
@@ -244,13 +244,13 @@ namespace Microsoft.Extensions.RazorViews
             WriteLiteral(trailer);
         }
 
-        /// <summary>
+       /// <summary>
         /// <see cref="HelperResult.WriteTo(TextWriter)"/> is invoked
         /// </summary>
         /// <param name="result">The <see cref="HelperResult"/> to invoke</param>
         protected void Write(HelperResult result)
         {
-            Write(result);
+            result.WriteTo(Output);
         }
 
         /// <summary>

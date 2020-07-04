@@ -49,7 +49,6 @@ namespace Microsoft.AspNetCore.Authentication.DataHandler
         }
 
         [Fact]
-        [QuarantinedTest]
         public void UnprotectWithDifferentPurposeFails()
         {
             var provider = ServiceProvider.GetRequiredService<IDataProtectionProvider>();

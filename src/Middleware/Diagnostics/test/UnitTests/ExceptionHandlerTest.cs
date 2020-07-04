@@ -164,9 +164,8 @@ namespace Microsoft.AspNetCore.Diagnostics
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
                 Assert.Equal(expectedResponseBody, await response.Content.ReadAsStringAsync());
                 IEnumerable<string> values;
-                Assert.True(response.Headers.TryGetValues("Cache-Control", out values));
-                Assert.Single(values);
-                Assert.Equal("no-cache", values.First());
+                Assert.True(response.Headers.CacheControl.NoCache);
+                Assert.True(response.Headers.CacheControl.NoStore);
                 Assert.True(response.Headers.TryGetValues("Pragma", out values));
                 Assert.Single(values);
                 Assert.Equal("no-cache", values.First());
@@ -214,9 +213,8 @@ namespace Microsoft.AspNetCore.Diagnostics
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
                 Assert.Equal(expectedResponseBody, await response.Content.ReadAsStringAsync());
                 IEnumerable<string> values;
-                Assert.True(response.Headers.TryGetValues("Cache-Control", out values));
-                Assert.Single(values);
-                Assert.Equal("no-cache", values.First());
+                Assert.True(response.Headers.CacheControl.NoCache);
+                Assert.True(response.Headers.CacheControl.NoStore);
                 Assert.True(response.Headers.TryGetValues("Pragma", out values));
                 Assert.Single(values);
                 Assert.Equal("no-cache", values.First());
@@ -408,8 +406,9 @@ namespace Microsoft.AspNetCore.Diagnostics
             var exception = Assert.Throws<InvalidOperationException>(() => new TestServer(builder));
 
             // Assert
-            Assert.Equal($"An error occurred when configuring the exception handler middleware. " +
-                $"Either the 'ExceptionHandlingPath' or the 'ExceptionHandler' option must be set in 'UseExceptionHandler()'.",
+            Assert.Equal("An error occurred when configuring the exception handler middleware. " +
+                "Either the 'ExceptionHandlingPath' or the 'ExceptionHandler' property must be set in 'UseExceptionHandler()'. " +
+                "Alternatively, set one of the aforementioned properties in 'Startup.ConfigureServices' as follows: 'services.Configure<ExceptionHandlerOptions>(options => { ... });'.",
                 exception.Message);
         }
     }

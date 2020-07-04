@@ -52,11 +52,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ref\Microsoft.AspNetCore.App.Ref.csproj">
+    <ProjectReference Include="..\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
-    <ProjectReference Include="..\src\Microsoft.AspNetCore.App.Runtime.csproj">
+    <ProjectReference Include="..\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
@@ -64,21 +64,21 @@
 
   <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="InitializeSourceControlInformation">
     <!-- Use the ref pack logic to compute the list of expected targeting pack content -->
-    <MSBuild Projects="$(RepoRoot)src\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj"
+    <MSBuild Projects="$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
         Targets="_ResolveTargetingPackContent"
         SkipNonexistentProjects="false">
       <Output TaskParameter="TargetOutputs" ItemName="_TargetingPackDependencies" />
     </MSBuild>
 
     <!-- This target is defined in eng/targets/Packaging.targets and included in every C# and F# project. -->
-    <MSBuild Projects="$(RepoRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj"
+    <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
         Targets="_GetPackageVersionInfo"
         SkipNonexistentProjects="false">
       <Output TaskParameter="TargetOutputs" ItemName="_RuntimePackageVersionInfo" />
     </MSBuild>
 
     <!-- Runtime and Ref packs may have separate versions. -->
-    <MSBuild Projects="$(RepoRoot)src\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj"
+    <MSBuild Projects="$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
         Targets="_GetPackageVersionInfo"
         SkipNonexistentProjects="false">
       <Output TaskParameter="TargetOutputs" ItemName="_TargetingPackVersionInfo" />
@@ -87,7 +87,7 @@
     <ItemGroup>
       <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
         <_Parameter1>TargetingPackDependencies</_Parameter1>
-        <_Parameter2>@(_TargetingPackDependencies)</_Parameter2>
+        <_Parameter2>@(_TargetingPackDependencies->'%(FileName)')</_Parameter2>
       </AssemblyAttribute>
 
       <AspNetCoreTargetingPackDependencies

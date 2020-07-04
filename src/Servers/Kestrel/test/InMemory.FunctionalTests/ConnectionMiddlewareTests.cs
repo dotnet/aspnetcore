@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task ImmediateShutdownDuringOnConnectionAsyncDoesNotCrash()
         {
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
             listenOptions.Use(next =>
             {
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     stopTask = server.StopAsync();
 
-                    tcs.TrySetResult(null);
+                    tcs.TrySetResult();
                 }
 
                 await stopTask;

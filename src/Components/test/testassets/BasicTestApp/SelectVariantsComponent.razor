@@ -1,0 +1,33 @@
+﻿@using BasicTestApp.FormsTest
+
+<input @bind="SelectValue" id="input-value"/>
+
+<select @bind="SelectValue" id="select-without-component">
+    <option value="A">Option A</option>
+    <option value="B">Option B</option>
+    <option value="C">Option C</option>
+    @if (ShowAdditionalOption) {
+        <option value="D">Option D</option>
+    }
+</select>
+
+<select @bind="SelectValue" id="select-with-component">
+    <MyOption value="A">Option A</MyOption>
+    <MyOption value="B">Option B</MyOption>
+    <MyOption value="C">Option C</MyOption>
+    @if (ShowAdditionalOption) {
+        <MyOption value="D">Option D</MyOption>
+    }
+</select>
+
+<button @onclick="ToggleShowAdditionalOption" id="show-additional-option"> Show Additional Option</button>
+
+@code
+{
+    public string SelectValue { get; set; } = "B";
+    public bool ShowAdditionalOption = false;
+
+    void ToggleShowAdditionalOption() {
+        ShowAdditionalOption = true;
+    }
+}

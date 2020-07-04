@@ -22,18 +22,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task BlockedHeartbeatDoesntCauseOverlapsAndIsLoggedAsError()
+        public async Task HeartbeatTakingLongerThanIntervalIsLoggedAsError()
         {
             var systemClock = new MockSystemClock();
             var heartbeatHandler = new Mock<IHeartbeatHandler>();
             var debugger = new Mock<IDebugger>();
             var kestrelTrace = new Mock<IKestrelTrace>();
             var handlerMre = new ManualResetEventSlim();
-            var handlerStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var handlerStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var now = systemClock.UtcNow;
 
-            heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Callback(() =>
+            heartbeatHandler.Setup(h => h.OnHeartbeat(now)).Callback(() =>
             {
-                handlerStartedTcs.SetResult(null);
+                handlerStartedTcs.SetResult();
                 handlerMre.Wait();
             });
             debugger.Setup(d => d.IsAttached).Returns(false);
@@ -45,31 +46,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 blockedHeartbeatTask = Task.Run(() => heartbeat.OnHeartbeat());
 
                 await handlerStartedTcs.Task.DefaultTimeout();
-
-                heartbeat.OnHeartbeat();
             }
+
+            // 2 seconds passes...
+            systemClock.UtcNow = systemClock.UtcNow.AddSeconds(2);
 
             handlerMre.Set();
 
             await blockedHeartbeatTask.DefaultTimeout();
 
-            heartbeatHandler.Verify(h => h.OnHeartbeat(systemClock.UtcNow), Times.Once());
-            kestrelTrace.Verify(t => t.HeartbeatSlow(TimeSpan.Zero, Heartbeat.Interval, systemClock.UtcNow), Times.Once());
+            heartbeatHandler.Verify(h => h.OnHeartbeat(now), Times.Once());
+            kestrelTrace.Verify(t => t.HeartbeatSlow(TimeSpan.FromSeconds(2), Heartbeat.Interval, now), Times.Once());
         }
 
         [Fact]
-        public async Task BlockedHeartbeatIsNotLoggedAsErrorIfDebuggerAttached()
+        public async Task HeartbeatTakingLongerThanIntervalIsNotLoggedAsErrorIfDebuggerAttached()
         {
             var systemClock = new MockSystemClock();
             var heartbeatHandler = new Mock<IHeartbeatHandler>();
             var debugger = new Mock<IDebugger>();
             var kestrelTrace = new Mock<IKestrelTrace>();
             var handlerMre = new ManualResetEventSlim();
-            var handlerStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var handlerStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var now = systemClock.UtcNow;
 
-            heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Callback(() =>
+            heartbeatHandler.Setup(h => h.OnHeartbeat(now)).Callback(() =>
             {
-                handlerStartedTcs.SetResult(null);
+                handlerStartedTcs.SetResult();
                 handlerMre.Wait();
             });
 
@@ -82,16 +85,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 blockedHeartbeatTask = Task.Run(() => heartbeat.OnHeartbeat());
 
                 await handlerStartedTcs.Task.DefaultTimeout();
-
-                heartbeat.OnHeartbeat();
             }
+
+            // 2 seconds passes...
+            systemClock.UtcNow = systemClock.UtcNow.AddSeconds(2);
 
             handlerMre.Set();
 
             await blockedHeartbeatTask.DefaultTimeout();
 
-            heartbeatHandler.Verify(h => h.OnHeartbeat(systemClock.UtcNow), Times.Once());
-            kestrelTrace.Verify(t => t.HeartbeatSlow(TimeSpan.Zero, Heartbeat.Interval, systemClock.UtcNow), Times.Never());
+            heartbeatHandler.Verify(h => h.OnHeartbeat(now), Times.Once());
+            kestrelTrace.Verify(t => t.HeartbeatSlow(TimeSpan.FromSeconds(2), Heartbeat.Interval, now), Times.Never());
         }
 
         [Fact]

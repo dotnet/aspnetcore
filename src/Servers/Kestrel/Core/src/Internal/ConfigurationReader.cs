@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Authentication;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
@@ -12,30 +14,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private const string ProtocolsKey = "Protocols";
         private const string CertificatesKey = "Certificates";
         private const string CertificateKey = "Certificate";
+        private const string SslProtocolsKey = "SslProtocols";
         private const string EndpointDefaultsKey = "EndpointDefaults";
         private const string EndpointsKey = "Endpoints";
         private const string UrlKey = "Url";
-        private const string Latin1RequestHeadersKey = "Latin1RequestHeaders";
 
         private readonly IConfiguration _configuration;
+
+        private IDictionary<string, CertificateConfig> _certificates;
+        private EndpointDefaults _endpointDefaults;
+        private IEnumerable<EndpointConfig> _endpoints;
 
         public ConfigurationReader(IConfiguration configuration)
         {
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            Certificates = ReadCertificates();
-            EndpointDefaults = ReadEndpointDefaults();
-            Endpoints = ReadEndpoints();
-            Latin1RequestHeaders = _configuration.GetValue<bool>(Latin1RequestHeadersKey);
         }
 
-        public IDictionary<string, CertificateConfig> Certificates { get; }
-        public EndpointDefaults EndpointDefaults { get; }
-        public IEnumerable<EndpointConfig> Endpoints { get; }
-        public bool Latin1RequestHeaders  { get; }
+        public IDictionary<string, CertificateConfig> Certificates => _certificates ??= ReadCertificates();
+        public EndpointDefaults EndpointDefaults => _endpointDefaults ??= ReadEndpointDefaults();
+        public IEnumerable<EndpointConfig> Endpoints => _endpoints ??= ReadEndpoints();
 
         private IDictionary<string, CertificateConfig> ReadCertificates()
         {
-            var certificates = new Dictionary<string, CertificateConfig>(0);
+            var certificates = new Dictionary<string, CertificateConfig>(0, StringComparer.OrdinalIgnoreCase);
 
             var certificatesConfig = _configuration.GetSection(CertificatesKey).GetChildren();
             foreach (var certificateConfig in certificatesConfig)
@@ -48,13 +49,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         // "EndpointDefaults": {
         //    "Protocols": "Http1AndHttp2",
+        //    "SslProtocols": [ "Tls11", "Tls12", "Tls13"],
         // }
         private EndpointDefaults ReadEndpointDefaults()
         {
             var configSection = _configuration.GetSection(EndpointDefaultsKey);
             return new EndpointDefaults
             {
-                Protocols = ParseProtocols(configSection[ProtocolsKey])
+                Protocols = ParseProtocols(configSection[ProtocolsKey]),
+                SslProtocols = ParseSslProcotols(configSection.GetSection(SslProtocolsKey))
             };
         }
 
@@ -68,6 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 // "EndpointName": {
                 //    "Url": "https://*:5463",
                 //    "Protocols": "Http1AndHttp2",
+                //    "SslProtocols": [ "Tls11", "Tls12", "Tls13"],
                 //    "Certificate": {
                 //        "Path": "testCert.pfx",
                 //        "Password": "testPassword"
@@ -87,6 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     Protocols = ParseProtocols(endpointConfig[ProtocolsKey]),
                     ConfigSection = endpointConfig,
                     Certificate = new CertificateConfig(endpointConfig.GetSection(CertificateKey)),
+                    SslProtocols = ParseSslProcotols(endpointConfig.GetSection(SslProtocolsKey))
                 };
 
                 endpoints.Add(endpoint);
@@ -104,19 +109,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             return null;
         }
+
+        private static SslProtocols? ParseSslProcotols(IConfigurationSection sslProtocols)
+        {
+            var stringProtocols = sslProtocols.Get<string[]>();
+
+            return stringProtocols?.Aggregate(SslProtocols.None, (acc, current) =>
+            {
+                if (Enum.TryParse(current, ignoreCase: true, out SslProtocols parsed))
+                {
+                    return acc | parsed;
+                }
+
+                return acc;
+            });
+        }
     }
 
     // "EndpointDefaults": {
     //    "Protocols": "Http1AndHttp2",
+    //    "SslProtocols": [ "Tls11", "Tls12", "Tls13"],
     // }
     internal class EndpointDefaults
     {
         public HttpProtocols? Protocols { get; set; }
+        public SslProtocols? SslProtocols { get; set; }
     }
 
     // "EndpointName": {
     //    "Url": "https://*:5463",
     //    "Protocols": "Http1AndHttp2",
+    //    "SslProtocols": [ "Tls11", "Tls12", "Tls13"],
     //    "Certificate": {
     //        "Path": "testCert.pfx",
     //        "Password": "testPassword"
@@ -130,6 +153,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public string Name { get; set; }
         public string Url { get; set; }
         public HttpProtocols? Protocols { get; set; }
+        public SslProtocols? SslProtocols { get; set; }
         public CertificateConfig Certificate { get; set; }
 
         // Compare config sections because it's accessible to app developers via an Action<EndpointConfiguration> callback.
@@ -153,6 +177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             Url == other.Url &&
             (Protocols ?? ListenOptions.DefaultHttpProtocols) == (other.Protocols ?? ListenOptions.DefaultHttpProtocols) &&
             Certificate == other.Certificate &&
+            (SslProtocols ?? System.Security.Authentication.SslProtocols.None) == (other.SslProtocols ?? System.Security.Authentication.SslProtocols.None) &&
             _configSectionClone == other._configSectionClone;
 
         public override int GetHashCode() => HashCode.Combine(Name, Url, Protocols ?? ListenOptions.DefaultHttpProtocols, Certificate, _configSectionClone);

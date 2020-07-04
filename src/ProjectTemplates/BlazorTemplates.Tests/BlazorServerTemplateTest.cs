@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,7 +26,7 @@ namespace Templates.Test
 
         public Project Project { get; private set; }
 
-        [ConditionalFact(Skip = "This test ran for over an hour")]
+        [Fact]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/20172")]
         public async Task BlazorServerTemplateWorks_NoAuth()
         {
@@ -137,9 +139,23 @@ namespace Templates.Test
 
         private void TestBasicNavigation()
         {
-            // Give components.server enough time to load so that it can replace
-            // the prerendered content before we start making assertions.
-            Thread.Sleep(5000);
+            var retries = 3;
+            var connected = false;
+            do
+            {
+                try
+                {
+                    Browser.Contains("Information: WebSocket connected to",
+                        () => string.Join(Environment.NewLine, Browser.GetBrowserLogs(LogLevel.Info).Select(b => b.Message)));
+                    connected = true;
+                }
+                catch (TimeoutException) when(retries-- > 0)
+                {
+                    Browser.Navigate().Refresh();
+                }
+            } while (!connected && retries > 0);
+
+
             Browser.Exists(By.TagName("ul"));
             // <title> element gets project ID injected into it during template execution
             Browser.Equal(Project.ProjectName.Trim(), () => Browser.Title.Trim());

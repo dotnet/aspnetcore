@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.IO;
 
@@ -8,7 +10,7 @@ namespace Microsoft.AspNetCore.Internal
 {
     internal static class AspNetCoreTempDirectory
     {
-        private static string _tempDirectory;
+        private static string? _tempDirectory;
 
         public static string TempDirectory
         {

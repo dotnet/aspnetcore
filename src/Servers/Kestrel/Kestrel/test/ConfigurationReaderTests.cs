@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Authentication;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.Extensions.Configuration;
 using Xunit;
@@ -68,6 +70,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         }
 
         [Fact]
+        public void ReadCertificatesSection_IsCaseInsensitive()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Certificates:filecert:Path", "/path/cert.pfx"),
+                new KeyValuePair<string, string>("CERTIFICATES:FILECERT:PASSWORD", "certpassword"),
+            }).Build();
+            var reader = new ConfigurationReader(config);
+            var certificates = reader.Certificates;
+            Assert.NotNull(certificates);
+            Assert.Equal(1, certificates.Count);
+
+            var fileCert = certificates["FiLeCeRt"];
+            Assert.True(fileCert.IsFileCert);
+            Assert.False(fileCert.IsStoreCert);
+            Assert.Equal("/path/cert.pfx", fileCert.Path);
+            Assert.Equal("certpassword", fileCert.Password);
+        }
+
+        [Fact]
+        public void ReadCertificatesSection_ThrowsOnCaseInsensitiveDuplicate()
+        {
+            var exception = Assert.Throws<ArgumentException>(() => 
+                new ConfigurationBuilder().AddInMemoryCollection(new[]
+                {
+                    new KeyValuePair<string, string>("Certificates:filecert:Password", "certpassword"),
+                    new KeyValuePair<string, string>("Certificates:FILECERT:Password", "certpassword"),
+                }).Build());
+
+            Assert.Contains(CoreStrings.KeyAlreadyExists, exception.Message);
+        }
+
+        [Fact]
         public void ReadEndpointsWhenNoEndpointsSection_ReturnsEmptyCollection()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
@@ -97,7 +132,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             {
                 new KeyValuePair<string, string>("Endpoints:End1", ""),
             }).Build();
-            Assert.Throws<InvalidOperationException>(() => new ConfigurationReader(config));
+            var reader = new ConfigurationReader(config);
+            Assert.Throws<InvalidOperationException>(() => reader.Endpoints);
         }
 
         [Fact]
@@ -107,7 +143,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             {
                 new KeyValuePair<string, string>("Endpoints:End1:Url", ""),
             }).Build();
-            Assert.Throws<InvalidOperationException>(() => new ConfigurationReader(config));
+            var reader = new ConfigurationReader(config);
+            Assert.Throws<InvalidOperationException>(() => reader.Endpoints);
         }
 
         [Fact]
@@ -170,6 +207,85 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.Equal("certstore", cert4.Store);
             Assert.Equal("cetlocation", cert4.Location);
             Assert.True(cert4.AllowInvalid);
+        }
+
+        [Fact]
+        public void ReadEndpointWithSingleSslProtocolSet_ReturnsCorrectValue()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+                new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "Tls11"),
+            }).Build();
+            var reader = new ConfigurationReader(config);
+
+            var endpoint = reader.Endpoints.First();
+            Assert.Equal(SslProtocols.Tls11, endpoint.SslProtocols);
+        }
+
+        [Fact]
+        public void ReadEndpointWithMultipleSslProtocolsSet_ReturnsCorrectValue()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+                new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "Tls11"),
+                new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:1", "Tls12"),
+            }).Build();
+            var reader = new ConfigurationReader(config);
+
+            var endpoint = reader.Endpoints.First();
+            Assert.Equal(SslProtocols.Tls11|SslProtocols.Tls12, endpoint.SslProtocols);
+        }
+
+        [Fact]
+        public void ReadEndpointWithSslProtocolSet_ReadsCaseInsensitive()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+                new KeyValuePair<string, string>("Endpoints:End1:SslProtocols:0", "TLS11"),
+            }).Build();
+            var reader = new ConfigurationReader(config);
+
+            var endpoint = reader.Endpoints.First();
+            Assert.Equal(SslProtocols.Tls11, endpoint.SslProtocols);
+        }
+
+        [Fact]
+        public void ReadEndpointWithNoSslProtocolSettings_ReturnsNull()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            }).Build();
+            var reader = new ConfigurationReader(config);
+
+            var endpoint = reader.Endpoints.First();
+            Assert.Null(endpoint.SslProtocols);
+        }
+
+        [Fact]
+        public void ReadEndpointDefaultsWithSingleSslProtocolSet_ReturnsCorrectValue()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("EndpointDefaults:SslProtocols:0", "Tls11"),
+            }).Build();
+            var reader = new ConfigurationReader(config);
+
+            var endpoint = reader.EndpointDefaults;
+            Assert.Equal(SslProtocols.Tls11, endpoint.SslProtocols);
+        }
+
+        [Fact]
+        public void ReadEndpointDefaultsWithNoSslProtocolSettings_ReturnsCorrectValue()
+        {
+            var config = new ConfigurationBuilder().Build();
+            var reader = new ConfigurationReader(config);
+
+            var endpoint = reader.EndpointDefaults;
+            Assert.Null(endpoint.SslProtocols);
         }
     }
 }

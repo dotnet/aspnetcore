@@ -1,0 +1,11 @@
+﻿@addTagHelper "*, TestAssembly"
+
+@{
+    var enumValue = MyEnum.MyValue;
+}
+
+<input value="@MyEnum.MyValue" />
+<input class="@MyEnum.MySecondValue" />
+<input value="MyValue" />
+<input value="MySecondValue" catch-all="MyValue"/>
+<input value="@enumValue" catch-all="@enumValue" />

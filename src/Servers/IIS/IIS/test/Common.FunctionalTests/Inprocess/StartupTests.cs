@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [SkipIfNotAdmin]
         [RequiresNewShim]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore-internal/issues/2221")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2221")]
         public async Task StartsWithDotnetInstallLocation(RuntimeArchitecture runtimeArchitecture)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp50)
+                .WithTfms(Tfm.Net50)
                 .WithAllApplicationTypes()
                 .WithAncmV2InProcess();
 

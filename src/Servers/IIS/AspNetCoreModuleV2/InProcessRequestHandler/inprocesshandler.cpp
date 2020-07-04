@@ -112,7 +112,7 @@ IN_PROCESS_HANDLER::NotifyDisconnect()
 
     if (pManagedHttpContext != nullptr)
     {
-        m_pDisconnectHandler(m_pManagedHttpContext);
+        m_pDisconnectHandler(pManagedHttpContext);
     }
 }
 
@@ -139,14 +139,17 @@ IN_PROCESS_HANDLER::SetManagedHttpContext(
     PVOID pManagedHttpContext
 )
 {
+    bool disconnectFired = false;
+
     {
         SRWExclusiveLock lock(m_srwDisconnectLock);
         m_pManagedHttpContext = pManagedHttpContext;
+        disconnectFired = m_disconnectFired;
     }
 
-    if (m_disconnectFired && m_pManagedHttpContext != nullptr)
+    if (disconnectFired && pManagedHttpContext != nullptr)
     {
-        m_pDisconnectHandler(m_pManagedHttpContext);
+        m_pDisconnectHandler(pManagedHttpContext);
     }
 }
 

@@ -75,11 +75,13 @@ namespace SystemdTestApp
             if (string.Equals(Process.GetCurrentProcess().Id.ToString(), Environment.GetEnvironmentVariable("LISTEN_PID")))
             {
                 // Use libuv if activated by systemd, since that's currently the only transport that supports being passed a socket handle.
+#pragma warning disable CS0618
                 hostBuilder.UseLibuv(options =>
                  {
                      // Uncomment the following line to change the default number of libuv threads for all endpoints.
                      // options.ThreadCount = 4;
                  });
+#pragma warning restore CS0618
             }
 
             return hostBuilder.Build().RunAsync();

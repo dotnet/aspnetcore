@@ -132,7 +132,7 @@ namespace Microsoft.Net.Http.Headers
             var range8 = new ContentRangeHeaderValue(1, 2, 6);
 
             Assert.False(range1.Equals(null), "bytes 1-2/5 vs. <null>");
-            Assert.False(range1.Equals(range2), "bytes 1-2/5 vs. bytes 1-2/*");
+            Assert.False(range1!.Equals(range2), "bytes 1-2/5 vs. bytes 1-2/*");
             Assert.False(range1.Equals(range3), "bytes 1-2/5 vs. bytes */5");
             Assert.False(range2.Equals(range3), "bytes 1-2/* vs. bytes */5");
             Assert.True(range1.Equals(range4), "bytes 1-2/5 vs. BYTES 1-2/5");
@@ -193,7 +193,7 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("bytes 1-9999999999999999999/3")]
         [InlineData("bytes 9999999999999999999-3/3")]
         [InlineData("bytes 1-2/9999999999999999999")]
-        public void Parse_SetOfInvalidValueStrings_Throws(string input)
+        public void Parse_SetOfInvalidValueStrings_Throws(string? input)
         {
             Assert.Throws<FormatException>(() => ContentRangeHeaderValue.Parse(input));
         }
@@ -212,8 +212,7 @@ namespace Microsoft.Net.Http.Headers
 
             // Note that we don't have a public constructor for value 'bytes */*' since the RFC doesn't mention a
             // scenario for it. However, if a server returns this value, we're flexible and accept it.
-            ContentRangeHeaderValue result = null;
-            Assert.True(ContentRangeHeaderValue.TryParse("bytes */*", out result));
+            Assert.True(ContentRangeHeaderValue.TryParse("bytes */*", out var result));
             Assert.Equal("bytes", result.Unit);
             Assert.Null(result.From);
             Assert.Null(result.To);
@@ -249,23 +248,21 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("bytes 1-9999999999999999999/3")]
         [InlineData("bytes 9999999999999999999-3/3")]
         [InlineData("bytes 1-2/9999999999999999999")]
-        public void TryParse_SetOfInvalidValueStrings_ReturnsFalse(string input)
+        public void TryParse_SetOfInvalidValueStrings_ReturnsFalse(string? input)
         {
-            ContentRangeHeaderValue result = null;
-            Assert.False(ContentRangeHeaderValue.TryParse(input, out result));
+            Assert.False(ContentRangeHeaderValue.TryParse(input, out var result));
             Assert.Null(result);
         }
 
-        private void CheckValidParse(string input, ContentRangeHeaderValue expectedResult)
+        private void CheckValidParse(string? input, ContentRangeHeaderValue expectedResult)
         {
             var result = ContentRangeHeaderValue.Parse(input);
             Assert.Equal(expectedResult, result);
         }
 
-        private void CheckValidTryParse(string input, ContentRangeHeaderValue expectedResult)
+        private void CheckValidTryParse(string? input, ContentRangeHeaderValue expectedResult)
         {
-            ContentRangeHeaderValue result = null;
-            Assert.True(ContentRangeHeaderValue.TryParse(input, out result));
+            Assert.True(ContentRangeHeaderValue.TryParse(input, out var result));
             Assert.Equal(expectedResult, result);
         }
     }

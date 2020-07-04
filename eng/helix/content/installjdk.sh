@@ -37,7 +37,7 @@ cleanup() {
 
 trap "cleanup" EXIT
 cd "$tmp"
-curl -Lsfo $(basename $url) "$url"
+curl -Lsfo $(basename $url) "$url" --retry 5
 echo "Installing java from $(basename $url) $url"
 mkdir $output_dir
 echo "Unpacking to $output_dir"

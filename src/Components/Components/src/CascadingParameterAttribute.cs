@@ -22,6 +22,6 @@ namespace Microsoft.AspNetCore.Components
         /// <see cref="CascadingValue{T}"/>  that supplies a value with a compatible
         /// type.
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

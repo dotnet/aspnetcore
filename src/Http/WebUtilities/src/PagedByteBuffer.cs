@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.WebUtilities
     {
         internal const int PageSize = 1024;
         private readonly ArrayPool<byte> _arrayPool;
-        private byte[] _currentPage;
+        private byte[]? _currentPage;
         private int _currentPageIndex;
 
         public PagedByteBuffer(ArrayPool<byte> arrayPool)

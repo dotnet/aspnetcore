@@ -214,7 +214,6 @@ namespace Templates.Test
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
         public async Task RazorPagesTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpages_rc", Output);

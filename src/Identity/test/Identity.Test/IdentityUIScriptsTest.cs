@@ -40,7 +40,6 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         [Theory]
         [MemberData(nameof(ScriptWithIntegrityData))]
-        [QuarantinedTest]
         public async Task IdentityUI_ScriptTags_SubresourceIntegrityCheck(ScriptTag scriptTag)
         {
             var integrity = await GetShaIntegrity(scriptTag);
@@ -80,7 +79,9 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         [Theory]
         [MemberData(nameof(ScriptWithFallbackSrcData))]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/2267")]
+        // Ubuntu 16 uses an old version of OpenSSL that doesn't work well when an intermediate CA is expired.
+        // We've decided to not run these tests against that OS anymore and will run on newer versions of Ubuntu.
+        [SkipOnHelix("Skip on Ubuntu 16", Queues = "Ubuntu.1604.Amd64.Open;Ubuntu.1604.Amd64")]
         public async Task IdentityUI_ScriptTags_FallbackSourceContent_Matches_CDNContent(ScriptTag scriptTag)
         {
             var wwwrootDir = Path.Combine(GetProjectBasePath(), "wwwroot", scriptTag.Version);

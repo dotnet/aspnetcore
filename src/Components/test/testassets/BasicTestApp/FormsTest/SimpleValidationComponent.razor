@@ -1,15 +1,8 @@
-@using System.ComponentModel.DataAnnotations
+﻿@using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 
 <EditForm Model="@this" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit" autocomplete="off">
-    @if (UseExperimentalValidator)
-    {
-        <ObjectGraphDataAnnotationsValidator />
-    }
-    else
-    {
-        <DataAnnotationsValidator />
-    }
+    <DataAnnotationsValidator />
 
     <p class="user-name">
         User name: <input @bind="UserName" class="@context.FieldCssClass(() => UserName)" />

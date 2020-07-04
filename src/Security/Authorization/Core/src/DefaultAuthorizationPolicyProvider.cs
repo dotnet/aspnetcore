@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 
@@ -14,8 +15,8 @@ namespace Microsoft.AspNetCore.Authorization
     public class DefaultAuthorizationPolicyProvider : IAuthorizationPolicyProvider
     {
         private readonly AuthorizationOptions _options;
-        private Task<AuthorizationPolicy> _cachedDefaultPolicy;
-        private Task<AuthorizationPolicy> _cachedFallbackPolicy;
+        private Task<AuthorizationPolicy>? _cachedDefaultPolicy;
+        private Task<AuthorizationPolicy?>? _cachedFallbackPolicy;
 
         /// <summary>
         /// Creates a new instance of <see cref="DefaultAuthorizationPolicyProvider"/>.
@@ -37,26 +38,26 @@ namespace Microsoft.AspNetCore.Authorization
         /// <returns>The default authorization policy.</returns>
         public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
         {
-            return GetCachedPolicy(ref _cachedDefaultPolicy, _options.DefaultPolicy);
+            if (_cachedDefaultPolicy == null || _cachedDefaultPolicy.Result != _options.DefaultPolicy)
+            {
+                _cachedDefaultPolicy = Task.FromResult(_options.DefaultPolicy);
+            }
+
+            return _cachedDefaultPolicy;
         }
 
         /// <summary>
         /// Gets the fallback authorization policy.
         /// </summary>
         /// <returns>The fallback authorization policy.</returns>
-        public Task<AuthorizationPolicy> GetFallbackPolicyAsync()
+        public Task<AuthorizationPolicy?> GetFallbackPolicyAsync()
         {
-            return GetCachedPolicy(ref _cachedFallbackPolicy, _options.FallbackPolicy);
-        }
-
-        private Task<AuthorizationPolicy> GetCachedPolicy(ref Task<AuthorizationPolicy> cachedPolicy, AuthorizationPolicy currentPolicy)
-        {
-            var local = cachedPolicy;
-            if (local == null || local.Result != currentPolicy)
+            if (_cachedFallbackPolicy == null || _cachedFallbackPolicy.Result != _options.FallbackPolicy)
             {
-                cachedPolicy = local = Task.FromResult(currentPolicy);
+                _cachedFallbackPolicy = Task.FromResult(_options.FallbackPolicy);
             }
-            return local;
+
+            return _cachedFallbackPolicy;
         }
 
         /// <summary>
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// </summary>
         /// <param name="policyName">The policy name to retrieve.</param>
         /// <returns>The named <see cref="AuthorizationPolicy"/>.</returns>
-        public virtual Task<AuthorizationPolicy> GetPolicyAsync(string policyName)
+        public virtual Task<AuthorizationPolicy?> GetPolicyAsync(string policyName)
         {
             // MVC caches policies specifically for this class, so this method MUST return the same policy per
             // policyName for every request or it could allow undesired access. It also must return synchronously.

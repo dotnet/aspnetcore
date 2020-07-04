@@ -12,7 +12,8 @@ YELLOW="\033[0;33m"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 target_os_name=''
 ci=false
-use_default_binary_log=false
+binary_log=false
+exclude_ci_binary_log=false
 verbosity='minimal'
 run_restore=''
 run_build=true
@@ -73,6 +74,7 @@ Options:
 
     --ci                              Apply CI specific settings and environment variables.
     --binarylog|-bl                   Use a binary logger
+    --excludeCIBinarylog              Don't output binary log by default in CI builds (short: -nobl).
     --verbosity|-v                    MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
 
     --dotnet-runtime-source-feed      Additional feed that can be used when downloading .NET runtimes
@@ -202,7 +204,10 @@ while [[ $# -gt 0 ]]; do
             ci=true
             ;;
         -binarylog|-bl)
-            use_default_binary_log=true
+            binary_log=true
+            ;;
+        -excludeCIBinarylog|-nobl)
+            exclude_ci_binary_log=true
             ;;
         -dotnet-runtime-source-feed|-dotnetruntimesourcefeed)
             shift
@@ -283,10 +288,6 @@ if [ -z "$configuration" ]; then
 fi
 msbuild_args[${#msbuild_args[*]}]="-p:Configuration=$configuration"
 
-# Set verbosity
-echo "Setting msbuild verbosity to $verbosity"
-msbuild_args[${#msbuild_args[*]}]="-verbosity:$verbosity"
-
 # Set up additional runtime args
 toolset_build_args=()
 if [ ! -z "$dotnet_runtime_source_feed$dotnet_runtime_source_feed_key" ]; then
@@ -305,14 +306,10 @@ restore=$run_restore
 nodeReuse=false
 export MSBUILDDISABLENODEREUSE=1
 
-# Our build often has warnings that we can't fix
-# Fixing this is tracked by https://github.com/dotnet/aspnetcore-internal/issues/601
-warn_as_error=false
-
-# Workaround Arcade check which asserts BinaryLog is true on CI.
-# We always use binlogs on CI, but we customize the name of the log file
-if [ "$ci" = true ]; then
-  binary_log=true
+# Ensure passing neither --bl nor --nobl on CI avoids errors in tools.sh. This is needed because we set both variables
+# to false by default i.e. they always exist. (We currently avoid binary logs but that is made visible in the YAML.)
+if [[ "$ci" == true && "$exclude_ci_binary_log" == false ]]; then
+    binary_log=true
 fi
 
 # increase file descriptor limit on macOS
@@ -323,18 +320,27 @@ fi
 # Import Arcade
 . "$DIR/eng/common/tools.sh"
 
-if [ "$use_default_binary_log" = true ]; then
-    msbuild_args[${#msbuild_args[*]}]="-bl:\"$log_dir/Build.binlog\""
+# Add default .binlog location if not already on the command line. tools.sh does not handle this; it just checks
+# $binary_log, $ci and $exclude_ci_binary_log values for an error case.
+if [[ "$binary_log" == true ]]; then
+    found=false
+    for arg in "${msbuild_args[@]}"; do
+        opt="$(echo "${arg/#--/-}" | awk '{print tolower($0)}')"
+        if [[ "$opt" == [-/]bl:* || "$opt" == [-/]binarylogger:* ]]; then
+            found=true
+            break
+        fi
+    done
+    if [[ "$found" == false ]]; then
+        msbuild_args[${#msbuild_args[*]}]="/bl:$log_dir/Build.binlog"
+    fi
+elif [[ "$ci" == true ]]; then
+    # Ensure the artifacts/log directory isn't empty to avoid warnings.
+    touch "$log_dir/empty.log"
 fi
 
 # Capture MSBuild crash logs
 export MSBUILDDEBUGPATH="$log_dir"
-
-# Import custom tools configuration, if present in the repo.
-configure_toolset_script="$eng_root/configure-toolset.sh"
-if [[ -a "$configure_toolset_script" ]]; then
-  . "$configure_toolset_script"
-fi
 
 # Set this global property so Arcade will always initialize the toolset. The error message you get when you build on a clean machine
 # with -norestore is not obvious about what to do to fix it. As initialization takes very little time, we think always initializing

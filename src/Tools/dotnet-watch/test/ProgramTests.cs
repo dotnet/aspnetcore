@@ -24,12 +24,12 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         }
 
         [Fact]
-        [QuarantinedTest]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23394")] // Failure on OSX https://dev.azure.com/dnceng/public/_build/results?buildId=706059&view=ms.vss-test-web.build-test-results-tab
         public async Task ConsoleCancelKey()
         {
             _tempDir
                 .WithCSharpProject("testproj")
-                .WithTargetFrameworks("netcoreapp5.0")
+                .WithTargetFrameworks("net5.0")
                 .Dir()
                 .WithFile("Program.cs")
                 .Create();

@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
@@ -65,6 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private int _isClosed;
 
         // Internal for testing
+        internal readonly Http2KeepAlive _keepAlive;
         internal readonly Dictionary<int, Http2Stream> _streams = new Dictionary<int, Http2Stream>();
         internal Http2StreamStack StreamPool;
 
@@ -104,6 +106,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             var connectionWindow = (uint)http2Limits.InitialConnectionWindowSize;
             _inputFlowControl = new InputFlowControl(connectionWindow, connectionWindow / 2);
+
+            if (http2Limits.KeepAlivePingInterval != TimeSpan.MaxValue)
+            {
+                _keepAlive = new Http2KeepAlive(
+                    http2Limits.KeepAlivePingInterval,
+                    http2Limits.KeepAlivePingTimeout,
+                    context.ServiceContext.SystemClock);
+            }
 
             _serverSettings.MaxConcurrentStreams = (uint)http2Limits.MaxStreamsPerConnection;
             _serverSettings.MaxFrameSize = (uint)http2Limits.MaxFrameSize;
@@ -210,8 +220,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                     try
                     {
+                        bool frameReceived = false;
                         while (Http2FrameReader.TryReadFrame(ref buffer, _incomingFrame, _serverSettings.MaxFrameSize, out var framePayload))
                         {
+                            frameReceived = true;
                             Log.Http2FrameReceived(ConnectionId, _incomingFrame);
                             await ProcessFrameAsync(application, framePayload);
                         }
@@ -219,6 +231,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         if (result.IsCompleted)
                         {
                             return;
+                        }
+
+                        if (_keepAlive != null)
+                        {
+                            // Note that the keep alive uses a complete frame being received to reset state.
+                            // Some other keep alive implementations use any bytes being received to reset state.
+                            var state = _keepAlive.ProcessKeepAlive(frameReceived);
+                            if (state == KeepAliveState.SendPing)
+                            {
+                                await _frameWriter.WritePingAsync(Http2PingFrameFlags.NONE, Http2KeepAlive.PingPayload);
+                            }
+                            else if (state == KeepAliveState.Timeout)
+                            {
+                                // There isn't a good error code to return with the GOAWAY.
+                                // NO_ERROR isn't a good choice because it indicates the connection is gracefully shutting down.
+                                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorKeepAliveTimeout, Http2ErrorCode.INTERNAL_ERROR);
+                            }
                         }
                     }
                     catch (Http2StreamErrorException ex)
@@ -752,7 +781,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // the new size.
                 _frameWriter.UpdateMaxHeaderTableSize(Math.Min(_clientSettings.HeaderTableSize, (uint)Limits.Http2.HeaderTableSize));
 
-                return ackTask.AsTask();
+                return ackTask.GetAsTask();
             }
             catch (Http2SettingsParameterOutOfRangeException ex)
             {
@@ -785,7 +814,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return Task.CompletedTask;
             }
 
-            return _frameWriter.WritePingAsync(Http2PingFrameFlags.ACK, payload).AsTask();
+            return _frameWriter.WritePingAsync(Http2PingFrameFlags.ACK, payload).GetAsTask();
         }
 
         private Task ProcessGoAwayFrameAsync()
@@ -971,7 +1000,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMissingMandatoryPseudoHeaderFields, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
-                if (_clientActiveStreamCount > _serverSettings.MaxConcurrentStreams)
+                if (_clientActiveStreamCount == _serverSettings.MaxConcurrentStreams)
+                {
+                    // Provide feedback in server logs that the client hit the number of maximum concurrent streams,
+                    // and that the client is likely waiting for existing streams to be completed before it can continue.
+                    Log.Http2MaxConcurrentStreamsReached(_context.ConnectionId);
+                }
+                else if (_clientActiveStreamCount > _serverSettings.MaxConcurrentStreams)
                 {
                     // The protocol default stream limit is infinite so the client can exceed our limit at the start of the connection.
                     // Refused streams can be retried, by which time the client must have received our settings frame with our limit information.
@@ -1002,6 +1037,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw;
             }
 
+            KestrelEventSource.Log.RequestQueuedStart(_currentHeadersStream, AspNetCore.Http.HttpProtocol.Http2);
             // Must not allow app code to block the connection handling loop.
             ThreadPool.UnsafeQueueUserWorkItem(_currentHeadersStream, preferLocal: false);
         }

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         // we can quickly evaluate the list of messages for the field without having to query all stores. This is
         // relevant because each validation component may define its own message store, so there might be as many
         // stores are there are fields or UI elements.
-        private HashSet<ValidationMessageStore> _validationMessageStores;
+        private HashSet<ValidationMessageStore>? _validationMessageStores;
 
         public FieldState(FieldIdentifier fieldIdentifier)
         {
