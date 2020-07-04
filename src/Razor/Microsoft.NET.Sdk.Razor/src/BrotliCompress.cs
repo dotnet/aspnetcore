@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 var input = FilesToCompress[i];
                 var inputFullPath = input.GetMetadata("FullPath");
                 var relativePath = input.GetMetadata("RelativePath");
-                var outputRelativePath = Path.Combine(OutputDirectory, CalculateTargetPath(relativePath));
+                var outputRelativePath = Path.Combine(OutputDirectory, CalculateTargetPath(relativePath, ".br"));
 
                 var outputItem = new TaskItem(outputRelativePath);
                 input.CopyMetadataTo(outputItem);
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             return builder.ToString();
         }
 
-        private static string CalculateTargetPath(string relativePath)
+        internal static string CalculateTargetPath(string relativePath, string extension)
         {
             // RelativePath can be long and if used as-is to write the output, might result in long path issues on Windows.
             // Instead we'll calculate a fixed length path by hashing the input file name. This uses SHA1 similar to the Hash task in MSBuild
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 builder.Append(InvalidPathChars.Contains(c) ? '+' : c);
             }
 
-            builder.Append(".br");
+            builder.Append(extension);
             return builder.ToString();
         }
     }

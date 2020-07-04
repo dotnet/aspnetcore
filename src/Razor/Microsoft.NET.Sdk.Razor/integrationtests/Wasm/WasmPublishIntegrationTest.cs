@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             // Verify compression works
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm.br");
-            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br"); // 
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br"); //
 
             // Verify static assets are in the publish directory
             Assert.FileExists(result, blazorPublishDirectory, "index.html");
@@ -311,6 +311,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.br");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br");
 
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.gz");
+
             VerifyServiceWorkerFiles(result, blazorPublishDirectory,
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
                 serviceWorkerContent: "// This is the production service worker",
@@ -352,6 +357,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task Publish_HostedApp_WithSatelliteAssemblies()
         {
             // Arrange
@@ -443,6 +449,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll.br");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.br");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br");
+
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.gz");
 
             VerifyServiceWorkerFiles(result, blazorPublishDirectory,
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
@@ -539,6 +550,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         // Regression test to verify satellite assemblies from the blazor app are copied to the published app's wwwroot output directory as
         // part of publishing in VS
         [Fact]
+        [QuarantinedTest]
         public async Task Publish_HostedApp_VisualStudio_WithSatelliteAssemblies()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
@@ -642,6 +654,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll.br");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.br");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br");
+
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.gz");
 
             VerifyServiceWorkerFiles(result, blazorPublishDirectory,
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
