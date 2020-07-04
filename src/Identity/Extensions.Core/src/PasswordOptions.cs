@@ -25,15 +25,15 @@ namespace Microsoft.AspNetCore.Identity
         public bool RequireNonAlphanumeric { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets a flag indicating if passwords must contain a lower case ASCII character. Defaults to true.
+        /// Gets or sets a flag indicating if passwords must contain a lower case unicode character. Defaults to true.
         /// </summary>
-        /// <value>True if passwords must contain a lower case ASCII character.</value>
+        /// <value>True if passwords must contain a lower case unicode character.</value>
         public bool RequireLowercase { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets a flag indicating if passwords must contain a upper case ASCII character. Defaults to true.
+        /// Gets or sets a flag indicating if passwords must contain a upper case unicode character. Defaults to true.
         /// </summary>
-        /// <value>True if passwords must contain a upper case ASCII character.</value>
+        /// <value>True if passwords must contain a upper case unicode character.</value>
         public bool RequireUppercase { get; set; } = true;
 
         /// <summary>
