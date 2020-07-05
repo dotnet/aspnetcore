@@ -12,7 +12,7 @@ using Microsoft.JSInterop.WebAssembly;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly
 {
-    public class WebAssemblyLazyAssemblyLoader
+    public class WebAssemblyLazyAssemblyLoader : ILazyLoader
     {
         internal const string GetDynamicAssemblies = "window.Blazor._internal.getLazyAssemblies";
         internal const string ReadDynamicAssemblies = "window.Blazor._internal.readLazyAssemblies";

@@ -41,6 +41,11 @@ namespace Microsoft.AspNetCore.Components.Server
         public override System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState> GetAuthenticationStateAsync() { throw null; }
         public void SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState> authenticationStateTask) { }
     }
+    public partial class ServerLazyAssemblyLoader : Microsoft.AspNetCore.Components.ILazyLoader
+    {
+        public ServerLazyAssemblyLoader() { }
+        public System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<System.Reflection.Assembly>> LoadAssembliesAsync(System.Collections.Generic.IEnumerable<string> assembliesToLoad) { throw null; }
+    }
 }
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {

@@ -8,6 +8,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Metadata.Ecma335;
+using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.Logging;
@@ -28,6 +31,10 @@ namespace Microsoft.AspNetCore.Components.Routing
         string _locationAbsolute;
         bool _navigationInterceptionEnabled;
         ILogger<Router> _logger;
+
+        private CancellationTokenSource _onNavigateCts;
+
+        private HashSet<Assembly> _assemblies = new HashSet<Assembly>();
 
         [Inject] private NavigationManager NavigationManager { get; set; }
 
@@ -64,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <summary>
         /// Gets or sets a handler that should be called before navigating to a new page.
         /// </summary>
-        [Parameter] public Func<string, Task<bool>> OnNavigateAsync { get; set; }
+        [Parameter] public Func<OnNavigateArgs, Task> OnNavigateAsync { get; set; }
 
         private RouteTable Routes { get; set; }
 
@@ -103,9 +110,6 @@ namespace Microsoft.AspNetCore.Components.Routing
                 throw new InvalidOperationException($"The {nameof(Router)} component requires a value for the parameter {nameof(NotFound)}.");
             }
 
-            var assemblies = AdditionalAssemblies == null ? new[] { AppAssembly } : new[] { AppAssembly }.Concat(AdditionalAssemblies);
-            Routes = RouteTableFactory.Create(assemblies);
-
             await RunOnNavigateAsync(NavigationManager.ToBaseRelativePath(_locationAbsolute), isNavigationIntercepted: false);
         }
 
@@ -123,8 +127,21 @@ namespace Microsoft.AspNetCore.Components.Routing
                 : str.Substring(0, firstIndex);
         }
 
+        private void RefreshRouteTable()
+        {
+            var assemblies = AdditionalAssemblies == null ? new[] { AppAssembly } : new[] { AppAssembly }.Concat(AdditionalAssemblies);
+            var assembliesSet = new HashSet<Assembly>(assemblies);
+            if (_assemblies.Count != assembliesSet.Count)
+            {
+                Routes = RouteTableFactory.Create(assemblies);
+                _assemblies = assembliesSet;
+            }
+        }
+
         private void Refresh(bool isNavigationIntercepted)
         {
+            RefreshRouteTable();
+
             var locationPath = NavigationManager.ToBaseRelativePath(_locationAbsolute);
             locationPath = StringUntilAny(locationPath, _queryOrHashStartChar);
             var context = new RouteContext(locationPath);
@@ -166,25 +183,45 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private async Task RunOnNavigateAsync(string path, bool isNavigationIntercepted)
         {
+            // If this router instance does not provide an OnNavigateAsync parameter
+            // then we render the component associated with the route as per usual.
             if (OnNavigateAsync == null)
             {
                 Refresh(isNavigationIntercepted);
                 return;
-
             }
+
+            // Create a new CTS for this invocation of the task and
+            // extract the reference to the current one.
+            var pendingOnNavigateCts = _onNavigateCts;
+            var onNavigateCts = new CancellationTokenSource();
+            _onNavigateCts = onNavigateCts;
+
+            var navigateContext = new OnNavigateArgs(path, _onNavigateCts);
+            var task = OnNavigateAsync(navigateContext);
+
+            // If we've already invoked a task and stored its CTS, then
+            // cancel the existing task.
+            if (pendingOnNavigateCts != null)
+            {
+                pendingOnNavigateCts.Cancel();
+            }
+
+            // Create a cancellation task based on the cancellation token
+            // associated with the current running task.
+            var cancellationTaskSource = new TaskCompletionSource();
+            navigateContext.CancellationTokenSource.Token.Register(() =>
+                cancellationTaskSource.TrySetCanceled(navigateContext.CancellationTokenSource.Token));
+
+            // If the user provided a Loading render fragment, then show it.
             if (Loading != null)
             {
                 _renderHandle.Render(Loading);
             }
-            
-            await OnNavigateAsync(path).ContinueWith(t => {
-                if (t.Result == true)
-                {
-                    var assemblies = AdditionalAssemblies == null ? new[] { AppAssembly } : new[] { AppAssembly }.Concat(AdditionalAssemblies);
-                    Routes = RouteTableFactory.Create(assemblies);
-                }
-                Refresh(isNavigationIntercepted);
-            });
+
+            await Task.WhenAny(task, cancellationTaskSource.Task);
+
+            Refresh(isNavigationIntercepted);
         }
 
         private void OnLocationChanged(object sender, LocationChangedEventArgs args)

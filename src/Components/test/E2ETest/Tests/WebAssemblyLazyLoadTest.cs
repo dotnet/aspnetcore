@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -83,19 +84,23 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
 
             // Ensure that we haven't requested the lazy loaded assembly
-            Assert.False(HasLoadedAssembly("TestContentPackage.dll"));
+            Assert.False(HasLoadedAssembly("LazyTestContentPackage.dll"));
 
             // Navigate to the designated route
             SetUrlViaPushState("/WithLazyLoadedRoutes");
 
+            // Wait for the page to finish loading
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(2)).Until(
+                driver => driver.FindElement(By.Id("lazy-load-msg")) != null);
+
             // Now the assembly has been loaded
-            Assert.True(HasLoadedAssembly("TestContentPackage.dll"));
+            Assert.True(HasLoadedAssembly("LazyTestContentPackage.dll"));
 
             var button = app.FindElement(By.Id("go-to-lazy-route"));
             button.Click();
 
             // Navigating the lazy-loaded route should show its content
-            var renderedElement = app.FindElement(By.ClassName("special-style"));
+            var renderedElement = app.FindElement(By.Id("lazy-page"));
             Assert.True(renderedElement.Displayed);
         }
 

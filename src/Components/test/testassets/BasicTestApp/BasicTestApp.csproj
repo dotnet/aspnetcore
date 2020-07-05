@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TestContentPackage\TestContentPackage.csproj" />
+    <ProjectReference Include="..\LazyTestContentPackage\LazyTestContentPackage.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,7 +32,7 @@
 
   <ItemGroup>
     <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json" />
-    <BlazorWebAssemblyLazyLoad Include="TestContentPackage" />
+    <BlazorWebAssemblyLazyLoad Include="LazyTestContentPackage" />
   </ItemGroup>
 
 </Project>
