@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Hosting
                 {
                     serverAddressesFeature.PreferHostingUrls = WebHostUtilities.ParseBool(Configuration, WebHostDefaults.PreferHostingUrlsKey);
 
-                    foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                    foreach (var value in urls.Split(';', StringSplitOptions.RemoveEmptyEntries))
                     {
                         addresses.Add(value);
                     }
