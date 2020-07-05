@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Hosting
             }
             else
             {
-                model.ErrorDetails = new ExceptionDetails[0];
+                model.ErrorDetails = Array.Empty<ExceptionDetails>();
             }
 
             var errorPage = new ErrorPage(model);
