@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Components.Extensions
         [Theory]
         [InlineData(null)]
         [InlineData("my custom purpose")]
-        public async Task GetAsync_InvokesJSAndUnprotects_ValidData(string customPurpose)
+        public async Task GetValueOrDefaultAsync_InvokesJSAndUnprotects_ValidData(string customPurpose)
         {
             // Arrange
             var jsRuntime = new TestJSRuntime();
@@ -122,8 +122,8 @@ namespace Microsoft.AspNetCore.Components.Extensions
 
             // Act
             var result = customPurpose == null
-                ? await protectedBrowserStorage.GetAsync<TestModel>(keyName)
-                : await protectedBrowserStorage.GetAsync<TestModel>(customPurpose, keyName);
+                ? await protectedBrowserStorage.GetValueOrDefaultAsync<TestModel>(keyName)
+                : await protectedBrowserStorage.GetValueOrDefaultAsync<TestModel>(customPurpose, keyName);
 
             // Assert
             Assert.Equal("Hello", result.StringProperty);
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Components.Extensions
         }
 
         [Fact]
-        public async Task GetAsync_InvokesJSAndUnprotects_NoValue()
+        public async Task GetValueOrDefaultAsync_InvokesJSAndUnprotects_NoValue()
         {
             // Arrange
             var jsRuntime = new TestJSRuntime();
@@ -146,14 +146,14 @@ namespace Microsoft.AspNetCore.Components.Extensions
             jsRuntime.NextInvocationResult = new ValueTask<string>((string)null);
 
             // Act
-            var result = await protectedBrowserStorage.GetAsync<TestModel>("test key");
+            var result = await protectedBrowserStorage.GetValueOrDefaultAsync<TestModel>("test key");
 
             // Assert
             Assert.Null(result);
         }
 
         [Fact]
-        public async Task GetAsync_InvokesJSAndUnprotects_InvalidJson()
+        public async Task GetValueOrDefaultAsync_InvokesJSAndUnprotects_InvalidJson()
         {
             // Arrange
             var jsRuntime = new TestJSRuntime();
@@ -166,13 +166,13 @@ namespace Microsoft.AspNetCore.Components.Extensions
 
             // Act/Assert
             var ex = await Assert.ThrowsAsync<JsonException>(
-                async () => await protectedBrowserStorage.GetAsync<TestModel>("test key"));
+                async () => await protectedBrowserStorage.GetValueOrDefaultAsync<TestModel>("test key"));
         }
 
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task GetAsync_InvokesJSAndUnprotects_InvalidProtection(bool base64Encode)
+        public async Task GetValueOrDefaultAsync_InvokesJSAndUnprotects_InvalidProtection(bool base64Encode)
         {
             // Arrange
             var jsRuntime = new TestJSRuntime();
@@ -192,11 +192,11 @@ namespace Microsoft.AspNetCore.Components.Extensions
 
             // Act/Assert
             var ex = await Assert.ThrowsAsync<CryptographicException>(
-                async () => await protectedBrowserStorage.GetAsync<TestModel>("test key"));
+                async () => await protectedBrowserStorage.GetValueOrDefaultAsync<TestModel>("test key"));
         }
 
         [Fact]
-        public async Task GetAsync_InvokesJSAndUnprotects_WrongPurpose()
+        public async Task GetValueOrDefaultAsync_InvokesJSAndUnprotects_WrongPurpose()
         {
             // Arrange
             var jsRuntime = new TestJSRuntime();
@@ -209,10 +209,60 @@ namespace Microsoft.AspNetCore.Components.Extensions
 
             // Act/Assert
             var ex = await Assert.ThrowsAsync<CryptographicException>(
-                async () => await protectedBrowserStorage.GetAsync<TestModel>("different key"));
+                async () => await protectedBrowserStorage.GetValueOrDefaultAsync<TestModel>("different key"));
             var innerException = ex.InnerException;
             Assert.IsType<ArgumentException>(innerException);
             Assert.Contains("The value is not protected with the expected purpose", innerException.Message);
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("my custom purpose")]
+        public async Task TryGetAsync_InvokesJSAndUnprotects_ValidData(string customPurpose)
+        {
+            // Arrange
+            var jsRuntime = new TestJSRuntime();
+            var dataProtectionProvider = new TestDataProtectionProvider();
+            var protectedBrowserStorage = new TestProtectedBrowserStorage("test store", jsRuntime, dataProtectionProvider);
+            var data = new TestModel { StringProperty = "Hello", IntProperty = 123 };
+            var keyName = "test key";
+            var expectedPurpose = customPurpose ?? $"{typeof(TestProtectedBrowserStorage).FullName}:test store:{keyName}";
+            var storedJson = "{\"StringProperty\":\"Hello\",\"IntProperty\":123}";
+            jsRuntime.NextInvocationResult = new ValueTask<string>(
+                TestDataProtectionProvider.Protect(expectedPurpose, storedJson));
+
+            // Act
+            var result = customPurpose == null
+                ? await protectedBrowserStorage.TryGetAsync<TestModel>(keyName)
+                : await protectedBrowserStorage.TryGetAsync<TestModel>(customPurpose, keyName);
+
+            // Assert
+            Assert.True(result.success);
+            Assert.Equal("Hello", result.result.StringProperty);
+            Assert.Equal(123, result.result.IntProperty);
+
+            var invocation = jsRuntime.Invocations.Single();
+            Assert.Equal("Blazor._internal.protectedBrowserStorage.get", invocation.Identifier);
+            Assert.Collection(invocation.Args,
+                arg => Assert.Equal("test store", arg),
+                arg => Assert.Equal(keyName, arg));
+        }
+
+        [Fact]
+        public async Task TryGetAsync_InvokesJSAndUnprotects_NoValue()
+        {
+            // Arrange
+            var jsRuntime = new TestJSRuntime();
+            var dataProtectionProvider = new TestDataProtectionProvider();
+            var protectedBrowserStorage = new TestProtectedBrowserStorage("test store", jsRuntime, dataProtectionProvider);
+            jsRuntime.NextInvocationResult = new ValueTask<string>((string)null);
+
+            // Act
+            var result = await protectedBrowserStorage.TryGetAsync<TestModel>("test key");
+
+            // Assert
+            Assert.False(result.success);
+            Assert.Null(result.result);
         }
 
         [Fact]

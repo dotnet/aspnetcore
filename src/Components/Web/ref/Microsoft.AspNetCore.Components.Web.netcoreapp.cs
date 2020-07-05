@@ -29,11 +29,14 @@ namespace Microsoft.AspNetCore.Components.Extensions
     {
         protected ProtectedBrowserStorage(string storeName, Microsoft.JSInterop.IJSRuntime jsRuntime, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtectionProvider) { }
         public System.Threading.Tasks.ValueTask DeleteAsync(string key) { throw null; }
-        public System.Threading.Tasks.ValueTask<T> GetAsync<T>(string key) { throw null; }
+        public System.Threading.Tasks.ValueTask<T> GetValueOrDefaultAsync<T>(string key) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.ValueTask<T> GetAsync<T>(string purpose, string key) { throw null; }
+        public System.Threading.Tasks.ValueTask<T> GetValueOrDefaultAsync<T>(string purpose, string key) { throw null; }
         public System.Threading.Tasks.ValueTask SetAsync(string key, object value) { throw null; }
         public System.Threading.Tasks.ValueTask SetAsync(string purpose, string key, object value) { throw null; }
+        public System.Threading.Tasks.ValueTask<(bool success, T result)> TryGetAsync<T>(string key) { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public System.Threading.Tasks.ValueTask<(bool success, T result)> TryGetAsync<T>(string purpose, string key) { throw null; }
     }
     public partial class ProtectedLocalStorage : Microsoft.AspNetCore.Components.Extensions.ProtectedBrowserStorage
     {
