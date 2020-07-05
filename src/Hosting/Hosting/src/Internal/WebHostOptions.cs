@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             var list = new List<string>();
-            foreach (var part in value.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var part in value.Split(';', StringSplitOptions.RemoveEmptyEntries))
             {
                 var trimmedPart = part;
                 if (!string.IsNullOrEmpty(trimmedPart))
