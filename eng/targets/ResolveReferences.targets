@@ -36,7 +36,7 @@
         * when a package is releasing a new patch (we like to update external dependencies in patches when possible)
     -->
     <UseLatestPackageReferences
-        Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsServicingBuild)' != 'true'  ">true</UseLatestPackageReferences>
+        Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsServicingBuild)' != 'true' ">true</UseLatestPackageReferences>
     <UseLatestPackageReferences
         Condition=" '$(UseLatestPackageReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseLatestPackageReferences>
     <UseLatestPackageReferences
@@ -153,20 +153,20 @@
     </JoinItems>
 
     <ItemGroup>
-      <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
       <PackageReference Include="@(_LatestPackageReferenceWithVersion)" IsImplicitlyDefined="true" />
+      <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
       <Reference Remove="@(_LatestPackageReferenceWithVersion)" />
     </ItemGroup>
 
     <!-- Resolve references from BaselinePackageReference for servicing builds in corner cases. May be unused. -->
     <JoinItems Left="@(Reference)" Right="@(BaselinePackageReference)" LeftMetadata="*" RightMetadata="Version"
-          Condition=" '$(IsServicingBuild)' == 'true' OR '$(UseLatestPackageReferences)' != 'true' ">
+        Condition=" '$(IsServicingBuild)' == 'true' OR '$(UseLatestPackageReferences)' != 'true' ">
       <Output TaskParameter="JoinResult" ItemName="_BaselinePackageReferenceWithVersion" />
     </JoinItems>
 
     <ItemGroup>
-      <!-- Remove reference items that have been resolved to a BaselinePackageReference item. -->
       <PackageReference Include="@(_BaselinePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
+      <!-- Remove reference items that have been resolved to a BaselinePackageReference item. -->
       <Reference Remove="@(_BaselinePackageReferenceWithVersion)" />
     </ItemGroup>
 
@@ -179,8 +179,8 @@
     </JoinItems>
 
     <ItemGroup>
-      <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
       <PackageReference Include="@(_PrivatePackageReferenceWithVersion)" IsImplicitlyDefined="true" />
+      <!-- Remove reference items that have been resolved to a LatestPackageReference item. -->
       <Reference Remove="@(_PrivatePackageReferenceWithVersion)" />
 
       <!-- Free up memory for unnecessary items -->
@@ -242,9 +242,9 @@
         Condition=" '$(IsAspNetCoreApp)' == 'true' AND '$(IsImplementationProject)' == 'true' AND
             !$(HasReferenceAssembly) AND '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' "
         Text="All assemblies which have set IsAspNetCoreApp=true should produce a reference assembly for default TFM." />
-    <Warning Condition=" '$(IsAspNetCoreApp)' == 'true' AND '$(IsImplementationProject)' != 'true' "
+    <Error Condition=" '$(IsAspNetCoreApp)' == 'true' AND '$(IsImplementationProject)' != 'true' "
         Text="Only implementation projects should set IsAspNetCoreApp=true." />
-    <Warning Condition=" '$(IsAspNetCoreApp)' != 'true' AND $(HasReferenceAssembly) "
+    <Error Condition=" '$(IsAspNetCoreApp)' != 'true' AND $(HasReferenceAssembly) "
         Text="Only projects in the shared framework i.e. IsAspNetCoreApp==true should produce a reference assembly." />
 
     <ItemGroup Condition=" '$(IsProjectReferenceProvider)' == 'true' ">

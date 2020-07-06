@@ -45,7 +45,7 @@ Steps for adding a new project to this repo.
 
 1. Create the .csproj
 2. Run `eng/scripts/GenerateProjectList.ps1`
-3. Add it to Mvc.sln (for example)
+3. Add new project to AspNetCore.sln and any relevant `*.slnf` files
 
 ## Example: adding a new dependency
 

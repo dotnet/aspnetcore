@@ -12,15 +12,6 @@ and are generated based on the last package release.
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <ItemDefinitionGroup>
-    <LatestPackageReference>
-      <!-- Required. Expected to be an exact package version. Wildcards are not allowed. -->
-      <Version />
-      <!-- Optional: Major.Minor.0 package version for use in servicing builds. -->
-      <RTMVersion />
-    </LatestPackageReference>
-  </ItemDefinitionGroup>
-
   <ItemGroup Label=".NET team dependencies">
     <LatestPackageReference Include="Microsoft.Azure.SignalR" />
     <LatestPackageReference Include="Microsoft.Css.Parser" />
@@ -92,16 +83,16 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.ValueTuple" />
 
     <!-- Runtime packages required for crossgen -->
-    <LatestPackageReference Include="Microsoft.NetCore.App.Runtime.win-x64" />
-    <LatestPackageReference Include="Microsoft.NetCore.App.Runtime.win-x86" />
-    <LatestPackageReference Include="Microsoft.NetCore.App.Runtime.win-arm" />
-    <LatestPackageReference Include="Microsoft.NetCore.App.Runtime.win-arm64" />
-    <LatestPackageReference Include="Microsoft.NetCore.App.Runtime.osx-x64" />
-    <LatestPackageReference Include="Microsoft.NetCore.App.Runtime.linux-x64" />
-    <LatestPackageReference Include="Microsoft.NetCore.App.Runtime.linux-arm" />
-    <LatestPackageReference Include="Microsoft.NetCore.App.Runtime.linux-arm64" />
-    <LatestPackageReference Include="Microsoft.NetCore.App.Runtime.linux-musl-x64" />
-    <LatestPackageReference Include="Microsoft.NetCore.App.Runtime.linux-musl-arm64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.win-x64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.win-x86" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.win-arm" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.win-arm64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.osx-x64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-x64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-arm" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-arm64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-x64" />
+    <LatestPackageReference Include="Microsoft.NETCore.App.Runtime.linux-musl-arm64" />
   </ItemGroup>
 
   <ItemGroup Label=".NET team dependencies (Non-source-build)" Condition="'$(DotNetBuildFromSource)' != 'true'">
@@ -198,12 +189,19 @@ and are generated based on the last package release.
     <LatestPackageReference Update="@(LatestPackageReference)">
       <Version>$(%(VersionName)PackageVersion)</Version>
       <RTMVersion>$(%(VersionName)V0PackageVersion)</RTMVersion>
+
+      <!-- Remove excess metadata. -->
+      <RTMVersion Condition=" '%(Version)' == '%(RTMVersion)' " />
+      <VersionName />
     </LatestPackageReference>
+
+    <!--
+      Special case RID-specific Microsoft.NETCore.App.Runtime dependencies to ease new RID additions. Map from a
+      single property to Version metadata for all RIDs.
+    -->
     <LatestPackageReference Update="@(LatestPackageReference->WithMetadataValue('Version', ''))">
       <Version
-          Condition=" $([System.String]::new('%(Identity)').StartsWith('Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.')) ">$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion)</Version>
-      <Version
-          Condition=" $([System.String]::new('%(Identity)').StartsWith('Microsoft.NetCore.App.Runtime.')) ">$(MicrosoftNETCoreAppRuntimeVersion)</Version>
+          Condition=" $([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App.Runtime.')) ">$(MicrosoftNETCoreAppRuntimeVersion)</Version>
     </LatestPackageReference>
   </ItemGroup>
 </Project>

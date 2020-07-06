@@ -104,11 +104,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- Disambiguated RID-specific crossgen executable relative path -->
     <CrossgenToolPackagePath Condition=" '$(CrossCompileDirectory)' != '' ">$(CrossCompileDirectory)\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
 
-    <!--
-      For example, "PkgMicrosoft_NETCore_App_Runtime_win-x64".
-      Microsoft.AspNetCore.App.Runtime\Microsoft.AspNetCore.App.Runtime.csproj.nuget.g.props sets this property value.
-    -->
-    <RuntimePackageRootVariableName>Pkgmicrosoft_netcore_app_runtime_$(RuntimeIdentifier)</RuntimePackageRootVariableName>
+    <!-- E.g. "PkgMicrosoft_NETCore_App_Runtime_win-x64" (set in obj/Microsoft.AspNetCore.App.Runtime.csproj.nuget.g.props). -->
+    <RuntimePackageRootVariableName>PkgMicrosoft_NETCore_App_Runtime_$(RuntimeIdentifier)</RuntimePackageRootVariableName>
 
     <AssetTargetFallback>$(AssetTargetFallback);native,Version=0.0</AssetTargetFallback>
 
@@ -125,7 +122,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <IncludeAssets>Runtime;Native</IncludeAssets>
     </Reference>
 
-    <Reference Include="microsoft.netcore.app.runtime.$(RuntimeIdentifier)"
+    <Reference Include="Microsoft.NETCore.App.Runtime.$(RuntimeIdentifier)"
         ExcludeAssets="All"
         PrivateAssets="All"
         GeneratePathProperty="true" />
