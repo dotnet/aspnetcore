@@ -351,6 +351,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                     if (isStreamResponse)
                     {
+                        // TODO: Need to sync this with CancelInvocationMessage
+                        cts = cts ?? CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
+                        connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId, cts);
+
                         var result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
 
                         if (result == null)
@@ -361,8 +365,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             return;
                         }
 
-                        cts = cts ?? CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
-                        connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId, cts);
                         var enumerable = descriptor.FromReturnedStream(result, cts.Token);
 
                         Log.StreamingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);

@@ -331,11 +331,11 @@ namespace Microsoft.AspNetCore.SignalR
                     input.AdvanceTo(buffer.Start, buffer.End);
                 }
 
-                static async Task DispatchMessage(HubConnectionContext connection, HubDispatcher<THub> dispatcher, HubMessage message)
+                static Task DispatchMessage(HubConnectionContext connection, HubDispatcher<THub> dispatcher, HubMessage message)
                 {
                     connection.StopClientTimeout();
                     _ = ProcessTask(connection, dispatcher.DispatchMessageAsync(connection, message));
-                    await connection.ActiveInvocationLimit.WaitAsync();
+                    return connection.ActiveInvocationLimit.WaitAsync();
                 }
 
                 static async Task ProcessTask(HubConnectionContext connection, Task task)

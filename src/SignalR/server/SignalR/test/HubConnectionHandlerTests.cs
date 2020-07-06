@@ -2962,6 +2962,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     // Connection is closed
                     await connectionHandlerTask.OrTimeout();
+
+                    tcsService.EndMethod.SetResult(null);
                 }
             }
         }
@@ -3245,8 +3247,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     await tcsService.StartedMethod.Task.OrTimeout();
                     // Grab the tcs before resetting to use in the second long running method
                     var endTcs = tcsService.EndMethod;
-
                     tcsService.Reset();
+
                     // Long running hub invocation to test that other invocations will not run until it is completed
                     await client.SendInvocationAsync(nameof(LongRunningHub.LongRunningMethod), nonBlocking: false).OrTimeout();
                     // Wait for the long running method to start
@@ -3328,6 +3330,63 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     var simpleCompletion = Assert.IsType<CompletionMessage>(result);
                     Assert.Equal(21L, simpleCompletion.Result);
+
+                    var hubActivator = serviceProvider.GetService<IHubActivator<LongRunningHub>>() as CustomHubActivator<LongRunningHub>;
+
+                    await client.SendHubMessageAsync(new CancelInvocationMessage(streamInvocationId)).OrTimeout();
+
+                    // Completion message for canceled Stream
+                    await client.ReadAsync().OrTimeout();
+
+                    // Shut down
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+
+                    // OnConnectedAsync, SimpleMethod, LongRunningStream, OnDisconnectedAsync
+                    Assert.Equal(4, hubActivator.ReleaseCount);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StreamInvocationsDoNotBlockOtherInvocationsWithParallelInvokes()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+                {
+                    builder.AddSingleton(tcsService);
+                    builder.AddSingleton(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
+
+                    builder.AddSignalR(options =>
+                    {
+                        options.MaxParallelInvocationsPerClient = 2;
+                    });
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
+
+                // Because we use PipeScheduler.Inline the hub invocations will run inline until they wait, which happens inside the LongRunningMethod call
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                    // Long running hub invocation to test that other invocations will not run until it is completed
+                    var streamInvocationId = await client.SendStreamInvocationAsync(nameof(LongRunningHub.LongRunningStream), null).OrTimeout();
+                    // Wait for the long running method to start
+                    await tcsService.StartedMethod.Task.OrTimeout();
+
+                    // Invoke another hub method which will wait for the first method to finish
+                    await client.SendInvocationAsync(nameof(LongRunningHub.SimpleMethod), nonBlocking: false).OrTimeout();
+
+                    // simple hub method result
+                    var result = await client.ReadAsync().OrTimeout();
+                    var simpleCompletion = Assert.IsType<CompletionMessage>(result);
+                    Assert.Equal(21L, simpleCompletion.Result);
+
+                    // Release the long running hub method
+                    tcsService.EndMethod.TrySetResult(null);
 
                     var hubActivator = serviceProvider.GetService<IHubActivator<LongRunningHub>>() as CustomHubActivator<LongRunningHub>;
 
