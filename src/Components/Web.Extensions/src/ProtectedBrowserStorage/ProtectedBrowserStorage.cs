@@ -16,19 +16,13 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
     /// </summary>
     public abstract class ProtectedBrowserStorage
     {
-        private const string JsFunctionsPrefix = "Blazor._internal.protectedBrowserStorage";
+        private const string JsFunctionsPrefix = "protectedBrowserStorage";
 
         private readonly string _storeName;
         private readonly IJSRuntime _jsRuntime;
         private readonly IDataProtectionProvider _dataProtectionProvider;
         private readonly ConcurrentDictionary<string, IDataProtector> _cachedDataProtectorsByPurpose
             = new ConcurrentDictionary<string, IDataProtector>();
-
-        // Stylistically, it doesn't matter at all what options we choose, since the values
-        // will be opaque after data protection. All that matters is that some fixed set of
-        // options exists and remains constant forever. We should choose whatever options
-        // maximize the ability to round-trip .NET objects reliably.
-        private readonly static JsonSerializerOptions SerializerOptions = new JsonSerializerOptions();
 
         /// <summary>
         /// Constructs an instance of <see cref="ProtectedBrowserStorage"/>.
@@ -40,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Browser))
             {
-                throw new InvalidOperationException($"{GetType()} cannot be used when running in WebAssembly.");
+                throw new PlatformNotSupportedException($"{GetType()} cannot be used when running in Browser WebAssembly.");
             }
 
             if (string.IsNullOrEmpty(storeName))
@@ -94,67 +88,29 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// Asynchronously retrieves the specified data.
         /// </para>
         /// <para>
-        /// The first value in the <see cref="ValueTask"/> result indicates whether the data was retrieved successfully.
-        /// </para>
-        /// <para>
         /// Since no data protection purpose is specified with this overload, the purpose is derived from <paramref name="key"/> and the store name. This is a good default purpose to use if the keys come from a fixed set known at compile-time.
         /// </para>
         /// </summary>
         /// <param name="key">A <see cref="string"/> value specifying the name of the storage slot to use.</param>
         /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
-        public ValueTask<(bool success, T result)> TryGetAsync<T>(string key)
-            => TryGetAsync<T>(CreatePurposeFromKey(key), key);
+        public ValueTask<ProtectedBrowserStorageResult<TValue>> GetAsync<TValue>(string key)
+            => GetAsync<TValue>(CreatePurposeFromKey(key), key);
 
         /// <summary>
         /// <para>
         /// Asynchronously retrieves the specified data.
-        /// </para>
-        /// <para>
-        /// The first value in the <see cref="ValueTask"/> result indicates whether the data was retrieved successfully.
         /// </para>
         /// </summary>
         /// <param name="purpose">A string that defines a scope for the data protection. The protected data can only be unprotected if the same purpose was previously specified when calling <see cref="SetAsync(string, string, object)"/>.</param>
         /// <param name="key">A <see cref="string"/> value specifying the name of the storage slot to use.</param>
         /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
-        public async ValueTask<(bool success, T result)> TryGetAsync<T>(string purpose, string key)
+        public async ValueTask<ProtectedBrowserStorageResult<TValue>> GetAsync<TValue>(string purpose, string key)
         {
             var protectedJson = await GetProtectedJsonAsync(key);
 
-            return protectedJson == null ? (false, default!) : (true, Unprotect<T>(purpose, protectedJson));
-        }
-
-        /// <summary>
-        /// <para>
-        /// Asynchronously retrieves the specified data.
-        /// </para>
-        /// <para>
-        /// If no slot with the given <paramref name="key"/> exists, the <see langword="default" /> value for <typeparamref name="T"/> is returned.
-        /// </para>
-        /// <para>
-        /// Since no data protection purpose is specified with this overload, the purpose is derived from <paramref name="key"/> and the store name. This is a good default purpose to use if the keys come from a fixed set known at compile-time.
-        /// </para>
-        /// </summary>
-        /// <param name="key">A <see cref="string"/> value specifying the name of the storage slot to use.</param>
-        /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
-        public ValueTask<T> GetValueOrDefaultAsync<T>(string key)
-            => GetValueOrDefaultAsync<T>(CreatePurposeFromKey(key), key);
-
-        /// <summary>
-        /// <para>
-        /// Asynchronously retrieves the specified data.
-        /// </para>
-        /// <para>
-        /// If no slot with the given <paramref name="key"/> exists, the <see langword="default" /> value for <typeparamref name="T"/> is returned.
-        /// </para>
-        /// </summary>
-        /// <param name="purpose">A string that defines a scope for the data protection. The protected data can only be unprotected if the same purpose was previously specified when calling <see cref="SetAsync(string, string, object)"/>.</param>
-        /// <param name="key">A <see cref="string"/> value specifying the name of the storage slot to use.</param>
-        /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
-        public async ValueTask<T> GetValueOrDefaultAsync<T>(string purpose, string key)
-        {
-            var protectedJson = await GetProtectedJsonAsync(key);
-
-            return protectedJson == null ? default! : Unprotect<T>(purpose, protectedJson);
+            return protectedJson == null ?
+                new ProtectedBrowserStorageResult<TValue>(false, default) :
+                new ProtectedBrowserStorageResult<TValue>(true, Unprotect<TValue>(purpose, protectedJson));
         }
 
         /// <summary>
@@ -167,18 +123,18 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
         private string Protect(string purpose, object value)
         {
-            var json = JsonSerializer.Serialize(value, options: SerializerOptions);
+            var json = JsonSerializer.Serialize(value, options: JsonSerializerOptionsProvider.Options);
             var protector = GetOrCreateCachedProtector(purpose);
 
             return protector.Protect(json);
         }
 
-        private T Unprotect<T>(string purpose, string protectedJson)
+        private TValue Unprotect<TValue>(string purpose, string protectedJson)
         {
             var protector = GetOrCreateCachedProtector(purpose);
             var json = protector.Unprotect(protectedJson);
 
-            return JsonSerializer.Deserialize<T>(json, options: SerializerOptions)!;
+            return JsonSerializer.Deserialize<TValue>(json, options: JsonSerializerOptionsProvider.Options)!;
         }
 
         private ValueTask SetProtectedJsonAsync(string key, string protectedJson)

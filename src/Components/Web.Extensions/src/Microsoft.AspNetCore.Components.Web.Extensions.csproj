@@ -1,9 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <IsAspNetCoreApp>true</IsAspNetCoreApp>
-    <Description>Support for rendering ASP.NET Core components for browsers.</Description>
+    <Description>A medley of Blazor componets for the web.</Description>
+    <StaticWebAssetBasePath>_content/Microsoft.AspNetCore.Components.Web.Extensions</StaticWebAssetBasePath>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
     <Nullable>enable</Nullable>
@@ -12,6 +12,10 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.DataProtection" />
     <Reference Include="Microsoft.JSInterop" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Shared\src\JsonSerializerOptionsProvider.cs" />
   </ItemGroup>
 
 </Project>

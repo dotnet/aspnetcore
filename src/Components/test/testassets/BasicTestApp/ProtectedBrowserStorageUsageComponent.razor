@@ -26,19 +26,31 @@
 
     protected override async Task OnInitializedAsync()
     {
-        localCount = await ProtectedLocalStore.GetValueOrDefaultAsync<int>("localCount");
-        sessionCount = await ProtectedSessionStore.GetValueOrDefaultAsync<int>("sessionCount");
+        await LoadLocalCount();
+        await LoadSessionCount();
+    }
+
+    private async Task LoadLocalCount()
+    {
+        var localResult = await ProtectedLocalStore.GetAsync<int>("localCount");
+        localCount = localResult.Success ? localResult.Value : 0;
+    }
+
+    private async Task LoadSessionCount()
+    {
+        var sessionResult = await ProtectedSessionStore.GetAsync<int>("sessionCount");
+        sessionCount = sessionResult.Success ? sessionResult.Value : 0;
     }
 
     private async Task IncrementLocalCount()
     {
         await ProtectedLocalStore.SetAsync("localCount", localCount + 1);
-        localCount = await ProtectedLocalStore.GetValueOrDefaultAsync<int>("localCount");
+        await LoadLocalCount();
     }
 
     private async Task IncrementSessionCount()
     {
         await ProtectedSessionStore.SetAsync("sessionCount", sessionCount + 1);
-        sessionCount = await ProtectedSessionStore.GetValueOrDefaultAsync<int>("sessionCount");
+        await LoadSessionCount();
     }
 }

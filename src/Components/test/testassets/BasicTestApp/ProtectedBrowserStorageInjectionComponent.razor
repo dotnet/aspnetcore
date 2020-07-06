@@ -17,9 +17,13 @@
             var localStorage = ServiceProvider.GetService<T>();
             message = "Success!";
         }
-        catch (InvalidOperationException ex)
+        catch (PlatformNotSupportedException ex)
         {
             message = ex.Message;
+        }
+        catch
+        {
+            message = "Unexpected exception encountered.";
         }
     }
 }
