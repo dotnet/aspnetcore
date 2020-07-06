@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Identity
         public virtual bool IsLower(char c)
         {
             string s = c.ToString();
-            foreach (Rune r in theString.EnumerateRunes())
+            foreach (Rune r in s.EnumerateRunes())
             {
                 if (Rune.IsLower(r)) return true;
             }
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Identity
         public virtual bool IsUpper(char c)
         {
             string s = c.ToString();
-            foreach (Rune r in theString.EnumerateRunes())
+            foreach (Rune r in s.EnumerateRunes())
             {
                 if (Rune.IsUpper(r)) return true;
             }
