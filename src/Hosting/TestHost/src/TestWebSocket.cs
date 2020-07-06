@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.TestHost
 {
     internal class TestWebSocket : WebSocket
     {
-        private ReceiverSenderBuffer _receiveBuffer;
-        private ReceiverSenderBuffer _sendBuffer;
+        private readonly ReceiverSenderBuffer _receiveBuffer;
+        private readonly ReceiverSenderBuffer _sendBuffer;
         private readonly string _subProtocol;
         private WebSocketState _state;
         private WebSocketCloseStatus? _closeStatus;
@@ -255,8 +255,8 @@ namespace Microsoft.AspNetCore.TestHost
             private bool _receiverClosed;
             private bool _senderClosed;
             private bool _disposed;
-            private SemaphoreSlim _sem;
-            private Queue<Message> _messageQueue;
+            private readonly SemaphoreSlim _sem;
+            private readonly Queue<Message> _messageQueue;
             
             public ReceiverSenderBuffer()
             {
