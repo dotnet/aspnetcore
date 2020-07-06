@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         private const string Identity = "Identity";
         private const string AssemblyName = "AssemblyName";
         private const string AssemblyFilePath = "AssemblyFilePath";
+        private const string CssScope = "CssScope";
 
         public string RootNamespace { get; set; }
 
@@ -123,6 +124,22 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     {
                         builder.AppendLine("-k");
                         builder.AppendLine(kind);
+                    }
+                }
+
+                // Added in 5.0
+                if (parsedVersion.Major >= 5)
+                {
+                    // Most inputs won't have an associated CSS scope, so we only want to generate
+                    // a scope parameter for those that do. Hence we need to specify in the parameter
+                    // which one we're talking about.
+                    var cssScope = input.GetMetadata(CssScope);
+                    if (!string.IsNullOrEmpty(cssScope))
+                    {
+                        builder.AppendLine("-cssscopeinput");
+                        builder.AppendLine(input.GetMetadata(FullPath));
+                        builder.AppendLine("-cssscopevalue");
+                        builder.AppendLine(cssScope);
                     }
                 }
             }
