@@ -157,12 +157,15 @@ namespace Microsoft.AspNetCore.Authorization
                         useDefaultPolicy = false;
                     }
 
-                    var authTypesSplit = authorizeDatum.AuthenticationSchemes?.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                    var authTypesSplit = authorizeDatum.AuthenticationSchemes?.Split(',');
                     if (authTypesSplit?.Length > 0)
                     {
                         foreach (var authType in authTypesSplit)
                         {
-                            policyBuilder.AuthenticationSchemes.Add(authType);
+                            if (!string.IsNullOrWhiteSpace(authType))
+                            {
+                                policyBuilder.AuthenticationSchemes.Add(authType.Trim());
+                            }
                         }
                     }
 
