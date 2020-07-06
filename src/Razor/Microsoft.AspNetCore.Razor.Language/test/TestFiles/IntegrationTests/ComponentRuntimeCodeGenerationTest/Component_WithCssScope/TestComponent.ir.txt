@@ -9,7 +9,7 @@ Document -
         UsingDirective - (45:1,1 [49] x:\dir\subdir\Test\TestComponent.cshtml) - Microsoft.AspNetCore.Components.Rendering
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                MarkupBlock -  - <h1>Element with no attributes</h1>\n
+                MarkupBlock -  - <h1 TestCssScope>Element with no attributes</h1>\n
                 MarkupElement - (131:3,0 [305] x:\dir\subdir\Test\TestComponent.cshtml) - parent
                     HtmlAttribute - (138:3,7 [22] x:\dir\subdir\Test\TestComponent.cshtml) -  with-attributes=" - "
                         HtmlAttributeValue - (156:3,25 [3] x:\dir\subdir\Test\TestComponent.cshtml) - 
@@ -17,12 +17,13 @@ Document -
                     HtmlAttribute - (160:3,29 [37] x:\dir\subdir\Test\TestComponent.cshtml) -  with-csharp-attribute-value=" - "
                         CSharpExpressionAttributeValue - (190:3,59 [6] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             LazyIntermediateToken - (192:3,61 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 123
-                    MarkupBlock -  - <child></child>\n    
-                    MarkupBlock -  - <child has multiple attributes="some with values">With text</child>\n    
+                    MarkupBlock -  - <child TestCssScope></child>\n    
+                    MarkupBlock -  - <child has multiple attributes="some with values" TestCssScope>With text</child>\n    
                     Component - (292:6,4 [133] x:\dir\subdir\Test\TestComponent.cshtml) - TemplatedComponent
                         ComponentChildContent -  - ChildContent - context
-                            MarkupBlock -  - <span id="hello">This is in child content</span>
+                            MarkupBlock -  - <span id="hello" TestCssScope>This is in child content</span>
                         ReferenceCapture - (318:6,30 [20] x:\dir\subdir\Test\TestComponent.cshtml) - myComponentReference
+                    HtmlAttribute -  - TestCssScope - 
                 CSharpCode - (439:10,1 [34] x:\dir\subdir\Test\TestComponent.cshtml)
                     LazyIntermediateToken - (439:10,1 [34] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - if (DateTime.Now.Year > 1950)\n{\n
                 MarkupElement - (477:12,4 [80] x:\dir\subdir\Test\TestComponent.cshtml) - with-ref-capture
@@ -30,6 +31,7 @@ Document -
                         LazyIntermediateToken - (531:12,58 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Content
                     HtmlAttribute -  - some-attr - 
                     ReferenceCapture - (511:12,38 [18] x:\dir\subdir\Test\TestComponent.cshtml) - myElementReference
+                    HtmlAttribute -  - TestCssScope - 
                 HtmlContent - (557:12,84 [6] x:\dir\subdir\Test\TestComponent.cshtml)
                     LazyIntermediateToken - (557:12,84 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                     LazyIntermediateToken - (559:13,0 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html -     
@@ -50,6 +52,7 @@ Document -
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => myVariable = __value, 
                             IntermediateToken -  - CSharp - myVariable
                             IntermediateToken -  - CSharp - )
+                    HtmlAttribute -  - TestCssScope - 
                 CSharpCode - (639:14,0 [3] x:\dir\subdir\Test\TestComponent.cshtml)
                     LazyIntermediateToken - (639:14,0 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - }\n
             CSharpCode - (651:16,7 [233] x:\dir\subdir\Test\TestComponent.cshtml)
@@ -64,6 +67,7 @@ Document -
                     LazyIntermediateToken - (914:25,30 [10] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Something 
                 CSharpExpression - (925:25,41 [1] x:\dir\subdir\Test\TestComponent.cshtml)
                     LazyIntermediateToken - (925:25,41 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - i
+                HtmlAttribute -  - TestCssScope - 
             HtmlContent - (931:25,47 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                 LazyIntermediateToken - (931:25,47 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (933:26,0 [164] x:\dir\subdir\Test\TestComponent.cshtml)

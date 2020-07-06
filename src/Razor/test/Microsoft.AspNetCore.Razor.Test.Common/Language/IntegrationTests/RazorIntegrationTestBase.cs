@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             });
         }
 
-        internal RazorProjectItem CreateProjectItem(string cshtmlRelativePath, string cshtmlContent, string fileKind = null)
+        internal RazorProjectItem CreateProjectItem(string cshtmlRelativePath, string cshtmlContent, string fileKind = null, string cssScope = null)
         {
             var fullPath = WorkingDirectory + PathSeparator + cshtmlRelativePath;
 
@@ -161,18 +161,19 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 physicalPath: fullPath,
                 relativePhysicalPath: cshtmlRelativePath,
                 basePath: WorkingDirectory,
-                fileKind: fileKind ?? FileKind)
+                fileKind: fileKind ?? FileKind,
+                cssScope: cssScope)
             {
                 Content = cshtmlContent.TrimStart(),
             };
         }
 
-        protected CompileToCSharpResult CompileToCSharp(string cshtmlContent, bool throwOnFailure=true)
+        protected CompileToCSharpResult CompileToCSharp(string cshtmlContent, bool throwOnFailure=true, string cssScope = null)
         {
-            return CompileToCSharp(DefaultFileName, cshtmlContent, throwOnFailure);
+            return CompileToCSharp(DefaultFileName, cshtmlContent, throwOnFailure, cssScope: cssScope);
         }
 
-        protected CompileToCSharpResult CompileToCSharp(string cshtmlRelativePath, string cshtmlContent, bool throwOnFailure = true, string fileKind = null)
+        protected CompileToCSharpResult CompileToCSharp(string cshtmlRelativePath, string cshtmlContent, bool throwOnFailure = true, string fileKind = null, string cssScope = null)
         {
             if (DeclarationOnly && DesignTime)
             {
@@ -202,7 +203,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 }
 
                 // Result of generating declarations
-                var projectItem = CreateProjectItem(cshtmlRelativePath, cshtmlContent, fileKind);
+                var projectItem = CreateProjectItem(cshtmlRelativePath, cshtmlContent, fileKind, cssScope);
                 codeDocument = projectEngine.ProcessDeclarationOnly(projectItem);
                 var declaration = new CompileToCSharpResult
                 {
@@ -248,7 +249,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 // This will include the built-in components.
                 var projectEngine = CreateProjectEngine(Configuration, BaseCompilation.References.ToArray());
 
-                var projectItem = CreateProjectItem(cshtmlRelativePath, cshtmlContent, fileKind);
+                var projectItem = CreateProjectItem(cshtmlRelativePath, cshtmlContent, fileKind, cssScope);
 
                 RazorCodeDocument codeDocument;
                 if (DeclarationOnly)

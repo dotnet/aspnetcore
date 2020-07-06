@@ -27,7 +27,7 @@ using Microsoft.AspNetCore.Components.Rendering;
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
-            __builder.AddMarkupContent(0, "<h1>Element with no attributes</h1>\r\n");
+            __builder.AddMarkupContent(0, "<h1 TestCssScope>Element with no attributes</h1>\r\n");
             __builder.OpenElement(1, "parent");
             __builder.AddAttribute(2, "with-attributes", "yes");
             __builder.AddAttribute(3, "with-csharp-attribute-value", 
@@ -39,14 +39,15 @@ using Microsoft.AspNetCore.Components.Rendering;
 #line hidden
 #nullable disable
             );
-            __builder.AddMarkupContent(4, "<child></child>\r\n    ");
-            __builder.AddMarkupContent(5, "<child has multiple attributes=\"some with values\">With text</child>\r\n    ");
-            __builder.OpenComponent<Test.TemplatedComponent>(6);
-            __builder.AddAttribute(7, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
-                __builder2.AddMarkupContent(8, "<span id=\"hello\">This is in child content</span>");
+            __builder.AddAttribute(4, "TestCssScope", true);
+            __builder.AddMarkupContent(5, "<child TestCssScope></child>\r\n    ");
+            __builder.AddMarkupContent(6, "<child has multiple attributes=\"some with values\" TestCssScope>With text</child>\r\n    ");
+            __builder.OpenComponent<Test.TemplatedComponent>(7);
+            __builder.AddAttribute(8, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((__builder2) => {
+                __builder2.AddMarkupContent(9, "<span id=\"hello\" TestCssScope>This is in child content</span>");
             }
             ));
-            __builder.AddComponentReferenceCapture(9, (__value) => {
+            __builder.AddComponentReferenceCapture(10, (__value) => {
 #nullable restore
 #line 7 "x:\dir\subdir\Test\TestComponent.cshtml"
                               myComponentReference = (Test.TemplatedComponent)__value;
@@ -66,9 +67,10 @@ using Microsoft.AspNetCore.Components.Rendering;
 #line default
 #line hidden
 #nullable disable
-            __builder.OpenElement(10, "with-ref-capture");
-            __builder.AddAttribute(11, "some-attr", true);
-            __builder.AddElementReferenceCapture(12, (__value) => {
+            __builder.OpenElement(11, "with-ref-capture");
+            __builder.AddAttribute(12, "some-attr", true);
+            __builder.AddAttribute(13, "TestCssScope", true);
+            __builder.AddElementReferenceCapture(14, (__value) => {
 #nullable restore
 #line 13 "x:\dir\subdir\Test\TestComponent.cshtml"
                                       myElementReference = __value;
@@ -78,13 +80,13 @@ using Microsoft.AspNetCore.Components.Rendering;
 #nullable disable
             }
             );
-            __builder.AddContent(13, "Content");
+            __builder.AddContent(15, "Content");
             __builder.CloseElement();
-            __builder.AddMarkupContent(14, "\r\n    ");
-            __builder.OpenElement(15, "input");
-            __builder.AddAttribute(16, "id", "myElem");
-            __builder.AddAttribute(17, "another-attr", "Another attr value");
-            __builder.AddAttribute(18, "value", Microsoft.AspNetCore.Components.BindConverter.FormatValue(
+            __builder.AddMarkupContent(16, "\r\n    ");
+            __builder.OpenElement(17, "input");
+            __builder.AddAttribute(18, "id", "myElem");
+            __builder.AddAttribute(19, "another-attr", "Another attr value");
+            __builder.AddAttribute(20, "value", Microsoft.AspNetCore.Components.BindConverter.FormatValue(
 #nullable restore
 #line 14 "x:\dir\subdir\Test\TestComponent.cshtml"
                               myVariable
@@ -93,8 +95,9 @@ using Microsoft.AspNetCore.Components.Rendering;
 #line hidden
 #nullable disable
             ));
-            __builder.AddAttribute(19, "onchange", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => myVariable = __value, myVariable));
+            __builder.AddAttribute(21, "onchange", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => myVariable = __value, myVariable));
             __builder.SetUpdatesAttributeName("value");
+            __builder.AddAttribute(22, "TestCssScope", true);
             __builder.CloseElement();
 #nullable restore
 #line 15 "x:\dir\subdir\Test\TestComponent.cshtml"
@@ -120,9 +123,9 @@ using Microsoft.AspNetCore.Components.Rendering;
 #line default
 #line hidden
 #nullable disable
-        __builder.AddContent(20, "            ");
-        __builder.OpenElement(21, "li");
-        __builder.AddAttribute(22, "data-index", 
+        __builder.AddContent(23, "            ");
+        __builder.OpenElement(24, "li");
+        __builder.AddAttribute(25, "data-index", 
 #nullable restore
 #line 26 "x:\dir\subdir\Test\TestComponent.cshtml"
                             i
@@ -131,8 +134,9 @@ using Microsoft.AspNetCore.Components.Rendering;
 #line hidden
 #nullable disable
         );
-        __builder.AddContent(23, "Something ");
-        __builder.AddContent(24, 
+        __builder.AddAttribute(26, "TestCssScope", true);
+        __builder.AddContent(27, "Something ");
+        __builder.AddContent(28, 
 #nullable restore
 #line 26 "x:\dir\subdir\Test\TestComponent.cshtml"
                                          i
@@ -142,7 +146,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 #nullable disable
         );
         __builder.CloseElement();
-        __builder.AddMarkupContent(25, "\r\n");
+        __builder.AddMarkupContent(29, "\r\n");
 #nullable restore
 #line 27 "x:\dir\subdir\Test\TestComponent.cshtml"
         }

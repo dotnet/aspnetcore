@@ -4983,7 +4983,7 @@ namespace Test
         System.GC.KeepAlive(myVariable);
     }
 }
-");
+", cssScope: "TestCssScope");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
