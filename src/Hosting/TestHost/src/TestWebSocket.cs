@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.TestHost
 
             public Message(WebSocketCloseStatus? closeStatus, string closeStatusDescription)
             {
-                Buffer = new ArraySegment<byte>(new byte[0]);
+                Buffer = new ArraySegment<byte>(Array.Empty<byte>());
                 CloseStatus = closeStatus;
                 CloseStatusDescription = closeStatusDescription;
                 MessageType = WebSocketMessageType.Close;
