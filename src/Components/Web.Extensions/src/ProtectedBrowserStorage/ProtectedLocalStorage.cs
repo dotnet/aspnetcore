@@ -4,24 +4,24 @@
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Extensions
+namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
     /// <summary>
     /// Provides mechanisms for storing and retrieving data in the browser's
-    /// 'sessionStorage' collection.
+    /// 'localStorage' collection.
     ///
-    /// This data will be scoped to the current browser tab. The data will be
-    /// discarded if the user closes the browser tab or closes the browser itself.
+    /// This data will be scoped to the current user's browser, shared across
+    /// all tabs. The data will persist across browser restarts.
     /// </summary>
-    public class ProtectedSessionStorage : ProtectedBrowserStorage
+    public class ProtectedLocalStorage : ProtectedBrowserStorage
     {
         /// <summary>
-        /// Constructs an instance of <see cref="ProtectedSessionStorage"/>.
+        /// Constructs an instance of <see cref="ProtectedLocalStorage"/>.
         /// </summary>
         /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
         /// <param name="dataProtectionProvider">The <see cref="IDataProtectionProvider"/>.</param>
-        public ProtectedSessionStorage(IJSRuntime jsRuntime, IDataProtectionProvider dataProtectionProvider)
-            : base("sessionStorage", jsRuntime, dataProtectionProvider)
+        public ProtectedLocalStorage(IJSRuntime jsRuntime, IDataProtectionProvider dataProtectionProvider)
+            : base("localStorage", jsRuntime, dataProtectionProvider)
         {
         }
     }

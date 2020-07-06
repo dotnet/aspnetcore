@@ -10,6 +10,7 @@ using System.Web;
 using BasicTestApp.AuthTest;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Web.Extensions;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
@@ -18,7 +19,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.JSInterop;
-using Microsoft.AspNetCore.Components.Extensions;
 
 namespace BasicTestApp
 {

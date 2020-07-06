@@ -25,6 +25,7 @@
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Authorization" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Forms" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Web.Extensions" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Web" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.FileProviders.Embedded" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.Extensions.Configuration.KeyPerFile" />

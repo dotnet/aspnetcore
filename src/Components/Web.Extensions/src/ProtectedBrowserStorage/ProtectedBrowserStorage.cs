@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Extensions
+namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
     /// <summary>
     /// Provides mechanisms for storing and retrieving data in the browser storage.
