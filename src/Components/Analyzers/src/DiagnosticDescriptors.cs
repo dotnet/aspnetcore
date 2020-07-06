@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Components.Analyzers
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisReleaseTracking", "RS2008:Enable analyzer release tracking")]
     internal static class DiagnosticDescriptors
     {
         // Note: The Razor Compiler (including Components features) use the RZ prefix for diagnostics, so there's currently
