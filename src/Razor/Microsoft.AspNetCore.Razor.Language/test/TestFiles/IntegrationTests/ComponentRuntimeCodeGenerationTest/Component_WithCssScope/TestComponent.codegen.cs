@@ -39,7 +39,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 #line hidden
 #nullable disable
             );
-            __builder.AddAttribute(4, "TestCssScope", true);
+            __builder.AddAttribute(4, "TestCssScope");
             __builder.AddMarkupContent(5, "<child TestCssScope></child>\r\n    ");
             __builder.AddMarkupContent(6, "<child has multiple attributes=\"some with values\" TestCssScope>With text</child>\r\n    ");
             __builder.OpenComponent<Test.TemplatedComponent>(7);
@@ -68,8 +68,8 @@ using Microsoft.AspNetCore.Components.Rendering;
 #line hidden
 #nullable disable
             __builder.OpenElement(11, "with-ref-capture");
-            __builder.AddAttribute(12, "some-attr", true);
-            __builder.AddAttribute(13, "TestCssScope", true);
+            __builder.AddAttribute(12, "some-attr");
+            __builder.AddAttribute(13, "TestCssScope");
             __builder.AddElementReferenceCapture(14, (__value) => {
 #nullable restore
 #line 13 "x:\dir\subdir\Test\TestComponent.cshtml"
@@ -97,7 +97,7 @@ using Microsoft.AspNetCore.Components.Rendering;
             ));
             __builder.AddAttribute(21, "onchange", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => myVariable = __value, myVariable));
             __builder.SetUpdatesAttributeName("value");
-            __builder.AddAttribute(22, "TestCssScope", true);
+            __builder.AddAttribute(22, "TestCssScope");
             __builder.CloseElement();
 #nullable restore
 #line 15 "x:\dir\subdir\Test\TestComponent.cshtml"
@@ -134,7 +134,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 #line hidden
 #nullable disable
         );
-        __builder.AddAttribute(26, "TestCssScope", true);
+        __builder.AddAttribute(26, "TestCssScope");
         __builder.AddContent(27, "Something ");
         __builder.AddContent(28, 
 #nullable restore
