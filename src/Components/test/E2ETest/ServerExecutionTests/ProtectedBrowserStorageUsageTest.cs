@@ -5,13 +5,13 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using BasicTestApp;
-using Components.TestServer;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Remote;
+using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
