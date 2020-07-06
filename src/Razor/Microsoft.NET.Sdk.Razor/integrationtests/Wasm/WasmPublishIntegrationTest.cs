@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             // Verify compression works
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm.br");
-            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br"); // 
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br"); //
 
             // Verify static assets are in the publish directory
             Assert.FileExists(result, blazorPublishDirectory, "index.html");
@@ -310,6 +310,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll.br");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.br");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br");
+
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.gz");
 
             VerifyServiceWorkerFiles(result, blazorPublishDirectory,
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
@@ -444,6 +449,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll.br");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.br");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br");
+
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.gz");
 
             VerifyServiceWorkerFiles(result, blazorPublishDirectory,
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
@@ -644,6 +654,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll.br");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.br");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br");
+
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.gz");
 
             VerifyServiceWorkerFiles(result, blazorPublishDirectory,
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),

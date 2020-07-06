@@ -15,6 +15,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.BlazorWriteSatelliteAssemblyFile" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.BlazorReadSatelliteAssemblyFile" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.BrotliCompress" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.GzipCompress" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.CreateBlazorTrimmerRootDescriptorFile" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
 
   <PropertyGroup>
@@ -151,6 +152,30 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="_ProcessBlazorWasmOutputs" DependsOnTargets="_ResolveBlazorWasmOutputs">
+    <PropertyGroup>
+      <_BlazorBuildGZipCompressDirectory>$(IntermediateOutputPath)build-gz\</_BlazorBuildGZipCompressDirectory>
+    </PropertyGroup>
+
+    <!--
+      Compress referenced binaries using GZip during build. This skips files such as the project's assemblies
+      that change from build to build. Runtime assets contribute to the bulk of the download size. Compressing it
+      has the most benefit while avoiding any ongoing costs to the dev inner loop.
+    -->
+    <ItemGroup>
+      <_GzipFileToCompressForBuild
+        Include="@(ReferenceCopyLocalPaths)"
+        RelativePath="$(_BlazorOutputPath)%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(FileName)%(Extension)"
+        Condition="'%(Extension)' == '.dll' or '%(ReferenceCopyLocalPaths.AssetType)' == 'native'" />
+    </ItemGroup>
+
+    <GZipCompress
+      FilesToCompress="@(_GzipFileToCompressForBuild)"
+      OutputDirectory="$(_BlazorBuildGZipCompressDirectory)">
+
+      <Output TaskParameter="CompressedFiles" ItemName="_BlazorBuildGZipCompressedFile" />
+      <Output TaskParameter="CompressedFiles" ItemName="FileWrites" />
+    </GZipCompress>
+
     <ItemGroup>
       <_BlazorWriteSatelliteAssembly Include="@(_BlazorOutputWithTargetPath->HasMetadata('Culture'))" />
 
@@ -238,6 +263,15 @@ Copyright (c) .NET Foundation. All rights reserved.
         <CopyToPublishDirectory>Never</CopyToPublishDirectory>
       </_BlazorWebAssemblyStaticWebAsset>
 
+      <_BlazorWebAssemblyStaticWebAsset Include="@(_BlazorBuildGZipCompressedFile)">
+        <SourceId>$(PackageId)</SourceId>
+        <SourceType></SourceType>
+        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(TargetDir)wwwroot\'))</ContentRoot>
+        <BasePath>$(StaticWebAssetBasePath)</BasePath>
+        <RelativePath>$([System.String]::Copy('%(_BlazorBuildGZipCompressedFile.RelativePath)').Replace('\','/').Substring(8))</RelativePath>
+        <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+      </_BlazorWebAssemblyStaticWebAsset>
+
       <StaticWebAsset Include="@(_BlazorWebAssemblyStaticWebAsset)" />
       <_ExternalStaticWebAsset Include="@(_BlazorWebAssemblyStaticWebAsset)" SourceType="Generated" />
     </ItemGroup>
@@ -295,6 +329,20 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Copy
         SourceFiles="@(_BlazorJSFile);$(_BlazorBuildBootJsonPath)"
         DestinationFolder="$(OutDir)$(_BlazorOutputPath)"
+        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+        Retries="$(CopyRetryCount)"
+        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+        UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
+        UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
+        ErrorIfLinkFails="$(ErrorIfLinkFailsForCopyFilesToOutputDirectory)">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+    </Copy>
+
+    <Copy
+        SourceFiles="@(_BlazorBuildGZipCompressedFile)"
+        DestinationFiles="@(_BlazorBuildGZipCompressedFile->'$(OutDir)%(RelativePath)')"
         SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
         OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
         Retries="$(CopyRetryCount)"
@@ -411,12 +459,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_BlazorCompressPublishFiles" AfterTargets="_ProcessPublishFilesForBlazor" Condition="'$(BlazorEnableCompression)' != 'false'">
     <PropertyGroup>
-      <_CompressedFileOutputPath>$(IntermediateOutputPath)brotli\</_CompressedFileOutputPath>
+      <_CompressedFileOutputPath>$(IntermediateOutputPath)compress\</_CompressedFileOutputPath>
       <_BlazorWebAssemblyBrotliIncremental>true</_BlazorWebAssemblyBrotliIncremental>
     </PropertyGroup>
 
     <ItemGroup>
-      <_BrotliFileToCompress
+      <_FileToCompress
         Include="@(ResolvedFileToPublish)"
         Condition="$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('\','/').StartsWith('wwwroot/'))" />
     </ItemGroup>
@@ -427,7 +475,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <BrotliCompress
       OutputDirectory="$(_CompressedFileOutputPath)"
-      FilesToCompress="@(_BrotliFileToCompress)"
+      FilesToCompress="@(_FileToCompress)"
       CompressionLevel="$(_BlazorBrotliCompressionLevel)"
       SkipIfOutputIsNewer="$(_BlazorWebAssemblyBrotliIncremental)"
       ToolAssembly="$(_RazorSdkToolAssembly)">
@@ -436,8 +484,17 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="CompressedFiles" ItemName="FileWrites" />
     </BrotliCompress>
 
+    <GZipCompress
+      OutputDirectory="$(_CompressedFileOutputPath)"
+      FilesToCompress="@(_FileToCompress)">
+
+      <Output TaskParameter="CompressedFiles" ItemName="_BlazorPublishGZipCompressedFile" />
+      <Output TaskParameter="CompressedFiles" ItemName="FileWrites" />
+    </GZipCompress>
+
     <ItemGroup>
       <ResolvedFileToPublish Include="@(_BrotliCompressedFile)" />
+      <ResolvedFileToPublish Include="@(_BlazorPublishGZipCompressedFile)" />
     </ItemGroup>
   </Target>
 
