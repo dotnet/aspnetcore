@@ -76,9 +76,13 @@ namespace Microsoft.AspNetCore.Authentication
             }
 
             var tokenKey = TokenKeyPrefix + tokenName;
-            return properties.Items.ContainsKey(tokenKey)
-                ? properties.Items[tokenKey]
-                : null;
+
+            if (!properties.Items.TryGetValue(tokenKey, out var value))
+            {
+                value = null;
+            }
+
+            return value;
         }
 
         public static bool UpdateTokenValue(this AuthenticationProperties properties, string tokenName, string tokenValue)
