@@ -4686,7 +4686,7 @@ namespace Test
         }
 
         [Fact]
-        public void WhiteSpace_InRenderTreeBuilderMethod()
+        public void WhiteSpace_InMarkupInFunctionsBlock()
         {
             // Arrange
 
