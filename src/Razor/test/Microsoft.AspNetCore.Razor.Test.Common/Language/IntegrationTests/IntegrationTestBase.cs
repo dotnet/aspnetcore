@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         protected CSharpSyntaxTree AddCSharpSyntaxTree(string text, string? filePath = null)
         {
-            var syntaxTree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(text, CSharpParseOptions, path: filePath);
+            var syntaxTree = (CSharpSyntaxTree)CSharpSyntaxTree.ParseText(text, CSharpParseOptions, path: filePath ?? string.Empty);
             CSharpSyntaxTrees.Add(syntaxTree);
             return syntaxTree;
         }

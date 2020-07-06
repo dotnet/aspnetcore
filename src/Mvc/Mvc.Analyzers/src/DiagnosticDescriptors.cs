@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Mvc.Analyzers
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("MicrosoftCodeAnalysisReleaseTracking", "RS2008:Enable analyzer release tracking")]
     public static class DiagnosticDescriptors
     {
         public static readonly DiagnosticDescriptor MVC1000_HtmlHelperPartialShouldBeAvoided =
