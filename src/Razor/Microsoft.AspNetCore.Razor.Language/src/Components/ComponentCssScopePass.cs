@@ -8,8 +8,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 {
     internal class ComponentCssScopePass : ComponentIntermediateNodePassBase, IRazorOptimizationPass
     {
-        // Run after component lowering pass
-        public override int Order => 50;
+        // Runs after components/bind, since it's preferable for the auto-generated attribute to appear later
+        // in the DOM than developer-written ones
+        public override int Order => 110;
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
