@@ -13,9 +13,24 @@ namespace Microsoft.AspNetCore.Http
     {
         public static string GetServerVariable(this Microsoft.AspNetCore.Http.HttpContext context, string variableName) { throw null; }
     }
-    public static partial class HttpRequestExtensions
+    public static partial class HttpRequestJsonExtensions
     {
         public static bool HasJsonContentType(this Microsoft.AspNetCore.Http.HttpRequest request) { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public static System.Threading.Tasks.ValueTask<object?> ReadFromJsonAsync(this Microsoft.AspNetCore.Http.HttpRequest request, System.Type type, System.Text.Json.JsonSerializerOptions? options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public static System.Threading.Tasks.ValueTask<object?> ReadFromJsonAsync(this Microsoft.AspNetCore.Http.HttpRequest request, System.Type type, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public static System.Threading.Tasks.ValueTask<TValue> ReadFromJsonAsync<TValue>(this Microsoft.AspNetCore.Http.HttpRequest request, System.Text.Json.JsonSerializerOptions? options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public static System.Threading.Tasks.ValueTask<TValue> ReadFromJsonAsync<TValue>(this Microsoft.AspNetCore.Http.HttpRequest request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+    }
+    public static partial class HttpResponseJsonExtensions
+    {
+        public static System.Threading.Tasks.Task WriteAsJsonAsync(this Microsoft.AspNetCore.Http.HttpResponse response, object? value, System.Type type, System.Text.Json.JsonSerializerOptions? options, string? contentType, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public static System.Threading.Tasks.Task WriteAsJsonAsync(this Microsoft.AspNetCore.Http.HttpResponse response, object? value, System.Type type, System.Text.Json.JsonSerializerOptions? options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public static System.Threading.Tasks.Task WriteAsJsonAsync(this Microsoft.AspNetCore.Http.HttpResponse response, object? value, System.Type type, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public static System.Threading.Tasks.Task WriteAsJsonAsync<TValue>(this Microsoft.AspNetCore.Http.HttpResponse response, [System.Diagnostics.CodeAnalysis.AllowNullAttribute] TValue value, System.Text.Json.JsonSerializerOptions? options, string? contentType, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public static System.Threading.Tasks.Task WriteAsJsonAsync<TValue>(this Microsoft.AspNetCore.Http.HttpResponse response, [System.Diagnostics.CodeAnalysis.AllowNullAttribute] TValue value, System.Text.Json.JsonSerializerOptions? options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public static System.Threading.Tasks.Task WriteAsJsonAsync<TValue>(this Microsoft.AspNetCore.Http.HttpResponse response, [System.Diagnostics.CodeAnalysis.AllowNullAttribute] TValue value, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
     public static partial class ResponseExtensions
     {
@@ -133,24 +148,6 @@ namespace Microsoft.AspNetCore.Http.Headers
 }
 namespace Microsoft.AspNetCore.Http.Json
 {
-    public static partial class HttpRequestJsonExtensions
-    {
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public static System.Threading.Tasks.ValueTask<object?> ReadFromJsonAsync(this Microsoft.AspNetCore.Http.HttpRequest request, System.Type type, System.Text.Json.JsonSerializerOptions? options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        public static System.Threading.Tasks.ValueTask<object?> ReadFromJsonAsync(this Microsoft.AspNetCore.Http.HttpRequest request, System.Type type, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public static System.Threading.Tasks.ValueTask<TValue> ReadFromJsonAsync<TValue>(this Microsoft.AspNetCore.Http.HttpRequest request, System.Text.Json.JsonSerializerOptions? options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        public static System.Threading.Tasks.ValueTask<TValue> ReadFromJsonAsync<TValue>(this Microsoft.AspNetCore.Http.HttpRequest request, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-    }
-    public static partial class HttpResponseJsonExtensions
-    {
-        public static System.Threading.Tasks.Task WriteAsJsonAsync(this Microsoft.AspNetCore.Http.HttpResponse response, object? value, System.Type type, System.Text.Json.JsonSerializerOptions? options, string? contentType, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        public static System.Threading.Tasks.Task WriteAsJsonAsync(this Microsoft.AspNetCore.Http.HttpResponse response, object? value, System.Type type, System.Text.Json.JsonSerializerOptions? options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        public static System.Threading.Tasks.Task WriteAsJsonAsync(this Microsoft.AspNetCore.Http.HttpResponse response, object? value, System.Type type, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        public static System.Threading.Tasks.Task WriteAsJsonAsync<TValue>(this Microsoft.AspNetCore.Http.HttpResponse response, [System.Diagnostics.CodeAnalysis.AllowNullAttribute] TValue value, System.Text.Json.JsonSerializerOptions? options, string? contentType, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        public static System.Threading.Tasks.Task WriteAsJsonAsync<TValue>(this Microsoft.AspNetCore.Http.HttpResponse response, [System.Diagnostics.CodeAnalysis.AllowNullAttribute] TValue value, System.Text.Json.JsonSerializerOptions? options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        public static System.Threading.Tasks.Task WriteAsJsonAsync<TValue>(this Microsoft.AspNetCore.Http.HttpResponse response, [System.Diagnostics.CodeAnalysis.AllowNullAttribute] TValue value, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-    }
     public partial class JsonOptions
     {
         public JsonOptions() { }
