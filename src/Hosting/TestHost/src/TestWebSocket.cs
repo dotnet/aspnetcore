@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentOutOfRangeException(nameof(messageType), messageType, string.Empty);
             }
 
-            var message = new Message(buffer, messageType, endOfMessage, cancellationToken);
+            var message = new Message(buffer, messageType, endOfMessage);
             return _sendBuffer.SendAsync(message, cancellationToken);
         }
 
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.TestHost
 
         private class Message
         {
-            public Message(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken token)
+            public Message(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage)
             {
                 Buffer = buffer;
                 CloseStatus = null;
