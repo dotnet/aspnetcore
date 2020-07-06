@@ -247,8 +247,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                     {
                         // If this is a child content tag helper, we want to add it if it's original type is in scope.
                         // E.g, if the type name is `Test.MyComponent.ChildContent`, we want to add it if `Test.MyComponent` is in scope.
-                        TrySplitNamespaceAndType(typeName, out var typeNameTextSpan, out var _);
-                        typeName = GetTextSpanContent(typeNameTextSpan, typeName);
+                        TrySplitNamespaceAndType(typeName, out var namespaceTextSpan, out var _);
+                        typeName = GetTextSpanContent(namespaceTextSpan, typeName);
                     }
 
                     if (currentNamespace != null && IsTypeInScope(typeName, currentNamespace))
@@ -337,8 +337,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                             {
                                 // If this is a child content tag helper, we want to add it if it's original type is in scope of the given namespace.
                                 // E.g, if the type name is `Test.MyComponent.ChildContent`, we want to add it if `Test.MyComponent` is in this namespace.
-                                TrySplitNamespaceAndType(typeName, out var typeNameTextSpan, out var _);
-                                typeName = GetTextSpanContent(typeNameTextSpan, typeName);
+                                TrySplitNamespaceAndType(typeName, out var namespaceTextSpan, out var _);
+                                typeName = GetTextSpanContent(namespaceTextSpan, typeName);
                             }
                             if (typeName != null && IsTypeInNamespace(typeName, @namespace))
                             {
@@ -352,13 +352,13 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             internal static bool IsTypeInNamespace(string typeName, string @namespace)
             {
-                if (!TrySplitNamespaceAndType(typeName, out var typeNamespace, out var _) || typeNamespace.Length == 0)
+                if (!TrySplitNamespaceAndType(typeName, out var namespaceTextSpan, out var _) || namespaceTextSpan.Length == 0)
                 {
                     // Either the typeName is not the full type name or this type is at the top level.
                     return true;
                 }
 
-                return @namespace.Length == typeNamespace.Length && 0 == string.CompareOrdinal(typeName, typeNamespace.Start, @namespace, 0, @namespace.Length);
+                return @namespace.Length == namespaceTextSpan.Length && 0 == string.CompareOrdinal(typeName, namespaceTextSpan.Start, @namespace, 0, @namespace.Length);
             }
 
             // Check if the given type is already in scope given the namespace of the current document.
@@ -368,13 +368,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Whereas `MyComponents.SomethingElse.OtherComponent` is not in scope.
             internal static bool IsTypeInScope(string typeName, string currentNamespace)
             {
-                if (!TrySplitNamespaceAndType(typeName, out var typeNamespaceTextSpan, out var _) || typeNamespaceTextSpan.Length == 0)
+                if (!TrySplitNamespaceAndType(typeName, out var namespaceTextSpan, out var _) || namespaceTextSpan.Length == 0)
                 {
                     // Either the typeName is not the full type name or this type is at the top level.
                     return true;
                 }
 
-                var typeNamespace = GetTextSpanContent(typeNamespaceTextSpan, typeName);
+                var typeNamespace = GetTextSpanContent(namespaceTextSpan, typeName);
                 var typeNamespaceSegments = typeNamespace.Split(NamespaceSeparators, StringSplitOptions.RemoveEmptyEntries);
                 var currentNamespaceSegments = currentNamespace.Split(NamespaceSeparators, StringSplitOptions.RemoveEmptyEntries);
                 if (typeNamespaceSegments.Length > currentNamespaceSegments.Length)
@@ -402,8 +402,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     // If this is a child content tag helper, we want to look at it's original type.
                     // E.g, if the type name is `Test.__generated__MyComponent.ChildContent`, we want to look at `Test.__generated__MyComponent`.
-                    TrySplitNamespaceAndType(typeName, out var typeNameTextSpan, out var _);
-                    typeName = GetTextSpanContent(typeNameTextSpan, typeName);
+                    TrySplitNamespaceAndType(typeName, out var namespaceTextSpan, out var _);
+                    typeName = GetTextSpanContent(namespaceTextSpan, typeName);
                 }
                 if (!TrySplitNamespaceAndType(typeName, out var _, out var classNameTextSpan))
                 {
