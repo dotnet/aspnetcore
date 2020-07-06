@@ -232,6 +232,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Optimization
             builder.Features.Add(new ComponentComplexAttributeContentPass());
             builder.Features.Add(new ComponentLoweringPass());
+            builder.Features.Add(new ComponentCssScopePass());
             builder.Features.Add(new ComponentScriptTagPass());
             builder.Features.Add(new ComponentEventHandlerLoweringPass());
             builder.Features.Add(new ComponentKeyLoweringPass());
