@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.Authentication
     /// </summary>
     public static class AuthenticationTokenExtensions
     {
-        private static string TokenNamesKey = ".TokenNames";
-        private static string TokenKeyPrefix = ".Token.";
+        private const string TokenNamesKey = ".TokenNames";
+        private const string TokenKeyPrefix = ".Token.";
 
         /// <summary>
         /// Stores a set of authentication tokens, after removing any old tokens.
