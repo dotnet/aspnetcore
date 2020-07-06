@@ -628,7 +628,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentMemoryPrefixBytes = ChunkWriter.GetPrefixBytesForChunk(_currentChunkMemory.Length, out var sliceOne);
             if (sliceOne)
             {
-                _currentChunkMemory = _currentChunkMemory.Slice(0, _currentChunkMemory.Length - 1);
+                _currentChunkMemory = _currentChunkMemory[..^1];
             }
             _currentChunkMemoryUpdated = true;
         }
