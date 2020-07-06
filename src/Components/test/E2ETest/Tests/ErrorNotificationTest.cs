@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23643")]
         public void ShowsErrorNotification_OnError_Dismiss()
         {
             var errorUi = Browser.FindElement(By.Id("blazor-error-ui"));
