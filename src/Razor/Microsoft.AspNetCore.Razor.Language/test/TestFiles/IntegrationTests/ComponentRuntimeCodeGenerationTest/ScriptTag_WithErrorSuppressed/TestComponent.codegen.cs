@@ -16,7 +16,7 @@ namespace Test
             __builder.OpenElement(0, "div");
             __builder.OpenElement(1, "script");
             __builder.AddAttribute(2, "src", "some/url.js");
-            __builder.AddAttribute(3, "anotherattribute", true);
+            __builder.AddAttribute(3, "anotherattribute");
             __builder.AddMarkupContent(4, "\r\n        some text\r\n        some more text\r\n    ");
             __builder.CloseElement();
             __builder.CloseElement();

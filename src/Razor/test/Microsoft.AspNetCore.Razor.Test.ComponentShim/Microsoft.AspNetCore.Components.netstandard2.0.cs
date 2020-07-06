@@ -385,6 +385,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     {
         public RenderTreeBuilder() { }
         public void AddAttribute(int sequence, in Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame frame) { }
+        public void AddAttribute(int sequence, string name) { }
         public void AddAttribute(int sequence, string name, Microsoft.AspNetCore.Components.EventCallback value) { }
         public void AddAttribute(int sequence, string name, bool value) { }
         public void AddAttribute(int sequence, string name, System.MulticastDelegate value) { }

@@ -30,7 +30,7 @@ using Microsoft.AspNetCore.Components.Web;
 #line hidden
 #nullable disable
             );
-            __builder.AddAttribute(2, "@onclick:preventDefault", true);
+            __builder.AddAttribute(2, "@onclick:preventDefault");
             __builder.CloseElement();
         }
         #pragma warning restore 1998
