@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 {
     public static class StaticFilesTestServer
     {
-        public static TestServer Create(Action<IApplicationBuilder> configureApp, Action<IServiceCollection> configureServices = null)
+        public static async Task<IHost> Create(Action<IApplicationBuilder> configureApp, Action<IServiceCollection> configureServices = null)
         {
             Action<IServiceCollection> defaultConfigureServices = services => { };
             var configuration = new ConfigurationBuilder()
@@ -34,8 +35,8 @@ namespace Microsoft.AspNetCore.StaticFiles
                     .ConfigureServices(configureServices ?? defaultConfigureServices);
                 }).Build();
 
-            host.Start();
-            return host.GetTestServer();
+            await host.StartAsync();
+            return host;
         }
     }
 }

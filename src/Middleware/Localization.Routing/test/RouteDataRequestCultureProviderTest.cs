@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Localization.Routing
             string expectedCulture,
             string expectedUICulture)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Localization.Routing
         [Fact]
         public async Task GetDefaultCultureInfo_IfCultureKeysAreMissing()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Localization.Routing
             string expectedCulture,
             string expectedUICulture)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

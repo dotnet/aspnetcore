@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.HostFiltering
         [Fact]
         public async Task MissingConfigThrows()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.HostFiltering
         [InlineData(false, 400)]
         public async Task AllowsMissingHost(bool allowed, int status)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.HostFiltering
         [InlineData(false, 400)]
         public async Task AllowsEmptyHost(bool allowed, int status)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.HostFiltering
         [InlineData("[::1]:80", "[::1]")]
         public async Task AllowsSpecifiedHost(string hosturl, string allowedHost)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.HostFiltering
         [InlineData("[::1:80", "[::1]")]
         public async Task RejectsMismatchedHosts(string hosturl, string allowedHost)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.HostFiltering
             config["AllowedHosts"] = "localhost";
             var currentHost = "otherHost";
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         public async Task Invoke_RewritePathWhenMatching()
         {
             var options = new RewriteOptions().AddApacheModRewrite(new StringReader("RewriteRule /hey/(.*) /$1 "));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         {
             var options = new RewriteOptions().AddApacheModRewrite(new StringReader("RewriteRule /hey/(.*) /$1 [L]"))
                             .AddApacheModRewrite(new StringReader("RewriteRule /hello /what"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         {
             var options = new RewriteOptions().AddApacheModRewrite(new StringReader("RewriteRule /hey/(.*) /$1"))
                                        .AddApacheModRewrite(new StringReader("RewriteRule /hello /what"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         public async Task Invoke_ShouldIgnoreComments()
         {
             var options = new RewriteOptions().AddApacheModRewrite(new StringReader("#RewriteRule ^/hey/(.*) /$1 "));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         public async Task Invoke_ShouldRewriteHomepage()
         {
             var options = new RewriteOptions().AddApacheModRewrite(new StringReader(@"RewriteRule ^/$ /homepage.html"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         public async Task Invoke_ShouldIgnorePorts()
         {
             var options = new RewriteOptions().AddApacheModRewrite(new StringReader(@"RewriteRule ^/$ /homepage.html"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         public async Task Invoke_HandleNegatedRewriteRules()
         {
             var options = new RewriteOptions().AddApacheModRewrite(new StringReader(@"RewriteRule !^/$ /homepage.html"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         public async Task Invoke_BackReferencesShouldBeApplied(string url, string rule, string expected)
         {
             var options = new RewriteOptions().AddApacheModRewrite(new StringReader(rule));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         public async Task Invoke_ShouldHandleFlagNoCase(string url, string rule, string expected)
         {
             var options = new RewriteOptions().AddApacheModRewrite(new StringReader(rule));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         {
             var options = new RewriteOptions()
                 .AddApacheModRewrite(new StringReader(@"RewriteRule (.+) http://www.example.com$1/"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         {
             var options = new RewriteOptions()
                 .AddApacheModRewrite(new StringReader(@"RewriteRule (.+) http://www.example.com$1/"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         {
             var options = new RewriteOptions()
                 .AddApacheModRewrite(new StringReader(@"RewriteRule (.+) http://www.example.com$1/"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -359,7 +359,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         {
             var options = new RewriteOptions()
                 .AddApacheModRewrite(new StringReader("RewriteCond %{REQUEST_URI} /foo/  \nRewriteCond %{HTTPS} !on   \nRewriteRule ^(.*)$ https://www.example.com$1 [R=301,L]"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -389,7 +389,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         {
             var options = new RewriteOptions()
                 .AddApacheModRewrite(new StringReader("RewriteRule ^(.*)$ $1 [R=301,L]"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -419,7 +419,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         {
             var options = new RewriteOptions()
                 .AddApacheModRewrite(new StringReader("RewriteRule ^(.*)$ $1 [L]"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -445,7 +445,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
         public async Task Invoke_CaptureEmptyStringInRegexAssertLocationHeaderContainsPathBase()
         {
             var options = new RewriteOptions().AddApacheModRewrite(new StringReader(@"RewriteRule ^(.*)$ $1 [R=301,L]"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -477,7 +477,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.ModRewrite
             var options = new RewriteOptions().AddApacheModRewrite(new StringReader(@"RewriteCond %{REQUEST_URI} /home
 RewriteCond %{QUERY_STRING} report_id=(.+)
 RewriteRule (.*) http://localhost:80/home/report/%1 [R=301,L,QSD]"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

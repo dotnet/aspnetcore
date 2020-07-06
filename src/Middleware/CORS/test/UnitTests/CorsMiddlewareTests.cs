@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         public async Task CorsRequest_MatchesPolicy_OnCaseInsensitiveAccessControlRequestMethod(string accessControlRequestMethod)
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         public async Task CorsRequest_MatchPolicy_SetsResponseHeaders()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             policy.Origins.Add(OriginUrl);
             policy.Methods.Add("PUT");
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             policy.Headers.Add("Header1");
             policy.ExposedHeaders.Add("AllowedHeader");
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 .AllowCredentials()
                 .Build();
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         public async Task PreFlightRequest_DoesNotMatchPolicy_SetsResponseHeadersAndReturnsNoContent()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         public async Task CorsRequest_DoesNotMatchPolicy_DoesNotSetHeaders()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -451,7 +451,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         public async Task PreFlight_MatchesDefaultPolicy_SetsResponseHeaders()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -526,7 +526,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         public async Task CorsRequest_SetsResponseHeaders()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -588,7 +588,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         {
             // Arrange
             var exceptionSeen = true;
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

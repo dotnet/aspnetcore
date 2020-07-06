@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRewritePath()
         {
             var options = new RewriteOptions().AddRewrite("(.*)", "http://example.com/$1", skipRemainingRules: false);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRedirectPath()
         {
             var options = new RewriteOptions().AddRedirect("(.*)", "http://example.com/$1", statusCode: StatusCodes.Status301MovedPermanently);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         [Fact]
         public async Task RewriteRulesCanComeFromConfigureOptions()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRedirectPathWithQueryString()
         {
             var options = new RewriteOptions().AddRedirect("(.*)", "http://example.com/$1", statusCode: StatusCodes.Status301MovedPermanently);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRedirectToHttps(int statusCode)
         {
             var options = new RewriteOptions().AddRedirectToHttps(statusCode: statusCode);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckPermanentRedirectToHttps()
         {
             var options = new RewriteOptions().AddRedirectToHttpsPermanent();
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRedirectToHttpsWithSslPort(int sslPort, string expected)
         {
             var options = new RewriteOptions().AddRedirectToHttps(statusCode: StatusCodes.Status301MovedPermanently, sslPort: sslPort);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRedirectToWwwWithStatusCode(int statusCode)
         {
             var options = new RewriteOptions().AddRedirectToWww(statusCode: statusCode);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRedirectToWww(string requestUri, string redirectUri)
         {
             var options = new RewriteOptions().AddRedirectToWww();
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckPermanentRedirectToWww()
         {
             var options = new RewriteOptions().AddRedirectToWwwPermanent();
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckNoRedirectToWww(string requestUri)
         {
             var options = new RewriteOptions().AddRedirectToWww();
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRedirectToNonWwwWithStatusCode(int statusCode)
         {
             var options = new RewriteOptions().AddRedirectToNonWww(statusCode: statusCode);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -382,7 +382,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRedirectToNonWww(string requestUri, string redirectUri)
         {
             var options = new RewriteOptions().AddRedirectToNonWww();
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -409,7 +409,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckPermanentRedirectToNonWww()
         {
             var options = new RewriteOptions().AddRedirectToNonWwwPermanent();
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -436,7 +436,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckIfEmptyStringRedirectCorrectly()
         {
             var options = new RewriteOptions().AddRedirect("(.*)", "$1", statusCode: StatusCodes.Status301MovedPermanently);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -461,7 +461,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckIfEmptyStringRewriteCorrectly()
         {
             var options = new RewriteOptions().AddRewrite("(.*)", "$1", skipRemainingRules: false);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -490,7 +490,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task SettingPathBase()
         {
             var options = new RewriteOptions().AddRedirect("(.*)", "$1");
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -525,7 +525,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckNoRedirectToWwwInNonWhitelistedDomains(string requestUri)
         {
             var options = new RewriteOptions().AddRedirectToWww("example2.com");
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -555,7 +555,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRedirectToWwwInWhitelistedDomains(string requestUri, string redirectUri)
         {
             var options = new RewriteOptions().AddRedirectToWww("example.com");
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -582,7 +582,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckPermanentRedirectToWwwInWhitelistedDomains()
         {
             var options = new RewriteOptions().AddRedirectToWwwPermanent("example.com");
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -613,7 +613,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
         public async Task CheckRedirectToWwwWithStatusCodeInWhitelistedDomains(int statusCode)
         {
             var options = new RewriteOptions().AddRedirectToWww(statusCode: statusCode, "example.com");
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

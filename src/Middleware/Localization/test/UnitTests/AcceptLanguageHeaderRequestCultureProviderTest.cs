@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Localization
         [Fact]
         public async Task GetFallbackLanguage_ReturnsFirstNonNullCultureFromSupportedCultureList()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -61,7 +61,7 @@ namespace Microsoft.Extensions.Localization
         [Fact]
         public async Task GetFallbackLanguage_ReturnsFromSupportedCulture_AcceptLanguageListContainsSupportedCultures()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -103,7 +103,7 @@ namespace Microsoft.Extensions.Localization
         [Fact]
         public async Task GetFallbackLanguage_ReturnsDefault_AcceptLanguageListDoesnotContainSupportedCultures()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -146,7 +146,7 @@ namespace Microsoft.Extensions.Localization
         [Fact]
         public async Task OmitDefaultRequestCultureShouldNotThrowNullReferenceException_And_ShouldGetTheRightCulture()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

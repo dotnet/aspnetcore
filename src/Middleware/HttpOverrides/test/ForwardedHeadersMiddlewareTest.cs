@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task XForwardedForDefaultSettingsChangeRemoteIpAndPort()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(1, "11.111.111.11.12345", "10.0.0.1", 99)] // Invalid
         public async Task XForwardedForFirstValueIsInvalid(int limit, string header, string expectedIp, int expectedPort)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(3, "13.113.113.13:34567, 12.112.112.12:23456, 11.111.111.11:12345", "13.113.113.13", 34567, "", true)]
         public async Task XForwardedForForwardLimit(int limit, string header, string expectedIp, int expectedPort, string remainingHeader, bool requireSymmetry)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData("::", false)]
         public async Task XForwardedForLoopback(string originalIp, bool expectForwarded)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(3, "13.113.113.13;34567, 12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11,12.112.112.12", "12.112.112.12", 23456, true)] // Invalid 3rd IP
         public async Task XForwardedForForwardKnownIps(int limit, string header, string knownIPs, string expectedIp, int expectedPort, bool requireSymmetry)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task XForwardedForOverrideBadIpDoesntChangeRemoteIp()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task XForwardedHostOverrideChangesRequestHost()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -366,7 +366,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         {
             var assertsExecuted = false;
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -453,7 +453,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         {
             var assertsExecuted = false;
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -505,7 +505,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public async Task XForwardedHostAllowsSpecifiedHost(string hostHeader, string allowedHost)
         {
             bool assertsExecuted = false;
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -558,7 +558,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public async Task XForwardedHostFailsMismatchedHosts(string hostHeader, string allowedHost)
         {
             bool assertsExecuted = false;
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -595,7 +595,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public async Task XForwardedHostStopsAtFirstUnspecifiedHost()
         {
             bool assertsExecuted = false;
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -639,7 +639,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(10, "h3, h2, h1", "h3")]
         public async Task XForwardedProtoOverrideChangesRequestProtocol(int limit, string header, string expected)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -690,7 +690,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         {
             var assertsExecuted = false;
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -749,7 +749,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         {
             var assertsExecuted = false;
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -793,7 +793,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(10, "h3, h2, h1", "::1, badip, ::1", "h1")]
         public async Task XForwardedProtoOverrideLimitedByXForwardedForCount(int limit, string protoHeader, string forHeader, string expected)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -837,7 +837,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(10, "h3, h2, h1", "::1, badip, ::1", "h1")]
         public async Task XForwardedProtoOverrideCanBeIndependentOfXForwardedForCount(int limit, string protoHeader, string forHeader, string expected)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -883,7 +883,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData("h2, h1", "E::, D::", "F::", true, "http")]
         public async Task XForwardedProtoOverrideLimitedByLoopback(string protoHeader, string forHeader, string remoteIp, bool loopback, string expected)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -934,7 +934,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task AllForwardsEnabledChangeRequestRemoteIpHostandProtocol()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -969,7 +969,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task AllOptionsDisabledRequestDoesntChange()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -1004,7 +1004,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task PartiallyEnabledForwardsPartiallyChangesRequest()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -1063,7 +1063,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 options.KnownNetworks.Add(new IPNetwork(networkIp, prefixLength));
             }
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -1093,7 +1093,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(2, "httpa, httpb, httpc", "httpb", "httpa")]
         public async Task ForwardersWithDIOptionsRunsOnce(int limit, string header, string expectedScheme, string remainingHeader)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -1135,7 +1135,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(2, "httpa, httpb, httpc", "httpa", "")]
         public async Task ForwardersWithDirectOptionsRunsTwice(int limit, string header, string expectedScheme, string remainingHeader)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

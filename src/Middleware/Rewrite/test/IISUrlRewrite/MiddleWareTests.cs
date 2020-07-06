@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                  .ConfigureWebHost(webHostBuilder =>
                  {
                      webHostBuilder
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -326,7 +326,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -404,7 +404,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -484,7 +484,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -522,7 +522,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -560,7 +560,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -599,7 +599,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -637,7 +637,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                             </globalRules>
                         </rewrite>";
             var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(xml));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -684,7 +684,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                         </rewriteMap>
                     </rewriteMaps>
                 </rewrite>"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -718,7 +718,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -775,7 +775,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             ruleBuilder.AddUrlAction(action);
 
             var options = new RewriteOptions().Add(ruleBuilder.Build());
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

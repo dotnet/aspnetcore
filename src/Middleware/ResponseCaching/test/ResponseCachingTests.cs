@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -391,7 +391,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -415,7 +415,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -439,7 +439,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -463,7 +463,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -487,7 +487,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -511,7 +511,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -535,7 +535,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -563,7 +563,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -592,7 +592,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -616,7 +616,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -644,7 +644,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -672,7 +672,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -701,7 +701,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -728,7 +728,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -758,7 +758,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -785,7 +785,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -813,7 +813,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -840,7 +840,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -867,7 +867,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -891,7 +891,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -919,7 +919,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -956,7 +956,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 
@@ -993,7 +993,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
             foreach (var builder in builders)
             {
-                var host = builder.Build();
+                using var host = builder.Build();
 
                 await host.StartAsync();
 

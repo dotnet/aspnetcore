@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         [Fact]
         public async Task ReturnsNotFoundWithoutWwwroot()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         [Fact]
         public async Task Endpoint_PassesThrough()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         [Fact]
         public async Task FoundFile_LastModifiedTrimsSeconds()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private async Task FoundFile_Served(string baseUrl, string baseDir, string requestUrl)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         [MemberData(nameof(ExistingFiles))]
         public async Task HeadFile_HeadersButNotBodyServed(string baseUrl, string baseDir, string requestUrl)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             var requestCancelled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var responseComplete = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             Exception exception = null;
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

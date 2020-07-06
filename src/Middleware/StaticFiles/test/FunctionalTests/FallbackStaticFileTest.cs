@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         [Fact]
         public async Task ReturnsFileForDefaultPattern()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         [Fact]
         public async Task ReturnsFileForCustomPattern()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

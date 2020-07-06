@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Session
         [Fact]
         public async Task ReadingEmptySessionDoesNotCreateCookie()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Session
         [Fact]
         public async Task SettingAValueCausesTheCookieToBeCreated()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Session
             string requestUri,
             bool shouldBeSecureOnly)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Session
         [Fact]
         public async Task SessionCanBeAccessedOnTheNextRequest()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Session
         [Fact]
         public async Task RemovedItemCannotBeAccessedAgain()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Session
         [Fact]
         public async Task ClearedItemsCannotBeAccessedAgain()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.Session
                 TestSink.EnableWithTypeName<DistributedSession>,
                 TestSink.EnableWithTypeName<DistributedSession>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -398,7 +398,7 @@ namespace Microsoft.AspNetCore.Session
                 TestSink.EnableWithTypeName<DistributedSession>,
                 TestSink.EnableWithTypeName<DistributedSession>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -465,7 +465,7 @@ namespace Microsoft.AspNetCore.Session
         public async Task RefreshesSession_WhenSessionData_IsNotModified()
         {
             var clock = new TestClock();
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -532,7 +532,7 @@ namespace Microsoft.AspNetCore.Session
         [Fact]
         public async Task SessionFeature_IsUnregistered_WhenResponseGoingOut()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -576,7 +576,7 @@ namespace Microsoft.AspNetCore.Session
         [Fact]
         public async Task SessionFeature_IsUnregistered_WhenResponseGoingOut_AndAnUnhandledExcetionIsThrown()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -627,7 +627,7 @@ namespace Microsoft.AspNetCore.Session
         [Fact]
         public async Task SessionKeys_AreCaseSensitive()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -670,7 +670,7 @@ namespace Microsoft.AspNetCore.Session
                 TestSink.EnableWithTypeName<DistributedSession>,
                 TestSink.EnableWithTypeName<DistributedSession>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -721,7 +721,7 @@ namespace Microsoft.AspNetCore.Session
                 TestSink.EnableWithTypeName<DistributedSession>,
                 TestSink.EnableWithTypeName<DistributedSession>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -771,7 +771,7 @@ namespace Microsoft.AspNetCore.Session
                 TestSink.EnableWithTypeName<DistributedSession>,
                 TestSink.EnableWithTypeName<DistributedSession>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -821,7 +821,7 @@ namespace Microsoft.AspNetCore.Session
                 TestSink.EnableWithTypeName<DistributedSession>,
                 TestSink.EnableWithTypeName<DistributedSession>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -877,7 +877,7 @@ namespace Microsoft.AspNetCore.Session
                         || beginScopeContext.LoggerName.Equals(typeof(DistributedSession).FullName);
                 });
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -939,7 +939,7 @@ namespace Microsoft.AspNetCore.Session
                         || beginScopeContext.LoggerName.Equals(typeof(DistributedSession).FullName);
                 });
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -1007,7 +1007,7 @@ namespace Microsoft.AspNetCore.Session
                         || beginScopeContext.LoggerName.Equals(typeof(DistributedSession).FullName);
                 });
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -1073,7 +1073,7 @@ namespace Microsoft.AspNetCore.Session
                         || beginScopeContext.LoggerName.Equals(typeof(DistributedSession).FullName);
                 });
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -1131,7 +1131,7 @@ namespace Microsoft.AspNetCore.Session
                 TestSink.EnableWithTypeName<SessionMiddleware>,
                 TestSink.EnableWithTypeName<SessionMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

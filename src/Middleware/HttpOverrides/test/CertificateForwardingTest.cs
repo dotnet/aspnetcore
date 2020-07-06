@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task VerifyHeaderIsUsedIfNoCertificateAlreadySet()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task VerifyHeaderOverridesCertificateEvenAlreadySet()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task VerifySettingTheAzureHeaderOnTheForwarderOptionsWorks()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task VerifyACustomHeaderFailsIfTheHeaderIsNotPresent()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task VerifyArrHeaderEncodedCertFailsOnBadEncoding()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

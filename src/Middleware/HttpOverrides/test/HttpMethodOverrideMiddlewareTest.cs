@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public async Task XHttpMethodOverrideHeaderAvaiableChangesRequestMethod()
         {
             var assertsExecuted = false;
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public async Task XHttpMethodOverrideHeaderUnavaiableDoesntChangeRequestMethod()
         {
             var assertsExecuted = false;
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public async Task XHttpMethodOverrideFromGetRequestDoesntChangeMethodType()
         {
             var assertsExecuted = false;
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public async Task FormFieldAvailableChangesRequestMethod()
         {
             var assertsExecuted = false;
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public async Task FormFieldUnavailableDoesNotChangeRequestMethod()
         {
             var assertsExecuted = false;
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public async Task FormFieldEmptyDoesNotChangeRequestMethod()
         {
             var assertsExecuted = false;
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

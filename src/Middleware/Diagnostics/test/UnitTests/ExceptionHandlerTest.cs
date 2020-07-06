@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         [InlineData(HttpStatusCode.InternalServerError)]
         public async Task OnlyHandles_UnhandledExceptions(HttpStatusCode expectedStatusCode)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         [Fact]
         public async Task DoesNotHandle_UnhandledExceptions_WhenResponseAlreadyStarted()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         public async Task ClearsResponseBuffer_BeforeRequestIsReexecuted()
         {
             var expectedResponseBody = "New response body";
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         {
             var expiresTime = DateTime.UtcNow.AddDays(5).ToString("R");
             var expectedResponseBody = "Handled error in a custom way.";
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         {
             var expiresTime = DateTime.UtcNow.AddDays(10).ToString("R");
             var expectedResponseBody = "Hello world!";
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -326,7 +326,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         public async Task DoesNotClearCacheHeaders_WhenResponseHasAlreadyStarted()
         {
             var expiresTime = DateTime.UtcNow.AddDays(10).ToString("R");
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             // Arrange
             DiagnosticListener diagnosticListener = null;
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -460,7 +460,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             // Arrange
             DiagnosticListener diagnosticListener = null;
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

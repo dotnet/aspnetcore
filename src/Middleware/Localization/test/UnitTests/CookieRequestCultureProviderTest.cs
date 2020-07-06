@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.Localization
         [Fact]
         public async Task GetCultureInfoFromPersistentCookie()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.Localization
         [Fact]
         public async Task GetDefaultCultureInfoIfCultureKeysAreMissingOrInvalid()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -128,7 +128,7 @@ namespace Microsoft.Extensions.Localization
         [Fact]
         public async Task GetDefaultCultureInfoIfCookieDoesNotExist()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -181,7 +181,7 @@ namespace Microsoft.Extensions.Localization
                 TestSink.EnableWithTypeName<RequestLocalizationMiddleware>,
                 TestSink.EnableWithTypeName<RequestLocalizationMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -243,7 +243,7 @@ namespace Microsoft.Extensions.Localization
                 TestSink.EnableWithTypeName<RequestLocalizationMiddleware>,
                 TestSink.EnableWithTypeName<RequestLocalizationMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

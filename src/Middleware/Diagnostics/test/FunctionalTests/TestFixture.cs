@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests
     public class TestFixture<TStartup> : IDisposable
     {
         private readonly TestServer _server;
+        private readonly IHost _host;
 
         public TestFixture()
         {
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests
             // (DefaultRequestCulture) is consistent regardless of system configuration or personal preferences.
             using (new CultureReplacer())
             {
-                var host = new HostBuilder()
+                _host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -29,8 +30,8 @@ namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests
                     .UseStartup(typeof(TStartup));
                 }).Build();
 
-                host.Start();
-                _server = host.GetTestServer();
+                _host.Start();
+                _server = _host.GetTestServer();
             }
 
             Client = _server.CreateClient();
@@ -43,6 +44,7 @@ namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests
         {
             Client.Dispose();
             _server.Dispose();
+            _host.Dispose();
         }
     }
 }

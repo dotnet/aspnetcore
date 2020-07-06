@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [Fact]
         public async Task GZipCompressionProvider_OptionsSetInDI_Compress()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [InlineData("text/plain2")]
         public async Task NoBody_NotCompressed(string contentType)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -432,7 +432,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 TestSink.EnableWithTypeName<ResponseCompressionProvider>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -495,7 +495,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 TestSink.EnableWithTypeName<ResponseCompressionProvider>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -560,7 +560,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 TestSink.EnableWithTypeName<ResponseCompressionProvider>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -620,7 +620,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -668,7 +668,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -715,7 +715,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -776,7 +776,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -838,7 +838,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
             };
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -910,7 +910,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
             };
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -968,7 +968,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             FakeSendFileFeature fakeSendFile = null;
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -1020,7 +1020,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             FakeSendFileFeature fakeSendFile = null;
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -1072,7 +1072,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             FakeSendFileFeature fakeSendFile = null;
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -1125,7 +1125,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -1191,7 +1191,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 TestSink.EnableWithTypeName<ResponseCompressionProvider>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

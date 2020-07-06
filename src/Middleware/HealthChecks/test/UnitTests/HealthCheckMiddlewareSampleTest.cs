@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task BasicStartup()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task CustomWriterStartup()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task LivenessProbeStartup_Liveness()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task LivenessProbeStartup_Readiness()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

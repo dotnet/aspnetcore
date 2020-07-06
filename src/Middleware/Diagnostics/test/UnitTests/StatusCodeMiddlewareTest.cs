@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         {
             var expectedStatusCode = 432;
             var destination = "/location";
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         {
             var expectedStatusCode = 432;
             var destination = "/location";
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         {
             var expectedStatusCode = 432;
             var destination = "/location";
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

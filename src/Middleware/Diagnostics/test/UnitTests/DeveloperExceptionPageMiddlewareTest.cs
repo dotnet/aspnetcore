@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         {
             // Arrange
             DiagnosticListener diagnosticListener = null;
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         public async Task ErrorPageWithAcceptHeaderForHtmlReturnsHtml()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         public async Task ErrorPageWithoutAcceptHeaderForHtmlReturnsPlainText()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         public async Task ExceptionPageFiltersAreApplied()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         public async Task ExceptionFilterCallingNextWorks()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         public async Task ExceptionPageFiltersAreAppliedInOrder()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         {
             // Arrange
             DiagnosticListener diagnosticListener = null;
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

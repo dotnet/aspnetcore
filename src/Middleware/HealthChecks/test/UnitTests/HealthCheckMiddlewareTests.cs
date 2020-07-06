@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public void ThrowFriendlyErrorWhenServicesNotRegistered()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact] // Matches based on '.Map'
         public async Task IgnoresRequestThatDoesNotMatchPath()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact] // Matches based on '.Map'
         public async Task MatchIsCaseInsensitive()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task ReturnsPlainTextStatus()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task StatusCodeIs200IfNoChecks()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task StatusCodeIs200IfAllChecksHealthy()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task StatusCodeIs200IfCheckIsDegraded()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task StatusCodeIs503IfCheckIsUnhealthy()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task StatusCodeIs503IfCheckHasUnhandledException()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
                 status = "Unhealthy",
             });
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task NoResponseWriterReturnsEmptyBody()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -394,7 +394,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task CanSetCustomStatusCodes()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -431,7 +431,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task SetsCacheHeaders()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -465,7 +465,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task CanSuppressCacheHeaders()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -502,7 +502,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task CanFilterChecks()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -541,7 +541,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task CanListenWithoutPath_AcceptsRequest()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -573,7 +573,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task CanListenWithPath_AcceptsRequestWithExtraSlash()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -603,7 +603,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task CanListenWithPath_AcceptsRequestWithCaseInsensitiveMatch()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -635,7 +635,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task CanListenWithPath_RejectsRequestWithExtraSegments()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -666,7 +666,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task CanListenWithPath_MultipleMiddleware_LeastSpecificFirst()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -705,7 +705,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task CanListenWithPath_MultipleMiddleware_MostSpecificFirst()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -743,7 +743,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task CanListenOnPort_AcceptsRequest_OnSpecifiedPort()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -783,7 +783,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task CanListenOnPortWithoutPath_AcceptsRequest_OnSpecifiedPort()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -823,7 +823,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task CanListenOnPort_RejectsRequest_OnOtherPort()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -861,7 +861,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task CanListenOnPort_MultipleMiddleware()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -907,7 +907,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public async Task CanListenOnPort_MultipleMiddleware_DifferentPorts()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

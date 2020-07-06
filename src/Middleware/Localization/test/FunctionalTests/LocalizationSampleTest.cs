@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         public async Task LocalizationSampleSmokeTest()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>,
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>,
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>,
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task SetHttpsPortEnvironmentVariableAndServerFeature_ReturnsCorrectStatusCodeOnResponse(
             int? optionsHttpsPort, string configHttpsPort, string serverAddressFeatureUrl, string expectedUrl)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>,
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>,
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -354,7 +354,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>,
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -409,7 +409,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>,
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -453,7 +453,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>,
                 TestSink.EnableWithTypeName<HttpsRedirectionMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

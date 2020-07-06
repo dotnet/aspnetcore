@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         [Fact]
         public void ThrowFriendlyErrorWhenServicesNotRegistered()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         public async Task MapHealthChecks_ReturnsOk()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
         public async Task MapHealthChecks_WithOptions_ReturnsOk()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

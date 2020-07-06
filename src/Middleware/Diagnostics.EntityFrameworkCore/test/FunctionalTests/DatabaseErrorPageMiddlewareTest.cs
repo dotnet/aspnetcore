@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [Fact]
         public async Task Successful_requests_pass_thru()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [Fact]
         public async Task Non_database_exceptions_pass_thru()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -105,7 +105,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             using (var database = SqlTestStore.CreateScratch())
             {
-                using TestServer server = await SetupTestServer<BloggingContext, DatabaseErrorButNoMigrationsMiddleware>(database);
+                using var host = await SetupServer<BloggingContext, DatabaseErrorButNoMigrationsMiddleware>(database);
+                using var server = host.GetTestServer();
                 var ex = await Assert.ThrowsAsync<DbUpdateException>(async () =>
                     await server.CreateClient().GetAsync("http://localhost/"));
 
@@ -137,7 +138,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             using (var database = SqlTestStore.CreateScratch())
             {
-                using TestServer server = await SetupTestServer<BloggingContext, NoMigrationsMiddleware>(database);
+                using var host = await SetupServer<BloggingContext, NoMigrationsMiddleware>(database);
+                using var server = host.GetTestServer();
                 HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
@@ -169,7 +171,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             using (var database = SqlTestStore.CreateScratch())
             {
-                using (var server = await SetupTestServer<BloggingContext, NoMigrationsMiddleware>(database))
+                using (var server = await SetupServer<BloggingContext, NoMigrationsMiddleware>(database))
                 {
                     using (var db = server.Services.GetService<BloggingContext>())
                     {
@@ -195,7 +197,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             using (var database = SqlTestStore.CreateScratch())
             {
-                using TestServer server = await SetupTestServer<BloggingContextWithMigrations, PendingMigrationsMiddleware>(database);
+                using var host = await SetupServer<BloggingContextWithMigrations, PendingMigrationsMiddleware>(database);
+                using var server = host.GetTestServer();
                 HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
@@ -231,7 +234,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             using (var database = SqlTestStore.CreateScratch())
             {
-                using TestServer server = await SetupTestServer<BloggingContextWithPendingModelChanges, PendingModelChangesMiddleware>(database);
+                using var host = await SetupServer<BloggingContextWithPendingModelChanges, PendingModelChangesMiddleware>(database);
+                using var server = host.GetTestServer();
                 HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
@@ -268,7 +272,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             using (var database = SqlTestStore.CreateScratch())
             {
-                using TestServer server = await SetupTestServer<BloggingContextWithMigrations, ApplyMigrationsMiddleware>(database);
+                using var host = await SetupServer<BloggingContextWithMigrations, ApplyMigrationsMiddleware>(database);
+                using var server = host.GetTestServer();
                 var client = server.CreateClient();
 
                 var expectedMigrationsEndpoint = "/ApplyDatabaseMigrations";
@@ -325,7 +330,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
             using (var database = SqlTestStore.CreateScratch())
             {
-                var host = new HostBuilder()
+                using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -368,7 +373,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             var logProvider = new TestLoggerProvider();
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -434,7 +439,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             {
                 var logProvider = new TestLoggerProvider();
 
-                var server = await SetupTestServer<BloggingContextWithSnapshotThatThrows, ExceptionInLogicMiddleware>(database, logProvider);
+                using var host = await SetupServer<BloggingContextWithSnapshotThatThrows, ExceptionInLogicMiddleware>(database, logProvider);
+                using var server = host.GetTestServer();
 
                 try
                 {
@@ -473,7 +479,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             using (var database = SqlTestStore.CreateScratch())
             {
-                TestServer server = await SetupTestServer<BloggingContext, WrappedExceptionMiddleware>(database);
+                using var host = await SetupServer<BloggingContext, WrappedExceptionMiddleware>(database);
+                using var server = host.GetTestServer();
                 HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
@@ -504,7 +511,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             }
         }
 
-        private static async Task<TestServer> SetupTestServer<TContext, TMiddleware>(SqlTestStore database, ILoggerProvider logProvider = null)
+        private static async Task<IHost> SetupServer<TContext, TMiddleware>(SqlTestStore database, ILoggerProvider logProvider = null)
             where TContext : DbContext
         {
             var host = new HostBuilder()
@@ -533,7 +540,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
             await host.StartAsync();
 
-            return host.GetTestServer();
+            return host;
         }
 
         private static UrlEncoder _urlEncoder = UrlEncoder.Default;

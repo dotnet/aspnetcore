@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
         {
             DiagnosticListener diagnosticListener = null;
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

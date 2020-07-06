@@ -20,7 +20,7 @@ namespace Microsoft.Extensions.Localization
         [Fact]
         public async Task CustomRequestCultureProviderThatGetsCultureInfoFromUrl()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

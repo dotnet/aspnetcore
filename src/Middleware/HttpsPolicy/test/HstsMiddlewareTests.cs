@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         [Fact]
         public async Task SetOptionsWithDefault_SetsMaxAgeToCorrectValue()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         [InlineData(50000, true, true, "max-age=50000; includeSubDomains; preload")]
         public async Task SetOptionsThroughConfigure_SetsHeaderCorrectly(int maxAge, bool includeSubDomains, bool preload, string expected)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         [InlineData(50000, true, true, "max-age=50000; includeSubDomains; preload")]
         public async Task SetOptionsThroughHelper_SetsHeaderCorrectly(int maxAge, bool includeSubDomains, bool preload, string expected)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HstsMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HstsMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HstsMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -331,7 +331,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HstsMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -380,7 +380,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                 TestSink.EnableWithTypeName<HstsMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder

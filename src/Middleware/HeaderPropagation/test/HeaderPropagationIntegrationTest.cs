@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             // Arrange
             Exception captured = null;
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         {
             // Arrange
             var handler = new SimpleHandler();
-            var host = await CreateHost(c =>
+            using var host = await CreateHost(c =>
                 c.Headers.Add("in", "out"),
                 handler);
             var server = host.GetTestServer();
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         {
             // Arrange
             var handler = new SimpleHandler();
-            var host = await CreateHost(c =>
+            using var host = await CreateHost(c =>
                 {
                     c.Headers.Add("first");
                     c.Headers.Add("second");
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         [Fact]
         public async Task Builder_UseHeaderPropagation_Without_AddHeaderPropagation_Throws()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         {
             // Arrange
             var handler = new SimpleHandler();
-            var host = await CreateHost(
+            using var host = await CreateHost(
                 c => c.Headers.Add("in", "out"),
                 handler,
                 c => c.Headers.Add("out", "different"));

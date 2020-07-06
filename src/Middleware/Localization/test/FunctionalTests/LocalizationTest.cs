@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
 
         private async Task RunTest(Type startupType, string culture, string expected)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
