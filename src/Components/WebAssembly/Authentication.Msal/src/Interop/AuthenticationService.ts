@@ -30,6 +30,11 @@ enum AuthenticationResultStatus {
     OperationCompleted = "operationCompleted"
 }
 
+enum LoginMode {
+    Popup,
+    Redirect
+}
+
 interface AuthenticationResult {
     status: AuthenticationResultStatus;
     state?: any;
@@ -47,7 +52,8 @@ interface AuthorizeService {
 
 interface AuthorizeServiceConfiguration extends Msal.Configuration {
     defaultAccessTokenScopes: string[];
-    additionalScopesToConsent: string[]
+    additionalScopesToConsent: string[];
+    loginMode: LoginMode;
 }
 
 class MsalAuthorizeService implements AuthorizeService {
@@ -142,18 +148,26 @@ class MsalAuthorizeService implements AuthorizeService {
     }
 
     async signInCore(request: Msal.AuthenticationParameters): Promise<Msal.AuthResponse | Msal.AuthError | undefined> {
-        try {
-            return await this._msalApplication.loginPopup(request);
-        } catch (e) {
-            // If the user explicitly cancelled the pop-up, avoid performing a redirect.
-            if (this.isMsalError(e) && e.errorCode !== ClientAuthErrorMessage.userCancelledError.code) {
-                try {
-                    this._msalApplication.loginRedirect(request);
-                } catch (e) {
+        if (this._settings.loginMode === LoginMode.Redirect) {
+            try {
+                this._msalApplication.loginRedirect(request);
+            } catch (e) {
+                return e;
+            }
+        } else {
+            try {
+                return await this._msalApplication.loginPopup(request);
+            } catch (e) {
+                // If the user explicitly cancelled the pop-up, avoid performing a redirect.
+                if (this.isMsalError(e) && e.errorCode !== ClientAuthErrorMessage.userCancelledError.code) {
+                    try {
+                        this._msalApplication.loginRedirect(request);
+                    } catch (e) {
+                        return e;
+                    }
+                } else {
                     return e;
                 }
-            } else {
-                return e;
             }
         }
     }
