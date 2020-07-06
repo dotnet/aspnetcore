@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         /// <inheritdoc />
-        protected override string FormatValueAsString(TValue value)
+        protected override string FormatValueAsString([AllowNull] TValue value)
         {
             switch (value)
             {

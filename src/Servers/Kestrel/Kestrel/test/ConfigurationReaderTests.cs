@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Authentication;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.Extensions.Configuration;
 using Xunit;
@@ -66,6 +67,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.Equal("certstore", storeCert.Store);
             Assert.Equal("cetlocation", storeCert.Location);
             Assert.True(storeCert.AllowInvalid);
+        }
+
+        [Fact]
+        public void ReadCertificatesSection_IsCaseInsensitive()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Certificates:filecert:Path", "/path/cert.pfx"),
+                new KeyValuePair<string, string>("CERTIFICATES:FILECERT:PASSWORD", "certpassword"),
+            }).Build();
+            var reader = new ConfigurationReader(config);
+            var certificates = reader.Certificates;
+            Assert.NotNull(certificates);
+            Assert.Equal(1, certificates.Count);
+
+            var fileCert = certificates["FiLeCeRt"];
+            Assert.True(fileCert.IsFileCert);
+            Assert.False(fileCert.IsStoreCert);
+            Assert.Equal("/path/cert.pfx", fileCert.Path);
+            Assert.Equal("certpassword", fileCert.Password);
+        }
+
+        [Fact]
+        public void ReadCertificatesSection_ThrowsOnCaseInsensitiveDuplicate()
+        {
+            var exception = Assert.Throws<ArgumentException>(() => 
+                new ConfigurationBuilder().AddInMemoryCollection(new[]
+                {
+                    new KeyValuePair<string, string>("Certificates:filecert:Password", "certpassword"),
+                    new KeyValuePair<string, string>("Certificates:FILECERT:Password", "certpassword"),
+                }).Build());
+
+            Assert.Contains(CoreStrings.KeyAlreadyExists, exception.Message);
         }
 
         [Fact]

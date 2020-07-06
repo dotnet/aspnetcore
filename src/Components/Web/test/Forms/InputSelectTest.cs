@@ -90,6 +90,88 @@ namespace Microsoft.AspNetCore.Components.Forms
             Assert.Null(inputSelectComponent.CurrentValue);
         }
 
+        // See: https://github.com/dotnet/aspnetcore/issues/9939
+        [Fact]
+        public async Task ParsesCurrentValueWhenUsingNotNullableGuid()
+        {
+            // Arrange
+            var model = new TestModel();
+            var rootComponent = new TestInputSelectHostComponent<Guid>
+            {
+                EditContext = new EditContext(model),
+                ValueExpression = () => model.NotNullableGuid
+            };
+            var inputSelectComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+
+            // Act
+            var guid = Guid.NewGuid();
+            inputSelectComponent.CurrentValueAsString = guid.ToString();
+
+            // Assert
+            Assert.Equal(guid, inputSelectComponent.CurrentValue);
+        }
+
+        // See: https://github.com/dotnet/aspnetcore/issues/9939
+        [Fact]
+        public async Task ParsesCurrentValueWhenUsingNullableGuid()
+        {
+            // Arrange
+            var model = new TestModel();
+            var rootComponent = new TestInputSelectHostComponent<Guid?>
+            {
+                EditContext = new EditContext(model),
+                ValueExpression = () => model.NullableGuid
+            };
+            var inputSelectComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+
+            // Act
+            var guid = Guid.NewGuid();
+            inputSelectComponent.CurrentValueAsString = guid.ToString();
+
+            // Assert
+            Assert.Equal(guid, inputSelectComponent.CurrentValue);
+        }
+
+        // See: https://github.com/dotnet/aspnetcore/pull/19562
+        [Fact]
+        public async Task ParsesCurrentValueWhenUsingNotNullableInt()
+        {
+            // Arrange
+            var model = new TestModel();
+            var rootComponent = new TestInputSelectHostComponent<int>
+            {
+                EditContext = new EditContext(model),
+                ValueExpression = () => model.NotNullableInt
+            };
+            var inputSelectComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+
+            // Act
+            inputSelectComponent.CurrentValueAsString = "42";
+
+            // Assert
+            Assert.Equal(42, inputSelectComponent.CurrentValue);
+        }
+
+        // See: https://github.com/dotnet/aspnetcore/pull/19562
+        [Fact]
+        public async Task ParsesCurrentValueWhenUsingNullableInt()
+        {
+            // Arrange
+            var model = new TestModel();
+            var rootComponent = new TestInputSelectHostComponent<int?>
+            {
+                EditContext = new EditContext(model),
+                ValueExpression = () => model.NullableInt
+            };
+            var inputSelectComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+
+            // Act
+            inputSelectComponent.CurrentValueAsString = "42";
+
+            // Assert
+            Assert.Equal(42, inputSelectComponent.CurrentValue);
+        }
+
         private static TestInputSelect<TValue> FindInputSelectComponent<TValue>(CapturedBatch batch)
             => batch.ReferenceFrames
                     .Where(f => f.FrameType == RenderTreeFrameType.Component)
@@ -117,6 +199,14 @@ namespace Microsoft.AspNetCore.Components.Forms
             public TestEnum NotNullableEnum { get; set; }
 
             public TestEnum? NullableEnum { get; set; }
+
+            public Guid NotNullableGuid { get; set; }
+
+            public Guid? NullableGuid { get; set; }
+
+            public int NotNullableInt { get; set; }
+
+            public int? NullableInt { get; set; }
         }
 
         class TestInputSelect<TValue> : InputSelect<TValue>

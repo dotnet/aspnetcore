@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets the <see cref="FieldIdentifier"/> for the bound value.
         /// </summary>
-        protected FieldIdentifier FieldIdentifier { get; set; }
+        protected internal FieldIdentifier FieldIdentifier { get; set; }
 
         /// <summary>
         /// Gets or sets the current value of the input.
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         /// <param name="value">The value to format.</param>
         /// <returns>A string representation of the value.</returns>
-        protected virtual string? FormatValueAsString(TValue value)
+        protected virtual string? FormatValueAsString([AllowNull] TValue value)
             => value?.ToString();
 
         /// <summary>

@@ -18,9 +18,9 @@
   "author": "Microsoft",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/dotnet/extensions/issues"
+    "url": "https://github.com/dotnet/aspnetcore/issues"
   },
-  "homepage": "https://github.com/dotnet/extensions/tree/master/src/JSInterop#readme",
+  "homepage": "https://github.com/dotnet/aspnetcore/tree/master/src/JSInterop",
   "files": [
     "dist/**"
   ],

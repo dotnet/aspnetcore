@@ -40,7 +40,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public IHostApplicationLifetime AppLifetime => TransportContext.AppLifetime;
         public ILibuvTrace Log => TransportContext.Log;
+
+#pragma warning disable CS0618
         public LibuvTransportOptions TransportOptions => TransportContext.Options;
+#pragma warning restore CS0618
 
         public EndPoint EndPoint { get; set; }
 
@@ -131,7 +134,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         {
             // TODO: Move thread management to LibuvTransportFactory
             // TODO: Split endpoint management from thread management
+#pragma warning disable CS0618
             for (var index = 0; index < TransportOptions.ThreadCount; index++)
+#pragma warning restore CS0618
             {
                 Threads.Add(new LibuvThread(Libuv, TransportContext));
             }
@@ -143,7 +148,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             try
             {
+#pragma warning disable CS0618
                 if (TransportOptions.ThreadCount == 1)
+#pragma warning restore CS0618
                 {
                     var listener = new Listener(TransportContext);
                     _listeners.Add(listener);

@@ -154,17 +154,15 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(expected, await response.Content.ReadAsStringAsync());
         }
 
-        [Theory]
-        [InlineData(65 * 1024)]
-        [InlineData(2 * 1024 * 1024)]
-        public virtual async Task Formatting_LargeObject(int size)
+        [Fact]
+        public virtual async Task Formatting_LargeObject()
         {
             // Arrange
-            var expectedName = "This is long so we can test large objects " + new string('a', size);
+            var expectedName = "This is long so we can test large objects " + new string('a', 1024 * 65);
             var expected = $"{{\"id\":10,\"name\":\"{expectedName}\",\"streetName\":null}}";
 
             // Act
-            var response = await Client.GetAsync($"/JsonOutputFormatter/{nameof(JsonOutputFormatterController.LargeObjectResult)}/{size}");
+            var response = await Client.GetAsync($"/JsonOutputFormatter/{nameof(JsonOutputFormatterController.LargeObjectResult)}");
 
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.OK);

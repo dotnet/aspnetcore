@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
     public class TimerAwaitableTests
     {
         [Fact]
-        [QuarantinedTest]
         public async Task FinalizerRunsIfTimerAwaitableReferencesObject()
         {
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

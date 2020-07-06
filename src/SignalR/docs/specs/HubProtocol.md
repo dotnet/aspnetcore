@@ -543,7 +543,7 @@ MessagePack uses different formats to encode values. Refer to the [MsgPack forma
 `Invocation` messages have the following structure:
 
 ```
-[1, Headers, InvocationId, NonBlocking, Target, [Arguments], [StreamIds]]
+[1, Headers, InvocationId, Target, [Arguments], [StreamIds]]
 ```
 
 * `1` - Message Type - `1` indicates this is an `Invocation` message.

@@ -20,6 +20,7 @@ namespace Microsoft.Extensions.RazorViews
     internal abstract class BaseView
     {
         private static readonly Encoding UTF8NoBOM = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+        private static readonly char[] NewLineChars = new[] { '\r', '\n' };
         private readonly Stack<TextWriter> _textWriterStack = new Stack<TextWriter>();
 
         /// <summary>
@@ -292,8 +293,8 @@ namespace Microsoft.Extensions.RazorViews
 
             // Split on line breaks before passing it through the encoder.
             return string.Join("<br />" + Environment.NewLine,
-                input.Split(new[] { "\r\n" }, StringSplitOptions.None)
-                .SelectMany(s => s.Split(new[] { '\r', '\n' }, StringSplitOptions.None))
+                input.Split("\r\n", StringSplitOptions.None)
+                .SelectMany(s => s.Split(NewLineChars, StringSplitOptions.None))
                 .Select(HtmlEncoder.Encode));
         }
     }

@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="RenderTree" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\WebAssemblyJSInteropInternalCalls.cs" />
   </ItemGroup>
 
   <ItemGroup>

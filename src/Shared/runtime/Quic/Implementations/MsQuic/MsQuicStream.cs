@@ -61,7 +61,7 @@ namespace System.Net.Quic.Implementations.MsQuic
         // Used by the class to indicate that the stream is writable.
         private readonly bool _canWrite;
 
-        private volatile bool _disposed = false;
+        private volatile bool _disposed;
 
         private List<QuicBuffer> _receiveQuicBuffers = new List<QuicBuffer>();
 

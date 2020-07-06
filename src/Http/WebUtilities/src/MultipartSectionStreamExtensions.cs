@@ -34,20 +34,22 @@ namespace Microsoft.AspNetCore.WebUtilities
             MediaTypeHeaderValue.TryParse(section.ContentType, out var sectionMediaType);
 
             var streamEncoding = sectionMediaType?.Encoding;
+#pragma warning disable CS0618, MSLIB0001 // Type or member is obsolete
             if (streamEncoding == null || streamEncoding == Encoding.UTF7)
+#pragma warning restore CS0618, MSLIB0001 // Type or member is obsolete
             {
                 streamEncoding = Encoding.UTF8;
             }
 
             using (var reader = new StreamReader(
-                section.Body, 
+                section.Body,
                 streamEncoding,
                 detectEncodingFromByteOrderMarks: true,
-                bufferSize: 1024, 
+                bufferSize: 1024,
                 leaveOpen: true))
             {
                 return await reader.ReadToEndAsync();
             }
-        } 
+        }
     }
 }
