@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Identity
@@ -95,7 +96,12 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>True if the character is a lower case unicode letter, otherwise false.</returns>
         public virtual bool IsLower(char c)
         {
-            return char.IsLower(c);
+            string s = c.ToString();
+            foreach (Rune r in theString.EnumerateRunes())
+            {
+                if (Rune.IsLower(r)) return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -105,7 +111,12 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>True if the character is an upper case unicode letter, otherwise false.</returns>
         public virtual bool IsUpper(char c)
         {
-            return char.IsUpper(c);
+            string s = c.ToString();
+            foreach (Rune r in theString.EnumerateRunes())
+            {
+                if (Rune.IsUpper(r)) return true;
+            }
+            return false;
         }
 
         /// <summary>
