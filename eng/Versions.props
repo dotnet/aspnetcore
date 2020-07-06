@@ -187,6 +187,7 @@
     <MicrosoftBuildUtilitiesCorePackageVersion>15.8.166</MicrosoftBuildUtilitiesCorePackageVersion>
     <MicrosoftCodeAnalysisCommonPackageVersion>3.4.0</MicrosoftCodeAnalysisCommonPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>3.4.0</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisFxCopAnalyzersVersion>3.0.0</MicrosoftCodeAnalysisFxCopAnalyzersVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>3.4.0</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>3.19.8</MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>
     <MicrosoftIdentityModelLoggingPackageVersion>5.5.0</MicrosoftIdentityModelLoggingPackageVersion>
