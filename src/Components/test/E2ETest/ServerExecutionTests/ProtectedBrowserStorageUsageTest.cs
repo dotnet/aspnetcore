@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -10,18 +11,17 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
-using OpenQA.Selenium.Remote;
 using TestServer;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
-    public class ProtectedBrowserStorageUsageTest : ServerTestBase<BasicTestAppServerSiteFixture<ProtectedBrowserStorageStartup>>
+    public class ProtectedBrowserStorageUsageTest : ServerTestBase<BasicTestAppServerSiteFixture<ServerStartup>>
     {
         public ProtectedBrowserStorageUsageTest(
             BrowserFixture browserFixture,
-            BasicTestAppServerSiteFixture<ProtectedBrowserStorageStartup> serverFixture,
+            BasicTestAppServerSiteFixture<ServerStartup> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
-        public void LocalStoragePersistsAccrossTabs()
+        public void LocalStoragePersistsAcrossTabs()
         {
             // Local storage initially cleared
             var incrementLocalButton = Browser.FindElement(By.Id("increment-local"));
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             incrementLocalButton.Click();
             Browser.Equal("1", () => localCount.Text);
 
-            // Local storage persists accross tabs
+            // Local storage persists across tabs
             OpenNewSession();
             localCount = Browser.FindElement(By.Id("local-count"));
             Browser.Equal("1", () => localCount.Text);
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
-        public void SessionStorageDoesNotPersistAccrossTabs()
+        public void SessionStorageDoesNotPersistAcrossTabs()
         {
             // Session storage initially cleared
             var incrementSessionButton = Browser.FindElement(By.Id("increment-session"));
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             incrementSessionButton.Click();
             Browser.Equal("1", () => sessionCount.Text);
 
-            // Session storage does not persist accross tabs
+            // Session storage does not persist across tabs
             OpenNewSession();
             sessionCount = Browser.FindElement(By.Id("session-count"));
             Browser.Equal("0", () => sessionCount.Text);
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         /// </remarks>
         private void OpenNewSession()
         {
-            var modifierKey = Browser is RemoteWebDriver remoteBrowser && remoteBrowser.Capabilities.Platform.PlatformType == PlatformType.Mac ?
+            var modifierKey = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
                 Keys.Command :
                 Keys.Control;
 

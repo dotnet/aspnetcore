@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
     /// <summary>
     /// Contains the result of a protected browser storage operation.
     /// </summary>
-    public struct ProtectedBrowserStorageResult<T>
+    public readonly struct ProtectedBrowserStorageResult<T>
     {
         /// <summary>
         /// Gets whether the operation succeeded.

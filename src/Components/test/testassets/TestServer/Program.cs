@@ -28,8 +28,7 @@ namespace TestServer
                 ["Globalization + Localization (Server-side)"] = (BuildWebHost<InternationalizationStartup>(CreateAdditionalArgs(args)), "/subdir"),
                 ["Server-side blazor"] = (BuildWebHost<ServerStartup>(CreateAdditionalArgs(args)), "/subdir"),
                 ["Hosted client-side blazor"] = (BuildWebHost<ClientStartup>(CreateAdditionalArgs(args)), "/subdir"),
-                ["Dev server client-side blazor"] = CreateDevServerHost(CreateAdditionalArgs(args)),
-                ["Protected browser storage"] = (BuildWebHost<ProtectedBrowserStorageStartup>(CreateAdditionalArgs(args)), "/subdir")
+                ["Dev server client-side blazor"] = CreateDevServerHost(CreateAdditionalArgs(args))
             };
 
             var mainHost = BuildWebHost(args);

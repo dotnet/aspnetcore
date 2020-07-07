@@ -16,13 +16,11 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
     /// </summary>
     public abstract class ProtectedBrowserStorage
     {
-        private const string JsFunctionsPrefix = "protectedBrowserStorage";
-
         private readonly string _storeName;
         private readonly IJSRuntime _jsRuntime;
         private readonly IDataProtectionProvider _dataProtectionProvider;
         private readonly ConcurrentDictionary<string, IDataProtector> _cachedDataProtectorsByPurpose
-            = new ConcurrentDictionary<string, IDataProtector>();
+            = new ConcurrentDictionary<string, IDataProtector>(StringComparer.Ordinal);
 
         /// <summary>
         /// Constructs an instance of <see cref="ProtectedBrowserStorage"/>.
@@ -32,9 +30,10 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// <param name="dataProtectionProvider">The <see cref="IDataProtectionProvider"/>.</param>
         protected ProtectedBrowserStorage(string storeName, IJSRuntime jsRuntime, IDataProtectionProvider dataProtectionProvider)
         {
+            // Performing data protection on the client would give users a false sense of security, so we'll prevent this.
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Browser))
             {
-                throw new PlatformNotSupportedException($"{GetType()} cannot be used when running in Browser WebAssembly.");
+                throw new PlatformNotSupportedException($"{GetType()} cannot be used when running in a browser.");
             }
 
             if (string.IsNullOrEmpty(storeName))
@@ -52,7 +51,9 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// Asynchronously stores the specified data.
         /// </para>
         /// <para>
-        /// Since no data protection purpose is specified with this overload, the purpose is derived from <paramref name="key"/> and the store name. This is a good default purpose to use if the keys come from a fixed set known at compile-time.
+        /// Since no data protection purpose is specified with this overload, the purpose is derived from
+        /// <paramref name="key"/> and the store name. This is a good default purpose to use if the keys come from a
+        /// fixed set known at compile-time.
         /// </para>
         /// </summary>
         /// <param name="key">A <see cref="string"/> value specifying the name of the storage slot to use.</param>
@@ -64,7 +65,10 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// <summary>
         /// Asynchronously stores the supplied data.
         /// </summary>
-        /// <param name="purpose">A string that defines a scope for the data protection. The protected data can only be unprotected by code that specifies the same purpose.</param>
+        /// <param name="purpose">
+        /// A string that defines a scope for the data protection. The protected data can only
+        /// be unprotected by code that specifies the same purpose.
+        /// </param>
         /// <param name="key">A <see cref="string"/> value specifying the name of the storage slot to use.</param>
         /// <param name="value">A JSON-serializable value to be stored.</param>
         /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
@@ -88,7 +92,9 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// Asynchronously retrieves the specified data.
         /// </para>
         /// <para>
-        /// Since no data protection purpose is specified with this overload, the purpose is derived from <paramref name="key"/> and the store name. This is a good default purpose to use if the keys come from a fixed set known at compile-time.
+        /// Since no data protection purpose is specified with this overload, the purpose is derived from
+        /// <paramref name="key"/> and the store name. This is a good default purpose to use if the keys come from a
+        /// fixed set known at compile-time.
         /// </para>
         /// </summary>
         /// <param name="key">A <see cref="string"/> value specifying the name of the storage slot to use.</param>
@@ -101,7 +107,11 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// Asynchronously retrieves the specified data.
         /// </para>
         /// </summary>
-        /// <param name="purpose">A string that defines a scope for the data protection. The protected data can only be unprotected if the same purpose was previously specified when calling <see cref="SetAsync(string, string, object)"/>.</param>
+        /// <param name="purpose">
+        /// A string that defines a scope for the data protection. The protected data can only
+        /// be unprotected if the same purpose was previously specified when calling
+        /// <see cref="SetAsync(string, string, object)"/>.
+        /// </param>
         /// <param name="key">A <see cref="string"/> value specifying the name of the storage slot to use.</param>
         /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
         public async ValueTask<ProtectedBrowserStorageResult<TValue>> GetAsync<TValue>(string purpose, string key)
@@ -116,10 +126,12 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// <summary>
         /// Asynchronously deletes any data stored for the specified key.
         /// </summary>
-        /// <param name="key">A <see cref="string"/> value specifying the name of the storage slot whose value should be deleted.</param>
+        /// <param name="key">
+        /// A <see cref="string"/> value specifying the name of the storage slot whose value should be deleted.
+        /// </param>
         /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
         public ValueTask DeleteAsync(string key)
-            => _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.delete", _storeName, key);
+            => _jsRuntime.InvokeVoidAsync($"{_storeName}.removeItem", key);
 
         private string Protect(string purpose, object value)
         {
@@ -138,10 +150,10 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         }
 
         private ValueTask SetProtectedJsonAsync(string key, string protectedJson)
-           => _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.set", _storeName, key, protectedJson);
+           => _jsRuntime.InvokeVoidAsync($"{_storeName}.setItem", key, protectedJson);
 
         private ValueTask<string> GetProtectedJsonAsync(string key)
-            => _jsRuntime.InvokeAsync<string>($"{JsFunctionsPrefix}.get", _storeName, key);
+            => _jsRuntime.InvokeAsync<string>($"{_storeName}.getItem", key);
 
         // IDataProtect isn't disposable, so we're fine holding these indefinitely.
         // Only a bounded number of them will be created, as the 'key' values should

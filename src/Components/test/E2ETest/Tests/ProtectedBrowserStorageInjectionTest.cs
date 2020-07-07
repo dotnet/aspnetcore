@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             if (_serverFixture.ExecutionMode == ExecutionMode.Client)
             {
-                Browser.Contains("cannot be used when running in Browser WebAssembly.", () => messageElement.Text);
+                Browser.Contains("cannot be used when running in a browser.", () => messageElement.Text);
             }
             else
             {
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             if (_serverFixture.ExecutionMode == ExecutionMode.Client)
             {
-                Browser.Contains("cannot be used when running in Browser WebAssembly.", () => messageElement.Text);
+                Browser.Contains("cannot be used when running in a browser.", () => messageElement.Text);
             }
             else
             {

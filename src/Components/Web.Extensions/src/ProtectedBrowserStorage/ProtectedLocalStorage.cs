@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
     ///
     /// This data will be scoped to the current user's browser, shared across
     /// all tabs. The data will persist across browser restarts.
+    ///
+    /// See: https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
     /// </summary>
     public class ProtectedLocalStorage : ProtectedBrowserStorage
     {

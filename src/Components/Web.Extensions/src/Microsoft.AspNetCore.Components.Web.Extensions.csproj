@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <Description>A medley of Blazor componets for the web.</Description>
+    <Description>A collection of Blazor components for the web.</Description>
     <StaticWebAssetBasePath>_content/Microsoft.AspNetCore.Components.Web.Extensions</StaticWebAssetBasePath>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>

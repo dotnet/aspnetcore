@@ -16,6 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         public static void AddProtectedBrowserStorage(this IServiceCollection services)
         {
+            services.AddDataProtection();
             services.AddScoped<ProtectedLocalStorage>();
             services.AddScoped<ProtectedSessionStorage>();
         }

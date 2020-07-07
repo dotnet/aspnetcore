@@ -16,6 +16,8 @@
       "Samples\\BlazorServerApp\\BlazorServerApp.csproj",
       "Server\\src\\Microsoft.AspNetCore.Components.Server.csproj",
       "Server\\test\\Microsoft.AspNetCore.Components.Server.Tests.csproj",
+      "Web.Extensions\\src\\Microsoft.AspNetCore.Components.Web.Extensions.csproj",
+      "Web.Extensions\\test\\Microsoft.AspNetCore.Components.Web.Extensions.Tests.csproj",
       "WebAssembly\\Authentication.Msal\\src\\Microsoft.Authentication.WebAssembly.Msal.csproj",
       "WebAssembly\\DebugProxy\\src\\Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.csproj",
       "WebAssembly\\DevServer\\src\\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj",
