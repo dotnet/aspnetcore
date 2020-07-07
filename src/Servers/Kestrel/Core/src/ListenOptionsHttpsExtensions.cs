@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -222,6 +223,27 @@ namespace Microsoft.AspNetCore.Hosting
                 // Set the list of protocols from listen options
                 httpsOptions.HttpProtocols = listenOptions.Protocols;
                 var middleware = new HttpsConnectionMiddleware(next, httpsOptions, loggerFactory);
+                return middleware.OnConnectionAsync;
+            });
+
+            return listenOptions;
+        }
+
+        /// <summary>
+        /// Configure Kestrel to use HTTPS.
+        /// </summary>
+        /// <param name="listenOptions">The <see cref="ListenOptions"/> to configure.</param>
+        /// <param name="serverOptionsCallback">Callback to configure HTTPS options.</param>
+        /// <param name="state">State for the <see cref="ServerOptionsSelectionCallback" />.</param>
+        /// <returns>The <see cref="ListenOptions"/>.</returns>
+        internal static ListenOptions UseHttps(this ListenOptions listenOptions, ServerOptionsSelectionCallback serverOptionsCallback, object state = null)
+        {
+            var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+
+            listenOptions.IsTls = true;
+            listenOptions.Use(next =>
+            {
+                var middleware = new HttpsConnectionMiddleware(next, serverOptionsCallback, state, loggerFactory);
                 return middleware.OnConnectionAsync;
             });
 

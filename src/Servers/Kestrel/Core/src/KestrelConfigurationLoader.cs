@@ -6,15 +6,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
+using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -277,6 +281,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
                 // Compare to UseHttps(httpsOptions => { })
                 var httpsOptions = new HttpsConnectionAdapterOptions();
+                ServerOptionsSelectionCallback serverOptionsCallback = null;
+
                 if (https)
                 {
                     httpsOptions.SslProtocols = ConfigurationReader.EndpointDefaults.SslProtocols ?? SslProtocols.None;
@@ -289,23 +295,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     {
                         httpsOptions.SslProtocols = endpoint.SslProtocols.Value;
                     }
+                    else
+                    {
+                        // Ensure endpoint is reloaded if it used the default protocol and the SslProtocols changed.
+                        endpoint.SslProtocols = ConfigurationReader.EndpointDefaults.SslProtocols;
+                    }
 
                     if (endpoint.ClientCertificateMode.HasValue)
                     {
                         httpsOptions.ClientCertificateMode = endpoint.ClientCertificateMode.Value;
                     }
+                    else
+                    {
+                        // Ensure endpoint is reloaded if it used the default protocol and the ClientCertificateMode changed.
+                        endpoint.ClientCertificateMode = ConfigurationReader.EndpointDefaults.ClientCertificateMode;
+                    }
 
                     // Specified
-                    httpsOptions.ServerCertificate = LoadCertificate(endpoint.Certificate, endpoint.Name)
-                        ?? httpsOptions.ServerCertificate;
-
-                    if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
+                    if (endpoint.SNI.Count == 0)
                     {
-                        // Fallback
-                        Options.ApplyDefaultCert(httpsOptions);
-
-                        // Ensure endpoint is reloaded if it used the default certificate and the certificate changed.
-                        endpoint.Certificate = DefaultCertificateConfig;
+                        LoadEndpointOrDefaultCertificate(httpsOptions, endpoint);
+                    }
+                    else
+                    {
+                        serverOptionsCallback = (stream, clientHelloInfo, state, cancellationToken) =>
+                            SniCallback(httpsOptions, listenOptions.Protocols, endpoint, clientHelloInfo);
                     }
                 }
 
@@ -329,12 +343,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 // EndpointDefaults or configureEndpoint may have added an https adapter.
                 if (https && !listenOptions.IsTls)
                 {
-                    if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
+                    if (serverOptionsCallback is null)
                     {
-                        throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
-                    }
+                        if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
+                        {
+                            throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
+                        }
 
-                    listenOptions.UseHttps(httpsOptions);
+                        listenOptions.UseHttps(httpsOptions);
+                    }
+                    else
+                    {
+                        listenOptions.UseHttps(serverOptionsCallback);
+                    }
                 }
 
                 listenOptions.EndpointConfig = endpoint;
@@ -344,6 +365,82 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
 
             return (endpointsToStop, endpointsToStart);
+        }
+
+        private ValueTask<SslServerAuthenticationOptions> SniCallback(
+            HttpsConnectionAdapterOptions httpsOptions,
+            HttpProtocols endpointDefaultHttpProtocols,
+            EndpointConfig endpoint,
+            SslClientHelloInfo clientHelloInfo)
+        {
+            const string wildcardHost = "*";
+            const string wildcardPrefix = "*.";
+
+            var sslServerOptions = new SslServerAuthenticationOptions();
+            var serverName = clientHelloInfo.ServerName;
+            SniConfig sniConfig = null;
+
+            if (!string.IsNullOrEmpty(serverName))
+            {
+                foreach (var (name, sniConfigCandidate) in endpoint.SNI)
+                {
+                    if (name.Equals(serverName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        sniConfig = sniConfigCandidate;
+                        break;
+                    }
+                    // Note that we only slice off the `*`. We want to match the leading `.` also.
+                    else if (name.StartsWith(wildcardPrefix, StringComparison.Ordinal)
+                        && serverName.EndsWith(name.Substring(wildcardHost.Length), StringComparison.OrdinalIgnoreCase)
+                        && name.Length > (sniConfig?.Name.Length ?? 0))
+                    {
+                        sniConfig = sniConfigCandidate;
+                    }
+                    else if (name.Equals(wildcardHost, StringComparison.Ordinal))
+                    {
+                        sniConfig ??= sniConfigCandidate;
+                    }
+                }
+            }
+
+            sslServerOptions.ServerCertificate = LoadCertificate(sniConfig?.Certificate, endpoint.Name) ?? LoadEndpointOrDefaultCertificate(httpsOptions, endpoint);
+
+            if (sslServerOptions.ServerCertificate is null)
+            {
+                throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
+            }
+
+            sslServerOptions.EnabledSslProtocols = sniConfig?.SslProtocols ?? httpsOptions.SslProtocols;
+            HttpsConnectionMiddleware.ConfigureAlpn(sslServerOptions, sniConfig?.Protocols ?? endpointDefaultHttpProtocols);
+
+            var clientCertificateMode = sniConfig?.ClientCertificateMode ?? httpsOptions.ClientCertificateMode;
+
+            if (clientCertificateMode != ClientCertificateMode.NoCertificate)
+            {
+                sslServerOptions.ClientCertificateRequired = true;
+                sslServerOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
+                    HttpsConnectionMiddleware.RemoteCertificateValidationCallback(clientCertificateMode, httpsOptions.ClientCertificateValidation, certificate, chain, sslPolicyErrors);
+            }
+
+            return new ValueTask<SslServerAuthenticationOptions>(sslServerOptions);
+        }
+
+        private X509Certificate2 LoadEndpointOrDefaultCertificate(HttpsConnectionAdapterOptions httpsOptions, EndpointConfig endpoint)
+        {
+            // Specified
+            httpsOptions.ServerCertificate = LoadCertificate(endpoint.Certificate, endpoint.Name)
+                ?? httpsOptions.ServerCertificate;
+
+            if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
+            {
+                // Fallback
+                Options.ApplyDefaultCert(httpsOptions);
+
+                // Ensure endpoint is reloaded if it used the default certificate and the certificate changed.
+                endpoint.Certificate = DefaultCertificateConfig;
+            }
+
+            return httpsOptions.ServerCertificate;
         }
 
         private void LoadDefaultCert(ConfigurationReader configReader)
@@ -436,6 +533,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
         private X509Certificate2 LoadCertificate(CertificateConfig certInfo, string endpointName)
         {
+            if (certInfo is null)
+            {
+                return null;
+            }
+
             var logger = Options.ApplicationServices.GetRequiredService<ILogger<KestrelConfigurationLoader>>();
             if (certInfo.IsFileCert && certInfo.IsStoreCert)
             {

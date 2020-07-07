@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https
 {
@@ -24,7 +25,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public HttpsConnectionAdapterOptions()
         {
             ClientCertificateMode = ClientCertificateMode.NoCertificate;
-            HandshakeTimeout = TimeSpan.FromSeconds(10);
+            // Defaults to 10 seconds
+            HandshakeTimeout = HttpsConnectionMiddleware.DefaultHandshakeTimeout;
         }
 
         /// <summary>
@@ -91,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public Action<ConnectionContext, SslServerAuthenticationOptions> OnAuthenticate { get; set; }
 
         /// <summary>
-        /// Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive and finite.
+        /// Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive and finite. Defaults to 10 seconds.
         /// </summary>
         public TimeSpan HandshakeTimeout
         {
