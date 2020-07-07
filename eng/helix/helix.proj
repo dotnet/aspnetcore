@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test" TreatAsLocalProperty="ProjectToBuild">
+  <!-- !!! Temporary workaround -->
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   
   <PropertyGroup>
@@ -7,6 +8,10 @@
       This must be reset in order for Build.props to evaluate a list of projects to be tested on Helix.
     -->
     <ProjectToBuild Condition="'$(ProjectToBuild)' == '$(MSBuildProjectFullPath)'"/>
+
+  <!-- !!! Temporary workaround -->
+    <NoWarn>$(NoWarn);MSB4011</NoWarn>    
+    
   </PropertyGroup>
 
   <Import Project="..\targets\Helix.Common.props" />
