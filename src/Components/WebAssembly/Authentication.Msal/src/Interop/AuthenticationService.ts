@@ -30,11 +30,6 @@ enum AuthenticationResultStatus {
     OperationCompleted = "operationCompleted"
 }
 
-enum LoginMode {
-    Popup,
-    Redirect
-}
-
 interface AuthenticationResult {
     status: AuthenticationResultStatus;
     state?: any;
@@ -148,7 +143,7 @@ class MsalAuthorizeService implements AuthorizeService {
     }
 
     async signInCore(request: Msal.AuthenticationParameters): Promise<Msal.AuthResponse | Msal.AuthError | undefined> {
-        if (this._settings.loginMode === LoginMode.Redirect) {
+        if (this._settings.loginMode.toLower() === "redirect") {
             try {
                 this._msalApplication.loginRedirect(request);
             } catch (e) {
