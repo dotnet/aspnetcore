@@ -1595,6 +1595,70 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task OutputFlowControl_ConnectionAndRequestAborted_NoException()
+        {
+            // Zero-length data frames are allowed to be sent even if there is no space available in the flow control window.
+            // https://httpwg.org/specs/rfc7540.html#rfc.section.6.9.1
+
+            // This only affects the stream windows. The connection-level window is always initialized at 64KiB.
+            _clientSettings.InitialWindowSize = _clientSettings.InitialWindowSize * 2;
+
+            var connectionAbortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestAbortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await InitializeConnectionAsync(async context =>
+            {
+                // Exceed connection window size
+                await context.Response.WriteAsync(new string('!', 65536));
+
+                await connectionAbortedTcs.Task;
+
+                try
+                {
+                    context.Abort();
+                    requestAbortedTcs.SetResult();
+                }
+                catch (Exception ex)
+                {
+                    requestAbortedTcs.SetException(ex);
+                }
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 32,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 16384,
+                withFlags: (byte)(Http2DataFrameFlags.NONE),
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 16384,
+                withFlags: (byte)(Http2DataFrameFlags.NONE),
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 16384,
+                withFlags: (byte)(Http2DataFrameFlags.NONE),
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 16383,
+                withFlags: (byte)(Http2DataFrameFlags.NONE),
+                withStreamId: 1);
+
+            _connection.HandleReadDataRateTimeout();
+
+            connectionAbortedTcs.SetResult();
+
+            await requestAbortedTcs.Task;
+        }
+
+        [Fact]
         public async Task DATA_Sent_DespiteStreamOutputFlowControl_IfEmptyAndEndsStream()
         {
             // Zero-length data frames are allowed to be sent even if there is no space available in the flow control window.
