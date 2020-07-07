@@ -3734,7 +3734,24 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void CanUseCustomComponentActivator()
+        public void CanUseCustomComponentActivatorFromConstructorParameter()
+        {
+            // Arrange
+            var serviceProvider = new TestServiceProvider();
+            var componentActivator = new TestComponentActivator<MessageComponent>();
+            var renderer = new TestRenderer(serviceProvider, componentActivator);
+
+            // Act: Ask for TestComponent
+            var suppliedComponent = renderer.InstantiateComponent<TestComponent>();
+
+            // Assert: We actually receive MessageComponent
+            Assert.IsType<MessageComponent>(suppliedComponent);
+            Assert.Collection(componentActivator.RequestedComponentTypes,
+                requestedType => Assert.Equal(typeof(TestComponent), requestedType));
+        }
+
+        [Fact]
+        public void CanUseCustomComponentActivatorFromServiceProvider()
         {
             // Arrange
             var serviceProvider = new TestServiceProvider();

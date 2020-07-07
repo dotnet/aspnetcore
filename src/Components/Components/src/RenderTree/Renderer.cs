@@ -59,6 +59,18 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
+            : this(serviceProvider, loggerFactory, GetComponentActivatorOrDefault(serviceProvider))
+        {
+            // This overload is provided for back-compatibility
+        }
+
+        /// <summary>
+        /// Constructs an instance of <see cref="Renderer"/>.
+        /// </summary>
+        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="componentActivator">The <see cref="IComponentActivator"/>.</param>
+        public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IComponentActivator componentActivator)
         {
             if (serviceProvider is null)
             {
@@ -70,12 +82,20 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
+            if (componentActivator is null)
+            {
+                throw new ArgumentNullException(nameof(componentActivator));
+            }
+
             _serviceProvider = serviceProvider;
             _logger = loggerFactory.CreateLogger<Renderer>();
-
-            var componentActivator = serviceProvider.GetService<IComponentActivator>()
-                ?? DefaultComponentActivator.Instance;
             _componentFactory = new ComponentFactory(componentActivator);
+        }
+
+        private static IComponentActivator GetComponentActivatorOrDefault(IServiceProvider serviceProvider)
+        {
+            return serviceProvider.GetService<IComponentActivator>()
+                ?? DefaultComponentActivator.Instance;
         }
 
         /// <summary>
