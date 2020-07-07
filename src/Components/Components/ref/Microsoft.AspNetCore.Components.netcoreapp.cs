@@ -477,6 +477,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     public abstract partial class Renderer : System.IDisposable
     {
         public Renderer(System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public Renderer(System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Components.IComponentActivator componentActivator) { }
         public abstract Microsoft.AspNetCore.Components.Dispatcher Dispatcher { get; }
         protected internal Microsoft.AspNetCore.Components.ElementReferenceContext? ElementReferenceContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
         public event System.UnhandledExceptionEventHandler UnhandledSynchronizationException { add { } remove { } }

@@ -29,6 +29,12 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
             Dispatcher = Dispatcher.CreateDefault();
         }
 
+        public TestRenderer(IServiceProvider serviceProvider, IComponentActivator componentActivator)
+            : base(serviceProvider, NullLoggerFactory.Instance, componentActivator)
+        {
+            Dispatcher = Dispatcher.CreateDefault();
+        }
+
         public override Dispatcher Dispatcher { get; }
 
         public Action OnExceptionHandled { get; set; }
