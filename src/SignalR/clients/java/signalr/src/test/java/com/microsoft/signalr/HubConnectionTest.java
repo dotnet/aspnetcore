@@ -2119,7 +2119,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void accessTokenProviderCanProvideDifferentValues() {
+    public void AccessTokenProviderCanProvideDifferentValues() {
         AtomicReference<String> token = new AtomicReference<>();
         TestHttpClient client = new TestHttpClient()
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
