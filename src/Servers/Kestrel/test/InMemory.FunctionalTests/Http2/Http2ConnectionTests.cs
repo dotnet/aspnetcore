@@ -1652,6 +1652,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             connectionAbortedTcs.SetResult();
 
+            // Task completing successfully means HttpContext.Abort didn't throw
             await requestAbortedTcs.Task;
         }
 
