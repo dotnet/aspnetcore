@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-dotnet_sdk_version="$2"
-dotnet_runtime_version="$3"
+dotnet_runtime_version="$2"
 
 RESET="\033[0m"
 RED="\033[0;31m"
@@ -77,8 +76,8 @@ $DOTNET_ROOT/dotnet --list-runtimes
 exit_code=0
 echo "Restore: $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources..."
 $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources
-echo "Running tests: $DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --sdk $2 --runtime $3 --queue $4 --arch $5 --quarantined $6 --ef $7 --aspnetruntime $8 --aspnetref $9 --helixTimeout ${10}..."
-$DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --sdk $2 --runtime $3 --queue $4 --arch $5 --quarantined $6 --ef $7 --aspnetruntime $8 --aspnetref $9 --helixTimeout ${10}
+echo "Running tests: $DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $3 --arch $4 --quarantined $5 --ef $6 --aspnetruntime $7 --aspnetref $8 --helixTimeout $9..."
+$DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $3 --arch $4 --quarantined $5 --ef $6 --aspnetruntime $7 --aspnetref $8 --helixTimeout $9
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 
