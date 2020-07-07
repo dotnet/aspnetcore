@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                                 }
                             }
 
-                            var literalValue = requiredValue?.ToString() ?? throw new InvalidOperationException($"Value for literal '{parameterPart.Name}' must evaluate to a non-null value.");
+                            var literalValue = requiredValue?.ToString() ?? throw new InvalidOperationException($"Required value for literal '{parameterPart.Name}' must evaluate to a non-null string.");
 
                             AddLiteralNode(includeLabel, nextParents, parent, literalValue);
                         }
