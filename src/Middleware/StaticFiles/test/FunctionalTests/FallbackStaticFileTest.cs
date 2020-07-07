@@ -74,8 +74,6 @@ namespace Microsoft.AspNetCore.StaticFiles
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 AssertFileEquals(environment, "SubFolder/default.html", responseContent);
             }
-
-            await host.StopAsync();
         }
 
         [Fact]

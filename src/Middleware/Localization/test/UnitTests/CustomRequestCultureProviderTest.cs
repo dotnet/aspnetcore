@@ -63,8 +63,6 @@ namespace Microsoft.Extensions.Localization
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/ar/page");
             }
-
-            await host.StopAsync();
         }
 
         private string GetCultureInfoFromUrl(HttpContext context, IList<CultureInfo> supportedCultures)

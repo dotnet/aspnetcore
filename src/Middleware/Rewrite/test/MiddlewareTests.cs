@@ -43,8 +43,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             var response = await server.CreateClient().GetStringAsync("foo");
 
             Assert.Equal("http://example.com/foo", response);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -69,8 +67,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             var response = await server.CreateClient().GetAsync("foo");
 
             Assert.Equal("http://example.com/foo", response.Headers.Location.OriginalString);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -101,8 +97,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             var response = await server.CreateClient().GetAsync("foo");
 
             Assert.Equal("http://example.com/foo", response.Headers.Location.OriginalString);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -127,8 +121,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             var response = await server.CreateClient().GetAsync("foo?bar=1");
 
             Assert.Equal("http://example.com/foo?bar=1", response.Headers.Location.OriginalString);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -158,8 +150,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
             Assert.Equal(statusCode, (int)response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -185,8 +175,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
             Assert.Equal(StatusCodes.Status301MovedPermanently, (int)response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -214,8 +202,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             Assert.Equal(expected, response.Headers.Location.OriginalString);
             Assert.Equal(StatusCodes.Status301MovedPermanently, (int)response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -245,8 +231,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             Assert.Equal("https://www.example.com/", response.Headers.Location.OriginalString);
             Assert.Equal(statusCode, (int)response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -276,8 +260,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             Assert.Equal(redirectUri, response.Headers.Location.OriginalString);
             Assert.Equal(StatusCodes.Status307TemporaryRedirect, (int)response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -303,8 +285,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             Assert.Equal("https://www.example.com/", response.Headers.Location.OriginalString);
             Assert.Equal(StatusCodes.Status308PermanentRedirect, (int)response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -339,8 +319,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             var response = await server.CreateClient().GetAsync(new Uri(requestUri));
 
             Assert.Null(response.Headers.Location);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -370,8 +348,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
             Assert.Equal(statusCode, (int)response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -401,8 +377,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             Assert.Equal(redirectUri, response.Headers.Location.OriginalString);
             Assert.Equal(StatusCodes.Status307TemporaryRedirect, (int)response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -428,8 +402,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
             Assert.Equal(StatusCodes.Status308PermanentRedirect, (int)response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -453,8 +425,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             var response = await server.CreateClient().GetAsync("");
             Assert.Equal("/", response.Headers.Location.OriginalString);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -482,8 +452,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             var response = await server.CreateClient().GetStringAsync("");
 
             Assert.Equal("/", response);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -512,8 +480,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             var response = await server.CreateClient().GetAsync("");
 
             Assert.Equal("/foo", response.Headers.Location.OriginalString);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -543,8 +509,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
             var response = await server.CreateClient().GetAsync(new Uri(requestUri));
 
             Assert.Null(response.Headers.Location);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -574,8 +538,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             Assert.Equal(redirectUri, response.Headers.Location.OriginalString);
             Assert.Equal(StatusCodes.Status307TemporaryRedirect, (int)response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -601,8 +563,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             Assert.Equal("https://www.example.com/", response.Headers.Location.OriginalString);
             Assert.Equal(StatusCodes.Status308PermanentRedirect, (int)response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -632,8 +592,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.CodeRules
 
             Assert.Equal("https://www.example.com/", response.Headers.Location.OriginalString);
             Assert.Equal(statusCode, (int)response.StatusCode);
-
-            await host.StopAsync();
         }
 
     }

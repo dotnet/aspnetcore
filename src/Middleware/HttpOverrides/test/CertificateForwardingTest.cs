@@ -76,8 +76,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             {
                 c.Request.Headers["X-Client-Cert"] = Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData);
             });
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -117,8 +115,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             {
                 c.Request.Headers["X-Client-Cert"] = Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData);
             });
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -157,8 +153,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             {
                 c.Request.Headers["X-ARR-ClientCert"] = Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData);
             });
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -197,8 +191,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             {
                 c.Request.Headers["not-the-right-header"] = Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData);
             });
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -237,8 +229,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             {
                 c.Request.Headers["X-Client-Cert"] = "OOPS" + Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData);
             });
-
-            await host.StopAsync();
         }
 
         private static class Certificates

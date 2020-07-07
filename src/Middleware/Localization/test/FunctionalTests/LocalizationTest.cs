@@ -119,8 +119,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expected, await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
     }
 }

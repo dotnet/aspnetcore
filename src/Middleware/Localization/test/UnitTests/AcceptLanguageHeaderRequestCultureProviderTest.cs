@@ -54,8 +54,6 @@ namespace Microsoft.Extensions.Localization
                 var response = await client.GetAsync(string.Empty);
                 Assert.Equal(3, count);
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -96,8 +94,6 @@ namespace Microsoft.Extensions.Localization
                 var count = client.DefaultRequestHeaders.AcceptLanguage.Count;
                 var response = await client.GetAsync(string.Empty);
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -139,8 +135,6 @@ namespace Microsoft.Extensions.Localization
                 var response = await client.GetAsync(string.Empty);
                 Assert.Equal(3, count);
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -187,8 +181,6 @@ namespace Microsoft.Extensions.Localization
                 var response = await client.GetAsync(string.Empty);
                 Assert.Equal(3, count);
             }
-
-            await host.StopAsync();
         }
     }
 }

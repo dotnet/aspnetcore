@@ -69,8 +69,6 @@ namespace Microsoft.AspNetCore.Diagnostics
             var content = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedQueryString, content);
             Assert.Equal(expectedQueryString, response.RequestMessage.RequestUri.Query);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -132,8 +130,6 @@ namespace Microsoft.AspNetCore.Diagnostics
             var response = await client.GetAsync(destination + "?name=James");
             var content = await response.Content.ReadAsStringAsync();
             Assert.Equal($"?id={expectedStatusCode}, /location, ?name=James", content);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -196,8 +192,6 @@ namespace Microsoft.AspNetCore.Diagnostics
             var response = await client.GetAsync(destination + "?name=James");
             var content = await response.Content.ReadAsStringAsync();
             Assert.Equal($"?id={expectedStatusCode}, /location, ?name=James", content);
-
-            await host.StopAsync();
         }
     }
 }

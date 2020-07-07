@@ -53,8 +53,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var response = await server.CreateClient().GetAsync("article/10/hey");
 
             Assert.Equal("/article.aspx?id=10&title=hey", response.Headers.Location.OriginalString);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -87,8 +85,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var response = await server.CreateClient().GetStringAsync("/article/10/hey");
 
             Assert.Equal("/article.aspx?id=10&title=hey", response);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -125,8 +121,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var response = await server.CreateClient().GetStringAsync("page.asp?p2=321&p1=123");
 
             Assert.Equal("/newpage.aspx?param1=123&param2=321", response);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -159,8 +153,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var response = await server.CreateClient().GetAsync("HElLo");
 
             Assert.Equal("/hello", response.Headers.Location.OriginalString);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -196,8 +188,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var response = await server.CreateClient().GetAsync("hey/hello/");
 
             Assert.Equal("/hey/hello", response.Headers.Location.OriginalString);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -233,8 +223,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var response = await server.CreateClient().GetAsync("hey/hello");
 
             Assert.Equal("/hey/hello/", response.Headers.Location.OriginalString);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -269,8 +257,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var response = await server.CreateClient().GetAsync(new Uri("http://example.com"));
 
             Assert.Equal("https://example.com/", response.Headers.Location.OriginalString);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -311,8 +297,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var response = await server.CreateClient().GetStringAsync(new Uri("http://example.com"));
 
             Assert.Equal("https://example.com/", response);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -350,8 +334,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var response = await server.CreateClient().GetStringAsync(new Uri("http://example.com/"));
 
             Assert.Equal("http://internalserver/", response);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -389,8 +371,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var response = await server.CreateClient().GetAsync(new Uri("http://example.com/"));
 
             Assert.Equal("/", response.Headers.Location.OriginalString);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -425,8 +405,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var response = await server.CreateClient().GetStringAsync(new Uri("http://example.com/"));
 
             Assert.Equal("/", response);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -462,8 +440,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var response = await server.CreateClient().GetAsync("");
 
             Assert.Equal("/foo", response.Headers.Location.OriginalString);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -502,8 +478,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var response = await server.CreateClient().GetAsync("hey/hello");
 
             Assert.Equal("/hey/hello/", response.Headers.Location.OriginalString);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -540,8 +514,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var response = await server.CreateClient().GetAsync("article/23?p1=123&p2=abc");
 
             Assert.Equal("/blogposts/article/abc?p1=123&p2=abc", response.Headers.Location.OriginalString);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -578,8 +550,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var response = await server.CreateClient().GetAsync("article/23?p1=123&p2=abc");
 
             Assert.Equal("/blog/article/23/abc?p1=123&p2=abc", response.Headers.Location.OriginalString);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -617,8 +587,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var ex = await Assert.ThrowsAsync<IndexOutOfRangeException>(() => server.CreateClient().GetAsync("article/23?p1=123&p2=abc"));
 
             Assert.Equal("Cannot access back reference at index 9. Only 5 back references were captured.", ex.Message);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -658,8 +626,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             // assert
             Assert.Equal("http://www.test.com/foo/bar", response);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -703,8 +669,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var response = await server.CreateClient().GetStringAsync(new Uri(requestUri));
 
             Assert.Equal(expectedRewrittenUri, response);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -739,8 +703,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
             Assert.Equal("reason", response.ReasonPhrase);
             Assert.Equal("description", content);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -796,8 +758,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
 
             // assert
             Assert.Equal(expectedResult, response);
-
-            await host.StopAsync();
         }
     }
 }

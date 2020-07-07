@@ -53,8 +53,6 @@ namespace Microsoft.AspNetCore.Diagnostics
             Assert.NotNull(listener.DiagnosticUnhandledException?.Exception);
             Assert.Null(listener.DiagnosticHandledException?.HttpContext);
             Assert.Null(listener.DiagnosticHandledException?.Exception);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -90,8 +88,6 @@ namespace Microsoft.AspNetCore.Diagnostics
             Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
             Assert.Contains("<html", responseText);
             Assert.Contains("Test exception", responseText);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -125,8 +121,6 @@ namespace Microsoft.AspNetCore.Diagnostics
             Assert.Equal("text/plain", response.Content.Headers.ContentType.MediaType);
             Assert.Contains("Test exception", responseText);
             Assert.DoesNotContain("<html", responseText);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -161,8 +155,6 @@ namespace Microsoft.AspNetCore.Diagnostics
 
             // Assert
             Assert.Equal("Test exception", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -237,8 +229,6 @@ namespace Microsoft.AspNetCore.Diagnostics
 
             // Assert
             Assert.Equal("An error occurred", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         public static TheoryData CompilationExceptionData
@@ -332,8 +322,6 @@ namespace Microsoft.AspNetCore.Diagnostics
             Assert.NotNull(listener.DiagnosticUnhandledException?.Exception);
             Assert.Null(listener.DiagnosticHandledException?.HttpContext);
             Assert.Null(listener.DiagnosticHandledException?.Exception);
-
-            await host.StopAsync();
         }
 
         public class CustomCompilationException : Exception, ICompilationException

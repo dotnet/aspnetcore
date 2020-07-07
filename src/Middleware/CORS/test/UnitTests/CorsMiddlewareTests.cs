@@ -62,8 +62,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 Assert.Equal("Cross origin response", await response.Content.ReadAsStringAsync());
                 Assert.Equal(OriginUrl, response.Headers.GetValues(CorsConstants.AccessControlAllowOrigin).FirstOrDefault());
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -107,8 +105,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 Assert.Equal(OriginUrl, response.Headers.GetValues(CorsConstants.AccessControlAllowOrigin).FirstOrDefault());
                 Assert.Equal("AllowedHeader", response.Headers.GetValues(CorsConstants.AccessControlExposeHeaders).FirstOrDefault());
             }
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -158,8 +154,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 Assert.Single(response.Headers);
                 Assert.Equal(OriginUrl, response.Headers.GetValues(CorsConstants.AccessControlAllowOrigin).FirstOrDefault());
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -225,8 +219,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                         Assert.Equal(new[] { OriginUrl }, kvp.Value);
                     });
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -298,8 +290,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                         Assert.Equal(new[] { OriginUrl }, kvp.Value);
                     });
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -383,8 +373,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Empty(response.Headers);
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -518,8 +506,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                         Assert.Equal(new[] { OriginUrl }, kvp.Value);
                     });
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -579,8 +565,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
                 Assert.Equal("Cross origin response", await response.Content.ReadAsStringAsync());
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -652,8 +636,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                         Assert.Equal("AllowedHeader", Assert.Single(kvp.Value));
                     });
             }
-
-            await host.StopAsync();
         }
 
         [Fact]

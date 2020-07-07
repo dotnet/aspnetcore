@@ -49,8 +49,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             Assert.False(context.Request.Headers.ContainsKey("X-Original-For"));
             // Should have been consumed and removed
             Assert.False(context.Request.Headers.ContainsKey("X-Forwarded-For"));
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -88,8 +86,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             Assert.False(context.Request.Headers.ContainsKey("X-Original-For"));
             Assert.True(context.Request.Headers.ContainsKey("X-Forwarded-For"));
             Assert.Equal(header, context.Request.Headers["X-Forwarded-For"]);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -146,8 +142,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             Assert.Equal(expectedIp, context.Connection.RemoteIpAddress.ToString());
             Assert.Equal(expectedPort, context.Connection.RemotePort);
             Assert.Equal(remainingHeader, context.Request.Headers["X-Forwarded-For"].ToString());
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -197,8 +191,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 Assert.Equal(99, context.Connection.RemotePort);
                 Assert.False(context.Request.Headers.ContainsKey("X-Original-For"));
             }
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -260,8 +252,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
             Assert.Equal(expectedIp, context.Connection.RemoteIpAddress.ToString());
             Assert.Equal(expectedPort, context.Connection.RemotePort);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -291,8 +281,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             });
 
             Assert.Null(context.Connection.RemoteIpAddress);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -322,8 +310,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             });
 
             Assert.Equal("testhost", context.Request.Host.ToString());
-
-            await host.StopAsync();
         }
 
         public static TheoryData<string> HostHeaderData
@@ -395,8 +381,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 c.Request.Headers["X-Forwarded-Host"] = hostHeader;
             });
             Assert.True(assertsExecuted);
-
-            await host.StopAsync();
         }
 
         public static TheoryData<string> HostHeaderInvalidData
@@ -482,8 +466,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 c.Request.Headers["X-Forwarded-Host"] = hostHeader;
             });
             Assert.True(assertsExecuted);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -534,8 +516,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 ctx.Request.Headers["X-forwarded-Host"] = hostHeader;
             });
             Assert.True(assertsExecuted);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -587,8 +567,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 ctx.Request.Headers["X-forwarded-Host"] = hostHeader;
             });
             Assert.True(assertsExecuted);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -625,8 +603,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 ctx.Request.Headers["X-forwarded-Host"] = "stuff:523, bar.foo.com:432, bar.com:80";
             });
             Assert.True(assertsExecuted);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -664,8 +640,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             });
 
             Assert.Equal(expected, context.Request.Scheme);
-
-            await host.StopAsync();
         }
 
         public static TheoryData<string> ProtoHeaderData
@@ -719,8 +693,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 c.Request.Headers["X-Forwarded-Proto"] = scheme;
             });
             Assert.True(assertsExecuted);
-
-            await host.StopAsync();
         }
 
         public static TheoryData<string> ProtoHeaderInvalidData
@@ -778,8 +750,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
                 c.Request.Headers["X-Forwarded-Proto"] = scheme;
             });
             Assert.True(assertsExecuted);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -820,8 +790,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             });
 
             Assert.Equal(expected, context.Request.Scheme);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -864,8 +832,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             });
 
             Assert.Equal(expected, context.Request.Scheme);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -917,8 +883,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             });
 
             Assert.Equal(expected, context.Request.Scheme);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -962,8 +926,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             Assert.Equal("11.111.111.11", context.Connection.RemoteIpAddress.ToString());
             Assert.Equal("testhost", context.Request.Host.ToString());
             Assert.Equal("Protocol", context.Request.Scheme);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -997,8 +959,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             Assert.Null(context.Connection.RemoteIpAddress);
             Assert.Equal("localhost", context.Request.Host.ToString());
             Assert.Equal("http", context.Request.Scheme);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -1031,8 +991,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             Assert.Equal("11.111.111.11", context.Connection.RemoteIpAddress.ToString());
             Assert.Equal("localhost", context.Request.Host.ToString());
             Assert.Equal("Protocol", context.Request.Scheme);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -1084,8 +1042,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             });
 
             Assert.Equal(expectedRemoteIp, context.Connection.RemoteIpAddress.ToString());
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -1126,8 +1082,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
             Assert.Equal(expectedScheme, context.Request.Scheme);
             Assert.Equal(remainingHeader, context.Request.Headers["X-Forwarded-Proto"].ToString());
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -1165,8 +1119,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
             Assert.Equal(expectedScheme, context.Request.Scheme);
             Assert.Equal(remainingHeader, context.Request.Headers["X-Forwarded-Proto"].ToString());
-
-            await host.StopAsync();
         }
     }
 }

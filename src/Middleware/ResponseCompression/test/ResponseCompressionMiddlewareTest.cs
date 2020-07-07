@@ -168,8 +168,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var response = await client.SendAsync(request);
 
             CheckResponseCompressed(response, expectedBodyLength: 133, expectedEncoding: "gzip");
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -328,8 +326,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var response = await client.SendAsync(request);
 
             CheckResponseNotCompressed(response, expectedBodyLength: 0, sendVaryHeader: false);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -480,8 +476,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             {
                 AssertLog(logMessages.Skip(1).Single(), LogLevel.Debug, "No response compression available for HTTPS requests. See ResponseCompressionOptions.EnableForHttps.");
             }
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -545,8 +539,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             {
                 AssertLog(logMessages.Skip(1).Single(), LogLevel.Debug, "No response compression available for HTTPS requests. See ResponseCompressionOptions.EnableForHttps.");
             }
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -610,8 +602,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             {
                 AssertCompressedWithLog(logMessages, "gzip");
             }
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -658,8 +648,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             await response.Content.LoadIntoBufferAsync();
 
             CheckResponseCompressed(response, expectedBodyLength, encoding);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -705,8 +693,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             await response.Content.LoadIntoBufferAsync();
 
             CheckResponseCompressed(response, expectedBodyLength, encoding);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -766,8 +752,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             read = await body.ReadAsync(new byte[100], 0, 100);
             Assert.True(read > 0);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -821,8 +805,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             read = await body.ReadAsync(new byte[100], 0, 100);
             Assert.True(read > 0);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -893,8 +875,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
                 signal.SetResult(0);
             }
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -959,8 +939,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
                 signal.SetResult(0);
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -1011,8 +989,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             CheckResponseNotCompressed(response, expectedBodyLength: 1024, sendVaryHeader: false);
 
             Assert.True(fakeSendFile.SendFileInvoked);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -1063,8 +1039,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             CheckResponseCompressed(response, expectedBodyLength: 34, expectedEncoding: "gzip");
 
             Assert.False(fakeSendFile.SendFileInvoked);
-
-            await host.StartAsync();
         }
 
         [Fact]
@@ -1115,8 +1089,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             CheckResponseCompressed(response, expectedBodyLength: 46, expectedEncoding: "gzip");
 
             Assert.False(fakeSendFile.SendFileInvoked);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -1175,8 +1147,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             read = await body.ReadAsync(new byte[100], 0, 100);
             Assert.True(read > 0);
-
-            await host.StopAsync();
         }
 
         private async Task<(HttpResponseMessage, List<WriteContext>)> InvokeMiddleware(
@@ -1226,8 +1196,6 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             }
 
             var response = await client.SendAsync(request);
-
-            await host.StopAsync();
 
             return (response, sink.Writes.ToList());
         }

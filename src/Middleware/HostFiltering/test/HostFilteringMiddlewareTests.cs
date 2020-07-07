@@ -36,8 +36,6 @@ namespace Microsoft.AspNetCore.HostFiltering
             await host.StartAsync();
 
             await Assert.ThrowsAsync<InvalidOperationException>(() => host.GetTestServer().SendAsync(_ => { }));
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -79,8 +77,6 @@ namespace Microsoft.AspNetCore.HostFiltering
             var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("/");
             Assert.Equal(status, (int)response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -124,8 +120,6 @@ namespace Microsoft.AspNetCore.HostFiltering
             var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("/");
             Assert.Equal(status, (int)response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -177,8 +171,6 @@ namespace Microsoft.AspNetCore.HostFiltering
             var server = host.GetTestServer();
             var response = await server.CreateRequest("/").GetAsync();
             Assert.Equal(200, (int)response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -231,8 +223,6 @@ namespace Microsoft.AspNetCore.HostFiltering
             var server = host.GetTestServer();
             var response = await server.CreateRequest("/").GetAsync();
             Assert.Equal(400, (int)response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -277,8 +267,6 @@ namespace Microsoft.AspNetCore.HostFiltering
 
             response = await server.CreateRequest("/").GetAsync();
             Assert.Equal(200, (int)response.StatusCode);
-
-            await host.StopAsync();
         }
 
         private class ReloadableMemorySource : IConfigurationSource

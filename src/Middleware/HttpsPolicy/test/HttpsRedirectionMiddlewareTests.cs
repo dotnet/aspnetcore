@@ -66,8 +66,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var message = logMessages.Single();
             Assert.Equal(LogLevel.Warning, message.LogLevel);
             Assert.Equal("Failed to determine the https port for redirect.", message.State.ToString());
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -124,8 +122,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var message = logMessages.Single();
             Assert.Equal(LogLevel.Debug, message.LogLevel);
             Assert.Equal($"Redirecting to '{expected}'.", message.State.ToString());
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -182,8 +178,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var message = logMessages.Single();
             Assert.Equal(LogLevel.Debug, message.LogLevel);
             Assert.Equal($"Redirecting to '{expectedUrl}'.", message.State.ToString());
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -238,8 +232,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var response = await client.SendAsync(request);
 
             Assert.Equal(expectedUrl, response.Headers.Location.ToString());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -291,8 +283,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             message = logMessages.Skip(1).First();
             Assert.Equal(LogLevel.Debug, message.LogLevel);
             Assert.Equal("Redirecting to 'https://localhost:5050/'.", message.State.ToString());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -343,8 +333,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             Assert.Equal(LogLevel.Warning, message.LogLevel);
             Assert.Equal("Cannot determine the https port from IServerAddressesFeature, multiple values were found. " +
                 "Please set the desired port explicitly on HttpsRedirectionOptions.HttpsPort.", message.State.ToString());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -398,8 +386,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             message = logMessages.Skip(1).First();
             Assert.Equal(LogLevel.Debug, message.LogLevel);
             Assert.Equal("Redirecting to 'https://localhost:5050/'.", message.State.ToString());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -442,8 +428,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var message = logMessages.First();
             Assert.Equal(LogLevel.Warning, message.LogLevel);
             Assert.Equal("Failed to determine the https port for redirect.", message.State.ToString());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -488,8 +472,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var message = logMessages.First();
             Assert.Equal(LogLevel.Warning, message.LogLevel);
             Assert.Equal("Failed to determine the https port for redirect.", message.State.ToString());
-
-            await host.StopAsync();
         }
     }
 }

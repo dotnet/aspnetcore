@@ -43,8 +43,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Contains("<h1>Bonjour</h1>", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
     }
 }

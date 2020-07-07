@@ -57,8 +57,6 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
             // reversed "Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware"
             Assert.Equal(1, listener.MiddlewareFinished.Count);
             Assert.Equal("Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware", listener.MiddlewareFinished[0]);
-
-            await host.StopAsync();
         }
     }
 }

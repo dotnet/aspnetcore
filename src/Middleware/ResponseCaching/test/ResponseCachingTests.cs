@@ -34,8 +34,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertCachedResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -60,8 +58,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -84,8 +80,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -108,8 +102,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -132,7 +124,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-                await host.StopAsync();
             }
         }
 
@@ -166,8 +157,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -201,8 +190,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -227,8 +214,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertCachedResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -253,8 +238,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -280,8 +263,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -305,8 +286,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertCachedResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -331,8 +310,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -355,8 +332,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertCachedResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -379,8 +354,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertCachedResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -403,8 +376,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertCachedResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -427,8 +398,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertCachedResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -451,8 +420,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertCachedResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -475,8 +442,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -499,8 +464,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -523,8 +486,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -551,8 +512,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -580,8 +539,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                     initialResponse.EnsureSuccessStatusCode();
                     Assert.Equal(System.Net.HttpStatusCode.GatewayTimeout, subsequentResponse.StatusCode);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -604,8 +561,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -632,8 +587,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertCachedResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -660,8 +613,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -684,8 +635,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -716,8 +665,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                     Assert.Equal(System.Net.HttpStatusCode.NotModified, subsequentResponse.StatusCode);
                     Assert304Headers(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -741,8 +688,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertCachedResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -773,8 +718,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
                     Assert.Equal(System.Net.HttpStatusCode.NotModified, subsequentResponse.StatusCode);
                     Assert304Headers(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -798,8 +741,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertCachedResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -825,8 +766,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertCachedResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -852,8 +791,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -879,8 +816,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -907,8 +842,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertCachedResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -944,8 +877,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertFreshResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -981,8 +912,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertCachedResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -1005,8 +934,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
 
                     await AssertCachedResponseAsync(initialResponse, subsequentResponse);
                 }
-
-                await host.StopAsync();
             }
         }
 

@@ -61,8 +61,6 @@ namespace Microsoft.AspNetCore.Session
                 response.EnsureSuccessStatusCode();
                 Assert.False(response.Headers.TryGetValues("Set-Cookie", out var _));
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -102,8 +100,6 @@ namespace Microsoft.AspNetCore.Session
                 Assert.Single(values);
                 Assert.True(!string.IsNullOrWhiteSpace(values.First()));
             }
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -166,8 +162,6 @@ namespace Microsoft.AspNetCore.Session
                     Assert.DoesNotContain("; secure", values.First());
                 }
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -216,8 +210,6 @@ namespace Microsoft.AspNetCore.Session
                 Assert.Equal("1", await client.GetStringAsync("/"));
                 Assert.Equal("2", await client.GetStringAsync("/"));
                 Assert.Equal("3", await client.GetStringAsync("/"));
-
-                await host.StopAsync();
             }
         }
 
@@ -278,8 +270,6 @@ namespace Microsoft.AspNetCore.Session
                 Assert.Equal("1", await client.GetStringAsync("/second"));
                 Assert.Equal("2", await client.GetStringAsync("/third"));
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -338,8 +328,6 @@ namespace Microsoft.AspNetCore.Session
                 Assert.Equal("1", await client.GetStringAsync("/second"));
                 Assert.Equal("2", await client.GetStringAsync("/third"));
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -387,8 +375,6 @@ namespace Microsoft.AspNetCore.Session
             Assert.Equal(LogLevel.Information, sessionLogMessages[0].LogLevel);
             Assert.Contains("stored", sessionLogMessages[1].State.ToString());
             Assert.Equal(LogLevel.Debug, sessionLogMessages[1].LogLevel);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -457,8 +443,6 @@ namespace Microsoft.AspNetCore.Session
             Assert.Equal(LogLevel.Information, sessionLogMessages[0].LogLevel);
             Assert.Equal(LogLevel.Debug, sessionLogMessages[1].LogLevel);
             Assert.Equal(LogLevel.Information, sessionLogMessages[2].LogLevel);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -525,8 +509,6 @@ namespace Microsoft.AspNetCore.Session
                 var data = await client.GetStringAsync("/AccessSessionData");
                 Assert.Equal("10", data);
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -569,8 +551,6 @@ namespace Microsoft.AspNetCore.Session
                 var response = await client.GetAsync(string.Empty);
                 response.EnsureSuccessStatusCode();
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -620,8 +600,6 @@ namespace Microsoft.AspNetCore.Session
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -659,8 +637,6 @@ namespace Microsoft.AspNetCore.Session
                 var response = await client.GetAsync(string.Empty);
                 response.EnsureSuccessStatusCode();
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -710,8 +686,6 @@ namespace Microsoft.AspNetCore.Session
             var message = Assert.Single(sink.Writes);
             Assert.Contains("Session cache read exception", message.State.ToString());
             Assert.Equal(LogLevel.Error, message.LogLevel);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -760,8 +734,6 @@ namespace Microsoft.AspNetCore.Session
             var message = Assert.Single(sink.Writes);
             Assert.Contains("Session cache read exception", message.State.ToString());
             Assert.Equal(LogLevel.Error, message.LogLevel);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -810,8 +782,6 @@ namespace Microsoft.AspNetCore.Session
             var message = Assert.Single(sink.Writes);
             Assert.Contains("Loading the session timed out.", message.State.ToString());
             Assert.Equal(LogLevel.Warning, message.LogLevel);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -858,8 +828,6 @@ namespace Microsoft.AspNetCore.Session
             }
 
             Assert.Empty(sink.Writes);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -920,8 +888,6 @@ namespace Microsoft.AspNetCore.Session
 
             Assert.Contains("Error closing the session.", sessionMiddlewareLogMessage.State.ToString());
             Assert.Equal(LogLevel.Error, sessionMiddlewareLogMessage.LogLevel);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -988,8 +954,6 @@ namespace Microsoft.AspNetCore.Session
 
             Assert.Contains("Committing the session was canceled.", sessionMiddlewareLogs[0].State.ToString());
             Assert.Equal(LogLevel.Information, sessionMiddlewareLogs[0].LogLevel);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -1054,8 +1018,6 @@ namespace Microsoft.AspNetCore.Session
             Assert.Equal(LogLevel.Debug, sessionLogMessages[1].LogLevel);
 
             Assert.Empty(sink.Writes.Where(message => message.LoggerName.Equals(typeof(SessionMiddleware).FullName, StringComparison.Ordinal)));
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -1120,8 +1082,6 @@ namespace Microsoft.AspNetCore.Session
             Assert.Equal(LogLevel.Debug, sessionLogMessages[1].LogLevel);
 
             Assert.Empty(sink.Writes.Where(message => message.LoggerName.Equals(typeof(SessionMiddleware).FullName, StringComparison.Ordinal)));
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -1168,8 +1128,6 @@ namespace Microsoft.AspNetCore.Session
             var message = Assert.Single(sink.Writes);
             Assert.Contains("Error closing the session.", message.State.ToString());
             Assert.Equal(LogLevel.Error, message.LogLevel);
-
-            await host.StopAsync();
         }
 
         private class TestClock : ISystemClock

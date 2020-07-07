@@ -55,8 +55,6 @@ namespace Microsoft.Extensions.Localization
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/page?culture=ar-SA&ui-culture=ar-YE");
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -91,8 +89,6 @@ namespace Microsoft.Extensions.Localization
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/page");
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -134,8 +130,6 @@ namespace Microsoft.Extensions.Localization
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/page?culture=ar-XY&ui-culture=ar-SA");
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -177,8 +171,6 @@ namespace Microsoft.Extensions.Localization
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/page?culture=ar-SA&ui-culture=ar-XY");
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -221,8 +213,6 @@ namespace Microsoft.Extensions.Localization
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/page?ui-culture=ar-SA");
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -265,8 +255,6 @@ namespace Microsoft.Extensions.Localization
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/page?culture=ar-SA");
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -314,8 +302,6 @@ namespace Microsoft.Extensions.Localization
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/page?c=ar-SA&uic=ar-YE");
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -364,8 +350,6 @@ namespace Microsoft.Extensions.Localization
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/page?c=FR&uic=FR");
             }
-
-            await host.StopAsync();
         }
     }
 }

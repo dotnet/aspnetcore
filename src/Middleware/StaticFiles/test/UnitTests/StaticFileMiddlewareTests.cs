@@ -43,8 +43,6 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             Assert.Null(response.Headers.ETag);
-
-            await host.StopAsync();
         }
 
         [ConditionalFact]
@@ -75,8 +73,6 @@ namespace Microsoft.AspNetCore.StaticFiles
 
                 Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
                 Assert.Null(response.Headers.ETag);
-
-                await host.StopAsync();
             }
             finally
             {
@@ -116,8 +112,6 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             Assert.Null(response.Headers.ETag);
-
-            await host.StopAsync();
         }
 
         [Fact]

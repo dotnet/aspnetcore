@@ -64,8 +64,6 @@ namespace Microsoft.AspNetCore.Diagnostics
                 Assert.Equal(expectedStatusCode, response.StatusCode);
                 Assert.Equal("An error occurred while adding a product", await response.Content.ReadAsStringAsync());
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -121,8 +119,6 @@ namespace Microsoft.AspNetCore.Diagnostics
                 response.EnsureSuccessStatusCode();
                 Assert.Equal("Hello", await response.Content.ReadAsStringAsync());
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -200,8 +196,6 @@ namespace Microsoft.AspNetCore.Diagnostics
                 Assert.Equal("-1", values.First());
                 Assert.False(response.Headers.TryGetValues("ETag", out values));
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -258,8 +252,6 @@ namespace Microsoft.AspNetCore.Diagnostics
                 Assert.Equal("-1", values.First());
                 Assert.False(response.Headers.TryGetValues("ETag", out values));
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -318,8 +310,6 @@ namespace Microsoft.AspNetCore.Diagnostics
                 Assert.Single(values);
                 Assert.Equal("abcdef", values.First());
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -395,8 +385,6 @@ namespace Microsoft.AspNetCore.Diagnostics
                 Assert.Single(values);
                 Assert.Equal("abcdef", values.First());
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -450,8 +438,6 @@ namespace Microsoft.AspNetCore.Diagnostics
             Assert.Null(listener.DiagnosticUnhandledException?.Exception);
             Assert.NotNull(listener.DiagnosticHandledException?.HttpContext);
             Assert.NotNull(listener.DiagnosticHandledException?.Exception);
-
-            await host.StopAsync();
         }
 
         [Fact]

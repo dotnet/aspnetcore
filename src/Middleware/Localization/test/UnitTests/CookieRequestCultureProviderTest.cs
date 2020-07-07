@@ -70,8 +70,6 @@ namespace Microsoft.Extensions.Localization
                 var response = await client.GetAsync(string.Empty);
                 Assert.Equal("c=ar-SA|uic=ar-SA", value);
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -121,8 +119,6 @@ namespace Microsoft.Extensions.Localization
                 client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue("Preferences", "uic=ar-SA").ToString());
                 var response = await client.GetAsync(string.Empty);
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -170,8 +166,6 @@ namespace Microsoft.Extensions.Localization
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -232,8 +226,6 @@ namespace Microsoft.Extensions.Localization
             var write = Assert.Single(sink.Writes);
             Assert.Equal(LogLevel.Debug, write.LogLevel);
             Assert.Equal(expectedMessage, write.State.ToString());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -293,8 +285,6 @@ namespace Microsoft.Extensions.Localization
             var write = Assert.Single(sink.Writes);
             Assert.Equal(LogLevel.Debug, write.LogLevel);
             Assert.Equal(expectedMessage, write.State.ToString());
-
-            await host.StopAsync();
         }
     }
 }

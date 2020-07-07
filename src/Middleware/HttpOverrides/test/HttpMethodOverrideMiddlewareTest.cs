@@ -43,8 +43,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             req.Headers.Add("X-Http-Method-Override", "DELETE");
             await server.CreateClient().SendAsync(req);
             Assert.True(assertsExecuted);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -75,8 +73,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             var req = new HttpRequestMessage(HttpMethod.Post, "");
             await server.CreateClient().SendAsync(req);
             Assert.True(assertsExecuted);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -107,8 +103,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
             var req = new HttpRequestMessage(HttpMethod.Get, "");
             await server.CreateClient().SendAsync(req);
             Assert.True(assertsExecuted);
-
-            await host.StopAsync();
         }
 
 
@@ -149,8 +143,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
             await server.CreateClient().SendAsync(req);
             Assert.True(assertsExecuted);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -189,8 +181,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
             await server.CreateClient().SendAsync(req);
             Assert.True(assertsExecuted);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -230,8 +220,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
             await server.CreateClient().SendAsync(req);
             Assert.True(assertsExecuted);
-
-            await host.StopAsync();
         }
     }
 }

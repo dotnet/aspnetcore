@@ -75,8 +75,6 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
                 "by adding 'app.UseHeaderPropagation()' in the 'Configure(...)' method. Header propagation can only be used within " +
                 "the context of an HTTP request.",
                 captured.Message);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -122,8 +120,6 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.True(handler.Headers.Contains("out"));
             Assert.Equal(new[] { "test" }, handler.Headers.GetValues("out"));
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -153,8 +149,6 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Assert.Equal(new[] { "value" }, handler.Headers.GetValues("first"));
             Assert.True(handler.Headers.Contains("second"));
             Assert.Equal(new[] { "other" }, handler.Headers.GetValues("second"));
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -199,8 +193,6 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.True(handler.Headers.Contains("different"));
             Assert.Equal(new[] { "test" }, handler.Headers.GetValues("different"));
-
-            await host.StopAsync();
         }
 
         private async Task<IHost> CreateHost(Action<HeaderPropagationOptions> configure, HttpMessageHandler primaryHandler, Action<HeaderPropagationMessageHandlerOptions> configureClient = null)

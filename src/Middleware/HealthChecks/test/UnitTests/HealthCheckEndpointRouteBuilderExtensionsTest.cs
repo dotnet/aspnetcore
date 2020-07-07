@@ -86,8 +86,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -133,8 +131,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Custom!", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
     }
 }

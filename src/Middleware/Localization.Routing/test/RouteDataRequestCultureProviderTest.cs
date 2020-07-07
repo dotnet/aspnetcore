@@ -90,8 +90,6 @@ namespace Microsoft.AspNetCore.Localization.Routing
                 var data = await response.Content.ReadAsStringAsync();
                 Assert.Equal($"{expectedCulture},{expectedUICulture}", data);
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -138,8 +136,6 @@ namespace Microsoft.AspNetCore.Localization.Routing
                 var data = await response.Content.ReadAsStringAsync();
                 Assert.Equal("en-US,en-US", data);
             }
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -216,8 +212,6 @@ namespace Microsoft.AspNetCore.Localization.Routing
                 var data = await response.Content.ReadAsStringAsync();
                 Assert.Equal($"{expectedCulture},{expectedUICulture}", data);
             }
-
-            await host.StopAsync();
         }
     }
 }

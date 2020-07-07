@@ -81,8 +81,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             response = await client.SendAsync(request);
 
             Assert.Equal(expectedHstsHeader, response.Headers.GetValues(HeaderNames.StrictTransportSecurity).FirstOrDefault());
-
-            await host.StopAsync();
         }
     }
 }

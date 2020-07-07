@@ -55,8 +55,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("max-age=2592000", response.Headers.GetValues(HeaderNames.StrictTransportSecurity).FirstOrDefault());
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -103,8 +101,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expected, response.Headers.GetValues(HeaderNames.StrictTransportSecurity).FirstOrDefault());
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -151,8 +147,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expected, response.Headers.GetValues(HeaderNames.StrictTransportSecurity).FirstOrDefault());
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -205,8 +199,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var message = logMessages.Single();
             Assert.Equal(LogLevel.Debug, message.LogLevel);
             Assert.Equal($"The host '{hostUrl}' is excluded. Skipping HSTS header.", message.State.ToString(), ignoreCase: true);
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -262,8 +254,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var message = logMessages.Single();
             Assert.Equal(LogLevel.Trace, message.LogLevel);
             Assert.Equal("Adding HSTS header to response.", message.State.ToString());
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -319,8 +309,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var message = logMessages.Single();
             Assert.Equal(LogLevel.Debug, message.LogLevel);
             Assert.Equal($"The host '{hostUrl}' is excluded. Skipping HSTS header.", message.State.ToString(), ignoreCase: true);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -368,8 +356,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var message = logMessages.Single();
             Assert.Equal(LogLevel.Debug, message.LogLevel);
             Assert.Equal("The request is insecure. Skipping HSTS header.", message.State.ToString());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -416,8 +402,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var message = logMessages.Single();
             Assert.Equal(LogLevel.Trace, message.LogLevel);
             Assert.Equal("Adding HSTS header to response.", message.State.ToString());
-
-            await host.StopAsync();
         }
     }
 }

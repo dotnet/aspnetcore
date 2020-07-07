@@ -46,8 +46,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
             Assert.Equal("Request Handled", await response.Content.ReadAsStringAsync());
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            await host.StopAsync();
         }
 
         class SuccessMiddleware
@@ -83,8 +81,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 await server.CreateClient().GetAsync("http://localhost/"));
 
             Assert.Equal("Exception requested from TestMiddleware", ex.Message);
-
-            await host.StopAsync();
         }
 
         class ExceptionMiddleware
@@ -361,8 +357,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
                 var content = await response.Content.ReadAsStringAsync();
                 Assert.Contains("req.open(\"POST\", \"" + JavaScriptEncode(migrationsEndpoint) + "\", true);", content);
-
-                await host.StopAsync();
             }
         }
 
@@ -405,8 +399,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
             Assert.Contains(logProvider.Logger.Messages.ToList(), m =>
                 m.StartsWith(StringsHelpers.GetResourceString("FormatDatabaseErrorPageMiddleware_ContextNotRegistered", typeof(BloggingContext))));
-
-            await host.StopAsync();
         }
 
         class ContextNotRegisteredInServicesMiddleware

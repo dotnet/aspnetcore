@@ -47,8 +47,6 @@ namespace Microsoft.AspNetCore.StaticFiles
 
                 Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -95,8 +93,6 @@ namespace Microsoft.AspNetCore.StaticFiles
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Equal("Hi from endpoint.", await response.Content.ReadAsStringAsync());
             }
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -124,8 +120,6 @@ namespace Microsoft.AspNetCore.StaticFiles
 
                 Assert.Equal(response.Content.Headers.LastModified.Value, trimmed);
             }
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -185,8 +179,6 @@ namespace Microsoft.AspNetCore.StaticFiles
                     Assert.True(responseContent.SequenceEqual(fileContents));
                 }
             }
-
-            await host.StopAsync();
         }
 
         [Theory]
@@ -221,8 +213,6 @@ namespace Microsoft.AspNetCore.StaticFiles
                 Assert.True(response.Content.Headers.ContentLength == fileInfo.Length);
                 Assert.Empty((await response.Content.ReadAsByteArrayAsync()));
             }
-
-            await host.StopAsync();
         }
 
         public static IEnumerable<object[]> ExistingFiles => new[]
@@ -305,8 +295,6 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             await responseComplete.Task.TimeoutAfter(interval);
             Assert.Null(exception);
-
-            await host.StopAsync();
         }
 
         private Socket SendSocketRequestAsync(string address, string path, string method = "GET")

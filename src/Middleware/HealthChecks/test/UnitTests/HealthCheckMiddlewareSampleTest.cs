@@ -32,8 +32,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -57,8 +55,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal("application/json", response.Content.Headers.ContentType.ToString());
 
             // Ignoring the body since it contains a bunch of statistics
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -81,8 +77,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -105,8 +99,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Unhealthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
     }
 }

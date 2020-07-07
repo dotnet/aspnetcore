@@ -46,8 +46,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
             Assert.Equal("Request Handled", await response.Content.ReadAsStringAsync());
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            await host.StopAsync();
         }
 
         class SuccessMiddleware
@@ -142,8 +140,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     Assert.Equal("111111111111111_MigrationOne", appliedMigrations.ElementAt(0).MigrationId);
                     Assert.Equal("222222222222222_MigrationTwo", appliedMigrations.ElementAt(1).MigrationId);
                 }
-
-                await host.StopAsync();
             }
         }
 
@@ -173,8 +169,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.StartsWith(StringsHelpers.GetResourceString("MigrationsEndPointMiddleware_NoContextType"), content);
             Assert.True(content.Length > 512);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -207,8 +201,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.StartsWith(StringsHelpers.GetResourceString("FormatMigrationsEndPointMiddleware_InvalidContextType", typeName), content);
             Assert.True(content.Length > 512);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -238,8 +230,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.StartsWith(StringsHelpers.GetResourceString("FormatMigrationsEndPointMiddleware_ContextNotRegistered", typeof(BloggingContext)), content);
             Assert.True(content.Length > 512);
-
-            await host.StopAsync();
         }
 
         [ConditionalFact]
@@ -278,8 +268,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
                 Assert.StartsWith(StringsHelpers.GetResourceString("FormatMigrationsEndPointMiddleware_Exception", typeof(BloggingContextWithSnapshotThatThrows)), ex.Message);
                 Assert.Equal("Welcome to the invalid migration!", ex.InnerException.Message);
-
-                await host.StopAsync();
             }
         }
     }

@@ -68,8 +68,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 
             var response = await client.GetAsync("/frob");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Fact] // Matches based on '.Map'
@@ -97,8 +95,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 
             var response = await client.GetAsync("/HEALTH");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -129,8 +125,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -161,8 +155,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -196,8 +188,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -231,8 +221,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Degraded", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -266,8 +254,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Unhealthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -301,8 +287,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Unhealthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -350,8 +334,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 
             var result = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedJson, result);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -387,8 +369,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 
             Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
             Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -424,8 +404,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
 
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -458,8 +436,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal("no-store, no-cache", response.Headers.CacheControl.ToString());
             Assert.Equal("no-cache", response.Headers.Pragma.ToString());
             Assert.Equal(new string[] { "Thu, 01 Jan 1970 00:00:00 GMT" }, response.Content.Headers.GetValues(HeaderNames.Expires));
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -495,8 +471,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Null(response.Headers.CacheControl);
             Assert.Empty(response.Headers.Pragma.ToString());
             Assert.False(response.Content.Headers.Contains(HeaderNames.Expires));
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -534,8 +508,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -566,8 +538,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -596,8 +566,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             var response = await client.GetAsync("http://localhost:5001/health/");
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -628,8 +596,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -658,8 +624,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             var response = await client.GetAsync("http://localhost:5001/health/detailed");
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-
-            await host.StopAsync();
         }
 
         // See: https://github.com/aspnet/Diagnostics/issues/511
@@ -697,8 +661,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         // See: https://github.com/aspnet/Diagnostics/issues/511
@@ -736,8 +698,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -776,8 +736,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -816,8 +774,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -854,8 +810,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             var response = await client.GetAsync("http://localhost:5000/health");
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -900,8 +854,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
@@ -946,8 +898,6 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
-
-            await host.StopAsync();
         }
 
         [Fact]
