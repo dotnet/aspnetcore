@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.Routing
         /// </summary>
         /// <param name="inlineConstraint">The inline constraint to resolve.</param>
         /// <returns>The <see cref="IRouteConstraint"/> the inline constraint was resolved to.</returns>
-        IRouteConstraint ResolveConstraint(string inlineConstraint);
+        IRouteConstraint? ResolveConstraint(string inlineConstraint);
     }
 }
