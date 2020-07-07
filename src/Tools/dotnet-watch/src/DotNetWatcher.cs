@@ -49,10 +49,10 @@ namespace Microsoft.DotNet.Watcher
                 Iteration = -1,
                 ProcessSpec = processSpec,
                 Reporter = _reporter,
-                SuppresMSBuildIncrementalism = suppressMSBuildIncrementalism == "1" || suppressMSBuildIncrementalism == "true",
+                SuppressMSBuildIncrementalism = suppressMSBuildIncrementalism == "1" || suppressMSBuildIncrementalism == "true",
             };
 
-            if (context.SuppresMSBuildIncrementalism)
+            if (context.SuppressMSBuildIncrementalism)
             {
                 _reporter.Verbose("MSBuild incremental optimizations suppressed.");
             }

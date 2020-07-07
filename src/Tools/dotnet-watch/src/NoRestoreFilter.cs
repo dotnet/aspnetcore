@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public ValueTask ProcessAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
-            if (context.SuppresMSBuildIncrementalism)
+            if (context.SuppressMSBuildIncrementalism)
             {
                 return default;
             }

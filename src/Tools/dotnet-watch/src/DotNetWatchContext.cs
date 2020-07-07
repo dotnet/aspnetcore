@@ -19,6 +19,6 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public bool RequiresMSBuildRevaluation { get; set; }
 
-        public bool SuppresMSBuildIncrementalism { get; set; }
+        public bool SuppressMSBuildIncrementalism { get; set; }
     }
 }

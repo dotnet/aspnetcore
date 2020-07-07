@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             var context = new DotNetWatchContext
             {
                 Iteration = 0,
-                SuppresMSBuildIncrementalism = true,
+                SuppressMSBuildIncrementalism = true,
             };
 
             await filter.ProcessAsync(context, default);

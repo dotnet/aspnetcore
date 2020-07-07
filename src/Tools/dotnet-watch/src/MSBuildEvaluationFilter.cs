@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public async ValueTask ProcessAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
-            if (context.SuppresMSBuildIncrementalism)
+            if (context.SuppressMSBuildIncrementalism)
             {
                 context.RequiresMSBuildRevaluation = true;
                 context.FileSet = await _factory.CreateAsync(cancellationToken);
