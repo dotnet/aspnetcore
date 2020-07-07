@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         protected override X509Certificate2 SaveCertificateCore(X509Certificate2 certificate)
         {
             var export = certificate.Export(X509ContentType.Pkcs12, "");
+            certificate.Dispose();
             certificate = new X509Certificate2(export, "", X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
             Array.Clear(export, 0, export.Length);
 

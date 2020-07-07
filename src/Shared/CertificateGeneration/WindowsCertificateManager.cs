@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             // On non OSX systems we need to export the certificate and import it so that the transient
             // key that we generated gets persisted.
             var export = certificate.Export(X509ContentType.Pkcs12, "");
+            certificate.Dispose();
             certificate = new X509Certificate2(export, "", X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
             Array.Clear(export, 0, export.Length);
             certificate.FriendlyName = AspNetHttpsOidFriendlyName;
@@ -66,7 +67,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         protected override void TrustCertificateCore(X509Certificate2 certificate)
         {
-            var publicCertificate = new X509Certificate2(certificate.Export(X509ContentType.Cert));
+            using var publicCertificate = new X509Certificate2(certificate.Export(X509ContentType.Cert));
 
             publicCertificate.FriendlyName = certificate.FriendlyName;
 

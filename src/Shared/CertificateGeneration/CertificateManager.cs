@@ -171,6 +171,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             certificates = filteredCertificates;
 
             X509Certificate2 certificate = null;
+            var isNewCertificate = false;
             if (certificates.Any())
             {
                 certificate = certificates.First();
@@ -217,6 +218,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 try
                 {
                     Log.CreateDevelopmentCertificateStart();
+                    isNewCertificate = true;
                     certificate = CreateAspNetCoreHttpsDevelopmentCertificate(notBefore, notAfter);
                 }
                 catch (Exception e)
@@ -292,6 +294,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                     return result;
                 }
             }
+
+            DisposeCertificates(!isNewCertificate ? certificates : certificates.Append(certificate));
 
             return result;
         }
