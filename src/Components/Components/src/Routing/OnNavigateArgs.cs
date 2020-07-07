@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,8 +18,8 @@ namespace Microsoft.AspNetCore.Components.Routing
             CancellationTokenSource = cancellationTokenSource;
         }
 
-        public string Path { get; private set; }
+        public string Path { get; }
 
-        public CancellationTokenSource CancellationTokenSource { get; private set; }
+        public CancellationTokenSource CancellationTokenSource { get; }
     }
 }
