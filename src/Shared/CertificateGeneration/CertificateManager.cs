@@ -395,6 +395,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             byte[] bytes;
             byte[] keyBytes;
             byte[] pemEnvelope = null;
+            RSA key = null;
+
             try
             {
                 if (includePrivateKey)
@@ -405,7 +407,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                             bytes = certificate.Export(X509ContentType.Pkcs12, password);
                             break;
                         case CertificateKeyExportFormat.Pem:
-                            var key = certificate.GetRSAPrivateKey();
+                            key = certificate.GetRSAPrivateKey();
 
                             char[] pem;
                             if (password != null)
@@ -421,6 +423,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                                 // To bypass it, we export the certificate to pem temporarily and then we import it and export it as unprotected PEM.
                                 keyBytes = key.ExportEncryptedPkcs8PrivateKey("", new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA256, 1));
                                 pem = PemEncoding.Write("ENCRYPTED PRIVATE KEY", keyBytes);
+                                key.Dispose();
                                 key = RSA.Create();
                                 key.ImportFromEncryptedPem(pem, "");
                                 Array.Clear(keyBytes, 0, keyBytes.Length);
@@ -448,6 +451,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             {
                 Log.ExportCertificateError(e.ToString());
                 throw;
+            }
+            finally
+            {
+                key?.Dispose();
             }
 
             try
@@ -610,7 +617,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             DateTimeOffset notBefore,
             DateTimeOffset notAfter)
         {
-            var key = CreateKeyMaterial(RSAMinimumKeySizeInBits);
+            using var key = CreateKeyMaterial(RSAMinimumKeySizeInBits);
 
             var request = new CertificateRequest(subject, key, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
             foreach (var extension in extensions)

@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             // Tries to use the certificate key to validate it can't access it
             try
             {
-                var rsa = candidate.GetRSAPrivateKey();
+                using var rsa = candidate.GetRSAPrivateKey();
                 if (rsa == null)
                 {
                     return new CheckCertificateStateResult(false, InvalidCertificateState);
