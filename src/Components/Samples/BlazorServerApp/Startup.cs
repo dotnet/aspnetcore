@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using BlazorServerApp.Data;
 
+// testing codeowners
 namespace BlazorServerApp
 {
     public class Startup
