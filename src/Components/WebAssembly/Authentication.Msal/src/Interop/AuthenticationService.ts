@@ -48,7 +48,7 @@ interface AuthorizeService {
 interface AuthorizeServiceConfiguration extends Msal.Configuration {
     defaultAccessTokenScopes: string[];
     additionalScopesToConsent: string[];
-    loginMode: LoginMode;
+    loginMode: string;
 }
 
 class MsalAuthorizeService implements AuthorizeService {
