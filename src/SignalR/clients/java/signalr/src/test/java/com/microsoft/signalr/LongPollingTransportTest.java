@@ -264,6 +264,42 @@ public class LongPollingTransportTest {
     }
 
     @Test
+    public void LongPollingTransportRunsAccessTokenProviderEveryRequest() {
+        AtomicInteger requestCount = new AtomicInteger();
+        AtomicReference<String> headerValue = new AtomicReference<>();
+        CompletableSubject secondGet = CompletableSubject.create();
+        CompletableSubject close = CompletableSubject.create();
+        TestHttpClient client = new TestHttpClient()
+                .on("GET", (req) -> {
+                    if (requestCount.get() == 0) {
+                        requestCount.incrementAndGet();
+                        return Single.just(new HttpResponse(200, "", ""));
+                    }
+                    assertEquals("Bearer TOKEN1", req.getHeaders().get("Authorization"));
+                    secondGet.onComplete();
+                    assertTrue(close.blockingAwait(1, TimeUnit.SECONDS));
+                    return Single.just(new HttpResponse(204, "", ""));
+                })
+                .on("POST", (req) -> {
+                    assertFalse(req.getHeaders().isEmpty());
+                    headerValue.set(req.getHeaders().get("Authorization"));
+                    return Single.just(new HttpResponse(200, "", ""));
+                });
+
+        AtomicInteger i = new AtomicInteger(0);
+        Map<String, String> headers = new HashMap<>();
+        Single<String> tokenProvider = Single.defer(() -> Single.just("TOKEN" + i.getAndIncrement()));
+        LongPollingTransport transport = new LongPollingTransport(headers, client, tokenProvider);
+        transport.setOnClose((error) -> {});
+
+        transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
+        secondGet.blockingAwait(1, TimeUnit.SECONDS);
+        assertTrue(transport.send("TEST").blockingAwait(1, TimeUnit.SECONDS));
+        assertEquals("Bearer TOKEN2", headerValue.get());
+        close.onComplete();
+    }
+
+    @Test
     public void After204StopDoesNotTriggerOnClose() {
         AtomicBoolean firstPoll = new AtomicBoolean(true);
         CompletableSubject block = CompletableSubject.create();
