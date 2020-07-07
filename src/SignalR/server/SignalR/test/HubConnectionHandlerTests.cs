@@ -400,9 +400,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     await client.Connection.Application.Output.WriteAsync(part3);
 
-                    Assert.True(task.IsCompleted);
-
-                    var completionMessage = await task as CompletionMessage;
+                    var completionMessage = await task.OrTimeout() as CompletionMessage;
                     Assert.NotNull(completionMessage);
                     Assert.Equal("hello", completionMessage.Result);
                     Assert.Equal("1", completionMessage.InvocationId);
@@ -2796,6 +2794,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
                     await client.Connected.OrTimeout();
                     await client.SendHubMessageAsync(PingMessage.Instance);
+                    await client.InvokeAsync(nameof(MethodHub.ValueMethod));
 
                     clock.UtcNow = clock.UtcNow.AddMilliseconds(timeout + 1);
                     client.TickHeartbeat();
@@ -2943,6 +2942,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     // Call long running hub method
                     var hubMethodTask = client.InvokeAsync(nameof(LongRunningHub.LongRunningMethod));
                     await tcsService.StartedMethod.Task.OrTimeout();
+
+                    await client.SendHubMessageAsync(PingMessage.Instance);
+                    await client.SendHubMessageAsync(PingMessage.Instance);
 
                     // Tick heartbeat while hub method is running to show that close isn't triggered
                     client.TickHeartbeat();

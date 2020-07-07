@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
@@ -243,6 +244,22 @@ namespace Microsoft.AspNetCore.SignalR
 
             var binder = new HubConnectionBinder<THub>(_dispatcher, connection);
 
+            var channel = Channel.CreateBounded<HubMessage>(new BoundedChannelOptions(connection.MaxInvokes));
+
+            for (var i = 0; i < connection.MaxInvokes; i++)
+            {
+                _ = DispatchChannel(channel.Reader, connection, _dispatcher);
+            }
+
+            static async Task DispatchChannel(ChannelReader<HubMessage> reader, HubConnectionContext connection, HubDispatcher<THub> dispatcher)
+            {
+                while (true)
+                {
+                    var message = await reader.ReadAsync();
+                    await dispatcher.DispatchMessageAsync(connection, message);
+                }
+            }
+
             while (true)
             {
                 var result = await input.ReadAsync();
@@ -263,8 +280,10 @@ namespace Microsoft.AspNetCore.SignalR
                         {
                             while (protocol.TryParseMessage(ref buffer, binder, out var message))
                             {
+                                connection.StopClientTimeout();
                                 messageReceived = true;
-                                await DispatchMessage(connection, _dispatcher, message);
+                                await channel.Writer.WriteAsync(message);
+                                //await DispatchMessage(connection, _dispatcher, message);
                             }
 
                             if (messageReceived)
@@ -290,8 +309,10 @@ namespace Microsoft.AspNetCore.SignalR
 
                                 if (protocol.TryParseMessage(ref segment, binder, out var message))
                                 {
+                                    connection.StopClientTimeout();
                                     messageReceived = true;
-                                    await DispatchMessage(connection, _dispatcher, message);
+                                    await channel.Writer.WriteAsync(message);
+                                    //await DispatchMessage(connection, _dispatcher, message);
                                 }
                                 else if (overLength)
                                 {
@@ -331,24 +352,24 @@ namespace Microsoft.AspNetCore.SignalR
                     input.AdvanceTo(buffer.Start, buffer.End);
                 }
 
-                static Task DispatchMessage(HubConnectionContext connection, HubDispatcher<THub> dispatcher, HubMessage message)
-                {
-                    connection.StopClientTimeout();
-                    _ = ProcessTask(connection, dispatcher.DispatchMessageAsync(connection, message));
-                    return connection.ActiveInvocationLimit.WaitAsync();
-                }
+                //static Task DispatchMessage(HubConnectionContext connection, HubDispatcher<THub> dispatcher, HubMessage message)
+                //{
+                //    connection.StopClientTimeout();
+                //    _ = ProcessTask(connection, dispatcher.DispatchMessageAsync(connection, message));
+                //    return connection.ActiveInvocationLimit.WaitAsync();
+                //}
 
-                static async Task ProcessTask(HubConnectionContext connection, Task task)
-                {
-                    try
-                    {
-                        await task;
-                    }
-                    finally
-                    {
-                        connection.ActiveInvocationLimit.Release();
-                    }
-                }
+                //static async Task ProcessTask(HubConnectionContext connection, Task task)
+                //{
+                //    try
+                //    {
+                //        await task;
+                //    }
+                //    finally
+                //    {
+                //        connection.ActiveInvocationLimit.Release();
+                //    }
+                //}
             }
         }
 
