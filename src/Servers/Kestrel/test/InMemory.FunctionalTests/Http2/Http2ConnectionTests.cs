@@ -1597,10 +1597,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task OutputFlowControl_ConnectionAndRequestAborted_NoException()
         {
-            // Zero-length data frames are allowed to be sent even if there is no space available in the flow control window.
-            // https://httpwg.org/specs/rfc7540.html#rfc.section.6.9.1
-
-            // This only affects the stream windows. The connection-level window is always initialized at 64KiB.
+            // Ensure the stream window size is bigger than the connection window size
             _clientSettings.InitialWindowSize = _clientSettings.InitialWindowSize * 2;
 
             var connectionAbortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
