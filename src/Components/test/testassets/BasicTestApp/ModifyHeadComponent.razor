@@ -1,0 +1,49 @@
+﻿@using Microsoft.AspNetCore.Components.Web.Extensions
+
+<p>
+    Title:
+    <input @bind-value="title" placeholder="Type a title..." />
+    <Title Value="@title" />
+</p>
+
+@for (int i = 0; i < showTitles.Length; i++)
+{
+    var titleId = i;
+
+    <button @onclick="() => ToggleTitle(titleId)">@(showTitles[titleId] ? "Hide" : "Show") title @titleId</button>
+
+    if (showTitles[titleId])
+    {
+        <Title Value="@($"Title {titleId}")" />
+    }
+}
+
+<button @onclick="Toggle">Toggle @(toggled ? "on" : "off")!</button>
+
+@if (toggled)
+{
+    <Title Value="@($"Toggle on!")" />
+}
+else
+{
+    <Title Value="@($"Toggle off!")" />
+}
+
+@code {
+    private string title = "Basic test app";
+
+    private bool toggled = false;
+
+    private readonly bool[] showTitles = Enumerable.Repeat(false, 6).ToArray();
+
+    private void ToggleTitle(int titleId)
+    {
+        showTitles[titleId] = !showTitles[titleId];
+        StateHasChanged();
+    }
+
+    private void Toggle()
+    {
+        toggled = !toggled;
+    }
+}

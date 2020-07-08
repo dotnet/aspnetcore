@@ -39,6 +39,8 @@ namespace BasicTestApp
                     policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
             });
 
+            builder.Services.AddSingleton<HeadManager>();
+
             builder.Services.AddDataProtection();
 
             builder.Services.AddTransient<ProtectedLocalStorage>();
