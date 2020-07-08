@@ -1,0 +1,27 @@
+# Description: All Globalization Rules are enabled with default severity.
+
+# Code files
+[*.{cs,vb}]
+
+# Globalization Rules
+
+# CA1303: Do not pass literals as localized parameters
+#dotnet_diagnostic.CA1303.severity = warning
+
+# CA1304: Specify CultureInfo
+#dotnet_diagnostic.CA1304.severity = warning
+
+# CA1305: Specify IFormatProvider
+#dotnet_diagnostic.CA1305.severity = warning
+
+# CA1307: Specify StringComparison
+#dotnet_diagnostic.CA1307.severity = warning
+
+# CA1308: Normalize strings to uppercase
+#dotnet_diagnostic.CA1308.severity = warning
+
+# CA1309: Use ordinal stringcomparison
+dotnet_diagnostic.CA1309.severity = warning
+
+# CA2101: Specify marshaling for P/Invoke string arguments
+#dotnet_diagnostic.CA2101.severity = warning
