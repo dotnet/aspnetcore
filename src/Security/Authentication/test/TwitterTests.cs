@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 using System;
 using System.Linq;
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         [Fact]
         public async Task ChallengeWillTriggerApplyRedirectEvent()
         {
-            var server = CreateServer(o =>
+            using var host = await CreateHost(o =>
             {
                 o.ConsumerKey = "Test Consumer Key";
                 o.ConsumerSecret = "Test Consumer Secret";
@@ -65,6 +66,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 await context.ChallengeAsync("Twitter");
                 return true;
             });
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("http://example.com/challenge");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var query = transaction.Response.Headers.Location.Query;
@@ -78,11 +80,12 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         [Fact]
         public async Task ThrowsIfClientIdMissing()
         {
-            var server = CreateServer(o =>
+            using var host = await CreateHost(o =>
             {
                 o.ConsumerSecret = "Test Consumer Secret";
             });
 
+            using var server = host.GetTestServer();
             await Assert.ThrowsAsync<ArgumentException>("ConsumerKey", async () => await server.SendAsync("http://example.com/challenge"));
         }
 
@@ -93,24 +96,26 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         [Fact]
         public async Task ThrowsIfClientSecretMissing()
         {
-            var server = CreateServer(o =>
+            using var host = await CreateHost(o =>
             {
                 o.ConsumerKey = "Test Consumer Key";
             });
 
+            using var server = host.GetTestServer();
             await Assert.ThrowsAsync<ArgumentException>("ConsumerSecret", async () => await server.SendAsync("http://example.com/challenge"));
         }
 
         [Fact]
         public async Task BadSignInWillThrow()
         {
-            var server = CreateServer(o =>
+            using var host = await CreateHost(o =>
             {
                 o.ConsumerKey = "Test Consumer Key";
                 o.ConsumerSecret = "Test Consumer Secret";
             });
 
             // Send a bogus sign in
+            using var server = host.GetTestServer();
             var error = await Assert.ThrowsAnyAsync<Exception>(() => server.SendAsync("https://example.com/signin-twitter"));
             Assert.Equal("Invalid state cookie.", error.GetBaseException().Message);
         }
@@ -118,11 +123,12 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         [Fact]
         public async Task SignInThrows()
         {
-            var server = CreateServer(o =>
+            using var host = await CreateHost(o =>
             {
                 o.ConsumerKey = "Test Consumer Key";
                 o.ConsumerSecret = "Test Consumer Secret";
             });
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://example.com/signIn");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
@@ -130,11 +136,12 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         [Fact]
         public async Task SignOutThrows()
         {
-            var server = CreateServer(o =>
+            using var host = await CreateHost(o =>
             {
                 o.ConsumerKey = "Test Consumer Key";
                 o.ConsumerSecret = "Test Consumer Secret";
             });
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://example.com/signOut");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
@@ -142,11 +149,12 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         [Fact]
         public async Task ForbidThrows()
         {
-            var server = CreateServer(o =>
+            using var host = await CreateHost(o =>
             {
                 o.ConsumerKey = "Test Consumer Key";
                 o.ConsumerSecret = "Test Consumer Secret";
             });
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://example.com/signOut");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
@@ -154,7 +162,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         [Fact]
         public async Task ChallengeWillTriggerRedirection()
         {
-            var server = CreateServer(o =>
+            using var host = await CreateHost(o =>
             {
                 o.ConsumerKey = "Test Consumer Key";
                 o.ConsumerSecret = "Test Consumer Secret";
@@ -168,6 +176,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 await context.ChallengeAsync("Twitter");
                 return true;
             });
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("http://example.com/challenge");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
@@ -177,7 +186,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         [Fact]
         public async Task HandleRequestAsync_RedirectsToAccessDeniedPathWhenExplicitlySet()
         {
-            var server = CreateServer(o =>
+            using var host = await CreateHost(o =>
             {
                 o.ConsumerKey = "Test Consumer Key";
                 o.ConsumerSecret = "Test Consumer Secret";
@@ -195,6 +204,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 await context.ChallengeAsync("Twitter", properties);
                 return true;
             });
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("http://example.com/challenge");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
@@ -217,7 +227,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         [Fact]
         public async Task BadCallbackCallsAccessDeniedWithState()
         {
-            var server = CreateServer(o =>
+            using var host = await CreateHost(o =>
             {
                 o.ConsumerKey = "Test Consumer Key";
                 o.ConsumerSecret = "Test Consumer Secret";
@@ -244,6 +254,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 await context.ChallengeAsync("Twitter", properties);
                 return true;
             });
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("http://example.com/challenge");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
@@ -265,7 +276,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         [Fact]
         public async Task BadCallbackCallsRemoteAuthFailedWithState()
         {
-            var server = CreateServer(o =>
+            using var host = await CreateHost(o =>
             {
                 o.ConsumerKey = "Test Consumer Key";
                 o.ConsumerSecret = "Test Consumer Secret";
@@ -294,6 +305,8 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 await context.ChallengeAsync("Twitter", properties);
                 return true;
             });
+
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("http://example.com/challenge");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
@@ -312,46 +325,51 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
         }
 
-        private static TestServer CreateServer(Action<TwitterOptions> options, Func<HttpContext, Task<bool>> handler = null)
+        private static async Task<IHost> CreateHost(Action<TwitterOptions> options, Func<HttpContext, Task<bool>> handler = null)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.UseAuthentication();
-                    app.Use(async (context, next) =>
-                    {
-                        var req = context.Request;
-                        var res = context.Response;
-                        if (req.Path == new PathString("/signIn"))
+            var host = new HostBuilder()
+                .ConfigureWebHost(builder =>
+                    builder.UseTestServer()
+                        .Configure(app =>
                         {
-                            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync("Twitter", new ClaimsPrincipal()));
-                        }
-                        else if (req.Path == new PathString("/signOut"))
+                            app.UseAuthentication();
+                            app.Use(async (context, next) =>
+                            {
+                                var req = context.Request;
+                                var res = context.Response;
+                                if (req.Path == new PathString("/signIn"))
+                                {
+                                    await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync("Twitter", new ClaimsPrincipal()));
+                                }
+                                else if (req.Path == new PathString("/signOut"))
+                                {
+                                    await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync("Twitter"));
+                                }
+                                else if (req.Path == new PathString("/forbid"))
+                                {
+                                    await Assert.ThrowsAsync<InvalidOperationException>(() => context.ForbidAsync("Twitter"));
+                                }
+                                else if (handler == null || !await handler(context))
+                                {
+                                    await next();
+                                }
+                            });
+                        })
+                        .ConfigureServices(services =>
                         {
-                            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync("Twitter"));
-                        }
-                        else if (req.Path == new PathString("/forbid"))
-                        {
-                            await Assert.ThrowsAsync<InvalidOperationException>(() => context.ForbidAsync("Twitter"));
-                        }
-                        else if (handler == null || ! await handler(context))
-                        {
-                            await next();
-                        }
-                    });
-                })
-                .ConfigureServices(services =>
-                {
-                    Action<TwitterOptions> wrapOptions = o =>
-                    {
-                        o.SignInScheme = "External";
-                        options(o);
-                    };
-                    services.AddAuthentication()
-                        .AddCookie("External", _ => { })
-                        .AddTwitter(wrapOptions);
-                });
-            return new TestServer(builder);
+                            Action<TwitterOptions> wrapOptions = o =>
+                            {
+                                o.SignInScheme = "External";
+                                options(o);
+                            };
+                            services.AddAuthentication()
+                                .AddCookie("External", _ => { })
+                                .AddTwitter(wrapOptions);
+                        }))
+                .Build();
+
+            await host.StartAsync();
+            return host;
         }
 
         private HttpResponseMessage BackchannelRequestToken(HttpRequestMessage req)
