@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Threading.Tasks;
 using Xunit;
@@ -16,8 +17,8 @@ namespace Microsoft.AspNetCore.Authentication
     {
         protected override string DisplayName => DefaultScheme;
 
-        private TestServer CreateServer(Action<TOptions> configureOptions, Func<HttpContext, Task> testpath = null, bool isDefault = true)
-            => CreateServerWithServices(s =>
+        private Task<IHost> CreateHost(Action<TOptions> configureOptions, Func<HttpContext, Task> testpath = null, bool isDefault = true)
+            => CreateHostWithServices(s =>
             {
                 var builder = s.AddAuthentication();
                 if (isDefault)
@@ -29,23 +30,26 @@ namespace Microsoft.AspNetCore.Authentication
             }, testpath);
 
 
-        protected virtual TestServer CreateServerWithServices(Action<IServiceCollection> configureServices, Func<HttpContext, Task> testpath = null)
+        protected virtual async Task<IHost> CreateHostWithServices(Action<IServiceCollection> configureServices, Func<HttpContext, Task> testpath = null)
         {
-            //private static TestServer CreateServer(Action<IApplicationBuilder> configure, Action<IServiceCollection> configureServices, Func<HttpContext, Task<bool>> handler)
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.Use(async (context, next) =>
-                    {
-                        if (testpath != null)
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                    webHostBuilder.UseTestServer()
+                        .Configure(app =>
                         {
-                            await testpath(context);
-                        }
-                        await next();
-                    });
-                })
-                .ConfigureServices(configureServices);
-            return new TestServer(builder);
+                            app.Use(async (context, next) =>
+                            {
+                                if (testpath != null)
+                                {
+                                    await testpath(context);
+                                }
+                                await next();
+                            });
+                        })
+                        .ConfigureServices(configureServices))
+                .Build();
+            await host.StartAsync();
+            return host;
         }
 
         protected abstract void ConfigureDefaults(TOptions o);
@@ -53,13 +57,14 @@ namespace Microsoft.AspNetCore.Authentication
         [Fact]
         public async Task VerifySignInSchemeCannotBeSetToSelf()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 o => 
                 {
                     ConfigureDefaults(o);
                     o.SignInScheme = DefaultScheme;
                 },
                 context => context.ChallengeAsync(DefaultScheme));
+            using var server = host.GetTestServer();
             var error = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync("https://example.com/challenge"));
             Assert.Contains("cannot be set to itself", error.Message);
         }
@@ -67,10 +72,12 @@ namespace Microsoft.AspNetCore.Authentication
         [Fact]
         public async Task VerifySignInSchemeCannotBeSetToSelfUsingDefaultScheme()
         {
-            var server = CreateServer(
+
+            using var host = await CreateHost(
                 o => o.SignInScheme = null,
                 context => context.ChallengeAsync(DefaultScheme),
                 isDefault: true);
+            using var server = host.GetTestServer();
             var error = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync("https://example.com/challenge"));
             Assert.Contains("cannot be set to itself", error.Message);
         }
@@ -78,13 +85,14 @@ namespace Microsoft.AspNetCore.Authentication
         [Fact]
         public async Task VerifySignInSchemeCannotBeSetToSelfUsingDefaultSignInScheme()
         {
-            var server = CreateServerWithServices(
+            using var host = await CreateHostWithServices(
                 services =>
                 {
                     var builder = services.AddAuthentication(o => o.DefaultSignInScheme = DefaultScheme);
                     RegisterAuth(builder, o => o.SignInScheme = null);
                 },
                 context => context.ChallengeAsync(DefaultScheme));
+            using var server = host.GetTestServer();
             var error = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync("https://example.com/challenge"));
             Assert.Contains("cannot be set to itself", error.Message);
         }
