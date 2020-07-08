@@ -1619,41 +1619,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 {
                     requestAbortedTcs.SetException(ex);
                 }
-            });
+            }).DefaultTimeout();
 
-            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true).DefaultTimeout();
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 32,
                 withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
-                withStreamId: 1);
+                withStreamId: 1).DefaultTimeout();
 
             await ExpectAsync(Http2FrameType.DATA,
                 withLength: 16384,
                 withFlags: (byte)(Http2DataFrameFlags.NONE),
-                withStreamId: 1);
+                withStreamId: 1).DefaultTimeout();
 
             await ExpectAsync(Http2FrameType.DATA,
                 withLength: 16384,
                 withFlags: (byte)(Http2DataFrameFlags.NONE),
-                withStreamId: 1);
+                withStreamId: 1).DefaultTimeout();
 
             await ExpectAsync(Http2FrameType.DATA,
                 withLength: 16384,
                 withFlags: (byte)(Http2DataFrameFlags.NONE),
-                withStreamId: 1);
+                withStreamId: 1).DefaultTimeout();
 
             await ExpectAsync(Http2FrameType.DATA,
                 withLength: 16383,
                 withFlags: (byte)(Http2DataFrameFlags.NONE),
-                withStreamId: 1);
+                withStreamId: 1).DefaultTimeout();
 
             _connection.HandleReadDataRateTimeout();
 
             connectionAbortedTcs.SetResult();
 
             // Task completing successfully means HttpContext.Abort didn't throw
-            await requestAbortedTcs.Task;
+            await requestAbortedTcs.Task.DefaultTimeout();
         }
 
         [Fact]
