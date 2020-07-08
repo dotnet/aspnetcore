@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         private static string NormalizePath(string path)
         {
             path = path.Replace('\\', '/');
-            return path != null && path.StartsWith("/") ? path : "/" + path;
+            return path.StartsWith("/") ? path : "/" + path;
         }
 
         private bool StartsWithBasePath(string subpath, out PathString rest)

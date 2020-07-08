@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 using static Microsoft.AspNetCore.Razor.Design.IntegrationTests.ServiceWorkerAssert;
 
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var entries = assets.EnumerateArray().Select(e => e.GetProperty("url").GetString()).OrderBy(e => e).ToArray();
             Assert.All(entries, e => expectedExtensions.Contains(Path.GetExtension(e)));
 
-            VerifyServiceWorkerFiles(result, 
+            VerifyServiceWorkerFiles(result,
                Path.Combine(buildOutputDirectory, "wwwroot"),
                serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
                serviceWorkerContent: "// This is the development service worker",
@@ -110,6 +111,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23756")]
         public async Task PublishHostedWithPWA_ProducesAssets()
         {
             // Arrange

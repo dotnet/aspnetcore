@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <HelixTimeout>00:45:00</HelixTimeout>
+    <HelixTimeout Condition="$(HelixTargetQueue.StartsWith('Windows.10.Amd64'))">01:00:00</HelixTimeout>
   </PropertyGroup>
 
   <ItemGroup>
