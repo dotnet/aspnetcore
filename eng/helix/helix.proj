@@ -1,17 +1,10 @@
 <Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test" TreatAsLocalProperty="ProjectToBuild">
-  <!-- !!! Temporary workaround -->
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-  
   <PropertyGroup>
     <!--
       When invoking helix.proj for the whole repo with build.cmd, ProjectToBuild will be set to the path to this project.
       This must be reset in order for Build.props to evaluate a list of projects to be tested on Helix.
     -->
     <ProjectToBuild Condition="'$(ProjectToBuild)' == '$(MSBuildProjectFullPath)'"/>
-
-  <!-- !!! Temporary workaround -->
-    <NoWarn>$(NoWarn);MSB4011</NoWarn>    
-    
   </PropertyGroup>
 
   <Import Project="..\targets\Helix.Common.props" />
@@ -30,7 +23,6 @@
     <HelixAccessToken Condition="'$(_UseHelixOpenQueues)' != 'true'">$(HelixApiAccessToken)</HelixAccessToken>
     <IncludeDotNetCli>true</IncludeDotNetCli>
     <DotNetCliPackageType>sdk</DotNetCliPackageType>
-    <DotNetCliVersion>$(NETCoreSdkVersion)</DotNetCliVersion>
     
     <!-- Copied from Microsoft.NET.DefaultOutputPaths.targets in the .NET SDK. The Helix SDK contains nothing similar. -->
     <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">bin\</BaseOutputPath>
