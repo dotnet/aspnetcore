@@ -67,7 +67,6 @@
     <ProjectReferenceProvider Include="Microsoft.JSInterop.WebAssembly" ProjectPath="$(RepoRoot)src\Components\WebAssembly\JSInterop\src\Microsoft.JSInterop.WebAssembly.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly.Server" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Server\src\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" ProjectPath="$(RepoRoot)src\Components\WebAssembly\WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj"  />
-    <ProjectReferenceProvider Include="System.Net.Http.WebAssemblyHttpHandler" ProjectPath="$(RepoRoot)src\Components\WebAssembly\WebAssemblyHttpHandler\src\Microsoft.AspNetCore.Components.WebAssembly.HttpHandler.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.WebAssembly" ProjectPath="$(RepoRoot)src\Components\WebAssembly\WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Testing" ProjectPath="$(RepoRoot)src\Testing\src\Microsoft.AspNetCore.Testing.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore" ProjectPath="$(RepoRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" RefProjectPath="$(RepoRoot)src\DefaultBuilder\ref\Microsoft.AspNetCore.csproj" />

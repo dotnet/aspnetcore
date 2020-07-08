@@ -8,8 +8,6 @@ Document -
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 Component - (0:0,0 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Counter
-                HtmlContent - (11:0,11 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    LazyIntermediateToken - (11:0,11 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 CSharpCode - (14:1,1 [18] x:\dir\subdir\Test\TestComponent.cshtml)
                     LazyIntermediateToken - (14:1,1 [18] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - if (true)\n{\n    
                 HtmlContent - (38:3,10 [21] x:\dir\subdir\Test\TestComponent.cshtml)

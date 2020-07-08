@@ -105,15 +105,15 @@ namespace Microsoft.AspNetCore.TestHost
         {
             if (buffer == null)
             {
-                throw new ArgumentNullException("buffer");
+                throw new ArgumentNullException(nameof(buffer));
             }
             if (offset < 0 || offset > buffer.Length)
             {
-                throw new ArgumentOutOfRangeException("offset", offset, string.Empty);
+                throw new ArgumentOutOfRangeException(nameof(offset), offset, string.Empty);
             }
             if (count <= 0 || count > buffer.Length - offset)
             {
-                throw new ArgumentOutOfRangeException("count", count, string.Empty);
+                throw new ArgumentOutOfRangeException(nameof(count), count, string.Empty);
             }
         }
 

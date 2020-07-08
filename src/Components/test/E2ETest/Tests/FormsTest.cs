@@ -302,6 +302,68 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void InputRadioGroupWithoutNameInteractsWithEditContext()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var airlineInputs = appElement.FindElement(By.ClassName("airline")).FindElements(By.TagName("input"));
+            var unknownAirlineInput = airlineInputs.First(i => i.GetAttribute("value").Equals("Unknown"));
+            var bestAirlineInput = airlineInputs.First(i => i.GetAttribute("value").Equals("BestAirline"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Validate unselected inputs
+            Assert.All(airlineInputs.Where(i => i != unknownAirlineInput), i => Browser.False(() => i.Selected));
+
+            // Validate selected inputs
+            Browser.True(() => unknownAirlineInput.Selected);
+
+            // InputRadio emits additional attributes
+            Browser.True(() => unknownAirlineInput.GetAttribute("extra").Equals("additional"));
+
+            // Validates on edit
+            Assert.All(airlineInputs, i => Browser.Equal("valid", () => i.GetAttribute("class")));
+            bestAirlineInput.Click();
+            Assert.All(airlineInputs, i => Browser.Equal("modified valid", () => i.GetAttribute("class")));
+
+            // Can become invalid
+            unknownAirlineInput.Click();
+            Assert.All(airlineInputs, i => Browser.Equal("modified invalid", () => i.GetAttribute("class")));
+            Browser.Equal(new[] { "Pick a valid airline." }, messagesAccessor);
+        }
+
+        [Fact]
+        public void InputRadioGroupsWithNamesNestedInteractWithEditContext()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
+            var group = appElement.FindElement(By.ClassName("nested-radio-group"));
+            var countryInputs = group.FindElements(By.Name("country"));
+            var colorInputs = group.FindElements(By.Name("color"));
+
+            // Validate group counts
+            Assert.Equal(3, countryInputs.Count);
+            Assert.Equal(4, colorInputs.Count);
+
+            // Validate unselected inputs
+            Assert.All(countryInputs, i => Browser.False(() => i.Selected));
+            Assert.All(colorInputs, i => Browser.False(() => i.Selected));
+
+            // Invalidates on submit
+            Assert.All(countryInputs, i => Browser.Equal("valid", () => i.GetAttribute("class")));
+            Assert.All(colorInputs, i => Browser.Equal("valid", () => i.GetAttribute("class")));
+            submitButton.Click();
+            Assert.All(countryInputs, i => Browser.Equal("invalid", () => i.GetAttribute("class")));
+            Assert.All(colorInputs, i => Browser.Equal("invalid", () => i.GetAttribute("class")));
+
+            // Validates on edit
+            countryInputs.First().Click();
+            Assert.All(countryInputs, i => Browser.Equal("modified valid", () => i.GetAttribute("class")));
+            Assert.All(colorInputs, i => Browser.Equal("invalid", () => i.GetAttribute("class")));
+
+            colorInputs.First().Click();
+            Assert.All(colorInputs, i => Browser.Equal("modified valid", () => i.GetAttribute("class")));
+        }
+
+        [Fact]
         public void CanWireUpINotifyPropertyChangedToEditContext()
         {
             var appElement = Browser.MountTestComponent<NotifyPropertyChangedValidationComponent>();

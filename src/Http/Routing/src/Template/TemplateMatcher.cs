@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Http;
@@ -14,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Template
 
         // Perf: This is a cache to avoid looking things up in 'Defaults' each request.
         private readonly bool[] _hasDefaultValue;
-        private readonly object[] _defaultValues;
+        private readonly object?[] _defaultValues;
 
         private static readonly char[] Delimiters = new char[] { SeparatorChar };
         private RoutePatternMatcher _routePatternMatcher;

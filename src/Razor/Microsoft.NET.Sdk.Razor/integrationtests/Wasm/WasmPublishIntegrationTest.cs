@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Tasks;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
-using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<string, string>;
 using static Microsoft.AspNetCore.Razor.Design.IntegrationTests.ServiceWorkerAssert;
+using ResourceHashesByNameDictionary = System.Collections.Generic.Dictionary<string, string>;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
@@ -60,6 +60,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
                 serviceWorkerContent: "// This is the production service worker",
                 assetsManifestPath: "custom-service-worker-assets.js");
+
+            VerifyTypeGranularTrimming(result, blazorPublishDirectory);
         }
 
         [Fact]
@@ -206,7 +208,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             // Verify compression works
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm.br");
-            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br"); // 
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br"); //
 
             // Verify static assets are in the publish directory
             Assert.FileExists(result, blazorPublishDirectory, "index.html");
@@ -223,9 +225,14 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
                 serviceWorkerContent: "// This is the production service worker",
                 assetsManifestPath: "custom-service-worker-assets.js");
+
+            // Verify assemblies are not trimmed
+            var loggingAssemblyPath = Path.Combine(blazorPublishDirectory, "_framework", "Microsoft.Extensions.Logging.Abstractions.dll");
+            Assert.AssemblyContainsType(result, loggingAssemblyPath, "Microsoft.Extensions.Logging.Abstractions.NullLogger");
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23756")]
         public async Task Publish_SatelliteAssemblies_AreCopiedToBuildOutput()
         {
             // Arrange
@@ -305,13 +312,21 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.br");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br");
 
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.gz");
+
             VerifyServiceWorkerFiles(result, blazorPublishDirectory,
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
                 serviceWorkerContent: "// This is the production service worker",
                 assetsManifestPath: "custom-service-worker-assets.js");
+
+            VerifyTypeGranularTrimming(result, blazorPublishDirectory);
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23756")]
         public async Task Publish_HostedApp_ProducesBootJsonDataWithExpectedContent()
         {
             // Arrange
@@ -344,6 +359,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23397")]
         public async Task Publish_HostedApp_WithSatelliteAssemblies()
         {
             // Arrange
@@ -435,6 +451,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll.br");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.br");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br");
+
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.gz");
 
             VerifyServiceWorkerFiles(result, blazorPublishDirectory,
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
@@ -531,6 +552,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         // Regression test to verify satellite assemblies from the blazor app are copied to the published app's wwwroot output directory as
         // part of publishing in VS
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23397")]
         public async Task Publish_HostedApp_VisualStudio_WithSatelliteAssemblies()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
@@ -635,6 +657,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.br");
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.br");
 
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "RazorClassLibrary.dll.gz");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll.gz");
+
             VerifyServiceWorkerFiles(result, blazorPublishDirectory,
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
                 serviceWorkerContent: "// This is the production service worker",
@@ -691,6 +718,21 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Assert.StartsWith("sha256-", webFormattedHash);
                 return webFormattedHash.Substring(7);
             }
+        }
+
+
+        private void VerifyTypeGranularTrimming(MSBuildResult result, string blazorPublishDirectory)
+        {
+            var loggingAssemblyPath = Path.Combine(blazorPublishDirectory, "_framework", "Microsoft.Extensions.Logging.Abstractions.dll");
+            Assert.FileExists(result, loggingAssemblyPath);
+
+            // ILogger is referenced by the app, so we expect it to be preserved
+            Assert.AssemblyContainsType(result, loggingAssemblyPath, "Microsoft.Extensions.Logging.ILogger");
+            // LogLevel is referenced by ILogger and therefore must be preserved.
+            Assert.AssemblyContainsType(result, loggingAssemblyPath, "Microsoft.Extensions.Logging.LogLevel");
+
+            // NullLogger is not referenced by the app, and should be trimmed.
+            Assert.AssemblyDoesNotContainType(result, loggingAssemblyPath, "Microsoft.Extensions.Logging.Abstractions.NullLogger");
         }
 
         private static BootJsonData ReadBootJsonData(MSBuildResult result, string path)

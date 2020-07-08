@@ -21,9 +21,8 @@ using Microsoft.AspNetCore.Components.Web;
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
             __builder.OpenElement(0, "div");
-            __builder.AddMarkupContent(1, "\r\n  ");
-            __builder.OpenElement(2, "input");
-            __builder.AddAttribute(3, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
+            __builder.OpenElement(1, "input");
+            __builder.AddAttribute(2, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, 
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
                    OnClick
@@ -33,7 +32,6 @@ using Microsoft.AspNetCore.Components.Web;
 #nullable disable
             ));
             __builder.CloseElement();
-            __builder.AddMarkupContent(4, "\r\n");
             __builder.CloseElement();
         }
         #pragma warning restore 1998

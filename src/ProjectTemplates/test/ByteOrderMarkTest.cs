@@ -21,83 +21,86 @@ namespace Templates.Test
             _output = output;
         }
 
-        [ConditionalTheory]
-        [QuarantinedTest]
+        [Theory]
         [InlineData("Web.ProjectTemplates")]
         [InlineData("Web.Spa.ProjectTemplates")]
+        [InlineData("Web.ItemTemplates")]
+        [InlineData("Web.Client.ItemTemplates")]
         public void JSAndJSONInAllTemplates_ShouldNotContainBOM(string projectName)
         {
-            var currentDirectory = Directory.GetCurrentDirectory();
-            var projectTemplateDir = Directory.GetParent(currentDirectory).Parent.Parent.Parent.FullName;
-            var path = Path.Combine(projectName, "content");
-            var directories = Directory.GetDirectories(Path.Combine(projectTemplateDir, path), "*Sharp");
+            var templateDirectoryPath = GetTemplateDirectoryPath(projectName);
 
             var filesWithBOMCharactersPresent = false;
-            foreach (var directory in directories)
+            var files = (IEnumerable<string>)Directory.GetFiles(templateDirectoryPath, "*.json");
+            files = files.Concat(Directory.GetFiles(templateDirectoryPath, "*.js"));
+
+            foreach (var file in files)
             {
-                var files = (IEnumerable<string>)Directory.GetFiles(directory, "*.json");
-                files = files.Concat(Directory.GetFiles(directory, "*.js"));
-                foreach (var file in files)
+                var filePath = Path.GetFullPath(file);
+                using var fileStream = new FileStream(filePath, FileMode.Open);
+
+                var bytes = new byte[3];
+                fileStream.Read(bytes, 0, 3);
+
+                // Check for UTF8 BOM 0xEF,0xBB,0xBF
+                if (bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
                 {
-                    var filePath = Path.GetFullPath(file);
-                    using var fileStream = new FileStream(filePath, FileMode.Open);
-
-                    var bytes = new byte[3];
-                    fileStream.Read(bytes, 0, 3);
-
-                    // Check for UTF8 BOM 0xEF,0xBB,0xBF
-                    if (bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
-                    {
-                        _output.WriteLine($"File {filePath} has UTF-8 BOM characters.");
-                        filesWithBOMCharactersPresent = true;
-                    }
-                    // Check for UTF16 BOM 0xFF, 0xFE
-                    if (bytes[0] == 0xFF && bytes[1] == 0xFE)
-                    {
-                        _output.WriteLine($"File {filePath} has UTF-16 BOM characters.");
-                        filesWithBOMCharactersPresent = true;
-                    }
+                    _output.WriteLine($"File {filePath} has UTF-8 BOM characters.");
+                    filesWithBOMCharactersPresent = true;
+                }
+                // Check for UTF16 BOM 0xFF, 0xFE
+                if (bytes[0] == 0xFF && bytes[1] == 0xFE)
+                {
+                    _output.WriteLine($"File {filePath} has UTF-16 BOM characters.");
+                    filesWithBOMCharactersPresent = true;
                 }
             }
 
             Assert.False(filesWithBOMCharactersPresent);
         }
 
-        [ConditionalFact]
-        [QuarantinedTest]
-        public void RazorFilesInWebProjects_ShouldContainBOM()
+        [Theory]
+        [InlineData("Web.ProjectTemplates")]
+        [InlineData("Web.Spa.ProjectTemplates")]
+        [InlineData("Web.ItemTemplates")]
+        [InlineData("Web.Client.ItemTemplates")]
+        public void RazorFilesInWebProjects_ShouldContainBOM(string projectName)
         {
-            var projectName = "Web.ProjectTemplates";
-            var currentDirectory = Directory.GetCurrentDirectory();
-            var projectTemplateDir = Directory.GetParent(currentDirectory).Parent.Parent.Parent.FullName;
-            var path = Path.Combine(projectName, "content");
-            var directories = Directory.GetDirectories(Path.Combine(projectTemplateDir, path), "*Sharp");
+            var templateDirectoryPath = GetTemplateDirectoryPath(projectName);
 
-            bool nonBOMFilesPresent = false;
+            var nonBOMFilesPresent = false;
 
-            foreach (var directory in directories)
+            var files = (IEnumerable<string>)Directory.GetFiles(templateDirectoryPath, "*.cshtml", SearchOption.AllDirectories);
+            files = files.Concat(Directory.GetFiles(templateDirectoryPath, "*.razor", SearchOption.AllDirectories));
+
+            foreach (var file in files)
             {
-                var files = (IEnumerable<string>)Directory.GetFiles(directory, "*.cshtml", SearchOption.AllDirectories);
-                files = files.Concat(Directory.GetFiles(directory, "*.razor", SearchOption.AllDirectories));
-                foreach (var file in files)
+                var filePath = Path.GetFullPath(file);
+                using var fileStream = new FileStream(filePath, FileMode.Open);
+
+                var bytes = new byte[3];
+                fileStream.Read(bytes, 0, 3);
+
+                // Check for UTF8 BOM 0xEF,0xBB,0xBF
+                var expectedBytes = Encoding.UTF8.GetPreamble();
+                if (bytes[0] != expectedBytes[0] || bytes[1] != expectedBytes[1] || bytes[2] != expectedBytes[2])
                 {
-                    var filePath = Path.GetFullPath(file);
-                    using var fileStream = new FileStream(filePath, FileMode.Open);
-
-                    var bytes = new byte[3];
-                    fileStream.Read(bytes, 0, 3);
-
-                    // Check for UTF8 BOM 0xEF,0xBB,0xBF
-                    var expectedBytes = Encoding.UTF8.GetPreamble();
-                    if (bytes[0] != expectedBytes[0] || bytes[1] != expectedBytes[1] || bytes[2] != expectedBytes[2])
-                    {
-                        _output.WriteLine($"File {filePath} does not have UTF-8 BOM characters.");
-                        nonBOMFilesPresent = true;
-                    }
+                    _output.WriteLine($"File {filePath} does not have UTF-8 BOM characters.");
+                    nonBOMFilesPresent = true;
                 }
             }
 
             Assert.False(nonBOMFilesPresent);
+        }
+
+        private string GetTemplateDirectoryPath(string projectName)
+        {
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var AssetsDir = Path.Combine(currentDirectory, "Assets");
+            var path = Path.Combine(projectName, "content");
+            var templateDirectoryPath = Path.Combine(AssetsDir, path);
+
+            return templateDirectoryPath;
         }
     }
 }

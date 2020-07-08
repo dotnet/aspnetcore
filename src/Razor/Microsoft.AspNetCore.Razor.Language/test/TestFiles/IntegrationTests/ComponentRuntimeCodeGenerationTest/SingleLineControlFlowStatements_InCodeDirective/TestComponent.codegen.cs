@@ -34,10 +34,9 @@ using Microsoft.AspNetCore.Components.Rendering;
 #line default
 #line hidden
 #nullable disable
-        __builder.AddContent(0, "        ");
-        __builder.OpenElement(1, "p");
-        __builder.AddContent(2, "Output: ");
-        __builder.AddContent(3, 
+        __builder.OpenElement(0, "p");
+        __builder.AddContent(1, "Output: ");
+        __builder.AddContent(2, 
 #nullable restore
 #line 9 "x:\dir\subdir\Test\TestComponent.cshtml"
                     output
@@ -47,7 +46,6 @@ using Microsoft.AspNetCore.Components.Rendering;
 #nullable disable
         );
         __builder.CloseElement();
-        __builder.AddMarkupContent(4, "\r\n");
 #nullable restore
 #line 10 "x:\dir\subdir\Test\TestComponent.cshtml"
     }

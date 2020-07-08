@@ -773,7 +773,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 WriteIndented = false,
                 ReadCommentHandling = JsonCommentHandling.Disallow,
                 AllowTrailingCommas = false,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+                DefaultIgnoreCondition = JsonIgnoreCondition.Never,
                 IgnoreReadOnlyProperties = false,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 PropertyNameCaseInsensitive = true,

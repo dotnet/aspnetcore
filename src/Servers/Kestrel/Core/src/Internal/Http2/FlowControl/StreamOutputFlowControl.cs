@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
             if (_currentConnectionLevelAwaitable != null &&
                 _currentConnectionLevelAwaitable.Version == _currentConnectionLevelAwaitableVersion)
             {
-                _currentConnectionLevelAwaitable.SetResult(null);
+                _currentConnectionLevelAwaitable.TrySetResult(null);
             }
         }
 

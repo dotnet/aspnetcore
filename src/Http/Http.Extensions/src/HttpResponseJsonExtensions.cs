@@ -6,12 +6,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 #nullable enable
 
-namespace Microsoft.AspNetCore.Http.Json
+namespace Microsoft.AspNetCore.Http
 {
     public static partial class HttpResponseJsonExtensions
     {
@@ -77,7 +78,6 @@ namespace Microsoft.AspNetCore.Http.Json
             options ??= ResolveSerializerOptions(response.HttpContext);
 
             response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
-            response.StatusCode = StatusCodes.Status200OK;
             return JsonSerializer.SerializeAsync<TValue>(response.Body, value!, options, cancellationToken);
         }
 
@@ -150,7 +150,6 @@ namespace Microsoft.AspNetCore.Http.Json
             options ??= ResolveSerializerOptions(response.HttpContext);
 
             response.ContentType = contentType ?? JsonConstants.JsonContentTypeWithCharset;
-            response.StatusCode = StatusCodes.Status200OK;
             return JsonSerializer.SerializeAsync(response.Body, value, type, options, cancellationToken);
         }
 

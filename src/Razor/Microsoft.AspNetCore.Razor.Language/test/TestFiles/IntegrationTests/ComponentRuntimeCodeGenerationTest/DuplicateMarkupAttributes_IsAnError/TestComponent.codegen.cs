@@ -14,15 +14,13 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
             __builder.OpenElement(0, "div");
-            __builder.AddMarkupContent(1, "\r\n  ");
-            __builder.OpenElement(2, "a");
-            __builder.AddAttribute(3, "href", "/cool-url");
-            __builder.AddAttribute(4, "style", true);
-            __builder.AddAttribute(5, "disabled", true);
-            __builder.AddAttribute(6, "href", "/even-cooler-url");
-            __builder.AddContent(7, "Learn the ten cool tricks your compiler author will hate!");
+            __builder.OpenElement(1, "a");
+            __builder.AddAttribute(2, "href", "/cool-url");
+            __builder.AddAttribute(3, "style", true);
+            __builder.AddAttribute(4, "disabled", true);
+            __builder.AddAttribute(5, "href", "/even-cooler-url");
+            __builder.AddContent(6, "Learn the ten cool tricks your compiler author will hate!");
             __builder.CloseElement();
-            __builder.AddMarkupContent(8, "\r\n");
             __builder.CloseElement();
         }
         #pragma warning restore 1998

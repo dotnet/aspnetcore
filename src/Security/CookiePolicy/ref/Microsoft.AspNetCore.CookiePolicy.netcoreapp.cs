@@ -56,3 +56,11 @@ namespace Microsoft.AspNetCore.CookiePolicy
         Always = 1,
     }
 }
+namespace Microsoft.Extensions.DependencyInjection
+{
+    public static partial class CookiePolicyServiceCollectionExtensions
+    {
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddCookiePolicy(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Builder.CookiePolicyOptions> configureOptions) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddCookiePolicy<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Builder.CookiePolicyOptions, TService> configureOptions) where TService : class { throw null; }
+    }
+}

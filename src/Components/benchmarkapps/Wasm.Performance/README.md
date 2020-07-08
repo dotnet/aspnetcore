@@ -9,7 +9,7 @@ The TestApp is a regular BlazorWASM project and can be run using `dotnet run`. T
 
 Here are the commands you would need to run it locally inside docker:
 
-1. `dotnet publish -c Release -r linux-x64 Driver/Wasm.Performance.Driver.csproj`
+1. `dotnet publish -c Release Driver/Wasm.Performance.Driver.csproj`
 2. `docker build -t blazor-local -f ./local.dockerfile . `
 3. `docker run -it blazor-local`
 

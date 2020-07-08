@@ -254,6 +254,11 @@ namespace Microsoft.AspNetCore.Http
                                 switch (attr)
                                 {
                                     case Attr.Delimiter:
+                                        if (ch == (char)0)
+                                        {
+                                            _valueEnd = _offset;
+                                            _trailingStart = _offset;
+                                        }
                                         _mode = Mode.Produce;
                                         break;
                                     case Attr.Quote:

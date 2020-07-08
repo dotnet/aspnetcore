@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 
@@ -36,9 +35,9 @@ namespace Microsoft.AspNetCore.Components
         /// The <see cref="CultureInfo"/> to use while formatting. Defaults to <see cref="CultureInfo.CurrentCulture"/>.
         /// </param>
         /// <returns>The formatted value.</returns>
-        public static string FormatValue(string value, CultureInfo? culture = null) => FormatStringValueCore(value, culture);
+        public static string? FormatValue(string? value, CultureInfo? culture = null) => FormatStringValueCore(value, culture);
 
-        private static string FormatStringValueCore(string value, CultureInfo? culture)
+        private static string? FormatStringValueCore(string? value, CultureInfo? culture)
         {
             return value;
         }

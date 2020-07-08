@@ -12,4 +12,3 @@ Document -
                 MarkupElement - (44:3,0 [38] x:\dir\subdir\Test\TestComponent.cshtml) - div
                     CSharpExpression - (50:3,6 [7] x:\dir\subdir\Test\TestComponent.cshtml)
                         LazyIntermediateToken - (50:3,6 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - myValue
-                    MarkupBlock -  -   

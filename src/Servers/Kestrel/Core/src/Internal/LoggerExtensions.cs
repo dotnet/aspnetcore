@@ -46,6 +46,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 new EventId(5, "DeveloperCertificateFirstRun"),
                 "{Message}");
 
+        private static readonly Action<ILogger, string, Exception> _failedToLoadCertificate =
+            LoggerMessage.Define<string>(
+                LogLevel.Error,
+                new EventId(6, "MissingOrInvalidCertificateFile"),
+                "The certificate file at '{CertificateFilePath}' can not be found, contains malformed data or does not contain a certificate.");
+
+        private static readonly Action<ILogger, string, Exception> _failedToLoadCertificateKey =
+            LoggerMessage.Define<string>(
+            LogLevel.Error,
+            new EventId(7, "MissingOrInvalidCertificateKeyFile"),
+            "The certificate key file at '{CertificateKeyFilePath}' can not be found, contains malformed data or does not contain a PEM encoded key in PKCS8 format.");
+
         public static void LocatedDevelopmentCertificate(this ILogger logger, X509Certificate2 certificate) => _locatedDevelopmentCertificate(logger, certificate.Subject, certificate.Thumbprint, null);
 
         public static void UnableToLocateDevelopmentCertificate(this ILogger logger) => _unableToLocateDevelopmentCertificate(logger, null);
@@ -57,5 +69,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public static void BadDeveloperCertificateState(this ILogger logger) => _badDeveloperCertificateState(logger, null);
 
         public static void DeveloperCertificateFirstRun(this ILogger logger, string message) => _developerCertificateFirstRun(logger, message, null);
+
+        public static void FailedToLoadCertificate(this ILogger logger, string certificatePath) => _failedToLoadCertificate(logger, certificatePath, null);
+        public static void FailedToLoadCertificateKey(this ILogger logger, string certificateKeyPath) => _failedToLoadCertificateKey(logger, certificateKeyPath, null);
     }
 }

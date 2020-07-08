@@ -153,6 +153,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             bool trust = false,
             bool includePrivateKey = false,
             string password = null,
+            CertificateKeyExportFormat keyExportFormat = CertificateKeyExportFormat.Pfx,
             bool isInteractive = true)
         {
             var result = EnsureCertificateResult.Succeeded;
@@ -170,6 +171,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             certificates = filteredCertificates;
 
             X509Certificate2 certificate = null;
+            var isNewCertificate = false;
             if (certificates.Any())
             {
                 certificate = certificates.First();
@@ -216,6 +218,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 try
                 {
                     Log.CreateDevelopmentCertificateStart();
+                    isNewCertificate = true;
                     certificate = CreateAspNetCoreHttpsDevelopmentCertificate(notBefore, notAfter);
                 }
                 catch (Exception e)
@@ -260,13 +263,13 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             {
                 try
                 {
-                    ExportCertificate(certificate, path, includePrivateKey, password);
+                    ExportCertificate(certificate, path, includePrivateKey, password, keyExportFormat);
                 }
                 catch (Exception e)
                 {
                     Log.ExportCertificateError(e.ToString());
                     // We don't want to mask the original source of the error here.
-                    result = result != EnsureCertificateResult.Succeeded || result != EnsureCertificateResult.ValidCertificatePresent ?
+                    result = result != EnsureCertificateResult.Succeeded && result != EnsureCertificateResult.ValidCertificatePresent ?
                         result :
                         EnsureCertificateResult.ErrorExportingTheCertificate;
 
@@ -292,7 +295,56 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 }
             }
 
+            DisposeCertificates(!isNewCertificate ? certificates : certificates.Append(certificate));
+
             return result;
+        }
+
+        internal ImportCertificateResult ImportCertificate(string certificatePath, string password)
+        {
+            if (!File.Exists(certificatePath))
+            {
+                Log.ImportCertificateMissingFile(certificatePath);
+                return ImportCertificateResult.CertificateFileMissing;
+            }
+
+            var certificates = ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false, requireExportable: false);
+            if (certificates.Any())
+            {
+                Log.ImportCertificateExistingCertificates(ToCertificateDescription(certificates));
+                return ImportCertificateResult.ExistingCertificatesPresent;
+            }
+
+            X509Certificate2 certificate;
+            try
+            {
+                Log.LoadCertificateStart(certificatePath);
+                certificate = new X509Certificate2(certificatePath, password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.EphemeralKeySet);
+                Log.LoadCertificateEnd(GetDescription(certificate));
+            }
+            catch (Exception e)
+            {
+                Log.LoadCertificateError(e.ToString());
+                return ImportCertificateResult.InvalidCertificate;
+            }
+
+            if (!IsHttpsDevelopmentCertificate(certificate))
+            {
+                Log.NoHttpsDevelopmentCertificate(GetDescription(certificate));
+                return ImportCertificateResult.NoDevelopmentHttpsCertificate;
+            }
+
+            try
+            {
+                SaveCertificate(certificate);
+            }
+            catch (Exception e)
+            {
+                Log.SaveCertificateInStoreError(e.ToString());
+                return ImportCertificateResult.ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore;
+            }
+
+            return ImportCertificateResult.Succeeded;
         }
 
         public void CleanupHttpsCertificates()
@@ -329,7 +381,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         protected abstract IList<X509Certificate2> GetCertificatesToRemove(StoreName storeName, StoreLocation storeLocation);
 
-        internal void ExportCertificate(X509Certificate2 certificate, string path, bool includePrivateKey, string password)
+        internal void ExportCertificate(X509Certificate2 certificate, string path, bool includePrivateKey, string password, CertificateKeyExportFormat format)
         {
             Log.ExportCertificateStart(GetDescription(certificate), path, includePrivateKey);
             if (includePrivateKey && password == null)
@@ -345,14 +397,68 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
 
             byte[] bytes;
+            byte[] keyBytes;
+            byte[] pemEnvelope = null;
+            RSA key = null;
+
             try
             {
-                bytes = includePrivateKey ? certificate.Export(X509ContentType.Pkcs12, password) : certificate.Export(X509ContentType.Cert);
+                if (includePrivateKey)
+                {
+                    switch (format)
+                    {
+                        case CertificateKeyExportFormat.Pfx:
+                            bytes = certificate.Export(X509ContentType.Pkcs12, password);
+                            break;
+                        case CertificateKeyExportFormat.Pem:
+                            key = certificate.GetRSAPrivateKey();
+
+                            char[] pem;
+                            if (password != null)
+                            {
+                                keyBytes = key.ExportEncryptedPkcs8PrivateKey(password, new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA256, 100000));
+                                pem = PemEncoding.Write("ENCRYPTED PRIVATE KEY", keyBytes);
+                                pemEnvelope = Encoding.ASCII.GetBytes(pem);
+                            }
+                            else
+                            {
+                                // Export the key first to an encrypted PEM to avoid issues with System.Security.Cryptography.Cng indicating that the operation is not supported.
+                                // This is likely by design to avoid exporting the key by mistake.
+                                // To bypass it, we export the certificate to pem temporarily and then we import it and export it as unprotected PEM.
+                                keyBytes = key.ExportEncryptedPkcs8PrivateKey("", new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA256, 1));
+                                pem = PemEncoding.Write("ENCRYPTED PRIVATE KEY", keyBytes);
+                                key.Dispose();
+                                key = RSA.Create();
+                                key.ImportFromEncryptedPem(pem, "");
+                                Array.Clear(keyBytes, 0, keyBytes.Length);
+                                Array.Clear(pem, 0, pem.Length);
+                                keyBytes = key.ExportPkcs8PrivateKey();
+                                pem = PemEncoding.Write("PRIVATE KEY", keyBytes);
+                                pemEnvelope = Encoding.ASCII.GetBytes(pem);
+                            }
+
+                            Array.Clear(keyBytes, 0, keyBytes.Length);
+                            Array.Clear(pem, 0, pem.Length);
+
+                            bytes = certificate.Export(X509ContentType.Cert);
+                            break;
+                        default:
+                            throw new InvalidOperationException("Unknown format.");
+                    }
+                }
+                else
+                {
+                    bytes = certificate.Export(X509ContentType.Cert);
+                }
             }
             catch (Exception e)
             {
                 Log.ExportCertificateError(e.ToString());
                 throw;
+            }
+            finally
+            {
+                key?.Dispose();
             }
 
             try
@@ -368,6 +474,25 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             finally
             {
                 Array.Clear(bytes, 0, bytes.Length);
+            }
+
+            if (includePrivateKey && format == CertificateKeyExportFormat.Pem)
+            {
+                try
+                {
+                    var keyPath = Path.ChangeExtension(path, ".key");
+                    Log.WritePemKeyToDisk(keyPath);
+                    File.WriteAllBytes(keyPath, pemEnvelope);
+                }
+                catch (Exception ex)
+                {
+                    Log.WritePemKeyToDiskError(ex.ToString());
+                    throw;
+                }
+                finally
+                {
+                    Array.Clear(pemEnvelope, 0, pemEnvelope.Length);
+                }
             }
         }
 
@@ -496,7 +621,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             DateTimeOffset notBefore,
             DateTimeOffset notAfter)
         {
-            var key = CreateKeyMaterial(RSAMinimumKeySizeInBits);
+            using var key = CreateKeyMaterial(RSAMinimumKeySizeInBits);
 
             var request = new CertificateRequest(subject, key, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
             foreach (var extension in extensions)
@@ -745,6 +870,31 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
             [Event(56, Level = EventLevel.Error)]
             internal void MacOSAddCertificateToKeyChainError(int exitCode) => WriteEvent(56, $"An error has ocurred while importing the certificate to the keychain: {exitCode}.");
+
+
+            [Event(57, Level = EventLevel.Verbose)]
+            public void WritePemKeyToDisk(string path) => WriteEvent(57, $"Writing the certificate to: {path}.");
+
+            [Event(58, Level = EventLevel.Error)]
+            public void WritePemKeyToDiskError(string ex) => WriteEvent(58, $"An error has ocurred while writing the certificate to disk: {ex}.");
+
+            [Event(59, Level = EventLevel.Error)]
+            internal void ImportCertificateMissingFile(string certificatePath) => WriteEvent(59, $"The file '{certificatePath}' does not exist.");
+
+            [Event(60, Level = EventLevel.Error)]
+            internal void ImportCertificateExistingCertificates(string certificateDescription) => WriteEvent(60, $"One or more HTTPS certificates exist '{certificateDescription}'.");
+
+            [Event(61, Level = EventLevel.Verbose)]
+            internal void LoadCertificateStart(string certificatePath) => WriteEvent(61, $"Loading certificate from path '{certificatePath}'.");
+
+            [Event(62, Level = EventLevel.Verbose)]
+            internal void LoadCertificateEnd(string description) => WriteEvent(62, $"The certificate '{description}' has been loaded successfully.");
+
+            [Event(63, Level = EventLevel.Error)]
+            internal void LoadCertificateError(string ex) => WriteEvent(63, $"An error has ocurred while loading the certificate from disk: {ex}.");
+
+            [Event(64, Level = EventLevel.Error)]
+            internal void NoHttpsDevelopmentCertificate(string description) => WriteEvent(64, $"The provided certificate '{description}' is not a valid ASP.NET Core HTTPS development certificate.");
         }
 
         internal class UserCancelledTrustException : Exception

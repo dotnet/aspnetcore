@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="parameter">The parameter the parameter policy is being created for.</param>
         /// <param name="inlineText">The inline text to resolve.</param>
         /// <returns>The <see cref="IParameterPolicy"/> for the parameter.</returns>
-        public abstract IParameterPolicy Create(RoutePatternParameterPart parameter, string inlineText);
+        public abstract IParameterPolicy Create(RoutePatternParameterPart? parameter, string inlineText);
 
         /// <summary>
         /// Creates a parameter policy.

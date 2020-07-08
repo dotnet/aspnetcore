@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components
         public static string? FormatValue(long? value, System.Globalization.CultureInfo? culture = null) { throw null; }
         public static string? FormatValue(float? value, System.Globalization.CultureInfo? culture = null) { throw null; }
         public static string FormatValue(float value, System.Globalization.CultureInfo? culture = null) { throw null; }
-        public static string FormatValue(string value, System.Globalization.CultureInfo? culture = null) { throw null; }
+        public static string? FormatValue(string? value, System.Globalization.CultureInfo? culture = null) { throw null; }
         public static object? FormatValue<T>(T value, System.Globalization.CultureInfo? culture = null) { throw null; }
         public static bool TryConvertToBool(object? obj, System.Globalization.CultureInfo? culture, out bool value) { throw null; }
         public static bool TryConvertToDateTime(object? obj, System.Globalization.CultureInfo? culture, out System.DateTime value) { throw null; }
@@ -125,7 +125,13 @@ namespace Microsoft.AspNetCore.Components
         private readonly object _dummy;
         private readonly int _dummyPrimitive;
         public ElementReference(string id) { throw null; }
+        public ElementReference(string id, Microsoft.AspNetCore.Components.ElementReferenceContext? context) { throw null; }
+        public Microsoft.AspNetCore.Components.ElementReferenceContext? Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+    }
+    public abstract partial class ElementReferenceContext
+    {
+        protected ElementReferenceContext() { }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct EventCallback
@@ -398,29 +404,29 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public void AddAttribute(int sequence, in Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame frame) { }
         public void AddAttribute(int sequence, string name, Microsoft.AspNetCore.Components.EventCallback value) { }
         public void AddAttribute(int sequence, string name, bool value) { }
-        public void AddAttribute(int sequence, string name, System.MulticastDelegate value) { }
-        public void AddAttribute(int sequence, string name, object value) { }
-        public void AddAttribute(int sequence, string name, string value) { }
+        public void AddAttribute(int sequence, string name, System.MulticastDelegate? value) { }
+        public void AddAttribute(int sequence, string name, object? value) { }
+        public void AddAttribute(int sequence, string name, string? value) { }
         public void AddAttribute<TArgument>(int sequence, string name, Microsoft.AspNetCore.Components.EventCallback<TArgument> value) { }
-        public void AddComponentReferenceCapture(int sequence, System.Action<object> componentReferenceCaptureAction) { }
+        public void AddComponentReferenceCapture(int sequence, System.Action<object?> componentReferenceCaptureAction) { }
         public void AddContent(int sequence, Microsoft.AspNetCore.Components.MarkupString markupContent) { }
-        public void AddContent(int sequence, Microsoft.AspNetCore.Components.RenderFragment fragment) { }
-        public void AddContent(int sequence, object textContent) { }
-        public void AddContent(int sequence, string textContent) { }
-        public void AddContent<TValue>(int sequence, Microsoft.AspNetCore.Components.RenderFragment<TValue> fragment, TValue value) { }
+        public void AddContent(int sequence, Microsoft.AspNetCore.Components.RenderFragment? fragment) { }
+        public void AddContent(int sequence, object? textContent) { }
+        public void AddContent(int sequence, string? textContent) { }
+        public void AddContent<TValue>(int sequence, Microsoft.AspNetCore.Components.RenderFragment<TValue>? fragment, TValue value) { }
         public void AddElementReferenceCapture(int sequence, System.Action<Microsoft.AspNetCore.Components.ElementReference> elementReferenceCaptureAction) { }
-        public void AddMarkupContent(int sequence, string markupContent) { }
-        public void AddMultipleAttributes(int sequence, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>> attributes) { }
+        public void AddMarkupContent(int sequence, string? markupContent) { }
+        public void AddMultipleAttributes(int sequence, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>>? attributes) { }
         public void Clear() { }
         public void CloseComponent() { }
         public void CloseElement() { }
         public void CloseRegion() { }
         public Microsoft.AspNetCore.Components.RenderTree.ArrayRange<Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame> GetFrames() { throw null; }
         public void OpenComponent(int sequence, System.Type componentType) { }
-        public void OpenComponent<TComponent>(int sequence) where TComponent : Microsoft.AspNetCore.Components.IComponent { }
+        public void OpenComponent<TComponent>(int sequence) where TComponent : notnull, Microsoft.AspNetCore.Components.IComponent { }
         public void OpenElement(int sequence, string elementName) { }
         public void OpenRegion(int sequence) { }
-        public void SetKey(object value) { }
+        public void SetKey(object? value) { }
         public void SetUpdatesAttributeName(string updatesAttributeName) { }
         void System.IDisposable.Dispose() { }
     }
@@ -467,6 +473,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     {
         public Renderer(System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         public abstract Microsoft.AspNetCore.Components.Dispatcher Dispatcher { get; }
+        protected internal Microsoft.AspNetCore.Components.ElementReferenceContext? ElementReferenceContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
         public event System.UnhandledExceptionEventHandler UnhandledSynchronizationException { add { } remove { } }
         protected internal int AssignRootComponentId(Microsoft.AspNetCore.Components.IComponent component) { throw null; }
         public virtual System.Threading.Tasks.Task DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo fieldInfo, System.EventArgs eventArgs) { throw null; }

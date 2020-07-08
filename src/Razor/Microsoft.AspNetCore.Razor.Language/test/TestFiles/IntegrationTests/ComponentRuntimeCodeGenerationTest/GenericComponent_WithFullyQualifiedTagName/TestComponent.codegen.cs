@@ -22,9 +22,8 @@ namespace Test
 #line hidden
 #nullable disable
             , 2, (context) => (__builder2) => {
-                __builder2.AddMarkupContent(3, "\r\n  ");
-                __builder2.OpenElement(4, "div");
-                __builder2.AddContent(5, 
+                __builder2.OpenElement(3, "div");
+                __builder2.AddContent(4, 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
         context.ToLower()
@@ -34,7 +33,6 @@ namespace Test
 #nullable disable
                 );
                 __builder2.CloseElement();
-                __builder2.AddMarkupContent(6, "\r\n");
             }
             );
         }

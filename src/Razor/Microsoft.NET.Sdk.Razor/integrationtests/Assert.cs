@@ -319,6 +319,22 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             return filePath;
         }
 
+        public static string DirectoryExists(MSBuildResult result, params string[] paths)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            var filePath = Path.Combine(result.Project.DirectoryPath, Path.Combine(paths));
+            if (!Directory.Exists(filePath))
+            {
+                throw new DirectoryMissingException(result, filePath);
+            }
+
+            return filePath;
+        }
+
         public static void FileCountEquals(MSBuildResult result, int expected, string directoryPath, string searchPattern, SearchOption searchOption = SearchOption.AllDirectories)
         {
             if (result == null)
@@ -519,7 +535,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             using (var file = File.OpenRead(assemblyPath))
             {
-                var peReader = new PEReader(file);
+                using var peReader = new PEReader(file);
                 var metadataReader = peReader.GetMetadataReader();
                 return metadataReader.TypeDefinitions.Where(t => !t.IsNil).Select(t =>
                 {
@@ -818,6 +834,19 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             public string FilePath { get; }
 
             protected override string Heading => $"File: '{FilePath}' was not found.";
+        }
+
+        private class DirectoryMissingException : MSBuildXunitException
+        {
+            public DirectoryMissingException(MSBuildResult result, string directoryPath)
+                : base(result)
+            {
+                DirectoryPath = directoryPath;
+            }
+
+            public string DirectoryPath { get; }
+
+            protected override string Heading => $"Directory: '{DirectoryPath}' was not found.";
         }
 
         private class FileCountException : MSBuildXunitException

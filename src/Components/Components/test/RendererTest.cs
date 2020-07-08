@@ -3733,6 +3733,52 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Equal($"The {nameof(ParameterView)} instance can no longer be read because it has expired. {nameof(ParameterView)} can only be read synchronously and must not be stored for later use.", ex.Message);
         }
 
+        [Fact]
+        public void CanUseCustomComponentActivatorFromConstructorParameter()
+        {
+            // Arrange
+            var serviceProvider = new TestServiceProvider();
+            var componentActivator = new TestComponentActivator<MessageComponent>();
+            var renderer = new TestRenderer(serviceProvider, componentActivator);
+
+            // Act: Ask for TestComponent
+            var suppliedComponent = renderer.InstantiateComponent<TestComponent>();
+
+            // Assert: We actually receive MessageComponent
+            Assert.IsType<MessageComponent>(suppliedComponent);
+            Assert.Collection(componentActivator.RequestedComponentTypes,
+                requestedType => Assert.Equal(typeof(TestComponent), requestedType));
+        }
+
+        [Fact]
+        public void CanUseCustomComponentActivatorFromServiceProvider()
+        {
+            // Arrange
+            var serviceProvider = new TestServiceProvider();
+            var componentActivator = new TestComponentActivator<MessageComponent>();
+            serviceProvider.AddService<IComponentActivator>(componentActivator);
+            var renderer = new TestRenderer(serviceProvider);
+
+            // Act: Ask for TestComponent
+            var suppliedComponent = renderer.InstantiateComponent<TestComponent>();
+
+            // Assert: We actually receive MessageComponent
+            Assert.IsType<MessageComponent>(suppliedComponent);
+            Assert.Collection(componentActivator.RequestedComponentTypes,
+                requestedType => Assert.Equal(typeof(TestComponent), requestedType));
+        }
+
+        private class TestComponentActivator<TResult> : IComponentActivator where TResult: IComponent, new()
+        {
+            public List<Type> RequestedComponentTypes { get; } = new List<Type>();
+
+            public IComponent CreateInstance(Type componentType)
+            {
+                RequestedComponentTypes.Add(componentType);
+                return new TResult();
+            }
+        }
+
         private class NoOpRenderer : Renderer
         {
             public NoOpRenderer() : base(new TestServiceProvider(), NullLoggerFactory.Instance)

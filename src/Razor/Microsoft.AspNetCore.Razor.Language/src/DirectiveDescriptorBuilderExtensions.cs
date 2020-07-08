@@ -117,6 +117,28 @@ namespace Microsoft.AspNetCore.Razor.Language
             return builder;
         }
 
+        public static IDirectiveDescriptorBuilder AddBooleanToken(this IDirectiveDescriptorBuilder builder)
+        {
+            return AddBooleanToken(builder, name: null, description: null);
+        }
+
+        public static IDirectiveDescriptorBuilder AddBooleanToken(this IDirectiveDescriptorBuilder builder, string name, string description)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.Tokens.Add(
+                DirectiveTokenDescriptor.CreateToken(
+                    DirectiveTokenKind.Boolean,
+                    optional: false,
+                    name: name,
+                    description: description));
+
+            return builder;
+        }
+
         public static IDirectiveDescriptorBuilder AddOptionalMemberToken(this IDirectiveDescriptorBuilder builder)
         {
             return AddOptionalMemberToken(builder, name: null, description: null);

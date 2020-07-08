@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Build.Framework;
@@ -21,18 +23,31 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public override bool Execute()
         {
-            using var fileStream = File.Create(TrimmerFile.ItemSpec);
+            var rootDescriptor = CreateRootDescriptorContents();
+            if (File.Exists(TrimmerFile.ItemSpec))
+            {
+                var existing = File.ReadAllText(TrimmerFile.ItemSpec);
 
-            WriteRootDescriptor(fileStream);
-            return true;
+                if (string.Equals(rootDescriptor, existing, StringComparison.Ordinal))
+                {
+                    Log.LogMessage(MessageImportance.Low, "Skipping write to file {0} because contents would not change.", TrimmerFile.ItemSpec);
+                    // Avoid writing if the file contents are identical. This is required for build incrementalism.
+                    return !Log.HasLoggedErrors;
+                }
+            }
+
+            File.WriteAllText(TrimmerFile.ItemSpec, rootDescriptor);
+            return !Log.HasLoggedErrors;
         }
 
-        internal void WriteRootDescriptor(Stream stream)
+        internal string CreateRootDescriptorContents()
         {
             var roots = new XElement("linker");
-            foreach (var assembly in Assemblies)
+            foreach (var assembly in Assemblies.OrderBy(a => a.ItemSpec))
             {
-                var assemblyName = assembly.GetMetadata("FileName") + assembly.GetMetadata("Extension");
+                // NOTE: Descriptor files don't include the file extension
+                // in the assemblyName.
+                var assemblyName = assembly.GetMetadata("FileName");
                 var typePreserved = assembly.GetMetadata("Preserve");
                 var typeRequired = assembly.GetMetadata("Required");
 
@@ -58,10 +73,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 OmitXmlDeclaration = true
             };
 
-            using var writer = XmlWriter.Create(stream, xmlWriterSettings);
-            var xDocument = new XDocument(roots);
-
-            xDocument.Save(writer);
+            return new XDocument(roots).Root.ToString();
         }
     }
 }

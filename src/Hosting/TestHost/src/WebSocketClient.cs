@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.TestHost
             // PathString.StartsWithSegments that we use below requires the base path to not end in a slash.
             if (pathBase.HasValue && pathBase.Value.EndsWith("/"))
             {
-                pathBase = new PathString(pathBase.Value.Substring(0, pathBase.Value.Length - 1));
+                pathBase = new PathString(pathBase.Value[..^1]); // All but the last character.
             }
             _pathBase = pathBase;
 

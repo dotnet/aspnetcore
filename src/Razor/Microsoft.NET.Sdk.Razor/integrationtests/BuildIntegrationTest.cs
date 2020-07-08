@@ -625,28 +625,26 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             var result = await DotnetMSBuild(
                 "Build",
-                "/p:UseRazorBuildServer=false /p:RazorLangVersion=5.0",
+                "/p:UseRazorBuildServer=false /p:RazorLangVersion=99.0",
                 suppressBuildServer: true);
 
             Assert.BuildFailed(result);
             Assert.BuildOutputContainsLine(
                 result,
-                $"Invalid option 5.0 for Razor language version --version; must be Latest or a valid version in range 1.0 to 3.0.");
+                $"Invalid option 99.0 for Razor language version --version; must be Latest or a valid version in range 1.0 to 5.0.");
 
             // Compilation failed without creating the views assembly
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
         }
 
-        [Fact(Skip = "Default C# version is 7.3 for netcoreapp3.1 and later https://github.com/dotnet/aspnetcore/issues/13930")]
+        [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_ImplicitCSharp8_NullableEnforcement_WarningsDuringBuild_NoBuildServer()
         {
             var result = await DotnetMSBuild(
                 "Build",
-                // Remove /p:LangVersion=Default once we've picked up a compiler that supports .NET 5.0.
-                // Tracked by https://github.com/dotnet/aspnetcore/issues/13304
-                "/p:Nullable=enable /p:LangVersion=Default",
+                "/p:Nullable=enable",
                 suppressBuildServer: true);
             var indexFilePath = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
 

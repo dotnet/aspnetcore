@@ -13,11 +13,11 @@ namespace Microsoft.AspNetCore.Components.Web
         /// <summary>
         /// The kind of drag data item, string or file
         /// </summary>
-        public string Kind { get; set; }
+        public string Kind { get; set; } = default!;
 
         /// <summary>
         /// The drag data item's type, typically a MIME type
         /// </summary>
-        public string Type { get; set; }
+        public string Type { get; set; } = default!;
     }
 }

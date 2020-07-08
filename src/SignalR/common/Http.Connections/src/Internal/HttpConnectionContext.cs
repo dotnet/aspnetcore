@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
@@ -98,6 +99,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         // Used for testing only
         internal Task DisposeAndRemoveTask { get; set; }
+
+        // Used for LongPolling because we need to create a scope that spans the lifetime of multiple requests on the cloned HttpContext
+        internal IServiceScope ServiceScope { get; set; }
 
         public Task TransportTask { get; set; }
 
@@ -251,6 +255,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         (identity as IDisposable)?.Dispose();
                     }
                 }
+
+                ServiceScope?.Dispose();
             }
 
             await disposeTask;

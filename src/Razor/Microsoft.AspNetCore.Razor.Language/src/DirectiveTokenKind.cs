@@ -10,5 +10,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         Member,
         String,
         Attribute,
+        Boolean,
     }
 }

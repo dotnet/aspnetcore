@@ -2,14 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Json;
 using Xunit;
 
 #nullable enable
@@ -86,6 +84,23 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             {
                 writer.WriteBooleanValue(value % 2 == 0);
             }
+        }
+
+        [Fact]
+        public async Task WriteAsJsonAsyncGeneric_CustomStatusCode_StatusCodeUnchanged()
+        {
+            // Arrange
+            var body = new MemoryStream();
+            var context = new DefaultHttpContext();
+            context.Response.Body = body;
+
+            // Act
+            context.Response.StatusCode = StatusCodes.Status418ImATeapot;
+            await context.Response.WriteAsJsonAsync(1);
+
+            // Assert
+            Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+            Assert.Equal(StatusCodes.Status418ImATeapot, context.Response.StatusCode);
         }
 
         [Fact]
@@ -221,6 +236,23 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             // Assert
             var data = Encoding.UTF8.GetString(body.ToArray());
             Assert.Equal(@"{""stringProperty"":""激光這兩個字是甚麼意思""}", data);
+        }
+
+        [Fact]
+        public async Task WriteAsJsonAsync_CustomStatusCode_StatusCodeUnchanged()
+        {
+            // Arrange
+            var body = new MemoryStream();
+            var context = new DefaultHttpContext();
+            context.Response.Body = body;
+
+            // Act
+            context.Response.StatusCode = StatusCodes.Status418ImATeapot;
+            await context.Response.WriteAsJsonAsync(1, typeof(int));
+
+            // Assert
+            Assert.Equal(JsonConstants.JsonContentTypeWithCharset, context.Response.ContentType);
+            Assert.Equal(StatusCodes.Status418ImATeapot, context.Response.StatusCode);
         }
 
         public class TestObject

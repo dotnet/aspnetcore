@@ -859,15 +859,6 @@ namespace Microsoft.AspNetCore.JsonPatch
             return null;
         }
 
-        private static bool ContinueWithSubPath(ExpressionType expressionType)
-        {
-            return (expressionType == ExpressionType.ArrayIndex
-                || expressionType == ExpressionType.Call
-                || expressionType == ExpressionType.Convert
-                || expressionType == ExpressionType.MemberAccess);
-
-        }
-
         // Evaluates the value of the key or index which may be an int or a string,
         // or some other expression type.
         // The expression is converted to a delegate and the result of executing the delegate is returned as a string.

@@ -512,7 +512,7 @@ namespace Microsoft.AspNetCore.Routing
             return TryGetValueSlow(key, out value);
         }
 
-        private bool TryGetValueSlow(string key, [NotNullWhen(true)] out object? value)
+        private bool TryGetValueSlow(string key, out object? value)
         {
             if (_propertyStorage != null)
             {

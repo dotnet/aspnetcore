@@ -31,6 +31,9 @@ elseif(TARGET_ARCH_NAME STREQUAL "arm64")
   else()
     set(TOOLCHAIN "aarch64-linux-gnu")
   endif()
+  if("$ENV{__DistroRid}" MATCHES "tizen.*")
+    set(TIZEN_TOOLCHAIN "aarch64-tizen-linux-gnu/9.2.0")
+  endif()
 elseif(TARGET_ARCH_NAME STREQUAL "x86")
   set(CMAKE_SYSTEM_PROCESSOR i686)
   set(TOOLCHAIN "i686-linux-gnu")
@@ -49,10 +52,14 @@ if(DEFINED ENV{TOOLCHAIN})
 endif()
 
 # Specify include paths
-if(TARGET_ARCH_NAME STREQUAL "armel")
-  if(DEFINED TIZEN_TOOLCHAIN)
+if(DEFINED TIZEN_TOOLCHAIN)
+  if(TARGET_ARCH_NAME STREQUAL "armel")
     include_directories(SYSTEM ${CROSS_ROOTFS}/usr/lib/gcc/${TIZEN_TOOLCHAIN}/include/c++/)
     include_directories(SYSTEM ${CROSS_ROOTFS}/usr/lib/gcc/${TIZEN_TOOLCHAIN}/include/c++/armv7l-tizen-linux-gnueabi)
+  endif()
+  if(TARGET_ARCH_NAME STREQUAL "arm64")
+    include_directories(SYSTEM ${CROSS_ROOTFS}/usr/lib64/gcc/${TIZEN_TOOLCHAIN}/include/c++/)
+    include_directories(SYSTEM ${CROSS_ROOTFS}/usr/lib64/gcc/${TIZEN_TOOLCHAIN}/include/c++/aarch64-tizen-linux-gnu)
   endif()
 endif()
 
@@ -127,6 +134,17 @@ if(TARGET_ARCH_NAME STREQUAL "armel")
     add_link_options("-L${CROSS_ROOTFS}/usr/lib")
     add_link_options("-L${CROSS_ROOTFS}/usr/lib/gcc/${TIZEN_TOOLCHAIN}")
   endif()
+elseif(TARGET_ARCH_NAME STREQUAL "arm64")
+  if(DEFINED TIZEN_TOOLCHAIN) # For Tizen only
+    add_link_options("-B${CROSS_ROOTFS}/usr/lib64/gcc/${TIZEN_TOOLCHAIN}")
+    add_link_options("-L${CROSS_ROOTFS}/lib64")
+    add_link_options("-L${CROSS_ROOTFS}/usr/lib64")
+    add_link_options("-L${CROSS_ROOTFS}/usr/lib64/gcc/${TIZEN_TOOLCHAIN}")
+
+    add_link_options("-Wl,--rpath-link=${CROSS_ROOTFS}/lib64")
+    add_link_options("-Wl,--rpath-link=${CROSS_ROOTFS}/usr/lib64")
+    add_link_options("-Wl,--rpath-link=${CROSS_ROOTFS}/usr/lib64/gcc/${TIZEN_TOOLCHAIN}")
+  endif()
 elseif(TARGET_ARCH_NAME STREQUAL "x86")
   add_link_options(-m32)
 elseif(ILLUMOS)
@@ -157,14 +175,17 @@ if(TARGET_ARCH_NAME MATCHES "^(arm|armel)$")
 
   if(TARGET_ARCH_NAME STREQUAL "armel")
     add_compile_options(-mfloat-abi=softfp)
-    if(DEFINED TIZEN_TOOLCHAIN)
-      add_compile_options(-Wno-deprecated-declarations) # compile-time option
-      add_compile_options(-D__extern_always_inline=inline) # compile-time option
-    endif()
   endif()
 elseif(TARGET_ARCH_NAME STREQUAL "x86")
   add_compile_options(-m32)
   add_compile_options(-Wno-error=unused-command-line-argument)
+endif()
+
+if(DEFINED TIZEN_TOOLCHAIN)
+  if(TARGET_ARCH_NAME MATCHES "^(armel|arm64)$")
+    add_compile_options(-Wno-deprecated-declarations) # compile-time option
+    add_compile_options(-D__extern_always_inline=inline) # compile-time option
+  endif()
 endif()
 
 # Set LLDB include and library paths for builds that need lldb.

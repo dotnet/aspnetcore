@@ -71,15 +71,6 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         private static IEnumerable<string> SplitString(string original)
-        {
-            if (string.IsNullOrEmpty(original))
-            {
-                return Array.Empty<string>();
-            }
-
-            var split = original.Split(',').Select(piece => piece.Trim()).Where(piece => !string.IsNullOrEmpty(piece));
-
-            return split;
-        }
+            => original?.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
     }
 }

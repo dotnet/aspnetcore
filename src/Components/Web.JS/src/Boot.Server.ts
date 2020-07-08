@@ -12,6 +12,7 @@ import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
 import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { attachRootComponentToLogicalElement } from './Rendering/Renderer';
+import { initializeProfiling } from './Platform/Profiling';
 
 let renderingFailed = false;
 let started = false;
@@ -21,6 +22,7 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
     throw new Error('Blazor has already started.');
   }
   started = true;
+  initializeProfiling(null);
 
   // Establish options to be used
   const options = resolveOptions(userOptions);
@@ -56,16 +58,18 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
     return true;
   };
 
-  window.addEventListener(
-    'unload',
-    () => {
+  let disconnectSent = false;
+  const cleanup = () => {
+    if (!disconnectSent) {
       const data = new FormData();
       const circuitId = circuit.circuitId!;
       data.append('circuitId', circuitId);
-      navigator.sendBeacon('_blazor/disconnect', data);
-    },
-    false
-  );
+      disconnectSent = navigator.sendBeacon('_blazor/disconnect', data);
+    }
+  };
+
+  window.addEventListener('beforeunload', cleanup, { capture: false, once: true });
+  window.addEventListener('unload', cleanup, { capture: false, once: true });
 
   window['Blazor'].reconnect = reconnect;
 
