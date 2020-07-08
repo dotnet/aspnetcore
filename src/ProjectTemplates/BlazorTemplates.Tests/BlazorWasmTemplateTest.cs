@@ -330,6 +330,7 @@ namespace Templates.Test
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23639")]
         public async Task BlazorWasmStandaloneTemplate_IndividualAuth_Works()
         {
             var project = await ProjectFactory.GetOrCreateProject("blazorstandaloneindividual", Output);

@@ -100,9 +100,7 @@ namespace Microsoft.AspNetCore.Routing
             }
             else
             {
-                var arguments = !string.IsNullOrEmpty(argumentString)
-                    ? argumentString.Split(',').Select(argument => argument.Trim()).ToArray()
-                    : Array.Empty<string>();
+                var arguments = argumentString?.Split(',', StringSplitOptions.TrimEntries) ?? Array.Empty<string>();
 
                 // We want to find the constructors that match the number of passed in arguments
                 // We either want a single match, or a single best match. The best match is the one with the most

@@ -108,3 +108,11 @@ namespace Microsoft.AspNetCore.Localization
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
     }
 }
+namespace Microsoft.Extensions.DependencyInjection
+{
+    public static partial class RequestLocalizationServiceCollectionExtensions
+    {
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddRequestLocalization(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Builder.RequestLocalizationOptions> configureOptions) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddRequestLocalization<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Builder.RequestLocalizationOptions, TService> configureOptions) where TService : class { throw null; }
+    }
+}

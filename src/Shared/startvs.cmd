@@ -1,3 +1,3 @@
 @ECHO OFF
 
-%~dp0..\..\startvs.cmd %~dp0Shared.sln
+%~dp0..\..\startvs.cmd %~dp0Shared.slnf

@@ -27,6 +27,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
+      We need a Microsoft.* package to verify type granular trimming. We'll pick a fixed version to we can bake in some details about
+      the contents of the package in our tests.
+    -->
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- These assets should be treated as static web assets for publish purposes -->
     <Content Include="..\LinkBaseToWebRoot\**\*.js">
       <LinkBase>wwwroot\</LinkBase>

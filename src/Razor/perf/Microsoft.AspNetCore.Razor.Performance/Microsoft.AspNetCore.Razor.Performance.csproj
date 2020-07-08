@@ -16,6 +16,15 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
+    <None Include="MSN.cshtml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="taghelpers.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="BlazorServerTagHelpers.razor" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="$(SharedSourceRoot)RazorShared\TagHelperDescriptorJsonConverter.cs">
+      <Link>Shared\TagHelperDescriptorJsonConverter.cs</Link>
+    </Compile>
+    <Compile Include="$(SharedSourceRoot)RazorShared\RazorDiagnosticJsonConverter.cs">
+      <Link>Shared\RazorDiagnosticJsonConverter.cs</Link>
+    </Compile>
   </ItemGroup>
 
 </Project>

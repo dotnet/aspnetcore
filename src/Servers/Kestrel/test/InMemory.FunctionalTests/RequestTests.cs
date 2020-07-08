@@ -1051,23 +1051,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task ContentLengthReadAsyncSingleBytesAtATime()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var tcs = new TaskCompletionSource();
-            var tcs2 = new TaskCompletionSource();
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs2 = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            static async Task<ReadResult> ReadAtLeastAsync(PipeReader reader, int numBytes)
+            {
+                var result = await reader.ReadAsync();
+
+                while (!result.IsCompleted && result.Buffer.Length < numBytes)
+                {
+                    reader.AdvanceTo(result.Buffer.Start, result.Buffer.End);
+                    result = await reader.ReadAsync();
+                }
+
+                if (result.Buffer.Length < numBytes)
+                {
+                    throw new IOException("Unexpected end of content.");
+                }
+
+                return result;
+            }
+
             await using (var server = new TestServer(async httpContext =>
             {
-                var readResult = await httpContext.Request.BodyReader.ReadAsync();
+                // Buffer 3 bytes.
+                var readResult = await ReadAtLeastAsync(httpContext.Request.BodyReader, numBytes: 3);
                 Assert.Equal(3, readResult.Buffer.Length);
                 tcs.SetResult();
 
                 httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
 
+                // Buffer 1 more byte.
                 readResult = await httpContext.Request.BodyReader.ReadAsync();
                 httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
                 tcs2.SetResult();
 
+                // Buffer 1 last byte.
                 readResult = await httpContext.Request.BodyReader.ReadAsync();
                 Assert.Equal(5, readResult.Buffer.Length);
 
+                // Do one more read to ensure completion is always observed.
+                httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+                readResult = await httpContext.Request.BodyReader.ReadAsync();
+                Assert.True(readResult.IsCompleted);
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -1765,7 +1791,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task ContentLengthRequestCallCancelPendingReadWorks()
         {
-            var tcs = new TaskCompletionSource();
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var testContext = new TestServiceContext(LoggerFactory);
 
             await using (var server = new TestServer(async httpContext =>
@@ -1862,7 +1888,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            var tcs = new TaskCompletionSource();
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             await using (var server = new TestServer(async httpContext =>
             {
                 var request = httpContext.Request;

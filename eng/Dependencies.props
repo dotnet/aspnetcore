@@ -21,6 +21,7 @@ and are generated based on the last package release.
 
   <ItemGroup Label=".NET team dependencies">
     <LatestPackageReference Include="Microsoft.Azure.SignalR" Version="$(MicrosoftAzureSignalRPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Css.Parser" Version="$(MicrosoftCssParserPackageVersion)" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisCommonPackageVersion)" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
@@ -110,6 +111,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.1.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" Version="$(MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion)" />
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="$(MicrosoftCodeAnalysisFxCopAnalyzersVersion)" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(MicrosoftEntityFrameworkCoreInMemoryPackageVersion)" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="$(MicrosoftEntityFrameworkCoreRelationalPackageVersion)" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(MicrosoftEntityFrameworkCoreSqlitePackageVersion)" />

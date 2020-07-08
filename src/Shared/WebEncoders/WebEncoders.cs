@@ -26,8 +26,6 @@ namespace Microsoft.Extensions.Internal
 #endif
     static class WebEncoders
     {
-        private static readonly byte[] EmptyBytes = new byte[0];
-
         /// <summary>
         /// Decodes a base64url-encoded string.
         /// </summary>
@@ -70,7 +68,7 @@ namespace Microsoft.Extensions.Internal
             // Special-case empty input
             if (count == 0)
             {
-                return EmptyBytes;
+                return Array.Empty<byte>();
             }
 
             // Create array large enough for the Base64 characters, not just shorter Base64-URL-encoded form.
@@ -117,7 +115,7 @@ namespace Microsoft.Extensions.Internal
 
             if (count == 0)
             {
-                return EmptyBytes;
+                return Array.Empty<byte>();
             }
 
             // Assumption: input is base64url encoded without padding and contains no whitespace.

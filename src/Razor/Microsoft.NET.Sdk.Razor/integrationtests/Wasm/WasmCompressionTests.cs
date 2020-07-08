@@ -81,6 +81,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23756")]
         public async Task Publish_WithLinkerAndCompression_IsIncremental()
         {
             // Arrange
@@ -92,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var buildOutputDirectory = project.BuildOutputDirectory;
 
             // Act
-            var compressedFilesFolder = Path.Combine("..", "blazorwasm", project.IntermediateOutputDirectory, "brotli");
+            var compressedFilesFolder = Path.Combine("..", "blazorwasm", project.IntermediateOutputDirectory, "compress");
             var thumbPrint = FileThumbPrint.CreateFolderThumbprint(project, compressedFilesFolder);
 
             // Assert
@@ -122,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var buildOutputDirectory = project.BuildOutputDirectory;
 
             // Act
-            var compressedFilesFolder = Path.Combine("..", "blazorwasm", project.IntermediateOutputDirectory, "brotli");
+            var compressedFilesFolder = Path.Combine("..", "blazorwasm", project.IntermediateOutputDirectory, "compress");
             var thumbPrint = FileThumbPrint.CreateFolderThumbprint(project, compressedFilesFolder);
 
             // Assert
@@ -159,6 +160,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 var extension = Path.GetExtension(file);
                 if (extension != ".br" && extension != ".gz")
                 {
+                    Assert.FileExists(result, file + ".gz");
                     Assert.FileExists(result, file + ".br");
                 }
             }

@@ -12,6 +12,7 @@
   <PropertyGroup>
     <CreateHelixPayload>true</CreateHelixPayload>
     <HelixTimeout>00:30:00</HelixTimeout>
+    <HelixTimeout Condition="$(HelixTargetQueue.StartsWith('Windows.10.Amd64'))">00:40:00</HelixTimeout>
     <RunQuarantinedTests>false</RunQuarantinedTests>
     <IsWindowsHelixQueue>false</IsWindowsHelixQueue>
     <IsWindowsHelixQueue Condition="$(HelixTargetQueue.Contains('Windows')) or $(HelixTargetQueue.Contains('windows'))">true</IsWindowsHelixQueue>

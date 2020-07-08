@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
 
         internal static void UseStaticWebAssetsCore(IWebHostEnvironment environment, Stream manifest)
         {
-            var staticWebAssetsFileProvider = new List<IFileProvider>();
             var webRootFileProvider = environment.WebRootFileProvider;
 
             var additionalFiles = StaticWebAssetsReader.Parse(manifest)

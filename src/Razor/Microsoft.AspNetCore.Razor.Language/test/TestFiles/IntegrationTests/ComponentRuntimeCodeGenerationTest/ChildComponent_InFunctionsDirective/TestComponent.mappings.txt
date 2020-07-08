@@ -17,7 +17,7 @@ Generated Location: (968:33,7 [69] )
 Source Location: (195:8,0 [7] x:\dir\subdir\Test\TestComponent.cshtml)
 |    }
 |
-Generated Location: (1343:46,0 [7] )
+Generated Location: (1249:44,0 [7] )
 |    }
 |
 

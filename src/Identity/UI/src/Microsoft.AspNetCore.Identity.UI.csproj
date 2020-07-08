@@ -43,7 +43,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <UIFrameworkVersionMoniker Include="V3" />
     <UIFrameworkVersionMoniker Include="V4" />
   </ItemGroup>
 
@@ -136,7 +135,6 @@
   <!-- Source build doesn't build this package -->
   <Target Name="VerifyBuildOutputs" AfterTargets="BuildRazorViews" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <ItemGroup>
-      <ExpectedOutputFile Include="$(TargetDir)Microsoft.AspNetCore.Identity.UI.Views.V3.dll" />
       <ExpectedOutputFile Include="$(TargetDir)Microsoft.AspNetCore.Identity.UI.Views.V4.dll" />
     </ItemGroup>
 
@@ -148,16 +146,7 @@
     <ItemGroup>
       <StaticWebAsset Remove="@(StaticWebAsset)" />
 
-      <_V3Content Include="wwwroot\V3\**" />
       <_V4Content Include="wwwroot\V4\**" />
-
-      <StaticWebAsset Include="@(_V3Content->'%(FullPath)')" Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap3'">
-        <SourceType></SourceType>
-        <SourceId>Microsoft.AspNetCore.Identity.UI</SourceId>
-        <ContentRoot>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)wwwroot/V3'))</ContentRoot>
-        <BasePath>/Identity</BasePath>
-        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
-      </StaticWebAsset>
 
       <StaticWebAsset Include="@(_V4Content->'%(FullPath)')" Condition="'$(IdentityUIFrameworkVersion)' == 'Bootstrap4'">
         <SourceType></SourceType>

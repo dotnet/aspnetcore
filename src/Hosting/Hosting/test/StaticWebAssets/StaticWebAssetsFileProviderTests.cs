@@ -87,6 +87,20 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
             // Assert
             Assert.Empty(directory);
         }
+        
+        [Fact]
+        public void GetDirectoryContents_HandlersEmptyPath()
+        {
+            // Arrange
+            var provider = new StaticWebAssetsFileProvider("/_content",
+                Path.Combine(AppContext.BaseDirectory, "testroot", "wwwroot"));
+
+            // Act
+            var directory = provider.GetDirectoryContents("");
+
+            // Assert
+            Assert.True(directory.Exists);
+        }
 
         [Fact]
         public void GetDirectoryContents_HandlesWhitespaceInBase()

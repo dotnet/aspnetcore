@@ -29,7 +29,6 @@ namespace Test
 #nullable disable
                 );
                 __builder2.CloseElement();
-                __builder2.AddMarkupContent(7, "\r\n  ");
             }
             ));
             __builder.CloseComponent();

@@ -559,4 +559,7 @@
   <data name="TagHelper_InvalidRequiredDirectiveAttributeName" xml:space="preserve">
     <value>Invalid tag helper required directive attribute '{0}'. The directive attribute '{1}' should start with a '@' character.</value>
   </data>
+  <data name="DirectiveExpectsBooleanLiteral" xml:space="preserve">
+    <value>The '{0}' directive expects a boolean literal.</value>
+  </data>
 </root>

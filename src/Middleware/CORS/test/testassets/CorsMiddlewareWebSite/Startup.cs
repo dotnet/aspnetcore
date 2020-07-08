@@ -1,9 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace CorsMiddlewareWebSite
 {
@@ -19,15 +21,19 @@ namespace CorsMiddlewareWebSite
             app.UseCors(policy => policy.WithOrigins("http://example.com"));
             app.UseMiddleware<EchoMiddleware>();
         }
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseIISIntegration()
-                .UseStartup<Startup>()
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseKestrel()
+                    .UseIISIntegration()
+                    .UseStartup<Startup>();
+                })
                 .Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }

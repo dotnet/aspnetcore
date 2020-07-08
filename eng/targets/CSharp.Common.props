@@ -33,6 +33,14 @@
     <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props" />
   </ImportGroup>
 
+  <ItemGroup Condition=" '$(IsTestProject)' != 'true' AND '$(DotNetBuildFromSource)' != 'true' ">
+    <Reference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" PrivateAssets="All" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>$(RepoRoot)eng\AllRulesDisabled.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Moq" />

@@ -105,3 +105,11 @@ namespace Microsoft.AspNetCore.Diagnostics
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
     }
 }
+namespace Microsoft.Extensions.DependencyInjection
+{
+    public static partial class ExceptionHandlerServiceCollectionExtensions
+    {
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddExceptionHandler(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Builder.ExceptionHandlerOptions> configureOptions) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddExceptionHandler<TService>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Builder.ExceptionHandlerOptions, TService> configureOptions) where TService : class { throw null; }
+    }
+}

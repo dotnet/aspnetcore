@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
@@ -22,8 +24,8 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IRouteBuilder MapRoute(
             this IRouteBuilder routeBuilder,
-            string name,
-            string template)
+            string? name,
+            string? template)
         {
             MapRoute(routeBuilder, name, template, defaults: null);
             return routeBuilder;
@@ -42,9 +44,9 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IRouteBuilder MapRoute(
             this IRouteBuilder routeBuilder,
-            string name,
-            string template,
-            object defaults)
+            string? name,
+            string? template,
+            object? defaults)
         {
             return MapRoute(routeBuilder, name, template, defaults, constraints: null);
         }
@@ -67,10 +69,10 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IRouteBuilder MapRoute(
             this IRouteBuilder routeBuilder,
-            string name,
-            string template,
-            object defaults,
-            object constraints)
+            string? name,
+            string? template,
+            object? defaults,
+            object? constraints)
         {
             return MapRoute(routeBuilder, name, template, defaults, constraints, dataTokens: null);
         }
@@ -97,11 +99,11 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>A reference to this instance after the operation has completed.</returns>
         public static IRouteBuilder MapRoute(
             this IRouteBuilder routeBuilder,
-            string name,
-            string template,
-            object defaults,
-            object constraints,
-            object dataTokens)
+            string? name,
+            string? template,
+            object? defaults,
+            object? constraints,
+            object? dataTokens)
         {
             if (routeBuilder.DefaultHandler == null)
             {
@@ -113,7 +115,7 @@ namespace Microsoft.AspNetCore.Builder
                 name,
                 template,
                 new RouteValueDictionary(defaults),
-                new RouteValueDictionary(constraints),
+                new RouteValueDictionary(constraints)!,
                 new RouteValueDictionary(dataTokens),
                 CreateInlineConstraintResolver(routeBuilder.ServiceProvider)));
 
@@ -144,7 +146,7 @@ namespace Microsoft.AspNetCore.Builder
                 _parameterPolicyFactory = parameterPolicyFactory;
             }
 
-            public IRouteConstraint ResolveConstraint(string inlineConstraint)
+            public IRouteConstraint? ResolveConstraint(string inlineConstraint)
             {
                 var routeConstraint = _inner.ResolveConstraint(inlineConstraint);
                 if (routeConstraint != null)

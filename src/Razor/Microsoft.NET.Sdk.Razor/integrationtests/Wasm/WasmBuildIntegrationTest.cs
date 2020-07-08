@@ -28,10 +28,14 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm.gz");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", DotNetJsFileName);
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.dll");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.dll");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.dll"); // Verify dependencies are part of the output.
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.dll.gz"); // Verify dependencies are part of the output.
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "System.dll");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "System.dll.gz");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.pdb");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.pdb");
 
@@ -55,10 +59,14 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm.gz");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", DotNetJsFileName);
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.dll");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.dll");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.dll"); // Verify dependencies are part of the output.
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.dll.gz");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "System.dll");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "System.dll.gz");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.pdb");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.pdb");
 
