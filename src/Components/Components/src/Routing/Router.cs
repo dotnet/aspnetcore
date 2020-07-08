@@ -206,13 +206,14 @@ namespace Microsoft.AspNetCore.Components.Routing
             // Create a new cancellation token source for this instance
             _onNavigateCts = new CancellationTokenSource();
             var navigateContext = new NavigationContext(path, _onNavigateCts.Token);
-            var task = OnNavigateAsync.InvokeAsync(navigateContext);
 
             // Create a cancellation task based on the cancellation token
             // associated with the current running task.
             var cancellationTaskSource = new TaskCompletionSource();
-            navigateContext.CancellationToken.Register(() =>
-                cancellationTaskSource.SetResult());
+            navigateContext.CancellationToken.Register(state =>
+                ((TaskCompletionSource)state).SetResult(), cancellationTaskSource);
+
+            var task = OnNavigateAsync.InvokeAsync(navigateContext);
 
             // If the user provided a Navigating render fragment, then show it.
             if (Navigating != null && task.Status != TaskStatus.RanToCompletion)

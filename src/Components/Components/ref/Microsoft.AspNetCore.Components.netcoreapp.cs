@@ -556,7 +556,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         public bool IsNavigationIntercepted { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string Location { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
-    public partial class NavigationContext
+    public sealed partial class NavigationContext
     {
         internal NavigationContext() { }
         public System.Threading.CancellationToken CancellationToken { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
