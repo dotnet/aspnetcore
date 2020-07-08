@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics
@@ -28,28 +29,35 @@ namespace Microsoft.AspNetCore.Diagnostics
         [InlineData(HttpStatusCode.InternalServerError)]
         public async Task OnlyHandles_UnhandledExceptions(HttpStatusCode expectedStatusCode)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseExceptionHandler("/handle-errors");
-
-                    app.Map("/handle-errors", (innerAppBuilder) =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        innerAppBuilder.Run(async (httpContext) =>
+                        app.UseExceptionHandler("/handle-errors");
+
+                        app.Map("/handle-errors", (innerAppBuilder) =>
                         {
-                            await httpContext.Response.WriteAsync("Handled error in a custom way.");
+                            innerAppBuilder.Run(async (httpContext) =>
+                            {
+                                await httpContext.Response.WriteAsync("Handled error in a custom way.");
+                            });
                         });
+
+                        app.Run((RequestDelegate)(async (context) =>
+                        {
+                            context.Response.StatusCode = (int)expectedStatusCode;
+                            context.Response.ContentType = "text/plain; charset=utf-8";
+                            await context.Response.WriteAsync("An error occurred while adding a product");
+                        }));
                     });
+                }).Build();
 
-                    app.Run((RequestDelegate)(async (context) =>
-                    {
-                        context.Response.StatusCode = (int)expectedStatusCode;
-                        context.Response.ContentType = "text/plain; charset=utf-8";
-                        await context.Response.WriteAsync("An error occurred while adding a product");
-                    }));
-                });
+            await host.StartAsync();
 
-            using (var server = new TestServer(builder))
+            using (var server = host.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
@@ -61,43 +69,50 @@ namespace Microsoft.AspNetCore.Diagnostics
         [Fact]
         public async Task DoesNotHandle_UnhandledExceptions_WhenResponseAlreadyStarted()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.Use(async (httpContext, next) =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        Exception exception = null;
-                        try
+                        app.Use(async (httpContext, next) =>
                         {
-                            await next();
-                        }
-                        catch (InvalidOperationException ex)
+                            Exception exception = null;
+                            try
+                            {
+                                await next();
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                exception = ex;
+                            }
+
+                            Assert.NotNull(exception);
+                            Assert.Equal("Something bad happened", exception.Message);
+                        });
+
+                        app.UseExceptionHandler("/handle-errors");
+
+                        app.Map("/handle-errors", (innerAppBuilder) =>
                         {
-                            exception = ex;
-                        }
+                            innerAppBuilder.Run(async (httpContext) =>
+                            {
+                                await httpContext.Response.WriteAsync("Handled error in a custom way.");
+                            });
+                        });
 
-                        Assert.NotNull(exception);
-                        Assert.Equal("Something bad happened", exception.Message);
-                    });
-
-                    app.UseExceptionHandler("/handle-errors");
-
-                    app.Map("/handle-errors", (innerAppBuilder) =>
-                    {
-                        innerAppBuilder.Run(async (httpContext) =>
+                        app.Run(async (httpContext) =>
                         {
-                            await httpContext.Response.WriteAsync("Handled error in a custom way.");
+                            await httpContext.Response.WriteAsync("Hello");
+                            throw new InvalidOperationException("Something bad happened");
                         });
                     });
+                }).Build();
 
-                    app.Run(async (httpContext) =>
-                    {
-                        await httpContext.Response.WriteAsync("Hello");
-                        throw new InvalidOperationException("Something bad happened");
-                    });
-                });
+            await host.StartAsync();
 
-            using (var server = new TestServer(builder))
+            using (var server = host.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
@@ -110,54 +125,61 @@ namespace Microsoft.AspNetCore.Diagnostics
         public async Task ClearsResponseBuffer_BeforeRequestIsReexecuted()
         {
             var expectedResponseBody = "New response body";
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    // add response buffering
-                    app.Use(async (httpContext, next) =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        var response = httpContext.Response;
-                        var originalResponseBody = response.Body;
-                        var bufferingStream = new MemoryStream();
-                        response.Body = bufferingStream;
-
-                        try
+                        // add response buffering
+                        app.Use(async (httpContext, next) =>
                         {
-                            await next();
+                            var response = httpContext.Response;
+                            var originalResponseBody = response.Body;
+                            var bufferingStream = new MemoryStream();
+                            response.Body = bufferingStream;
 
-                            response.Body = originalResponseBody;
-                            bufferingStream.Seek(0, SeekOrigin.Begin);
-                            await bufferingStream.CopyToAsync(response.Body);
-                        }
-                        finally
+                            try
+                            {
+                                await next();
+
+                                response.Body = originalResponseBody;
+                                bufferingStream.Seek(0, SeekOrigin.Begin);
+                                await bufferingStream.CopyToAsync(response.Body);
+                            }
+                            finally
+                            {
+                                response.Body = originalResponseBody;
+                            }
+                        });
+
+                        app.UseExceptionHandler("/handle-errors");
+
+                        app.Map("/handle-errors", (innerAppBuilder) =>
                         {
-                            response.Body = originalResponseBody;
-                        }
-                    });
+                            innerAppBuilder.Run(async (httpContext) =>
+                            {
+                                Assert.True(httpContext.Response.Body.CanSeek);
+                                Assert.Equal(0, httpContext.Response.Body.Position);
 
-                    app.UseExceptionHandler("/handle-errors");
+                                await httpContext.Response.WriteAsync(expectedResponseBody);
+                            });
+                        });
 
-                    app.Map("/handle-errors", (innerAppBuilder) =>
-                    {
-                        innerAppBuilder.Run(async (httpContext) =>
+                        app.Run(async (context) =>
                         {
-                            Assert.True(httpContext.Response.Body.CanSeek);
-                            Assert.Equal(0, httpContext.Response.Body.Position);
+                            // Write some content into the response before throwing exception
+                            await context.Response.WriteAsync(new string('a', 100));
 
-                            await httpContext.Response.WriteAsync(expectedResponseBody);
+                            throw new InvalidOperationException("Invalid input provided.");
                         });
                     });
+                }).Build();
 
-                    app.Run(async (context) =>
-                    {
-                        // Write some content into the response before throwing exception
-                        await context.Response.WriteAsync(new string('a', 100));
+            await host.StartAsync();
 
-                        throw new InvalidOperationException("Invalid input provided.");
-                    });
-                });
-
-            using (var server = new TestServer(builder))
+            using (var server = host.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
@@ -181,32 +203,39 @@ namespace Microsoft.AspNetCore.Diagnostics
         {
             var expiresTime = DateTime.UtcNow.AddDays(5).ToString("R");
             var expectedResponseBody = "Handled error in a custom way.";
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseExceptionHandler("/handle-errors");
-
-                    app.Map("/handle-errors", (innerAppBuilder) =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        innerAppBuilder.Run(async (httpContext) =>
-                        {
-                            httpContext.Response.Headers.Add("Cache-Control", new[] { "max-age=600" });
-                            httpContext.Response.Headers.Add("Pragma", new[] { "max-age=600" });
-                            httpContext.Response.Headers.Add(
-                                "Expires", new[] { expiresTime });
-                            httpContext.Response.Headers.Add("ETag", new[] { "12345" });
+                        app.UseExceptionHandler("/handle-errors");
 
-                            await httpContext.Response.WriteAsync(expectedResponseBody);
+                        app.Map("/handle-errors", (innerAppBuilder) =>
+                        {
+                            innerAppBuilder.Run(async (httpContext) =>
+                            {
+                                httpContext.Response.Headers.Add("Cache-Control", new[] { "max-age=600" });
+                                httpContext.Response.Headers.Add("Pragma", new[] { "max-age=600" });
+                                httpContext.Response.Headers.Add(
+                                    "Expires", new[] { expiresTime });
+                                httpContext.Response.Headers.Add("ETag", new[] { "12345" });
+
+                                await httpContext.Response.WriteAsync(expectedResponseBody);
+                            });
+                        });
+
+                        app.Run((context) =>
+                        {
+                            throw new InvalidOperationException("Invalid input provided.");
                         });
                     });
+                }).Build();
 
-                    app.Run((context) =>
-                    {
-                        throw new InvalidOperationException("Invalid input provided.");
-                    });
-                });
+            await host.StartAsync();
 
-            using (var server = new TestServer(builder))
+            using (var server = host.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
@@ -230,31 +259,38 @@ namespace Microsoft.AspNetCore.Diagnostics
         {
             var expiresTime = DateTime.UtcNow.AddDays(10).ToString("R");
             var expectedResponseBody = "Hello world!";
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseExceptionHandler("/handle-errors");
-
-                    app.Map("/handle-errors", (innerAppBuilder) =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        innerAppBuilder.Run(async (httpContext) =>
+                        app.UseExceptionHandler("/handle-errors");
+
+                        app.Map("/handle-errors", (innerAppBuilder) =>
                         {
-                            await httpContext.Response.WriteAsync("Handled error in a custom way.");
+                            innerAppBuilder.Run(async (httpContext) =>
+                            {
+                                await httpContext.Response.WriteAsync("Handled error in a custom way.");
+                            });
+                        });
+
+                        app.Run(async (httpContext) =>
+                        {
+                            httpContext.Response.Headers.Add("Cache-Control", new[] { "max-age=3600" });
+                            httpContext.Response.Headers.Add("Pragma", new[] { "max-age=3600" });
+                            httpContext.Response.Headers.Add("Expires", new[] { expiresTime });
+                            httpContext.Response.Headers.Add("ETag", new[] { "abcdef" });
+
+                            await httpContext.Response.WriteAsync(expectedResponseBody);
                         });
                     });
+                }).Build();
 
-                    app.Run(async (httpContext) =>
-                    {
-                        httpContext.Response.Headers.Add("Cache-Control", new[] { "max-age=3600" });
-                        httpContext.Response.Headers.Add("Pragma", new[] { "max-age=3600" });
-                        httpContext.Response.Headers.Add("Expires", new[] { expiresTime });
-                        httpContext.Response.Headers.Add("ETag", new[] { "abcdef" });
+            await host.StartAsync();
 
-                        await httpContext.Response.WriteAsync(expectedResponseBody);
-                    });
-                });
-
-            using (var server = new TestServer(builder))
+            using (var server = host.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
@@ -280,49 +316,56 @@ namespace Microsoft.AspNetCore.Diagnostics
         public async Task DoesNotClearCacheHeaders_WhenResponseHasAlreadyStarted()
         {
             var expiresTime = DateTime.UtcNow.AddDays(10).ToString("R");
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.Use(async (httpContext, next) =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        Exception exception = null;
-                        try
+                        app.Use(async (httpContext, next) =>
                         {
-                            await next();
-                        }
-                        catch (InvalidOperationException ex)
+                            Exception exception = null;
+                            try
+                            {
+                                await next();
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                exception = ex;
+                            }
+
+                            Assert.NotNull(exception);
+                            Assert.Equal("Something bad happened", exception.Message);
+                        });
+
+                        app.UseExceptionHandler("/handle-errors");
+
+                        app.Map("/handle-errors", (innerAppBuilder) =>
                         {
-                            exception = ex;
-                        }
+                            innerAppBuilder.Run(async (httpContext) =>
+                            {
+                                await httpContext.Response.WriteAsync("Handled error in a custom way.");
+                            });
+                        });
 
-                        Assert.NotNull(exception);
-                        Assert.Equal("Something bad happened", exception.Message);
-                    });
-
-                    app.UseExceptionHandler("/handle-errors");
-
-                    app.Map("/handle-errors", (innerAppBuilder) =>
-                    {
-                        innerAppBuilder.Run(async (httpContext) =>
+                        app.Run(async (httpContext) =>
                         {
-                            await httpContext.Response.WriteAsync("Handled error in a custom way.");
+                            httpContext.Response.Headers.Add("Cache-Control", new[] { "max-age=3600" });
+                            httpContext.Response.Headers.Add("Pragma", new[] { "max-age=3600" });
+                            httpContext.Response.Headers.Add("Expires", new[] { expiresTime });
+                            httpContext.Response.Headers.Add("ETag", new[] { "abcdef" });
+
+                            await httpContext.Response.WriteAsync("Hello");
+
+                            throw new InvalidOperationException("Something bad happened");
                         });
                     });
+                }).Build();
 
-                    app.Run(async (httpContext) =>
-                    {
-                        httpContext.Response.Headers.Add("Cache-Control", new[] { "max-age=3600" });
-                        httpContext.Response.Headers.Add("Pragma", new[] { "max-age=3600" });
-                        httpContext.Response.Headers.Add("Expires", new[] { expiresTime });
-                        httpContext.Response.Headers.Add("ETag", new[] { "abcdef" });
+            await host.StartAsync();
 
-                        await httpContext.Response.WriteAsync("Hello");
-
-                        throw new InvalidOperationException("Something bad happened");
-                    });
-                });
-
-            using (var server = new TestServer(builder))
+            using (var server = host.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
@@ -350,25 +393,33 @@ namespace Microsoft.AspNetCore.Diagnostics
             // Arrange
             DiagnosticListener diagnosticListener = null;
 
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
-
-                    app.UseExceptionHandler("/handle-errors");
-                    app.Map("/handle-errors", (innerAppBuilder) =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        innerAppBuilder.Run(async (httpContext) =>
+                        diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
+
+                        app.UseExceptionHandler("/handle-errors");
+                        app.Map("/handle-errors", (innerAppBuilder) =>
                         {
-                            await httpContext.Response.WriteAsync("Handled error in a custom way.");
+                            innerAppBuilder.Run(async (httpContext) =>
+                            {
+                                await httpContext.Response.WriteAsync("Handled error in a custom way.");
+                            });
+                        });
+                        app.Run(context =>
+                        {
+                            throw new Exception("Test exception");
                         });
                     });
-                    app.Run(context =>
-                    {
-                        throw new Exception("Test exception");
-                    });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var listener = new TestDiagnosticListener();
             diagnosticListener.SubscribeWithAdapter(listener);
@@ -395,15 +446,20 @@ namespace Microsoft.AspNetCore.Diagnostics
             // Arrange
             DiagnosticListener diagnosticListener = null;
 
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
-                    app.UseExceptionHandler();
-                });
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
+                        app.UseExceptionHandler();
+                    });
+                }).Build();
 
             // Act
-            var exception = Assert.Throws<InvalidOperationException>(() => new TestServer(builder));
+            var exception = Assert.Throws<InvalidOperationException>(() => host.Start());
 
             // Assert
             Assert.Equal("An error occurred when configuring the exception handler middleware. " +

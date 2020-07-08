@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.HttpOverrides
@@ -17,18 +18,26 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public async Task XHttpMethodOverrideHeaderAvaiableChangesRequestMethod()
         {
             var assertsExecuted = false;
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseHttpMethodOverride();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        assertsExecuted = true;
-                        Assert.Equal("DELETE", context.Request.Method);
-                        return Task.FromResult(0);
+                        app.UseHttpMethodOverride();
+                        app.Run(context =>
+                        {
+                            assertsExecuted = true;
+                            Assert.Equal("DELETE", context.Request.Method);
+                            return Task.FromResult(0);
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var req = new HttpRequestMessage(HttpMethod.Post, "");
             req.Headers.Add("X-Http-Method-Override", "DELETE");
@@ -40,18 +49,26 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public async Task XHttpMethodOverrideHeaderUnavaiableDoesntChangeRequestMethod()
         {
             var assertsExecuted = false;
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseHttpMethodOverride();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        Assert.Equal("POST",context.Request.Method);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
+                        app.UseHttpMethodOverride();
+                        app.Run(context =>
+                        {
+                            Assert.Equal("POST", context.Request.Method);
+                            assertsExecuted = true;
+                            return Task.FromResult(0);
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var req = new HttpRequestMessage(HttpMethod.Post, "");
             await server.CreateClient().SendAsync(req);
@@ -62,18 +79,26 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public async Task XHttpMethodOverrideFromGetRequestDoesntChangeMethodType()
         {
             var assertsExecuted = false;
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseHttpMethodOverride();
-                    app.Run(context =>
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        Assert.Equal("GET", context.Request.Method);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
+                        app.UseHttpMethodOverride();
+                        app.Run(context =>
+                        {
+                            Assert.Equal("GET", context.Request.Method);
+                            assertsExecuted = true;
+                            return Task.FromResult(0);
+                        });
                     });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var req = new HttpRequestMessage(HttpMethod.Get, "");
             await server.CreateClient().SendAsync(req);
@@ -85,21 +110,29 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public async Task FormFieldAvailableChangesRequestMethod()
         {
             var assertsExecuted = false;
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseHttpMethodOverride(new HttpMethodOverrideOptions()
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        FormFieldName = "_METHOD"
+                        app.UseHttpMethodOverride(new HttpMethodOverrideOptions()
+                        {
+                            FormFieldName = "_METHOD"
+                        });
+                        app.Run(context =>
+                        {
+                            Assert.Equal("DELETE", context.Request.Method);
+                            assertsExecuted = true;
+                            return Task.FromResult(0);
+                        });
                     });
-                    app.Run(context =>
-                    {
-                        Assert.Equal("DELETE", context.Request.Method);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var req = new HttpRequestMessage(HttpMethod.Post, "");
             req.Content = new FormUrlEncodedContent(new Dictionary<string, string>()
@@ -116,21 +149,29 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public async Task FormFieldUnavailableDoesNotChangeRequestMethod()
         {
             var assertsExecuted = false;
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseHttpMethodOverride(new HttpMethodOverrideOptions()
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        FormFieldName = "_METHOD"
+                        app.UseHttpMethodOverride(new HttpMethodOverrideOptions()
+                        {
+                            FormFieldName = "_METHOD"
+                        });
+                        app.Run(context =>
+                        {
+                            Assert.Equal("POST", context.Request.Method);
+                            assertsExecuted = true;
+                            return Task.FromResult(0);
+                        });
                     });
-                    app.Run(context =>
-                    {
-                        Assert.Equal("POST", context.Request.Method);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var req = new HttpRequestMessage(HttpMethod.Post, "");
             req.Content = new FormUrlEncodedContent(new Dictionary<string, string>()
@@ -146,21 +187,29 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public async Task FormFieldEmptyDoesNotChangeRequestMethod()
         {
             var assertsExecuted = false;
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseHttpMethodOverride(new HttpMethodOverrideOptions()
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        FormFieldName = "_METHOD"
+                        app.UseHttpMethodOverride(new HttpMethodOverrideOptions()
+                        {
+                            FormFieldName = "_METHOD"
+                        });
+                        app.Run(context =>
+                        {
+                            Assert.Equal("POST", context.Request.Method);
+                            assertsExecuted = true;
+                            return Task.FromResult(0);
+                        });
                     });
-                    app.Run(context =>
-                    {
-                        Assert.Equal("POST", context.Request.Method);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
-                });
-            var server = new TestServer(builder);
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var req = new HttpRequestMessage(HttpMethod.Post, "");
             req.Content = new FormUrlEncodedContent(new Dictionary<string, string>()
