@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Tests
             var directoryInfo = new DirectoryInfo(applicationBasePath);
             do
             {
-                var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "DefaultBuilder.sln"));
+                var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "DefaultBuilder.slnf"));
                 if (solutionFileInfo.Exists)
                 {
                     return Path.GetFullPath(Path.Combine(directoryInfo.FullName, "testassets"));
