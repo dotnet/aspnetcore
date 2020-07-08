@@ -111,7 +111,8 @@ namespace Microsoft.AspNetCore.Html
                 throw new ArgumentNullException(nameof(destination));
             }
 
-            for (var i = 0; i < Entries.Count; i++)
+            var count = Entries.Count;
+            for (var i = 0; i < count; i++)
             {
                 var entry = Entries[i];
 
@@ -140,7 +141,8 @@ namespace Microsoft.AspNetCore.Html
                 throw new ArgumentNullException(nameof(destination));
             }
 
-            for (var i = 0; i < Entries.Count; i++)
+            var count = Entries.Count;
+            for (var i = 0; i < count; i++)
             {
                 var entry = Entries[i];
 
@@ -176,7 +178,8 @@ namespace Microsoft.AspNetCore.Html
                 throw new ArgumentNullException(nameof(encoder));
             }
 
-            for (var i = 0; i < Entries.Count; i++)
+            var count = Entries.Count;
+            for (var i = 0; i < count; i++)
             {
                 var entry = Entries[i];
 
