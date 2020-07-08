@@ -147,6 +147,15 @@ export const monoPlatform: Platform = {
     assertHeapIsNotLocked();
     currentHeapLock = new MonoHeapLock();
     return currentHeapLock;
+  },
+
+  invokeWhenHeapUnlocked: function(callback) {
+    // This is somewhat like a sync context. If we're not locked, just pass through the call directly.
+    if (!currentHeapLock) {
+      callback();
+    } else {
+      currentHeapLock.enqueuePostReleaseAction(callback);
+    }
   }
 };
 
@@ -490,11 +499,31 @@ class MonoHeapLock implements HeapLock {
   // Within a given heap lock, it's safe to cache decoded strings since the memory can't change
   stringCache = new Map<number, string | null>();
 
+  private postReleaseActions?: Function[];
+
+  enqueuePostReleaseAction(callback: Function) {
+    if (!this.postReleaseActions) {
+      this.postReleaseActions = [];
+    }
+
+    this.postReleaseActions.push(callback);
+  }
+
   release() {
     if (currentHeapLock !== this) {
       throw new Error('Trying to release a lock which isn\'t current');
     }
 
     currentHeapLock = null;
+
+    while (this.postReleaseActions?.length) {
+      const nextQueuedAction = this.postReleaseActions.shift()!;
+
+      // It's possible that the action we invoke here might itself take a succession of heap locks,
+      // but since heap locks must be released synchronously, by the time we get back to this stack
+      // frame, we know the heap should no longer be locked.
+      nextQueuedAction();
+      assertHeapIsNotLocked();
+    }
   }
 }

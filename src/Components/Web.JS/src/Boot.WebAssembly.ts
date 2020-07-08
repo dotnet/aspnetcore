@@ -22,7 +22,13 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   }
   started = true;
 
-  setEventDispatcher((eventDescriptor, eventArgs) => DotNet.invokeMethodAsync('Microsoft.AspNetCore.Components.WebAssembly', 'DispatchEvent', eventDescriptor, JSON.stringify(eventArgs)));
+  setEventDispatcher((eventDescriptor, eventArgs) => {
+    // It's extremely unusual, but an event can be raised while we're in the middle of synchronously applying a
+    // renderbatch. For example, a renderbatch might mutate the DOM in such a way as to cause an <input> to lose
+    // focus, in turn triggering a 'change' event. It may also be possible to listen to other DOM mutation events
+    // that are themselves triggered by the application of a renderbatch.
+    monoPlatform.invokeWhenHeapUnlocked(() => DotNet.invokeMethodAsync('Microsoft.AspNetCore.Components.WebAssembly', 'DispatchEvent', eventDescriptor, JSON.stringify(eventArgs)));
+  });
 
   // Configure environment for execution under Mono WebAssembly with shared-memory rendering
   const platform = Environment.setPlatform(monoPlatform);

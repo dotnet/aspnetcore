@@ -20,6 +20,7 @@ export interface Platform {
   readStructField<T extends Pointer>(baseAddress: Pointer, fieldOffset?: number): T;
 
   beginHeapLock(): HeapLock;
+  invokeWhenHeapUnlocked(callback: Function): void;
 }
 
 export interface HeapLock {
