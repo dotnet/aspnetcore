@@ -1,15 +1,5 @@
-@page "/WithLazyLoadedRoutes"
-
-@inject NavigationManager NavigationManager
+﻿@page "/WithLazyLoadedRoutes"
 
 <p id="lazy-load-msg">Click the button below to navigate to a route defined in a lazy-loaded component.</p>
 
-<button @onclick="GoToRoute" id="go-to-lazy-route">Click Me</button>
-
-@code
-{
-    private void GoToRoute()
-    {
-        NavigationManager.NavigateTo("LazyRouteInsidePackage");
-    }
-}
+<a href="LazyRouteInsidePackage" id="go-to-lazy-route">Click Me</a>

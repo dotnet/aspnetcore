@@ -62,14 +62,14 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Parameter] public RenderFragment<RouteData> Found { get; set; }
 
         /// <summary>
-        /// Get or sets the content to display when the upcoming route is loading.
+        /// Get or sets the content to display when asynchronous navigation is in progress.
         /// </summary>
-        [Parameter] public RenderFragment Loading { get; set; }
+        [Parameter] public RenderFragment Navigating { get; set; }
 
         /// <summary>
         /// Gets or sets a handler that should be called before navigating to a new page.
         /// </summary>
-        [Parameter] public Func<OnNavigateArgs, Task> OnNavigateAsync { get; set; }
+        [Parameter] public Func<NavigationContext, Task> OnNavigateAsync { get; set; }
 
         private RouteTable Routes { get; set; }
 
@@ -134,6 +134,18 @@ namespace Microsoft.AspNetCore.Components.Routing
                 Routes = RouteTableFactory.Create(assemblies);
                 _assemblies = assembliesSet;
             }
+            // If the new assemblies set is the same length as the previous one,
+            // we check if they are equal-by-value and refresh the route table if
+            // not. NOTE: This is an uncommon occurrence and a cold-code path so
+            // we shouldn't end up needing to do an equal-by-value check too frequently.
+            if (_assemblies.Count == assembliesSet.Count)
+            {
+                if (!_assemblies.SetEquals(assembliesSet))
+                {
+                    Routes = RouteTableFactory.Create(assemblies);
+                    _assemblies = assembliesSet;
+                }
+            }
         }
 
         private void Refresh(bool isNavigationIntercepted)
@@ -189,21 +201,17 @@ namespace Microsoft.AspNetCore.Components.Routing
                 return;
             }
 
-            // Create a new CTS for this invocation of the task and
-            // extract the reference to the current one.
-            var pendingOnNavigateCts = _onNavigateCts;
-            var onNavigateCts = new CancellationTokenSource();
-            _onNavigateCts = onNavigateCts;
-
-            var navigateContext = new OnNavigateArgs(path, _onNavigateCts);
-            var task = OnNavigateAsync(navigateContext);
-
             // If we've already invoked a task and stored its CTS, then
             // cancel the existing task.
-            if (pendingOnNavigateCts != null)
+            if (_onNavigateCts != null && !_onNavigateCts.IsCancellationRequested)
             {
-                pendingOnNavigateCts.Cancel();
+                _onNavigateCts.Cancel();
             }
+            // Create a new cancellation token source for this instance
+            _onNavigateCts = new CancellationTokenSource();
+
+            var navigateContext = new NavigationContext(path, _onNavigateCts);
+            var task = OnNavigateAsync(navigateContext);
 
             // Create a cancellation task based on the cancellation token
             // associated with the current running task.
@@ -211,10 +219,10 @@ namespace Microsoft.AspNetCore.Components.Routing
             navigateContext.CancellationTokenSource.Token.Register(() =>
                 cancellationTaskSource.TrySetCanceled(navigateContext.CancellationTokenSource.Token));
 
-            // If the user provided a Loading render fragment, then show it.
-            if (Loading != null)
+            // If the user provided a Navigating render fragment, then show it.
+            if (Navigating != null && task.Status != TaskStatus.RanToCompletion)
             {
-                _renderHandle.Render(Loading);
+                _renderHandle.Render(Navigating);
             }
 
             await Task.WhenAny(task, cancellationTaskSource.Task);

@@ -7,32 +7,60 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 using Microsoft.JSInterop.WebAssembly;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.WebAssembly
+namespace Microsoft.AspNetCore.Components.WebAssembly.Services
 {
-    public class WebAssemblyLazyAssemblyLoader : ILazyLoader
+    public class LazyAssemblyLoader
     {
         internal const string GetDynamicAssemblies = "window.Blazor._internal.getLazyAssemblies";
         internal const string ReadDynamicAssemblies = "window.Blazor._internal.readLazyAssemblies";
 
         private List<string> _loadedAssemblyCache = new List<string>();
 
-        private readonly WebAssemblyJSRuntime _jsRuntime;
+        private readonly IServiceProvider _provider;
 
-        internal WebAssemblyLazyAssemblyLoader(WebAssemblyJSRuntime jsRuntime)
+        public LazyAssemblyLoader(IServiceProvider provider)
         {
-            _jsRuntime = jsRuntime;
+            _provider = provider;
         }
 
         public async Task<IEnumerable<Assembly>> LoadAssembliesAsync(IEnumerable<string> assembliesToLoad)
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Browser))
+            {
+                return await LoadAssembliesInClientAsync(assembliesToLoad);
+            }
+
+            return await LoadAssembliesInServerAsync(assembliesToLoad);
+        }
+
+        private Task<IEnumerable<Assembly>> LoadAssembliesInServerAsync(IEnumerable<string> assembliesToLoad)
+        {
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(assembly =>
+                assembliesToLoad.Contains(assembly.GetName().Name + ".dll"));
+
+            if (assemblies.Count() != assembliesToLoad.Count())
+            {
+                var unloadedAssemblies = assembliesToLoad.Except(assemblies.Select(assembly => assembly.GetName().Name + ".dll"));
+                throw new FileNotFoundException($"Unable to find the following assemblies: {string.Join(",", unloadedAssemblies)}");
+            }
+
+            return Task.FromResult(assemblies);
+        }
+
+        private async Task<IEnumerable<Assembly>> LoadAssembliesInClientAsync(IEnumerable<string> assembliesToLoad)
+        {
+            var _jsRuntime = _provider.GetRequiredService<IJSRuntime>();
             // Only load assemblies that haven't already been lazily-loaded
             var newAssembliesToLoad = assembliesToLoad.Where(assembly => !_loadedAssemblyCache.Contains(assembly));
             var loadedAssemblies = new List<Assembly>();
 
-            var count = (int)await _jsRuntime.InvokeUnmarshalled<string[], object, object, Task<object>>(
+            var count = (int)await ((WebAssemblyJSRuntime)_jsRuntime).InvokeUnmarshalled<string[], object, object, Task<object>>(
                 GetDynamicAssemblies,
                 assembliesToLoad.ToArray(),
                 null,
@@ -43,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly
                 return loadedAssemblies;
             }
 
-            var assemblies = _jsRuntime.InvokeUnmarshalled<object, object, object, object[]>(
+            var assemblies = ((WebAssemblyJSRuntime)_jsRuntime).InvokeUnmarshalled<object, object, object, object[]>(
                 ReadDynamicAssemblies,
                 null,
                 null,

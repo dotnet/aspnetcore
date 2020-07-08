@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
-    public class OnNavigateArgs
+    public class NavigationContext
     {
-        public OnNavigateArgs(string path, CancellationTokenSource cancellationTokenSource)
+        internal NavigationContext(string path, CancellationTokenSource cancellationTokenSource)
         {
             Path = path;
             CancellationTokenSource = cancellationTokenSource;

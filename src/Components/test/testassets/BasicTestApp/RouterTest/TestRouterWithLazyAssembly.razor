@@ -1,14 +1,15 @@
-@using Microsoft.AspNetCore.Components.Routing
+﻿@using Microsoft.AspNetCore.Components.Routing
 @using System.Reflection
+@using Microsoft.AspNetCore.Components.WebAssembly.Services 
 
-@inject ILazyLoader lazyLoader
+@inject LazyAssemblyLoader lazyLoader
 
 <Router AppAssembly="@typeof(BasicTestApp.Program).Assembly" AdditionalAssemblies="@lazyLoadedAssemblies" OnNavigateAsync="@OnNavigateAsync">
-    <Loading>
+    <Navigating>
         <div style="padding: 20px;background-color:blue;color:white;" id="loading-banner">
             <p>Loading the requested page...</p>
         </div>
-    </Loading>
+    </Navigating>
     <Found Context="routeData">
         <RouteView RouteData="@routeData" />
     </Found>
@@ -22,7 +23,7 @@
 @code {
     private List<Assembly> lazyLoadedAssemblies = new List<Assembly>();
 
-    private async Task OnNavigateAsync(OnNavigateArgs args)
+    private async Task OnNavigateAsync(NavigationContext args)
     {
         Console.WriteLine($"Running OnNavigate for {args.Path}...");
         await LoadAssemblies(args.Path);
