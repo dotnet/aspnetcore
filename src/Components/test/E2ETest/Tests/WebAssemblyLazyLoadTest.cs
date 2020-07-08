@@ -65,6 +65,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             SetUrlViaPushState("/WithLazyAssembly");
             var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
 
+            // Wait for the page to finish loading
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(2)).Until(
+                driver => driver.FindElement(By.Id("use-package-button")) != null);
+
             var button = app.FindElement(By.Id("use-package-button"));
 
             // We should have requested the DLL

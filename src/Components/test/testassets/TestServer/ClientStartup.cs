@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +23,6 @@ namespace TestServer
         {
             services.AddMvc();
             services.AddServerSideBlazor();
-            services.AddSingleton(s => new LazyAssemblyLoader(s));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
