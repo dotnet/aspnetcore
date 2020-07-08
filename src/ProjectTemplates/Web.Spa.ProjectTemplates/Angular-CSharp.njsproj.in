@@ -1,0 +1,166 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">14.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+    <Name>Company.WebApplication1.Client</Name>
+    <RootNamespace>Company.WebApplication1.Client</RootNamespace>
+    <LaunchUrl>https://localhost:5002</LaunchUrl>
+    <SaveNodeJsSettingsInProjectFile>True</SaveNodeJsSettingsInProjectFile>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>5990939C-7E7B-4CFA-86FF-44CA5756498A</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>node_modules/@angular/cli/bin/ng</StartupFile>
+    <AngularFrontendPort>5002</AngularFrontendPort>
+    <AspNetHttpsPemKeyPath>$(MSBuildProjectDirectory)/obj/65dbd9db-07fc-4667-bfff-eb58cc8cdeb0.key</AspNetHttpsPemKeyPath>
+    <AspNetHttpsCertificate>$(MSBuildProjectDirectory)/obj/65dbd9db-07fc-4667-bfff-eb58cc8cdeb0.crt</AspNetHttpsCertificate>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{349c5851-65df-11da-9384-00065b846f21};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
+    <NodejsPort>1337</NodejsPort>
+    <StartWebBrowser>True</StartWebBrowser>
+    <ScriptArguments>serve --proxy-config proxy.conf.json --port $(AngularFrontendPort) --ssl --ssl-key $(AspNetHttpsPemKeyPath) --ssl-cert $(AspNetHttpsCertificate)</ScriptArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include=".editorconfig" />
+    <Content Include=".gitignore" />
+    <Content Include="angular.json" />
+    <Content Include="browserslist" />
+    <Content Include="package.json" />
+    <Content Include="package-lock.json" />
+    <Content Include="README.md" />
+    <Content Include="tsconfig.json" />
+    <Content Include="tslint.json" />
+    <Content Include="e2e\protractor.conf.js" />
+    <Content Include="e2e\tsconfig.e2e.json" />
+    <Content Include="e2e\src\app.e2e-spec.ts" />
+    <Content Include="e2e\src\app.po.ts" />
+    <Content Include="src\index.html" />
+    <Content Include="src\karma.conf.js" />
+    <Content Include="src\main.ts" />
+    <Content Include="src\polyfills.ts" />
+    <Content Include="src\styles.css" />
+    <Content Include="src\test.ts" />
+    <Content Include="src\tsconfig.app.json" />
+    <Content Include="src\tsconfig.server.json" />
+    <Content Include="src\tsconfig.spec.json" />
+    <Content Include="src\tslint.json" />
+    <Content Include="src\api-authorization\api-authorization.constants.ts" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\api-authorization.module.spec.ts" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\api-authorization.module.ts" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\authorize.guard.spec.ts" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\authorize.guard.ts" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\authorize.interceptor.spec.ts" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\authorize.interceptor.ts" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\authorize.service.spec.ts" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\authorize.service.ts" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\login\login.component.css" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\login\login.component.html" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\login\login.component.spec.ts" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\login\login.component.ts" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\login-menu\login-menu.component.css" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\login-menu\login-menu.component.html" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\login-menu\login-menu.component.spec.ts" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\login-menu\login-menu.component.ts" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\logout\logout.component.css" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\logout\logout.component.html" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\logout\logout.component.spec.ts" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\api-authorization\logout\logout.component.ts" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Content Include="src\app\app.component.html" />
+    <Content Include="src\app\app.component.ts" />
+    <Content Include="src\app\app.module.ts" />
+    <Content Include="src\app\app.server.module.ts" />
+    <Content Include="src\app\counter\counter.component.html" />
+    <Content Include="src\app\counter\counter.component.spec.ts" />
+    <Content Include="src\app\counter\counter.component.ts" />
+    <Content Include="src\app\fetch-data\fetch-data.component.html" />
+    <Content Include="src\app\fetch-data\fetch-data.component.ts" />
+    <Content Include="src\app\home\home.component.html" />
+    <Content Include="src\app\home\home.component.ts" />
+    <Content Include="src\app\nav-menu\nav-menu.component.css" />
+    <Content Include="src\app\nav-menu\nav-menu.component.html" />
+    <Content Include="src\app\nav-menu\nav-menu.component.ts" />
+    <Content Include="src\assets\.gitkeep" />
+    <Content Include="src\environments\environment.prod.ts" />
+    <Content Include="src\environments\environment.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="e2e" />
+    <Folder Include="src" />
+    <Folder Include="e2e\src" />
+    <Folder Include="src\api-authorization" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Folder Include="src\app" />
+    <Folder Include="src\assets" />
+    <Folder Include="src\environments" />
+    <Folder Include="src\api-authorization\login" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Folder Include="src\api-authorization\login-menu" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Folder Include="src\api-authorization\logout" Condition="'$(IndividualLocalAuth)' == 'true'" />
+    <Folder Include="src\app\counter" />
+    <Folder Include="src\app\fetch-data" />
+    <Folder Include="src\app\home" />
+    <Folder Include="src\app\nav-menu" />
+  </ItemGroup>
+  <PropertyGroup>
+    <PrepareForBuildDependsOn>$(PrepareForBuildDependsOn);RestoreNpmPackages;EnsureHttpsDevelopmentCertificate</PrepareForBuildDependsOn>
+    <PostBuildEvent>
+      npm run build
+    </PostBuildEvent>
+  </PropertyGroup>
+  <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>0</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:48022/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>True</UseCustomServer>
+          <CustomServerUrl>http://localhost:1337</CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}" User="">
+        <WebProjectProperties>
+          <StartPageUrl>
+          </StartPageUrl>
+          <StartAction>CurrentPage</StartAction>
+          <AspNetDebugging>True</AspNetDebugging>
+          <SilverlightDebugging>False</SilverlightDebugging>
+          <NativeDebugging>False</NativeDebugging>
+          <SQLDebugging>False</SQLDebugging>
+          <ExternalProgram>
+          </ExternalProgram>
+          <StartExternalURL>
+          </StartExternalURL>
+          <StartCmdLineArguments>
+          </StartCmdLineArguments>
+          <StartWorkingDirectory>
+          </StartWorkingDirectory>
+          <EnableENC>False</EnableENC>
+          <AlwaysStartWebServerOnDebug>False</AlwaysStartWebServerOnDebug>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Target Name="RestoreNpmPackages" Condition="!Exists('node_modules')">
+    <Exec Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
+  <Target Name="EnsureHttpsDevelopmentCertificate" Condition="!Exists('$(AspNetHttpsPemKeyPath)') OR !Exists('$(AspNetHttpsCertificate)')">
+    <Exec Command="echo dotnet dev-certs https --export-path $(AspNetHttpsCertificate) --no-password --key-format pem" WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
+</Project>

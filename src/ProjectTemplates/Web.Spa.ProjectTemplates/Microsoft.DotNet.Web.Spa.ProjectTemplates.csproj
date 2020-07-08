@@ -32,7 +32,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <GeneratedContent Include="Angular-CSharp.csproj.in" OutputPath="content/Angular-CSharp/Company.WebApplication1.csproj" />
+    <GeneratedContent Include="Angular-CSharp.csproj.in" OutputPath="content/Angular-CSharp/Server/Company.WebApplication1.csproj" />
+    <GeneratedContent Include="Angular-CSharp.njsproj.in" OutputPath="content/Angular-CSharp/Client/Company.WebApplication1.Client.njsproj" />
+    <GeneratedContent Include="Angular-CSharp.sln.in" OutputPath="content/Angular-CSharp/Company.WebApplication1.sln" />
     <GeneratedContent Include="React-CSharp.csproj.in" OutputPath="content/React-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="ReactRedux-CSharp.csproj.in" OutputPath="content/ReactRedux-CSharp/Company.WebApplication1.csproj" />
   </ItemGroup>

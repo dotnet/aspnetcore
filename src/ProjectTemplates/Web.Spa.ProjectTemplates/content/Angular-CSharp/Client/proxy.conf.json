@@ -1,0 +1,28 @@
+{
+  "/weatherforecast": {
+    "target": "https://localhost:5001",
+      "secure": false
+////#if (IndividualLocalAuth)
+//  },
+//  "/_configuration/*": {
+//    "target": "https://localhost:5001",
+//    "secure": false
+//  },
+//  "/.well-known/*": {
+//    "target": "https://localhost:5001",
+//    "secure": false
+//  },
+//  "/Identity/*": {
+//    "target": "https://localhost:5001",
+//    "secure": false
+//  },
+//  "/connect/*": {
+//    "target": "https://localhost:5001",
+//    "secure": false
+//  },
+//  "/ApplyDatabaseMigrations": {
+//    "target": "https://localhost:5001",
+//    "secure": false
+//  }
+////#endif
+}
