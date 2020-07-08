@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Identity
 
         /// <summary>
         /// Returns a <see cref="SignInResult"/> that represents a sign-in attempt that failed because 
-        /// the user was logged out.
+        /// the user was locked out.
         /// </summary>
         /// <returns>A <see cref="SignInResult"/> that represents sign-in attempt that failed due to the
         /// user being locked out.</returns>
