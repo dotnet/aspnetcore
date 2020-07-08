@@ -40,7 +40,7 @@
 
     public static async Task TestOnNavCancel(NavigationContext args)
     {
-        await Task.Delay(2000, args.CancellationTokenSource.Token);
+        await Task.Delay(2000, args.CancellationToken);
         Console.WriteLine("I'm not happening...");
     }
 }

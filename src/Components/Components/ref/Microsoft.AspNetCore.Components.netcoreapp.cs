@@ -559,7 +559,7 @@ namespace Microsoft.AspNetCore.Components.Routing
     public partial class NavigationContext
     {
         internal NavigationContext() { }
-        public System.Threading.CancellationTokenSource CancellationTokenSource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Threading.CancellationToken CancellationToken { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class Router : Microsoft.AspNetCore.Components.IComponent, Microsoft.AspNetCore.Components.IHandleAfterRender, System.IDisposable

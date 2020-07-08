@@ -12,14 +12,14 @@ namespace Microsoft.AspNetCore.Components.Routing
 {
     public class NavigationContext
     {
-        internal NavigationContext(string path, CancellationTokenSource cancellationTokenSource)
+        internal NavigationContext(string path, CancellationToken cancellationToken)
         {
             Path = path;
-            CancellationTokenSource = cancellationTokenSource;
+            CancellationToken = cancellationToken;
         }
 
         public string Path { get; }
 
-        public CancellationTokenSource CancellationTokenSource { get; }
+        public CancellationToken CancellationToken { get; }
     }
 }

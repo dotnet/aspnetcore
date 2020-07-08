@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private CancellationTokenSource _onNavigateCts;
 
-        private HashSet<Assembly> _assemblies = new HashSet<Assembly>();
+        private readonly HashSet<Assembly> _assemblies = new HashSet<Assembly>();
 
         [Inject] private NavigationManager NavigationManager { get; set; }
 
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             if (_assemblies.Count != assembliesSet.Count)
             {
                 Routes = RouteTableFactory.Create(assemblies);
-                _assemblies = assembliesSet;
+                _assemblies.UnionWith(assembliesSet);
             }
             // If the new assemblies set is the same length as the previous one,
             // we check if they are equal-by-value and refresh the route table if
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Components.Routing
                 if (!_assemblies.SetEquals(assembliesSet))
                 {
                     Routes = RouteTableFactory.Create(assemblies);
-                    _assemblies = assembliesSet;
+                    _assemblies.UnionWith(assembliesSet);
                 }
             }
         }
@@ -210,14 +210,14 @@ namespace Microsoft.AspNetCore.Components.Routing
             // Create a new cancellation token source for this instance
             _onNavigateCts = new CancellationTokenSource();
 
-            var navigateContext = new NavigationContext(path, _onNavigateCts);
+            var navigateContext = new NavigationContext(path, _onNavigateCts.Token);
             var task = OnNavigateAsync(navigateContext);
 
             // Create a cancellation task based on the cancellation token
             // associated with the current running task.
             var cancellationTaskSource = new TaskCompletionSource();
-            navigateContext.CancellationTokenSource.Token.Register(() =>
-                cancellationTaskSource.TrySetCanceled(navigateContext.CancellationTokenSource.Token));
+            navigateContext.CancellationToken.Register(() =>
+                cancellationTaskSource.TrySetCanceled(navigateContext.CancellationToken));
 
             // If the user provided a Navigating render fragment, then show it.
             if (Navigating != null && task.Status != TaskStatus.RanToCompletion)
