@@ -17,37 +17,55 @@ using Microsoft.AspNetCore.Components.Rendering;
 #nullable disable
     public partial class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
+        #pragma warning disable 219
+        private void __RazorDirectiveTokenHelpers__() {
+        }
+        #pragma warning restore 219
+        #pragma warning disable 0414
+        private static System.Object __o = null;
+        #pragma warning restore 0414
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder)
         {
         }
         #pragma warning restore 1998
 #nullable restore
-#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
        
-    void RenderChildComponent(RenderTreeBuilder __builder)
+    void MyMethod(RenderTreeBuilder __builder)
     {
-        var output = string.Empty;
-        if (__builder == null) output = "Builder is null!";
-        else output = "Builder is not null!";
+        
 
 #line default
 #line hidden
 #nullable disable
-        __builder.OpenElement(0, "p");
-        __builder.AddContent(1, "Output: ");
-        __builder.AddContent(2, 
+#nullable restore
+#line 6 "x:\dir\subdir\Test\TestComponent.cshtml"
+             for (var i = 0; i < 100; i++)
+            {
+                
+
+#line default
+#line hidden
+#nullable disable
 #nullable restore
 #line 9 "x:\dir\subdir\Test\TestComponent.cshtml"
-                    output
+               __o = i;
 
 #line default
 #line hidden
 #nullable disable
-        );
-        __builder.CloseElement();
 #nullable restore
 #line 10 "x:\dir\subdir\Test\TestComponent.cshtml"
+                     
+            }
+
+#line default
+#line hidden
+#nullable disable
+#nullable restore
+#line 12 "x:\dir\subdir\Test\TestComponent.cshtml"
+             
     }
 
 #line default

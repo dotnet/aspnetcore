@@ -4686,6 +4686,35 @@ namespace Test
         }
 
         [Fact]
+        public void WhiteSpace_InMarkupInFunctionsBlock()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Rendering
+@code {
+    void MyMethod(RenderTreeBuilder __builder)
+    {
+        <ul>
+            @for (var i = 0; i < 100; i++)
+            {
+                <li>
+                    @i
+                </li>
+            }
+        </ul>
+    }
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void WhiteSpace_WithPreserveWhitespace()
         {
             // Arrange
