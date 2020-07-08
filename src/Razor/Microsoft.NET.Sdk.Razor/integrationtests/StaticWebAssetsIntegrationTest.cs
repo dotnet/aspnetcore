@@ -166,6 +166,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23756")]
         [InitializeTestProject("AppWithPackageAndP2PReference", language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Clean_Success_RemovesManifestAndCache()
         {

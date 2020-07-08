@@ -185,6 +185,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23757")]
         public void InputEvent_RespondsOnKeystrokes_EvenIfUpdatesAreLaggy()
         {
             // This test doesn't mean much on WebAssembly - it just shows that even if the CPU is locked
