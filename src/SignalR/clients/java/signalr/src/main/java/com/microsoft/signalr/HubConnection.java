@@ -192,7 +192,7 @@ public class HubConnection implements AutoCloseable {
                 }
             }
 
-            HubMessage[] messages = protocol.parseMessages(payload, connectionState);
+            List<HubMessage> messages = protocol.parseMessages(payload, connectionState);
 
             for (HubMessage message : messages) {
                 logger.debug("Received message of type {}.", message.getMessageType());
