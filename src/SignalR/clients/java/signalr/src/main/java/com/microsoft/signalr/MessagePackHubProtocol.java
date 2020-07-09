@@ -137,10 +137,12 @@ class MessagePackHubProtocol implements HubProtocol {
             return new InvocationBindingFailureMessage(invocationId, target, ex);
         }
         
-        // NOTE - C# client accounts for possibility of streamId array being absent, while spec claims it's required - which?
-        Collection<String> streams = readStreamIds(unpacker);
+        Collection<String> streams = null;
+        // Older implementations may not send the streamID array
+        if (itemCount > 5) {
+            streams = readStreamIds(unpacker);
+        }
         
-        // NOTE - C# client applies headers by assigning Message.Headers directly, rather than adding new constructor
         return new InvocationMessage(headers, invocationId, target, arguments, streams);
     }
     
