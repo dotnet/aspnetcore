@@ -113,7 +113,8 @@
     <Folder Include="src\app\nav-menu" />
   </ItemGroup>
   <PropertyGroup>
-    <PrepareForBuildDependsOn>$(PrepareForBuildDependsOn);RestoreNpmPackages;EnsureHttpsDevelopmentCertificate</PrepareForBuildDependsOn>
+    <CompileDependsOn>RestoreNpmPackages;$(CompileDependsOn)</CompileDependsOn>
+    <PrepareForBuildDependsOn>$(PrepareForBuildDependsOn);EnsureHttpsDevelopmentCertificate</PrepareForBuildDependsOn>
     <PostBuildEvent>
       npm run build
     </PostBuildEvent>
@@ -157,8 +158,17 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
-  <Target Name="RestoreNpmPackages" Condition="!Exists('node_modules')">
+  <Target Name="PrepareForRestorePackages">
+    <PropertyGroup>
+      <_NpmInstallCacheFile>$(IntermediateOutputPath)package.json.cache</_NpmInstallCacheFile>
+    </PropertyGroup>
+  </Target>
+  <Target Name="RestoreNpmPackages" Inputs="package.json" Outputs="$(_NpmInstallCacheFile)" DependsOnTargets="PrepareForRestorePackages">
+    <GetFileHash Files="package.json">
+      <Output TaskParameter="Items" PropertyName="_packageJsonHash" />
+    </GetFileHash>
     <Exec Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)" />
+    <WriteLinesToFile File="$(_NpmInstallCacheFile)" Lines="$(_packageJsonHash)" Overwrite="true" WriteOnlyWhenDifferent="true"/>
   </Target>
   <Target Name="EnsureHttpsDevelopmentCertificate" Condition="!Exists('$(AspNetHttpsPemKeyPath)') OR !Exists('$(AspNetHttpsCertificate)')">
     <Exec Command="echo dotnet dev-certs https --export-path $(AspNetHttpsCertificate) --no-password --key-format pem" WorkingDirectory="$(MSBuildProjectDirectory)" />

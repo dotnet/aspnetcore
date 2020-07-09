@@ -8,6 +8,7 @@
   "groupIdentity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.Angular",
   "precedence": "7000",
   "guids": [
+    "65dbd9db-07fc-4667-bfff-eb58cc8cdeb0",
     "5990939C-7E7B-4CFA-86FF-44CA5756498A",
     "650B3CE7-2E93-4CC4-9F46-466686815EAA"
   ],
