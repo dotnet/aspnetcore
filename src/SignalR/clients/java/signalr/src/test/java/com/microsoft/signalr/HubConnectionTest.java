@@ -2119,6 +2119,37 @@ class HubConnectionTest {
     }
 
     @Test
+    public void AccessTokenProviderCanProvideDifferentValues() {
+        AtomicReference<String> token = new AtomicReference<>();
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                        (req) -> {
+                            token.set(req.getHeaders().get("Authorization"));
+                            return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                        });
+
+        AtomicInteger i = new AtomicInteger(0);
+        MockTransport transport = new MockTransport(true);
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .withAccessTokenProvider(Single.defer(() -> Single.just("secret" + i.getAndIncrement())))
+                .build();
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals("Bearer secret0", token.get());
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals("Bearer secret1", token.get());
+    }
+
+    @Test
     public void accessTokenProviderIsOverriddenFromRedirectNegotiate() {
         AtomicReference<String> token = new AtomicReference<>();
         TestHttpClient client = new TestHttpClient()
