@@ -8,8 +8,8 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
-#pragma warning disable CS0618 // Type or member is obsolete
-    public class ComplexTypeModelBinderProviderTest
+    [Obsolete]
+    public class ComplexObjectModelBinderProviderTest
     {
         [Theory]
         [InlineData(typeof(string))]
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public void Create_ForNonComplexType_ReturnsNull(Type modelType)
         {
             // Arrange
-            var provider = new ComplexTypeModelBinderProvider();
+            var provider = new ComplexObjectModelBinderProvider();
 
             var context = new TestModelBinderProviderContext(modelType);
 
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public void Create_ForSupportedTypes_ReturnsBinder()
         {
             // Arrange
-            var provider = new ComplexTypeModelBinderProvider();
+            var provider = new ComplexObjectModelBinderProvider();
 
             var context = new TestModelBinderProviderContext(typeof(Person));
             context.OnCreatingBinder(m =>
@@ -53,14 +53,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = provider.GetBinder(context);
 
             // Assert
-            Assert.IsType<ComplexTypeModelBinder>(result);
+            Assert.IsType<ComplexObjectModelBinder>(result);
         }
 
         [Fact]
         public void Create_ForSupportedType_ReturnsBinder()
         {
             // Arrange
-            var provider = new ComplexTypeModelBinderProvider();
+            var provider = new ComplexObjectModelBinderProvider();
 
             var context = new TestModelBinderProviderContext(typeof(Person));
             context.OnCreatingBinder(m =>
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var result = provider.GetBinder(context);
 
             // Assert
-            Assert.IsType<ComplexTypeModelBinder>(result);
+            Assert.IsType<ComplexObjectModelBinder>(result);
         }
 
         private class Person
@@ -90,5 +90,4 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             public int Age { get; set; }
         }
     }
-#pragma warning restore CS0618 // Type or member is obsolete
 }

@@ -5,7 +5,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 
@@ -16,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
     /// </summary>
     public class DefaultModelMetadataProvider : ModelMetadataProvider
     {
-        private readonly TypeCache _typeCache = new TypeCache();
+        private readonly ModelMetadataCache _modelMetadataCache = new ModelMetadataCache();
         private readonly Func<ModelMetadataIdentity, ModelMetadataCacheEntry> _cacheEntryFactory;
         private readonly ModelMetadataCacheEntry _metadataCacheEntryForObjectType;
 
@@ -150,6 +154,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
             return cacheEntry.Metadata;
         }
+        
+        /// <inheritdoc />
+        public override ModelMetadata GetMetadataForConstructor(ConstructorInfo constructorInfo, Type modelType)
+        {
+            if (constructorInfo is null)
+            {
+                throw new ArgumentNullException(nameof(constructorInfo));
+            }
+
+            var cacheEntry = GetCacheEntry(constructorInfo, modelType);
+            return cacheEntry.Metadata;
+        }
 
         private static DefaultModelBindingMessageProvider GetMessageProvider(IOptions<MvcOptions> optionsAccessor)
         {
@@ -174,7 +190,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             {
                 var key = ModelMetadataIdentity.ForType(modelType);
 
-                cacheEntry = _typeCache.GetOrAdd(key, _cacheEntryFactory);
+                cacheEntry = _modelMetadataCache.GetOrAdd(key, _cacheEntryFactory);
             }
 
             return cacheEntry;
@@ -182,22 +198,34 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
         private ModelMetadataCacheEntry GetCacheEntry(ParameterInfo parameter, Type modelType)
         {
-            return _typeCache.GetOrAdd(
+            return _modelMetadataCache.GetOrAdd(
                 ModelMetadataIdentity.ForParameter(parameter, modelType),
                 _cacheEntryFactory);
         }
 
         private ModelMetadataCacheEntry GetCacheEntry(PropertyInfo property, Type modelType)
         {
-            return _typeCache.GetOrAdd(
+            return _modelMetadataCache.GetOrAdd(
                 ModelMetadataIdentity.ForProperty(property, modelType, property.DeclaringType),
+                _cacheEntryFactory);
+        }
+
+        private ModelMetadataCacheEntry GetCacheEntry(ConstructorInfo constructor, Type modelType)
+        {
+            return _modelMetadataCache.GetOrAdd(
+                ModelMetadataIdentity.ForConstructor(constructor, modelType),
                 _cacheEntryFactory);
         }
 
         private ModelMetadataCacheEntry CreateCacheEntry(ModelMetadataIdentity key)
         {
             DefaultMetadataDetails details;
-            if (key.MetadataKind == ModelMetadataKind.Parameter)
+
+            if (key.MetadataKind == ModelMetadataKind.Constructor)
+            {
+                details = CreateConstructorDetails(key);
+            }
+            else if (key.MetadataKind == ModelMetadataKind.Parameter)
             {
                 details = CreateParameterDetails(key);
             }
@@ -228,6 +256,74 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
             Debug.Fail($"Unable to find property '{propertyKey.Name}' on type '{propertyKey.ContainerType}.");
             return null;
+        }
+
+        private DefaultMetadataDetails CreateConstructorDetails(ModelMetadataIdentity constructorKey)
+        {
+            var constructor = constructorKey.ConstructorInfo;
+            var parameters = constructor.GetParameters();
+            var parameterMetadata = new ModelMetadata[parameters.Length];
+            var parameterTypes = new Type[parameters.Length];
+
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                var parameter = parameters[i];
+                var parameterDetails = CreateParameterDetails(ModelMetadataIdentity.ForParameter(parameter));
+                parameterMetadata[i] = CreateModelMetadata(parameterDetails);
+
+                parameterTypes[i] = parameter.ParameterType;
+            }
+
+            var constructorDetails = new DefaultMetadataDetails(constructorKey, ModelAttributes.Empty);
+            constructorDetails.ConstructorParameters = parameterMetadata;
+            constructorDetails.BoundConstructorInvoker = CreateObjectFactory(constructor);
+
+            return constructorDetails;
+
+            static Func<object[], object> CreateObjectFactory(ConstructorInfo constructor)
+            {
+                var args = Expression.Parameter(typeof(object[]), "args");
+                var factoryExpressionBody = BuildFactoryExpression(constructor, args);
+
+                var factoryLamda = Expression.Lambda<Func<object[], object>>(
+                   factoryExpressionBody, args);
+
+                return factoryLamda.Compile();
+            }
+        }
+
+        private static Expression BuildFactoryExpression(
+            ConstructorInfo constructor,
+            Expression factoryArgumentArray)
+        {
+            var constructorParameters = constructor.GetParameters();
+            var constructorArguments = new Expression[constructorParameters.Length];
+
+            for (var i = 0; i < constructorParameters.Length; i++)
+            {
+                var constructorParameter = constructorParameters[i];
+                var parameterType = constructorParameter.ParameterType;
+
+                constructorArguments[i] = Expression.ArrayAccess(factoryArgumentArray, Expression.Constant(i));
+                if (ParameterDefaultValue.TryGetDefaultValue(constructorParameter, out var defaultValue))
+                {
+                    // We have a default value;
+                }
+                else if (parameterType.IsValueType)
+                {
+                    defaultValue = Activator.CreateInstance(parameterType);
+                }
+
+                if (defaultValue != null)
+                {
+                    var defaultValueExpression = Expression.Constant(defaultValue);
+                    constructorArguments[i] = Expression.Coalesce(constructorArguments[i], defaultValueExpression);
+                }
+
+                constructorArguments[i] = Expression.Convert(constructorArguments[i], parameterType);
+            }
+
+            return Expression.New(constructor, constructorArguments);
         }
 
         private ModelMetadataCacheEntry GetMetadataCacheEntryForObjectType()
@@ -341,7 +437,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 ModelAttributes.GetAttributesForParameter(key.ParameterInfo, key.ModelType));
         }
 
-        private class TypeCache : ConcurrentDictionary<ModelMetadataIdentity, ModelMetadataCacheEntry>
+        private class ModelMetadataCache : ConcurrentDictionary<ModelMetadataIdentity, ModelMetadataCacheEntry>
         {
         }
 
@@ -356,6 +452,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             public ModelMetadata Metadata { get; }
 
             public DefaultMetadataDetails Details { get; }
+        }
+
+        private class NullServiceProvider : IServiceProvider
+        {
+            public static readonly NullServiceProvider Instance = new NullServiceProvider();
+
+            // We do not expect this to be invoked at all.
+            public object GetService(Type serviceType) => throw new NotSupportedException();
         }
     }
 }

@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -116,6 +117,71 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expected.Id, actual.Id);
+            Assert.Equal(expected.Name, actual.Name);
+            Assert.Equal(expected.StreetName, actual.StreetName);
+        }
+
+        [Fact]
+        public virtual async Task JsonInputFormatter_RoundtripsRecordType()
+        {
+            // Arrange
+            var expected = new JsonFormatterController.SimpleRecordModel(18, "James", "JnK");
+
+            // Act
+            var response = await Client.PostAsJsonAsync("http://localhost/JsonFormatter/RoundtripRecordType/", expected);
+            var actual = await response.Content.ReadAsAsync<JsonFormatterController.SimpleRecordModel>();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expected.Id, actual.Id);
+            Assert.Equal(expected.Name, actual.Name);
+            Assert.Equal(expected.StreetName, actual.StreetName);
+        }
+
+        [Fact]
+        public virtual async Task JsonInputFormatter_ValidationWithRecordTypes_ValidationErrors()
+        {
+            // Arrange
+            var expected = new JsonFormatterController.SimpleModelWithValidation(123, "This is a very long name", StreetName: null);
+
+            // Act
+            var response = await Client.PostAsJsonAsync($"JsonFormatter/{nameof(JsonFormatterController.RoundtripModelWithValidation)}", expected);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.BadRequest);
+            var problem = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>();
+            Assert.Collection(
+                problem.Errors.OrderBy(e => e.Key),
+                kvp =>
+                {
+                    Assert.Equal("Id", kvp.Key);
+                    Assert.Equal("The field Id must be between 1 and 100.", Assert.Single(kvp.Value));
+                },
+                kvp =>
+                {
+                    Assert.Equal("Name", kvp.Key);
+                    Assert.Equal("The field Name must be a string with a minimum length of 2 and a maximum length of 8.", Assert.Single(kvp.Value));
+                },
+                kvp =>
+                {
+                    Assert.Equal("StreetName", kvp.Key);
+                    Assert.Equal("The StreetName field is required.", Assert.Single(kvp.Value));
+                });
+        }
+
+        [Fact]
+        public virtual async Task JsonInputFormatter_ValidationWithRecordTypes_NoValidationErrors()
+        {
+            // Arrange
+            var expected = new JsonFormatterController.SimpleModelWithValidation(99, "TestName", "Some address");
+
+            // Act
+            var response = await Client.PostAsJsonAsync($"JsonFormatter/{nameof(JsonFormatterController.RoundtripModelWithValidation)}", expected);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var actual = await response.Content.ReadFromJsonAsync<JsonFormatterController.SimpleModel>();
             Assert.Equal(expected.Id, actual.Id);
             Assert.Equal(expected.Name, actual.Name);
             Assert.Equal(expected.StreetName, actual.StreetName);

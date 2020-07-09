@@ -4,8 +4,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -24,7 +26,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         public static readonly int DefaultOrder = 10000;
 
+        private static readonly IReadOnlyDictionary<ModelMetadata, ModelMetadata> EmptyParameterMapping = new Dictionary<ModelMetadata, ModelMetadata>(0);
+
         private int? _hashCode;
+        private IReadOnlyList<ModelMetadata>? _boundProperties;
+        private IReadOnlyDictionary<ModelMetadata, ModelMetadata>? _parameterMapping;
 
         /// <summary>
         /// Creates a new <see cref="ModelMetadata"/>.
@@ -83,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the key for the current instance.
         /// </summary>
-        protected ModelMetadataIdentity Identity { get; }
+        protected internal ModelMetadataIdentity Identity { get; }
 
         /// <summary>
         /// Gets a collection of additional information about the model.
@@ -94,6 +100,94 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets the collection of <see cref="ModelMetadata"/> instances for the model's properties.
         /// </summary>
         public abstract ModelPropertyCollection Properties { get; }
+
+        internal IReadOnlyList<ModelMetadata> BoundProperties
+        {
+            get
+            {
+                // An item may appear as both a constructor parameter and a property. For instance, in record types,
+                // each constructor parameter is also a settable property and will have the same name, possibly with a difference in case.
+                // Executing model binding on these parameters twice may have detrimental effects, such as duplicate validation entries,
+                // or failures if a model expects to be bound exactly ones.
+                // Consequently when a bound constructor is present, we only bind and validate the subset of properties whose names
+                // haven't appeared as parameters.
+                if (BoundConstructor is null)
+                {
+                    return Properties;
+                }
+
+                if (_boundProperties is null)
+                {
+                    var boundParameters = BoundConstructor.Parameters;
+                    var boundProperties = new List<ModelMetadata>();
+
+                    foreach (var metadata in Properties)
+                    {
+                        if (!boundParameters.Any(p =>
+                            string.Equals(p.ParameterName, metadata.PropertyName, StringComparison.OrdinalIgnoreCase)
+                            && p.ModelType == metadata.ModelType))
+                        {
+                            boundProperties.Add(metadata);
+                        }
+                    }
+
+                    _boundProperties = boundProperties;
+                }
+
+                return _boundProperties;
+            }
+        }
+
+        internal IReadOnlyDictionary<ModelMetadata, ModelMetadata> ParameterMapping
+        {
+            get
+            {
+                if (_parameterMapping != null)
+                {
+                    return _parameterMapping;
+                }
+
+                if (BoundConstructor is null)
+                {
+                    _parameterMapping = EmptyParameterMapping;
+                    return _parameterMapping;
+                }
+
+                var boundParameters = BoundConstructor.Parameters;
+                var parameterMapping = new Dictionary<ModelMetadata, ModelMetadata>();
+
+                foreach (var parameter in boundParameters)
+                {
+                    var property = Properties.FirstOrDefault(p =>
+                        string.Equals(p.Name, parameter.ParameterName, StringComparison.OrdinalIgnoreCase) &&
+                        p.ModelType == parameter.ModelType);
+
+                    if (property != null)
+                    {
+                        parameterMapping[parameter] = property;
+                    }
+                }
+
+                _parameterMapping = parameterMapping;
+                return _parameterMapping;
+            }
+        }
+
+        /// <summary>
+        /// Gets <see cref="ModelMetadata"/> instance for a constructor that is used during binding and validation.
+        /// <para>
+        /// A constructor is used during model binding and validation if it is the only constructor on the type,
+        /// is a parameterless constructor on a type with multiple constructors, or is a constructor with the
+        /// <c>ModelBindingConstructorAttribute</c>.
+        /// </para>
+        /// </summary>
+        public virtual ModelMetadata? BoundConstructor { get; }
+
+        /// <summary>
+        /// Gets the collection of <see cref="ModelMetadata"/> instances for a constructor's parameters.
+        /// This is only available when <see cref="MetadataKind"/> is <see cref="ModelMetadataKind.Constructor"/>.
+        /// </summary>
+        public abstract IReadOnlyList<ModelMetadata> Parameters { get; }
 
         /// <summary>
         /// Gets the name of a model if specified explicitly using <see cref="IModelNameProvider"/>.
@@ -402,6 +496,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract Action<object, object> PropertySetter { get; }
 
         /// <summary>
+        /// Gets a delegate that invokes the constructor.
+        /// </summary>
+        public abstract Func<object[], object> ConstructorInvoker { get; }
+
+        /// <summary>
         /// Gets a display name for the model.
         /// </summary>
         /// <remarks>
@@ -500,6 +599,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     return $"ModelMetadata (Property: '{ContainerType!.Name}.{PropertyName}' Type: '{ModelType.Name}')";
                 case ModelMetadataKind.Type:
                     return $"ModelMetadata (Type: '{ModelType.Name}')";
+                case ModelMetadataKind.Constructor:
+                    return $"ModelMetadata (Constructor: '{ModelType.Name}')";
                 default:
                     return $"Unsupported MetadataKind '{MetadataKind}'.";
             }

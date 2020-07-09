@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <summary>
         /// Error message the model binding system adds when <see cref="ModelError.Exception"/> is of type
         /// <see cref="FormatException"/> or <see cref="OverflowException"/>, value is known, and error is associated
-        /// with a property.
+        /// with a property or parameter.
         /// </summary>
         /// <value>Default <see cref="string"/> is "The value '{0}' is not valid for {1}.".</value>
         public virtual Func<string, string, string> AttemptedValueIsInvalidAccessor { get; } = default!;
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <summary>
         /// Error message the model binding system adds when <see cref="ModelError.Exception"/> is of type
         /// <see cref="FormatException"/> or <see cref="OverflowException"/>, value is known, and error is associated
-        /// with a collection element or action parameter.
+        /// with a collection element.
         /// </summary>
         /// <value>Default <see cref="string"/> is "The value '{0}' is not valid.".</value>
         public virtual Func<string, string> NonPropertyAttemptedValueIsInvalidAccessor { get; } = default!;
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <summary>
         /// Error message the model binding system adds when <see cref="ModelError.Exception"/> is of type
         /// <see cref="FormatException"/> or <see cref="OverflowException"/>, value is unknown, and error is associated
-        /// with a property.
+        /// with a property or parameter.
         /// </summary>
         /// <value>Default <see cref="string"/> is "The supplied value is invalid for {0}.".</value>
         public virtual Func<string, string> UnknownValueIsInvalidAccessor { get; } = default!;
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <summary>
         /// Error message the model binding system adds when <see cref="ModelError.Exception"/> is of type
         /// <see cref="FormatException"/> or <see cref="OverflowException"/>, value is unknown, and error is associated
-        /// with a collection element or action parameter.
+        /// with a collection element .
         /// </summary>
         /// <value>Default <see cref="string"/> is "The supplied value is invalid.".</value>
         public virtual Func<string> NonPropertyUnknownValueIsInvalidAccessor { get; } = default!;

@@ -54,5 +54,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             throw new NotSupportedException();
         }
+
+        /// <summary>
+        /// Supplies metadata describing a property.
+        /// </summary>
+        /// <param name="constructor">The <see cref="ConstructorInfo"/>.</param>
+        /// <param name="modelType">The type declaring the constructor.</param>
+        /// <returns>A <see cref="ModelMetadata"/> instance describing the <paramref name="constructor"/>.</returns>
+        public virtual ModelMetadata GetMetadataForConstructor(ConstructorInfo constructor, Type modelType)
+        {
+            throw new NotSupportedException();
+        }
     }
 }

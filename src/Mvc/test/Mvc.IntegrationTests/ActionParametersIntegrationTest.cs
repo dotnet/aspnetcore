@@ -408,6 +408,71 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(
                 string.Format(
                     "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
+                    "value types and must have a parameterless constructor. Record types must have a single constructor. " +
+                    "Alternatively, set the '{1}' property to a non-null value in the '{2}' constructor.",
+                    typeof(ClassWithNoDefaultConstructor).FullName,
+                    nameof(Class1.Property1),
+                    typeof(Class1).FullName),
+                exception.Message);
+        }
+
+        public record ActionParameter_DefaultValueConstructor(string name = "test", int age = 23);
+
+        [Fact]
+        public async Task ActionParameter_UsesDefaultConstructorParameters()
+        {
+            // Arrange
+            var parameterType = typeof(ActionParameter_MultipleConstructors_ParameterlessConstructorModel);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "p",
+                ParameterType = parameterType
+            };
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("Name", "James");
+            });
+            var modelState = testContext.ModelState;
+
+            // Act
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelState.IsValid);
+
+            var model = Assert.IsType<ActionParameter_MultipleConstructors_ParameterlessConstructorModel>(result.Model);
+            Assert.Equal("James", model.Name);
+        }
+
+        [Fact]
+        public async Task ActionParameter_UsingComplexTypeModelBinder_ModelPropertyTypeWithNoParameterlessConstructor_ThrowsException()
+        {
+            // Arrange
+            var parameterType = typeof(Class1);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "p",
+                ParameterType = parameterType
+            };
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("Name", "James").Add("Property1.City", "Seattle");
+            }, updateOptions: options =>
+            {
+                options.ModelBinderProviders.RemoveType<ComplexObjectModelBinderProvider>();
+#pragma warning disable CS0618 // Type or member is obsolete
+                options.ModelBinderProviders.Add(new ComplexTypeModelBinderProvider());
+#pragma warning restore CS0618 // Type or member is obsolete
+            });
+            var modelState = testContext.ModelState;
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => parameterBinder.BindModelAsync(parameter, testContext));
+            Assert.Equal(
+                string.Format(
+                    "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
                     "value types and must have a parameterless constructor. Alternatively, set the '{1}' property to" +
                     " a non-null value in the '{2}' constructor.",
                     typeof(ClassWithNoDefaultConstructor).FullName,
@@ -434,21 +499,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(
                 string.Format(
                     "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
-                    "value types and must have a parameterless constructor.",
+                    "value types and must have a parameterless constructor. Record types must have a single constructor.",
                     typeof(PointStruct).FullName),
                 exception.Message);
         }
 
-        [Theory]
-        [InlineData(typeof(ClassWithNoDefaultConstructor))]
-        [InlineData(typeof(AbstractClassWithNoDefaultConstructor))]
-        public async Task ActionParameter_BindingToTypeWithNoParameterlessConstructor_ThrowsException(Type parameterType)
+        [Fact]
+        public async Task ActionParameter_BindingToAbstractionType_ThrowsException()
         {
             // Arrange
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
-                ParameterType = parameterType,
+                ParameterType = typeof(AbstractClassWithNoDefaultConstructor),
                 Name = "p"
             };
             var testContext = ModelBindingTestHelper.GetTestContext();
@@ -458,8 +521,156 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(
                 string.Format(
                     "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
-                    "value types and must have a parameterless constructor.",
-                    parameterType.FullName),
+                    "value types and must have a parameterless constructor. Record types must have a single constructor.",
+                    typeof(AbstractClassWithNoDefaultConstructor).FullName),
+                exception.Message);
+        }
+
+        public class ActionParameter_MultipleConstructors_ParameterlessConstructorModel
+        {
+            public ActionParameter_MultipleConstructors_ParameterlessConstructorModel(string name) => (Name) = name;
+
+            public ActionParameter_MultipleConstructors_ParameterlessConstructorModel(string name, int age) => (Name, Age) = (name, age);
+
+            public ActionParameter_MultipleConstructors_ParameterlessConstructorModel() { }
+
+            public string Name { get; set; }
+
+            public int Age { get; set; }
+        }
+
+        [Fact]
+        public async Task ActionParameter_MultipleConstructors_ParameterlessConstructor()
+        {
+            // Arrange
+            var parameterType = typeof(ActionParameter_MultipleConstructors_ParameterlessConstructorModel);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "p",
+                ParameterType = parameterType
+            };
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("Name", "James");
+            });
+            var modelState = testContext.ModelState;
+
+            // Act
+            var result = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+            Assert.True(modelState.IsValid);
+
+            var model = Assert.IsType<ActionParameter_MultipleConstructors_ParameterlessConstructorModel>(result.Model);
+            Assert.Equal("James", model.Name);
+        }
+
+        public class ActionParameter_MultipleConstructors_NoParameterlessConstructorModel
+        {
+            public ActionParameter_MultipleConstructors_NoParameterlessConstructorModel(string name) => (Name) = (name);
+
+            public ActionParameter_MultipleConstructors_NoParameterlessConstructorModel(string name, int age) => (Name, Age) = (name, age);
+
+            public string Name { get; init; }
+
+            public int Age { get; init; }
+        }
+
+        [Fact]
+        public async Task ActionParameter_MultipleConstructors_NoParameterlessConstructor_Throws()
+        {
+            // Arrange
+            var parameterType = typeof(ActionParameter_MultipleConstructors_NoParameterlessConstructorModel);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "p",
+                ParameterType = parameterType
+            };
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("Name", "James");
+            });
+            var modelState = testContext.ModelState;
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => parameterBinder.BindModelAsync(parameter, testContext));
+            Assert.Equal(
+                string.Format(
+                    "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
+                    "value types and must have a parameterless constructor. Record types must have a single constructor.",
+                    typeof(ActionParameter_MultipleConstructors_NoParameterlessConstructorModel).FullName),
+                exception.Message);
+        }
+
+        public class ActionParameter_MultipleConstructorsWithDefaultValues_NoParameterlessConstructorModel
+        {
+            public ActionParameter_MultipleConstructorsWithDefaultValues_NoParameterlessConstructorModel(string name = "default-name") => (Name) = (name);
+
+            public ActionParameter_MultipleConstructorsWithDefaultValues_NoParameterlessConstructorModel(string name, int age) => (Name, Age) = (name, age);
+
+            public string Name { get; init; }
+
+            public int Age { get; init; }
+        }
+
+        [Fact]
+        public async Task ActionParameter_MultipleConstructorsWithDefaultValues_NoParameterlessConstructor_Throws()
+        {
+            // Arrange
+            var parameterType = typeof(ActionParameter_MultipleConstructorsWithDefaultValues_NoParameterlessConstructorModel);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "p",
+                ParameterType = parameterType
+            };
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("Name", "James");
+            });
+            var modelState = testContext.ModelState;
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => parameterBinder.BindModelAsync(parameter, testContext));
+            Assert.Equal(
+                string.Format(
+                    "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
+                    "value types and must have a parameterless constructor. Record types must have a single constructor.",
+                    typeof(ActionParameter_MultipleConstructorsWithDefaultValues_NoParameterlessConstructorModel).FullName),
+                exception.Message);
+        }
+
+        public record ActionParameter_RecordTypeWithMultipleConstructors(string Name, int Age)
+        {
+            public ActionParameter_RecordTypeWithMultipleConstructors(string Name) : this(Name, 0) {}
+        }
+
+        [Fact]
+        public async Task ActionParameter_RecordTypeWithMultipleConstructors_Throws()
+        {
+            // Arrange
+            var parameterType = typeof(ActionParameter_RecordTypeWithMultipleConstructors);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "p",
+                ParameterType = parameterType
+            };
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("Name", "James").Add("Age", "29");
+            });
+            var modelState = testContext.ModelState;
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => parameterBinder.BindModelAsync(parameter, testContext));
+            Assert.Equal(
+                string.Format(
+                    "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
+                    "value types and must have a parameterless constructor. Record types must have a single constructor.",
+                    typeof(ActionParameter_RecordTypeWithMultipleConstructors).FullName),
                 exception.Message);
         }
 
@@ -865,7 +1076,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         // By default the ComplexTypeModelBinder fails to construct models for types with no parameterless constructor,
         // but a developer could change this behavior by overriding CreateModel
+#pragma warning disable CS0618 // Type or member is obsolete
         private class CustomComplexTypeModelBinder : ComplexTypeModelBinder
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             public CustomComplexTypeModelBinder(IDictionary<ModelMetadata, IModelBinder> propertyBinders)
                 : base(propertyBinders, NullLoggerFactory.Instance)

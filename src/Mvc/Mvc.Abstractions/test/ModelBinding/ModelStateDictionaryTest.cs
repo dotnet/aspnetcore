@@ -1025,8 +1025,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var bindingMetadataProvider = new DefaultBindingMetadataProvider();
             var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
             var optionsAccessor = new OptionsAccessor();
-            optionsAccessor.Value.ModelBindingMessageProvider.SetNonPropertyUnknownValueIsInvalidAccessor(
-                () => "Hmm, the supplied value is not valid.");
+            optionsAccessor.Value.ModelBindingMessageProvider.SetUnknownValueIsInvalidAccessor(
+                _ => "Hmm, the supplied value is not valid.");
 
             var method = typeof(string).GetMethod(nameof(string.Copy));
             var parameter = method.GetParameters()[0]; // Copy(string str)
@@ -1141,8 +1141,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var bindingMetadataProvider = new DefaultBindingMetadataProvider();
             var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
             var optionsAccessor = new OptionsAccessor();
-            optionsAccessor.Value.ModelBindingMessageProvider.SetNonPropertyAttemptedValueIsInvalidAccessor(
-                value => $"Hmm, the value '{ value }' is not valid.");
+            optionsAccessor.Value.ModelBindingMessageProvider.SetAttemptedValueIsInvalidAccessor(
+                (value, _) => $"Hmm, the value '{ value }' is not valid.");
 
             var method = typeof(string).GetMethod(nameof(string.Copy));
             var parameter = method.GetParameters()[0]; // Copy(string str)

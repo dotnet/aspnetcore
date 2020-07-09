@@ -300,6 +300,40 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task ValidationTagHelpers_UsingRecords()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Customer/HtmlGeneration_Customer/CustomerWithRecords");
+            var nameValueCollection = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string,string>("Number", string.Empty),
+                new KeyValuePair<string,string>("Name", string.Empty),
+                new KeyValuePair<string,string>("Email", string.Empty),
+                new KeyValuePair<string,string>("PhoneNumber", string.Empty),
+                new KeyValuePair<string,string>("Password", string.Empty)
+            };
+            request.Content = new FormUrlEncodedContent(nameValueCollection);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            var document = await response.GetHtmlDocumentAsync();
+
+            var validation = document.RequiredQuerySelector("span[data-valmsg-for=Number]");
+            Assert.Equal("The value '' is invalid.", validation.TextContent);
+
+            validation = document.QuerySelector("span[data-valmsg-for=Name]");
+            Assert.Null(validation);
+
+            validation = document.QuerySelector("span[data-valmsg-for=Email]");
+            Assert.Equal("field-validation-valid", validation.ClassName);
+
+            validation = document.QuerySelector("span[data-valmsg-for=Password]");
+            Assert.Equal("The Password field is required.", validation.TextContent);
+        }
+
+        [Fact]
         public async Task CacheTagHelper_CanCachePortionsOfViewsPartialViewsAndViewComponents()
         {
             // Arrange

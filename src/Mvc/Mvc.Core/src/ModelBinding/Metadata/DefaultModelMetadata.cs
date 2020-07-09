@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
         private ReadOnlyDictionary<object, object> _additionalValues;
         private ModelMetadata _elementMetadata;
+        private ModelMetadata _constructorMetadata;
         private bool? _isBindingRequired;
         private bool? _isReadOnly;
         private bool? _isRequired;
@@ -387,6 +388,28 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
+        public override ModelMetadata BoundConstructor
+        {
+            get
+            {
+                if (BindingMetadata.BoundConstructor == null)
+                {
+                    return null;
+                }
+
+                if (_constructorMetadata == null)
+                {
+                    var modelMetadataProvider = (ModelMetadataProvider)_provider;
+                    _constructorMetadata = modelMetadataProvider.GetMetadataForConstructor(BindingMetadata.BoundConstructor, ModelType);
+                }
+
+                return _constructorMetadata;
+            }
+        }
+
+        public override IReadOnlyList<ModelMetadata> Parameters => _details.ConstructorParameters;
+
+        /// <inheritdoc />
         public override IPropertyFilterProvider PropertyFilterProvider => BindingMetadata.PropertyFilterProvider;
 
         /// <inheritdoc />
@@ -494,7 +517,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
             else if (defaultModelMetadata.IsComplexType)
             {
-                foreach (var property in defaultModelMetadata.Properties)
+                var parameters = defaultModelMetadata.BoundConstructor?.Parameters ?? Array.Empty<ModelMetadata>();
+                foreach (var parameter in parameters)
+                {
+                    if (CalculateHasValidators(visited, parameter))
+                    {
+                        return true;
+                    }
+                }
+
+                foreach (var property in defaultModelMetadata.BoundProperties)
                 {
                     if (CalculateHasValidators(visited, property))
                     {
@@ -526,6 +558,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
         /// <inheritdoc />
         public override Action<object, object> PropertySetter => _details.PropertySetter;
+
+        public override Func<object[], object> ConstructorInvoker => _details.BoundConstructorInvoker;
+
+        internal DefaultMetadataDetails Details => _details;
 
         /// <inheritdoc />
         public override ModelMetadata GetMetadataForType(Type modelType)

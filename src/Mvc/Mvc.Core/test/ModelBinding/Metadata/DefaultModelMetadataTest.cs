@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForProperty(
-                typeof(TypeWithProperties).GetProperty(nameof(TypeWithProperties.PublicGetPublicSetProperty)), 
+                typeof(TypeWithProperties).GetProperty(nameof(TypeWithProperties.PublicGetPublicSetProperty)),
                 typeof(string),
                 typeof(TypeWithProperties));
 
@@ -1161,7 +1161,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var unitHead = ModelMetadataIdentity.ForProperty(unitModel.GetProperty(nameof(BusinessUnit.Head)), typeof(Employee), unitModel);
             var unitHeadMetadata = CreateModelMetadata(unitHead, metadataProvider.Object, true); // BusinessUnit.Head has validators
             var unitId = ModelMetadataIdentity.ForProperty(unitModel.GetProperty(nameof(BusinessUnit.Id)), typeof(int), unitModel);
-            var unitIdMetadata = CreateModelMetadata(unitId, metadataProvider.Object, false); 
+            var unitIdMetadata = CreateModelMetadata(unitId, metadataProvider.Object, false);
 
             metadataProvider
                 .Setup(mp => mp.GetMetadataForProperties(modelType))
@@ -1254,8 +1254,229 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             Assert.False(result);
         }
 
+        private record SimpleRecordType(int Property);
+
+        [Fact]
+        public void CalculateHasValidators_RecordType_ParametersWithNoValidators()
+        {
+            // Arrange
+            var modelType = typeof(SimpleRecordType);
+            var constructor = modelType.GetConstructors().First();
+            var parameter = constructor.GetParameters().First();
+            var modelIdentity = ModelMetadataIdentity.ForType(modelType);
+            var metadataProvider = new Mock<ModelMetadataProvider>();
+            var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
+            modelMetadata.BindingMetadata.BoundConstructor = constructor;
+
+            var propertyId = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(SimpleRecordType.Property)), typeof(int), modelType);
+            var propertyMetadata = CreateModelMetadata(propertyId, metadataProvider.Object, false);
+
+            var parameterId = ModelMetadataIdentity.ForParameter(parameter);
+            var parameterMetadata = CreateModelMetadata(parameterId, metadataProvider.Object, hasValidators: false);
+
+            var constructorMetadata = CreateModelMetadata(ModelMetadataIdentity.ForConstructor(constructor, modelType), metadataProvider.Object, null);
+            constructorMetadata.Details.ConstructorParameters = new[]
+            {
+                parameterMetadata,
+            };
+
+            metadataProvider
+               .Setup(mp => mp.GetMetadataForConstructor(constructor, modelType))
+               .Returns(constructorMetadata)
+               .Verifiable();
+
+            metadataProvider
+               .Setup(mp => mp.GetMetadataForProperties(modelType))
+               .Returns(new[] { propertyMetadata })
+               .Verifiable();
+
+            // Act
+            var result = DefaultModelMetadata.CalculateHasValidators(new HashSet<DefaultModelMetadata>(), modelMetadata);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void CalculateHasValidators_RecordType_ParametersWithValidators()
+        {
+            // Arrange
+            var modelType = typeof(SimpleRecordType);
+            var constructor = modelType.GetConstructors().First();
+            var parameter = constructor.GetParameters().First();
+            var modelIdentity = ModelMetadataIdentity.ForType(modelType);
+            var metadataProvider = new Mock<ModelMetadataProvider>();
+            var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
+            modelMetadata.BindingMetadata.BoundConstructor = constructor;
+
+            var propertyId = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(SimpleRecordType.Property)), typeof(int), modelType);
+            var propertyMetadata = CreateModelMetadata(propertyId, metadataProvider.Object, false);
+
+            var parameterId = ModelMetadataIdentity.ForParameter(parameter);
+            var parameterMetadata = CreateModelMetadata(parameterId, metadataProvider.Object, hasValidators: true);
+
+            var constructorMetadata = CreateModelMetadata(ModelMetadataIdentity.ForConstructor(constructor, modelType), metadataProvider.Object, null);
+            constructorMetadata.Details.ConstructorParameters = new[]
+            {
+                parameterMetadata,
+            };
+
+            metadataProvider
+               .Setup(mp => mp.GetMetadataForConstructor(constructor, modelType))
+               .Returns(constructorMetadata)
+               .Verifiable();
+
+            metadataProvider
+               .Setup(mp => mp.GetMetadataForProperties(modelType))
+               .Returns(new[] { propertyMetadata })
+               .Verifiable();
+
+            // Act
+            var result = DefaultModelMetadata.CalculateHasValidators(new HashSet<DefaultModelMetadata>(), modelMetadata);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        private record SimpleRecordTypeWithProperty(int Property)
+        {
+            public int Property2 { get; set; }
+        }
+
+        [Fact]
+        public void CalculateHasValidators_RecordTypeWithProperty_NoValidators()
+        {
+            // Arrange
+            var modelType = typeof(SimpleRecordTypeWithProperty);
+            var constructor = modelType.GetConstructors().First();
+            var parameter = constructor.GetParameters().First();
+            var modelIdentity = ModelMetadataIdentity.ForType(modelType);
+            var metadataProvider = new Mock<ModelMetadataProvider>();
+            var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
+            modelMetadata.BindingMetadata.BoundConstructor = constructor;
+
+            var propertyId = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(SimpleRecordTypeWithProperty.Property)), typeof(int), modelType);
+            var propertyMetadata = CreateModelMetadata(propertyId, metadataProvider.Object, false);
+
+            var property2Id = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(SimpleRecordTypeWithProperty.Property2)), typeof(int), modelType);
+            var property2Metadata = CreateModelMetadata(property2Id, metadataProvider.Object, false);
+
+            var parameterId = ModelMetadataIdentity.ForParameter(parameter);
+            var parameterMetadata = CreateModelMetadata(parameterId, metadataProvider.Object, hasValidators: false);
+
+            var constructorMetadata = CreateModelMetadata(ModelMetadataIdentity.ForConstructor(constructor, modelType), metadataProvider.Object, null);
+            constructorMetadata.Details.ConstructorParameters = new[]
+            {
+                parameterMetadata,
+            };
+
+            metadataProvider
+               .Setup(mp => mp.GetMetadataForConstructor(constructor, modelType))
+               .Returns(constructorMetadata)
+               .Verifiable();
+
+            metadataProvider
+               .Setup(mp => mp.GetMetadataForProperties(modelType))
+               .Returns(new[] { propertyMetadata, property2Metadata })
+               .Verifiable();
+
+            // Act
+            var result = DefaultModelMetadata.CalculateHasValidators(new HashSet<DefaultModelMetadata>(), modelMetadata);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void CalculateHasValidators_RecordTypeWithProperty_PropertyHasValidators()
+        {
+            // Arrange
+            var modelType = typeof(SimpleRecordTypeWithProperty);
+            var constructor = modelType.GetConstructors().First();
+            var parameter = constructor.GetParameters().First();
+            var modelIdentity = ModelMetadataIdentity.ForType(modelType);
+            var metadataProvider = new Mock<ModelMetadataProvider>();
+            var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
+            modelMetadata.BindingMetadata.BoundConstructor = constructor;
+
+            var propertyId = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(SimpleRecordTypeWithProperty.Property)), typeof(int), modelType);
+            var propertyMetadata = CreateModelMetadata(propertyId, metadataProvider.Object, false);
+
+            var property2Id = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(SimpleRecordTypeWithProperty.Property2)), typeof(int), modelType);
+            var property2Metadata = CreateModelMetadata(property2Id, metadataProvider.Object, true);
+
+            var parameterId = ModelMetadataIdentity.ForParameter(parameter);
+            var parameterMetadata = CreateModelMetadata(parameterId, metadataProvider.Object, hasValidators: true);
+
+            var constructorMetadata = CreateModelMetadata(ModelMetadataIdentity.ForConstructor(constructor, modelType), metadataProvider.Object, null);
+            constructorMetadata.Details.ConstructorParameters = new[]
+            {
+                parameterMetadata,
+            };
+
+            metadataProvider
+               .Setup(mp => mp.GetMetadataForConstructor(constructor, modelType))
+               .Returns(constructorMetadata)
+               .Verifiable();
+
+            metadataProvider
+               .Setup(mp => mp.GetMetadataForProperties(modelType))
+               .Returns(new[] { propertyMetadata, property2Metadata })
+               .Verifiable();
+
+            // Act
+            var result = DefaultModelMetadata.CalculateHasValidators(new HashSet<DefaultModelMetadata>(), modelMetadata);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void CalculateHasValidators_RecordTypeWithProperty_MappedPropertyHasValidators_ValidatorsAreIgnored()
+        {
+            // Arrange
+            var modelType = typeof(SimpleRecordTypeWithProperty);
+            var constructor = modelType.GetConstructors().First();
+            var parameter = constructor.GetParameters().First();
+            var modelIdentity = ModelMetadataIdentity.ForType(modelType);
+            var metadataProvider = new Mock<ModelMetadataProvider>();
+            var modelMetadata = CreateModelMetadata(modelIdentity, metadataProvider.Object, false);
+            modelMetadata.BindingMetadata.BoundConstructor = constructor;
+
+            var propertyId = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(SimpleRecordTypeWithProperty.Property)), typeof(int), modelType);
+            var propertyMetadata = CreateModelMetadata(propertyId, metadataProvider.Object, true);
+
+            var property2Id = ModelMetadataIdentity.ForProperty(modelType.GetProperty(nameof(SimpleRecordTypeWithProperty.Property2)), typeof(int), modelType);
+            var property2Metadata = CreateModelMetadata(property2Id, metadataProvider.Object, false);
+
+            var parameterId = ModelMetadataIdentity.ForParameter(parameter);
+            var parameterMetadata = CreateModelMetadata(parameterId, metadataProvider.Object, hasValidators: false);
+
+            var constructorMetadata = CreateModelMetadata(ModelMetadataIdentity.ForConstructor(constructor, modelType), metadataProvider.Object, null);
+            constructorMetadata.Details.ConstructorParameters = new[]
+            {
+                parameterMetadata,
+            };
+
+            metadataProvider
+               .Setup(mp => mp.GetMetadataForConstructor(constructor, modelType))
+               .Returns(constructorMetadata)
+               .Verifiable();
+
+            metadataProvider
+               .Setup(mp => mp.GetMetadataForProperties(modelType))
+               .Returns(new[] { propertyMetadata, property2Metadata })
+               .Verifiable();
+
+            // Act
+            var result = DefaultModelMetadata.CalculateHasValidators(new HashSet<DefaultModelMetadata>(), modelMetadata);
+
+            // Assert
+            Assert.False(result);
+        }
+
         private static DefaultModelMetadata CreateModelMetadata(
-            ModelMetadataIdentity modelIdentity, 
+            ModelMetadataIdentity modelIdentity,
             IModelMetadataProvider metadataProvider,
             bool? hasValidators)
         {

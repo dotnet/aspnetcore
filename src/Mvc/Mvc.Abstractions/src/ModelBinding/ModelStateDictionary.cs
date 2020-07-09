@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -298,7 +299,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 // "The value '' is not valid." (when no value was provided, not even an empty string) and
                 // "The supplied value is invalid for Int32." (when error is for an element or parameter).
                 var messageProvider = metadata.ModelBindingMessageProvider;
-                var name = metadata.DisplayName ?? metadata.PropertyName;
+
+                var name = metadata.DisplayName ?? 
+                    ((metadata.MetadataKind == ModelMetadataKind.Parameter) ? metadata.ParameterName : metadata.PropertyName);
                 string errorMessage;
                 if (entry == null && name == null)
                 {

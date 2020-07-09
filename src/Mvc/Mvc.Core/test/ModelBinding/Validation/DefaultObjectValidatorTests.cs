@@ -1669,6 +1669,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
         private class DepthObject
         {
+            public DepthObject() { }
+
             public DepthObject(int maxAllowedDepth, int depth = 0)
             {
                 MaxAllowedDepth = maxAllowedDepth;
