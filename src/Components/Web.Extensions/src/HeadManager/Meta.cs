@@ -1,56 +1,84 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
     public class Meta : HeadElementBase
     {
-        private MetaElement _metaElement = default!;
+        private MetaElementState _state = default!;
 
-        internal override object ElementKey => _metaElement;
+        internal override object ElementKey => _state.Key;
 
         [Parameter]
         public string? Name { get; set; }
+
+        [Parameter]
+        public string? HttpEquiv { get; set; }
+
+        [Parameter]
+        public string? Charset { get; set; }
 
         [Parameter]
         public string? Content { get; set; }
 
         protected override async Task OnParametersSetAsync()
         {
-            if (Name == null)
-            {
-                throw new InvalidOperationException($"{GetType()} requires a name to be specified.");
-            }
+            var key = GetMetaElementKey();
 
-            if (_metaElement == null)
+            if (_state == null)
             {
-                _metaElement = new MetaElement
-                {
-                    Name = Name,
-                    Content = Content ?? string.Empty,
-                };
+                _state = new MetaElementState();
             }
-            else if (!string.Equals(_metaElement.Name, Name))
+            else if (!_state.Key.Equals(key))
             {
                 await HeadManager.NotifyDisposedAsync(this);
             }
+
+            _state.Key = key;
+            _state.Content = Content;
 
             await HeadManager.NotifyChangedAsync(this);
         }
 
         internal override async ValueTask ApplyAsync()
         {
-            await HeadManager.SetMetaElementByNameAsync(_metaElement.Name, _metaElement);
+            await HeadManager.SetMetaElementAsync(_state.Key, _state);
         }
 
         internal override async ValueTask<object> GetInitialStateAsync()
         {
-            return await HeadManager.GetMetaElementByNameAsync(_metaElement.Name);
+            return await HeadManager.GetMetaElementAsync(_state.Key);
         }
 
         internal override ValueTask ResetInitialStateAsync(object initialState)
         {
-            return HeadManager.SetMetaElementByNameAsync(_metaElement.Name, initialState);
+            return HeadManager.SetMetaElementAsync(_state.Key, initialState);
+        }
+
+        // TODO: There can only be one charset, doesn't matter what value is.
+        private MetaElementKey GetMetaElementKey()
+        {
+            try
+            {
+                var (id, name) = new (string? id, MetaElementKeyName type)[]
+                {
+                    (Name, MetaElementKeyName.Name),
+                    (HttpEquiv, MetaElementKeyName.HttpEquiv),
+                    (Charset, MetaElementKeyName.Charset)
+                }
+                .Where(t => t.id != null)
+                .Single();
+
+                return new MetaElementKey(name, id!);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new InvalidOperationException(
+                    $"{GetType()} must contain exactly one of {nameof(Name)}, {nameof(HttpEquiv)}, " +
+                    $"or {nameof(Charset)}.",
+                    ex);
+            }
         }
     }
 }

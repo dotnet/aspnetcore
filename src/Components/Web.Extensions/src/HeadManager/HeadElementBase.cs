@@ -31,15 +31,15 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             await HeadManager.NotifyChangedAsync(this);
         }
 
+        public void Dispose()
+        {
+            HeadManager.NotifyDisposedAsync(this).ConfigureAwait(false); // TODO: Async problems here?
+        }
+
         internal abstract ValueTask<object> GetInitialStateAsync();
 
         internal abstract ValueTask ResetInitialStateAsync(object initialState);
 
         internal abstract ValueTask ApplyAsync();
-
-        public void Dispose()
-        {
-            HeadManager.NotifyDisposedAsync(this).ConfigureAwait(false); // TODO: Async problems here?
-        }
     }
 }

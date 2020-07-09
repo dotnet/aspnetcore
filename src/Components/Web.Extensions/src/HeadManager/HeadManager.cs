@@ -55,19 +55,19 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             return _jsRuntime.InvokeAsync<string>($"{JsFunctionsPrefix}.getTitle");
         }
 
-        internal ValueTask<MetaElement> GetMetaElementByNameAsync(string name)
-        {
-            return _jsRuntime.InvokeAsync<MetaElement>($"{JsFunctionsPrefix}.getMetaElementByName", name);
-        }
-
         internal async ValueTask SetTitleAsync(object title)
         {
              await _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.setTitle", title);
         }
 
-        internal async ValueTask SetMetaElementByNameAsync(string name, object metaElement)
+        internal ValueTask<MetaElementState> GetMetaElementAsync(MetaElementKey key)
         {
-            await _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.setMetaElementByName", name, metaElement);
+            return _jsRuntime.InvokeAsync<MetaElementState>($"{JsFunctionsPrefix}.getMetaElement", key);
+        }
+
+        internal async ValueTask SetMetaElementAsync(MetaElementKey key, object metaElement)
+        {
+            await _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.setMetaElement", key, metaElement);
         }
     }
 }

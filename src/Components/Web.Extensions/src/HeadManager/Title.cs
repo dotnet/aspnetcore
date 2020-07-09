@@ -1,22 +1,13 @@
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
     public class Title : HeadElementBase
     {
-        [Parameter]
-        public string Value { get; set; } = string.Empty;
-
-        [Parameter]
-        public RenderFragment? ChildContent { get; set; }
-
         internal override object ElementKey => "title";
 
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            ChildContent?.Invoke(builder);
-        }
+        [Parameter]
+        public string Value { get; set; } = string.Empty;
 
         internal override async ValueTask<object> GetInitialStateAsync()
         {
@@ -31,11 +22,6 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         internal override async ValueTask ApplyAsync()
         {
             await HeadManager.SetTitleAsync(Value);
-        }
-
-        public override string ToString()
-        {
-            return Value;
         }
     }
 }

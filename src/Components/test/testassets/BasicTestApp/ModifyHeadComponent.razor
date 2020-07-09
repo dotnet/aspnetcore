@@ -15,10 +15,18 @@
 </p>
 
 <p>
-    <button @onclick="ToggleMeta">@(renderMeta ? "Disable" : "Enable") meta</button>
+    <button @onclick="ToggleMetaDescription">@(renderMeta ? "Disable" : "Enable") meta</button>
     @if (renderMeta)
     {
         <Meta Name="description" Content="This is a meta tag, wheeee!"/>
+    }
+</p>
+
+<p>
+    <button @onclick="ToggleMetaCharset">@(renderCharset ? "Disable" : "Enable") charset</button>
+    @if (renderCharset)
+    {
+        <Meta Charset="us-ascii" />
     }
 </p>
 
@@ -26,6 +34,7 @@
     private readonly bool[] titles = Enumerable.Repeat(false, 6).ToArray();
 
     private bool renderMeta = false;
+    private bool renderCharset = false;
 
     private void ToggleTitle(int titleId)
     {
@@ -33,9 +42,15 @@
         StateHasChanged();
     }
 
-    private void ToggleMeta()
+    private void ToggleMetaDescription()
     {
         renderMeta = !renderMeta;
+        StateHasChanged();
+    }
+
+    private void ToggleMetaCharset()
+    {
+        renderCharset = !renderCharset;
         StateHasChanged();
     }
 }

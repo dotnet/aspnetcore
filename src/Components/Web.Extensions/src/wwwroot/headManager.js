@@ -6,23 +6,25 @@ const setTitle = (title) => {
     document.title = title;
 };
 
-const getMetaElementByName = (name) => {
+const getMetaElement = (key) => {
+    const keyName = ['name', 'http-equiv', 'charset'][key.name];
     const elements = Array.from(document.getElementsByTagName('meta'));
-    const domMetaElement = elements.find(e => e.name === name);
+    let domMetaElement = elements.find(e => e.getAttribute(keyName) === key.id);
 
     if (!domMetaElement) {
         return undefined;
     }
 
     return {
-        name: domMetaElement.name,
-        content: domMetaElement.content,
+        name: domMetaElement.getAttribute(keyName),
+        content: domMetaElement.getAttribute('content'),
     };
 };
 
-const setMetaElementByName = (name, metaElement) => {
+const setMetaElement = (key, metaElement) => {
+    const keyName = ['name', 'http-equiv', 'charset'][key.name];
     const elements = Array.from(document.getElementsByTagName('meta'));
-    let domMetaElement = elements.find(e => e.name === name);
+    let domMetaElement = elements.find(e => e.getAttribute(keyName) === key.id);
 
     if (!metaElement) {
         domMetaElement && domMetaElement.remove();
@@ -40,8 +42,13 @@ const setMetaElementByName = (name, metaElement) => {
         head.appendChild(domMetaElement);
     }
 
-    domMetaElement.name = metaElement.name;
-    domMetaElement.content = metaElement.content;
+    domMetaElement.setAttribute(keyName, key.id);
+
+    if (metaElement.content) {
+        domMetaElement.setAttribute('content', metaElement.content);
+    } else {
+        domMetaElement.removeAttribute('content');
+    }
 
     return true;
 };
@@ -49,6 +56,6 @@ const setMetaElementByName = (name, metaElement) => {
 window._blazorHeadManager = {
     getTitle,
     setTitle,
-    getMetaElementByName,
-    setMetaElementByName,
+    getMetaElement,
+    setMetaElement,
 };
