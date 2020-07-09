@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Components.Web.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
