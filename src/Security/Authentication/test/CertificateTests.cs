@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Certificate.Test
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyValidSelfSignedWithClientEkuAuthenticates()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
@@ -52,6 +53,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 },
                 Certificates.SelfSignedValidWithClientEku);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
@@ -59,7 +61,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyValidSelfSignedWithNoEkuAuthenticates()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
@@ -67,6 +69,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 },
                 Certificates.SelfSignedValidWithNoEku);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
@@ -74,13 +77,14 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyValidSelfSignedWithClientEkuFailsWhenSelfSignedCertsNotAllowed()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.Chained
                 },
                 Certificates.SelfSignedValidWithClientEku);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
@@ -88,7 +92,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyValidSelfSignedWithNoEkuFailsWhenSelfSignedCertsNotAllowed()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.Chained,
@@ -96,6 +100,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 },
                 Certificates.SelfSignedValidWithNoEku);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
@@ -103,7 +108,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyValidSelfSignedWithServerFailsEvenIfSelfSignedCertsAreAllowed()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
@@ -111,6 +116,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 },
                 Certificates.SelfSignedValidWithServerEku);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
@@ -118,7 +124,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyValidSelfSignedWithServerPassesWhenSelfSignedCertsAreAllowedAndPurposeValidationIsOff()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
@@ -127,6 +133,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 },
                 Certificates.SelfSignedValidWithServerEku);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
@@ -134,7 +141,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyValidSelfSignedWithServerFailsPurposeValidationIsOffButSelfSignedCertsAreNotAllowed()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.Chained,
@@ -143,6 +150,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 },
                 Certificates.SelfSignedValidWithServerEku);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
@@ -150,7 +158,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyExpiredSelfSignedFails()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
@@ -159,6 +167,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 },
                 Certificates.SelfSignedExpired);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
@@ -166,7 +175,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyExpiredSelfSignedPassesIfDateRangeValidationIsDisabled()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
@@ -175,6 +184,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 },
                 Certificates.SelfSignedExpired);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
@@ -182,7 +192,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyNotYetValidSelfSignedFails()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
@@ -191,6 +201,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 },
                 Certificates.SelfSignedNotYetValid);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
@@ -198,7 +209,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyNotYetValidSelfSignedPassesIfDateRangeValidationIsDisabled()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
@@ -207,6 +218,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 },
                 Certificates.SelfSignedNotYetValid);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
@@ -214,7 +226,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyFailingInTheValidationEventReturnsForbidden()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     ValidateCertificateUse = false,
@@ -222,6 +234,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 },
                 Certificates.SelfSignedValidWithServerEku);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
@@ -229,7 +242,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task DoingNothingInTheValidationEventReturnsOK()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
@@ -238,6 +251,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 },
                 Certificates.SelfSignedValidWithServerEku);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
@@ -245,12 +259,13 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyNotSendingACertificateEndsUpInForbidden()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     Events = successfulValidationEvents
                 });
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
@@ -258,12 +273,13 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyUntrustedClientCertEndsUpInForbidden()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     Events = successfulValidationEvents
                 }, Certificates.SignedClient);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
@@ -271,7 +287,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyClientCertWithUntrustedRootAndTrustedChainEndsUpInForbidden()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     Events = successfulValidationEvents,
@@ -280,6 +296,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                     RevocationMode = X509RevocationMode.NoCheck
                 }, Certificates.SignedClient);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
@@ -287,7 +304,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyValidClientCertWithTrustedChainAuthenticates()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     Events = successfulValidationEvents,
@@ -296,6 +313,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                     RevocationMode = X509RevocationMode.NoCheck
                 }, Certificates.SignedClient);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
@@ -303,7 +321,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyHeaderIsUsedIfCertIsNotPresent()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
@@ -311,6 +329,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 },
                 wireUpHeaderMiddleware: true);
 
+            using var server = host.GetTestServer();
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Add("X-Client-Cert", Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData));
             var response = await client.GetAsync("https://example.com/");
@@ -320,13 +339,14 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyHeaderEncodedCertFailsOnBadEncoding()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     Events = successfulValidationEvents
                 },
                 wireUpHeaderMiddleware: true);
 
+            using var server = host.GetTestServer();
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Add("X-Client-Cert", "OOPS" + Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData));
             var response = await client.GetAsync("https://example.com/");
@@ -336,7 +356,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifySettingTheAzureHeaderOnTheForwarderOptionsWorks()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
@@ -345,6 +365,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 wireUpHeaderMiddleware: true,
                 headerName: "X-ARR-ClientCert");
 
+            using var server = host.GetTestServer();
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Add("X-ARR-ClientCert", Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData));
             var response = await client.GetAsync("https://example.com/");
@@ -354,7 +375,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyACustomHeaderFailsIfTheHeaderIsNotPresent()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     Events = successfulValidationEvents
@@ -362,6 +383,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 wireUpHeaderMiddleware: true,
                 headerName: "X-ARR-ClientCert");
 
+            using var server = host.GetTestServer();
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Add("random-Weird-header", Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData));
             var response = await client.GetAsync("https://example.com/");
@@ -371,13 +393,14 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         [Fact]
         public async Task VerifyNoEventWireupWithAValidCertificateCreatesADefaultUser()
         {
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned
                 },
                 Certificates.SelfSignedValidWithNoEku);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -481,7 +504,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             const string Expected = "John Doe";
             var validationCount = 0;
 
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
@@ -508,6 +531,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 },
                 Certificates.SelfSignedValidWithNoEku, null, null, false, "", cache);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -554,7 +578,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         {
             const string Expected = "John Doe";
 
-            var server = CreateServer(
+            using var host = await CreateHost(
                 new CertificateAuthenticationOptions
                 {
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
@@ -577,6 +601,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 },
                 Certificates.SelfSignedValidWithNoEku);
 
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
@@ -596,7 +621,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             Assert.Single(responseAsXml.Elements("claim"));
         }
 
-        private static TestServer CreateServer(
+        private static async Task<IHost> CreateHost(
             CertificateAuthenticationOptions configureOptions,
             X509Certificate2 clientCertificate = null,
             Func<HttpContext, bool> handler = null,
@@ -605,92 +630,95 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             string headerName = "",
             bool useCache = false)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.Use((context, next) =>
-                    {
-                        if (clientCertificate != null)
+            var host = new HostBuilder()
+                .ConfigureWebHost(builder =>
+                    builder.UseTestServer()
+                        .Configure(app =>
                         {
-                            context.Connection.ClientCertificate = clientCertificate;
-                        }
-                        return next();
-                    });
-
-
-                    if (wireUpHeaderMiddleware)
-                    {
-                        app.UseCertificateForwarding();
-                    }
-
-                    app.UseAuthentication();
-
-                    app.Use(async (context, next) =>
-                    {
-                        var request = context.Request;
-                        var response = context.Response;
-
-                        var authenticationResult = await context.AuthenticateAsync();
-
-                        if (authenticationResult.Succeeded)
-                        {
-                            response.StatusCode = (int)HttpStatusCode.OK;
-                            response.ContentType = "text/xml";
-
-                            await response.WriteAsync("<claims>");
-                            foreach (Claim claim in context.User.Claims)
+                            app.Use((context, next) =>
                             {
-                                await response.WriteAsync($"<claim Type=\"{claim.Type}\" Issuer=\"{claim.Issuer}\">{claim.Value}</claim>");
+                                if (clientCertificate != null)
+                                {
+                                    context.Connection.ClientCertificate = clientCertificate;
+                                }
+                                return next();
+                            });
+
+
+                            if (wireUpHeaderMiddleware)
+                            {
+                                app.UseCertificateForwarding();
                             }
-                            await response.WriteAsync("</claims>");
+
+                            app.UseAuthentication();
+
+                            app.Use(async (context, next) =>
+                            {
+                                var request = context.Request;
+                                var response = context.Response;
+
+                                var authenticationResult = await context.AuthenticateAsync();
+
+                                if (authenticationResult.Succeeded)
+                                {
+                                    response.StatusCode = (int)HttpStatusCode.OK;
+                                    response.ContentType = "text/xml";
+
+                                    await response.WriteAsync("<claims>");
+                                    foreach (Claim claim in context.User.Claims)
+                                    {
+                                        await response.WriteAsync($"<claim Type=\"{claim.Type}\" Issuer=\"{claim.Issuer}\">{claim.Value}</claim>");
+                                    }
+                                    await response.WriteAsync("</claims>");
+                                }
+                                else
+                                {
+                                    await context.ChallengeAsync();
+                                }
+                            });
+                        })
+                    .ConfigureServices(services =>
+                    {
+                        AuthenticationBuilder authBuilder;
+                        if (configureOptions != null)
+                        {
+                            authBuilder = services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate(options =>
+                            {
+                                options.CustomTrustStore = configureOptions.CustomTrustStore;
+                                options.ChainTrustValidationMode = configureOptions.ChainTrustValidationMode;
+                                options.AllowedCertificateTypes = configureOptions.AllowedCertificateTypes;
+                                options.Events = configureOptions.Events;
+                                options.ValidateCertificateUse = configureOptions.ValidateCertificateUse;
+                                options.RevocationFlag = configureOptions.RevocationFlag;
+                                options.RevocationMode = configureOptions.RevocationMode;
+                                options.ValidateValidityPeriod = configureOptions.ValidateValidityPeriod;
+                            });
                         }
                         else
                         {
-                            await context.ChallengeAsync();
+                            authBuilder = services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate();
                         }
-                    });
-                })
-            .ConfigureServices(services =>
-            {
-                AuthenticationBuilder authBuilder;
-                if (configureOptions != null)
-                {
-                    authBuilder = services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate(options =>
-                    {
-                        options.CustomTrustStore = configureOptions.CustomTrustStore;
-                        options.ChainTrustValidationMode = configureOptions.ChainTrustValidationMode;
-                        options.AllowedCertificateTypes = configureOptions.AllowedCertificateTypes;
-                        options.Events = configureOptions.Events;
-                        options.ValidateCertificateUse = configureOptions.ValidateCertificateUse;
-                        options.RevocationFlag = configureOptions.RevocationFlag;
-                        options.RevocationMode = configureOptions.RevocationMode;
-                        options.ValidateValidityPeriod = configureOptions.ValidateValidityPeriod;
-                    });
-                }
-                else
-                {
-                    authBuilder = services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme).AddCertificate();
-                }
-                if (useCache)
-                {
-                    authBuilder.AddCertificateCache();
-                }
+                        if (useCache)
+                        {
+                            authBuilder.AddCertificateCache();
+                        }
 
-                if (wireUpHeaderMiddleware && !string.IsNullOrEmpty(headerName))
-                {
-                    services.AddCertificateForwarding(options =>
-                    {
-                        options.CertificateHeader = headerName;
-                    });
-                }
-            });
+                        if (wireUpHeaderMiddleware && !string.IsNullOrEmpty(headerName))
+                        {
+                            services.AddCertificateForwarding(options =>
+                            {
+                                options.CertificateHeader = headerName;
+                            });
+                        }
+                    }))
+                .Build();
 
-            var server = new TestServer(builder)
-            {
-                BaseAddress = baseAddress
-            };
+            await host.StartAsync();
 
-            return server;
+
+            var server = host.GetTestServer();
+            server.BaseAddress = baseAddress;
+            return host;
         }
 
         private CertificateAuthenticationEvents successfulValidationEvents = new CertificateAuthenticationEvents()
