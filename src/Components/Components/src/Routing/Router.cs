@@ -8,8 +8,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Routing
@@ -28,6 +28,12 @@ namespace Microsoft.AspNetCore.Components.Routing
         string _locationAbsolute;
         bool _navigationInterceptionEnabled;
         ILogger<Router> _logger;
+
+        private CancellationTokenSource _onNavigateCts;
+
+        private readonly HashSet<Assembly> _assemblies = new HashSet<Assembly>();
+
+        private bool _onNavigateCalled = false;
 
         [Inject] private NavigationManager NavigationManager { get; set; }
 
@@ -56,6 +62,16 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// </summary>
         [Parameter] public RenderFragment<RouteData> Found { get; set; }
 
+        /// <summary>
+        /// Get or sets the content to display when asynchronous navigation is in progress.
+        /// </summary>
+        [Parameter] public RenderFragment Navigating { get; set; }
+
+        /// <summary>
+        /// Gets or sets a handler that should be called before navigating to a new page.
+        /// </summary>
+        [Parameter] public EventCallback<NavigationContext> OnNavigateAsync { get; set; }
+
         private RouteTable Routes { get; set; }
 
         /// <inheritdoc />
@@ -69,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         }
 
         /// <inheritdoc />
-        public Task SetParametersAsync(ParameterView parameters)
+        public async Task SetParametersAsync(ParameterView parameters)
         {
             parameters.SetParameterProperties(this);
 
@@ -93,17 +109,20 @@ namespace Microsoft.AspNetCore.Components.Routing
                 throw new InvalidOperationException($"The {nameof(Router)} component requires a value for the parameter {nameof(NotFound)}.");
             }
 
+            if (!_onNavigateCalled)
+            {
+                _onNavigateCalled = true;
+                await RunOnNavigateAsync(NavigationManager.ToBaseRelativePath(_locationAbsolute));
+            }
 
-            var assemblies = AdditionalAssemblies == null ? new[] { AppAssembly } : new[] { AppAssembly }.Concat(AdditionalAssemblies);
-            Routes = RouteTableFactory.Create(assemblies);
             Refresh(isNavigationIntercepted: false);
-            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
         public void Dispose()
         {
             NavigationManager.LocationChanged -= OnLocationChanged;
+            _onNavigateCts?.Dispose();
         }
 
         private static string StringUntilAny(string str, char[] chars)
@@ -114,8 +133,24 @@ namespace Microsoft.AspNetCore.Components.Routing
                 : str.Substring(0, firstIndex);
         }
 
+        private void RefreshRouteTable()
+        {
+            var assemblies = AdditionalAssemblies == null ? new[] { AppAssembly } : new[] { AppAssembly }.Concat(AdditionalAssemblies);
+            var assembliesSet = new HashSet<Assembly>(assemblies);
+
+            if (!_assemblies.SetEquals(assembliesSet))
+            {
+                Routes = RouteTableFactory.Create(assemblies);
+                _assemblies.Clear();
+                _assemblies.UnionWith(assembliesSet);
+            }
+
+        }
+
         private void Refresh(bool isNavigationIntercepted)
         {
+            RefreshRouteTable();
+
             var locationPath = NavigationManager.ToBaseRelativePath(_locationAbsolute);
             locationPath = StringUntilAny(locationPath, _queryOrHashStartChar);
             var context = new RouteContext(locationPath);
@@ -155,12 +190,52 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
         }
 
+        private async Task RunOnNavigateAsync(string path)
+        {
+            // If this router instance does not provide an OnNavigateAsync parameter
+            // then we render the component associated with the route as per usual.
+            if (!OnNavigateAsync.HasDelegate)
+            {
+                return;
+            }
+
+            // If we've already invoked a task and stored its CTS, then
+            // cancel the existing task.
+            _onNavigateCts?.Dispose();
+
+            // Create a new cancellation token source for this instance
+            _onNavigateCts = new CancellationTokenSource();
+            var navigateContext = new NavigationContext(path, _onNavigateCts.Token);
+
+            // Create a cancellation task based on the cancellation token
+            // associated with the current running task.
+            var cancellationTaskSource = new TaskCompletionSource();
+            navigateContext.CancellationToken.Register(state =>
+                ((TaskCompletionSource)state).SetResult(), cancellationTaskSource);
+
+            var task = OnNavigateAsync.InvokeAsync(navigateContext);
+
+            // If the user provided a Navigating render fragment, then show it.
+            if (Navigating != null && task.Status != TaskStatus.RanToCompletion)
+            {
+                _renderHandle.Render(Navigating);
+            }
+
+            await Task.WhenAny(task, cancellationTaskSource.Task);
+        }
+
+        private async Task RunOnNavigateWithRefreshAsync(string path, bool isNavigationIntercepted)
+        {
+            await RunOnNavigateAsync(path);
+            Refresh(isNavigationIntercepted);
+        }
+
         private void OnLocationChanged(object sender, LocationChangedEventArgs args)
         {
             _locationAbsolute = args.Location;
             if (_renderHandle.IsInitialized && Routes != null)
             {
-                Refresh(args.IsNavigationIntercepted);
+                _ = RunOnNavigateWithRefreshAsync(NavigationManager.ToBaseRelativePath(_locationAbsolute), args.IsNavigationIntercepted);
             }
         }
 

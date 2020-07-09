@@ -18,14 +18,21 @@
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
+    <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\TestContentPackage\TestContentPackage.csproj" />
+    <ProjectReference Include="..\LazyTestContentPackage\LazyTestContentPackage.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Update="Resources.resx" GenerateSource="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json" />
+    <BlazorWebAssemblyLazyLoad Include="LazyTestContentPackage" />
   </ItemGroup>
 
 </Project>

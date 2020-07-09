@@ -61,6 +61,18 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        public void IsCompatibleWithLazyLoadWebAssembly()
+        {
+            Navigate("/prerendered/WithLazyAssembly");
+
+            var button = Browser.FindElement(By.Id("use-package-button"));
+
+            button.Click();
+
+            AssertLogDoesNotContainCriticalMessages("Could not load file or assembly 'Newtonsoft.Json");
+        }
+
+        [Fact]
         public void CanReadUrlHashOnlyOnceConnected()
         {
             var urlWithoutHash = "prerendered/show-uri?my=query&another=value";
@@ -119,6 +131,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         private void BeginInteractivity()
         {
             Browser.FindElement(By.Id("load-boot-script")).Click();
+        }
+
+        private void AssertLogDoesNotContainCriticalMessages(params string[] messages)
+        {
+            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+            foreach (var message in messages)
+            {
+                Assert.DoesNotContain(log, entry =>
+                {
+                    return entry.Level == LogLevel.Severe
+                    && entry.Message.Contains(message);
+                });
+            }
         }
 
         private void SignInAs(string userName, string roles, bool useSeparateTab = false) =>
