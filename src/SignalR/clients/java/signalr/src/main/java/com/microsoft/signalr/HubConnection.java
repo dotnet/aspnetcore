@@ -145,7 +145,7 @@ public class HubConnection implements AutoCloseable {
         if (httpClient != null) {
             this.httpClient = httpClient;
         } else {
-            this.httpClient = new DefaultHttpClient(0, null, configureBuilder);
+            this.httpClient = new DefaultHttpClient(configureBuilder);
         }
 
         if (transport != null) {

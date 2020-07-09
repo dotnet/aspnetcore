@@ -19,8 +19,8 @@ import okhttp3.*;
 final class DefaultHttpClient extends HttpClient {
     private OkHttpClient client = null;
 
-    public DefaultHttpClient() {
-        this(0, null, null);
+    public DefaultHttpClient(Action1<OkHttpClient.Builder> configureBuilder) {
+        this(0, null, configureBuilder);
     }
 
     public DefaultHttpClient cloneWithTimeOut(int timeoutInMilliseconds) {
