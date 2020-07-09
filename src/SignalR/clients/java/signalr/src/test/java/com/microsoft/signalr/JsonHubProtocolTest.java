@@ -43,11 +43,12 @@ class JsonHubProtocolTest {
         String stringifiedMessage = "{\"type\":6}\u001E";
         TestBinder binder = new TestBinder(PingMessage.getInstance());
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
 
         //We know it's only one message
-        assertEquals(1, messages.length);
-        assertEquals(HubMessageType.PING, messages[0].getMessageType());
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+        assertEquals(HubMessageType.PING, messages.get(0).getMessageType());
     }
 
     @Test
@@ -55,15 +56,16 @@ class JsonHubProtocolTest {
         String stringifiedMessage = "{\"type\":7}\u001E";
         TestBinder binder = new TestBinder(new CloseMessage());
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
 
         //We know it's only one message
-        assertEquals(1, messages.length);
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
 
-        assertEquals(HubMessageType.CLOSE, messages[0].getMessageType());
+        assertEquals(HubMessageType.CLOSE, messages.get(0).getMessageType());
 
         //We can safely cast here because we know that it's a close message.
-        CloseMessage closeMessage = (CloseMessage) messages[0];
+        CloseMessage closeMessage = (CloseMessage) messages.get(0);
 
         assertEquals(null, closeMessage.getError());
     }
@@ -73,15 +75,16 @@ class JsonHubProtocolTest {
         String stringifiedMessage = "{\"type\":7,\"error\": \"There was an error\"}\u001E";
         TestBinder binder = new TestBinder(new CloseMessage("There was an error"));
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
 
         //We know it's only one message
-        assertEquals(1, messages.length);
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
 
-        assertEquals(HubMessageType.CLOSE, messages[0].getMessageType());
+        assertEquals(HubMessageType.CLOSE, messages.get(0).getMessageType());
 
         //We can safely cast here because we know that it's a close message.
-        CloseMessage closeMessage = (CloseMessage) messages[0];
+        CloseMessage closeMessage = (CloseMessage) messages.get(0);
 
         assertEquals("There was an error", closeMessage.getError());
     }
@@ -91,15 +94,16 @@ class JsonHubProtocolTest {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
         TestBinder binder = new TestBinder(new InvocationMessage(null, "1", "test", new Object[] { 42 }, null));
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
 
         //We know it's only one message
-        assertEquals(1, messages.length);
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
 
-        assertEquals(HubMessageType.INVOCATION, messages[0].getMessageType());
+        assertEquals(HubMessageType.INVOCATION, messages.get(0).getMessageType());
 
         //We can safely cast here because we know that it's an invocation message.
-        InvocationMessage invocationMessage = (InvocationMessage) messages[0];
+        InvocationMessage invocationMessage = (InvocationMessage) messages.get(0);
 
         assertEquals("test", invocationMessage.getTarget());
         assertEquals(null, invocationMessage.getInvocationId());
@@ -131,14 +135,16 @@ class JsonHubProtocolTest {
         String twoMessages = "{\"type\":1,\"target\":\"one\",\"arguments\":[42]}\u001E{\"type\":1,\"target\":\"two\",\"arguments\":[43]}\u001E";
         TestBinder binder = new TestBinder(new InvocationMessage(null, "1", "one", new Object[] { 42 }, null));
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(twoMessages, binder);
-        assertEquals(2, messages.length);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(twoMessages, binder);
+        
+        assertNotNull(messages);
+        assertEquals(2, messages.size());
 
         // Check the first message
-        assertEquals(HubMessageType.INVOCATION, messages[0].getMessageType());
+        assertEquals(HubMessageType.INVOCATION, messages.get(0).getMessageType());
 
         //Now that we know we have an invocation message we can cast the hubMessage.
-        InvocationMessage invocationMessage = (InvocationMessage) messages[0];
+        InvocationMessage invocationMessage = (InvocationMessage) messages.get(0);
 
         assertEquals("one", invocationMessage.getTarget());
         assertEquals(null, invocationMessage.getInvocationId());
@@ -146,10 +152,10 @@ class JsonHubProtocolTest {
         assertEquals(42, messageResult);
 
         // Check the second message
-        assertEquals(HubMessageType.INVOCATION, messages[1].getMessageType());
+        assertEquals(HubMessageType.INVOCATION, messages.get(1).getMessageType());
 
         //Now that we know we have an invocation message we can cast the hubMessage.
-        InvocationMessage invocationMessage2 = (InvocationMessage) messages[1];
+        InvocationMessage invocationMessage2 = (InvocationMessage) messages.get(1);
 
         assertEquals("two", invocationMessage2.getTarget());
         assertEquals(null, invocationMessage2.getInvocationId());
@@ -162,12 +168,15 @@ class JsonHubProtocolTest {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42, 24]}\u001E";
         TestBinder binder = new TestBinder(new InvocationMessage(null, "1", "test", new Object[] { 42, 24 }, null));
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
 
         //We know it's only one message
-        assertEquals(HubMessageType.INVOCATION, messages[0].getMessageType());
+        assertEquals(HubMessageType.INVOCATION, messages.get(0).getMessageType());
 
-        InvocationMessage message = (InvocationMessage)messages[0];
+        InvocationMessage message = (InvocationMessage)messages.get(0);
         assertEquals("test", message.getTarget());
         assertEquals(null, message.getInvocationId());
         int messageResult = (int) message.getArguments()[0];
@@ -181,12 +190,15 @@ class JsonHubProtocolTest {
         String stringifiedMessage = "{\"arguments\":[42, 24],\"type\":1,\"target\":\"test\"}\u001E";
         TestBinder binder = new TestBinder(new InvocationMessage(null, "1", "test", new Object[] { 42, 24 }, null));
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
 
         // We know it's only one message
-        assertEquals(HubMessageType.INVOCATION, messages[0].getMessageType());
+        assertEquals(HubMessageType.INVOCATION, messages.get(0).getMessageType());
 
-        InvocationMessage message = (InvocationMessage) messages[0];
+        InvocationMessage message = (InvocationMessage) messages.get(0);
         assertEquals("test", message.getTarget());
         assertEquals(null, message.getInvocationId());
         int messageResult = (int) message.getArguments()[0];
@@ -200,12 +212,15 @@ class JsonHubProtocolTest {
         String stringifiedMessage = "{\"type\":3,\"result\":42,\"invocationId\":\"1\"}\u001E";
         TestBinder binder = new TestBinder(new CompletionMessage(null, "1", 42, null));
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
 
         // We know it's only one message
-        assertEquals(HubMessageType.COMPLETION, messages[0].getMessageType());
+        assertEquals(HubMessageType.COMPLETION, messages.get(0).getMessageType());
 
-        CompletionMessage message = (CompletionMessage) messages[0];
+        CompletionMessage message = (CompletionMessage) messages.get(0);
         assertEquals(null, message.getError());
         assertEquals(42 , message.getResult());
     }
@@ -215,10 +230,13 @@ class JsonHubProtocolTest {
         String stringifiedMessage = "{\"arguments\":[42, 24],\"type\":1,\"target\":\"test\"}\u001E";
         TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
-        assertEquals(1, messages.length);
-        assertEquals(InvocationBindingFailureMessage.class, messages[0].getClass());
-        InvocationBindingFailureMessage message = (InvocationBindingFailureMessage)messages[0];
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+        
+        assertEquals(InvocationBindingFailureMessage.class, messages.get(0).getClass());
+        InvocationBindingFailureMessage message = (InvocationBindingFailureMessage)messages.get(0);
         assertEquals("Invocation provides 2 argument(s) but target expects 1.", message.getException().getMessage());
     }
 
@@ -227,10 +245,13 @@ class JsonHubProtocolTest {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42, 24]}\u001E";
         TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
-        assertEquals(1, messages.length);
-        assertEquals(InvocationBindingFailureMessage.class, messages[0].getClass());
-        InvocationBindingFailureMessage message = (InvocationBindingFailureMessage) messages[0];
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+        
+        assertEquals(InvocationBindingFailureMessage.class, messages.get(0).getClass());
+        InvocationBindingFailureMessage message = (InvocationBindingFailureMessage) messages.get(0);
         assertEquals("Invocation provides 2 argument(s) but target expects 1.", message.getException().getMessage());
     }
 
@@ -239,10 +260,13 @@ class JsonHubProtocolTest {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
         TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42, 24 }, null));
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
-        assertEquals(1, messages.length);
-        assertEquals(InvocationBindingFailureMessage.class, messages[0].getClass());
-        InvocationBindingFailureMessage message = (InvocationBindingFailureMessage) messages[0];
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+        
+        assertEquals(InvocationBindingFailureMessage.class, messages.get(0).getClass());
+        InvocationBindingFailureMessage message = (InvocationBindingFailureMessage) messages.get(0);
         assertEquals("Invocation provides 1 argument(s) but target expects 2.", message.getException().getMessage());
     }
 
@@ -251,10 +275,13 @@ class JsonHubProtocolTest {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[\"true\"]}\u001E";
         TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
-        assertEquals(1, messages.length);
-        assertEquals(InvocationBindingFailureMessage.class, messages[0].getClass());
-        InvocationBindingFailureMessage message = (InvocationBindingFailureMessage) messages[0];
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+        
+        assertEquals(InvocationBindingFailureMessage.class, messages.get(0).getClass());
+        InvocationBindingFailureMessage message = (InvocationBindingFailureMessage) messages.get(0);
         assertEquals("java.lang.NumberFormatException: For input string: \"true\"", message.getException().getMessage());
     }
 
@@ -263,10 +290,13 @@ class JsonHubProtocolTest {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[\"true\"],\"invocationId\":\"123\"}\u001E";
         TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
 
-        HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
-        assertEquals(1, messages.length);
-        assertEquals(InvocationBindingFailureMessage.class, messages[0].getClass());
-        InvocationBindingFailureMessage message = (InvocationBindingFailureMessage) messages[0];
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+        
+        assertEquals(InvocationBindingFailureMessage.class, messages.get(0).getClass());
+        InvocationBindingFailureMessage message = (InvocationBindingFailureMessage) messages.get(0);
         assertEquals("java.lang.NumberFormatException: For input string: \"true\"", message.getException().getMessage());
         assertEquals("123", message.getInvocationId());
     }

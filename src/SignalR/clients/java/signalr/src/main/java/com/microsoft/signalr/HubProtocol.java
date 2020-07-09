@@ -3,6 +3,8 @@
 
 package com.microsoft.signalr;
 
+import java.util.List;
+
 /**
  * A protocol abstraction for communicating with SignalR hubs.
  */
@@ -16,7 +18,7 @@ public interface HubProtocol {
      * @param message A string representation of one or more {@link HubMessage}s.
      * @return A list of {@link HubMessage}s.
      */
-    HubMessage[] parseMessages(String message, InvocationBinder binder);
+    List<HubMessage> parseMessages(String message, InvocationBinder binder);
 
     /**
      * Writes the specified {@link HubMessage} to a String.

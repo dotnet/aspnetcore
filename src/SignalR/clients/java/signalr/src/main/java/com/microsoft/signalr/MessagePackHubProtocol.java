@@ -43,9 +43,9 @@ class MessagePackHubProtocol implements HubProtocol {
     }
 
     @Override
-    public HubMessage[] parseMessages(String payload, InvocationBinder binder) {
+    public List<HubMessage> parseMessages(String payload, InvocationBinder binder) {
         if (payload.length() == 0) {
-            return new HubMessage[]{};
+            return null;
         }
 
         List<HubMessage> hubMessages = new ArrayList<>();
@@ -86,7 +86,7 @@ class MessagePackHubProtocol implements HubProtocol {
             throw new RuntimeException("Error reading MessagePack data.", ex);
         }
 
-        return hubMessages.toArray(new HubMessage[hubMessages.size()]);
+        return hubMessages;
     }
     
     @Override
