@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                             Array.Clear(keyBytes, 0, keyBytes.Length);
                             Array.Clear(pem, 0, pem.Length);
 
-                            bytes = certificate.Export(X509ContentType.Cert);
+                            bytes = Encoding.ASCII.GetBytes(PemEncoding.Write("CERTIFICATE", certificate.Export(X509ContentType.Cert)));
                             break;
                         default:
                             throw new InvalidOperationException("Unknown format.");
