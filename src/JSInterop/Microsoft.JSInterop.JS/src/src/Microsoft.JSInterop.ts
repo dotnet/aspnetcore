@@ -167,11 +167,12 @@ export module DotNet {
      *
      * @param identifier Identifies the globally-reachable function to invoke.
      * @param argsJson JSON representation of arguments to be passed to the function.
+     * @param treatReturnAsVoid Ignore any result that is returned and treat as Void.
      * @returns JSON representation of the invocation result.
      */
-    invokeJSFromDotNet: (identifier: string, argsJson: string) => {
+    invokeJSFromDotNet: (identifier: string, argsJson: string, treatReturnAsVoid: boolean) => {
       const result = findJSFunction(identifier).apply(null, parseJsonWithRevivers(argsJson));
-      return result === null || result === undefined
+      return result === null || result === undefined || treatReturnAsVoid === true
         ? null
         : JSON.stringify(result, argReplacer);
     },
