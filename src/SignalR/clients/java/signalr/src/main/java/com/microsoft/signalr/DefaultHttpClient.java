@@ -18,7 +18,6 @@ import okhttp3.*;
 
 final class DefaultHttpClient extends HttpClient {
     private OkHttpClient client = null;
-    private Action1<OkHttpClient.Builder> configureBuilder = null;
 
     public DefaultHttpClient() {
         this(0, null, null);
@@ -27,7 +26,7 @@ final class DefaultHttpClient extends HttpClient {
     public DefaultHttpClient cloneWithTimeOut(int timeoutInMilliseconds) {
         OkHttpClient newClient = client.newBuilder().readTimeout(timeoutInMilliseconds, TimeUnit.MILLISECONDS)
                 .build();
-        return new DefaultHttpClient(timeoutInMilliseconds, newClient, this.configureBuilder);
+        return new DefaultHttpClient(timeoutInMilliseconds, newClient, null);
     }
 
     @Override
@@ -95,9 +94,8 @@ final class DefaultHttpClient extends HttpClient {
                 builder.readTimeout(timeoutInMilliseconds, TimeUnit.MILLISECONDS);
             }
 
-            this.configureBuilder = configureBuilder;
-            if (this.configureBuilder != null) {
-                this.configureBuilder.invoke(builder);
+            if (configureBuilder != null) {
+                configureBuilder.invoke(builder);
             }
 
             this.client = builder.build();
