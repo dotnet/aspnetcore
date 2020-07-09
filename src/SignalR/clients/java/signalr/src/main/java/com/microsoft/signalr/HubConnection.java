@@ -585,9 +585,9 @@ public class HubConnection implements AutoCloseable {
         args = checkUploadStream(args, streamIds);
         InvocationMessage invocationMessage;
         if (isStreamInvocation) {
-            invocationMessage = new StreamInvocationMessage(id, method, args, streamIds);
+            invocationMessage = new StreamInvocationMessage(null, id, method, args, streamIds);
         } else {
-            invocationMessage = new InvocationMessage(id, method, args, streamIds);
+            invocationMessage = new InvocationMessage(null, id, method, args, streamIds);
         }
 
         sendHubMessage(invocationMessage);
@@ -602,13 +602,13 @@ public class HubConnection implements AutoCloseable {
         for (String streamId: streamIds) {
             Observable observable = this.streamMap.get(streamId);
             observable.subscribe(
-                (item) -> sendHubMessage(new StreamItem(streamId, item)),
+                (item) -> sendHubMessage(new StreamItem(null, streamId, item)),
                 (error) -> {
-                    sendHubMessage(new CompletionMessage(streamId, null, error.toString()));
+                    sendHubMessage(new CompletionMessage(null, streamId, null, error.toString()));
                     this.streamMap.remove(streamId);
                 },
                 () -> {
-                    sendHubMessage(new CompletionMessage(streamId, null, null));
+                    sendHubMessage(new CompletionMessage(null, streamId, null, null));
                     this.streamMap.remove(streamId);
                 });
         }
@@ -753,7 +753,7 @@ public class HubConnection implements AutoCloseable {
             sendInvocationMessage(method, args, invocationId, true);
             return observable.doOnDispose(() -> {
                 if (subscriptionCount.decrementAndGet() == 0) {
-                    CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(invocationId);
+                    CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(null, invocationId);
                     sendHubMessage(cancelInvocationMessage);
                     if (connectionState != null) {
                         connectionState.tryRemoveInvocation(invocationId);
