@@ -385,6 +385,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23826")]
         public void CanBindTextboxNullableShort()
         {
             var target = Browser.FindElement(By.Id("textbox-nullable-short"));
