@@ -227,7 +227,7 @@
     </Dependency>
     <Dependency Name="System.Resources.Extensions" Version="5.0.0-preview.8.20358.9">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>898832566661830677344ea90b1951ba8cca94c5</Sha>
+      <Sha>255eea008147245df48aaa1fae60eb92519f1dc3</Sha>
     </Dependency>
     <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="5.0.0-preview.8.20358.9">
       <Uri>https://github.com/dotnet/runtime</Uri>
