@@ -5,7 +5,6 @@ package com.microsoft.signalr;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
 import io.reactivex.Single;
 import okhttp3.OkHttpClient;
