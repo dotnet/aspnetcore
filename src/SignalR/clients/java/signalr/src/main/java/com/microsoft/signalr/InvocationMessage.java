@@ -13,18 +13,6 @@ class InvocationMessage extends HubMessage {
     private final String target;
     private final Object[] arguments;
     private Collection<String> streamIds;
-
-    public InvocationMessage(String invocationId, String target, Object[] args) {
-        this(null, invocationId, target, args, null);
-    }
-    
-    public InvocationMessage(Map<String, String> headers, String invocationId, String target, Object[] args) {
-        this(headers, invocationId, target, args, null);
-    }
-
-    public InvocationMessage(String invocationId, String target, Object[] args, Collection<String> streamIds) {
-        this(null, invocationId, target, args, streamIds);
-    }
     
     public InvocationMessage(Map<String, String> headers, String invocationId, String target, Object[] args, Collection<String> streamIds) {
         if (headers != null && !headers.isEmpty()) {

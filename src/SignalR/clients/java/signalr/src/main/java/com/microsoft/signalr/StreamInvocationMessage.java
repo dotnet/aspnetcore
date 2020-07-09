@@ -7,21 +7,6 @@ import java.util.Collection;
 import java.util.Map;
 
 final class StreamInvocationMessage extends InvocationMessage {
-
-    public StreamInvocationMessage(String invocationId, String target, Object[] args) {
-        super(invocationId, target, args);
-        super.type = HubMessageType.STREAM_INVOCATION.value;
-    }
-    
-    public StreamInvocationMessage(Map<String, String> headers, String invocationId, String target, Object[] args) {
-        super(headers, invocationId, target, args);
-        super.type = HubMessageType.STREAM_INVOCATION.value;
-    }
-
-    public StreamInvocationMessage(String invocationId, String target, Object[] args, Collection<String> streamIds) {
-        super(invocationId, target, args, streamIds);
-        super.type = HubMessageType.STREAM_INVOCATION.value;
-    }
     
     public StreamInvocationMessage(Map<String, String> headers, String invocationId, String target, Object[] args, Collection<String> streamIds) {
         super(headers, invocationId, target, args, streamIds);

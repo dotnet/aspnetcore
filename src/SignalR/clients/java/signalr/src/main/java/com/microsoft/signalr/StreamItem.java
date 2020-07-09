@@ -10,10 +10,6 @@ final class StreamItem extends HubMessage {
     private Map<String, String> headers;
     private final String invocationId;
     private final Object item;
-
-    public StreamItem(String invocationId, Object item) {
-        this(null, invocationId, item);
-    }
     
     public StreamItem(Map<String, String> headers, String invocationId, Object item) {
         if (headers != null && !headers.isEmpty()) {

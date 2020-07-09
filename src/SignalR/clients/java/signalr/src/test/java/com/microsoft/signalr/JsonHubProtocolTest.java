@@ -32,7 +32,7 @@ class JsonHubProtocolTest {
 
     @Test
     public void verifyWriteMessage() {
-        InvocationMessage invocationMessage = new InvocationMessage(null, "test", new Object[] {"42"});
+        InvocationMessage invocationMessage = new InvocationMessage(null, null, "test", new Object[] {"42"}, null);
         String result = jsonHubProtocol.writeMessage(invocationMessage);
         String expectedResult = "{\"type\":1,\"target\":\"test\",\"arguments\":[\"42\"]}\u001E";
         assertEquals(expectedResult, result);
@@ -89,7 +89,7 @@ class JsonHubProtocolTest {
     @Test
     public void parseSingleMessage() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
-        TestBinder binder = new TestBinder(new InvocationMessage("1", "test", new Object[] { 42 }));
+        TestBinder binder = new TestBinder(new InvocationMessage(null, "1", "test", new Object[] { 42 }, null));
 
         HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
 
@@ -111,7 +111,7 @@ class JsonHubProtocolTest {
     @Test
     public void parseSingleUnsupportedStreamInvocationMessage() {
         String stringifiedMessage = "{\"type\":4,\"Id\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
-        TestBinder binder = new TestBinder(new StreamInvocationMessage("1", "test", new Object[] { 42 }));
+        TestBinder binder = new TestBinder(new StreamInvocationMessage(null, "1", "test", new Object[] { 42 }, null));
 
         Throwable exception = assertThrows(UnsupportedOperationException.class, () -> jsonHubProtocol.parseMessages(stringifiedMessage, binder));
         assertEquals("The message type STREAM_INVOCATION is not supported yet.", exception.getMessage());
@@ -129,7 +129,7 @@ class JsonHubProtocolTest {
     @Test
     public void parseTwoMessages() {
         String twoMessages = "{\"type\":1,\"target\":\"one\",\"arguments\":[42]}\u001E{\"type\":1,\"target\":\"two\",\"arguments\":[43]}\u001E";
-        TestBinder binder = new TestBinder(new InvocationMessage("1", "one", new Object[] { 42 }));
+        TestBinder binder = new TestBinder(new InvocationMessage(null, "1", "one", new Object[] { 42 }, null));
 
         HubMessage[] messages = jsonHubProtocol.parseMessages(twoMessages, binder);
         assertEquals(2, messages.length);
@@ -160,7 +160,7 @@ class JsonHubProtocolTest {
     @Test
     public void parseSingleMessageMutipleArgs() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42, 24]}\u001E";
-        TestBinder binder = new TestBinder(new InvocationMessage("1", "test", new Object[] { 42, 24 }));
+        TestBinder binder = new TestBinder(new InvocationMessage(null, "1", "test", new Object[] { 42, 24 }, null));
 
         HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
 
@@ -179,7 +179,7 @@ class JsonHubProtocolTest {
     @Test
     public void parseMessageWithOutOfOrderProperties() {
         String stringifiedMessage = "{\"arguments\":[42, 24],\"type\":1,\"target\":\"test\"}\u001E";
-        TestBinder binder = new TestBinder(new InvocationMessage("1", "test", new Object[] { 42, 24 }));
+        TestBinder binder = new TestBinder(new InvocationMessage(null, "1", "test", new Object[] { 42, 24 }, null));
 
         HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
 
@@ -198,7 +198,7 @@ class JsonHubProtocolTest {
     @Test
     public void parseCompletionMessageWithOutOfOrderProperties() {
         String stringifiedMessage = "{\"type\":3,\"result\":42,\"invocationId\":\"1\"}\u001E";
-        TestBinder binder = new TestBinder(new CompletionMessage("1", 42, null));
+        TestBinder binder = new TestBinder(new CompletionMessage(null, "1", 42, null));
 
         HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
 
@@ -213,7 +213,7 @@ class JsonHubProtocolTest {
     @Test
     public void invocationBindingFailureWhileParsingTooManyArgumentsWithOutOfOrderProperties() {
         String stringifiedMessage = "{\"arguments\":[42, 24],\"type\":1,\"target\":\"test\"}\u001E";
-        TestBinder binder = new TestBinder(new InvocationMessage(null, "test", new Object[] { 42 }));
+        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
 
         HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
         assertEquals(1, messages.length);
@@ -225,7 +225,7 @@ class JsonHubProtocolTest {
     @Test
     public void invocationBindingFailureWhileParsingTooManyArguments() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42, 24]}\u001E";
-        TestBinder binder = new TestBinder(new InvocationMessage(null, "test", new Object[] { 42 }));
+        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
 
         HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
         assertEquals(1, messages.length);
@@ -237,7 +237,7 @@ class JsonHubProtocolTest {
     @Test
     public void invocationBindingFailureWhileParsingTooFewArguments() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
-        TestBinder binder = new TestBinder(new InvocationMessage(null, "test", new Object[] { 42, 24 }));
+        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42, 24 }, null));
 
         HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
         assertEquals(1, messages.length);
@@ -249,7 +249,7 @@ class JsonHubProtocolTest {
     @Test
     public void invocationBindingFailureWhenParsingIncorrectType() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[\"true\"]}\u001E";
-        TestBinder binder = new TestBinder(new InvocationMessage(null, "test", new Object[] { 42 }));
+        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
 
         HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
         assertEquals(1, messages.length);
@@ -261,7 +261,7 @@ class JsonHubProtocolTest {
     @Test
     public void invocationBindingFailureStillReadsJsonPayloadAfterFailure() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[\"true\"],\"invocationId\":\"123\"}\u001E";
-        TestBinder binder = new TestBinder(new InvocationMessage(null, "test", new Object[] { 42 }));
+        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
 
         HubMessage[] messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
         assertEquals(1, messages.length);
@@ -274,7 +274,7 @@ class JsonHubProtocolTest {
     @Test
     public void errorWhileParsingIncompleteMessage() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":";
-        TestBinder binder = new TestBinder(new InvocationMessage(null, "test", new Object[] { 42, 24 }));
+        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42, 24 }, null));
 
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> jsonHubProtocol.parseMessages(stringifiedMessage, binder));

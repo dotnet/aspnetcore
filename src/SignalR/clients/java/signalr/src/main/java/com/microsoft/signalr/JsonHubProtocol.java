@@ -135,9 +135,9 @@ class JsonHubProtocol implements HubProtocol {
                             hubMessages.add(new InvocationBindingFailureMessage(invocationId, target, argumentBindingException));
                         } else {
                             if (arguments == null) {
-                                hubMessages.add(new InvocationMessage(invocationId, target, new Object[0]));
+                                hubMessages.add(new InvocationMessage(null, invocationId, target, new Object[0], null));
                             } else {
-                                hubMessages.add(new InvocationMessage(invocationId, target, arguments.toArray()));
+                                hubMessages.add(new InvocationMessage(null, invocationId, target, arguments.toArray(), null));
                             }
                         }
                         break;
@@ -146,14 +146,14 @@ class JsonHubProtocol implements HubProtocol {
                             Class<?> returnType = binder.getReturnType(invocationId);
                             result = gson.fromJson(resultToken, returnType != null ? returnType : Object.class);
                         }
-                        hubMessages.add(new CompletionMessage(invocationId, result, error));
+                        hubMessages.add(new CompletionMessage(null, invocationId, result, error));
                         break;
                     case STREAM_ITEM:
                         if (resultToken != null) {
                             Class<?> returnType = binder.getReturnType(invocationId);
                             result = gson.fromJson(resultToken, returnType != null ? returnType : Object.class);
                         }
-                        hubMessages.add(new StreamItem(invocationId, result));
+                        hubMessages.add(new StreamItem(null, invocationId, result));
                         break;
                     case STREAM_INVOCATION:
                     case CANCEL_INVOCATION:
