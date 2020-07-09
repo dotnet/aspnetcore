@@ -55,7 +55,7 @@ namespace Interop.FunctionalTests
                 var dataset = new TheoryData<H2SpecTestCase>();
                 var toSkip = new string[] { /*"http2/5.1/8"*/ };
 
-                var supportsAlpn = Utilities.CurrentPlatformSupportsAlpn();
+                var supportsAlpn = Utilities.CurrentPlatformSupportsHTTP2OverTls();
 
                 foreach (var testcase in H2SpecCommands.EnumerateTestCases())
                 {

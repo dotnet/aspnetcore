@@ -1,4 +1,4 @@
-@page "/"
+﻿@page "/"
 @inject IJSRuntime JSRuntime
 
 Hello, world!
@@ -6,6 +6,6 @@ Hello, world!
 @code {
     protected override void OnAfterRender(bool firstRender)
     {
-        BenchmarkEvent.Send(JSRuntime, "Rendered index.cshtml");
+        BenchmarkEvent.Send(JSRuntime, "Rendered Index.razor");
     }
 }

@@ -40,13 +40,25 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
         /// <inheritdoc />
         public virtual IReadOnlyCollection<XElement> GetAllElements()
         {
-            using (var scope = _services.CreateScope())
-            {
-                var context = scope.ServiceProvider.GetRequiredService<TContext>();
+            // forces complete enumeration
+            return GetAllElementsCore().ToList().AsReadOnly();
 
-                // Put logger in a local such that `this` isn't captured.
-                var logger = _logger;
-                return context.DataProtectionKeys.AsNoTracking().Select(key => TryParseKeyXml(key.Xml, logger)).ToList().AsReadOnly();
+            IEnumerable<XElement> GetAllElementsCore()
+            {
+                using (var scope = _services.CreateScope())
+                {
+                    var context = scope.ServiceProvider.GetRequiredService<TContext>();
+
+                    foreach (var key in context.DataProtectionKeys.AsNoTracking())
+                    {
+                        _logger.ReadingXmlFromKey(key.FriendlyName!, key.Xml);
+
+                        if (!string.IsNullOrEmpty(key.Xml))
+                        {
+                            yield return XElement.Parse(key.Xml);
+                        }
+                    }
+                }
             }
         }
 
@@ -65,19 +77,6 @@ namespace Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
                 context.DataProtectionKeys.Add(newKey);
                 _logger.LogSavingKeyToDbContext(friendlyName, typeof(TContext).Name);
                 context.SaveChanges();
-            }
-        }
-
-        private static XElement TryParseKeyXml(string xml, ILogger logger)
-        {
-            try
-            {
-                return XElement.Parse(xml);
-            }
-            catch (Exception e)
-            {
-                logger?.LogExceptionWhileParsingKeyXml(xml, e);
-                return null;
             }
         }
     }

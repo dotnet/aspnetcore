@@ -54,12 +54,12 @@ namespace Microsoft.AspNetCore.Routing
 
         public TextWriter QueryWriter { get; }
 
-        public bool Accept(string value)
+        public bool Accept(string? value)
         {
             return Accept(value, encodeSlashes: true);
         }
 
-        public bool Accept(string value, bool encodeSlashes)
+        public bool Accept(string? value, bool encodeSlashes)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Routing
             _lastValueOffset = -1;
         }
 
-        public bool Buffer(string value)
+        public bool Buffer(string? value)
         {
             if (string.IsNullOrEmpty(value))
             {

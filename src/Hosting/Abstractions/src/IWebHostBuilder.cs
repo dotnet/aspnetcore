@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// </summary>
         /// <param name="key">The key of the setting to look up.</param>
         /// <returns>The value the setting currently contains.</returns>
-        string GetSetting(string key);
+        string? GetSetting(string key);
 
         /// <summary>
         /// Add or replace a setting in the configuration.
@@ -58,6 +58,6 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="key">The key of the setting to add or replace.</param>
         /// <param name="value">The value of the setting to add or replace.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        IWebHostBuilder UseSetting(string key, string value);
+        IWebHostBuilder UseSetting(string key, string? value);
     }
 }

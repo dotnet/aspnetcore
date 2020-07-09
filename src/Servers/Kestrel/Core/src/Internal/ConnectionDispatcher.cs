@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private readonly ServiceContext _serviceContext;
         private readonly Func<T, Task> _connectionDelegate;
         private readonly TransportConnectionManager _transportConnectionManager;
-        private readonly TaskCompletionSource<object> _acceptLoopTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _acceptLoopTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public ConnectionDispatcher(ServiceContext serviceContext, Func<T, Task> connectionDelegate, TransportConnectionManager transportConnectionManager)
         {
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 }
                 finally
                 {
-                    _acceptLoopTcs.TrySetResult(null);
+                    _acceptLoopTcs.TrySetResult();
                 }
             }
         }

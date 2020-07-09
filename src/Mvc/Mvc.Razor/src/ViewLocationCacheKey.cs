@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            var hashCodeCombiner = HashCodeCombiner.Start();
+            var hashCodeCombiner = new HashCode();
             hashCodeCombiner.Add(IsMainPage ? 1 : 0);
             hashCodeCombiner.Add(ViewName, StringComparer.Ordinal);
             hashCodeCombiner.Add(ControllerName, StringComparer.Ordinal);
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 }
             }
 
-            return hashCodeCombiner;
+            return hashCodeCombiner.ToHashCode();
         }
     }
 }

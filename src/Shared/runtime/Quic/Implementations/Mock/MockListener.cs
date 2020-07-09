@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 #nullable enable
 using System.Net.Sockets;
@@ -13,7 +12,7 @@ namespace System.Net.Quic.Implementations.Mock
 {
     internal sealed class MockListener : QuicListenerProvider
     {
-        private bool _disposed = false;
+        private bool _disposed;
         private SslServerAuthenticationOptions? _sslOptions;
         private IPEndPoint _listenEndPoint;
         private TcpListener _tcpListener;

@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)]
     public static class WebHostBuilderLibuvExtensions
     {
         /// <summary>
@@ -20,6 +21,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>
         /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
         /// </returns>
+        [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)]
         public static IWebHostBuilder UseLibuv(this IWebHostBuilder hostBuilder)
         {
             return hostBuilder.ConfigureServices(services =>
@@ -40,6 +42,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>
         /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
         /// </returns>
+        [Obsolete("The libuv transport is obsolete and will be removed in a future release. See https://aka.ms/libuvtransport for details.", error: false)]
         public static IWebHostBuilder UseLibuv(this IWebHostBuilder hostBuilder, Action<LibuvTransportOptions> configureOptions)
         {
             return hostBuilder.UseLibuv().ConfigureServices(services =>

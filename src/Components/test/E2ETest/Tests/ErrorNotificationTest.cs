@@ -6,6 +6,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
@@ -29,16 +30,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
             Browser.MountTestComponent<ErrorComponent>();
             Browser.Exists(By.Id("blazor-error-ui"));
-            Browser.Exists(By.TagName("button"));
+            Browser.Exists(By.Id("throw-simple-exception"));
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23643")]
         public void ShowsErrorNotification_OnError_Dismiss()
         {
             var errorUi = Browser.FindElement(By.Id("blazor-error-ui"));
             Assert.Equal("none", errorUi.GetCssValue("display"));
 
-            var causeErrorButton = Browser.FindElement(By.TagName("button"));
+            var causeErrorButton = Browser.FindElement(By.Id("throw-simple-exception"));
             causeErrorButton.Click();
 
             Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"), TimeSpan.FromSeconds(10));
@@ -50,9 +52,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23596")]
         public void ShowsErrorNotification_OnError_Reload()
         {
-            var causeErrorButton = Browser.Exists(By.TagName("button"));
+            var causeErrorButton = Browser.Exists(By.Id("throw-simple-exception"));
             var errorUi = Browser.FindElement(By.Id("blazor-error-ui"));
             Assert.Equal("none", errorUi.GetCssValue("display"));
 

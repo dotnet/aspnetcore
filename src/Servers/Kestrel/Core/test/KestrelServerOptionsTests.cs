@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Net;
 using Xunit;
 
@@ -59,6 +60,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // This is a regression test to verify the Listen* methods don't throw a NullReferenceException if called after Configure().
             // https://github.com/dotnet/aspnetcore/issues/21423
             options.ListenLocalhost(5000);
+        }
+
+        [Fact]
+        public void SettingRequestHeaderEncodingSelecterThrowsArgumentNullException()
+        {
+            var options = new KestrelServerOptions();
+
+            var ex = Assert.Throws<ArgumentNullException>(() => options.RequestHeaderEncodingSelector = null);
+            Assert.Equal("value", ex.ParamName);
         }
     }
 }

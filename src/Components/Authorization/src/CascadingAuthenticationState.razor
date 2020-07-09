@@ -1,4 +1,4 @@
-@implements IDisposable
+﻿@implements IDisposable
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 <CascadingValue TValue="Task<AuthenticationState>" Value="@_currentAuthenticationStateTask" ChildContent="@ChildContent" />

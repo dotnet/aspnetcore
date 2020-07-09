@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 #nullable enable
 using System.Buffers;
@@ -413,7 +412,7 @@ namespace System.Net.Http.QPack
 
             if (_index is int index)
             {
-                Debug.Assert(index >= 0 && index <= H3StaticTable.Instance.Count, $"The index should be a valid static index here. {nameof(QPackDecoder)} should have previously thrown if it read a dynamic index.");
+                Debug.Assert(index >= 0 && index <= H3StaticTable.Count, $"The index should be a valid static index here. {nameof(QPackDecoder)} should have previously thrown if it read a dynamic index.");
                 handler.OnStaticIndexedHeader(index, headerValueSpan);
                 _index = null;
 

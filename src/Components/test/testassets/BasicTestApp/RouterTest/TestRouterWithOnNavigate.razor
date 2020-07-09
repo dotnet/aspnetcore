@@ -1,0 +1,46 @@
+﻿@using Microsoft.AspNetCore.Components.Routing
+
+<Router AppAssembly="@typeof(BasicTestApp.Program).Assembly" OnNavigateAsync="@OnNavigateAsync">
+    <Navigating>
+        <div style="padding: 20px;background-color:blue;color:white;" id="loading-banner">
+            <p>Loading the requested page...</p>
+        </div>
+    </Navigating>
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(RouterTestLayout)">
+            <div id="test-info">Oops, that component wasn't found!</div>
+        </LayoutView>
+    </NotFound>
+</Router>
+
+@code {
+    private Dictionary<string, Func<NavigationContext, Task>> preNavigateTasks = new Dictionary<string, Func<NavigationContext, Task>>()
+    {
+        { "LongPage1", new Func<NavigationContext, Task>(TestLoadingPageShows) },
+        { "LongPage2", new Func<NavigationContext, Task>(TestOnNavCancel) }
+    };
+
+    private async Task OnNavigateAsync(NavigationContext args)
+    {
+        Console.WriteLine($"Running OnNavigate for {args.Path}...");
+        Func<NavigationContext, Task> task;
+        if (preNavigateTasks.TryGetValue(args.Path, out task))
+        {
+            await task.Invoke(args);
+        }
+    }
+
+    public static async Task TestLoadingPageShows(NavigationContext args)
+    {
+        await Task.Delay(2000);
+    }
+
+    public static async Task TestOnNavCancel(NavigationContext args)
+    {
+        await Task.Delay(2000, args.CancellationToken);
+        Console.WriteLine("I'm not happening...");
+    }
+}

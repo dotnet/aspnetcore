@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/7291")]
+        [QuarantinedTest]
         public async Task WebHostStopAsyncUsesDefaultTimeoutIfGivenTokenDoesNotFire()
         {
             var data = new Dictionary<string, string>
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/7291")]
+        [QuarantinedTest]
         public void WebHostApplicationLifetimeEventsOrderedCorrectlyDuringShutdown()
         {
             using (var host = CreateBuilder()

@@ -1,3 +1,3 @@
 @ECHO OFF
 
-%~dp0..\..\startvs.cmd %~dp0Security.sln
+%~dp0..\..\startvs.cmd %~dp0Security.slnf

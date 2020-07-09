@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace HealthChecksSample
@@ -25,12 +27,12 @@ namespace HealthChecksSample
             };
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            BuildWebHost(args).Run();
+            return BuildWebHost(args).RunAsync();
         }
 
-        public static IWebHost BuildWebHost(string[] args)
+        public static IHost BuildWebHost(string[] args)
         {
             var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -45,16 +47,20 @@ namespace HealthChecksSample
                 startupType = typeof(BasicStartup);
             }
 
-            return new WebHostBuilder()
-                .UseConfiguration(config)
-                .ConfigureLogging(builder =>
+            return new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    builder.SetMinimumLevel(LogLevel.Trace);
-                    builder.AddConfiguration(config);
-                    builder.AddConsole();
+                    webHostBuilder
+                    .UseConfiguration(config)
+                    .ConfigureLogging(builder =>
+                    {
+                        builder.SetMinimumLevel(LogLevel.Trace);
+                        builder.AddConfiguration(config);
+                        builder.AddConsole();
+                    })
+                    .UseKestrel()
+                    .UseStartup(startupType);
                 })
-                .UseKestrel()
-                .UseStartup(startupType)
                 .Build();
         }
 

@@ -120,9 +120,9 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         private void AssociateWithField(in FieldIdentifier fieldIdentifier)
-            => _editContext.GetFieldState(fieldIdentifier, ensureExists: true).AssociateWithValidationMessageStore(this);
+            => _editContext.GetOrAddFieldState(fieldIdentifier).AssociateWithValidationMessageStore(this);
 
         private void DissociateFromField(in FieldIdentifier fieldIdentifier)
-            => _editContext.GetFieldState(fieldIdentifier, ensureExists: false)?.DissociateFromValidationMessageStore(this);
+            => _editContext.GetFieldState(fieldIdentifier)?.DissociateFromValidationMessageStore(this);
     }
 }

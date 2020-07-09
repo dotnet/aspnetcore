@@ -1,6 +1,5 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 #nullable enable
 using System.Buffers;
@@ -61,7 +60,7 @@ namespace System.Net.Quic.Implementations.MsQuic
         // Used by the class to indicate that the stream is writable.
         private readonly bool _canWrite;
 
-        private volatile bool _disposed = false;
+        private volatile bool _disposed;
 
         private List<QuicBuffer> _receiveQuicBuffers = new List<QuicBuffer>();
 

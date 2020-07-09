@@ -42,6 +42,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23366")]
         public void CanRenderTextOnlyComponent()
         {
             var appElement = Browser.MountTestComponent<TextOnlyComponent>();
@@ -329,8 +330,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var showPromptButton = appElement.FindElements(By.TagName("button")).First();
             showPromptButton.Click();
 
-            var modal = new WebDriverWait(Browser, TimeSpan.FromSeconds(3))
-                .Until(SwitchToAlert);
+            var modal = Browser.Exists(() => Browser.SwitchTo().Alert(), TimeSpan.FromSeconds(3));
             modal.SendKeys("Some value from test");
             modal.Accept();
             var promptResult = appElement.FindElement(By.TagName("strong"));
@@ -401,6 +401,26 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanUseFocusExtensionToFocusElement()
+        {
+            var appElement = Browser.MountTestComponent<ElementFocusComponent>();
+            var buttonElement = appElement.FindElement(By.Id("focus-button"));
+
+            // Make sure the input element isn't focused when the test begins; we don't want
+            // the test to pass just because the input started as the focused element
+            Browser.NotEqual("focus-input", getFocusedElementId);
+
+            // Click the button whose callback focuses the input element
+            buttonElement.Click();
+
+            // Verify that the input element is focused
+            Browser.Equal("focus-input", getFocusedElementId);
+
+            // A local helper that gets the ID of the focused element.
+            string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetAttribute("id");
+        }
+
+        [Fact]
         public void CanCaptureReferencesToDynamicallyAddedElements()
         {
             var appElement = Browser.MountTestComponent<ElementRefComponent>();
@@ -464,6 +484,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void CanRenderMarkupBlocks()
         {
             var appElement = Browser.MountTestComponent<MarkupBlockComponent>();
@@ -645,18 +666,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 return completeLIs.Count == 2
                     && completeLIs[0].FindElement(By.CssSelector(".item-isdone")).Selected;
             });
-        }
-
-        static IAlert SwitchToAlert(IWebDriver driver)
-        {
-            try
-            {
-                return driver.SwitchTo().Alert();
-            }
-            catch (NoAlertPresentException)
-            {
-                return null;
-            }
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -25,6 +25,7 @@
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="System.Diagnostics.EventLog" />
+    <Reference Include="System.Net.Http.WinHttpHandler" />
   </ItemGroup>
 
 </Project>

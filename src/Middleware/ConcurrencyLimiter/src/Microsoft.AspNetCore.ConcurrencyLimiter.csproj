@@ -5,7 +5,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;queue;queuing</PackageTags>
-    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

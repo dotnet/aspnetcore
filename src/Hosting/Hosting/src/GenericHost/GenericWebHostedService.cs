@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Hosting
                 {
                     serverAddressesFeature.PreferHostingUrls = WebHostUtilities.ParseBool(Configuration, WebHostDefaults.PreferHostingUrlsKey);
 
-                    foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                    foreach (var value in urls.Split(';', StringSplitOptions.RemoveEmptyEntries))
                     {
                         addresses.Add(value);
                     }
@@ -180,14 +180,15 @@ namespace Microsoft.AspNetCore.Hosting
             }
             else
             {
-                model.ErrorDetails = new ExceptionDetails[0];
+                model.ErrorDetails = Array.Empty<ExceptionDetails>();
             }
 
             var errorPage = new ErrorPage(model);
             return context =>
             {
                 context.Response.StatusCode = 500;
-                context.Response.Headers[HeaderNames.CacheControl] = "no-cache";
+                context.Response.Headers[HeaderNames.CacheControl] = "no-cache,no-store";
+                context.Response.Headers[HeaderNames.Pragma] = "no-cache";
                 context.Response.ContentType = "text/html; charset=utf-8";
                 return errorPage.ExecuteAsync(context);
             };

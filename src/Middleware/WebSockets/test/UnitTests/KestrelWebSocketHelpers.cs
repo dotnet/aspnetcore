@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.WebSockets.Test
 {
@@ -48,16 +49,19 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             var config = configBuilder.Build();
             config["server.urls"] = $"http://127.0.0.1:0";
 
-            var host = new WebHostBuilder()
-                .ConfigureServices(s =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    s.AddWebSockets(configure);
-                    s.AddSingleton(loggerFactory);
-                })
-                .UseConfiguration(config)
-                .UseKestrel()
-                .Configure(startup)
-                .Build();
+                    webHostBuilder
+                    .ConfigureServices(s =>
+                    {
+                        s.AddWebSockets(configure);
+                        s.AddSingleton(loggerFactory);
+                    })
+                    .UseConfiguration(config)
+                    .UseKestrel()
+                    .Configure(startup);
+                }).Build();
 
             host.Start();
             port = host.GetPort();

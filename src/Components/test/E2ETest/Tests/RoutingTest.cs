@@ -9,8 +9,10 @@ using BasicTestApp.RouterTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Support.UI;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -479,14 +481,18 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal(0, () => BrowserScrollY);
         }
 
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23596")]
+        public void PreventDefault_CanBlockNavigation_ForInternalNavigation_PreventDefaultTarget()
+            => PreventDefault_CanBlockNavigation("internal", "target");
+
         [Theory]
         [InlineData("external", "ancestor")]
         [InlineData("external", "target")]
         [InlineData("external", "descendant")]
         [InlineData("internal", "ancestor")]
-        [InlineData("internal", "target")]
         [InlineData("internal", "descendant")]
-        public void PreventDefault_CanBlockNavigation(string navigationType, string whereToPreventDefault)
+        public virtual void PreventDefault_CanBlockNavigation(string navigationType, string whereToPreventDefault)
         {
             SetUrlViaPushState("/PreventDefaultCases");
             var app = Browser.MountTestComponent<TestRouter>();
@@ -522,6 +528,32 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             }
         }
 
+        [Fact]
+        public void OnNavigate_CanRenderLoadingFragment()
+        {
+            var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
+
+            SetUrlViaPushState("/LongPage1");
+
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(2)).Until(
+                driver => driver.FindElement(By.Id("loading-banner")) != null);
+
+            Assert.True(app.FindElement(By.Id("loading-banner")) != null);
+        }
+
+        [Fact]
+        public void OnNavigate_CanCancelCallback()
+        {
+            var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
+
+            // Navigating from one page to another should
+            // cancel the previous OnNavigate Task
+            SetUrlViaPushState("/LongPage2");
+            SetUrlViaPushState("/LongPage1");
+
+            AssertDidNotLog("I'm not happening...");
+        }
+
         private long BrowserScrollY
         {
             get => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.scrollY");
@@ -536,6 +568,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             jsExecutor.ExecuteScript($"Blazor.navigateTo('{absoluteUri.ToString().Replace("'", "\\'")}')");
 
             return absoluteUri.AbsoluteUri;
+        }
+
+        private void AssertDidNotLog(params string[] messages)
+        {
+            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+            foreach (var message in messages)
+            {
+                Assert.DoesNotContain(log, entry => entry.Message.Contains(message));
+            }
         }
 
         private void AssertHighlightedLinks(params string[] linkTexts)

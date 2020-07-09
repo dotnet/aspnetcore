@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
-            OnAdvance(_readResult, consumed, examined);
+            TrackConsumedAndExaminedBytes(_readResult, consumed, examined);
             _requestBodyPipe.Reader.AdvanceTo(consumed, examined);
         }
 
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     consumed = reader.Position;
                     examined = reader.Position;
 
-                    AddAndCheckConsumedBytes(reader.Consumed);
+                    AddAndCheckObservedBytes(reader.Consumed);
                     _inputLength = chunkSize;
                     _mode = Mode.Extension;
                     return;
@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     consumed = reader.Position;
 
-                    AddAndCheckConsumedBytes(reader.Consumed);
+                    AddAndCheckObservedBytes(reader.Consumed);
                     _inputLength = chunkSize;
                     _mode = chunkSize > 0 ? Mode.Data : Mode.Trailer;
                     return;
@@ -398,7 +398,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     // End marker not found yet
                     consumed = buffer.End;
                     examined = buffer.End;
-                    AddAndCheckConsumedBytes(buffer.Length);
+                    AddAndCheckObservedBytes(buffer.Length);
                     return;
                 };
 
@@ -410,7 +410,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     consumed = extensionCursor;
                     examined = buffer.End;
-                    AddAndCheckConsumedBytes(charsToByteCRExclusive);
+                    AddAndCheckObservedBytes(charsToByteCRExclusive);
                     return;
                 }
 
@@ -424,14 +424,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                     consumed = suffixBuffer.End;
                     examined = suffixBuffer.End;
-                    AddAndCheckConsumedBytes(charsToByteCRExclusive + 2);
+                    AddAndCheckObservedBytes(charsToByteCRExclusive + 2);
                 }
                 else
                 {
                     // Don't consume suffixSpan[1] in case it is also a \r.
                     buffer = buffer.Slice(charsToByteCRExclusive + 1);
                     consumed = extensionCursor;
-                    AddAndCheckConsumedBytes(charsToByteCRExclusive + 1);
+                    AddAndCheckObservedBytes(charsToByteCRExclusive + 1);
                 }
             } while (_mode == Mode.Extension);
         }
@@ -445,7 +445,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Copy(buffer.Slice(0, actual), writableBuffer);
 
             _inputLength -= actual;
-            AddAndCheckConsumedBytes(actual);
+            AddAndCheckObservedBytes(actual);
 
             if (_inputLength == 0)
             {
@@ -472,7 +472,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (suffixSpan[0] == '\r' && suffixSpan[1] == '\n')
             {
                 consumed = suffixBuffer.End;
-                AddAndCheckConsumedBytes(2);
+                AddAndCheckObservedBytes(2);
                 _mode = Mode.Prefix;
             }
             else
@@ -500,7 +500,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (trailerSpan[0] == '\r' && trailerSpan[1] == '\n')
             {
                 consumed = trailerBuffer.End;
-                AddAndCheckConsumedBytes(2);
+                AddAndCheckObservedBytes(2);
                 _mode = Mode.Complete;
                 // No trailers
                 _context.OnTrailersComplete();

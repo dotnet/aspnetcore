@@ -859,11 +859,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var logEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var logEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 var mockLogger = new Mock<IKestrelTrace>();
                 mockLogger
                     .Setup(logger => logger.RequestBodyDone("ConnectionId", "RequestId"))
-                    .Callback(() => logEvent.SetResult(null));
+                    .Callback(() => logEvent.SetResult());
                 mockLogger
                     .Setup(logger => logger.IsEnabled(Extensions.Logging.LogLevel.Debug))
                     .Returns(true);

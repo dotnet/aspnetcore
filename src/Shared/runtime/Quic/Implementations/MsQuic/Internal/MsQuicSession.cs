@@ -1,12 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 namespace System.Net.Quic.Implementations.MsQuic.Internal
 {
     internal sealed class MsQuicSession : IDisposable
     {
-        private bool _disposed = false;
+        private bool _disposed;
         private IntPtr _nativeObjPtr;
         private bool _opened;
 

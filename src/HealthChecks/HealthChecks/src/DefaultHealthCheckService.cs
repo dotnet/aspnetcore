@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             ValidateRegistrations(_options.Value.Registrations);
         }
         public override async Task<HealthReport> CheckHealthAsync(
-            Func<HealthCheckRegistration, bool> predicate,
+            Func<HealthCheckRegistration, bool>? predicate,
             CancellationToken cancellationToken = default)
         {
             var registrations = _options.Value.Registrations;
@@ -89,7 +89,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 Log.HealthCheckBegin(_logger, registration);
 
                 HealthReportEntry entry;
-                CancellationTokenSource timeoutCancellationTokenSource = null;
+                CancellationTokenSource? timeoutCancellationTokenSource = null;
                 try
                 {
                     HealthCheckResult result;
@@ -183,17 +183,17 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
 
         private static class Log
         {
-            private static readonly Action<ILogger, Exception> _healthCheckProcessingBegin = LoggerMessage.Define(
+            private static readonly Action<ILogger, Exception?> _healthCheckProcessingBegin = LoggerMessage.Define(
                 LogLevel.Debug,
                 EventIds.HealthCheckProcessingBegin,
                 "Running health checks");
 
-            private static readonly Action<ILogger, double, HealthStatus, Exception> _healthCheckProcessingEnd = LoggerMessage.Define<double, HealthStatus>(
+            private static readonly Action<ILogger, double, HealthStatus, Exception?> _healthCheckProcessingEnd = LoggerMessage.Define<double, HealthStatus>(
                 LogLevel.Debug,
                 EventIds.HealthCheckProcessingEnd,
                 "Health check processing completed after {ElapsedMilliseconds}ms with combined status {HealthStatus}");
 
-            private static readonly Action<ILogger, string, Exception> _healthCheckBegin = LoggerMessage.Define<string>(
+            private static readonly Action<ILogger, string, Exception?> _healthCheckBegin = LoggerMessage.Define<string>(
                 LogLevel.Debug,
                 EventIds.HealthCheckBegin,
                 "Running health check {HealthCheckName}");
@@ -201,27 +201,27 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             // These are separate so they can have different log levels
             private static readonly string HealthCheckEndText = "Health check {HealthCheckName} completed after {ElapsedMilliseconds}ms with status {HealthStatus} and description '{HealthCheckDescription}'";
 
-            private static readonly Action<ILogger, string, double, HealthStatus, string, Exception> _healthCheckEndHealthy = LoggerMessage.Define<string, double, HealthStatus, string>(
+            private static readonly Action<ILogger, string, double, HealthStatus, string?, Exception?> _healthCheckEndHealthy = LoggerMessage.Define<string, double, HealthStatus, string?>(
                 LogLevel.Debug,
                 EventIds.HealthCheckEnd,
                 HealthCheckEndText);
 
-            private static readonly Action<ILogger, string, double, HealthStatus, string, Exception> _healthCheckEndDegraded = LoggerMessage.Define<string, double, HealthStatus, string>(
+            private static readonly Action<ILogger, string, double, HealthStatus, string?, Exception?> _healthCheckEndDegraded = LoggerMessage.Define<string, double, HealthStatus, string?>(
                 LogLevel.Warning,
                 EventIds.HealthCheckEnd,
                 HealthCheckEndText);
 
-            private static readonly Action<ILogger, string, double, HealthStatus, string, Exception> _healthCheckEndUnhealthy = LoggerMessage.Define<string, double, HealthStatus, string>(
+            private static readonly Action<ILogger, string, double, HealthStatus, string?, Exception?> _healthCheckEndUnhealthy = LoggerMessage.Define<string, double, HealthStatus, string?>(
                 LogLevel.Error,
                 EventIds.HealthCheckEnd,
                 HealthCheckEndText);
 
-            private static readonly Action<ILogger, string, double, HealthStatus, string, Exception> _healthCheckEndFailed = LoggerMessage.Define<string, double, HealthStatus, string>(
+            private static readonly Action<ILogger, string, double, HealthStatus, string?, Exception?> _healthCheckEndFailed = LoggerMessage.Define<string, double, HealthStatus, string?>(
                 LogLevel.Error,
                 EventIds.HealthCheckEnd,
                 HealthCheckEndText);
 
-            private static readonly Action<ILogger, string, double, Exception> _healthCheckError = LoggerMessage.Define<string, double>(
+            private static readonly Action<ILogger, string, double, Exception?> _healthCheckError = LoggerMessage.Define<string, double>(
                 LogLevel.Error,
                 EventIds.HealthCheckError,
                 "Health check {HealthCheckName} threw an unhandled exception after {ElapsedMilliseconds}ms");
@@ -283,7 +283,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             private readonly string _name;
             private readonly List<KeyValuePair<string, object>> _values;
 
-            private string _formatted;
+            private string? _formatted;
 
             public HealthCheckDataLogValue(string name, IReadOnlyDictionary<string, object> values)
             {

@@ -437,7 +437,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         private class TestRemoteRenderer : RemoteRenderer
         {
             public TestRemoteRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, CircuitOptions options, CircuitClientProxy client, ILogger logger)
-                : base(serviceProvider, loggerFactory, options, client, logger)
+                : base(serviceProvider, loggerFactory, options, client, logger, null)
             {
             }
 

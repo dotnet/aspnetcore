@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         private static readonly ConcurrentDictionary<string, RouteConstraint> _cachedConstraints
             = new ConcurrentDictionary<string, RouteConstraint>();
 
-        public abstract bool Match(string pathSegment, out object convertedValue);
+        public abstract bool Match(string pathSegment, out object? convertedValue);
 
         public static RouteConstraint Parse(string template, string segment, string constraint)
         {
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// </summary>
         /// <param name="constraint">String representation of the constraint</param>
         /// <returns>Type-specific RouteConstraint object</returns>
-        private static RouteConstraint CreateRouteConstraint(string constraint)
+        private static RouteConstraint? CreateRouteConstraint(string constraint)
         {
             switch (constraint)
             {

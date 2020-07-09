@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
@@ -34,9 +35,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
             var assembly = ApplicationAssembly ?? BuildWebHostMethod.Method.DeclaringType.Assembly;
             var sampleSitePath = FindSampleOrTestSitePath(assembly.FullName);
 
+            var host = "127.0.0.1";
+            if (E2ETestOptions.Instance.SauceTest)
+            {
+                host = E2ETestOptions.Instance.Sauce.HostName;
+            }
+
             return BuildWebHostMethod(new[]
             {
-                "--urls", "http://127.0.0.1:0",
+                "--urls", $"http://{host}:0",
                 "--contentroot", sampleSitePath,
                 "--environment", Environment.ToString(),
             }.Concat(AdditionalArguments).ToArray());

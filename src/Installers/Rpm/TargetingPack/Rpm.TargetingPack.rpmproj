@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj">
+    <ProjectReference Include="..\..\..\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>

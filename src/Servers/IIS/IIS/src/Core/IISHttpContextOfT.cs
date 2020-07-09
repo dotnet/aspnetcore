@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -17,8 +18,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     {
         private readonly IHttpApplication<TContext> _application;
 
-        public IISHttpContextOfT(MemoryPool<byte> memoryPool, IHttpApplication<TContext> application, IntPtr pInProcessHandler, IISServerOptions options, IISHttpServer server, ILogger logger)
-            : base(memoryPool, pInProcessHandler, options, server, logger)
+        public IISHttpContextOfT(MemoryPool<byte> memoryPool, IHttpApplication<TContext> application, IntPtr pInProcessHandler, IISServerOptions options, IISHttpServer server, ILogger logger, bool useLatin1)
+            : base(memoryPool, pInProcessHandler, options, server, logger, useLatin1)
         {
             _application = application;
         }

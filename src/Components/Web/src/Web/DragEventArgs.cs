@@ -12,6 +12,6 @@ namespace Microsoft.AspNetCore.Components.Web
         /// The data that underlies a drag-and-drop operation, known as the drag data store.
         /// See <see cref="DataTransfer"/>.
         /// </summary>
-        public DataTransfer DataTransfer { get; set; }
+        public DataTransfer DataTransfer { get; set; } = default!;
     }
 }

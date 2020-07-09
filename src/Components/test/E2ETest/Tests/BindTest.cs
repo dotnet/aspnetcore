@@ -7,6 +7,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -219,6 +220,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // https://github.com/dotnet/aspnetcore/issues/17735
             target.SelectByText("Empty value");
             Browser.Equal(string.Empty, () => boundValue.Text);
+            Browser.Equal("Empty value", () => target.SelectedOption.Text);
         }
 
         [Fact]
@@ -237,6 +239,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // https://github.com/dotnet/aspnetcore/issues/17735
             target.SelectByText("Empty value");
             Browser.Equal(string.Empty, () => boundValue.Text);
+            Browser.Equal("Empty value", () => target.SelectedOption.Text);
         }
 
         [Fact]
@@ -504,6 +507,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23596")]
         public void CanBindTextboxNullableDouble()
         {
             var target = Browser.FindElement(By.Id("textbox-nullable-double"));

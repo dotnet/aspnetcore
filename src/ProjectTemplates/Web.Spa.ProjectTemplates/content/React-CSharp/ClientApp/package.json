@@ -24,7 +24,8 @@
     "eslint-plugin-flowtype": "^4.6.0",
     "eslint-plugin-import": "^2.20.1",
     "eslint-plugin-jsx-a11y": "^6.2.3",
-    "eslint-plugin-react": "^7.18.3"
+    "eslint-plugin-react": "^7.18.3",
+    "nan": "^2.14.1"
   },
   "eslintConfig": {
     "extends": "react-app"

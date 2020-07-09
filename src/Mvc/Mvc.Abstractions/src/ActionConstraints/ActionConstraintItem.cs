@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
         /// <summary>
         /// The <see cref="IActionConstraint"/> associated with <see cref="Metadata"/>.
         /// </summary>
-        public IActionConstraint Constraint { get; set; }
+        public IActionConstraint Constraint { get; set; } = default!;
 
         /// <summary>
         /// The <see cref="IActionConstraintMetadata"/> instance.

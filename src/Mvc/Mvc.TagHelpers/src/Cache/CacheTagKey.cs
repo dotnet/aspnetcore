@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
                 return _hashcode.Value;
             }
 
-            var hashCodeCombiner = new HashCodeCombiner();
+            var hashCodeCombiner = new HashCode();
 
             hashCodeCombiner.Add(Key, StringComparer.Ordinal);
             hashCodeCombiner.Add(_expiresAfter);
@@ -258,12 +258,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
             hashCodeCombiner.Add(_requestCulture);
             hashCodeCombiner.Add(_requestUICulture);
 
-            CombineCollectionHashCode(hashCodeCombiner, VaryByCookieName, _cookies);
-            CombineCollectionHashCode(hashCodeCombiner, VaryByHeaderName, _headers);
-            CombineCollectionHashCode(hashCodeCombiner, VaryByQueryName, _queries);
-            CombineCollectionHashCode(hashCodeCombiner, VaryByRouteName, _routeValues);
+            CombineCollectionHashCode(ref hashCodeCombiner, VaryByCookieName, _cookies);
+            CombineCollectionHashCode(ref hashCodeCombiner, VaryByHeaderName, _headers);
+            CombineCollectionHashCode(ref hashCodeCombiner, VaryByQueryName, _queries);
+            CombineCollectionHashCode(ref hashCodeCombiner, VaryByRouteName, _routeValues);
 
-            _hashcode = hashCodeCombiner.CombinedHash;
+            _hashcode = hashCodeCombiner.ToHashCode();
 
             return _hashcode.Value;
         }
@@ -331,7 +331,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
         }
 
         private static void CombineCollectionHashCode(
-            HashCodeCombiner hashCodeCombiner,
+            ref HashCode hashCodeCombiner,
             string collectionName,
             IList<KeyValuePair<string, string>> values)
         {

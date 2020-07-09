@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         public RouteConstraint[] Constraints { get; }
 
-        public bool Match(string pathSegment, out object matchedParameterValue)
+        public bool Match(string pathSegment, out object? matchedParameterValue)
         {
             if (IsParameter)
             {

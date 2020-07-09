@@ -25,8 +25,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         [Fact]
         public async Task CanStartStopSSETransport()
         {
-            var eventStreamTcs = new TaskCompletionSource<object>();
-            var copyToAsyncTcs = new TaskCompletionSource<int>();
+            var eventStreamTcs = new TaskCompletionSource();
+            var copyToAsyncTcs = new TaskCompletionSource();
 
             var mockHttpHandler = new Mock<HttpMessageHandler>();
             mockHttpHandler.Protected()
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     await Task.Yield();
                     // Receive loop started - allow stopping the transport
-                    eventStreamTcs.SetResult(null);
+                    eventStreamTcs.SetResult();
 
                     // returns unfinished task to block pipelines
                     var mockStream = new Mock<Stream>();
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
             finally
             {
-                copyToAsyncTcs.SetResult(0);
+                copyToAsyncTcs.SetResult();
             }
         }
 
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                        writeContext.EventId.Name == "ErrorSending";
             }
 
-            var eventStreamTcs = new TaskCompletionSource<object>();
+            var eventStreamTcs = new TaskCompletionSource();
             var readTcs = new TaskCompletionSource<int>();
 
             var mockHttpHandler = new Mock<HttpMessageHandler>();
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     if (request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("text/event-stream")) == true)
                     {
                         // Receive loop started - allow stopping the transport
-                        eventStreamTcs.SetResult(null);
+                        eventStreamTcs.SetResult();
 
                         // returns unfinished task to block pipelines
                         var mockStream = new Mock<Stream>();
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         [Fact]
         public async Task SSETransportStopsIfChannelClosed()
         {
-            var eventStreamTcs = new TaskCompletionSource<object>();
+            var eventStreamTcs = new TaskCompletionSource();
             var readTcs = new TaskCompletionSource<int>();
 
             var mockHttpHandler = new Mock<HttpMessageHandler>();
@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     await Task.Yield();
 
                     // Receive loop started - allow stopping the transport
-                    eventStreamTcs.SetResult(null);
+                    eventStreamTcs.SetResult();
 
                     // returns unfinished task to block pipelines
                     var mockStream = new Mock<Stream>();
@@ -299,8 +299,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         [Fact]
         public async Task SSETransportCancelsSendOnStop()
         {
-            var eventStreamTcs = new TaskCompletionSource<object>();
-            var readTcs = new TaskCompletionSource<object>();
+            var eventStreamTcs = new TaskCompletionSource();
+            var readTcs = new TaskCompletionSource();
             var sendSyncPoint = new SyncPoint();
 
             var mockHttpHandler = new Mock<HttpMessageHandler>();
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     if (request.Headers.Accept?.Contains(new MediaTypeWithQualityHeaderValue("text/event-stream")) == true)
                     {
                         // Receive loop started - allow stopping the transport
-                        eventStreamTcs.SetResult(null);
+                        eventStreamTcs.SetResult();
 
                         // returns unfinished task to block pipelines
                         var mockStream = new Mock<Stream>();
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 var stopTask = sseTransport.StopAsync();
 
-                readTcs.SetResult(null);
+                readTcs.SetResult();
                 sendSyncPoint.Continue();
 
                 await stopTask;

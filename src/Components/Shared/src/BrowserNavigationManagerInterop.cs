@@ -10,9 +10,9 @@ namespace Microsoft.AspNetCore.Components.Web
 
         public static readonly string EnableNavigationInterception = Prefix + "enableNavigationInterception";
 
-        public static readonly string GetLocationHref = Prefix + "getLocationHref";
+        public static readonly string GetLocationHref = Prefix + "getUnmarshalledLocationHref";
 
-        public static readonly string GetBaseUri = Prefix + "getBaseURI";
+        public static readonly string GetBaseUri = Prefix + "getUnmarshalledBaseURI";
 
         public static readonly string NavigateTo = Prefix + "navigateTo";
     }
