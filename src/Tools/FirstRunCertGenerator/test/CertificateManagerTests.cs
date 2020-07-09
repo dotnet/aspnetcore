@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         {
             // Arrange
             var message = "plaintext";
-            const string CertificateName = nameof(EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates) + ".pfx";
+            const string CertificateName = nameof(EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates) + ".pem";
             var certificatePassword = Guid.NewGuid().ToString();
 
             _fixture.CleanupCertificates();
@@ -183,10 +183,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             Assert.Equal(EnsureCertificateResult.ValidCertificatePresent, result);
             Assert.True(File.Exists(CertificateName));
 
-            var key = RSA.Create();
-            key.ImportFromEncryptedPem(File.ReadAllText(Path.ChangeExtension(CertificateName, "key")), certificatePassword);
-            var exportedCertificate = new X509Certificate2(File.ReadAllBytes(CertificateName));
-            exportedCertificate = exportedCertificate.CopyWithPrivateKey(key);
+            var exportedCertificate = X509Certificate2.CreateFromEncryptedPemFile(CertificateName, certificatePassword, Path.ChangeExtension(CertificateName, "key"));
             Assert.NotNull(exportedCertificate);
             Assert.True(exportedCertificate.HasPrivateKey);
 
@@ -260,7 +257,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         {
             // Arrange
             var message = "plaintext";
-            const string CertificateName = nameof(EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates) + ".pfx";
+            const string CertificateName = nameof(EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates) + ".pem";
             _fixture.CleanupCertificates();
 
             var now = DateTimeOffset.UtcNow;
@@ -277,10 +274,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             Assert.Equal(EnsureCertificateResult.ValidCertificatePresent, result);
             Assert.True(File.Exists(CertificateName));
 
-            var key = RSA.Create();
-            key.ImportFromPem(File.ReadAllText(Path.ChangeExtension(CertificateName, "key")));
-            var exportedCertificate = new X509Certificate2(File.ReadAllBytes(CertificateName));
-            exportedCertificate = exportedCertificate.CopyWithPrivateKey(key);
+            var exportedCertificate = X509Certificate2.CreateFromPemFile(CertificateName, Path.ChangeExtension(CertificateName, "key"));
             Assert.NotNull(exportedCertificate);
             Assert.True(exportedCertificate.HasPrivateKey);
 

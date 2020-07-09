@@ -92,9 +92,9 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                         "Imports the provided HTTPS development certificate into the machine. All other HTTPS developer certificates will be cleared out",
                         CommandOptionType.SingleValue);
 
-                    var keyFormat = c.Option(
-                        "--key-format",
-                        "Export the certificate key in the given format. Valid values are Pfx and Pem. Pfx is the default.",
+                    var format = c.Option(
+                        "--format",
+                        "Export the certificate in the given format. Valid values are Pfx and Pem. Pfx is the default.",
                         CommandOptionType.SingleValue);
 
                     CommandOption trust = null;
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
 
                         if (clean.HasValue())
                         {
-                            if (exportPath.HasValue() || trust?.HasValue() == true || keyFormat.HasValue() || noPassword.HasValue() || check.HasValue() ||
+                            if (exportPath.HasValue() || trust?.HasValue() == true || format.HasValue() || noPassword.HasValue() || check.HasValue() ||
                                (!import.HasValue() && password.HasValue()) ||
                                (import.HasValue() && !password.HasValue()))
                             {
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
 
                         if (check.HasValue())
                         {
-                            if (exportPath.HasValue() || password.HasValue() || noPassword.HasValue() || clean.HasValue() || keyFormat.HasValue() || import.HasValue())
+                            if (exportPath.HasValue() || password.HasValue() || noPassword.HasValue() || clean.HasValue() || format.HasValue() || import.HasValue())
                             {
                                 reporter.Error(InvalidUsageErrorMessage);
                                 return CriticalError;
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                                 return CriticalError;
                             }
 
-                            if (noPassword.HasValue() && !(keyFormat.HasValue() && string.Equals(keyFormat.Value(), "PEM", StringComparison.OrdinalIgnoreCase)))
+                            if (noPassword.HasValue() && !(format.HasValue() && string.Equals(format.Value(), "PEM", StringComparison.OrdinalIgnoreCase)))
                             {
                                 reporter.Error(InvalidUsageErrorMessage);
                                 return CriticalError;
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                             return ImportCertificate(import, password, reporter);
                         }
 
-                        return EnsureHttpsCertificate(exportPath, password, noPassword, trust, keyFormat, reporter);
+                        return EnsureHttpsCertificate(exportPath, password, noPassword, trust, format, reporter);
                     });
                 });
 
