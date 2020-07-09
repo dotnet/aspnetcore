@@ -23,7 +23,7 @@ namespace Microsoft.JSInterop
                 throw new ArgumentNullException(nameof(jsRuntime));
             }
 
-            jsRuntime.Invoke<object>(identifier, args);
+            jsRuntime.Invoke<VoidReturn>(identifier, args);
         }
     }
 }
