@@ -1,0 +1,70 @@
+﻿<h1>Event during batch rendering</h1>
+
+<p>
+    While Blazor WebAssembly is rendering a batch, the JavaScript code reads data from the .NET heap directly.
+    So, it's essential that .NET code doesn't run during this time (either to modify the state of the
+    render tree or to perform garbage collection which may relocate objects in the heap).
+</p>
+<p>
+    To ensure this is safe, batch rendering is a fully synchronous process during which the JS code doesn't
+    yield control to user code. However, there are possible cases where user code may be triggered unavoidably
+    including (1) JavaScript DOM mutation observers, (2) Web Component lifecycle events, and (3) edge cases
+    where Blazor performing a DOM mutation can itself trigger a .NET-bound event such as "change".
+</p>
+<p>
+    Cases (1) and (2) result in developer-supplied JS code executing, which may try to perform .NET interop.
+    The intended behavior is that .NET interop calls should be blocked while a batch is being rendered.
+    Developers need to wrap such calls in <code>requestAnimationFrame</code> or <code>setTimeout(..., 0)</code>
+    or similar, so that it runs after the current batch has finished rendering.
+</p>
+<p>
+    Case (3) more directly results in developer-supplied .NET code executing. The intended behavior in this case
+    is that Blazor takes care of deferring the event dispatch until the current batch finishes rendering. This
+    shouldn't be regarded as problematic, because Blazor has never guaranteed synchronous dispatch of DOM event
+    handlers (in the Blazor Server case, all DOM event handlers run asynchronously).
+</p>
+
+<h2>WebComponent attempting JS interop during batch rendering (cases 1 & 2 above)</h2>
+
+@for (var i = 0; i < numWebComponents; i++)
+{
+    <custom-web-component-performing-js-interop>Instance @i</custom-web-component-performing-js-interop>
+}
+
+<button id="add-web-component" @onclick="@(() => numWebComponents++)">Add a web component</button>
+
+<pre id="web-component-error-log"></pre>
+
+<h2>DOM mutation triggering a .NET event handler (case 3 above)</h2>
+
+<p>
+    Type into either text box. Each keystroke will swap the list order, causing a change event during batch rendering.
+</p>
+
+<div id="reversible-list">
+    @foreach (var item in itemsList)
+    {
+        <div @key="item">
+            <input @oninput="@(() => itemsList.Reverse())"
+                   @onchange="@(evt => eventLog += $"Change event on item {item.Name} with value {evt.Value}\n")" />
+        </div>
+    }
+</div>
+
+<pre id="event-log">@eventLog</pre>
+
+@code {
+    string eventLog = "";
+    int numWebComponents = 0;
+
+    class ListItem
+    {
+        public string Name { get; set; }
+    }
+
+    List<ListItem> itemsList = new List<ListItem>
+    {
+        new ListItem { Name = "First" },
+        new ListItem { Name = "Second" },
+    };
+}
