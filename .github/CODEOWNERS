@@ -13,6 +13,7 @@
 /src/DefaultBuilder/            @tratcher
 /src/Hosting/                   @tratcher
 /src/Http/                      @tratcher @jkotalik
+/src/Http/Routing/              @javiercn
 /src/Middleware/                @tratcher
 /src/Middleware/HttpsPolicy/    @jkotalik
 /src/Middleware/Rewrite/        @jkotalik
