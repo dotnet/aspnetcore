@@ -21,7 +21,7 @@ namespace Microsoft.JSInterop
         [return: MaybeNull]
         public TValue Invoke<TValue>(string identifier, params object[] args)
         {
-            var resultJson = InvokeJS(identifier, JsonSerializer.Serialize(args, JsonSerializerOptions));
+            var resultJson = InvokeJS(identifier, JsonSerializer.Serialize(args, JsonSerializerOptions), typeof(TValue) == typeof(VoidReturn));
             if (resultJson is null)
             {
                 return default;
@@ -35,7 +35,8 @@ namespace Microsoft.JSInterop
         /// </summary>
         /// <param name="identifier">The identifier for the function to invoke.</param>
         /// <param name="argsJson">A JSON representation of the arguments.</param>
+        /// <param name="treatReturnAsVoid">Ignore any result that is returned and treat as Void.</param>
         /// <returns>A JSON representation of the result.</returns>
-        protected abstract string? InvokeJS(string identifier, string? argsJson);
+        protected abstract string? InvokeJS(string identifier, string? argsJson, bool? treatReturnAsVoid);
     }
 }
