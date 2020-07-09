@@ -14,14 +14,14 @@
   "profiles": {
     "IIS Express": {
       "commandName": "IISExpress",
-      "launchBrowser": true,
+      "launchBrowser": false,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "Company.WebApplication1": {
       "commandName": "Project",
-      "launchBrowser": true,
+      "launchBrowser": false,
       //#if(!RequiresHttps)
       "applicationUrl": "http://localhost:5000",
       //#else

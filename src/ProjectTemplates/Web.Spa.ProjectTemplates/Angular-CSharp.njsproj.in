@@ -15,17 +15,16 @@
     <ProjectHome>.</ProjectHome>
     <StartupFile>node_modules/@angular/cli/bin/ng</StartupFile>
     <AngularFrontendPort>5002</AngularFrontendPort>
-    <AspNetHttpsPemKeyPath>$(MSBuildProjectDirectory)/obj/65dbd9db-07fc-4667-bfff-eb58cc8cdeb0.key</AspNetHttpsPemKeyPath>
-    <AspNetHttpsCertificate>$(MSBuildProjectDirectory)/obj/65dbd9db-07fc-4667-bfff-eb58cc8cdeb0.crt</AspNetHttpsCertificate>
+    <AspNetHttpsCertificate>$(MSBuildProjectDirectory)/obj/EFB8BE63-2B17-4435-B7AD-E9FAA9964C16.crt</AspNetHttpsCertificate>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{349c5851-65df-11da-9384-00065b846f21};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
-    <NodejsPort>1337</NodejsPort>
+    <NodejsPort>5002</NodejsPort>
     <StartWebBrowser>True</StartWebBrowser>
-    <ScriptArguments>serve --proxy-config proxy.conf.json --port $(AngularFrontendPort) --ssl --ssl-key $(AspNetHttpsPemKeyPath) --ssl-cert $(AspNetHttpsCertificate)</ScriptArguments>
+    <ScriptArguments>serve --proxy-config proxy.conf.json --port 5002 --ssl --ssl-key ./obj/65dbd9db-07fc-4667-bfff-eb58cc8cdeb0.key --ssl-cert ./obj/65dbd9db-07fc-4667-bfff-eb58cc8cdeb0.pem</ScriptArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -43,6 +42,7 @@
     <Content Include="README.md" />
     <Content Include="tsconfig.json" />
     <Content Include="tslint.json" />
+    <Content Include="proxy.conf.json" />
     <Content Include="e2e\protractor.conf.js" />
     <Content Include="e2e\tsconfig.e2e.json" />
     <Content Include="e2e\src\app.e2e-spec.ts" />
@@ -113,7 +113,6 @@
     <Folder Include="src\app\nav-menu" />
   </ItemGroup>
   <PropertyGroup>
-    <CompileDependsOn>RestoreNpmPackages;$(CompileDependsOn)</CompileDependsOn>
     <PrepareForBuildDependsOn>$(PrepareForBuildDependsOn);EnsureHttpsDevelopmentCertificate</PrepareForBuildDependsOn>
     <PostBuildEvent>
       npm run build
@@ -131,7 +130,7 @@
           <IISUrl>http://localhost:48022/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>True</UseCustomServer>
-          <CustomServerUrl>http://localhost:1337</CustomServerUrl>
+          <CustomServerUrl>https://localhost:5002</CustomServerUrl>
           <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
         </WebProjectProperties>
       </FlavorProperties>
@@ -158,18 +157,6 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
-  <Target Name="PrepareForRestorePackages">
-    <PropertyGroup>
-      <_NpmInstallCacheFile>$(IntermediateOutputPath)package.json.cache</_NpmInstallCacheFile>
-    </PropertyGroup>
-  </Target>
-  <Target Name="RestoreNpmPackages" Inputs="package.json" Outputs="$(_NpmInstallCacheFile)" DependsOnTargets="PrepareForRestorePackages">
-    <GetFileHash Files="package.json">
-      <Output TaskParameter="Items" PropertyName="_packageJsonHash" />
-    </GetFileHash>
-    <Exec Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)" />
-    <WriteLinesToFile File="$(_NpmInstallCacheFile)" Lines="$(_packageJsonHash)" Overwrite="true" WriteOnlyWhenDifferent="true"/>
-  </Target>
   <Target Name="EnsureHttpsDevelopmentCertificate" Condition="!Exists('$(AspNetHttpsPemKeyPath)') OR !Exists('$(AspNetHttpsCertificate)')">
     <Exec Command="echo dotnet dev-certs https --export-path $(AspNetHttpsCertificate) --no-password --key-format pem" WorkingDirectory="$(MSBuildProjectDirectory)" />
   </Target>
