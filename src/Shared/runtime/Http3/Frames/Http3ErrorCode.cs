@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 namespace System.Net.Http
 {
@@ -13,7 +12,7 @@ namespace System.Net.Http
         NoError = 0x100,
         /// <summary>
         /// H3_GENERAL_PROTOCOL_ERROR (0x101):
-        /// Peer violated protocol requirements in a way which doesn’t match a more specific error code,
+        /// Peer violated protocol requirements in a way which doesn't match a more specific error code,
         /// or endpoint declines to use the more specific error code.
         /// </summary>
         ProtocolError = 0x101,
@@ -75,7 +74,7 @@ namespace System.Net.Http
         RequestCancelled = 0x10c,
         /// <summary>
         /// H3_REQUEST_INCOMPLETE (0x10E):
-        /// The client’s stream terminated without containing a fully-formed request.
+        /// The client?s stream terminated without containing a fully-formed request.
         /// </summary>
         RequestIncomplete = 0x10d,
         /// <summary>
