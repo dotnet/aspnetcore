@@ -452,6 +452,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             _isBatchInProgress = true;
             var updateDisplayTask = Task.CompletedTask;
 
+            List<Task> asyncDisposalTasks = null;
+
             try
             {
                 if (_batchBuilder.ComponentRenderQueue.Count == 0)
@@ -464,7 +466,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 while (_batchBuilder.ComponentRenderQueue.Count > 0)
                 {
                     var nextToRender = _batchBuilder.ComponentRenderQueue.Dequeue();
-                    RenderInExistingBatch(nextToRender);
+                    RenderInExistingBatch(nextToRender, ref asyncDisposalTasks);
                 }
 
                 var batch = _batchBuilder.ToBatch();
@@ -498,7 +500,42 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 ProcessRenderQueue();
             }
+
+            if (asyncDisposalTasks != null)
+            {
+                _ = ProcessAsyncDisposables(asyncDisposalTasks);
+            }
+
             ComponentsProfiling.Instance.End();
+        }
+
+        private async Task ProcessAsyncDisposables(List<Task> asyncDisposalTasks)
+        {
+            await Task.WhenAll(asyncDisposalTasks);
+            List<Exception> exceptions = null;
+
+            int count = asyncDisposalTasks.Count;
+            for (var i = 0; i < count; i++)
+            {
+                var asyncDisposableTask = asyncDisposalTasks[i];
+                if (asyncDisposableTask.IsCanceled || asyncDisposableTask.IsCompletedSuccessfully)
+                {
+                    continue;
+                }
+
+                exceptions ??= new List<Exception>();
+                exceptions.Add(asyncDisposableTask.Exception);
+            }
+
+            if (exceptions.Count == 1)
+            {
+                HandleException(exceptions[0]);
+            }
+
+            if (exceptions.Count > 0)
+            {
+                HandleException(new AggregateException("Exceptions were encountered while disposing components.", exceptions));
+            }
         }
 
         private Task InvokeRenderCompletedCalls(ArrayRange<RenderTreeDiff> updatedComponents, Task updateDisplayTask)
@@ -620,7 +657,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             batch.Add(GetErrorHandledTask(task));
         }
 
-        private void RenderInExistingBatch(RenderQueueEntry renderQueueEntry)
+        private void RenderInExistingBatch(RenderQueueEntry renderQueueEntry, ref List<Task> asyncDisposalTasks)
         {
             var componentState = renderQueueEntry.ComponentState;
             Log.RenderingComponent(_logger, componentState);
@@ -634,11 +671,32 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 var disposeComponentId = _batchBuilder.ComponentDisposalQueue.Dequeue();
                 var disposeComponentState = GetRequiredComponentState(disposeComponentId);
                 Log.DisposingComponent(_logger, disposeComponentState);
-                if (!disposeComponentState.TryDisposeInBatch(_batchBuilder, out var exception))
+                if (disposeComponentState.RequiresAsyncDisposal())
                 {
-                    exceptions ??= new List<Exception>();
-                    exceptions.Add(exception);
+                    if (!disposeComponentState.TryDisposeInBatch(_batchBuilder, out var exception))
+                    {
+                        exceptions ??= new List<Exception>();
+                        exceptions.Add(exception);
+                    }
                 }
+                else
+                {
+                    var result = disposeComponentState.DisposeInBatchAsync(_batchBuilder);
+                    if (result.IsCompleted)
+                    {
+                        if (result.IsFaulted && !result.IsCanceled)
+                        {
+                            exceptions ??= new List<Exception>();
+                            ProcessAggregateException(exceptions, result.Exception);
+                        }
+                    }
+                    else
+                    {
+                        asyncDisposalTasks ??= new List<Task>();
+                        asyncDisposalTasks.Add(result);
+                    }
+                }
+
                 _componentStateById.Remove(disposeComponentId);
                 _batchBuilder.DisposedComponentIds.Append(disposeComponentId);
             }
@@ -650,6 +708,21 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             else if (exceptions?.Count == 1)
             {
                 HandleException(exceptions[0]);
+            }
+        }
+
+        private static void ProcessAggregateException(List<Exception> exceptions, AggregateException aggregateException)
+        {
+            var innerExceptions = aggregateException.Flatten().InnerExceptions;
+            for (var i = 0; i < innerExceptions.Count; i++)
+            {
+                var exception = exceptions[i];
+                if (exception is TaskCanceledException)
+                {
+                    continue;
+                }
+
+                exceptions.Add(exception);
             }
         }
 

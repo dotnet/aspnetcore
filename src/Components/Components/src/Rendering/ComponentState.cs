@@ -222,5 +222,27 @@ namespace Microsoft.AspNetCore.Components.Rendering
             ((IDisposable)CurrentRenderTree).Dispose();
             _latestDirectParametersSnapshot?.Dispose();
         }
+
+        internal bool RequiresAsyncDisposal() => Component is IAsyncDisposable;
+
+        internal async Task DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
+        {
+            _componentWasDisposed = true;
+
+            // We don't expect these things to throw.
+            RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrentRenderTree.GetFrames());
+
+            if (_hasAnyCascadingParameterSubscriptions)
+            {
+                RemoveCascadingParameterSubscriptions();
+            }
+
+            DisposeBuffers();
+
+            if (Component is IAsyncDisposable asyncDisposable)
+            {
+                await asyncDisposable.DisposeAsync();
+            }
+        }
     }
 }
