@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         [Fact]
         public async Task MissingConfigurationThrows()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(builder =>
                     builder.UseTestServer()
                         .Configure(ConfigureApp)
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         [Fact]
         public async Task EventsResolvedFromDI()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(builder =>
                     builder.UseTestServer()
                         .ConfigureServices(services =>

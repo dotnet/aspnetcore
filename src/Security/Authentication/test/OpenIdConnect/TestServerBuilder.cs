@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 .Build();
 
             host.Start();
-            return host.GetTestServer(); ;
+            return host.GetTestServer();
         }
     }
 }
