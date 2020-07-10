@@ -146,7 +146,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
 
             var builder = new StringBuilder();
-            builder.AppendLine($"{method}[{buffer.Length}]");
+            builder.Append(method);
+            builder.Append("[");
+            builder.Append(buffer.Length);
+            builder.AppendLine("]");
+
             var charBuilder = new StringBuilder();
 
             // Write the hex
