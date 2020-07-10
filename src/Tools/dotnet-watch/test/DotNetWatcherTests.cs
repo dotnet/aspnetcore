@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -54,6 +55,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23854")]
         public async Task RunsWithNoRestoreOnOrdinaryFileChanges()
         {
             _app.DotnetWatchArgs.Add("--verbose");
@@ -71,10 +73,13 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 var message = await _app.Process.GetOutputLineStartsWithAsync(messagePrefix, TimeSpan.FromMinutes(2));
 
                 Assert.Equal(messagePrefix + " --no-restore -- wait", message.Trim());
+
+                await _app.HasRestarted();
             }
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23854")]
         public async Task RunsWithRestoreIfCsprojChanges()
         {
             _app.DotnetWatchArgs.Add("--verbose");
@@ -91,6 +96,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
             // csproj changed. Do not expect a --no-restore
             Assert.Equal(messagePrefix + " -- wait", message.Trim());
+
+            await _app.HasRestarted();
 
             // regular file changed after csproj changes. Should use --no-restore
             File.SetLastWriteTime(Path.Combine(_app.SourceDirectory, "Program.cs"), DateTime.Now);
