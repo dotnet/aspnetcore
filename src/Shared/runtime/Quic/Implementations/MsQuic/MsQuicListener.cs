@@ -62,7 +62,7 @@ namespace System.Net.Quic.Implementations.MsQuic
 
         internal override async ValueTask<QuicConnectionProvider> AcceptConnectionAsync(CancellationToken cancellationToken = default)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Enter(this);
 
             ThrowIfDisposed();
 
@@ -81,7 +81,7 @@ namespace System.Net.Quic.Implementations.MsQuic
                 _options.CertificateFilePath,
                 _options.PrivateKeyFilePath).ConfigureAwait(false);
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Exit(this);
             return connection;
         }
 
