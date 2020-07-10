@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using ProcessUtilities;
 using Xunit;
 
 namespace XUnitTestProject3
