@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             // then we render the component associated with the route as per usual.
             if (!OnNavigateAsync.HasDelegate)
             {
-                return await Task.FromResult(true);
+                return true;
             }
 
             // If we've already invoked a task and stored its CTS, then
@@ -226,11 +226,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
 
             var completedTask = await Task.WhenAny(task, cancellationTcs.Task);
-            if (completedTask == task)
-            {
-                return await Task.FromResult(true);
-            }
-            return await Task.FromResult(false);
+            return task == completedTask;
         }
 
         private async Task RunOnNavigateWithRefreshAsync(string path, bool isNavigationIntercepted)
