@@ -92,6 +92,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var url = "http://127.0.0.1:0";
 
             _host = new HostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.Configure<HostOptions>(options => options.ShutdownTimeout = TimeSpan.FromSeconds(30));
+                })
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
