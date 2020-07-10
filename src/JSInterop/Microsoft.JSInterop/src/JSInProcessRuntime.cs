@@ -37,6 +37,6 @@ namespace Microsoft.JSInterop
         /// <param name="argsJson">A JSON representation of the arguments.</param>
         /// <param name="treatReturnAsVoid">Ignore any result that is returned and treat as Void.</param>
         /// <returns>A JSON representation of the result.</returns>
-        protected abstract string? InvokeJS(string identifier, string? argsJson, bool? treatReturnAsVoid);
+        protected abstract string? InvokeJS(string identifier, string? argsJson, bool treatReturnAsVoid);
     }
 }

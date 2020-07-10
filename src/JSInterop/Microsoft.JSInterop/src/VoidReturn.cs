@@ -5,7 +5,7 @@ namespace Microsoft.JSInterop
     /// <summary>
     /// Used as a type for the <see cref="TaskCompletionSource{TResult}"/> that represents nothing should be returned.
     /// </summary>
-    internal class VoidReturn
+    internal sealed class VoidReturn
     {
     }
 }

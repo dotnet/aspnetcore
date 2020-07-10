@@ -112,7 +112,7 @@ namespace Microsoft.JSInterop
                 var argsJson = args?.Any() == true ?
                     JsonSerializer.Serialize(args, JsonSerializerOptions) :
                     null;
-                BeginInvokeJS(taskId, identifier, argsJson);
+                BeginInvokeJS(taskId, identifier, argsJson, typeof(TValue) == typeof(VoidReturn));
 
                 return new ValueTask<TValue>(tcs.Task);
             }
@@ -138,7 +138,8 @@ namespace Microsoft.JSInterop
         /// <param name="taskId">The identifier for the function invocation, or zero if no async callback is required.</param>
         /// <param name="identifier">The identifier for the function to invoke.</param>
         /// <param name="argsJson">A JSON representation of the arguments.</param>
-        protected abstract void BeginInvokeJS(long taskId, string identifier, string? argsJson);
+        /// <param name="treatReturnAsVoid">Ignore any result that is returned and treat as Void.</param>
+        protected abstract void BeginInvokeJS(long taskId, string identifier, string? argsJson, bool treatReturnAsVoid);
 
         /// <summary>
         /// Completes an async JS interop call from JavaScript to .NET

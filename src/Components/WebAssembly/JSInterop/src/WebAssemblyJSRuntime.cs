@@ -14,19 +14,19 @@ namespace Microsoft.JSInterop.WebAssembly
     public abstract class WebAssemblyJSRuntime : JSInProcessRuntime
     {
         /// <inheritdoc />
-        protected override string InvokeJS(string identifier, string argsJson)
+        protected override string InvokeJS(string identifier, string argsJson, bool treatReturnAsVoid)
         {
             var noAsyncHandle = default(long);
-            var result = InternalCalls.InvokeJSMarshalled(out var exception, ref noAsyncHandle, identifier, argsJson);
+            var result = InternalCalls.InvokeJSMarshalled(out var exception, ref noAsyncHandle, identifier, argsJson, treatReturnAsVoid);
             return exception != null
                 ? throw new JSException(exception)
                 : result;
         }
 
         /// <inheritdoc />
-        protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
+        protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson, bool treatReturnAsVoid)
         {
-            InternalCalls.InvokeJSMarshalled(out _, ref asyncHandle, identifier, argsJson);
+            InternalCalls.InvokeJSMarshalled(out _, ref asyncHandle, identifier, argsJson, treatReturnAsVoid);
         }
 
         protected override void EndInvokeDotNet(DotNetInvocationInfo callInfo, in DotNetInvocationResult dispatchResult)
@@ -39,7 +39,7 @@ namespace Microsoft.JSInterop.WebAssembly
             // We pass 0 as the async handle because we don't want the JS-side code to
             // send back any notification (we're just providing a result for an existing async call)
             var args = JsonSerializer.Serialize(new[] { callInfo.CallId, dispatchResult.Success, resultOrError }, JsonSerializerOptions);
-            BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args);
+            BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args, false);
         }
 
         /// <summary>
