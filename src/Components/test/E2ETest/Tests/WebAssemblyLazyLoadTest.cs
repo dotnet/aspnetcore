@@ -7,6 +7,7 @@ using BasicTestApp.RouterTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Xunit;
@@ -35,6 +36,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23856")]
         public void CanLazyLoadOnRouteChange()
         {
             // Navigate to a page without any lazy-loaded dependencies
@@ -59,6 +61,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23856")]
         public void CanLazyLoadOnFirstVisit()
         {
             // Navigate to a page with lazy loaded assemblies for the first time
