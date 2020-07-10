@@ -1,30 +1,42 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
+    /// <summary>
+    /// A component that adds or updates meta tags contained in the HTML head element.
+    /// </summary>
     public class Meta : HeadElementBase
     {
         private MetaElementState _state = default!;
 
         internal override object ElementKey => _state.Key;
 
+        /// <summary>
+        /// Gets or sets the "name" attribute of the HTML meta tag.
+        /// </summary>
         [Parameter]
         public string? Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the "http-equiv" attribute of the HTML meta tag.
+        /// </summary>
         [Parameter]
         public string? HttpEquiv { get; set; }
 
-        [Parameter]
-        public string? Charset { get; set; }
-
+        /// <summary>
+        /// Gets or sets the "content" attribute of the HTML meta tag.
+        /// </summary>
         [Parameter]
         public string? Content { get; set; }
 
+        /// <inheritdoc />
         protected override async Task OnParametersSetAsync()
         {
-            var key = GetMetaElementKey();
+            var key = GetKey();
 
             if (_state == null)
             {
@@ -32,6 +44,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             }
             else if (!_state.Key.Equals(key))
             {
+                // If the key changes, this component now represents a new meta tag.
                 await HeadManager.NotifyDisposedAsync(this);
             }
 
@@ -56,29 +69,13 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             return HeadManager.SetMetaElementAsync(_state.Key, initialState);
         }
 
-        // TODO: There can only be one charset, doesn't matter what value is.
-        private MetaElementKey GetMetaElementKey()
-        {
-            try
+        private MetaElementKey GetKey()
+            => (Name, HttpEquiv) switch
             {
-                var (id, name) = new (string? id, MetaElementKeyName type)[]
-                {
-                    (Name, MetaElementKeyName.Name),
-                    (HttpEquiv, MetaElementKeyName.HttpEquiv),
-                    (Charset, MetaElementKeyName.Charset)
-                }
-                .Where(t => t.id != null)
-                .Single();
-
-                return new MetaElementKey(name, id!);
-            }
-            catch (InvalidOperationException ex)
-            {
-                throw new InvalidOperationException(
-                    $"{GetType()} must contain exactly one of {nameof(Name)}, {nameof(HttpEquiv)}, " +
-                    $"or {nameof(Charset)}.",
-                    ex);
-            }
-        }
+                (string name, null) => new MetaElementKey("name", name),
+                (null, string httpEquiv) => new MetaElementKey("http-equiv", httpEquiv),
+                _ => throw new InvalidOperationException(
+                    $"{GetType()} parameters must contain exactly one of {nameof(Name)} or {nameof(HttpEquiv)}.")
+            };
     }
 }

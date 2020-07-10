@@ -15,18 +15,29 @@
 </p>
 
 <p>
-    <button @onclick="ToggleMetaDescription">@(renderMeta ? "Disable" : "Enable") meta</button>
+    <button @onclick="ToggleMetaDescription">@(renderMeta ? "Disable" : "Enable") meta description</button>
     @if (renderMeta)
     {
-        <Meta Name="description" Content="This is a meta tag, wheeee!"/>
+        <Meta Name="description" Content="Modifying the head from a Blazor component." />
     }
 </p>
 
 <p>
-    <button @onclick="ToggleMetaCharset">@(renderCharset ? "Disable" : "Enable") charset</button>
-    @if (renderCharset)
+    <button @onclick="ToggleMetaNested">@(renderNested ? "Disable" : "Enable") meta http-equiv nested</button>
+    @if (renderNested)
     {
-        <Meta Charset="us-ascii" />
+        <div>
+            <Meta HttpEquiv="test" Content="Layer 1" />
+            <div>
+                <Meta HttpEquiv="test" Content="Layer 2" />
+                <div>
+                    <Meta HttpEquiv="test" Content="Layer 3" />
+                    <div>
+                        <Meta HttpEquiv="test" Content="Layer 4" />
+                    </div>
+                </div>
+            </div>
+        </div>
     }
 </p>
 
@@ -34,7 +45,7 @@
     private readonly bool[] titles = Enumerable.Repeat(false, 6).ToArray();
 
     private bool renderMeta = false;
-    private bool renderCharset = false;
+    private bool renderNested = false;
 
     private void ToggleTitle(int titleId)
     {
@@ -48,9 +59,9 @@
         StateHasChanged();
     }
 
-    private void ToggleMetaCharset()
+    private void ToggleMetaNested()
     {
-        renderCharset = !renderCharset;
+        renderNested = !renderNested;
         StateHasChanged();
     }
 }

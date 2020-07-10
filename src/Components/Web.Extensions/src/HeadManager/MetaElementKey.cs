@@ -1,21 +1,27 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
+    /// <summary>
+    /// Identifies meta elements by a shared attribute.
+    /// </summary>
     internal readonly struct MetaElementKey
     {
-        public MetaElementKeyName Name { get; }
+        public string Name { get; }
 
-        public string Id { get; }
+        public string Value { get; }
 
-        public MetaElementKey(MetaElementKeyName name, string id)
+        public MetaElementKey(string name, string value)
         {
             Name = name;
-            Id = id;
+            Value = value;
         }
 
         public override bool Equals(object? obj)
-            => obj is MetaElementKey other && Name.Equals(other.Name) && Id.Equals(other.Id);
+            => obj is MetaElementKey other && string.Equals(Name, other.Name) && string.Equals(Value, other.Value); 
 
         public override int GetHashCode()
-            => Name.GetHashCode() ^ Id.GetHashCode();
+            => Name.GetHashCode() ^ Value.GetHashCode();
     }
 }

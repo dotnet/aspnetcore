@@ -6,25 +6,26 @@ const setTitle = (title) => {
     document.title = title;
 };
 
-const getMetaElement = (key) => {
-    const keyName = ['name', 'http-equiv', 'charset'][key.name];
+const getDomMetaElement = (key) => {
     const elements = Array.from(document.getElementsByTagName('meta'));
-    let domMetaElement = elements.find(e => e.getAttribute(keyName) === key.id);
+    return elements.find(e => e.getAttribute(key.name) === key.value);
+}
+
+const getMetaElement = (key) => {
+    const domMetaElement = getDomMetaElement(key);
 
     if (!domMetaElement) {
         return undefined;
     }
 
     return {
-        name: domMetaElement.getAttribute(keyName),
+        key,
         content: domMetaElement.getAttribute('content'),
     };
 };
 
 const setMetaElement = (key, metaElement) => {
-    const keyName = ['name', 'http-equiv', 'charset'][key.name];
-    const elements = Array.from(document.getElementsByTagName('meta'));
-    let domMetaElement = elements.find(e => e.getAttribute(keyName) === key.id);
+    let domMetaElement = getDomMetaElement(key);
 
     if (!metaElement) {
         domMetaElement && domMetaElement.remove();
@@ -42,7 +43,7 @@ const setMetaElement = (key, metaElement) => {
         head.appendChild(domMetaElement);
     }
 
-    domMetaElement.setAttribute(keyName, key.id);
+    domMetaElement.setAttribute(key.name, key.value);
 
     if (metaElement.content) {
         domMetaElement.setAttribute('content', metaElement.content);

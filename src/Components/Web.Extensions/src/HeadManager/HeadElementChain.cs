@@ -1,9 +1,16 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
+    /// <summary>
+    /// Tracks <see cref="HeadElementBase"/> instances whose effects override each other, organizes them
+    /// into a priority queue, and applies changes from the correct <see cref="HeadElementBase"/>.
+    /// </summary>
     internal class HeadElementChain
     {
         private readonly LinkedList<HeadElementBase> _priorityChain = new LinkedList<HeadElementBase>();
@@ -17,6 +24,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
         public async ValueTask ApplyChangeAsync(HeadElementBase newElement)
         {
+            // Move the element to the end of the priority chain.
             if (newElement.Node != _priorityChain.Last)
             {
                 if (newElement.Node.List == _priorityChain)
@@ -30,6 +38,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             await newElement.ApplyAsync();
         }
 
+        // Returns true if the chain is now empty.
         public async ValueTask<bool> DiscardChangeAsync(HeadElementBase discardedElement)
         {
             Debug.Assert(discardedElement.Node.List == _priorityChain);
