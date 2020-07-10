@@ -11,7 +11,7 @@ on:
 jobs:
   compare_repos:
     # Comment out this line to test the scripts in a fork
-    # if: github.repository == 'dotnet/aspnetcore'
+    if: github.repository == 'dotnet/aspnetcore'
     name: Compare the shared code in the AspNetCore and Runtime repos and notify if they're out of sync.
     runs-on: windows-latest
     steps:
@@ -51,8 +51,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         # Test this script using an issue in the local forked repo
-        $issue = 'https://github.com/Tratcher/aspnetcore/issues/1'
-        # $issue = 'https://api.github.com/repos/dotnet/aspnetcore/issues/18943'
+        $issue = 'https://api.github.com/repos/dotnet/aspnetcore/issues/18943'
         $changed = .\aspnetcore\.github\workflows\ReportDiff.ps1
         echo "::set-output name=changed::$changed"
     - name: Send PR
