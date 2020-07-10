@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         [Fact]
         public async Task CookieOptionsAlterSetCookieHeader()
         {
-            var host = await CreateHost(o =>
+            using var host = await CreateHost(o =>
             {
                 o.Cookie.Name = "TestCookie";
                 o.Cookie.Path = "/foo";
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             Assert.Contains(" samesite=none", setCookie1);
             Assert.Contains(" httponly", setCookie1);
 
-            var host2 = await CreateHost(o =>
+            using var host2 = await CreateHost(o =>
             {
                 o.Cookie.Name = "SecondCookie";
                 o.Cookie.SecurePolicy = CookieSecurePolicy.None;
@@ -985,7 +985,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         [InlineData(false)]
         public async Task MapWillAffectChallengeOnlyWithUseAuth(bool useAuth)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(builder =>
                     builder.UseTestServer()
                         .Configure(app =>
@@ -1020,7 +1020,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         [ConditionalFact(Skip = "Revisit, exception no longer thrown")]
         public async Task ChallengeDoesNotSet401OnUnauthorized()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(builder =>
                     builder.UseTestServer()
                     .Configure(app =>
@@ -1044,7 +1044,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         [Fact]
         public async Task CanConfigureDefaultCookieInstance()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(builder =>
                     builder.UseTestServer()
                         .Configure(app =>
@@ -1072,7 +1072,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         [Fact]
         public async Task CanConfigureNamedCookieInstance()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(builder =>
                     builder.UseTestServer()
                         .Configure(app =>
@@ -1100,7 +1100,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         [Fact]
         public async Task MapWithSignInOnlyRedirectToReturnUrlOnLoginPath()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(builder =>
                     builder.UseTestServer()
                         .Configure(app =>
@@ -1123,7 +1123,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         [Fact]
         public async Task MapWillNotAffectSignInRedirectToReturnUrl()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(builder =>
                     builder.UseTestServer()
                         .Configure(app =>
@@ -1149,7 +1149,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         [Fact]
         public async Task MapWithSignOutOnlyRedirectToReturnUrlOnLogoutPath()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(builder =>
                     builder.UseTestServer()
                         .Configure(app =>
@@ -1171,7 +1171,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         [Fact]
         public async Task MapWillNotAffectSignOutRedirectToReturnUrl()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(builder =>
                     builder.UseTestServer()
                         .Configure(app =>
@@ -1197,7 +1197,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         [Fact]
         public async Task MapWillNotAffectAccessDenied()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(builder =>
                     builder.UseTestServer()
                         .Configure(app =>
@@ -1221,7 +1221,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         [Fact]
         public async Task NestedMapWillNotAffectLogin()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(builder =>
                     builder.UseTestServer()
                         .Configure(app =>
@@ -1340,15 +1340,19 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         [Fact]
         public async Task NestedMapWillNotAffectAccessDenied()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                    app.Map("/base", map =>
-                    {
-                        map.UseAuthentication();
-                        map.Map("/forbid", signoutApp => signoutApp.Run(context => context.ForbidAsync("Cookies")));
-                    }))
-                    .ConfigureServices(services => services.AddAuthentication().AddCookie(o => o.AccessDeniedPath = new PathString("/denied")));
-            var server = new TestServer(builder);
+            using var host = new HostBuilder()
+                .ConfigureWebHost(builder =>
+                    builder.UseTestServer()
+                        .Configure(app =>
+                            app.Map("/base", map =>
+                            {
+                                map.UseAuthentication();
+                                map.Map("/forbid", signoutApp => signoutApp.Run(context => context.ForbidAsync("Cookies")));
+                            }))
+                            .ConfigureServices(services => services.AddAuthentication().AddCookie(o => o.AccessDeniedPath = new PathString("/denied"))))
+                .Build();
+            await host.StartAsync();
+            using var server = host.GetTestServer();
             var transaction = await server.SendAsync("http://example.com/base/forbid");
 
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
@@ -1360,43 +1364,50 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         [Fact]
         public async Task CanSpecifyAndShareDataProtector()
         {
-
             var dp = new NoOpDataProtector();
-            var builder1 = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.UseAuthentication();
-                    app.Use((context, next) =>
-                        context.SignInAsync("Cookies",
-                                        new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))),
-                                        new AuthenticationProperties()));
-                })
-                .ConfigureServices(services => services.AddAuthentication().AddCookie(o =>
-                {
-                    o.TicketDataFormat = new TicketDataFormat(dp);
-                    o.Cookie.Name = "Cookie";
-                }));
-            var server1 = new TestServer(builder1);
+            using var host1 = new HostBuilder()
+                .ConfigureWebHost(builder =>
+                    builder.UseTestServer()
+                        .Configure(app =>
+                        {
+                            app.UseAuthentication();
+                            app.Use((context, next) =>
+                                context.SignInAsync("Cookies",
+                                                new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))),
+                                                new AuthenticationProperties()));
+                        })
+                        .ConfigureServices(services => services.AddAuthentication().AddCookie(o =>
+                        {
+                            o.TicketDataFormat = new TicketDataFormat(dp);
+                            o.Cookie.Name = "Cookie";
+                        })))
+                .Build();
+            await host1.StartAsync();
+            using var server1 = host1.GetTestServer(); ;
 
             var transaction = await SendAsync(server1, "http://example.com/stuff");
             Assert.NotNull(transaction.SetCookie);
 
-            var builder2 = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.UseAuthentication();
-                    app.Use(async (context, next) =>
+            using var host2 = new HostBuilder()
+                .ConfigureWebHost(builder =>
+                    builder.UseTestServer()
+                    .Configure(app =>
                     {
-                        var result = await context.AuthenticateAsync("Cookies");
-                        await DescribeAsync(context.Response, result);
-                    });
-                })
-                .ConfigureServices(services => services.AddAuthentication().AddCookie("Cookies", o =>
-                {
-                    o.Cookie.Name = "Cookie";
-                    o.TicketDataFormat = new TicketDataFormat(dp);
-                }));
-            var server2 = new TestServer(builder2);
+                        app.UseAuthentication();
+                        app.Use(async (context, next) =>
+                        {
+                            var result = await context.AuthenticateAsync("Cookies");
+                            await DescribeAsync(context.Response, result);
+                        });
+                    })
+                    .ConfigureServices(services => services.AddAuthentication().AddCookie("Cookies", o =>
+                    {
+                        o.Cookie.Name = "Cookie";
+                        o.TicketDataFormat = new TicketDataFormat(dp);
+                    })))
+                .Build();
+            await host2.StartAsync();
+            using var server2 = host2.GetTestServer();
             var transaction2 = await SendAsync(server2, "http://example.com/stuff", transaction.CookieNameValue);
             Assert.Equal("Alice", FindClaimValue(transaction2, ClaimTypes.Name));
         }
@@ -1405,39 +1416,43 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         [Fact]
         public async Task NullExpiresUtcPropertyIsGuarded()
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services => services.AddAuthentication().AddCookie(o =>
-                {
-                    o.Events = new CookieAuthenticationEvents
+            using var host = new HostBuilder()
+                .ConfigureWebHost(builder =>
+                    builder.UseTestServer()
+                    .ConfigureServices(services => services.AddAuthentication().AddCookie(o =>
                     {
-                        OnValidatePrincipal = context =>
+                        o.Events = new CookieAuthenticationEvents
                         {
-                            context.Properties.ExpiresUtc = null;
-                            context.ShouldRenew = true;
-                            return Task.FromResult(0);
-                        }
-                    };
-                }))
-                .Configure(app =>
-                {
-                    app.UseAuthentication();
-
-                    app.Run(async context =>
+                            OnValidatePrincipal = context =>
+                            {
+                                context.Properties.ExpiresUtc = null;
+                                context.ShouldRenew = true;
+                                return Task.FromResult(0);
+                            }
+                        };
+                    }))
+                    .Configure(app =>
                     {
-                        if (context.Request.Path == "/signin")
-                        {
-                            await context.SignInAsync(
-                                CookieAuthenticationDefaults.AuthenticationScheme,
-                                new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))));
-                        }
-                        else
-                        {
-                            await context.Response.WriteAsync("ha+1");
-                        }
-                    });
-                });
+                        app.UseAuthentication();
 
-            var server = new TestServer(builder);
+                        app.Run(async context =>
+                        {
+                            if (context.Request.Path == "/signin")
+                            {
+                                await context.SignInAsync(
+                                    CookieAuthenticationDefaults.AuthenticationScheme,
+                                    new ClaimsPrincipal(new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"))));
+                            }
+                            else
+                            {
+                                await context.Response.WriteAsync("ha+1");
+                            }
+                        });
+                    }))
+                .Build();
+
+            await host.StartAsync();
+            using var server = host.GetTestServer();
 
             var cookie = (await server.SendAsync("http://www.example.com/signin")).SetCookie.FirstOrDefault();
             Assert.NotNull(cookie);
