@@ -79,9 +79,9 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             return _jsRuntime.InvokeAsync<string>($"{JsFunctionsPrefix}.getTitle");
         }
 
-        internal async ValueTask SetTitleAsync(object title)
+        internal ValueTask SetTitleAsync(object? title)
         {
-             await _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.setTitle", title);
+             return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.setTitle", title!);
         }
 
         internal ValueTask<MetaElementState> GetMetaElementAsync(MetaElementKey key)
@@ -89,9 +89,19 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             return _jsRuntime.InvokeAsync<MetaElementState>($"{JsFunctionsPrefix}.getMetaElement", key);
         }
 
-        internal async ValueTask SetMetaElementAsync(MetaElementKey key, object metaElement)
+        internal ValueTask SetMetaElementAsync(MetaElementKey key, object? metaElement)
         {
-            await _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.setMetaElement", key, metaElement);
+            return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.setMetaElement", key, metaElement!);
+        }
+
+        internal ValueTask SetLinkElementAsync(int id, object? attributes)
+        {
+            return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.setLinkElement", id, attributes!);
+        }
+
+        internal ValueTask DeleteLinkElementAsync(int id)
+        {
+            return _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.deleteLinkElement", id);
         }
 
         private void EnqueueTask(Func<Task> task)

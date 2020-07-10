@@ -18,12 +18,12 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         [Parameter]
         public string Value { get; set; } = string.Empty;
 
-        internal override async ValueTask<object> GetInitialStateAsync()
+        internal override async ValueTask<object?> GetInitialStateAsync()
         {
             return await HeadManager.GetTitleAsync();
         }
 
-        internal override ValueTask ResetInitialStateAsync(object initialState)
+        internal override ValueTask ResetInitialStateAsync(object? initialState)
         {
             return HeadManager.SetTitleAsync(initialState);
         }

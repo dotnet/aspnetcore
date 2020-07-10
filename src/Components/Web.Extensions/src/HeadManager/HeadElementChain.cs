@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
     {
         private readonly LinkedList<HeadElementBase> _priorityChain = new LinkedList<HeadElementBase>();
 
-        private readonly object _initialState;
+        private readonly object? _initialState;
 
-        public HeadElementChain(object initialState)
+        public HeadElementChain(object? initialState)
         {
             _initialState = initialState;
         }

@@ -54,9 +54,9 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             HeadManager.NotifyDisposed(this);
         }
 
-        internal abstract ValueTask<object> GetInitialStateAsync();
+        internal abstract ValueTask<object?> GetInitialStateAsync();
 
-        internal abstract ValueTask ResetInitialStateAsync(object initialState);
+        internal abstract ValueTask ResetInitialStateAsync(object? initialState);
 
         internal abstract ValueTask ApplyAsync();
     }

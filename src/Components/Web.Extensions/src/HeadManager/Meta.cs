@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
     /// <summary>
-    /// A component that adds or updates meta tags contained in the HTML head element.
+    /// A component that adds or updates meta elements in the HTML head.
     /// </summary>
     public class Meta : HeadElementBase
     {
@@ -65,12 +65,12 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             await HeadManager.SetMetaElementAsync(_state.Key, _state);
         }
 
-        internal override async ValueTask<object> GetInitialStateAsync()
+        internal override async ValueTask<object?> GetInitialStateAsync()
         {
             return await HeadManager.GetMetaElementAsync(_state.Key);
         }
 
-        internal override ValueTask ResetInitialStateAsync(object initialState)
+        internal override ValueTask ResetInitialStateAsync(object? initialState)
         {
             return HeadManager.SetMetaElementAsync(_state.Key, initialState);
         }
