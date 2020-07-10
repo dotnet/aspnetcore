@@ -4,6 +4,7 @@
   <PropertyGroup>
     <ANCM-Setup Condition="$(ANCM-Setup) == ''">$(MSBuildThisFileDirectory)..\</ANCM-Setup>
     <EnableSourceLink>false</EnableSourceLink>
+    <Platform Condition="'$(Platform)' == 'x86'">Win32</Platform>
   </PropertyGroup>
 
   <PropertyGroup>
