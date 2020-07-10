@@ -51,20 +51,20 @@ namespace System.Net.Quic.Implementations.MsQuic
         // constructor for inbound connections
         public MsQuicConnection(IPEndPoint localEndPoint, IPEndPoint remoteEndPoint, IntPtr nativeObjPtr)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Enter(this);
             _localEndPoint = localEndPoint;
             _remoteEndPoint = remoteEndPoint;
             _ptr = nativeObjPtr;
 
             SetCallbackHandler();
             SetIdleTimeout(TimeSpan.FromSeconds(120));
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Exit(this);
         }
 
         // constructor for outbound connections
         public MsQuicConnection(QuicClientConnectionOptions options)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Enter(this);
 
             // TODO need to figure out if/how we want to expose sessions
             // Creating a session per connection isn't ideal.
@@ -75,7 +75,7 @@ namespace System.Net.Quic.Implementations.MsQuic
             SetCallbackHandler();
             SetIdleTimeout(options.IdleTimeout);
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Exit(this);
         }
 
         internal override IPEndPoint LocalEndPoint
@@ -168,7 +168,7 @@ namespace System.Net.Quic.Implementations.MsQuic
 
         private uint HandleEventConnected(ConnectionEvent connectionEvent)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Enter(this);
 
             SOCKADDR_INET inetAddress = MsQuicParameterHelpers.GetINetParam(MsQuicApi.Api, _ptr, (uint)QUIC_PARAM_LEVEL.CONNECTION, (uint)QUIC_PARAM_CONN.LOCAL_ADDRESS);
             _localEndPoint = MsQuicAddressHelpers.INetToIPEndPoint(inetAddress);
@@ -179,13 +179,13 @@ namespace System.Net.Quic.Implementations.MsQuic
             // handle event shutdown initiated by transport
             _connectTcs.Complete(MsQuicStatusCodes.Success);
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Exit(this);
             return MsQuicStatusCodes.Success;
         }
 
         private uint HandleEventShutdownInitiatedByTransport(ConnectionEvent connectionEvent)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Enter(this);
 
             if (!_connected)
             {
@@ -194,7 +194,7 @@ namespace System.Net.Quic.Implementations.MsQuic
 
             _acceptQueue.Writer.Complete();
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Exit(this);
 
             return MsQuicStatusCodes.Success;
         }
@@ -208,22 +208,22 @@ namespace System.Net.Quic.Implementations.MsQuic
 
         private uint HandleEventShutdownComplete(ConnectionEvent connectionEvent)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Enter(this);
 
             _shutdownTcs.Complete(MsQuicStatusCodes.Success);
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Exit(this);
             return MsQuicStatusCodes.Success;
         }
 
         private uint HandleEventNewStream(ConnectionEvent connectionEvent)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Enter(this);
 
             MsQuicStream msQuicStream = new MsQuicStream(this, connectionEvent.StreamFlags, connectionEvent.Data.NewStream.Stream, inbound: true);
 
             _acceptQueue.Writer.TryWrite(msQuicStream);
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Exit(this);
 
             return MsQuicStatusCodes.Success;
         }
@@ -235,7 +235,7 @@ namespace System.Net.Quic.Implementations.MsQuic
 
         internal override async ValueTask<QuicStreamProvider> AcceptStreamAsync(CancellationToken cancellationToken = default)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Enter(this);
 
             ThrowIfDisposed();
 
@@ -254,7 +254,7 @@ namespace System.Net.Quic.Implementations.MsQuic
                 };
             }
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Exit(this);
             return stream;
         }
 
@@ -305,7 +305,7 @@ namespace System.Net.Quic.Implementations.MsQuic
         private MsQuicStream StreamOpen(
             QUIC_STREAM_OPEN_FLAG flags)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Enter(this);
 
             IntPtr streamPtr = IntPtr.Zero;
             QuicExceptionHelpers.ThrowIfFailed(
@@ -319,7 +319,7 @@ namespace System.Net.Quic.Implementations.MsQuic
 
             MsQuicStream stream = new MsQuicStream(this, flags, streamPtr, inbound: false);
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Exit(this);
             return stream;
         }
 
@@ -337,7 +337,7 @@ namespace System.Net.Quic.Implementations.MsQuic
             QUIC_CONNECTION_SHUTDOWN_FLAG Flags,
             long ErrorCode)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Enter(this);
 
             uint status = MsQuicApi.Api.ConnectionShutdownDelegate(
                 _ptr,
@@ -345,7 +345,7 @@ namespace System.Net.Quic.Implementations.MsQuic
                 ErrorCode);
             QuicExceptionHelpers.ThrowIfFailed(status, "Failed to shutdown connection.");
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Exit(this);
             return _shutdownTcs.GetTypelessValueTask();
         }
 
@@ -377,7 +377,7 @@ namespace System.Net.Quic.Implementations.MsQuic
                 return;
             }
 
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Enter(this);
 
             if (_ptr != IntPtr.Zero)
             {
@@ -395,7 +395,7 @@ namespace System.Net.Quic.Implementations.MsQuic
 
             _disposed = true;
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(this);
+            if (NetEventSource.Log.IsEnabled()) NetEventSource.Exit(this);
         }
 
         internal override ValueTask CloseAsync(long errorCode, CancellationToken cancellationToken = default)
