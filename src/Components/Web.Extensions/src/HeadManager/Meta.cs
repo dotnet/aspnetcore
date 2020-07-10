@@ -81,8 +81,10 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
                 (string name, null, null) => new MetaElementKey("name", name),
                 (null, string httpEquiv, null) => new MetaElementKey("http-equiv", httpEquiv),
                 (null, null, string property) => new MetaElementKey("property", property),
+
                 _ => throw new InvalidOperationException(
-                    $"{GetType()} parameters must contain exactly one of {nameof(Name)} or {nameof(HttpEquiv)}.")
+                    $"{GetType()} parameters must contain exactly one of " +
+                    $"{nameof(Name)}, {nameof(HttpEquiv)} or {nameof(Property)}.")
             };
     }
 }
