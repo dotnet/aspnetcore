@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         public string? Content { get; set; }
 
         /// <inheritdoc />
-        protected override async Task OnParametersSetAsync()
+        protected override void OnParametersSet()
         {
             var key = GetKey();
 
@@ -45,13 +45,13 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             else if (!_state.Key.Equals(key))
             {
                 // If the key changes, this component now represents a new meta tag.
-                await HeadManager.NotifyDisposedAsync(this);
+                HeadManager.NotifyDisposed(this);
             }
 
             _state.Key = key;
             _state.Content = Content;
 
-            await HeadManager.NotifyChangedAsync(this);
+            HeadManager.NotifyChanged(this);
         }
 
         internal override async ValueTask ApplyAsync()

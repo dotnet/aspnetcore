@@ -43,15 +43,15 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         }
 
         /// <inheritdoc />
-        protected override async Task OnParametersSetAsync()
+        protected override void OnParametersSet()
         {
-            await HeadManager.NotifyChangedAsync(this);
+            HeadManager.NotifyChanged(this);
         }
 
         /// <inheritdoc />
         public void Dispose()
         {
-            HeadManager.NotifyDisposedAsync(this).ConfigureAwait(false); 
+            HeadManager.NotifyDisposed(this);
         }
 
         internal abstract ValueTask<object> GetInitialStateAsync();

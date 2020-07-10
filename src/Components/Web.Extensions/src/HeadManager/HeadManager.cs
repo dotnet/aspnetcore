@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -34,11 +35,14 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             _jsRuntime = jsRuntime;
         }
 
-        internal async ValueTask NotifyChangedAsync(HeadElementBase element)
-        {
-            // Wait for previous changes to be applied before proceeding.
-            await AcquireLock();
+        internal void NotifyChanged(HeadElementBase element)
+            => EnqueueTask(() => HandleChangedAsync(element));
 
+        internal void NotifyDisposed(HeadElementBase element)
+            => EnqueueTask(() => HandleDisposedAsync(element));
+
+        private async Task HandleChangedAsync(HeadElementBase element)
+        {
             if (!_elementChains.TryGetValue(element.ElementKey, out var chain))
             {
                 // No changes to the target element are being tracked - save the initial element state.
@@ -50,15 +54,10 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             }
 
             await chain.ApplyChangeAsync(element);
-
-            ReleaseLock();
         }
 
-        internal async ValueTask NotifyDisposedAsync(HeadElementBase element)
+        private async Task HandleDisposedAsync(HeadElementBase element)
         {
-            // Wait for previous changes to be applied before proceeding.
-            await AcquireLock();
-
             if (_elementChains.TryGetValue(element.ElementKey, out var chain))
             {
                 var isChainEmpty = await chain.DiscardChangeAsync(element);
@@ -73,8 +72,6 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
                 // This should never happen, but if it does, we'd like to know.
                 Debug.Fail("Element key not found in state map.");
             }
-
-            ReleaseLock();
         }
 
         internal ValueTask<string> GetTitleAsync()
@@ -97,10 +94,15 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             await _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.setMetaElement", key, metaElement);
         }
 
-        private Task AcquireLock()
+        private void EnqueueTask(Func<Task> task)
         {
             // Add a new TCS for the current acquisition.
             var tcs = new TaskCompletionSource();
+
+            // Define the pipeline to be run when the semaphore unblocks.
+            tcs.Task.ContinueWith(t => task.Invoke().ContinueWith(t => _semaphore.Release()));
+
+            // Reserve the task's position in the queue.
             _tcsQueue.Enqueue(tcs);
 
             _semaphore.WaitAsync().ContinueWith(t =>
@@ -111,13 +113,6 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
                     completedTcs.SetResult();
                 }
             });
-
-            return tcs.Task;
-        }
-
-        private void ReleaseLock()
-        {
-            _semaphore.Release();
         }
     }
 }
