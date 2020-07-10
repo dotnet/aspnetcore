@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30204.135
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "eng", "eng", "{C28A32F6-8314-412E-9F3B-CBD31C23E878}"
 EndProject
@@ -17,7 +17,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc", "Mvc", "{1A0EFF9F-E69
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc", "Mvc", "{819B136D-B8B6-46AE-8C4F-5469BBBFC46B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc", "src\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj", "{D4FBDF11-7A65-4205-8AF6-ABC190EFCF50}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc", "src\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj", "{D4FBDF11-7A65-4205-8AF6-ABC190EFCF50}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SignalR", "SignalR", "{5BC5A805-DCA0-41DF-91B8-520B5DAD57DA}"
 EndProject
@@ -25,27 +25,27 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "server", "server", "{2C0222
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SignalR", "SignalR", "{B6081DA9-738E-4088-92DD-7FFA200523C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR", "src\SignalR\server\SignalR\src\Microsoft.AspNetCore.SignalR.csproj", "{BE70E100-E6C4-4686-8592-73E2A04E877F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR", "src\SignalR\server\SignalR\src\Microsoft.AspNetCore.SignalR.csproj", "{BE70E100-E6C4-4686-8592-73E2A04E877F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Components", "Components", "{60D51C98-2CC0-40DF-B338-44154EFEE2FF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{6DE916F5-E78F-446C-89CB-9240AED2A2E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.Server", "src\Components\Server\src\Microsoft.AspNetCore.Components.Server.csproj", "{7546E2DD-2CF4-4240-8045-2533DF539458}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Server", "src\Components\Server\src\Microsoft.AspNetCore.Components.Server.csproj", "{7546E2DD-2CF4-4240-8045-2533DF539458}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Antiforgery", "Antiforgery", "{B55A5DE1-5AF3-4B18-AF04-C1735B071DA6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Antiforgery", "src\Antiforgery\src\Microsoft.AspNetCore.Antiforgery.csproj", "{210B7FF8-ADD2-4E11-831A-41B28F423E44}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Antiforgery", "src\Antiforgery\src\Microsoft.AspNetCore.Antiforgery.csproj", "{210B7FF8-ADD2-4E11-831A-41B28F423E44}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http", "Http", "{627BE8B3-59E6-4F1D-8C9C-76B804D41724}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Authentication.Abstractions", "Authentication.Abstractions", "{AB0ED518-C27C-42D9-8D66-5F974033F855}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.Abstractions", "src\Http\Authentication.Abstractions\src\Microsoft.AspNetCore.Authentication.Abstractions.csproj", "{18E65289-27FC-4EC6-BFE8-9FA852381319}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Abstractions", "src\Http\Authentication.Abstractions\src\Microsoft.AspNetCore.Authentication.Abstractions.csproj", "{18E65289-27FC-4EC6-BFE8-9FA852381319}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Authentication.Core", "Authentication.Core", "{5CF8E05A-C8DD-4551-8542-844A217B39F2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.Core", "src\Http\Authentication.Core\src\Microsoft.AspNetCore.Authentication.Core.csproj", "{74CF6CCE-B922-4FEF-87AA-38C85D42A4A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Core", "src\Http\Authentication.Core\src\Microsoft.AspNetCore.Authentication.Core.csproj", "{74CF6CCE-B922-4FEF-87AA-38C85D42A4A2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Security", "Security", "{A39335E5-7A26-4CFD-BF3B-2CFE75113498}"
 EndProject
@@ -53,115 +53,115 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Authorization", "Authorizat
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{EA034D9C-3281-426B-A363-FF1C05D12483}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authorization", "src\Security\Authorization\Core\src\Microsoft.AspNetCore.Authorization.csproj", "{C2751270-6970-4CC8-8D8C-81A4B8D26446}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authorization", "src\Security\Authorization\Core\src\Microsoft.AspNetCore.Authorization.csproj", "{C2751270-6970-4CC8-8D8C-81A4B8D26446}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Policy", "Policy", "{C63C5E92-1511-45A5-A160-0FCC9B3E3CDB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authorization.Policy", "src\Security\Authorization\Policy\src\Microsoft.AspNetCore.Authorization.Policy.csproj", "{E2083951-98E7-4C1C-AB3A-935EA6311018}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authorization.Policy", "src\Security\Authorization\Policy\src\Microsoft.AspNetCore.Authorization.Policy.csproj", "{E2083951-98E7-4C1C-AB3A-935EA6311018}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Components", "Components", "{B59D558B-AC58-4BA4-B5AF-AE51C8531B28}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components", "src\Components\Components\src\Microsoft.AspNetCore.Components.csproj", "{A345753F-B4FA-43E4-8275-151FA5B70728}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components", "src\Components\Components\src\Microsoft.AspNetCore.Components.csproj", "{A345753F-B4FA-43E4-8275-151FA5B70728}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{08B240FC-AE5D-478A-963D-890ADE70B0B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.Web", "src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj", "{34A797ED-AC07-476D-BEB1-E86DBBF2395A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Web", "src\Components\Web\src\Microsoft.AspNetCore.Components.Web.csproj", "{34A797ED-AC07-476D-BEB1-E86DBBF2395A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Servers", "Servers", "{0ACCEDA7-339C-4B4D-8DD4-1AC271F31C04}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Connections.Abstractions", "Connections.Abstractions", "{78DD1AC3-0981-4109-861B-C3E2F1FC3281}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Connections.Abstractions", "src\Servers\Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj", "{D5D2C620-42B7-4ECF-A892-295BB124A833}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Connections.Abstractions", "src\Servers\Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj", "{D5D2C620-42B7-4ECF-A892-295BB124A833}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Middleware", "Middleware", "{E5963C9F-20A6-4385-B364-814D2581FADF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CORS", "CORS", "{27223011-E8E9-4178-9377-44A7B3CBCC21}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Cors", "src\Middleware\CORS\src\Microsoft.AspNetCore.Cors.csproj", "{8CDA0BDC-05C2-451F-9990-2BEF471684BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Cors", "src\Middleware\CORS\src\Microsoft.AspNetCore.Cors.csproj", "{8CDA0BDC-05C2-451F-9990-2BEF471684BF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataProtection", "DataProtection", "{380430A1-C02F-4943-8A52-FDFA9F7735F0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cryptography.Internal", "Cryptography.Internal", "{5B27FAB7-E5FE-4FF2-8F39-900E177D5E39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Cryptography.Internal", "src\DataProtection\Cryptography.Internal\src\Microsoft.AspNetCore.Cryptography.Internal.csproj", "{392701C6-0BDB-4505-ADB8-1475770A2421}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Cryptography.Internal", "src\DataProtection\Cryptography.Internal\src\Microsoft.AspNetCore.Cryptography.Internal.csproj", "{392701C6-0BDB-4505-ADB8-1475770A2421}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataProtection", "DataProtection", "{682157DB-17F2-40D6-B0ED-11B6C6CB064B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection", "src\DataProtection\DataProtection\src\Microsoft.AspNetCore.DataProtection.csproj", "{DAF8C29D-5FAE-414F-8630-43CA8ECDCCD1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection", "src\DataProtection\DataProtection\src\Microsoft.AspNetCore.DataProtection.csproj", "{DAF8C29D-5FAE-414F-8630-43CA8ECDCCD1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Abstractions", "Abstractions", "{64D54BBB-13D1-4655-A149-CFB754820BD2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.Abstractions", "src\DataProtection\Abstractions\src\Microsoft.AspNetCore.DataProtection.Abstractions.csproj", "{5BF0F5D9-8502-4431-BFFD-CA8B9D21142A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.Abstractions", "src\DataProtection\Abstractions\src\Microsoft.AspNetCore.DataProtection.Abstractions.csproj", "{5BF0F5D9-8502-4431-BFFD-CA8B9D21142A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagnostics.Abstractions", "Diagnostics.Abstractions", "{ECB76EBA-0512-4449-95AA-7258F543BA2E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.Abstractions", "src\Middleware\Diagnostics.Abstractions\src\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj", "{1D6348B5-0616-41A6-90ED-09D34C452926}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.Abstractions", "src\Middleware\Diagnostics.Abstractions\src\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj", "{1D6348B5-0616-41A6-90ED-09D34C452926}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosting", "Hosting", "{2DB7E3C7-D213-4609-95DD-72561F23AB58}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Abstractions", "Abstractions", "{83C6944F-8F6C-4698-A09A-25DB92BA1AD2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Hosting.Abstractions", "src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj", "{456056B5-3888-47AB-AFD7-4F16A8A1454F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting.Abstractions", "src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj", "{456056B5-3888-47AB-AFD7-4F16A8A1454F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server.Abstractions", "Server.Abstractions", "{44663691-023E-48D0-9757-A106974E8AAE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Hosting.Server.Abstractions", "src\Hosting\Server.Abstractions\src\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj", "{4DE12851-6ABC-4675-84B8-0E0EFA142F79}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting.Server.Abstractions", "src\Hosting\Server.Abstractions\src\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj", "{4DE12851-6ABC-4675-84B8-0E0EFA142F79}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Html", "Html", "{13E7C397-F40B-4791-B853-F7430AF88D00}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Abstractions", "Abstractions", "{412D4C15-F48F-4DB1-940A-131D1AA87088}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Html.Abstractions", "src\Html\Abstractions\src\Microsoft.AspNetCore.Html.Abstractions.csproj", "{A400C938-46E2-4B84-B06E-487B13D22E1B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Html.Abstractions", "src\Html\Abstractions\src\Microsoft.AspNetCore.Html.Abstractions.csproj", "{A400C938-46E2-4B84-B06E-487B13D22E1B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http", "Http", "{3D330C1E-D773-4BA8-9E91-123544B0D672}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http", "src\Http\Http\src\Microsoft.AspNetCore.Http.csproj", "{563714CA-0022-4A95-BDBB-0953541193CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http", "src\Http\Http\src\Microsoft.AspNetCore.Http.csproj", "{563714CA-0022-4A95-BDBB-0953541193CA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http.Abstractions", "Http.Abstractions", "{DCBBDB52-4A49-4141-8F4D-81C0FFFB7BD5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Abstractions", "src\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj", "{E55659A7-5489-4E86-B11C-2E41697555F7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Abstractions", "src\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj", "{E55659A7-5489-4E86-B11C-2E41697555F7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{1A304CA0-7795-4684-88E5-E66402966927}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http.Connections", "Http.Connections", "{A0FFAF00-D628-4BDB-BE68-8DBA21FBBEA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Connections", "src\SignalR\common\Http.Connections\src\Microsoft.AspNetCore.Http.Connections.csproj", "{627F94BE-AD74-4188-9F61-12E5096DA826}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Connections", "src\SignalR\common\Http.Connections\src\Microsoft.AspNetCore.Http.Connections.csproj", "{627F94BE-AD74-4188-9F61-12E5096DA826}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http.Connections.Common", "Http.Connections.Common", "{BC0E5F62-06EE-407D-83C6-490785E9A011}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Connections.Common", "src\SignalR\common\Http.Connections.Common\src\Microsoft.AspNetCore.Http.Connections.Common.csproj", "{F5EAE3E3-951B-46B7-A6B0-0BC76CCB83C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Connections.Common", "src\SignalR\common\Http.Connections.Common\src\Microsoft.AspNetCore.Http.Connections.Common.csproj", "{F5EAE3E3-951B-46B7-A6B0-0BC76CCB83C5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http.Extensions", "Http.Extensions", "{225AEDCF-7162-4A86-AC74-06B84660B379}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Extensions", "src\Http\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj", "{606C2615-3E08-4A08-993F-FBD90F4CD021}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Extensions", "src\Http\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj", "{606C2615-3E08-4A08-993F-FBD90F4CD021}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http.Features", "Http.Features", "{BFDD5ACE-A1F0-4C33-8DA1-06CB5CA53177}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Features", "src\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj", "{62043A86-BC6F-432E-9AFD-F3B616192D8D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Features", "src\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj", "{62043A86-BC6F-432E-9AFD-F3B616192D8D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Localization", "Localization", "{9934060B-1957-40FF-83E1-5C15344E7A33}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Localization", "src\Middleware\Localization\src\Microsoft.AspNetCore.Localization.csproj", "{EEC636DE-4C4D-4F16-9D57-0AD1762CCB4D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Localization", "src\Middleware\Localization\src\Microsoft.AspNetCore.Localization.csproj", "{EEC636DE-4C4D-4F16-9D57-0AD1762CCB4D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.Abstractions", "Mvc.Abstractions", "{D685AF51-2CE2-4CD8-86AA-FB0EDD47533F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Abstractions", "src\Mvc\Mvc.Abstractions\src\Microsoft.AspNetCore.Mvc.Abstractions.csproj", "{600CB408-C94D-4F69-83DB-D99EF6DAE0E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Abstractions", "src\Mvc\Mvc.Abstractions\src\Microsoft.AspNetCore.Mvc.Abstractions.csproj", "{600CB408-C94D-4F69-83DB-D99EF6DAE0E1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.ApiExplorer", "Mvc.ApiExplorer", "{0322CF4A-9701-4E7E-9827-BC7DFFA78842}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.ApiExplorer", "src\Mvc\Mvc.ApiExplorer\src\Microsoft.AspNetCore.Mvc.ApiExplorer.csproj", "{3AEEC6C0-65ED-43D1-BA42-F7E6913BB69A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.ApiExplorer", "src\Mvc\Mvc.ApiExplorer\src\Microsoft.AspNetCore.Mvc.ApiExplorer.csproj", "{3AEEC6C0-65ED-43D1-BA42-F7E6913BB69A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.Core", "Mvc.Core", "{5F51EB21-20E2-4793-A137-2E18D50696C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Core", "src\Mvc\Mvc.Core\src\Microsoft.AspNetCore.Mvc.Core.csproj", "{9CE2DD5F-BC82-4EEB-BF7B-70E75677566A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Core", "src\Mvc\Mvc.Core\src\Microsoft.AspNetCore.Mvc.Core.csproj", "{9CE2DD5F-BC82-4EEB-BF7B-70E75677566A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.Cors", "Mvc.Cors", "{7ACD11D4-4682-4936-AFF6-DAC64C636612}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Cors", "src\Mvc\Mvc.Cors\src\Microsoft.AspNetCore.Mvc.Cors.csproj", "{E071FB7E-E650-44B0-9529-D5D1685AEA62}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Cors", "src\Mvc\Mvc.Cors\src\Microsoft.AspNetCore.Mvc.Cors.csproj", "{E071FB7E-E650-44B0-9529-D5D1685AEA62}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.DataAnnotations", "Mvc.DataAnnotations", "{79C7F0D4-7B1A-46BF-8932-5C2E971C5925}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.DataAnnotations", "src\Mvc\Mvc.DataAnnotations\src\Microsoft.AspNetCore.Mvc.DataAnnotations.csproj", "{6A31248F-5F64-4A73-856C-8DC6492E6AC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.DataAnnotations", "src\Mvc\Mvc.DataAnnotations\src\Microsoft.AspNetCore.Mvc.DataAnnotations.csproj", "{6A31248F-5F64-4A73-856C-8DC6492E6AC7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.Formatters.Json", "Mvc.Formatters.Json", "{644AAC18-8E13-4392-8891-3814E355C819}"
 EndProject
@@ -169,73 +169,73 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Fo
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.Localization", "Mvc.Localization", "{70AD2DB0-47D7-492F-817A-34BCAFD861C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Localization", "src\Mvc\Mvc.Localization\src\Microsoft.AspNetCore.Mvc.Localization.csproj", "{51D0FA50-6970-4C19-B31B-3D6CCDF6C028}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Localization", "src\Mvc\Mvc.Localization\src\Microsoft.AspNetCore.Mvc.Localization.csproj", "{51D0FA50-6970-4C19-B31B-3D6CCDF6C028}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.Razor", "Mvc.Razor", "{D21F1804-4690-4B00-BC6A-2147C14BF1B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Razor", "src\Mvc\Mvc.Razor\src\Microsoft.AspNetCore.Mvc.Razor.csproj", "{451C6023-83D5-4809-9F71-6A23ED725A03}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor", "src\Mvc\Mvc.Razor\src\Microsoft.AspNetCore.Mvc.Razor.csproj", "{451C6023-83D5-4809-9F71-6A23ED725A03}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.RazorPages", "Mvc.RazorPages", "{9578BB4F-D805-4581-9AAE-A66002BFDA1F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.RazorPages", "src\Mvc\Mvc.RazorPages\src\Microsoft.AspNetCore.Mvc.RazorPages.csproj", "{A47371F8-F47E-4AF3-9F2E-068F28CE6587}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.RazorPages", "src\Mvc\Mvc.RazorPages\src\Microsoft.AspNetCore.Mvc.RazorPages.csproj", "{A47371F8-F47E-4AF3-9F2E-068F28CE6587}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.TagHelpers", "Mvc.TagHelpers", "{3691F0FE-6A8D-4F99-95EB-2D3AD3F9B712}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.TagHelpers", "src\Mvc\Mvc.TagHelpers\src\Microsoft.AspNetCore.Mvc.TagHelpers.csproj", "{4C056678-59A0-4D37-BE70-B98D764C7EA4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.TagHelpers", "src\Mvc\Mvc.TagHelpers\src\Microsoft.AspNetCore.Mvc.TagHelpers.csproj", "{4C056678-59A0-4D37-BE70-B98D764C7EA4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.ViewFeatures", "Mvc.ViewFeatures", "{DA5E4C5A-E62C-47CD-9557-65F747638BAD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.ViewFeatures", "src\Mvc\Mvc.ViewFeatures\src\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj", "{81A35CF9-214F-4351-9561-334F32B41C3A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.ViewFeatures", "src\Mvc\Mvc.ViewFeatures\src\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj", "{81A35CF9-214F-4351-9561-334F32B41C3A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Razor", "Razor", "{B27FBAC2-ADA3-4A05-B232-64011B6B2DA3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Razor", "Razor", "{66A0F71A-FFB5-4763-913E-FB4A4F17EAA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor", "src\Razor\Razor\src\Microsoft.AspNetCore.Razor.csproj", "{50D97D17-79CF-4917-AD70-F79146FE8808}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor", "src\Razor\Razor\src\Microsoft.AspNetCore.Razor.csproj", "{50D97D17-79CF-4917-AD70-F79146FE8808}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Razor.Runtime", "Razor.Runtime", "{AB316CF4-D9C3-427E-8460-7C5235BED45E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Runtime", "src\Razor\Razor.Runtime\src\Microsoft.AspNetCore.Razor.Runtime.csproj", "{135B4B7B-D641-4A45-87F4-15C6A8CAA7F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Runtime", "src\Razor\Razor.Runtime\src\Microsoft.AspNetCore.Razor.Runtime.csproj", "{135B4B7B-D641-4A45-87F4-15C6A8CAA7F5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ResponseCaching.Abstractions", "ResponseCaching.Abstractions", "{0408482E-7934-49CA-A590-7E21AF4BE1BF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.ResponseCaching.Abstractions", "src\Middleware\ResponseCaching.Abstractions\src\Microsoft.AspNetCore.ResponseCaching.Abstractions.csproj", "{A9027A02-135B-4149-947A-79F5B73A7F28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ResponseCaching.Abstractions", "src\Middleware\ResponseCaching.Abstractions\src\Microsoft.AspNetCore.ResponseCaching.Abstractions.csproj", "{A9027A02-135B-4149-947A-79F5B73A7F28}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Routing", "Routing", "{54C42F57-5447-4C21-9812-4AF665567566}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Routing", "src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj", "{352D08E0-782E-4AE3-99B2-7BC5B2C3F227}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routing", "src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj", "{352D08E0-782E-4AE3-99B2-7BC5B2C3F227}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Routing.Abstractions", "Routing.Abstractions", "{3ACCF669-89AB-4B02-809E-E94C81271BFF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Routing.Abstractions", "src\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj", "{DEED8B59-B811-471F-936A-D8D71AA97CE1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routing.Abstractions", "src\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj", "{DEED8B59-B811-471F-936A-D8D71AA97CE1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SignalR.Common", "SignalR.Common", "{DF5E3AC1-94B3-4B8A-B534-9D30924A8E6B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Common", "src\SignalR\common\SignalR.Common\src\Microsoft.AspNetCore.SignalR.Common.csproj", "{B2660D8F-8990-46C7-9B41-F3F94C6402F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Common", "src\SignalR\common\SignalR.Common\src\Microsoft.AspNetCore.SignalR.Common.csproj", "{B2660D8F-8990-46C7-9B41-F3F94C6402F6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{4F99BF26-E900-487C-828F-145166926DE2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Core", "src\SignalR\server\Core\src\Microsoft.AspNetCore.SignalR.Core.csproj", "{31E763AD-996E-44EF-A70E-1B8187922C98}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Core", "src\SignalR\server\Core\src\Microsoft.AspNetCore.SignalR.Core.csproj", "{31E763AD-996E-44EF-A70E-1B8187922C98}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Protocols.Json", "Protocols.Json", "{989F2C7A-807F-41DA-AA5F-08147E8FF433}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Protocols.Json", "src\SignalR\common\Protocols.Json\src\Microsoft.AspNetCore.SignalR.Protocols.Json.csproj", "{3974EB1C-077A-4A79-B295-87B62446C266}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Protocols.Json", "src\SignalR\common\Protocols.Json\src\Microsoft.AspNetCore.SignalR.Protocols.Json.csproj", "{3974EB1C-077A-4A79-B295-87B62446C266}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StaticFiles", "StaticFiles", "{9AA5D0E4-B341-4570-B3E4-081E6653471D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.StaticFiles", "src\Middleware\StaticFiles\src\Microsoft.AspNetCore.StaticFiles.csproj", "{CE49768E-1D4C-4724-9D35-1D0F73E49C9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.StaticFiles", "src\Middleware\StaticFiles\src\Microsoft.AspNetCore.StaticFiles.csproj", "{CE49768E-1D4C-4724-9D35-1D0F73E49C9D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSockets", "WebSockets", "{B7ED4805-AD3E-4D76-BC5B-700A31488493}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.WebSockets", "src\Middleware\WebSockets\src\Microsoft.AspNetCore.WebSockets.csproj", "{AB3A72FB-5DF6-4F95-BAA8-19CF5BC97760}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebSockets", "src\Middleware\WebSockets\src\Microsoft.AspNetCore.WebSockets.csproj", "{AB3A72FB-5DF6-4F95-BAA8-19CF5BC97760}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebUtilities", "WebUtilities", "{BF4B36D6-D1FA-41A3-9CB3-2E1D2894E2AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.WebUtilities", "src\Http\WebUtilities\src\Microsoft.AspNetCore.WebUtilities.csproj", "{06492CD6-4C51-41F3-9D1A-0A95F914F871}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebUtilities", "src\Http\WebUtilities\src\Microsoft.AspNetCore.WebUtilities.csproj", "{06492CD6-4C51-41F3-9D1A-0A95F914F871}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Headers", "Headers", "{C59FBB3C-3A7F-4744-A823-1EB92C5B23A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Net.Http.Headers", "src\Http\Headers\src\Microsoft.Net.Http.Headers.csproj", "{62BE5BF4-24BB-4013-ACE8-3D76521FA77C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Net.Http.Headers", "src\Http\Headers\src\Microsoft.Net.Http.Headers.csproj", "{62BE5BF4-24BB-4013-ACE8-3D76521FA77C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Analyzers", "Analyzers", "{7321E95C-0A37-45BD-B458-1BA4412A14AC}"
 EndProject
@@ -275,21 +275,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Kestrel", "Kestrel", "{4FDD
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Kestrel", "Kestrel", "{89472057-8BB2-44A8-B0FC-D9F3ADB1181C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.Kestrel", "src\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj", "{D40C86C9-0E5D-4974-84D8-A835B58B2A8F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel", "src\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj", "{D40C86C9-0E5D-4974-84D8-A835B58B2A8F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{D69B5668-86EF-4CC5-814B-113BAF740DD0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.Kestrel.Core", "src\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj", "{0674F69B-FAC8-43E5-8711-A476936F459F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Core", "src\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj", "{0674F69B-FAC8-43E5-8711-A476936F459F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HttpsPolicy", "HttpsPolicy", "{D9403AE4-77D1-44DE-8785-280C342D215A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.HttpsPolicy", "src\Middleware\HttpsPolicy\src\Microsoft.AspNetCore.HttpsPolicy.csproj", "{5DEF52C0-B440-4DAC-8A2D-920C7016C580}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpsPolicy", "src\Middleware\HttpsPolicy\src\Microsoft.AspNetCore.HttpsPolicy.csproj", "{5DEF52C0-B440-4DAC-8A2D-920C7016C580}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IIS", "IIS", "{D67E977E-75DF-41EE-8315-6DBF5C2B7357}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IISIntegration", "IISIntegration", "{EE74FCEC-542A-4B66-B0A9-49B28049C203}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.IISIntegration", "src\Servers\IIS\IISIntegration\src\Microsoft.AspNetCore.Server.IISIntegration.csproj", "{737D2BC0-092E-404B-BB73-EACAEDBF0E65}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IISIntegration", "src\Servers\IIS\IISIntegration\src\Microsoft.AspNetCore.Server.IISIntegration.csproj", "{737D2BC0-092E-404B-BB73-EACAEDBF0E65}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", "{7004082D-53E9-45C2-B2DE-EB3CE448B64F}"
 EndProject
@@ -317,7 +317,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAppServicesSample", "s
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosting", "Hosting", "{68C2D913-06D4-4EAC-9283-78465BF214E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Hosting", "src\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj", "{D2CA01D0-954A-4F90-AF9B-F081DA9F40E3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting", "src\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj", "{D2CA01D0-954A-4F90-AF9B-F081DA9F40E3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server.IntegrationTesting", "Server.IntegrationTesting", "{F4B3C10B-F713-45D1-84EF-DD503BA09D20}"
 EndProject
@@ -353,97 +353,97 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authen
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Analyzers", "Analyzers", "{A274799D-3D1F-4AE5-A154-4BF6C80A8D94}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.Analyzers", "src\Components\Analyzers\src\Microsoft.AspNetCore.Components.Analyzers.csproj", "{D5DF181B-E759-4797-ABAF-0BFDEC2A883D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Analyzers", "src\Components\Analyzers\src\Microsoft.AspNetCore.Components.Analyzers.csproj", "{D5DF181B-E759-4797-ABAF-0BFDEC2A883D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.Analyzers.Tests", "src\Components\Analyzers\test\Microsoft.AspNetCore.Components.Analyzers.Tests.csproj", "{7B382EC7-57B6-4C0C-8B27-5F63B5184193}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Analyzers.Tests", "src\Components\Analyzers\test\Microsoft.AspNetCore.Components.Analyzers.Tests.csproj", "{7B382EC7-57B6-4C0C-8B27-5F63B5184193}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebAssembly", "WebAssembly", "{562D5067-8CD8-4F19-BCBB-873204932C61}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebAssembly", "WebAssembly", "{58FFC6CE-5958-460C-A520-32CF3FD0BE61}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.WebAssembly", "src\Components\WebAssembly\WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj", "{DE6F167E-F41C-414D-923E-8E51E992A830}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly", "src\Components\WebAssembly\WebAssembly\src\Microsoft.AspNetCore.Components.WebAssembly.csproj", "{DE6F167E-F41C-414D-923E-8E51E992A830}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.WebAssembly.Tests", "src\Components\WebAssembly\WebAssembly\test\Microsoft.AspNetCore.Components.WebAssembly.Tests.csproj", "{839C479D-64DC-4A59-85E4-04E5A2CC9631}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.Tests", "src\Components\WebAssembly\WebAssembly\test\Microsoft.AspNetCore.Components.WebAssembly.Tests.csproj", "{839C479D-64DC-4A59-85E4-04E5A2CC9631}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DevServer", "DevServer", "{26196065-4F78-435E-B500-2967A63D277D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.WebAssembly.DevServer", "src\Components\WebAssembly\DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj", "{ADB4912C-BCD5-400F-BD20-37410BA76EF8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.DevServer", "src\Components\WebAssembly\DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj", "{ADB4912C-BCD5-400F-BD20-37410BA76EF8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{13683DEB-FB7E-4F20-ACB2-015381943541}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.WebAssembly.Server", "src\Components\WebAssembly\Server\src\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj", "{1721A1A3-D8A0-4CEE-A11D-4D168F93F0D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.Server", "src\Components\WebAssembly\Server\src\Microsoft.AspNetCore.Components.WebAssembly.Server.csproj", "{1721A1A3-D8A0-4CEE-A11D-4D168F93F0D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.Performance", "src\Components\Components\perf\Microsoft.AspNetCore.Components.Performance.csproj", "{4510DA15-69F3-411E-86F2-7AD04FFB9823}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Performance", "src\Components\Components\perf\Microsoft.AspNetCore.Components.Performance.csproj", "{4510DA15-69F3-411E-86F2-7AD04FFB9823}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.Tests", "src\Components\Components\test\Microsoft.AspNetCore.Components.Tests.csproj", "{B46A45E2-27E8-4C85-920B-1BFF45B7EBEB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Tests", "src\Components\Components\test\Microsoft.AspNetCore.Components.Tests.csproj", "{B46A45E2-27E8-4C85-920B-1BFF45B7EBEB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.Server.Tests", "src\Components\Server\test\Microsoft.AspNetCore.Components.Server.Tests.csproj", "{6CBF1AA9-1073-4A97-B867-FB534C6829C1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Server.Tests", "src\Components\Server\test\Microsoft.AspNetCore.Components.Server.Tests.csproj", "{6CBF1AA9-1073-4A97-B867-FB534C6829C1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0508E463-0269-40C9-B5C2-3B600FB2A28B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.E2ETests", "src\Components\test\E2ETest\Microsoft.AspNetCore.Components.E2ETests.csproj", "{A71B95EE-1BFF-49BA-BA5F-121EFAE41667}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.E2ETests", "src\Components\test\E2ETest\Microsoft.AspNetCore.Components.E2ETests.csproj", "{A71B95EE-1BFF-49BA-BA5F-121EFAE41667}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DefaultBuilder", "DefaultBuilder", "{881FE4C3-1553-4CA1-B430-DDD37B3493AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore", "src\DefaultBuilder\src\Microsoft.AspNetCore.csproj", "{DAAB40E7-73DD-4BF1-BCB7-FE3E20F2F7C1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore", "src\DefaultBuilder\src\Microsoft.AspNetCore.csproj", "{DAAB40E7-73DD-4BF1-BCB7-FE3E20F2F7C1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagnostics", "Diagnostics", "{DE5C0805-1C4A-4C70-B613-89EE2EA0B757}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics", "src\Middleware\Diagnostics\src\Microsoft.AspNetCore.Diagnostics.csproj", "{FB86B2B2-60B2-477A-9D78-2530A0089660}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics", "src\Middleware\Diagnostics\src\Microsoft.AspNetCore.Diagnostics.csproj", "{FB86B2B2-60B2-477A-9D78-2530A0089660}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HostFiltering", "HostFiltering", "{58915BB2-CEF5-4CA3-8886-A61156564505}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.HostFiltering", "src\Middleware\HostFiltering\src\Microsoft.AspNetCore.HostFiltering.csproj", "{7FC5CFC7-9BFE-4C19-90DE-A84A76A8E03D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HostFiltering", "src\Middleware\HostFiltering\src\Microsoft.AspNetCore.HostFiltering.csproj", "{7FC5CFC7-9BFE-4C19-90DE-A84A76A8E03D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HttpOverrides", "HttpOverrides", "{39086512-EBC8-4061-BE34-DCCA5D1BA585}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.HttpOverrides", "src\Middleware\HttpOverrides\src\Microsoft.AspNetCore.HttpOverrides.csproj", "{34F24889-22D2-40A1-A2AB-A43B9061FE0D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpOverrides", "src\Middleware\HttpOverrides\src\Microsoft.AspNetCore.HttpOverrides.csproj", "{34F24889-22D2-40A1-A2AB-A43B9061FE0D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NodeServices", "NodeServices", "{ED90A0D9-867B-4212-846F-3E09D60A5B7E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.NodeServices", "src\Middleware\NodeServices\src\Microsoft.AspNetCore.NodeServices.csproj", "{C68A3531-E47A-4F2F-842E-4A3A7C844CC1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.NodeServices", "src\Middleware\NodeServices\src\Microsoft.AspNetCore.NodeServices.csproj", "{C68A3531-E47A-4F2F-842E-4A3A7C844CC1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ResponseCompression", "ResponseCompression", "{512EFCA7-1590-492A-8D06-84744F79DA91}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.ResponseCompression", "src\Middleware\ResponseCompression\src\Microsoft.AspNetCore.ResponseCompression.csproj", "{CC783D3A-71CB-4DFD-9769-9EC7EF1ADF1B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ResponseCompression", "src\Middleware\ResponseCompression\src\Microsoft.AspNetCore.ResponseCompression.csproj", "{CC783D3A-71CB-4DFD-9769-9EC7EF1ADF1B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SpaServices.Extensions", "SpaServices.Extensions", "{B06D06BD-DE60-46E8-AC05-0C1D39E40638}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SpaServices.Extensions", "src\Middleware\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj", "{566B6729-63FF-484D-8F47-91561D76F445}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaServices.Extensions", "src\Middleware\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj", "{566B6729-63FF-484D-8F47-91561D76F445}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SpaServices", "SpaServices", "{1EBEF6FF-4A0D-4668-A9F3-74587ECAC969}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SpaServices", "src\Middleware\SpaServices\src\Microsoft.AspNetCore.SpaServices.csproj", "{797B9228-5BC9-4C0C-B444-C490A98D057E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaServices", "src\Middleware\SpaServices\src\Microsoft.AspNetCore.SpaServices.csproj", "{797B9228-5BC9-4C0C-B444-C490A98D057E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.Analyzers", "Mvc.Analyzers", "{515282B6-6EF9-46E0-8EF1-DBD1CD948D9E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Analyzers", "src\Mvc\Mvc.Analyzers\src\Microsoft.AspNetCore.Mvc.Analyzers.csproj", "{02A85F31-A092-4322-A3D9-91E894D9ECD2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Analyzers", "src\Mvc\Mvc.Analyzers\src\Microsoft.AspNetCore.Mvc.Analyzers.csproj", "{02A85F31-A092-4322-A3D9-91E894D9ECD2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IIS", "IIS", "{33CAD745-5912-47D3-BAF3-5AE580FED275}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.IIS", "src\Servers\IIS\IIS\src\Microsoft.AspNetCore.Server.IIS.csproj", "{9E01AF6A-F748-4490-B45B-8558D1E701B4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IIS", "src\Servers\IIS\IIS\src\Microsoft.AspNetCore.Server.IIS.csproj", "{9E01AF6A-F748-4490-B45B-8558D1E701B4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Transport.Sockets", "Transport.Sockets", "{94174359-D57E-467E-8AC7-167A10260F34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets", "src\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj", "{94F7E7AE-4AEF-44EC-B9F2-ABD1A5AC9E4A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets", "src\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj", "{94F7E7AE-4AEF-44EC-B9F2-ABD1A5AC9E4A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Protocols.MessagePack", "Protocols.MessagePack", "{B4B39C18-70F5-4C07-9871-4E124F63F1F7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Protocols.MessagePack", "src\SignalR\common\Protocols.MessagePack\src\Microsoft.AspNetCore.SignalR.Protocols.MessagePack.csproj", "{B2D225EF-BE70-4FA0-B631-0A4D24DB7BD7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Protocols.MessagePack", "src\SignalR\common\Protocols.MessagePack\src\Microsoft.AspNetCore.SignalR.Protocols.MessagePack.csproj", "{B2D225EF-BE70-4FA0-B631-0A4D24DB7BD7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Protocols.NewtonsoftJson", "Protocols.NewtonsoftJson", "{01EED30B-3DC5-4591-A4C2-B17C6D36B1DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson", "src\SignalR\common\Protocols.NewtonsoftJson\src\Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson.csproj", "{EDFF668F-1DB2-4EC7-BB6F-9DDBF70437CB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson", "src\SignalR\common\Protocols.NewtonsoftJson\src\Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson.csproj", "{EDFF668F-1DB2-4EC7-BB6F-9DDBF70437CB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.NewtonsoftJson", "Mvc.NewtonsoftJson", "{4B6BA2CC-8DE7-4070-A912-D51375998553}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.NewtonsoftJson", "src\Mvc\Mvc.NewtonsoftJson\src\Microsoft.AspNetCore.Mvc.NewtonsoftJson.csproj", "{18FCF9CD-8545-41FC-9E4B-0F18B593863D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.NewtonsoftJson", "src\Mvc\Mvc.NewtonsoftJson\src\Microsoft.AspNetCore.Mvc.NewtonsoftJson.csproj", "{18FCF9CD-8545-41FC-9E4B-0F18B593863D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Features", "Features", "{F94AF7F5-7DB1-4716-B4B5-A7DAB066AF2F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JsonPatch", "JsonPatch", "{5FF36127-063D-4D3E-9429-3BFD32713FEE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.JsonPatch", "src\Features\JsonPatch\src\Microsoft.AspNetCore.JsonPatch.csproj", "{5BFA4A13-895A-4680-BCC6-3BDA8F048A29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.JsonPatch", "src\Features\JsonPatch\src\Microsoft.AspNetCore.JsonPatch.csproj", "{5BFA4A13-895A-4680-BCC6-3BDA8F048A29}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "clients", "clients", "{0338EC37-E5AD-47DA-9502-24A5F7433ADE}"
 EndProject
@@ -451,73 +451,73 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "csharp", "csharp", "{2637A2
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client", "Client", "{A6D39EEA-CC08-4ECF-BD2E-134D845876FB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Client", "src\SignalR\clients\csharp\Client\src\Microsoft.AspNetCore.SignalR.Client.csproj", "{95F132DA-D9B6-4181-8D1B-A58D935B1827}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Client", "src\SignalR\clients\csharp\Client\src\Microsoft.AspNetCore.SignalR.Client.csproj", "{95F132DA-D9B6-4181-8D1B-A58D935B1827}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Client.Core", "Client.Core", "{85EFA9E2-A041-438B-BAF9-928C74571141}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Client.Core", "src\SignalR\clients\csharp\Client.Core\src\Microsoft.AspNetCore.SignalR.Client.Core.csproj", "{9443F095-DA20-4EED-BC97-5BF92470D972}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Client.Core", "src\SignalR\clients\csharp\Client.Core\src\Microsoft.AspNetCore.SignalR.Client.Core.csproj", "{9443F095-DA20-4EED-BC97-5BF92470D972}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Http.Connections.Client", "Http.Connections.Client", "{EA798F59-BCF8-4013-AF6B-9611FDC9919C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Connections.Client", "src\SignalR\clients\csharp\Http.Connections.Client\src\Microsoft.AspNetCore.Http.Connections.Client.csproj", "{C10C8A03-9ECC-4CDC-9D8E-9E0FDF12E4EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Connections.Client", "src\SignalR\clients\csharp\Http.Connections.Client\src\Microsoft.AspNetCore.Http.Connections.Client.csproj", "{C10C8A03-9ECC-4CDC-9D8E-9E0FDF12E4EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.Web.Tests", "src\Components\Web\test\Microsoft.AspNetCore.Components.Web.Tests.csproj", "{9EA5219C-3C11-45D4-BD43-8BE05FB2812A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Web.Tests", "src\Components\Web\test\Microsoft.AspNetCore.Components.Web.Tests.csproj", "{9EA5219C-3C11-45D4-BD43-8BE05FB2812A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Authorization", "Authorization", "{9DF052F3-D239-4BB5-B41E-DA93A086B4F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.Authorization", "src\Components\Authorization\src\Microsoft.AspNetCore.Components.Authorization.csproj", "{CBA2A020-E44D-4AFF-ADB8-E6414E7EAD94}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Authorization", "src\Components\Authorization\src\Microsoft.AspNetCore.Components.Authorization.csproj", "{CBA2A020-E44D-4AFF-ADB8-E6414E7EAD94}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.Authorization.Tests", "src\Components\Authorization\test\Microsoft.AspNetCore.Components.Authorization.Tests.csproj", "{418848BA-83AE-49E4-9EEC-7AFB5591D8E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Authorization.Tests", "src\Components\Authorization\test\Microsoft.AspNetCore.Components.Authorization.Tests.csproj", "{418848BA-83AE-49E4-9EEC-7AFB5591D8E8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Forms", "Forms", "{59ECEDFE-72E7-495D-BECB-784B0018544E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.Forms", "src\Components\Forms\src\Microsoft.AspNetCore.Components.Forms.csproj", "{61F6B56C-0764-4585-9C3F-63A0CF05E56E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Forms", "src\Components\Forms\src\Microsoft.AspNetCore.Components.Forms.csproj", "{61F6B56C-0764-4585-9C3F-63A0CF05E56E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.Forms.Tests", "src\Components\Forms\test\Microsoft.AspNetCore.Components.Forms.Tests.csproj", "{60B11F05-CA3B-4AD1-BAC1-912C19D37395}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Forms.Tests", "src\Components\Forms\test\Microsoft.AspNetCore.Components.Forms.Tests.csproj", "{60B11F05-CA3B-4AD1-BAC1-912C19D37395}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{5FE1FBC1-8CE3-4355-9866-44FE1307C5F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorServerApp", "src\Components\Samples\BlazorServerApp\BlazorServerApp.csproj", "{8DE6625B-C9E4-4949-A75C-89E3FF556724}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorServerApp", "src\Components\Samples\BlazorServerApp\BlazorServerApp.csproj", "{8DE6625B-C9E4-4949-A75C-89E3FF556724}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Ignitor", "Ignitor", "{9E6FF2AC-6424-49A5-8189-623FFB2A9B4C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ignitor", "src\Components\Ignitor\src\Ignitor.csproj", "{BE5D6903-34B9-4C29-85A2-811A7EA06DAF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ignitor", "src\Components\Ignitor\src\Ignitor.csproj", "{BE5D6903-34B9-4C29-85A2-811A7EA06DAF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ignitor.Test", "src\Components\Ignitor\test\Ignitor.Test.csproj", "{F3F89B56-66A9-4EBC-8658-80785827237E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ignitor.Test", "src\Components\Ignitor\test\Ignitor.Test.csproj", "{F3F89B56-66A9-4EBC-8658-80785827237E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarkapps", "benchmarkapps", "{0CE1CC26-98CE-4022-A81C-E32AAFC9B819}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Wasm.Performance", "Wasm.Performance", "{6276A9A0-791B-49C1-AD8F-50AC47CDC196}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wasm.Performance.Driver", "src\Components\benchmarkapps\Wasm.Performance\Driver\Wasm.Performance.Driver.csproj", "{B81C7FA1-870F-4F21-A928-A5BE18754E6E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wasm.Performance.Driver", "src\Components\benchmarkapps\Wasm.Performance\Driver\Wasm.Performance.Driver.csproj", "{B81C7FA1-870F-4F21-A928-A5BE18754E6E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wasm.Performance.TestApp", "src\Components\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj", "{2AEACF69-7F68-414A-B49D-2C627D37D0F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wasm.Performance.TestApp", "src\Components\benchmarkapps\Wasm.Performance\TestApp\Wasm.Performance.TestApp.csproj", "{2AEACF69-7F68-414A-B49D-2C627D37D0F6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.WebAssembly.Server.Tests", "src\Components\WebAssembly\Server\test\Microsoft.AspNetCore.Components.WebAssembly.Server.Tests.csproj", "{0C610220-E00C-4752-98A0-44A3D4B96A21}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.Server.Tests", "src\Components\WebAssembly\Server\test\Microsoft.AspNetCore.Components.WebAssembly.Server.Tests.csproj", "{0C610220-E00C-4752-98A0-44A3D4B96A21}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Authentication.Msal", "Authentication.Msal", "{1FD5F261-6384-4AE1-A6DA-4D08A0BCE1CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Authentication.WebAssembly.Msal", "src\Components\WebAssembly\Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj", "{09F72EF0-2BDE-4B73-B116-A87E38C432FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Authentication.WebAssembly.Msal", "src\Components\WebAssembly\Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj", "{09F72EF0-2BDE-4B73-B116-A87E38C432FE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DebugProxy", "DebugProxy", "{F01E5B0D-1277-481D-8879-41A87F3F9524}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.WebAssembly.DebugProxy", "src\Components\WebAssembly\DebugProxy\src\Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.csproj", "{67F51062-6897-4019-AA88-6BDB5E30B015}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.DebugProxy", "src\Components\WebAssembly\DebugProxy\src\Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.csproj", "{67F51062-6897-4019-AA88-6BDB5E30B015}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JSInterop", "JSInterop", "{44161B20-CC30-403A-AC94-247592ED7590}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.JSInterop.WebAssembly", "src\Components\WebAssembly\JSInterop\src\Microsoft.JSInterop.WebAssembly.csproj", "{E0B1F2AA-4EBA-4DC7-92D5-2F081354C8DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.JSInterop.WebAssembly", "src\Components\WebAssembly\JSInterop\src\Microsoft.JSInterop.WebAssembly.csproj", "{E0B1F2AA-4EBA-4DC7-92D5-2F081354C8DE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebAssembly.Authentication", "WebAssembly.Authentication", "{E33C36A1-481C-4A93-BCBE-22CCBA53349B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.WebAssembly.Authentication", "src\Components\WebAssembly\WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj", "{E167A806-EEFA-4BCF-A14D-D985BAEA9387}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.Authentication", "src\Components\WebAssembly\WebAssembly.Authentication\src\Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj", "{E167A806-EEFA-4BCF-A14D-D985BAEA9387}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Components.WebAssembly.Authentication.Tests", "src\Components\WebAssembly\WebAssembly.Authentication\test\Microsoft.AspNetCore.Components.WebAssembly.Authentication.Tests.csproj", "{15A90CE7-886D-4005-8C14-CF29123344E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.Authentication.Tests", "src\Components\WebAssembly\WebAssembly.Authentication\test\Microsoft.AspNetCore.Components.WebAssembly.Authentication.Tests.csproj", "{15A90CE7-886D-4005-8C14-CF29123344E1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JSInterop", "JSInterop", "{E50C2015-42A4-4E71-94B9-62773D369FEE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.JSInterop", "Microsoft.JSInterop", "{16898702-3E33-41C1-B8D8-4CE3F1D46BD9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.JSInterop", "src\JSInterop\Microsoft.JSInterop\src\Microsoft.JSInterop.csproj", "{70B719CD-C70E-4417-B1EE-FD24B5AFB0B7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.JSInterop", "src\JSInterop\Microsoft.JSInterop\src\Microsoft.JSInterop.csproj", "{70B719CD-C70E-4417-B1EE-FD24B5AFB0B7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.Abstractions.Tests", "src\DataProtection\Abstractions\test\Microsoft.AspNetCore.DataProtection.Abstractions.Tests.csproj", "{552EB148-0518-41A6-905D-4696A6438E80}"
 EndProject
@@ -1421,6 +1421,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerComparison.Functional
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Testing.Tests", "src\Testing\test\Microsoft.AspNetCore.Testing.Tests.csproj", "{1542DC58-1836-4191-A9C5-51D1716D2543}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web.Extensions", "Web.Extensions", "{F71FE795-9923-461B-9809-BB1821A276D0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Web.Extensions", "src\Components\Web.Extensions\src\Microsoft.AspNetCore.Components.Web.Extensions.csproj", "{8294A74F-7DAA-4B69-BC56-7634D93C9693}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Web.Extensions.Tests", "src\Components\Web.Extensions\test\Microsoft.AspNetCore.Components.Web.Extensions.Tests.csproj", "{157605CB-5170-4C1A-980F-4BAE42DB60DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1429,9 +1435,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{03C2290A-1C48-489A-81DB-F3447B0DA595}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -6702,6 +6705,33 @@ Global
 		{1542DC58-1836-4191-A9C5-51D1716D2543}.Release|x64.Build.0 = Release|Any CPU
 		{1542DC58-1836-4191-A9C5-51D1716D2543}.Release|x86.ActiveCfg = Release|Any CPU
 		{1542DC58-1836-4191-A9C5-51D1716D2543}.Release|x86.Build.0 = Release|Any CPU
+		{8294A74F-7DAA-4B69-BC56-7634D93C9693}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8294A74F-7DAA-4B69-BC56-7634D93C9693}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8294A74F-7DAA-4B69-BC56-7634D93C9693}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8294A74F-7DAA-4B69-BC56-7634D93C9693}.Debug|x64.Build.0 = Debug|Any CPU
+		{8294A74F-7DAA-4B69-BC56-7634D93C9693}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8294A74F-7DAA-4B69-BC56-7634D93C9693}.Debug|x86.Build.0 = Debug|Any CPU
+		{8294A74F-7DAA-4B69-BC56-7634D93C9693}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8294A74F-7DAA-4B69-BC56-7634D93C9693}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8294A74F-7DAA-4B69-BC56-7634D93C9693}.Release|x64.ActiveCfg = Release|Any CPU
+		{8294A74F-7DAA-4B69-BC56-7634D93C9693}.Release|x64.Build.0 = Release|Any CPU
+		{8294A74F-7DAA-4B69-BC56-7634D93C9693}.Release|x86.ActiveCfg = Release|Any CPU
+		{8294A74F-7DAA-4B69-BC56-7634D93C9693}.Release|x86.Build.0 = Release|Any CPU
+		{157605CB-5170-4C1A-980F-4BAE42DB60DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{157605CB-5170-4C1A-980F-4BAE42DB60DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{157605CB-5170-4C1A-980F-4BAE42DB60DE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{157605CB-5170-4C1A-980F-4BAE42DB60DE}.Debug|x64.Build.0 = Debug|Any CPU
+		{157605CB-5170-4C1A-980F-4BAE42DB60DE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{157605CB-5170-4C1A-980F-4BAE42DB60DE}.Debug|x86.Build.0 = Debug|Any CPU
+		{157605CB-5170-4C1A-980F-4BAE42DB60DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{157605CB-5170-4C1A-980F-4BAE42DB60DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{157605CB-5170-4C1A-980F-4BAE42DB60DE}.Release|x64.ActiveCfg = Release|Any CPU
+		{157605CB-5170-4C1A-980F-4BAE42DB60DE}.Release|x64.Build.0 = Release|Any CPU
+		{157605CB-5170-4C1A-980F-4BAE42DB60DE}.Release|x86.ActiveCfg = Release|Any CPU
+		{157605CB-5170-4C1A-980F-4BAE42DB60DE}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0F84F170-57D0-496B-8E2C-7984178EF69F} = {C28A32F6-8314-412E-9F3B-CBD31C23E878}
@@ -7411,5 +7441,11 @@ Global
 		{3CBC4802-E9B8-48B7-BC8C-B0AFB9EEC643} = {0ACCEDA7-339C-4B4D-8DD4-1AC271F31C04}
 		{48E64014-B249-4644-8AEB-CDEE8ABA0DC2} = {3CBC4802-E9B8-48B7-BC8C-B0AFB9EEC643}
 		{1542DC58-1836-4191-A9C5-51D1716D2543} = {05A169C7-4F20-4516-B10A-B13C5649D346}
+		{F71FE795-9923-461B-9809-BB1821A276D0} = {60D51C98-2CC0-40DF-B338-44154EFEE2FF}
+		{8294A74F-7DAA-4B69-BC56-7634D93C9693} = {F71FE795-9923-461B-9809-BB1821A276D0}
+		{157605CB-5170-4C1A-980F-4BAE42DB60DE} = {F71FE795-9923-461B-9809-BB1821A276D0}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}
 	EndGlobalSection
 EndGlobal

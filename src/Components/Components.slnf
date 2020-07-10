@@ -100,6 +100,8 @@
       "src\\Components\\test\\testassets\\ComponentsApp.Server\\ComponentsApp.Server.csproj",
       "src\\Components\\benchmarkapps\\Wasm.Performance\\Driver\\Wasm.Performance.Driver.csproj",
       "src\\Components\\benchmarkapps\\Wasm.Performance\\TestApp\\Wasm.Performance.TestApp.csproj",
+      "src\\Components\\Web.Extensions\\src\\Microsoft.AspNetCore.Components.Web.Extensions.csproj",
+      "src\\Components\\Web.Extensions\\test\\Microsoft.AspNetCore.Components.Web.Extensions.Tests.csproj",
       "src\\Components\\WebAssembly\\Server\\test\\Microsoft.AspNetCore.Components.WebAssembly.Server.Tests.csproj",
       "src\\Components\\WebAssembly\\Authentication.Msal\\src\\Microsoft.Authentication.WebAssembly.Msal.csproj",
       "src\\Components\\WebAssembly\\DebugProxy\\src\\Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.csproj",
