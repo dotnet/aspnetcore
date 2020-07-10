@@ -96,10 +96,10 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
         private void EnqueueTask(Func<Task> task)
         {
-            // Add a new TCS for the current acquisition.
+            // Create a new TCS for the enqueued task.
             var tcs = new TaskCompletionSource();
 
-            // Define the pipeline to be run when the semaphore unblocks.
+            // Define the pipeline to be run when the task gets dequeued.
             tcs.Task.ContinueWith(t => task.Invoke().ContinueWith(t => _semaphore.Release()));
 
             // Reserve the task's position in the queue.

@@ -28,6 +28,12 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         public string? HttpEquiv { get; set; }
 
         /// <summary>
+        /// Gets or sets the "property" attribute of the HTML meta tag.
+        /// </summary>
+        [Parameter]
+        public string? Property { get; set; }
+
+        /// <summary>
         /// Gets or sets the "content" attribute of the HTML meta tag.
         /// </summary>
         [Parameter]
@@ -70,10 +76,11 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         }
 
         private MetaElementKey GetKey()
-            => (Name, HttpEquiv) switch
+            => (Name, HttpEquiv, Property) switch
             {
-                (string name, null) => new MetaElementKey("name", name),
-                (null, string httpEquiv) => new MetaElementKey("http-equiv", httpEquiv),
+                (string name, null, null) => new MetaElementKey("name", name),
+                (null, string httpEquiv, null) => new MetaElementKey("http-equiv", httpEquiv),
+                (null, null, string property) => new MetaElementKey("property", property),
                 _ => throw new InvalidOperationException(
                     $"{GetType()} parameters must contain exactly one of {nameof(Name)} or {nameof(HttpEquiv)}.")
             };
