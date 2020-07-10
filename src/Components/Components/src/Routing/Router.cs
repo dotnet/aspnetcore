@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         static readonly ReadOnlyDictionary<string, object> _emptyParametersDictionary
             = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>());
 
-        internal RenderHandle _renderHandle { get; set; }
+        RenderHandle _renderHandle;
         string _baseUri;
         string _locationAbsolute;
         bool _navigationInterceptionEnabled;
@@ -31,11 +31,13 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private CancellationTokenSource _onNavigateCts;
 
+        private Task _previousOnNavigateTask = Task.CompletedTask;
+
         private readonly HashSet<Assembly> _assemblies = new HashSet<Assembly>();
 
         private bool _onNavigateCalled = false;
 
-        [Inject] internal NavigationManager NavigationManager { get; set; }
+        [Inject] private NavigationManager NavigationManager { get; set; }
 
         [Inject] private INavigationInterception NavigationInterception { get; set; }
 
@@ -72,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// </summary>
         [Parameter] public EventCallback<NavigationContext> OnNavigateAsync { get; set; }
 
-        internal RouteTable Routes { get; set; }
+        private RouteTable Routes { get; set; }
 
         /// <inheritdoc />
         public void Attach(RenderHandle renderHandle)
@@ -109,18 +111,14 @@ namespace Microsoft.AspNetCore.Components.Routing
                 throw new InvalidOperationException($"The {nameof(Router)} component requires a value for the parameter {nameof(NotFound)}.");
             }
 
-            var shouldRefresh = true;
             if (!_onNavigateCalled)
             {
                 _onNavigateCalled = true;
-                shouldRefresh = await RunOnNavigateAsync(NavigationManager.ToBaseRelativePath(_locationAbsolute));
+                await RunOnNavigateWithRefreshAsync(NavigationManager.ToBaseRelativePath(_locationAbsolute), isNavigationIntercepted: false);
+                return;
             }
 
-            if (shouldRefresh)
-            {
-                Refresh(isNavigationIntercepted: false);
-            }
-
+            Refresh(isNavigationIntercepted: false);
         }
 
         /// <inheritdoc />
@@ -151,7 +149,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         }
 
-        private void Refresh(bool isNavigationIntercepted)
+        internal virtual void Refresh(bool isNavigationIntercepted)
         {
             RefreshRouteTable();
 
@@ -194,7 +192,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
         }
 
-        internal async Task<bool> RunOnNavigateAsync(string path)
+        private async ValueTask<bool> RunOnNavigateAsync(string path, Task prevOnNavigate)
         {
             // If this router instance does not provide an OnNavigateAsync parameter
             // then we render the component associated with the route as per usual.
@@ -204,8 +202,11 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
 
             // If we've already invoked a task and stored its CTS, then
-            // cancel the existing task.
+            // cancel that existing task.
             _onNavigateCts?.Cancel();
+            // Then make sure that the task has been completed cancelled or
+            // completed before continuing with the execution of this current task.
+            await prevOnNavigate;
 
             // Create a new cancellation token source for this instance
             _onNavigateCts = new CancellationTokenSource();
@@ -229,16 +230,31 @@ namespace Microsoft.AspNetCore.Components.Routing
             return task == completedTask;
         }
 
-        private async Task RunOnNavigateWithRefreshAsync(string path, bool isNavigationIntercepted)
+        internal async Task RunOnNavigateWithRefreshAsync(string path, bool isNavigationIntercepted)
         {
-            var shouldRefresh = await RunOnNavigateAsync(path);
-            if (shouldRefresh)
+            // We cache the Task representing the previously invoked RunOnNavigateWithRefreshAsync
+            // that is stored
+            var previousTask = _previousOnNavigateTask;
+            // Then we create a new one that represents our current invocation and store it
+            // globally for the next invocation.
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _previousOnNavigateTask = tcs.Task;
+            try
             {
-                Refresh(isNavigationIntercepted);
+                // And pass an indicator for the previous task to the currently running one.
+                var shouldRefresh = await RunOnNavigateAsync(path, previousTask);
+                if (shouldRefresh)
+                {
+                    Refresh(isNavigationIntercepted);
+                }
+            }
+            finally
+            {
+                tcs.SetResult();
             }
         }
 
-        internal void OnLocationChanged(object sender, LocationChangedEventArgs args)
+        private void OnLocationChanged(object sender, LocationChangedEventArgs args)
         {
             _locationAbsolute = args.Location;
             if (_renderHandle.IsInitialized && Routes != null)

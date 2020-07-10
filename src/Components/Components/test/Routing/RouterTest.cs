@@ -4,11 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyModel;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test.Routing
@@ -16,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
     public class RouterTest
     {
         [Fact]
-        public void CanRunOnNavigateViaLocationChangeAsync()
+        public void CanRunOnNavigateAsync()
         {
             // Arrange
             var router = CreateMockRouter();
@@ -26,10 +29,10 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
                 await Task.CompletedTask;
                 called = true;
             }
-            router.OnNavigateAsync = new EventCallbackFactory().Create<NavigationContext>(router, OnNavigateAsync);
+            router.Object.OnNavigateAsync = new EventCallbackFactory().Create<NavigationContext>(router, OnNavigateAsync);
 
             // Act
-            router.OnLocationChanged(null, new LocationChangedEventArgs("http://example.com/jan", false));
+            router.Object.RunOnNavigateWithRefreshAsync("http://example.com/jan", false);
 
             // Assert
             Assert.True(called);
@@ -46,11 +49,11 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
                 await Task.CompletedTask;
                 args.CancellationToken.Register(() => cancelled = args.Path);
             };
-            router.OnNavigateAsync = new EventCallbackFactory().Create<NavigationContext>(router, OnNavigateAsync);
+            router.Object.OnNavigateAsync = new EventCallbackFactory().Create<NavigationContext>(router, OnNavigateAsync);
 
             // Act
-            router.OnLocationChanged(null, new LocationChangedEventArgs("http://example.com/jan", false));
-            router.OnLocationChanged(null, new LocationChangedEventArgs("http://example.com/feb", false));
+            router.Object.RunOnNavigateWithRefreshAsync("jan", false);
+            router.Object.RunOnNavigateWithRefreshAsync("feb", false);
 
             // Assert
             var expected = "jan";
@@ -58,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         }
 
         [Fact]
-        public async Task RefreshesOnceOnCancelledOnNavigateAsync()
+        public void RefreshesOnceOnCancelledOnNavigateAsync()
         {
             // Arrange
             var router = CreateMockRouter();
@@ -66,34 +69,23 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             {
                 if (args.Path.EndsWith("jan"))
                 {
-                    await Task.Delay(5000);
-                }
-                if (args.Path.EndsWith("feb"))
-                {
-                    await Task.CompletedTask;
+                    await Task.Delay(Timeout.Infinite);
                 }
             };
-            router.OnNavigateAsync = new EventCallbackFactory().Create<NavigationContext>(router, OnNavigateAsync);
+            router.Object.OnNavigateAsync = new EventCallbackFactory().Create<NavigationContext>(router, OnNavigateAsync);
 
             // Act
-            var janTask = router.RunOnNavigateAsync("jan");
-            var febTask = router.RunOnNavigateAsync("feb");
+            router.Object.RunOnNavigateWithRefreshAsync("jan", false);
+            router.Object.RunOnNavigateWithRefreshAsync("feb", false);
 
-            await janTask;
-            await febTask;
-
-            // Assert
-            Assert.False(janTask.Result);
-            Assert.True(febTask.Result);
+            // Assert refresh should've only been called once for the second route
+            router.Verify(x => x.Refresh(It.IsAny<bool>()), Times.Once());
         }
 
-        private Router CreateMockRouter()
+        private Mock<Router> CreateMockRouter()
         {
-            var router = new Router();
-            var renderer = new TestRenderer();
-            router._renderHandle = new RenderHandle(renderer, 0);
-            router.Routes = RouteTableFactory.Create(new[] { typeof(JanComponent), typeof(FebComponent) });
-            router.NavigationManager = new TestNavigationManager();
+            var router = new Mock<Router>() { CallBase = true };
+            router.Setup(x => x.Refresh(It.IsAny<bool>())).Verifiable();
             return router;
         }
 
@@ -102,23 +94,5 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
 
         [Route("feb")]
         private class FebComponent : ComponentBase { }
-
-        private class TestNavigationManager : NavigationManager
-        {
-            public TestNavigationManager()
-            {
-                Initialize("http://example.com/", "http://example.com/months");
-            }
-
-            public new void Initialize(string baseUri, string uri)
-            {
-                base.Initialize(baseUri, uri);
-            }
-
-            protected override void NavigateToCore(string uri, bool forceLoad)
-            {
-                throw new System.NotImplementedException();
-            }
-        }
     }
 }
