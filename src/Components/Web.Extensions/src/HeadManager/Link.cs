@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -27,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             return ValueTask.FromResult<object?>(null);
         }
 
-        internal override ValueTask ResetInitialStateAsync(object? initialState)
+        internal override ValueTask ResetStateAsync(object? initialState)
         {
             return HeadManager.DeleteLinkElementAsync(ElementKey.GetHashCode());
         }

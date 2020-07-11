@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
         internal abstract ValueTask<object?> GetInitialStateAsync();
 
-        internal abstract ValueTask ResetInitialStateAsync(object? initialState);
+        internal abstract ValueTask ResetStateAsync(object? initialState);
 
         internal abstract ValueTask ApplyAsync();
     }

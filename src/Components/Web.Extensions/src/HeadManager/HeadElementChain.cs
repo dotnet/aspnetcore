@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
     /// <summary>
     /// Tracks <see cref="HeadElementBase"/> instances whose effects override each other, organizes them
-    /// into a priority queue, and applies changes from the correct <see cref="HeadElementBase"/>.
+    /// into a priority list, and applies changes from the correct <see cref="HeadElementBase"/>.
     /// </summary>
     internal class HeadElementChain
     {
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             {
                 if (_priorityChain.Last == null)
                 {
-                    await discardedElement.ResetInitialStateAsync(_initialState);
+                    await discardedElement.ResetStateAsync(_initialState);
                     return true;
                 }
 

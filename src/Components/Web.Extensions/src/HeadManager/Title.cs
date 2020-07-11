@@ -23,14 +23,14 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             return await HeadManager.GetTitleAsync();
         }
 
-        internal override ValueTask ResetInitialStateAsync(object? initialState)
+        internal override ValueTask ResetStateAsync(object? initialState)
         {
             return HeadManager.SetTitleAsync(initialState);
         }
 
-        internal override async ValueTask ApplyAsync()
+        internal override ValueTask ApplyAsync()
         {
-            await HeadManager.SetTitleAsync(Value);
+            return HeadManager.SetTitleAsync(Value);
         }
     }
 }

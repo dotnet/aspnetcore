@@ -60,9 +60,9 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             HeadManager.NotifyChanged(this);
         }
 
-        internal override async ValueTask ApplyAsync()
+        internal override ValueTask ApplyAsync()
         {
-            await HeadManager.SetMetaElementAsync(_state.Key, _state);
+            return HeadManager.SetMetaElementAsync(_state.Key, _state);
         }
 
         internal override async ValueTask<object?> GetInitialStateAsync()
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             return await HeadManager.GetMetaElementAsync(_state.Key);
         }
 
-        internal override ValueTask ResetInitialStateAsync(object? initialState)
+        internal override ValueTask ResetStateAsync(object? initialState)
         {
             return HeadManager.SetMetaElementAsync(_state.Key, initialState);
         }
