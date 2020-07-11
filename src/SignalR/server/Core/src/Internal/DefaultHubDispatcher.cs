@@ -158,10 +158,19 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                 case InvocationMessage invocationMessage:
                     Log.ReceivedHubInvocation(_logger, invocationMessage);
-                    return ProcessInvocation(connection, invocationMessage, isStreamResponse: false);
+                    return connection.ActiveInvocationLimit.RunAsync(state =>
+                    {
+                        var (dispatcher, connection, invocationMessage) = state;
+                        return dispatcher.ProcessInvocation(connection, invocationMessage, isStreamResponse: false);
+                    }, (this, connection, invocationMessage));
 
                 case StreamInvocationMessage streamInvocationMessage:
                     Log.ReceivedStreamHubInvocation(_logger, streamInvocationMessage);
+                    //return connection.ActiveInvocationLimit.RunAsync(state =>
+                    //{
+                    //    var (dispatcher, connection, streamInvocationMessage) = state;
+                    //    return dispatcher.ProcessInvocation(connection, streamInvocationMessage, isStreamResponse: true);
+                    //}, (this, connection, streamInvocationMessage));
                     return ProcessInvocation(connection, streamInvocationMessage, isStreamResponse: true);
 
                 case CancelInvocationMessage cancelInvocationMessage:
