@@ -77,10 +77,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             ViewLookupCache = new MemoryCache(new MemoryCacheOptions());
         }
 
+        protected RazorViewEngine(
+            IRazorPageFactoryProvider pageFactory,
+            IRazorPageActivator pageActivator,
+            HtmlEncoder htmlEncoder,
+            IOptions<RazorViewEngineOptions> optionsAccessor,
+            ILoggerFactory loggerFactory,
+            DiagnosticListener diagnosticListener,
+            IMemoryCache memoryCache) : self(pageFactory, pageActivator, htmlEncoder, optionsAccessor, loggerFactory, diagnosticListener) {
+                this.ViewLookupCache = memoryCache;
+        }
+
         /// <summary>
         /// A cache for results of view lookups.
         /// </summary>
-        protected IMemoryCache ViewLookupCache { get; set; }
+        protected IMemoryCache ViewLookupCache { get; }
 
         /// <summary>
         /// Gets the case-normalized route value for the specified route <paramref name="key"/>.
