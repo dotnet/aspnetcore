@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRender
     {
-        private readonly ComponentBroadcast _refresh = ComponentBroadcast.Instance;
+        private readonly ComponentBroadcast _refresh;
         private readonly RenderFragment _renderFragment;
         private RenderHandle _renderHandle;
         private bool _initialized;
@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         public ComponentBase()
         {
+            _refresh = ComponentBroadcast.Instance;
             this._refresh.RefreshRequested += new Action(this.DoRefresh);
             _renderFragment = builder =>
             {
