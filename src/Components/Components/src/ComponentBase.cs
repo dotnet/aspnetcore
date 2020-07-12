@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRender
     {
+        private readonly ComponentBroadcast _refresh = ComponentBroadcast.Instance;
         private readonly RenderFragment _renderFragment;
         private RenderHandle _renderHandle;
         private bool _initialized;
@@ -37,6 +38,7 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         public ComponentBase()
         {
+            this._refresh.RefreshRequested += new Action(this.DoRefresh);
             _renderFragment = builder =>
             {
                 _hasPendingQueuedRender = false;
@@ -63,7 +65,7 @@ namespace Microsoft.AspNetCore.Components
         /// initial parameters from its parent in the render tree.
         /// </summary>
         protected virtual void OnInitialized()
-        {
+        {            
         }
 
         /// <summary>
