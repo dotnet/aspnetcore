@@ -16,7 +16,7 @@ internal sealed class ComponentBroadcast : IComponentBroadcast
     {
     }
 
-    public event Action RefreshRequested;
+    public event? Action RefreshRequested;
     public void CallRequestRefresh()
     {
         RefreshRequested?.Invoke();
