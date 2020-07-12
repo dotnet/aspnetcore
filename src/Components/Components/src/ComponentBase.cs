@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Components
         /// initial parameters from its parent in the render tree.
         /// </summary>
         protected virtual void OnInitialized()
-        {            
+        {
         }
 
         /// <summary>
