@@ -92,6 +92,7 @@ namespace Microsoft.AspNetCore.Components
     {
         public ComponentBase() { }
         protected virtual void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
+        protected void CallRequestRefresh() { }
         protected System.Threading.Tasks.Task InvokeAsync(System.Action workItem) { throw null; }
         protected System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> workItem) { throw null; }
         void Microsoft.AspNetCore.Components.IComponent.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
