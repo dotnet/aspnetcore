@@ -46,6 +46,14 @@ namespace Microsoft.AspNetCore.Components
                 BuildRenderTree(builder);
             };
         }
+        
+        /// <summary>
+        /// Request to Render all components.
+        /// </summary>
+        public void CallRequestRefresh()
+        {
+            _refresh.CallRequestRefresh();
+        }
 
         /// <summary>
         /// Renders the component to the supplied <see cref="RenderTreeBuilder"/>.
