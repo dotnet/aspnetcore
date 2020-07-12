@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Components
         public ComponentBase()
         {
             _refresh = ComponentBroadcast.Instance;
-            this._refresh.RefreshRequested += new Action(this.DoRefresh);
+            this._refresh.RefreshRequested += new Action(this.StateHasChanged());
             _renderFragment = builder =>
             {
                 _hasPendingQueuedRender = false;
