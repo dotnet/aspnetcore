@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
             Outputs = Option("-o", "Generated output file path", CommandOptionType.MultipleValue);
             RelativePaths = Option("-r", "Relative path", CommandOptionType.MultipleValue);
             FileKinds = Option("-k", "File kind", CommandOptionType.MultipleValue);
-            CssScopeSources = Option("-cssscopeinput", "CSS scope source file", CommandOptionType.MultipleValue);
-            CssScopeValues = Option("-cssscopevalue", "CSS scope value", CommandOptionType.MultipleValue);
+            CssScopeSources = Option("-cssscopedinput", ".razor file with scoped CSS", CommandOptionType.MultipleValue);
+            CssScopeValues = Option("-cssscopevalue", "CSS scope value for .razor file with scoped CSS", CommandOptionType.MultipleValue);
             ProjectDirectory = Option("-p", "project root directory", CommandOptionType.SingleValue);
             TagHelperManifest = Option("-t", "tag helper manifest file", CommandOptionType.SingleValue);
             Version = Option("-v|--version", "Razor language version", CommandOptionType.SingleValue);

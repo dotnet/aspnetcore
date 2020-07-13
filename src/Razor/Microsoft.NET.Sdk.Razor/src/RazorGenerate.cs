@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     var cssScope = input.GetMetadata(CssScope);
                     if (!string.IsNullOrEmpty(cssScope))
                     {
-                        builder.AppendLine("-cssscopeinput");
+                        builder.AppendLine("-cssscopedinput");
                         builder.AppendLine(input.GetMetadata(FullPath));
                         builder.AppendLine("-cssscopevalue");
                         builder.AppendLine(cssScope);
