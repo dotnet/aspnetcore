@@ -2,11 +2,14 @@
 
 <p>
     Multiple title elements:<br />
+
     @for (int i = 0; i < titles.Length; i++)
     {
         var titleId = i;
 
-        <button @onclick="() => ToggleTitle(titleId)">@(titles[titleId] ? "Disable" : "Enable") title @titleId</button>
+        <button id="button-title-@i" @onclick="() => Toggle(ref titles[titleId])">
+            @GetToggleString(titles[titleId]) title @titleId
+        </button>
 
         if (titles[titleId])
         {
@@ -16,27 +19,63 @@
 </p>
 
 <p>
-    Add/remove meta element:<br />
-    <button @onclick="ToggleMetaDescription">@(renderSingleMeta ? "Disable" : "Enable") meta description</button>
-    @if (renderSingleMeta)
+    Multiple meta elements:<br />
+
+    @for (int i = 0; i < metas.Length; i++)
     {
-        <Meta Name="description" Content="Modifying the head from a Blazor component." />
+        var metaId = i;
+
+        <button id="button-meta-@i" @onclick="() => Toggle(ref metas[metaId])">
+            @GetToggleString(metas[metaId]) meta @metaId</button>
+
+        if (metas[metaId])
+        {
+            <Meta Name="multiple-metas" Content="@($"Meta {metaId}")" />
+        }
+    }
+</p>
+
+<p>
+    Nested title elements:<br />
+
+    <button id="button-title-nested" @onclick="() => Toggle(ref renderNestedTitle)">
+        @GetToggleString(renderNestedTitle) title nested
+    </button>
+
+    @if (renderNestedTitle)
+    {
+        <div>
+            <Title Value="Layer 1" />
+            <div>
+                <Title Value="Layer 2" />
+                <div>
+                    <Title Value="Layer 3" />
+                    <div>
+                        <Title Value="Layer 4" />
+                    </div>
+                </div>
+            </div>
+        </div>
     }
 </p>
 
 <p>
     Nested meta elements:<br />
-    <button @onclick="ToggleMetaNested">@(renderNestedMeta ? "Disable" : "Enable") meta http-equiv nested</button>
+
+    <button id="button-meta-nested" @onclick="() => Toggle(ref renderNestedMeta)">
+        @GetToggleString(renderNestedMeta) meta http-equiv nested
+    </button>
+
     @if (renderNestedMeta)
     {
         <div>
-            <Meta HttpEquiv="test" Content="Layer 1" />
+            <Meta HttpEquiv="nested-meta" Content="Layer 1" />
             <div>
-                <Meta HttpEquiv="test" Content="Layer 2" />
+                <Meta HttpEquiv="nested-meta" Content="Layer 2" />
                 <div>
-                    <Meta HttpEquiv="test" Content="Layer 3" />
+                    <Meta HttpEquiv="nested-meta" Content="Layer 3" />
                     <div>
-                        <Meta HttpEquiv="test" Content="Layer 4" />
+                        <Meta HttpEquiv="nested-meta" Content="Layer 4" />
                     </div>
                 </div>
             </div>
@@ -46,15 +85,19 @@
 
 <p>
     Nested link elements:<br />
-    <button @onclick="ToggleLinkNested">@(renderNestedLink ? "Disable" : "Enable") link nested</button>
+
+    <button id="button-link-nested" @onclick="() => Toggle(ref renderNestedLink)">
+        @GetToggleString(renderNestedLink) link nested
+    </button>
+
     @if (renderNestedLink)
     {
         <div>
-            <Link attr1="some attribute" attr2="Layer 1" />
+            <Link id="nested-link" attr1="some attribute" attr2="Layer 1" />
             <div>
-                <Link attr1="some attribute" attr2="Layer 2" />
+                <Link id="nested-link" attr1="some attribute" attr2="Layer 2" />
                 <div>
-                    <Link attr1="some other attribute" attr2="Layer 3" extra-attr="one more" />
+                    <Link id="nested-link" attr1="some other attribute" attr2="Layer 3" extra-attr="one more" />
                 </div>
             </div>
         </div>
@@ -63,42 +106,28 @@
 
 <p>
     Link elements w/ bindings:<br />
-    <input @bind="@linkAttribute1" placeholder="Attribute 1" /><br />
-    <input @bind="@linkAttribute2" placeholder="Attribute 2"/><br />
-    <Link attr1="@linkAttribute1" attr2="@linkAttribute2" />
+    <input id="link-attr-input-1" @bind="@linkAttribute1" placeholder="Attribute 1" /><br />
+    <input id="link-attr-input-2" @bind="@linkAttribute2" placeholder="Attribute 2" /><br />
+    <Link id="link-with-bindings" attr1="@linkAttribute1" attr2="@linkAttribute2" />
 </p>
 
 @code {
-    private readonly bool[] titles = Enumerable.Repeat(false, 6).ToArray();
+    private readonly bool[] titles = Enumerable.Repeat(false, 3).ToArray();
+    private readonly bool[] metas = Enumerable.Repeat(false, 3).ToArray();
 
-    private bool renderSingleMeta = false;
+    private bool renderNestedTitle = false;
     private bool renderNestedMeta = false;
     private bool renderNestedLink = false;
 
     private string linkAttribute1 = "First attribute";
     private string linkAttribute2 = "Second attribute";
 
-    private void ToggleTitle(int titleId)
+    private void Toggle(ref bool b)
     {
-        titles[titleId] = !titles[titleId];
+        b = !b;
         StateHasChanged();
     }
 
-    private void ToggleMetaDescription()
-    {
-        renderSingleMeta = !renderSingleMeta;
-        StateHasChanged();
-    }
-
-    private void ToggleMetaNested()
-    {
-        renderNestedMeta = !renderNestedMeta;
-        StateHasChanged();
-    }
-
-    private void ToggleLinkNested()
-    {
-        renderNestedLink = !renderNestedLink;
-        StateHasChanged();
-    }
+    private string GetToggleString(bool b)
+        => b ? "Disable" : "Enable";
 }
