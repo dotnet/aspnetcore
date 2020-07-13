@@ -4929,6 +4929,69 @@ namespace New.Test
 
         #endregion
 
+        #region "CSS scoping"
+        [Fact]
+        public void Component_WithCssScope()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class TemplatedComponent : ComponentBase
+    {
+        [Parameter]
+        public RenderFragment ChildContent { get; set; }
+    }
+}
+"));
+
+            // Act
+            // This test case attempts to use all syntaxes that might interact with auto-generated attributes
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Rendering
+<h1>Element with no attributes</h1>
+<parent with-attributes=""yes"" with-csharp-attribute-value=""@(123)"">
+    <child />
+    <child has multiple attributes=""some with values"">With text</child>
+    <TemplatedComponent @ref=""myComponentReference"">
+        <span id=""hello"">This is in child content</span>
+    </TemplatedComponent>
+</parent>
+@if (DateTime.Now.Year > 1950)
+{
+    <with-ref-capture some-attr @ref=""myElementReference"">Content</with-ref-capture>
+    <input id=""myElem"" @bind=""myVariable"" another-attr=""Another attr value"" />
+}
+
+@code {
+    ElementReference myElementReference;
+    TemplatedComponent myComponentReference;
+    string myVariable;
+
+    void MethodRenderingMarkup(RenderTreeBuilder __builder)
+    {
+        for (var i = 0; i < 10; i++)
+        {
+            <li data-index=@i>Something @i</li>
+        }
+
+        System.GC.KeepAlive(myElementReference);
+        System.GC.KeepAlive(myComponentReference);
+        System.GC.KeepAlive(myVariable);
+    }
+}
+", cssScope: "TestCssScope");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+        #endregion
+
         #region Misc
 
         [Fact] // We don't process <!DOCTYPE ...> - we just skip them
