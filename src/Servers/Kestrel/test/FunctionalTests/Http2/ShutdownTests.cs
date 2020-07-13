@@ -99,8 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closed. The last processed stream ID was 1."));
         }
 
-        [ConditionalFact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/21521")] // Test still quarantined due to Sockets.Functional tests.
+        [Fact]
         public async Task GracefulTurnsAbortiveIfRequestsDoNotFinish()
         {
             var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
