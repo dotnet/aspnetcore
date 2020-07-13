@@ -303,10 +303,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
         private static SourceItem[] GetSourceItems(List<string> sources, List<string> outputs, List<string> relativePath, List<string> fileKinds, List<string> cssScopeSources, List<string> cssScopeValues)
         {
-            var cssScopeSourceIndices = new Dictionary<string, int>(StringComparer.Ordinal);
+            var cssScopeAssociations = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             for (var cssScopeSourceIndex = 0; cssScopeSourceIndex < cssScopeSources.Count; cssScopeSourceIndex++)
             {
-                cssScopeSourceIndices.Add(cssScopeSources[cssScopeSourceIndex], cssScopeSourceIndex);
+                cssScopeAssociations.Add(cssScopeSources[cssScopeSourceIndex], cssScopeSourceIndex);
             }
 
             var items = new SourceItem[sources.Count];
@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     fileKind = Language.FileKinds.GetComponentFileKindFromFilePath(sources[i]);
                 }
 
-                var cssScopeValue = cssScopeSourceIndices.TryGetValue(sources[i], out var cssScopeIndex)
+                var cssScopeValue = cssScopeAssociations.TryGetValue(sources[i], out var cssScopeIndex)
                     ? cssScopeValues[cssScopeIndex]
                     : null;
 
