@@ -69,9 +69,9 @@ You can also use -NoBuildJava to suppress this project type.
 Build Windows Installers. Required .NET 3.5 to be installed (WiX toolset requirement).
 You can also use -NoBuildInstallers to suppress this project type.
 
-.PARAMETER BuildHostingBundle
+.PARAMETER BuildBundles
 Build Windows Hosting Bundle. Required .NET 3.5 to be installed (WiX toolset requirement).
-You can also use -NoBuildHostingBundle to suppress this project type.
+You can also use -NoBuildBundles to suppress this project type.
 
 .PARAMETER BinaryLog
 Enable the binary logger
@@ -154,7 +154,7 @@ param(
     [switch]$BuildNodeJS,
     [switch]$BuildJava,
     [switch]$BuildInstallers,
-    [switch]$BuildHostingBundle,
+    [switch]$BuildBundles,
 
     # Inverse of the previous switches because specifying '-switch:$false' is not intuitive for most command line users
     [switch]$NoBuildManaged,
@@ -162,7 +162,7 @@ param(
     [switch]$NoBuildNodeJS,
     [switch]$NoBuildJava,
     [switch]$NoBuildInstallers,
-    [switch]$NoBuildHostingBundle,
+    [switch]$NoBuildBundles,
 
     [switch]$NoBuildRepoTasks,
 
@@ -209,7 +209,7 @@ if ($Projects) {
     }
 }
 # When adding new sub-group build flags, add them to this check.
-elseif (-not ($All -or $BuildNative -or $BuildManaged -or $BuildNodeJS -or $BuildInstallers -or $BuildHostingBundle -or $BuildJava)) {
+elseif (-not ($All -or $BuildNative -or $BuildManaged -or $BuildNodeJS -or $BuildInstallers -or $BuildBundles -or $BuildJava)) {
     Write-Warning "No default group of projects was specified, so building the managed and native projects and their dependencies. Run ``build.cmd -help`` for more details."
 
     # The goal of this is to pick a sensible default for `build.cmd` with zero arguments.
@@ -286,8 +286,8 @@ if ($Projects) {
 if ($NoBuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=false"; $BuildInstallers = $false }
 if ($BuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=true" }
 
-if ($NoBuildHostingBundle) { $MSBuildArguments += "/p:BuildHostingBundle=false"; $BuildHostingBundle = $false }
-if ($BuildHostingBundle) { $MSBuildArguments += "/p:BuildHostingBundle=true" }
+if ($NoBuildBundles) { $MSBuildArguments += "/p:BuildBundles=false"; $BuildBundles = $false }
+if ($BuildBundles) { $MSBuildArguments += "/p:BuildBundles=true" }
 
 # Build native projects by default unless -NoBuildNative was specified.
 $specifiedBuildNative = $BuildNative
@@ -305,11 +305,11 @@ if ($BuildNodeJS) { $dotnetBuildArguments += "/p:BuildNodeJS=true" }
 # Don't bother with two builds if just one will build everything. Ignore super-weird cases like
 # "-Projects ... -NoBuildJava -NoBuildManaged -NoBuildNodeJS". An empty `./build.ps1` command will build both
 # managed and native projects.
-$performDesktopBuild = ($BuildInstallers -or $BuildHostingBundle -or $BuildNative) -and `
+$performDesktopBuild = ($BuildInstallers -or $BuildBundles -or $BuildNative) -and `
     -not $Architecture.StartsWith("arm", [System.StringComparison]::OrdinalIgnoreCase)
 $performDotnetBuild = $BuildJava -or $BuildManaged -or $BuildNodeJS -or `
     ($All -and -not ($NoBuildJava -and $NoBuildManaged -and $NoBuildNodeJS)) -or `
-    ($Projects -and -not ($BuildInstallers -or $BuildHostingBundle -or $specifiedBuildNative))
+    ($Projects -and -not ($BuildInstallers -or $BuildBundles -or $specifiedBuildNative))
 
 $foundJdk = $false
 $javac = Get-Command javac -ErrorAction Ignore -CommandType Application

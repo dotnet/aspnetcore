@@ -61,14 +61,15 @@
         <!-- Build the targeting pack installers -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
 
-        <!-- Build the SharedFramework installers -->
-        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
-
         <!-- Build the SharedFramework wixlib -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
       </ItemGroup>
 
-      <ItemGroup Condition=" '$(BuildHostingBundle)' == 'true' AND '$(TargetOsName)' == 'win' ">
+      <ItemGroup Condition=" '$(BuildBundles)' == 'true' AND '$(TargetOsName)' == 'win' ">
+        <!-- Build the SharedFramework installers -->
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x86" />
+
         <!-- Windows hosting bundled -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" /> 
       </ItemGroup>
