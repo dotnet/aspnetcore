@@ -57,8 +57,6 @@ Document -
                     LazyIntermediateToken - (639:14,0 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - }\n
             CSharpCode - (651:16,7 [233] x:\dir\subdir\Test\TestComponent.cshtml)
                 LazyIntermediateToken - (651:16,7 [233] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    ElementReference myElementReference;\n    TemplatedComponent myComponentReference;\n    string myVariable;\n\n    void MethodRenderingMarkup(RenderTreeBuilder __builder)\n    {\n        for (var i = 0; i < 10; i++)\n        {\n
-            HtmlContent - (884:25,0 [12] x:\dir\subdir\Test\TestComponent.cshtml)
-                LazyIntermediateToken - (884:25,0 [12] x:\dir\subdir\Test\TestComponent.cshtml) - Html -             
             MarkupElement - (896:25,12 [35] x:\dir\subdir\Test\TestComponent.cshtml) - li
                 HtmlAttribute - (899:25,15 [14] x:\dir\subdir\Test\TestComponent.cshtml) -  data-index= - 
                     CSharpExpressionAttributeValue - (911:25,27 [2] x:\dir\subdir\Test\TestComponent.cshtml) - 
@@ -68,7 +66,5 @@ Document -
                 CSharpExpression - (925:25,41 [1] x:\dir\subdir\Test\TestComponent.cshtml)
                     LazyIntermediateToken - (925:25,41 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - i
                 HtmlAttribute -  - TestCssScope - 
-            HtmlContent - (931:25,47 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                LazyIntermediateToken - (931:25,47 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (933:26,0 [164] x:\dir\subdir\Test\TestComponent.cshtml)
                 LazyIntermediateToken - (933:26,0 [164] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -         }\n\n        System.GC.KeepAlive(myElementReference);\n        System.GC.KeepAlive(myComponentReference);\n        System.GC.KeepAlive(myVariable);\n    }\n

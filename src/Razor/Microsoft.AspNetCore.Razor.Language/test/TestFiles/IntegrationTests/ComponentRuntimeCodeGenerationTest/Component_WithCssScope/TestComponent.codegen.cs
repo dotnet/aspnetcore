@@ -123,9 +123,8 @@ using Microsoft.AspNetCore.Components.Rendering;
 #line default
 #line hidden
 #nullable disable
-        __builder.AddContent(23, "            ");
-        __builder.OpenElement(24, "li");
-        __builder.AddAttribute(25, "data-index", 
+        __builder.OpenElement(23, "li");
+        __builder.AddAttribute(24, "data-index", 
 #nullable restore
 #line 26 "x:\dir\subdir\Test\TestComponent.cshtml"
                             i
@@ -134,9 +133,9 @@ using Microsoft.AspNetCore.Components.Rendering;
 #line hidden
 #nullable disable
         );
-        __builder.AddAttribute(26, "TestCssScope");
-        __builder.AddContent(27, "Something ");
-        __builder.AddContent(28, 
+        __builder.AddAttribute(25, "TestCssScope");
+        __builder.AddContent(26, "Something ");
+        __builder.AddContent(27, 
 #nullable restore
 #line 26 "x:\dir\subdir\Test\TestComponent.cshtml"
                                          i
@@ -146,7 +145,6 @@ using Microsoft.AspNetCore.Components.Rendering;
 #nullable disable
         );
         __builder.CloseElement();
-        __builder.AddMarkupContent(29, "\r\n");
 #nullable restore
 #line 27 "x:\dir\subdir\Test\TestComponent.cshtml"
         }
