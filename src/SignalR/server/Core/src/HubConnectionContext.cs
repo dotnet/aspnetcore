@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.SignalR
             _lastSendTimeStamp = _systemClock.UtcNowTicks;
 
             var maxInvokes = contextOptions.MaximumParallelInvocations;
-            ActiveInvocationLimit = new SemaphoreSlim(maxInvokes - 1, maxInvokes);
+            ActiveInvocationLimit = new SemaphoreSlim(maxInvokes, maxInvokes);
             MaxInvokes = contextOptions.MaximumParallelInvocations;
         }
 
