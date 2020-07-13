@@ -436,7 +436,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var confirmEmailContainer = appElement.FindElement(By.ClassName("confirm-email"));
             var confirmInput = confirmEmailContainer.FindElement(By.TagName("input"));
             var confirmEmailValidationMessage = CreateValidationMessagesAccessor(confirmEmailContainer);
-            var modelErrors = CreateValidationMessagesAccessor(appElement.FindElement(By.ClassName("model-errors")));
             CreateValidationMessagesAccessor(emailContainer);
             var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
 
@@ -444,8 +443,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             emailInput.SendKeys("a@b.com\t");
 
             submitButton.Click();
-            Browser.Empty(confirmEmailValidationMessage);
-            Browser.Equal(new[] { "Email and confirm email do not match." }, modelErrors);
+            Browser.Equal(new[] { "Email and confirm email do not match." }, confirmEmailValidationMessage);
 
             confirmInput.SendKeys("not-test@example.com\t");
             Browser.Equal(new[] { "Email and confirm email do not match." }, confirmEmailValidationMessage);
@@ -455,9 +453,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             confirmInput.SendKeys("a@b.com\t");
 
             Browser.Empty(confirmEmailValidationMessage);
-
-            submitButton.Click();
-            Browser.Empty(modelErrors);
         }
 
         [Fact]
@@ -500,7 +495,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void SelectComponentSupportsOptionsComponent() {
+        public void SelectComponentSupportsOptionsComponent()
+        {
             var appElement = Browser.MountTestComponent<SelectVariantsComponent>();
             var input = appElement.FindElement(By.Id("input-value"));
             var showAdditionalOptionButton = appElement.FindElement(By.Id("show-additional-option"));

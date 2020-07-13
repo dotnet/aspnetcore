@@ -49,6 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 feature => Assert.IsType<ComponentBindLoweringPass>(feature),
                 feature => Assert.IsType<ComponentChildContentDiagnosticPass>(feature),
                 feature => Assert.IsType<ComponentComplexAttributeContentPass>(feature),
+                feature => Assert.IsType<ComponentCssScopePass>(feature),
                 feature => Assert.IsType<ComponentDocumentClassifierPass>(feature),
                 feature => Assert.IsType<ComponentEventHandlerLoweringPass>(feature),
                 feature => Assert.IsType<ComponentGenericTypePass>(feature),

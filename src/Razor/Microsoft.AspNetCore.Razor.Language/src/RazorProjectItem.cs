@@ -36,6 +36,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         public virtual string RelativePhysicalPath => null;
 
         /// <summary>
+        /// A scope identifier that will be used on elements in the generated class, or null.
+        /// </summary>
+        public virtual string CssScope { get; }
+
+        /// <summary>
         /// Gets the document kind that should be used for the generated document. If possible this will be inferred from the file path. May be null.
         /// </summary>
         public virtual string FileKind

@@ -673,6 +673,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // OR
             // _builder.AddAttribute(1, "ChildContent", (RenderFragment<Person>)((person) => (__builder73) => { ... }));
             BeginWriteAttribute(context, node.AttributeName);
+            context.CodeWriter.WriteParameterSeparator();
             context.CodeWriter.Write($"({node.TypeName})(");
 
             WriteComponentChildContentInnards(context, node);
@@ -851,14 +852,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         private void WriteAttribute(CodeRenderingContext context, string key, IList<IntermediateToken> value)
         {
             BeginWriteAttribute(context, key);
-            WriteAttributeValue(context, value);
+            if (value.Count > 0)
+            {
+                context.CodeWriter.WriteParameterSeparator();
+                WriteAttributeValue(context, value);
+            }
             context.CodeWriter.WriteEndMethodInvocation();
         }
 
         private void WriteAttribute(CodeRenderingContext context, IntermediateNode nameExpression, IList<IntermediateToken> value)
         {
             BeginWriteAttribute(context, nameExpression);
-            WriteAttributeValue(context, value);
+            if (value.Count > 0)
+            {
+                context.CodeWriter.WriteParameterSeparator();
+                WriteAttributeValue(context, value);
+            }
             context.CodeWriter.WriteEndMethodInvocation();
         }
 
@@ -868,8 +877,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{ComponentsApi.RenderTreeBuilder.AddAttribute}")
                 .Write((_sourceSequence++).ToString())
                 .WriteParameterSeparator()
-                .WriteStringLiteral(key)
-                .WriteParameterSeparator();
+                .WriteStringLiteral(key);
         }
 
         protected override void BeginWriteAttribute(CodeRenderingContext context, IntermediateNode nameExpression)
@@ -883,8 +891,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 WriteCSharpToken(context, tokens[i]);
             }
-
-            context.CodeWriter.WriteParameterSeparator();
         }
 
         private static string GetHtmlContent(HtmlContentIntermediateNode node)
@@ -988,8 +994,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
             else
             {
-                // Minimized attributes always map to 'true'
-                writer.Write("true");
+                throw new InvalidOperationException("Found attribute whose value is neither HTML nor CSharp");
             }
         }
 

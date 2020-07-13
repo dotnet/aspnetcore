@@ -15,12 +15,14 @@ namespace Microsoft.AspNetCore.Razor.Language
             string physicalPath = null,
             string relativePhysicalPath = null,
             string basePath = "/",
-            string fileKind = null)
+            string fileKind = null,
+            string cssScope = null)
         {
             FilePath = filePath;
             PhysicalPath = physicalPath;
             RelativePhysicalPath = relativePhysicalPath;
             BasePath = basePath;
+            CssScope = cssScope;
             _fileKind = fileKind;
         }
 
@@ -33,6 +35,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override string PhysicalPath { get; }
 
         public override string RelativePhysicalPath { get; }
+
+        public override string CssScope { get; }
 
         public override bool Exists { get; } = true;
 
