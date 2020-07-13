@@ -51,7 +51,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             HtmlEncoder htmlEncoder,
             IOptions<RazorViewEngineOptions> optionsAccessor,
             ILoggerFactory loggerFactory,
-            DiagnosticListener diagnosticListener)
+            DiagnosticListener diagnosticListener) : this(pageFactory, pageActivator, htmlEncoder, optionsAccessor, loggerFactory, diagnosticListener, new MemoryCache(new MemoryCacheOptions()))
+        { }
+
+        protected RazorViewEngine(
+            IRazorPageFactoryProvider pageFactory,
+            IRazorPageActivator pageActivator,
+            HtmlEncoder htmlEncoder,
+            IOptions<RazorViewEngineOptions> optionsAccessor,
+            ILoggerFactory loggerFactory,
+            DiagnosticListener diagnosticListener,
+            IMemoryCache memoryCache)
         {
             _options = optionsAccessor.Value;
 
@@ -74,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             _htmlEncoder = htmlEncoder;
             _logger = loggerFactory.CreateLogger<RazorViewEngine>();
             _diagnosticListener = diagnosticListener;
-            ViewLookupCache = new MemoryCache(new MemoryCacheOptions());
+            ViewLookupCache = memoryCache;
         }
 
         /// <summary>
