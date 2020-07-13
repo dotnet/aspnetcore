@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{A86E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EchoApp", "WebSockets\samples\EchoApp\EchoApp.csproj", "{0792C20B-1D18-4D7C-9C0F-A6F45A0F378E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSockets.TestServer", "WebSockets\samples\TestServer\WebSockets.TestServer.csproj", "{4E5F5FCC-172C-44D9-BEA0-39098A79CD0B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebSockets.TestServer", "WebSockets\samples\TestServer\WebSockets.TestServer.csproj", "{4E5F5FCC-172C-44D9-BEA0-39098A79CD0B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebSockets", "WebSockets\src\Microsoft.AspNetCore.WebSockets.csproj", "{BECAA6A1-1AA4-415E-ADF3-07C103333826}"
 EndProject
@@ -300,6 +300,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Perf", "Perf", "{4623F52E-2070-4631-8DEE-7D2F48733FFD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ResponseCaching.Microbenchmarks", "perf\ResponseCaching.Microbenchmarks\Microsoft.AspNetCore.ResponseCaching.Microbenchmarks.csproj", "{80C8E810-1206-482E-BE17-961DD2EBFB11}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CSP", "CSP", "{75DC8384-0171-47AC-8510-7502E3892A73}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Csp", "CSP\Microsoft.AspNetCore.Csp.csproj", "{73A2989B-5F4F-4095-AC25-C705173FA825}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1643,6 +1647,18 @@ Global
 		{80C8E810-1206-482E-BE17-961DD2EBFB11}.Release|x64.Build.0 = Release|Any CPU
 		{80C8E810-1206-482E-BE17-961DD2EBFB11}.Release|x86.ActiveCfg = Release|Any CPU
 		{80C8E810-1206-482E-BE17-961DD2EBFB11}.Release|x86.Build.0 = Release|Any CPU
+		{73A2989B-5F4F-4095-AC25-C705173FA825}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73A2989B-5F4F-4095-AC25-C705173FA825}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73A2989B-5F4F-4095-AC25-C705173FA825}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{73A2989B-5F4F-4095-AC25-C705173FA825}.Debug|x64.Build.0 = Debug|Any CPU
+		{73A2989B-5F4F-4095-AC25-C705173FA825}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{73A2989B-5F4F-4095-AC25-C705173FA825}.Debug|x86.Build.0 = Debug|Any CPU
+		{73A2989B-5F4F-4095-AC25-C705173FA825}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73A2989B-5F4F-4095-AC25-C705173FA825}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73A2989B-5F4F-4095-AC25-C705173FA825}.Release|x64.ActiveCfg = Release|Any CPU
+		{73A2989B-5F4F-4095-AC25-C705173FA825}.Release|x64.Build.0 = Release|Any CPU
+		{73A2989B-5F4F-4095-AC25-C705173FA825}.Release|x86.ActiveCfg = Release|Any CPU
+		{73A2989B-5F4F-4095-AC25-C705173FA825}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1772,6 +1788,7 @@ Global
 		{C4D624B3-749E-41D8-A43B-B304BC3885EA} = {4623F52E-2070-4631-8DEE-7D2F48733FFD}
 		{8A9C1F6C-3A47-4868-AA95-3EBE0260F5A0} = {D6FA4ABE-E685-4EDD-8B06-D8777E76B472}
 		{80C8E810-1206-482E-BE17-961DD2EBFB11} = {4623F52E-2070-4631-8DEE-7D2F48733FFD}
+		{73A2989B-5F4F-4095-AC25-C705173FA825} = {75DC8384-0171-47AC-8510-7502E3892A73}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {83786312-A93B-4BB4-AB06-7C6913A59AFA}
