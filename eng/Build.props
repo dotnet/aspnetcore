@@ -66,12 +66,11 @@
 
         <!-- Build the SharedFramework wixlib -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\SharedFrameworkLib\SharedFrameworkLib.wixproj" AdditionalProperties="Platform=$(TargetArchitecture)" />
+      </ItemGroup>
 
+      <ItemGroup Condition=" '$(BuildHostingBundle)' == 'true' AND '$(TargetOsName)' == 'win' ">
         <!-- Windows hosting bundled -->
-        <ProjectToBuild 
-          Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" 
-          AdditionalProperties="Platform=$(TargetArchitecture)" 
-          Condition="'$(TargetArchitecture)' == 'x86'"/>
+        <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" /> 
       </ItemGroup>
 
       <ItemGroup Condition="'$(BuildInstallers)' == 'true' AND '$(TargetRuntimeIdentifier)' == 'linux-x64'">
