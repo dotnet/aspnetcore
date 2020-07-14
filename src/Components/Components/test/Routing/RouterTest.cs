@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         }
 
         [Fact]
-        public void RefreshesOnceOnCancelledOnNavigateAsync()
+        public async Task RefreshesOnceOnCancelledOnNavigateAsync()
         {
             // Arrange
             var router = CreateMockRouter();
@@ -75,9 +75,15 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             router.Object.OnNavigateAsync = new EventCallbackFactory().Create<NavigationContext>(router, OnNavigateAsync);
 
             // Act
-            router.Object.RunOnNavigateWithRefreshAsync("jan", false);
-            router.Object.RunOnNavigateWithRefreshAsync("feb", false);
+            var janTask = router.Object.RunOnNavigateWithRefreshAsync("jan", false);
+            var febTask = router.Object.RunOnNavigateWithRefreshAsync("feb", false);
 
+            var janTaskException = await Record.ExceptionAsync(() => janTask);
+            var febTaskException = await Record.ExceptionAsync(() => febTask);
+
+            // Assert neither exceution threw an exception
+            Assert.Null(janTaskException);
+            Assert.Null(febTaskException);
             // Assert refresh should've only been called once for the second route
             router.Verify(x => x.Refresh(false), Times.Once());
         }
