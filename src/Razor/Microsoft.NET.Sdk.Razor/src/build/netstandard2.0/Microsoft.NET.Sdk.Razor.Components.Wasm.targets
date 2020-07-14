@@ -25,6 +25,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Trimmer defaults -->
     <PublishTrimmed Condition="'$(PublishTrimmed)' == ''">true</PublishTrimmed>
     <TrimMode Condition="'$(TrimMode)' == ''">link</TrimMode>
+    <TrimmerRemoveSymbols Condition="'$(TrimmerRemoveSymbols)' == ''">false</TrimmerRemoveSymbols>
+
+    <!-- Runtime feature defaults to trim unnecessary code -->
+    <EventSourceSupport Condition="'$(EventSourceSupport)' == ''">false</EventSourceSupport>
+    <UseSystemResourceKeys Condition="'$(UseSystemResourceKeys)' == ''">true</UseSystemResourceKeys>
+    <EnableUnsafeUTF7Encoding Condition="'$(EnableUnsafeUTF7Encoding)' == ''">false</EnableUnsafeUTF7Encoding>
+    <HttpActivityPropagationSupport Condition="'$(HttpActivityPropagationSupport)' == ''">false</HttpActivityPropagationSupport>
+    <DebuggerSupport Condition="'$(DebuggerSupport)' == '' and '$(Configuration)' == 'Release' and '$(BlazorWebAssemblyEnableDebugging)' != 'true'">false</DebuggerSupport>
 
     <StaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">/</StaticWebAssetBasePath>
     <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
