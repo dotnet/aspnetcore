@@ -239,6 +239,22 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return results;
         }
 
+        [Authorize("test")]
+        public async Task<List<object>> UploadArrayAuth(ChannelReader<object> source)
+        {
+            var results = new List<object>();
+
+            while (await source.WaitToReadAsync())
+            {
+                while (source.TryRead(out var item))
+                {
+                    results.Add(item);
+                }
+            }
+
+            return results;
+        }
+
         public async Task<string> TestTypeCastingErrors(ChannelReader<int> source)
         {
             try

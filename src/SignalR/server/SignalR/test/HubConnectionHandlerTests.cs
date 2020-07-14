@@ -2943,8 +2943,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var hubMethodTask = client.InvokeAsync(nameof(LongRunningHub.LongRunningMethod));
                     await tcsService.StartedMethod.Task.OrTimeout();
 
-                    await client.SendHubMessageAsync(PingMessage.Instance);
-                    await client.SendHubMessageAsync(PingMessage.Instance);
+                    // Invoke another hub method (which will be blocked by the first method) in order to stop the timeout
+                    // This is how a real-world example would behave
+                    await client.SendInvocationAsync(nameof(LongRunningHub.LongRunningMethod));
 
                     // Tick heartbeat while hub method is running to show that close isn't triggered
                     client.TickHeartbeat();
@@ -2964,8 +2965,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     // Connection is closed
                     await connectionHandlerTask.OrTimeout();
-
-                    tcsService.EndMethod.SetResult(null);
                 }
             }
         }
@@ -3558,6 +3557,69 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     Debug.Write(response);
                     Assert.Equal(words[int.Parse(id)], ((CompletionMessage)response).Result);
                 }
+            }
+        }
+
+        private class DelayRequirement : AuthorizationHandler<DelayRequirement, HubInvocationContext>, IAuthorizationRequirement
+        {
+            private readonly TcsService _tcsService;
+            public DelayRequirement(TcsService tcsService)
+            {
+                _tcsService = tcsService;
+            }
+
+            protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, DelayRequirement requirement, HubInvocationContext resource)
+            {
+                _tcsService.StartedMethod.SetResult(null);
+                await _tcsService.EndMethod.Task;
+                context.Succeed(requirement);
+            }
+        }
+
+        [Fact]
+        public async Task UploadStreamParallel()
+        {
+            // Use Auth as the delay injection point because it is one of the first things to run after the invocation message has been parsed
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddSignalR(options =>
+                {
+                    options.MaxParallelInvocationsPerClient = 1;
+                });
+
+                services.AddAuthorization(options =>
+                {
+                    options.AddPolicy("test", policy =>
+                    {
+                        policy.Requirements.Add(new DelayRequirement(tcsService));
+                    });
+                });
+            });
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+                await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.UploadArrayAuth), new[] { "id" }, Array.Empty<object>());
+                await tcsService.StartedMethod.Task.OrTimeout();
+
+                var objects = new[] { new SampleObject("solo", 322), new SampleObject("ggez", 3145) };
+                foreach (var thing in objects)
+                {
+                    await client.SendHubMessageAsync(new StreamItemMessage("id", thing)).OrTimeout();
+                }
+
+                tcsService.EndMethod.SetResult(null);
+
+                await client.SendHubMessageAsync(CompletionMessage.Empty("id")).OrTimeout();
+                var response = (CompletionMessage)await client.ReadAsync().OrTimeout();
+                var result = ((JArray)response.Result).ToArray<object>();
+
+                Assert.Equal(objects[0].Foo, ((JContainer)result[0])["foo"]);
+                Assert.Equal(objects[0].Bar, ((JContainer)result[0])["bar"]);
+                Assert.Equal(objects[1].Foo, ((JContainer)result[1])["foo"]);
+                Assert.Equal(objects[1].Bar, ((JContainer)result[1])["bar"]);
             }
         }
 

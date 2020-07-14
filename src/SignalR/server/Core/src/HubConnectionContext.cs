@@ -76,7 +76,6 @@ namespace Microsoft.AspNetCore.SignalR
 
             var maxInvokes = contextOptions.MaximumParallelInvocations;
             ActiveInvocationLimit = new SemaphoreSlim(maxInvokes, maxInvokes);
-            MaxInvokes = contextOptions.MaximumParallelInvocations;
         }
 
         internal StreamTracker StreamTracker
@@ -97,7 +96,6 @@ namespace Microsoft.AspNetCore.SignalR
 
         internal Exception? CloseException { get; private set; }
         internal SemaphoreSlim ActiveInvocationLimit { get; }
-        internal int MaxInvokes { get; }
 
         /// <summary>
         /// Gets a <see cref="CancellationToken"/> that notifies when the connection is aborted.

@@ -244,22 +244,6 @@ namespace Microsoft.AspNetCore.SignalR
 
             var binder = new HubConnectionBinder<THub>(_dispatcher, connection);
 
-            var channel = Channel.CreateBounded<HubMessage>(new BoundedChannelOptions(connection.MaxInvokes));
-
-            for (var i = 0; i < connection.MaxInvokes; i++)
-            {
-                _ = DispatchChannel(channel.Reader, connection, _dispatcher);
-            }
-
-            static async Task DispatchChannel(ChannelReader<HubMessage> reader, HubConnectionContext connection, HubDispatcher<THub> dispatcher)
-            {
-                while (true)
-                {
-                    var message = await reader.ReadAsync();
-                    await dispatcher.DispatchMessageAsync(connection, message);
-                }
-            }
-
             while (true)
             {
                 var result = await input.ReadAsync();
@@ -283,8 +267,6 @@ namespace Microsoft.AspNetCore.SignalR
                                 connection.StopClientTimeout();
                                 messageReceived = true;
                                 await _dispatcher.DispatchMessageAsync(connection, message);
-                                //await channel.Writer.WriteAsync(message);
-                                //await DispatchMessage(connection, _dispatcher, message);
                             }
 
                             if (messageReceived)
@@ -312,8 +294,7 @@ namespace Microsoft.AspNetCore.SignalR
                                 {
                                     connection.StopClientTimeout();
                                     messageReceived = true;
-                                    await channel.Writer.WriteAsync(message);
-                                    //await DispatchMessage(connection, _dispatcher, message);
+                                    await _dispatcher.DispatchMessageAsync(connection, message);
                                 }
                                 else if (overLength)
                                 {
@@ -352,25 +333,6 @@ namespace Microsoft.AspNetCore.SignalR
                     // before yielding the read again.
                     input.AdvanceTo(buffer.Start, buffer.End);
                 }
-
-                //static Task DispatchMessage(HubConnectionContext connection, HubDispatcher<THub> dispatcher, HubMessage message)
-                //{
-                //    connection.StopClientTimeout();
-                //    _ = ProcessTask(connection, dispatcher.DispatchMessageAsync(connection, message));
-                //    return connection.ActiveInvocationLimit.WaitAsync();
-                //}
-
-                //static async Task ProcessTask(HubConnectionContext connection, Task task)
-                //{
-                //    try
-                //    {
-                //        await task;
-                //    }
-                //    finally
-                //    {
-                //        connection.ActiveInvocationLimit.Release();
-                //    }
-                //}
             }
         }
 

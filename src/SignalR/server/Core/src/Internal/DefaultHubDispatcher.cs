@@ -146,6 +146,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         {
             // Messages are dispatched sequentially and will stop other messages from being processed until they complete.
             // Streaming methods will run sequentially until they start streaming, then they will fire-and-forget allowing other messages to run.
+
             // With parallel invokes enabled, messages run sequentially until they go async and then the next message will be allowed to start running.
 
             switch (hubMessage)
@@ -166,11 +167,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                 case StreamInvocationMessage streamInvocationMessage:
                     Log.ReceivedStreamHubInvocation(_logger, streamInvocationMessage);
-                    //return connection.ActiveInvocationLimit.RunAsync(state =>
-                    //{
-                    //    var (dispatcher, connection, streamInvocationMessage) = state;
-                    //    return dispatcher.ProcessInvocation(connection, streamInvocationMessage, isStreamResponse: true);
-                    //}, (this, connection, streamInvocationMessage));
                     return ProcessInvocation(connection, streamInvocationMessage, isStreamResponse: true);
 
                 case CancelInvocationMessage cancelInvocationMessage:
@@ -314,48 +310,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     InitializeHub(hub, connection);
                     Task invocation = null;
 
-                    CancellationTokenSource cts = null;
                     var arguments = hubMethodInvocationMessage.Arguments;
+                    CancellationTokenSource cts = null;
                     if (descriptor.HasSyntheticArguments)
                     {
-                        // In order to add the synthetic arguments we need a new array because the invocation array is too small (it doesn't know about synthetic arguments)
-                        arguments = new object[descriptor.OriginalParameterTypes.Count];
-
-                        var streamPointer = 0;
-                        var hubInvocationArgumentPointer = 0;
-                        for (var parameterPointer = 0; parameterPointer < arguments.Length; parameterPointer++)
-                        {
-                            if (hubMethodInvocationMessage.Arguments.Length > hubInvocationArgumentPointer &&
-                                (hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer] == null ||
-                                descriptor.OriginalParameterTypes[parameterPointer].IsAssignableFrom(hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer].GetType())))
-                            {
-                                // The types match so it isn't a synthetic argument, just copy it into the arguments array
-                                arguments[parameterPointer] = hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer];
-                                hubInvocationArgumentPointer++;
-                            }
-                            else
-                            {
-                                if (descriptor.OriginalParameterTypes[parameterPointer] == typeof(CancellationToken))
-                                {
-                                    cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
-                                    arguments[parameterPointer] = cts.Token;
-                                }
-                                else if (isStreamCall && ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer], mustBeDirectType: true))
-                                {
-                                    Log.StartingParameterStream(_logger, hubMethodInvocationMessage.StreamIds[streamPointer]);
-                                    var itemType = descriptor.StreamingParameters[streamPointer];
-                                    arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer],
-                                        itemType, descriptor.OriginalParameterTypes[parameterPointer]);
-
-                                    streamPointer++;
-                                }
-                                else
-                                {
-                                    // This should never happen
-                                    Debug.Assert(false, $"Failed to bind argument of type '{descriptor.OriginalParameterTypes[parameterPointer].Name}' for hub method '{methodExecutor.MethodInfo.Name}'.");
-                                }
-                            }
-                        }
+                        ReplaceArguments(descriptor, hubMethodInvocationMessage, isStreamCall, connection, ref arguments, out cts);
                     }
 
                     if (isStreamResponse)
@@ -621,6 +580,50 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
 
             return true;
+        }
+
+        private void ReplaceArguments(HubMethodDescriptor descriptor, HubMethodInvocationMessage hubMethodInvocationMessage, bool isStreamCall,
+            HubConnectionContext connection, ref object[] arguments, out CancellationTokenSource cts)
+        {
+            cts = null;
+            // In order to add the synthetic arguments we need a new array because the invocation array is too small (it doesn't know about synthetic arguments)
+            arguments = new object[descriptor.OriginalParameterTypes.Count];
+
+            var streamPointer = 0;
+            var hubInvocationArgumentPointer = 0;
+            for (var parameterPointer = 0; parameterPointer < arguments.Length; parameterPointer++)
+            {
+                if (hubMethodInvocationMessage.Arguments.Length > hubInvocationArgumentPointer &&
+                    (hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer] == null ||
+                    descriptor.OriginalParameterTypes[parameterPointer].IsAssignableFrom(hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer].GetType())))
+                {
+                    // The types match so it isn't a synthetic argument, just copy it into the arguments array
+                    arguments[parameterPointer] = hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer];
+                    hubInvocationArgumentPointer++;
+                }
+                else
+                {
+                    if (descriptor.OriginalParameterTypes[parameterPointer] == typeof(CancellationToken))
+                    {
+                        cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
+                        arguments[parameterPointer] = cts.Token;
+                    }
+                    else if (isStreamCall && ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer], mustBeDirectType: true))
+                    {
+                        Log.StartingParameterStream(_logger, hubMethodInvocationMessage.StreamIds[streamPointer]);
+                        var itemType = descriptor.StreamingParameters[streamPointer];
+                        arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer],
+                            itemType, descriptor.OriginalParameterTypes[parameterPointer]);
+
+                        streamPointer++;
+                    }
+                    else
+                    {
+                        // This should never happen
+                        Debug.Assert(false, $"Failed to bind argument of type '{descriptor.OriginalParameterTypes[parameterPointer].Name}' for hub method '{descriptor.MethodExecutor.MethodInfo.Name}'.");
+                    }
+                }
+            }
         }
 
         private void DiscoverHubMethods()
