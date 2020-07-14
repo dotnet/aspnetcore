@@ -177,7 +177,7 @@ namespace PackageBaselineGenerator
                 var versionAttribute = document.Root.Attribute("Version");
                 hasChanged = await TryUpdateVersionAsync(
                     versionAttribute,
-                    "Microsoft.AspNetCore.App.Runtime.win-x64",
+                    "Microsoft.AspNetCore.App",
                     packageMetadataResource,
                     logger,
                     cacheContext);
