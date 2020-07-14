@@ -3,15 +3,15 @@
 <p>
     Multiple title elements:<br />
 
-    @for (int i = 0; i < titles.Length; i++)
+    @for (int i = 0; i < 3; i++)
     {
         var titleId = i;
 
-        <button id="button-title-@i" @onclick="() => Toggle(ref titles[titleId])">
-            @GetToggleString(titles[titleId]) title @titleId
+        <button id="button-title-@i" @onclick="() => SetSelectedTitle(titleId)">
+            Title @titleId
         </button>
 
-        if (titles[titleId])
+        if (selectedTitle == titleId)
         {
             <Title Value="@($"Title {titleId}")" />
         }
@@ -30,7 +30,24 @@
 
         if (metas[metaId])
         {
-            <Meta Name="multiple-metas" Content="@($"Meta {metaId}")" />
+            <Meta id="@($"Meta {metaId}")" />
+        }
+    }
+</p>
+
+<p>
+    Multiple link elements:<br />
+
+    @for (int i = 0; i < links.Length; i++)
+    {
+        var linkId = i;
+
+        <button id="button-link-@i" @onclick="() => Toggle(ref links[linkId])">
+            @GetToggleString(links[linkId]) link @linkId</button>
+
+        if (links[linkId])
+        {
+            <Link id="@($"Link {linkId}")" />
         }
     }
 </p>
@@ -38,11 +55,11 @@
 <p>
     Nested title elements:<br />
 
-    <button id="button-title-nested" @onclick="() => Toggle(ref renderNestedTitle)">
-        @GetToggleString(renderNestedTitle) title nested
+    <button id="button-title-nested" @onclick="() => SetSelectedTitle(3)">
+        Nested titles
     </button>
 
-    @if (renderNestedTitle)
+    @if (selectedTitle == 3)
     {
         <div>
             <Title Value="Layer 1" />
@@ -60,48 +77,10 @@
 </p>
 
 <p>
-    Nested meta elements:<br />
-
-    <button id="button-meta-nested" @onclick="() => Toggle(ref renderNestedMeta)">
-        @GetToggleString(renderNestedMeta) meta http-equiv nested
-    </button>
-
-    @if (renderNestedMeta)
-    {
-        <div>
-            <Meta HttpEquiv="nested-meta" Content="Layer 1" />
-            <div>
-                <Meta HttpEquiv="nested-meta" Content="Layer 2" />
-                <div>
-                    <Meta HttpEquiv="nested-meta" Content="Layer 3" />
-                    <div>
-                        <Meta HttpEquiv="nested-meta" Content="Layer 4" />
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
-</p>
-
-<p>
-    Nested link elements:<br />
-
-    <button id="button-link-nested" @onclick="() => Toggle(ref renderNestedLink)">
-        @GetToggleString(renderNestedLink) link nested
-    </button>
-
-    @if (renderNestedLink)
-    {
-        <div>
-            <Link id="nested-link" attr1="some attribute" attr2="Layer 1" />
-            <div>
-                <Link id="nested-link" attr1="some attribute" attr2="Layer 2" />
-                <div>
-                    <Link id="nested-link" attr1="some other attribute" attr2="Layer 3" extra-attr="one more" />
-                </div>
-            </div>
-        </div>
-    }
+    Meta elements w/ bindings:<br />
+    <input id="meta-attr-input-1" @bind="@metaAttribute1" placeholder="Attribute 1" /><br />
+    <input id="meta-attr-input-2" @bind="@metaAttribute2" placeholder="Attribute 2" /><br />
+    <Meta id="meta-with-bindings" attr1="@metaAttribute1" attr2="@metaAttribute2" />
 </p>
 
 <p>
@@ -112,12 +91,13 @@
 </p>
 
 @code {
-    private readonly bool[] titles = Enumerable.Repeat(false, 3).ToArray();
     private readonly bool[] metas = Enumerable.Repeat(false, 3).ToArray();
+    private readonly bool[] links = Enumerable.Repeat(false, 3).ToArray();
 
-    private bool renderNestedTitle = false;
-    private bool renderNestedMeta = false;
-    private bool renderNestedLink = false;
+    private int selectedTitle = -1;
+
+    private string metaAttribute1 = "First attribute";
+    private string metaAttribute2 = "Second attribute";
 
     private string linkAttribute1 = "First attribute";
     private string linkAttribute2 = "Second attribute";
@@ -125,6 +105,12 @@
     private void Toggle(ref bool b)
     {
         b = !b;
+        StateHasChanged();
+    }
+
+    private void SetSelectedTitle(int title)
+    {
+        selectedTitle = title;
         StateHasChanged();
     }
 

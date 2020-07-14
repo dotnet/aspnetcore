@@ -2,15 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
     /// <summary>
     /// A component that changes the title of the document.
     /// </summary>
-    public class Title : HeadElementBase
+    public class Title : ComponentBase
     {
-        internal override object ElementKey => "title";
+        [Inject]
+        private IJSRuntime JSRuntime { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the value to use as the document's title.
@@ -18,19 +20,9 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         [Parameter]
         public string Value { get; set; } = string.Empty;
 
-        internal override async ValueTask<object?> GetInitialStateAsync()
+        protected override async Task OnParametersSetAsync()
         {
-            return await HeadManager.GetTitleAsync();
-        }
-
-        internal override ValueTask ResetStateAsync(object? initialState)
-        {
-            return HeadManager.SetTitleAsync(initialState);
-        }
-
-        internal override ValueTask ApplyAsync()
-        {
-            return HeadManager.SetTitleAsync(Value);
+             await JSRuntime.InvokeVoidAsync(HeadManagementInterop.SetTitle, Value);
         }
     }
 }

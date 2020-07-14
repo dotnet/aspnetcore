@@ -1,18 +1,22 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
     /// <summary>
     /// A component that adds a link element to the HTML head.
     /// </summary>
-    public class Link : HeadElementBase
+    public class Link : ComponentBase, IDisposable
     {
-        // Link components should never override each other, so they have unique keys.
-        internal override object ElementKey { get; } = new object();
+        private readonly string _linkTagId = Guid.NewGuid().ToString("N");
+
+        [Inject]
+        private IJSRuntime JSRuntime { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be applied to the link element.
@@ -20,19 +24,14 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         [Parameter(CaptureUnmatchedValues = true)]
         public IReadOnlyDictionary<string, object>? Attributes { get; set; }
 
-        internal override ValueTask ApplyAsync()
+        protected override async Task OnParametersSetAsync()
         {
-            return HeadManager.SetLinkElementAsync(ElementKey.GetHashCode(), Attributes);
+            await JSRuntime.InvokeVoidAsync(HeadManagementInterop.SetTag, "link", _linkTagId, Attributes!);
         }
 
-        internal override ValueTask<object?> GetInitialStateAsync()
+        public void Dispose()
         {
-            return ValueTask.FromResult<object?>(null);
-        }
-
-        internal override ValueTask ResetStateAsync(object? initialState)
-        {
-            return HeadManager.DeleteLinkElementAsync(ElementKey.GetHashCode());
+            Task.Run(() => JSRuntime.InvokeVoidAsync(HeadManagementInterop.RemoveTag, "link", _linkTagId));
         }
     }
 }

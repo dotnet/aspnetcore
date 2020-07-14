@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Linq;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest;
@@ -31,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
         }
 
         [Fact]
-        public void Title_AddsAndDiscardsChangesInReverseOrder()
+        public void Title_DoesChangeDocumentTitle()
         {
             var titleCount = 3;
             var titleButtonsById = Enumerable.Range(0, titleCount)
@@ -48,7 +47,16 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
         }
 
         [Fact]
-        public void Meta_AddsAndDiscardsChangesInReverseOrder()
+        public void Title_DeepestComponentHasPriority()
+        {
+            var nestedTitleButton = Browser.FindElement(By.Id("button-title-nested"));
+            nestedTitleButton.Click();
+
+            Browser.Equal("Layer 4", () => Browser.Title);
+        }
+
+        [Fact]
+        public void Meta_AddsAndRemovesElements()
         {
             var metaCount = 3;
             var metaButtonsById = Enumerable.Range(0, metaCount)
@@ -60,57 +68,64 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
                 var (id, button) = buttonById;
                 button.Click();
 
-                var metaElement = Browser.FindElements(By.TagName("meta"))
-                    .Where(e => e.GetAttribute("name").Equals("multiple-metas"))
-                    .Single();
+                Browser.Exists(By.Id($"Meta {id}"));
+            });
 
-                Browser.Equal($"Meta {id}", () => metaElement.GetAttribute("content"));
+            Assert.All(metaButtonsById, buttonById =>
+            {
+                var (id, button) = buttonById;
+                button.Click();
+
+                Browser.DoesNotExist(By.Id($"Meta {id}"));
             });
         }
 
         [Fact]
-        public void Title_DeepestComponentHasPriority()
+        public void Meta_UpdatesSameElementWhenComponentPropertyChanged()
         {
-            var nestedTitleButton = Browser.FindElement(By.Id("button-title-nested"));
+            var metaAttributeInput1 = Browser.FindElement(By.Id("meta-attr-input-1"));
+            var metaAttributeInput2 = Browser.FindElement(By.Id("meta-attr-input-2"));
+            var metaElement = Browser.FindElement(By.Id("meta-with-bindings"));
 
-            Browser.Equal("Basic test app", () => Browser.Title);
+            Browser.Equal("First attribute", () => metaElement.GetAttribute("attr1"));
+            Browser.Equal("Second attribute", () => metaElement.GetAttribute("attr2"));
 
-            nestedTitleButton.Click();
+            metaAttributeInput1.Clear();
+            metaAttributeInput1.SendKeys("hello\n");
 
-            Browser.Equal("Layer 4", () => Browser.Title);
+            Browser.Equal("hello", () => metaElement.GetAttribute("attr1"));
+            Browser.Equal("Second attribute", () => metaElement.GetAttribute("attr2"));
+
+            metaAttributeInput2.Clear();
+            metaAttributeInput2.SendKeys("world\n");
+
+            Browser.Equal("hello", () => metaElement.GetAttribute("attr1"));
+            Browser.Equal("world", () => metaElement.GetAttribute("attr2"));
         }
 
         [Fact]
-        public void Meta_DeepestComponentHasPriority()
+        public void Link_AddsAndRemovesElements()
         {
-            var nestedMetaButton = Browser.FindElement(By.Id("button-meta-nested"));
+            var linkCount = 3;
+            var linkButtonsById = Enumerable.Range(0, linkCount)
+                .Select(i => (i, Browser.FindElement(By.Id($"button-link-{i}"))))
+                .ToList();
 
-            Browser.Empty(FindNestedMetas);
+            Assert.All(linkButtonsById, buttonById =>
+            {
+                var (id, button) = buttonById;
+                button.Click();
 
-            nestedMetaButton.Click();
+                Browser.Exists(By.Id($"Link {id}"));
+            });
 
-            var nestedMetaElement = FindNestedMetas().Single();
+            Assert.All(linkButtonsById, buttonById =>
+            {
+                var (id, button) = buttonById;
+                button.Click();
 
-            Browser.Equal("Layer 4", () => nestedMetaElement.GetAttribute("content"));
-
-            IEnumerable<IWebElement> FindNestedMetas()
-                => Browser.FindElements(By.TagName("meta"))
-                          .Where(e => e.GetAttribute("http-equiv")?.Equals("nested-meta") ?? false);
-        }
-
-        [Fact]
-        public void Link_NestedComponentsDoNotOverride()
-        {
-            var nestedLinkButton = Browser.FindElement(By.Id("button-link-nested"));
-
-            Browser.Empty(FindNestedLinks);
-
-            nestedLinkButton.Click();
-
-            Browser.Equal(3, () => FindNestedLinks().Count());
-
-            IEnumerable<IWebElement> FindNestedLinks()
-                => Browser.FindElements(By.Id("nested-link"));
+                Browser.DoesNotExist(By.Id($"Link {id}"));
+            });
         }
 
         [Fact]
