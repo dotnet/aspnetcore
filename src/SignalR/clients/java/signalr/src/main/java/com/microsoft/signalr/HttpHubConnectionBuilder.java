@@ -116,13 +116,13 @@ public class HttpHubConnectionBuilder {
     }
 
     /**
-     * Adds a method that will be called when constructing the HttpClient to allow customization such as certificate validation, proxies, and cookies.
+     * Sets a method that will be called when constructing the HttpClient to allow customization such as certificate validation, proxies, and cookies.
      * By default the client will have a cookie jar added and a read timeout for LongPolling.
      *
      * @param configureBuilder Callback for configuring the OkHttpClient.Builder.
      * @return This instance of the HttpHubConnectionBuilder.
      */
-    public HttpHubConnectionBuilder configureHttpClient(Action1<OkHttpClient.Builder> configureBuilder) {
+    public HttpHubConnectionBuilder setConfigureHttpClient(Action1<OkHttpClient.Builder> configureBuilder) {
         this.configureBuilder = configureBuilder;
         return this;
     }
