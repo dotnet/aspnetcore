@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             router.Object.RunOnNavigateWithRefreshAsync("feb", false);
 
             // Assert refresh should've only been called once for the second route
-            router.Verify(x => x.Refresh(It.IsAny<bool>()), Times.Once());
+            router.Verify(x => x.Refresh(false), Times.Once());
         }
 
         private Mock<Router> CreateMockRouter()

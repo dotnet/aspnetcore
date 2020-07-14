@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
         }
 
-        private async ValueTask<bool> RunOnNavigateAsync(string path, Task prevOnNavigate)
+        private async ValueTask<bool> RunOnNavigateAsync(string path, Task previousOnNavigate)
         {
             // If this router instance does not provide an OnNavigateAsync parameter
             // then we render the component associated with the route as per usual.
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             _onNavigateCts?.Cancel();
             // Then make sure that the task has been completed cancelled or
             // completed before continuing with the execution of this current task.
-            await prevOnNavigate;
+            await previousOnNavigate;
 
             // Create a new cancellation token source for this instance
             _onNavigateCts = new CancellationTokenSource();
