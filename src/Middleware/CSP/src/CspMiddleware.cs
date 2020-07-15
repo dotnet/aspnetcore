@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Csp
 
         public Task Invoke(HttpContext context)
         {
-            context.Response.Headers[CspConstants.CspHeaderKey] = _csp.GetPolicy();
+            context.Response.Headers[CspConstants.CspEnforcedHeaderName] = _csp.GetPolicy();
             return _next(context);
         }
     }

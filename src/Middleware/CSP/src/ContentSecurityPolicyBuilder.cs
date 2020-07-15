@@ -1,14 +1,18 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Csp
 {
     public class ContentSecurityPolicyBuilder
     {
         private readonly ContentSecurityPolicy _policy = new ContentSecurityPolicy();
+        private LoggingConfiguration _LoggingConfiguration;
+
+        public ContentSecurityPolicyBuilder()
+        {
+            // TODO: Consider adding builder for logging config
+            _LoggingConfiguration = new LoggingConfiguration();
+            _LoggingConfiguration.LogLevel = Extensions.Logging.LogLevel.Information;
+        }
 
         public ContentSecurityPolicyBuilder WithCspMode(CspMode cspMode)
         {
@@ -27,12 +31,6 @@ namespace Microsoft.AspNetCore.Csp
             _policy.UnsafeEval = true;
             return this;
         }
-
-        public ContentSecurityPolicyBuilder WithReportOnly()
-        {
-            _policy.ReportOnly = true;
-            return this;
-        }
         public ContentSecurityPolicyBuilder WithReportingUri(string reportingUri)
         {
             // TODO: normalize URL
@@ -42,7 +40,7 @@ namespace Microsoft.AspNetCore.Csp
 
         public ContentSecurityPolicyBuilder WithLoggingConfiguration(LoggingConfiguration loggingConfiguration)
         {
-            _policy.LoggingConfiguration = loggingConfiguration;
+            _LoggingConfiguration = loggingConfiguration;
             return this;
         }
 
@@ -54,18 +52,13 @@ namespace Microsoft.AspNetCore.Csp
                 throw new InvalidOperationException();
             }
 
-            if (_policy.ReportOnly && _policy.ReportingUri == null)
+            if (_policy.CspMode == CspMode.REPORTING && _policy.ReportingUri == null)
             {
                 // TODO: Error message
                 throw new InvalidOperationException();
             }
 
-            if (_policy.ReportOnly && _policy.LoggingConfiguration == null)
-            {
-                // TODO: Error message
-                throw new InvalidOperationException();
-            }
-
+            _policy.LoggingConfiguration = _LoggingConfiguration;
             return _policy;
         }
     }

@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Csp
 {
     public static class CspConstants
     {
-        public static readonly string CspHeaderKey = "Content-Security-Policy";
+        public static readonly string CspEnforcedHeaderName = "Content-Security-Policy";
+        public static readonly string CspReportingHeaderName = "Content-Security-Policy-Report-Only";
     }
 }

@@ -40,8 +40,6 @@ namespace Microsoft.AspNetCore.Csp.Test
                 // Assert
                 response.EnsureSuccessStatusCode();
                 Assert.Single(response.Headers);
-                var expectedPolicy = "object-src 'none'; script-src 'nonce-{random}' 'strict-dynamic' https: http:; base-uri 'none'; ";
-                Assert.Equal(expectedPolicy, response.Headers.GetValues(CspConstants.CspHeaderKey).FirstOrDefault());
                 Assert.Equal("Test response", await response.Content.ReadAsStringAsync());
             }
         }
