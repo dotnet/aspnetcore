@@ -4,62 +4,74 @@ namespace Microsoft.AspNetCore.Csp
 {
     public class ContentSecurityPolicyBuilder
     {
-        private readonly ContentSecurityPolicy _policy = new ContentSecurityPolicy();
-        private LoggingConfiguration _LoggingConfiguration;
+        private LoggingConfiguration _loggingConfiguration;
+        private CspMode _cspMode;
+        private bool _strictDynamic;
+        private bool _unsafeEval;
+        private string _reportingUri;
 
         public ContentSecurityPolicyBuilder()
         {
             // TODO: Consider adding builder for logging config
-            _LoggingConfiguration = new LoggingConfiguration();
-            _LoggingConfiguration.LogLevel = Extensions.Logging.LogLevel.Information;
+            _loggingConfiguration = new LoggingConfiguration();
+            _loggingConfiguration.LogLevel = Extensions.Logging.LogLevel.Information;
         }
 
         public ContentSecurityPolicyBuilder WithCspMode(CspMode cspMode)
         {
-            _policy.CspMode = cspMode;
+            _cspMode = cspMode;
             return this;
         }
 
         public ContentSecurityPolicyBuilder WithStrictDynamic()
         {
-            _policy.StrictDynamic = true;
+            _strictDynamic = true;
             return this;
         }
 
         public ContentSecurityPolicyBuilder WithUnsafeEval()
         {
-            _policy.UnsafeEval = true;
+            _unsafeEval = true;
             return this;
         }
         public ContentSecurityPolicyBuilder WithReportingUri(string reportingUri)
         {
             // TODO: normalize URL
-            _policy.ReportingUri = reportingUri;
+            _reportingUri = reportingUri;
             return this;
         }
 
         public ContentSecurityPolicyBuilder WithLoggingConfiguration(LoggingConfiguration loggingConfiguration)
         {
-            _LoggingConfiguration = loggingConfiguration;
+            _loggingConfiguration = loggingConfiguration;
             return this;
+        }
+
+        public bool HasReporting()
+        {
+            return _reportingUri != null;
         }
 
         public ContentSecurityPolicy Build()
         {
-            if (_policy.CspMode == CspMode.NONE)
+            if (_cspMode == CspMode.NONE)
             {
                 // TODO: Error message
                 throw new InvalidOperationException();
             }
 
-            if (_policy.CspMode == CspMode.REPORTING && _policy.ReportingUri == null)
+            if (_cspMode == CspMode.REPORTING && _reportingUri == null)
             {
                 // TODO: Error message
                 throw new InvalidOperationException();
             }
 
-            _policy.LoggingConfiguration = _LoggingConfiguration;
-            return _policy;
+            return new ContentSecurityPolicy(
+                _cspMode,
+                _strictDynamic,
+                _unsafeEval,
+                _reportingUri
+            );
         }
     }
 }

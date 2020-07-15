@@ -17,25 +17,36 @@ namespace Microsoft.AspNetCore.Csp
     {
         private readonly string _baseAndObject = "base-uri 'none'; object-src 'none'";
 
+        private readonly CspMode _cspMode;
+        private readonly bool _strictDynamic;
+        private readonly bool _unsafeEval;
+        private readonly string _reportingUri;
+
+        public ContentSecurityPolicy(
+            CspMode cspMode,
+            bool strictDynamic,
+            bool unsafeEval,
+            string reportingUri
+        )
+        {
+            _cspMode = cspMode;
+            _strictDynamic = strictDynamic;
+            _unsafeEval = unsafeEval;
+            _reportingUri = reportingUri;
+        }
+
         public string GetHeaderName()
         {
-            return CspMode == CspMode.REPORTING ? CspConstants.CspReportingHeaderName : CspConstants.CspEnforcedHeaderName;
+            return _cspMode == CspMode.REPORTING ? CspConstants.CspReportingHeaderName : CspConstants.CspEnforcedHeaderName;
         }
         public string GetPolicy()
         {
             return string.Format(
                 "script-src 'nonce-random' {0} {1} https: http:; {2}; {3}",
-                StrictDynamic ? "'strict-dynamic'" : "",
-                UnsafeEval ? "'unsafe-eval'" : "",
+                _strictDynamic ? "'strict-dynamic'" : "",
+                _unsafeEval ? "'unsafe-eval'" : "",
                 _baseAndObject,
-                ReportingUri != null ? "report-uri " + ReportingUri : "");
+                _reportingUri != null ? "report-uri " + _reportingUri : "");
         }
-
-        //TODO: Remove getters
-        public CspMode CspMode { get; internal set; }
-        public bool StrictDynamic { get; internal set; }
-        public bool UnsafeEval { get; internal set; }
-        public string ReportingUri { get; internal set; }
-        public LoggingConfiguration LoggingConfiguration { get; internal set; }
     }
 }

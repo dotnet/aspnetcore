@@ -15,6 +15,11 @@ namespace Microsoft.AspNetCore.Csp
             var policyBuilder = new ContentSecurityPolicyBuilder();
             configurePolicy(policyBuilder);
 
+            if (policyBuilder.HasReporting())
+            {
+                //TODO: Register reporting endpoint and implement default handler
+            }
+
             return app.UseMiddleware<CspMiddleware>(policyBuilder.Build());
         }
     }

@@ -17,16 +17,7 @@ namespace Microsoft.AspNetCore.Csp.Test
             );
         }
 
-        [Fact]
-        public void WhenNoLoggingConfigurationSet_thenDefaultLoggingConfigurationUsed()
-        {
-            var policy = new ContentSecurityPolicyBuilder()
-                .WithCspMode(CspMode.ENFORCING)
-                .Build();
-
-            //TODO: Define default logging config
-            Assert.Equal(LogLevel.Information, policy.LoggingConfiguration.LogLevel);
-        }
+        // TODO: Add logging configuration test
 
         [Fact]
         public void WhenModeSetToReporting_IfNoReportingUriSet_thenExceptionThrown()
