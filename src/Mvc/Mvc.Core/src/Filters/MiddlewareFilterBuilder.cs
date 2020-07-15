@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
     /// </summary>
     internal class MiddlewareFilterBuilder
     {
-        // 'GetOrAdd' call on the dictionary is not thread safe and we might end up creating the pipeline more
+        // 'GetOrAdd' call on the dictionary is not thread safe and we might end up creating the pipeline more than
         // once. To prevent this Lazy<> is used. In the worst case multiple Lazy<> objects are created for multiple
         // threads but only one of the objects succeeds in creating a pipeline.
         private readonly ConcurrentDictionary<Type, Lazy<RequestDelegate>> _pipelinesCache
