@@ -1,0 +1,22 @@
+﻿@implements IAsyncDisposable
+<p>I'm async disposable component @Name.</p>
+@code {
+    [Parameter] public EventCallback<string> SetMessage { get; set; }
+
+    [Parameter] public int Delay { get; set; }
+    [Parameter] public int InitialDelay { get; set; }
+    [Parameter] public string Name { get; set; }
+
+    public async ValueTask DisposeAsync()
+    {
+        if(InitialDelay > 0)
+        {
+            await Task.Delay(InitialDelay);
+        }
+        await SetMessage.InvokeAsync($"Before going async {Name}.");
+        await Task.Delay(Delay);
+        await SetMessage.InvokeAsync($"After going async {Name}.");
+        await Task.Delay(Delay);
+        await SetMessage.InvokeAsync($"Done disposing {Name}.");
+    }
+}

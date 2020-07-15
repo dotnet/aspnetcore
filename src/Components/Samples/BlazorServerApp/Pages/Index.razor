@@ -1,5 +1,27 @@
 ﻿@page "/"
 
 <h1>Hello, world!</h1>
+<p>@_message</p>
 
-Welcome to your new app.
+@if (!_hidden[0])
+{
+    <AsyncDisposable SetMessage="@SetMessage" Name="0" InitialDelay="500" Delay="2000" />
+}
+
+@if (!_hidden[1])
+{
+    <AsyncDisposable SetMessage="@SetMessage" Name="1" Delay="4000" />
+}
+
+<button @onclick="() => _hidden[0] = !_hidden[0]">Toggle 0</button>
+<button @onclick="() => _hidden[1] = !_hidden[1]">Toggle 1</button>
+
+@code{
+    private string _message;
+    bool[] _hidden = new [] { false, false };
+
+    public void SetMessage(string message)
+    {
+        _message = message;
+    }
+}
