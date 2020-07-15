@@ -1,6 +1,11 @@
 ﻿@using Microsoft.AspNetCore.Components.Routing
 
 <Router AppAssembly="@typeof(BasicTestApp.Program).Assembly" OnNavigateAsync="@OnNavigateAsync">
+    <OnNavigateError>
+        <div style="padding: 20px;background-color:red;color:white;" id="loading-banner">
+            <p>Woops!</p>
+        </div>
+    </OnNavigateError>
     <Navigating>
         <div style="padding: 20px;background-color:blue;color:white;" id="loading-banner">
             <p>Loading the requested page...</p>
@@ -19,8 +24,9 @@
 @code {
     private Dictionary<string, Func<NavigationContext, Task>> preNavigateTasks = new Dictionary<string, Func<NavigationContext, Task>>()
     {
-        { "LongPage1", new Func<NavigationContext, Task>(TestLoadingPageShows) },
-        { "LongPage2", new Func<NavigationContext, Task>(TestOnNavCancel) }
+    { "LongPage1", new Func<NavigationContext, Task>(TestLoadingPageShows) },
+    { "LongPage2", new Func<NavigationContext, Task>(TestOnNavCancel) },
+    { "Other", new Func<NavigationContext, Task>(TestOnNavException) }
     };
 
     private async Task OnNavigateAsync(NavigationContext args)
@@ -42,5 +48,10 @@
     {
         await Task.Delay(2000, args.CancellationToken);
         Console.WriteLine("I'm not happening...");
+    }
+    public static async Task TestOnNavException(NavigationContext args)
+    {
+        await Task.Delay(2000);
+        throw new Exception("This is an uncaught exception.");
     }
 }

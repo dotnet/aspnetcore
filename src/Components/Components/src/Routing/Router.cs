@@ -70,6 +70,12 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Parameter] public RenderFragment Navigating { get; set; }
 
         /// <summary>
+        /// Gets or sets the content to display with an asynchronous navigation task
+        /// throws an unhandled exception.
+        /// </summary>
+        [Parameter] public RenderFragment<Exception> OnNavigateError { get; set; }
+
+        /// <summary>
         /// Gets or sets a handler that should be called before navigating to a new page.
         /// </summary>
         [Parameter] public EventCallback<NavigationContext> OnNavigateAsync { get; set; }
@@ -227,6 +233,13 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
 
             var completedTask = await Task.WhenAny(task, cancellationTcs.Task);
+
+            if (OnNavigateError != null && completedTask.IsFaulted)
+            {
+                _renderHandle.Render(OnNavigateError(completedTask.Exception.InnerException));
+                return false;
+            }
+
             return task == completedTask;
         }
 

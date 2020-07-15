@@ -551,6 +551,18 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             SetUrlViaPushState("/LongPage2");
             SetUrlViaPushState("/LongPage1");
 
+            Assert.True(app.FindElement(By.Id("error-banner")) != null);
+        }
+
+        [Fact]
+        public void OnNavigate_CanRenderUIForExceptions()
+        {
+            var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
+
+            // Navigating from one page to another should
+            // cancel the previous OnNavigate Task
+            SetUrlViaPushState("/Other");
+
             AssertDidNotLog("I'm not happening...");
         }
 
