@@ -1,51 +1,110 @@
-// Local helpers
+(function () {
+    // Local helpers
 
-const getHeadElement = (tagName, id) => {
-    const elements = Array.from(document.getElementsByTagName(tagName));
-    return elements.find(e => e._blazorId === id);
-}
+    const blazorIdAttributeName = '_blazor_id';
+    const headCommentRegularExpression = /\W*Head:[^{]*(.*)$/;
+    const prerenderedTags = [];
 
-const getOrCreateHeadElement = (tagName, id) => {
-    let element = getHeadElement(tagName, id);
+    function createHeadTag({ tagName, attributes }, id) {
+        const tagElement = document.createElement(tagName);
 
-    if (element) {
-        return element;
-    }
+        if (id) {
+            tagElement.setAttribute(blazorIdAttributeName, id);
+        }
 
-    element = document.createElement(tagName);
-    element._blazorId = id;
-
-    const head = document.getElementsByTagName('head')[0];
-    head.appendChild(element);
-
-    return element;
-};
-
-// Exported functions
-
-const setTitle = (title) => {
-    document.title = title;
-};
-
-const setTag = (tagName, id, attributes) => {
-    let tag = getOrCreateHeadElement(tagName, id);
-
-    if (attributes) {
-        for (let key in attributes) {
-            if (attributes.hasOwnProperty(key)) {
-                tag.setAttribute(key, attributes[key]);
+        if (attributes) {
+            for (const key in attributes) {
+                if (attributes.hasOwnProperty(key)) {
+                    tagElement.setAttribute(key, attributes[key]);
+                }
             }
         }
+
+        document.head.appendChild(tagElement);
+
+        return tagElement;
     }
-};
 
-const removeTag = (tagName, id) => {
-    let tag = getHeadElement(tagName, id);
-    tag && tag.remove();
-};
+    function resolvePrerenderedHeadComponents(node) {
+        node.childNodes.forEach((childNode) => {
+            const headElement = parseHeadComment(childNode);
 
-window._blazorHeadManager = {
-    setTitle,
-    setTag,
-    removeTag,
-};
+            if (headElement) {
+                applyPrerenderedHeadComponent(headElement);
+            } else {
+                resolvePrerenderedHeadComponents(childNode);
+            }
+        });
+    }
+
+    function applyPrerenderedHeadComponent(headElement) {
+        switch (headElement.type) {
+            case 'title':
+                setTitle(headElement.title);
+                break;
+            case 'tag':
+                const tag = createHeadTag(headElement);
+                prerenderedTags.push(tag);
+                break;
+        }
+    }
+
+    function parseHeadComment(node) {
+        if (!node || node.nodeType != Node.COMMENT_NODE) {
+            return;
+        }
+
+        const commentText = node.textContent;
+
+        if (!commentText) {
+            return;
+        }
+
+        const headStartComment = new RegExp(headCommentRegularExpression);
+        const definition = headStartComment.exec(commentText);
+        const json = definition && definition[1];
+
+        if (json) {
+            try {
+                return JSON.parse(json);
+            } catch (error) {
+                throw new Error(`Found malformed head comment '${commentText}'.`);
+            }
+        } else {
+            return;
+        }
+    }
+
+    // Exported functions
+
+    function setTitle(title) {
+        document.title = title;
+    }
+
+    function applyHeadTag(tag, id) {
+        removeHeadTag(id);
+        createHeadTag(tag, id);
+    }
+
+    function removeHeadTag(id) {
+        let tag = document.head.querySelector(`[${blazorIdAttributeName}='${id}']`);
+        tag && tag.remove();
+    }
+
+    function removePrerenderedHeadTags() {
+        prerenderedTags.forEach((tag) => {
+            tag.remove();
+        });
+
+        prerenderedTags.length = 0;
+    }
+
+    window._blazorHeadManager = {
+        setTitle,
+        applyHeadTag,
+        removeHeadTag,
+        removePrerenderedHeadTags,
+    };
+
+    resolvePrerenderedHeadComponents(document);
+})();

@@ -73,6 +73,51 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        public void CanInfluenceHeadDuringPrerender()
+        {
+            Navigate("/prerendered/prerendered-head");
+
+            var metaWithBindings = Browser.FindElement(By.Id("meta-with-bindings"));
+            var metaNoBindings = Browser.FindElement(By.Id("meta-no-bindings"));
+
+            // Validate updated head during prerender
+            Browser.Equal("Initial title", () => Browser.Title);
+            Browser.Equal("Initial meta content", () => metaWithBindings.GetAttribute("content"));
+            Browser.Equal("Immutable meta content", () => metaNoBindings.GetAttribute("content"));
+
+            BeginInteractivity();
+
+            // Wait for elements to be recreated with internal ids to permit mutation
+            WaitForNewElement(ref metaWithBindings, "meta-with-bindings");
+            WaitForNewElement(ref metaNoBindings, "meta-no-bindings");
+
+            // Validate updated head after prerender
+            Browser.Equal("Initial title", () => Browser.Title);
+            Browser.Equal("Initial meta content", () => metaWithBindings.GetAttribute("content"));
+            Browser.Equal("Immutable meta content", () => metaNoBindings.GetAttribute("content"));
+
+            // Change parameter of meta component
+            var inputMetaBinding = Browser.FindElement(By.Id("input-meta-binding"));
+            inputMetaBinding.Clear();
+            inputMetaBinding.SendKeys("Updated meta content\n");
+
+            // Wait for meta tag to be recreated with new attributes
+            WaitForNewElement(ref metaWithBindings, "meta-with-bindings");
+
+            // Validate new meta content attribute
+            Browser.Equal("Updated meta content", () => metaWithBindings.GetAttribute("content"));
+
+            void WaitForNewElement(ref IWebElement existingElement, string id)
+            {
+                var newElement = existingElement;
+
+                Browser.NotEqual(existingElement, () => newElement = Browser.FindElement(By.Id(id)) ?? newElement);
+
+                existingElement = newElement;
+            }
+        }
+
+        [Fact]
         public void CanReadUrlHashOnlyOnceConnected()
         {
             var urlWithoutHash = "prerendered/show-uri?my=query&another=value";

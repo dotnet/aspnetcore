@@ -1,0 +1,29 @@
+﻿@page "/prerendered-head"
+
+@using Microsoft.AspNetCore.Components.Web.Extensions
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<p>
+    This component demonstrates that head components (i.e. Title, Meta, etc.) can take effect during prerendering
+    and become updatable when the circuit connects.
+</p>
+
+<p>
+    Title:<br />
+    <input id="title-input" @bind="title" placeholder="Set the title" />
+    <Title Value=@title />
+</p>
+
+<p>
+    Meta:<br />
+    <input id="input-meta-binding" @bind="metaContent" placeholder="Set the meta content" />
+    <Meta id="meta-with-bindings" content="@metaContent" />
+</p>
+
+<Meta id="meta-no-bindings" content="Immutable meta content" />
+
+@code {
+    private string title = "Initial title";
+    private string metaContent = "Initial meta content";
+}

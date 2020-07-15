@@ -2,26 +2,36 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
     /// <summary>
-    /// A component that changes the title of the document.
+    /// Serves as a base for components that represent tags in the HTML head.
     /// </summary>
-    public class Title : ComponentBase
+    public abstract class HeadTagBase : ComponentBase, IDisposable
     {
+        private readonly string _id = Guid.NewGuid().ToString("N");
+
+        private TagElement _tagElement;
+
         private HeadManager _headManager = default!;
 
         [Inject]
         private IServiceProvider ServiceProvider { get; set; } = default!;
 
         /// <summary>
-        /// Gets or sets the value to use as the document's title.
+        /// Gets or sets a collection of additional attributes that will be applied to the meta element.
         /// </summary>
-        [Parameter]
-        public string Value { get; set; } = string.Empty;
+        [Parameter(CaptureUnmatchedValues = true)]
+        public IReadOnlyDictionary<string, object>? Attributes { get; set; }
+
+        protected HeadTagBase(string tagName)
+        {
+            _tagElement = new TagElement(tagName);
+        }
 
         /// <inheritdoc />
         protected override void OnInitialized()
@@ -31,9 +41,15 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         }
 
         /// <inheritdoc />
+        protected override void OnParametersSet()
+        {
+            _tagElement.Attributes = Attributes;
+        }
+
+        /// <inheritdoc />
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            await _headManager.SetTitleAsync(Value);
+            await _headManager.ApplyTagAsync(_tagElement, _id);
         }
 
         /// <inheritdoc />
@@ -41,7 +57,16 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         {
             if (_headManager.IsPrerendering)
             {
-                _headManager.BuildHeadElementComment(builder, new TitleElement { Title = Value });
+                _headManager.BuildHeadElementComment(builder, _tagElement);
+            }
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            if (!_headManager.IsPrerendering)
+            {
+                _ = _headManager.RemoveTagAsync(_id);
             }
         }
     }

@@ -85,22 +85,26 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
         {
             var metaAttributeInput1 = Browser.FindElement(By.Id("meta-attr-input-1"));
             var metaAttributeInput2 = Browser.FindElement(By.Id("meta-attr-input-2"));
-            var metaElement = Browser.FindElement(By.Id("meta-with-bindings"));
+            var metaElement = FindMetaElement();
 
             Browser.Equal("First attribute", () => metaElement.GetAttribute("attr1"));
             Browser.Equal("Second attribute", () => metaElement.GetAttribute("attr2"));
 
             metaAttributeInput1.Clear();
             metaAttributeInput1.SendKeys("hello\n");
+            metaElement = FindMetaElement();
 
             Browser.Equal("hello", () => metaElement.GetAttribute("attr1"));
             Browser.Equal("Second attribute", () => metaElement.GetAttribute("attr2"));
 
             metaAttributeInput2.Clear();
             metaAttributeInput2.SendKeys("world\n");
+            metaElement = FindMetaElement();
 
             Browser.Equal("hello", () => metaElement.GetAttribute("attr1"));
             Browser.Equal("world", () => metaElement.GetAttribute("attr2"));
+
+            IWebElement FindMetaElement() => Browser.FindElements(By.Id("meta-with-bindings")).Single();
         }
 
         [Fact]
@@ -133,22 +137,26 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
         {
             var linkAttributeInput1 = Browser.FindElement(By.Id("link-attr-input-1"));
             var linkAttributeInput2 = Browser.FindElement(By.Id("link-attr-input-2"));
-            var linkElement = Browser.FindElement(By.Id("link-with-bindings"));
+            var linkElement = FindLinkElement();
 
             Browser.Equal("First attribute", () => linkElement.GetAttribute("attr1"));
             Browser.Equal("Second attribute", () => linkElement.GetAttribute("attr2"));
 
             linkAttributeInput1.Clear();
             linkAttributeInput1.SendKeys("hello\n");
+            linkElement = FindLinkElement();
 
             Browser.Equal("hello", () => linkElement.GetAttribute("attr1"));
             Browser.Equal("Second attribute", () => linkElement.GetAttribute("attr2"));
 
             linkAttributeInput2.Clear();
             linkAttributeInput2.SendKeys("world\n");
+            linkElement = FindLinkElement();
 
             Browser.Equal("hello", () => linkElement.GetAttribute("attr1"));
             Browser.Equal("world", () => linkElement.GetAttribute("attr2"));
+
+            IWebElement FindLinkElement() => Browser.FindElements(By.Id("link-with-bindings")).Single();
         }
     }
 }

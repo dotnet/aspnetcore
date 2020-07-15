@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Web.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +22,7 @@ namespace TestServer
             services.AddMvc();
             services.AddServerSideBlazor();
             services.AddProtectedBrowserStorage();
+            services.AddHeadManagement();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
