@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Components.E2ETest.Tests;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -36,10 +35,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 $"{typeof(InvalidOperationException).FullName}: The current thread is not associated with the Dispatcher. Use InvokeAsync() to switch execution to the Dispatcher when triggering rendering or component state.",
                 () => result.Text);
         }
-        
+
         [Fact]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/3615", FlakyOn.Helix.All)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19413")]
         public override void CanDispatchAsyncWorkToSyncContext()
-            => base.CanDispatchAsyncWorkToSyncContext();        
+            => base.CanDispatchAsyncWorkToSyncContext();
     }
 }

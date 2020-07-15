@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication
@@ -17,33 +18,38 @@ namespace Microsoft.AspNetCore.Authentication
         [Fact]
         public async Task OnlyInvokesCanHandleRequestHandlers()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.UseAuthentication();
-                })
-                .ConfigureServices(services => services.AddAuthentication(o =>
-                {
-                    o.AddScheme("Skip", s =>
-                    {
-                        s.HandlerType = typeof(SkipHandler);
-                    });
-                    // Won't get hit since CanHandleRequests is false
-                    o.AddScheme("throws", s =>
-                    {
-                        s.HandlerType = typeof(ThrowsHandler);
-                    });
-                    o.AddScheme("607", s =>
-                    {
-                        s.HandlerType = typeof(SixOhSevenHandler);
-                    });
-                    // Won't get run since 607 will finish
-                    o.AddScheme("305", s =>
-                    {
-                        s.HandlerType = typeof(ThreeOhFiveHandler);
-                    });
-                }));
-            var server = new TestServer(builder);
+            using var host = new HostBuilder()
+                .ConfigureWebHost(builder =>
+                    builder.UseTestServer()
+                        .Configure(app =>
+                        {
+                            app.UseAuthentication();
+                        })
+                        .ConfigureServices(services => services.AddAuthentication(o =>
+                        {
+                            o.AddScheme("Skip", s =>
+                            {
+                                s.HandlerType = typeof(SkipHandler);
+                            });
+                            // Won't get hit since CanHandleRequests is false
+                            o.AddScheme("throws", s =>
+                            {
+                                s.HandlerType = typeof(ThrowsHandler);
+                            });
+                            o.AddScheme("607", s =>
+                            {
+                                s.HandlerType = typeof(SixOhSevenHandler);
+                            });
+                            // Won't get run since 607 will finish
+                            o.AddScheme("305", s =>
+                            {
+                                s.HandlerType = typeof(ThreeOhFiveHandler);
+                            });
+                        })))
+                .Build();
+
+            await host.StartAsync();
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("http://example.com/");
             Assert.Equal(607, (int)response.StatusCode);
         }
@@ -191,6 +197,5 @@ namespace Microsoft.AspNetCore.Authentication
                 throw new NotImplementedException();
             }
         }
-
     }
 }

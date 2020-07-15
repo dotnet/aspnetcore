@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Builder
     {
         /// <summary>
         /// Captures synchronous and asynchronous database related exceptions from the pipeline that may be resolved using Entity Framework
-        /// migrations. When these exceptions occur an HTML response with details of possible actions to resolve the issue is generated.
+        /// migrations. When these exceptions occur, an HTML response with details of possible actions to resolve the issue is generated.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> to register the middleware with.</param>
         /// <returns>The same <see cref="IApplicationBuilder"/> instance so that multiple calls can be chained.</returns>
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Captures synchronous and asynchronous database related exceptions from the pipeline that may be resolved using Entity Framework
-        /// migrations. When these exceptions occur an HTML response with details of possible actions to resolve the issue is generated.
+        /// migrations. When these exceptions occur, an HTML response with details of possible actions to resolve the issue is generated.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> to register the middleware with.</param>
         /// <param name="options">A <see cref="DatabaseErrorPageOptions"/> that specifies options for the middleware.</param>

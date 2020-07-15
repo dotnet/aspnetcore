@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable warnings
+
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -147,20 +149,20 @@ namespace Microsoft.AspNetCore.Components.Rendering
         // synchronously runs the callback
         public override void Send(SendOrPostCallback d, object state)
         {
-            Task antecedant;
+            Task antecedent;
             var completion = new TaskCompletionSource<object>();
 
             lock (_state.Lock)
             {
-                antecedant = _state.Task;
+                antecedent = _state.Task;
                 _state.Task = completion.Task;
             }
 
             // We have to block. That's the contract of Send - we don't expect this to be used
             // in many scenarios in Components.
             //
-            // Using Wait here is ok because the antecedant task will never throw.
-            antecedant.Wait();
+            // Using Wait here is ok because the antecedent task will never throw.
+            antecedent.Wait();
 
             ExecuteSynchronously(completion, d, state);
         }
@@ -195,7 +197,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             ExecuteSynchronously(completion, d, state);
         }
 
-        private Task Enqueue(Task antecedant, SendOrPostCallback d, object state, bool forceAsync = false)
+        private Task Enqueue(Task antecedent, SendOrPostCallback d, object state, bool forceAsync = false)
         {
             // If we get here is means that a callback is being explicitly queued. Let's instead add it to the queue and yield.
             //
@@ -212,7 +214,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             var flags = forceAsync ? TaskContinuationOptions.RunContinuationsAsynchronously : TaskContinuationOptions.None;
-            return antecedant.ContinueWith(BackgroundWorkThunk, new WorkItem()
+            return antecedent.ContinueWith(BackgroundWorkThunk, new WorkItem()
             {
                 SynchronizationContext = this,
                 ExecutionContext = executionContext,

@@ -1,12 +1,13 @@
 {
   "name": "@microsoft/signalr",
-  "version": "3.0.0-dev",
+  "version": "5.0.0-dev",
   "description": "ASP.NET Core SignalR Client",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "typings": "./dist/esm/index.d.ts",
   "umd": "./dist/browser/signalr.js",
   "umd_name": "signalR",
+  "unpkg": "./dist/browser/signalr.js",
   "directories": {
     "test": "spec"
   },
@@ -32,14 +33,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aspnet/AspNetCore.git"
+    "url": "git+https://github.com/dotnet/aspnetcore.git"
   },
   "author": "Microsoft",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/aspnet/AspNetCore/issues"
+    "url": "https://github.com/dotnet/aspnetcore/issues"
   },
-  "homepage": "https://github.com/aspnet/AspNetCore/tree/master/src/SignalR#readme",
+  "homepage": "https://github.com/dotnet/aspnetcore/tree/master/src/SignalR#readme",
   "files": [
     "dist/**/*",
     "src/**/*"
@@ -48,12 +49,14 @@
     "@types/eventsource": "^1.0.2",
     "@types/jest": "^23.3.2",
     "@types/node": "^10.9.4",
-    "@types/request": "^2.47.1",
+    "@types/tough-cookie": "^2.3.6",
     "es6-promise": "^4.2.2"
   },
   "dependencies": {
     "eventsource": "^1.0.7",
-    "request": "^2.88.0",
+    "node-fetch": "^2.6.0",
+    "abort-controller": "^3.0.0",
+    "fetch-cookie": "^0.7.3",
     "ws": "^6.0.0"
   }
 }

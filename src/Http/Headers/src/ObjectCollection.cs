@@ -21,7 +21,7 @@ namespace Microsoft.Net.Http.Headers
 
         // We need to create a 'read-only' inner list for Collection<T> to do the right
         // thing.
-        private static IList<T> CreateInnerList(bool isReadOnly, IEnumerable <T> other = null)
+        private static IList<T> CreateInnerList(bool isReadOnly, IEnumerable<T>? other = null)
         {
             var list = other == null ? new List<T>() : new List<T>(other);
             if (isReadOnly)

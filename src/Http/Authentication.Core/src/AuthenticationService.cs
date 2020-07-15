@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -15,6 +16,8 @@ namespace Microsoft.AspNetCore.Authentication
     /// </summary>
     public class AuthenticationService : IAuthenticationService
     {
+        private HashSet<ClaimsPrincipal>? _transformCache;
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -56,7 +59,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <returns>The result.</returns>
-        public virtual async Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string scheme)
+        public virtual async Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string? scheme)
         {
             if (scheme == null)
             {
@@ -74,11 +77,25 @@ namespace Microsoft.AspNetCore.Authentication
                 throw await CreateMissingHandlerException(scheme);
             }
 
-            var result = await handler.AuthenticateAsync();
-            if (result != null && result.Succeeded)
+            // Handlers should not return null, but we'll be tolerant of null values for legacy reasons.
+            var result = (await handler.AuthenticateAsync()) ?? AuthenticateResult.NoResult();
+
+            if (result.Succeeded)
             {
-                var transformed = await Transform.TransformAsync(result.Principal);
-                return AuthenticateResult.Success(new AuthenticationTicket(transformed, result.Properties, result.Ticket.AuthenticationScheme));
+                var principal = result.Principal!;
+                var doTransform = true;
+                _transformCache ??= new HashSet<ClaimsPrincipal>();
+                if (_transformCache.Contains(principal))
+                {
+                    doTransform = false;
+                }
+
+                if (doTransform)
+                {
+                    principal = await Transform.TransformAsync(principal);
+                    _transformCache.Add(principal);
+                }
+                return AuthenticateResult.Success(new AuthenticationTicket(principal, result.Properties, result.Ticket!.AuthenticationScheme));
             }
             return result;
         }
@@ -90,7 +107,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
         /// <returns>A task.</returns>
-        public virtual async Task ChallengeAsync(HttpContext context, string scheme, AuthenticationProperties properties)
+        public virtual async Task ChallengeAsync(HttpContext context, string? scheme, AuthenticationProperties? properties)
         {
             if (scheme == null)
             {
@@ -118,7 +135,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
         /// <returns>A task.</returns>
-        public virtual async Task ForbidAsync(HttpContext context, string scheme, AuthenticationProperties properties)
+        public virtual async Task ForbidAsync(HttpContext context, string? scheme, AuthenticationProperties? properties)
         {
             if (scheme == null)
             {
@@ -147,7 +164,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="principal">The <see cref="ClaimsPrincipal"/> to sign in.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
         /// <returns>A task.</returns>
-        public virtual async Task SignInAsync(HttpContext context, string scheme, ClaimsPrincipal principal, AuthenticationProperties properties)
+        public virtual async Task SignInAsync(HttpContext context, string? scheme, ClaimsPrincipal principal, AuthenticationProperties? properties)
         {
             if (principal == null)
             {
@@ -198,7 +215,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
         /// <returns>A task.</returns>
-        public virtual async Task SignOutAsync(HttpContext context, string scheme, AuthenticationProperties properties)
+        public virtual async Task SignOutAsync(HttpContext context, string? scheme, AuthenticationProperties? properties)
         {
             if (scheme == null)
             {
@@ -253,7 +270,7 @@ namespace Microsoft.AspNetCore.Authentication
             var schemes = await GetAllSignInSchemeNames();
 
             // CookieAuth is the only implementation of sign-in.
-            var footer = $" Did you forget to call AddAuthentication().AddCookies(\"{scheme}\",...)?";
+            var footer = $" Did you forget to call AddAuthentication().AddCookie(\"{scheme}\",...)?";
 
             if (string.IsNullOrEmpty(schemes))
             {
@@ -275,7 +292,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 // CookieAuth is the only implementation of sign-in.
                 return new InvalidOperationException(mismatchError
-                    + $"Did you forget to call AddAuthentication().AddCookies(\"Cookies\") and SignInAsync(\"Cookies\",...)?");
+                    + $"Did you forget to call AddAuthentication().AddCookie(\"Cookies\") and SignInAsync(\"Cookies\",...)?");
             }
 
             return new InvalidOperationException(mismatchError + $"The registered sign-in schemes are: {schemes}.");
@@ -292,7 +309,7 @@ namespace Microsoft.AspNetCore.Authentication
         {
             var schemes = await GetAllSignOutSchemeNames();
 
-            var footer = $" Did you forget to call AddAuthentication().AddCookies(\"{scheme}\",...)?";
+            var footer = $" Did you forget to call AddAuthentication().AddCookie(\"{scheme}\",...)?";
 
             if (string.IsNullOrEmpty(schemes))
             {
@@ -314,7 +331,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 // CookieAuth is the most common implementation of sign-out, but OpenIdConnect and WsFederation also support it.
                 return new InvalidOperationException(mismatchError
-                    + $"Did you forget to call AddAuthentication().AddCookies(\"Cookies\") and {nameof(SignOutAsync)}(\"Cookies\",...)?");
+                    + $"Did you forget to call AddAuthentication().AddCookie(\"Cookies\") and {nameof(SignOutAsync)}(\"Cookies\",...)?");
             }
 
             return new InvalidOperationException(mismatchError + $"The registered sign-out schemes are: {schemes}.");

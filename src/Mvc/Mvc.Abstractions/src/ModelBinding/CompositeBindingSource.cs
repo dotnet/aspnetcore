@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public override bool CanAcceptDataFrom(BindingSource bindingSource)
         {
-            if (bindingSource == null)
+            if (bindingSource is null)
             {
                 throw new ArgumentNullException(nameof(bindingSource));
             }

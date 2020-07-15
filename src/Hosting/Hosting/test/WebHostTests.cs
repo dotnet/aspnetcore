@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/7291")]
+        [QuarantinedTest]
         public async Task WebHostStopAsyncUsesDefaultTimeoutIfGivenTokenDoesNotFire()
         {
             var data = new Dictionary<string, string>
@@ -238,7 +238,6 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2244", FlakyOn.Helix.All)]
         public async Task WebHostStopAsyncUsesDefaultTimeoutIfNoTokenProvided()
         {
             var data = new Dictionary<string, string>
@@ -314,7 +313,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/7291")]
+        [QuarantinedTest]
         public void WebHostApplicationLifetimeEventsOrderedCorrectlyDuringShutdown()
         {
             using (var host = CreateBuilder()

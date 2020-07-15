@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1987", FlakyOn.AzP.Windows)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/1987")]
         public void InputEvent_RespondsOnKeystrokes()
         {
             Browser.MountTestComponent<InputEventComponent>();
@@ -185,13 +185,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23757")]
         public void InputEvent_RespondsOnKeystrokes_EvenIfUpdatesAreLaggy()
         {
             // This test doesn't mean much on WebAssembly - it just shows that even if the CPU is locked
             // up for a bit it doesn't cause typing to lose keystrokes. But when running server-side, this
             // shows that network latency doesn't cause keystrokes to be lost even if:
             // [1] By the time a keystroke event arrives, the event handler ID has since changed
-            // [2] We have the situation described under "the problem" at https://github.com/aspnet/AspNetCore/issues/8204#issuecomment-493986702
+            // [2] We have the situation described under "the problem" at https://github.com/dotnet/aspnetcore/issues/8204#issuecomment-493986702
 
             Browser.MountTestComponent<LaggyTypingComponent>();
 
@@ -236,6 +237,37 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // To be sure that the preceding action has no effect, we need to trigger a different action that does have an effect
             Browser.FindElement(By.Id("enabled-button")).Click();
             Browser.Equal("Got event on enabled button", () => eventLog.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void EventDuringBatchRendering_CanTriggerDOMEvents()
+        {
+            Browser.MountTestComponent<EventDuringBatchRendering>();
+
+            var input = Browser.FindElements(By.CssSelector("#reversible-list input"))[0];
+            var eventLog = Browser.FindElement(By.Id("event-log"));
+
+            SendKeysSequentially(input, "abc");
+            Browser.Equal("abc", () => input.GetAttribute("value"));
+            Browser.Equal(
+                "Change event on item First with value a\n" +
+                "Change event on item First with value ab\n" +
+                "Change event on item First with value abc",
+                () => eventLog.Text.Trim().Replace("\r\n", "\n"));
+        }
+
+        [Fact]
+        public void EventDuringBatchRendering_CannotTriggerJSInterop()
+        {
+            Browser.MountTestComponent<EventDuringBatchRendering>();
+            var errorLog = Browser.FindElement(By.Id("web-component-error-log"));
+
+            Browser.FindElement(By.Id("add-web-component")).Click();
+            var expectedMessage = _serverFixture.ExecutionMode == ExecutionMode.Client
+                ? "Assertion failed - heap is currently locked"
+                : "There was an exception invoking 'SomeMethodThatDoesntNeedToExistForThisTest' on assembly 'SomeAssembly'";
+
+            Browser.Contains(expectedMessage, () => errorLog.Text);
         }
 
         void SendKeysSequentially(IWebElement target, string text)

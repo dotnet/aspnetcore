@@ -26,28 +26,23 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private const string TypePropertyName = "type";
         private static JsonEncodedText TypePropertyNameBytes = JsonEncodedText.Encode(TypePropertyName);
 
-        private static ConcurrentDictionary<IHubProtocol, ReadOnlyMemory<byte>> _messageCache = new ConcurrentDictionary<IHubProtocol, ReadOnlyMemory<byte>>();
+        private static readonly ReadOnlyMemory<byte> _successHandshakeData;
 
-        public static ReadOnlySpan<byte> GetSuccessfulHandshake(IHubProtocol protocol)
+        static HandshakeProtocol()
         {
-            ReadOnlyMemory<byte> result;
-            if (!_messageCache.TryGetValue(protocol, out result))
+            var memoryBufferWriter = MemoryBufferWriter.Get();
+            try
             {
-                var memoryBufferWriter = MemoryBufferWriter.Get();
-                try
-                {
-                    WriteResponseMessage(HandshakeResponseMessage.Empty, memoryBufferWriter);
-                    result = memoryBufferWriter.ToArray();
-                    _messageCache.TryAdd(protocol, result);
-                }
-                finally
-                {
-                    MemoryBufferWriter.Return(memoryBufferWriter);
-                }
+                WriteResponseMessage(HandshakeResponseMessage.Empty, memoryBufferWriter);
+                _successHandshakeData = memoryBufferWriter.ToArray();
             }
-
-            return result.Span;
+            finally
+            {
+                MemoryBufferWriter.Return(memoryBufferWriter);
+            }
         }
+
+        public static ReadOnlySpan<byte> GetSuccessfulHandshake(IHubProtocol protocol) => _successHandshakeData.Span;
 
         /// <summary>
         /// Writes the serialized representation of a <see cref="HandshakeRequestMessage"/> to the specified writer.

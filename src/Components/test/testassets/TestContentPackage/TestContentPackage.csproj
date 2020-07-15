@@ -1,9 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>library</OutputType>
-    <RazorLangVersion>3.0</RazorLangVersion>
     <StaticWebAssetBasePath>_content/TestContentPackage</StaticWebAssetBasePath>
   </PropertyGroup>
 

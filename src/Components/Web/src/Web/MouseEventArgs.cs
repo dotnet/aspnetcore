@@ -36,6 +36,16 @@ namespace Microsoft.AspNetCore.Components.Web
         public double ClientY { get; set; }
 
         /// <summary>
+        /// The X coordinate of the mouse pointer in relative (Target Element) coordinates.
+        /// </summary>
+        public double OffsetX { get; set; }
+
+        /// <summary>
+        /// The Y coordinate of the mouse pointer in relative (Target Element) coordinates.
+        /// </summary>
+        public double OffsetY { get; set; }
+
+        /// <summary>
         /// The button number that was pressed when the mouse event was fired:
         /// Left button=0,
         /// middle button=1 (if present),
@@ -79,6 +89,6 @@ namespace Microsoft.AspNetCore.Components.Web
         /// <summary>
         /// Gets or sets the type of the event.
         /// </summary>
-        public string Type { get; set; }
+        public string Type { get; set; } = default!;
     }
 }

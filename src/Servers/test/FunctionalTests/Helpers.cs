@@ -16,7 +16,7 @@ namespace ServerComparison.FunctionalTests
             var directoryInfo = new DirectoryInfo(applicationBasePath);
             do
             {
-                var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "FunctionalTests.sln"));
+                var solutionFileInfo = new FileInfo(Path.Combine(directoryInfo.FullName, "FunctionalTests.slnf"));
                 if (solutionFileInfo.Exists)
                 {
                     return Path.GetFullPath(Path.Combine(directoryInfo.FullName, "..", "..","testassets", "ServerComparison.TestSites"));

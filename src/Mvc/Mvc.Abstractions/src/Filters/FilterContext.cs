@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Mvc.Filters
 {
@@ -81,6 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <returns>The implementation of <typeparamref name="TMetadata"/> applied to the action associated with
         /// the <see cref="FilterContext"/>
         /// </returns>
+        [return: MaybeNull]
         public TMetadata FindEffectivePolicy<TMetadata>() where TMetadata : IFilterMetadata
         {
             // The most specific policy is the one closest to the action (nearest the end of the list).
@@ -93,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                 }
             }
 
-            return default(TMetadata);
+            return default;
         }
     }
 }

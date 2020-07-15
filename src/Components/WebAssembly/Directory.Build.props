@@ -1,9 +1,6 @@
 <Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
   <PropertyGroup>
-    <!-- Override version labels -->
-    <VersionPrefix>$(ComponentsWebAssemblyVersionPrefix)</VersionPrefix>
-
     <!-- Avoid source build issues with WebAssembly -->
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>

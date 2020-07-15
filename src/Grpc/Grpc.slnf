@@ -1,0 +1,11 @@
+﻿{
+  "solution": {
+    "path": "..\\..\\AspNetCore.sln",
+    "projects" : [
+      "src\\Grpc\\test\\InteropTests\\InteropTests.csproj",
+      "src\\Grpc\\test\\testassets\\InteropWebsite\\InteropWebsite.csproj",
+      "src\\Grpc\\test\\testassets\\InteropClient\\InteropClient.csproj",
+      "src\\Testing\\src\\Microsoft.AspNetCore.Testing.csproj"
+    ]
+  }
+}

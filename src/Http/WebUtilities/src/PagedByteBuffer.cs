@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.WebUtilities
     {
         internal const int PageSize = 1024;
         private readonly ArrayPool<byte> _arrayPool;
-        private byte[] _currentPage;
+        private byte[]? _currentPage;
         private int _currentPageIndex;
 
         public PagedByteBuffer(ArrayPool<byte> arrayPool)
@@ -79,6 +80,23 @@ namespace Microsoft.AspNetCore.WebUtilities
                     page.Length;
 
                 stream.Write(page, 0, length);
+            }
+
+            ClearBuffers();
+        }
+
+        public async Task MoveToAsync(PipeWriter writer, CancellationToken cancellationToken)
+        {
+            ThrowIfDisposed();
+
+            for (var i = 0; i < Pages.Count; i++)
+            {
+                var page = Pages[i];
+                var length = (i == Pages.Count - 1) ?
+                    _currentPageIndex :
+                    page.Length;
+
+                await writer.WriteAsync(page.AsMemory(0, length), cancellationToken);
             }
 
             ClearBuffers();

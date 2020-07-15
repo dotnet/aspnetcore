@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var expectedMethod = (HttpMethod)intExpectedMethod;
             // Arrange
-            var block = new Span<byte>(Encoding.ASCII.GetBytes(input));
+            var block = new ReadOnlySpan<byte>(Encoding.ASCII.GetBytes(input));
 
             // Act
             var result = block.GetKnownMethod(out var knownMethod, out var length);
@@ -52,8 +52,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData("HTTP/1.0\r", true, HttpUtilities.Http10Version, (int)HttpVersion.Http10)]
-        [InlineData("HTTP/1.1\r", true, HttpUtilities.Http11Version, (int)HttpVersion.Http11)]
+        [InlineData("HTTP/1.0\r", true, "HTTP/1.0", (int)HttpVersion.Http10)]
+        [InlineData("HTTP/1.1\r", true, "HTTP/1.1", (int)HttpVersion.Http11)]
         [InlineData("HTTP/3.0\r", false, null, (int)HttpVersion.Unknown)]
         [InlineData("http/1.0\r", false, null, (int)HttpVersion.Unknown)]
         [InlineData("http/1.1\r", false, null, (int)HttpVersion.Unknown)]
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var version = (HttpVersion)intVersion;
             // Arrange
-            var block = new Span<byte>(Encoding.ASCII.GetBytes(input));
+            var block = new ReadOnlySpan<byte>(Encoding.ASCII.GetBytes(input));
 
             // Act
             var result = block.GetKnownVersion(out HttpVersion knownVersion, out var length);

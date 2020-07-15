@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win10, WindowsVersions.Win81)]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win7)]
         // Win7 SslStream is missing ALPN support.
         public void TlsAndHttp2NotSupportedOnWin7()
         {
@@ -80,8 +80,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/10428", Queues = "Debian.8.Amd64.Open")] // Debian 8 uses OpenSSL 1.0.1 which does not support HTTP/2
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10428", Queues = "Debian.8.Amd64;Debian.8.Amd64.Open")] // Debian 8 uses OpenSSL 1.0.1 which does not support HTTP/2
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
         public async Task TlsAlpnHandshakeSelectsHttp2From1and2()
         {
             using (var server = new TestServer(context =>
@@ -111,8 +111,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/10428", Queues = "Debian.8.Amd64.Open")] // Debian 8 uses OpenSSL 1.0.1 which does not support HTTP/2
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81)]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10428", Queues = "Debian.8.Amd64;Debian.8.Amd64.Open")] // Debian 8 uses OpenSSL 1.0.1 which does not support HTTP/2
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
         public async Task TlsAlpnHandshakeSelectsHttp2()
         {
             using (var server = new TestServer(context =>

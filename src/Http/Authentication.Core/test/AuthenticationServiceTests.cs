@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Authentication
+namespace Microsoft.AspNetCore.Authentication.Core.Test
 {
     public class AuthenticationServiceTests
     {
@@ -25,6 +25,30 @@ namespace Microsoft.AspNetCore.Authentication
             await context.AuthenticateAsync("base");
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.AuthenticateAsync("missing"));
             Assert.Contains("base", ex.Message);
+        }
+
+        [Fact]
+        public async Task CustomHandlersAuthenticateRunsClaimsTransformationEveryTime()
+        {
+            var transform = new RunOnce();
+            var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+            {
+                o.AddScheme<BaseHandler>("base", "whatever");
+            })
+                .AddSingleton<IClaimsTransformation>(transform)
+                .BuildServiceProvider();
+            var context = new DefaultHttpContext();
+            context.RequestServices = services;
+
+            // Because base handler returns a different principal per call, its run multiple times
+            await context.AuthenticateAsync("base");
+            Assert.Equal(1, transform.Ran);
+
+            await context.AuthenticateAsync("base");
+            Assert.Equal(2, transform.Ran);
+
+            await context.AuthenticateAsync("base");
+            Assert.Equal(3, transform.Ran);
         }
 
         [Fact]
@@ -219,20 +243,33 @@ namespace Microsoft.AspNetCore.Authentication
             await context.ForbidAsync();
         }
 
+        private class RunOnce : IClaimsTransformation
+        {
+            public int Ran = 0;
+            public Task<ClaimsPrincipal> TransformAsync(ClaimsPrincipal principal)
+            {
+                Ran++;
+                return Task.FromResult(new ClaimsPrincipal());
+            }
+        }
 
         private class BaseHandler : IAuthenticationHandler
         {
             public Task<AuthenticateResult> AuthenticateAsync()
             {
-                return Task.FromResult(AuthenticateResult.NoResult());
+                return Task.FromResult(AuthenticateResult.Success(
+                    new AuthenticationTicket(
+                        new ClaimsPrincipal(new ClaimsIdentity("whatever")),
+                        new AuthenticationProperties(),
+                        "whatever")));
             }
 
-            public Task ChallengeAsync(AuthenticationProperties properties)
+            public Task ChallengeAsync(AuthenticationProperties? properties)
             {
                 return Task.FromResult(0);
             }
 
-            public Task ForbidAsync(AuthenticationProperties properties)
+            public Task ForbidAsync(AuthenticationProperties? properties)
             {
                 return Task.FromResult(0);
             }
@@ -250,12 +287,12 @@ namespace Microsoft.AspNetCore.Authentication
                 return Task.FromResult(AuthenticateResult.NoResult());
             }
 
-            public Task ChallengeAsync(AuthenticationProperties properties)
+            public Task ChallengeAsync(AuthenticationProperties? properties)
             {
                 return Task.FromResult(0);
             }
 
-            public Task ForbidAsync(AuthenticationProperties properties)
+            public Task ForbidAsync(AuthenticationProperties? properties)
             {
                 return Task.FromResult(0);
             }
@@ -265,12 +302,12 @@ namespace Microsoft.AspNetCore.Authentication
                 return Task.FromResult(0);
             }
 
-            public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
+            public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
             {
                 return Task.FromResult(0);
             }
 
-            public Task SignOutAsync(AuthenticationProperties properties)
+            public Task SignOutAsync(AuthenticationProperties? properties)
             {
                 return Task.FromResult(0);
             }
@@ -283,12 +320,12 @@ namespace Microsoft.AspNetCore.Authentication
                 return Task.FromResult(AuthenticateResult.NoResult());
             }
 
-            public Task ChallengeAsync(AuthenticationProperties properties)
+            public Task ChallengeAsync(AuthenticationProperties? properties)
             {
                 return Task.FromResult(0);
             }
 
-            public Task ForbidAsync(AuthenticationProperties properties)
+            public Task ForbidAsync(AuthenticationProperties? properties)
             {
                 return Task.FromResult(0);
             }
@@ -298,7 +335,7 @@ namespace Microsoft.AspNetCore.Authentication
                 return Task.FromResult(0);
             }
 
-            public Task SignOutAsync(AuthenticationProperties properties)
+            public Task SignOutAsync(AuthenticationProperties? properties)
             {
                 return Task.FromResult(0);
             }
@@ -311,12 +348,12 @@ namespace Microsoft.AspNetCore.Authentication
                 return Task.FromResult(AuthenticateResult.NoResult());
             }
 
-            public Task ChallengeAsync(AuthenticationProperties properties)
+            public Task ChallengeAsync(AuthenticationProperties? properties)
             {
                 return Task.FromResult(0);
             }
 
-            public Task ForbidAsync(AuthenticationProperties properties)
+            public Task ForbidAsync(AuthenticationProperties? properties)
             {
                 return Task.FromResult(0);
             }
@@ -331,12 +368,12 @@ namespace Microsoft.AspNetCore.Authentication
                 return Task.FromResult(0);
             }
 
-            public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
+            public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
             {
                 return Task.FromResult(0);
             }
 
-            public Task SignOutAsync(AuthenticationProperties properties)
+            public Task SignOutAsync(AuthenticationProperties? properties)
             {
                 return Task.FromResult(0);
             }
@@ -349,12 +386,12 @@ namespace Microsoft.AspNetCore.Authentication
                 throw new NotImplementedException();
             }
 
-            public Task ChallengeAsync(AuthenticationProperties properties)
+            public Task ChallengeAsync(AuthenticationProperties? properties)
             {
                 throw new NotImplementedException();
             }
 
-            public Task ForbidAsync(AuthenticationProperties properties)
+            public Task ForbidAsync(AuthenticationProperties? properties)
             {
                 return Task.FromResult(0);
             }
@@ -369,12 +406,12 @@ namespace Microsoft.AspNetCore.Authentication
                 return Task.FromResult(0);
             }
 
-            public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
+            public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
             {
                 throw new NotImplementedException();
             }
 
-            public Task SignOutAsync(AuthenticationProperties properties)
+            public Task SignOutAsync(AuthenticationProperties? properties)
             {
                 throw new NotImplementedException();
             }

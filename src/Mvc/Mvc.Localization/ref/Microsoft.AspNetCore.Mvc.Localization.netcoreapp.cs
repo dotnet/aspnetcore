@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         public virtual Microsoft.Extensions.Localization.LocalizedString GetString(string name, params object[] arguments) { throw null; }
         protected virtual Microsoft.AspNetCore.Mvc.Localization.LocalizedHtmlString ToHtmlString(Microsoft.Extensions.Localization.LocalizedString result) { throw null; }
         protected virtual Microsoft.AspNetCore.Mvc.Localization.LocalizedHtmlString ToHtmlString(Microsoft.Extensions.Localization.LocalizedString result, object[] arguments) { throw null; }
-        [System.ObsoleteAttribute("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
-        public virtual Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizer WithCulture(System.Globalization.CultureInfo culture) { throw null; }
     }
     public static partial class HtmlLocalizerExtensions
     {
@@ -36,8 +34,6 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         public virtual System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString> GetAllStrings(bool includeParentCultures) { throw null; }
         public virtual Microsoft.Extensions.Localization.LocalizedString GetString(string name) { throw null; }
         public virtual Microsoft.Extensions.Localization.LocalizedString GetString(string name, params object[] arguments) { throw null; }
-        [System.ObsoleteAttribute("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
-        public virtual Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizer WithCulture(System.Globalization.CultureInfo culture) { throw null; }
     }
     public partial interface IHtmlLocalizer
     {
@@ -46,8 +42,6 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString> GetAllStrings(bool includeParentCultures);
         Microsoft.Extensions.Localization.LocalizedString GetString(string name);
         Microsoft.Extensions.Localization.LocalizedString GetString(string name, params object[] arguments);
-        [System.ObsoleteAttribute("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
-        Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizer WithCulture(System.Globalization.CultureInfo culture);
     }
     public partial interface IHtmlLocalizerFactory
     {
@@ -65,9 +59,9 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         public LocalizedHtmlString(string name, string value) { }
         public LocalizedHtmlString(string name, string value, bool isResourceNotFound) { }
         public LocalizedHtmlString(string name, string value, bool isResourceNotFound, params object[] arguments) { }
-        public bool IsResourceNotFound { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool IsResourceNotFound { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public void WriteTo(System.IO.TextWriter writer, System.Text.Encodings.Web.HtmlEncoder encoder) { }
     }
     public partial class ViewLocalizer : Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizer, Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer, Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware
@@ -79,8 +73,6 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         public System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString> GetAllStrings(bool includeParentCultures) { throw null; }
         public Microsoft.Extensions.Localization.LocalizedString GetString(string name) { throw null; }
         public Microsoft.Extensions.Localization.LocalizedString GetString(string name, params object[] values) { throw null; }
-        [System.ObsoleteAttribute("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
-        public Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizer WithCulture(System.Globalization.CultureInfo culture) { throw null; }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection

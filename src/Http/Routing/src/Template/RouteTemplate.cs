@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -72,7 +74,7 @@ namespace Microsoft.AspNetCore.Routing.Template
 
         public IList<TemplateSegment> Segments { get; }
 
-        public TemplateSegment GetSegment(int index)
+        public TemplateSegment? GetSegment(int index)
         {
             if (index < 0)
             {
@@ -92,7 +94,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         /// </summary>
         /// <param name="name">The name of the parameter to match.</param>
         /// <returns>The matching parameter or <c>null</c> if no parameter matches the given name.</returns>
-        public TemplatePart GetParameter(string name)
+        public TemplatePart? GetParameter(string name)
         {
             for (var i = 0; i < Parameters.Count; i++)
             {

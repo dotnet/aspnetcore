@@ -17,12 +17,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public int IOQueueCount { get; set; } = Math.Min(Environment.ProcessorCount, 16);
 
         /// <summary>
+        /// Wait until there is data available to allocate a buffer. Setting this to false can increase throughput at the cost of increased memory usage.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to true.
+        /// </remarks>
+        public bool WaitForDataBeforeAllocatingBuffer { get; set; } = true;
+
+        /// <summary>
         /// Set to false to enable Nagle's algorithm for all connections.
         /// </summary>
         /// <remarks>
         /// Defaults to true.
         /// </remarks>
         public bool NoDelay { get; set; } = true;
+
+        /// <summary>
+        /// The maximum length of the pending connection queue.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to 512.
+        /// </remarks>
+        public int Backlog { get; set; } = 512;
 
         public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
 

@@ -2575,7 +2575,7 @@ namespace Microsoft.AspNetCore.Components.Test
         [Fact]
         public async Task CanCombineBindAndConditionalAttribute()
         {
-            // This test represents https://github.com/aspnet/Blazor/issues/624
+            // This test represents https://github.com/dotnet/blazor/issues/624
 
             // Arrange: Rendered with textbox enabled
             var renderer = new TestRenderer();
@@ -2810,8 +2810,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Equal(10, component.OnAfterRenderCallCount);
         }
 
-        [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/7487")]
+        [Fact]
         public async Task CanTriggerEventHandlerDisposedInEarlierPendingBatchAsync()
         {
             // This represents the scenario where the same event handler is being triggered
@@ -3574,7 +3573,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act &A Assert
             renderer.Dispose();
 
-            // All components must be disposed even if some throw as part of being diposed.
+            // All components must be disposed even if some throw as part of being disposed.
             Assert.True(component.Disposed);
             var aex = Assert.IsType<AggregateException>(Assert.Single(renderer.HandledExceptions));
             Assert.Contains(exception1, aex.InnerExceptions);
@@ -3732,6 +3731,52 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // It's enough to assert about one of the messages
             Assert.Equal($"The {nameof(ParameterView)} instance can no longer be read because it has expired. {nameof(ParameterView)} can only be read synchronously and must not be stored for later use.", ex.Message);
+        }
+
+        [Fact]
+        public void CanUseCustomComponentActivatorFromConstructorParameter()
+        {
+            // Arrange
+            var serviceProvider = new TestServiceProvider();
+            var componentActivator = new TestComponentActivator<MessageComponent>();
+            var renderer = new TestRenderer(serviceProvider, componentActivator);
+
+            // Act: Ask for TestComponent
+            var suppliedComponent = renderer.InstantiateComponent<TestComponent>();
+
+            // Assert: We actually receive MessageComponent
+            Assert.IsType<MessageComponent>(suppliedComponent);
+            Assert.Collection(componentActivator.RequestedComponentTypes,
+                requestedType => Assert.Equal(typeof(TestComponent), requestedType));
+        }
+
+        [Fact]
+        public void CanUseCustomComponentActivatorFromServiceProvider()
+        {
+            // Arrange
+            var serviceProvider = new TestServiceProvider();
+            var componentActivator = new TestComponentActivator<MessageComponent>();
+            serviceProvider.AddService<IComponentActivator>(componentActivator);
+            var renderer = new TestRenderer(serviceProvider);
+
+            // Act: Ask for TestComponent
+            var suppliedComponent = renderer.InstantiateComponent<TestComponent>();
+
+            // Assert: We actually receive MessageComponent
+            Assert.IsType<MessageComponent>(suppliedComponent);
+            Assert.Collection(componentActivator.RequestedComponentTypes,
+                requestedType => Assert.Equal(typeof(TestComponent), requestedType));
+        }
+
+        private class TestComponentActivator<TResult> : IComponentActivator where TResult: IComponent, new()
+        {
+            public List<Type> RequestedComponentTypes { get; } = new List<Type>();
+
+            public IComponent CreateInstance(Type componentType)
+            {
+                RequestedComponentTypes.Add(componentType);
+                return new TResult();
+            }
         }
 
         private class NoOpRenderer : Renderer

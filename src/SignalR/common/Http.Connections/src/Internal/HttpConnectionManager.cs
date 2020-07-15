@@ -10,7 +10,6 @@ using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
@@ -31,13 +30,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private readonly TimerAwaitable _nextHeartbeat;
         private readonly ILogger<HttpConnectionManager> _logger;
         private readonly ILogger<HttpConnectionContext> _connectionLogger;
-        private readonly bool _useSendTimeout = true;
         private readonly TimeSpan _disconnectTimeout;
-
-        public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime)
-            : this(loggerFactory, appLifetime, Options.Create(new ConnectionOptions() { DisconnectTimeout = ConnectionOptionsSetup.DefaultDisconectTimeout }))
-        {
-        }
 
         public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions)
         {
@@ -45,10 +38,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
             _nextHeartbeat = new TimerAwaitable(_heartbeatTickRate, _heartbeatTickRate);
             _disconnectTimeout = connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout;
-            if (AppContext.TryGetSwitch("Microsoft.AspNetCore.Http.Connections.DoNotUseSendTimeout", out var timeoutDisabled))
-            {
-                _useSendTimeout = !timeoutDisabled;
-            }
 
             // Register these last as the callbacks could run immediately
             appLifetime.ApplicationStarted.Register(() => Start());
@@ -176,7 +165,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 }
                 else
                 {
-                    if (!Debugger.IsAttached && _useSendTimeout)
+                    if (!Debugger.IsAttached)
                     {
                         connection.TryCancelSend(utcNow.Ticks);
                     }

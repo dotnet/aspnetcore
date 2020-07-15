@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Hosting
     public sealed partial class HostingStartupAttribute : System.Attribute
     {
         public HostingStartupAttribute(System.Type hostingStartupType) { }
-        public System.Type HostingStartupType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Type HostingStartupType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.ObsoleteAttribute("This type is obsolete and will be removed in a future version. The recommended alternative is Microsoft.Extensions.Hosting.IHostApplicationLifetime.", false)]
     public partial interface IApplicationLifetime
@@ -93,8 +93,8 @@ namespace Microsoft.AspNetCore.Hosting
         Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureAppConfiguration(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.Configuration.IConfigurationBuilder> configureDelegate);
         Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureServices(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.DependencyInjection.IServiceCollection> configureServices);
         Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureServices(System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection> configureServices);
-        string GetSetting(string key);
-        Microsoft.AspNetCore.Hosting.IWebHostBuilder UseSetting(string key, string value);
+        string? GetSetting(string key);
+        Microsoft.AspNetCore.Hosting.IWebHostBuilder UseSetting(string key, string? value);
     }
     public partial interface IWebHostEnvironment : Microsoft.Extensions.Hosting.IHostEnvironment
     {
@@ -104,8 +104,8 @@ namespace Microsoft.AspNetCore.Hosting
     public partial class WebHostBuilderContext
     {
         public WebHostBuilderContext() { }
-        public Microsoft.Extensions.Configuration.IConfiguration Configuration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Hosting.IWebHostEnvironment HostingEnvironment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.Extensions.Configuration.IConfiguration Configuration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Hosting.IWebHostEnvironment HostingEnvironment { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public static partial class WebHostDefaults
     {

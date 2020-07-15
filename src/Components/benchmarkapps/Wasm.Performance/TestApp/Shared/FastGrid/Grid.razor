@@ -1,0 +1,48 @@
+﻿@typeparam TRowData
+
+<CascadingValue IsFixed="true" Value="this">@ChildContent</CascadingValue>
+
+<table @attributes="@Attributes">
+    <thead>
+        <tr>
+            @foreach (var col in columns)
+            {
+                col.RenderHeader(__builder);
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Data)
+        {
+            <tr @key="item.GetHashCode()" class="@(RowClass?.Invoke(item))">
+                @foreach (var col in columns)
+                {
+                    col.RenderCell(__builder, item);
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> Attributes { get; set; }
+    [Parameter] public ICollection<TRowData> Data { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public Func<TRowData, string> RowClass { get; set; }
+
+    private List<GridColumn<TRowData>> columns = new List<GridColumn<TRowData>>();
+
+    internal void AddColumn(GridColumn<TRowData> column)
+    {
+        columns.Add(column);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // On the first render, we collect the list of columns, then we have to render them.
+            StateHasChanged();
+        }
+    }
+}

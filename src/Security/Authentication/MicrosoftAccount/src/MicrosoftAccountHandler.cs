@@ -20,8 +20,6 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
 {
     public class MicrosoftAccountHandler : OAuthHandler<MicrosoftAccountOptions>
     {
-        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
-
         public MicrosoftAccountHandler(IOptionsMonitor<MicrosoftAccountOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
@@ -64,7 +62,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
             if (Options.UsePkce)
             {
                 var bytes = new byte[32];
-                CryptoRandom.GetBytes(bytes);
+                RandomNumberGenerator.Fill(bytes);
                 var codeVerifier = Base64UrlTextEncoder.Encode(bytes);
 
                 // Store this for use during the code redemption.

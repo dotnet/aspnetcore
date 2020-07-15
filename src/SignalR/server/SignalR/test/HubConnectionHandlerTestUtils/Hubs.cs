@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public Task ProtocolError()
         {
-            return Clients.Caller.SendAsync("Send", new string('x', 3000), new SelfRef());
+            return Clients.Caller.SendAsync("Send",  new SelfRef());
         }
 
         public void InvalidArgument(CancellationToken token)
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Self = this;
             }
 
-            public SelfRef Self;
+            public SelfRef Self { get; set; }
         }
 
         public async Task<string> StreamingConcat(ChannelReader<string> source)
@@ -220,7 +220,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
             }
         }
-
 
         public async Task<int> StreamingSum(ChannelReader<int> source)
         {
@@ -321,6 +320,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 tcs.TrySetResult(42);
             }
+        }
+
+        public async Task BlockingMethod()
+        {
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            Context.ConnectionAborted.Register(state => ((TaskCompletionSource<object>)state).SetResult(null), tcs);
+
+            await tcs.Task;
         }
     }
 
@@ -510,7 +517,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         public override Task OnConnectedAsync()
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             tcs.SetException(new InvalidOperationException("Hub OnConnected failed."));
             return tcs.Task;
         }
@@ -520,7 +527,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
             tcs.SetException(new InvalidOperationException("Hub OnDisconnected failed."));
             return tcs.Task;
         }
@@ -565,6 +572,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         public void OverloadedMethod(string message)
+        {
+        }
+    }
+
+    public class GenericMethodHub : Hub
+    {
+        public void GenericMethod<T>()
         {
         }
     }
@@ -660,7 +674,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return new AsyncEnumerableImpl<string>(CounterAsyncEnumerable(count));
         }
 
-        public AsyncEnumerableImplChannelThrows<string> AsyncEnumerableIsPreferedOverChannelReader(int count)
+        public AsyncEnumerableImplChannelThrows<string> AsyncEnumerableIsPreferredOverChannelReader(int count)
         {
             return new AsyncEnumerableImplChannelThrows<string>(CounterChannel(count));
         }
@@ -1041,8 +1055,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
     public class TcsService
     {
-        public TaskCompletionSource<object> StartedMethod = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-        public TaskCompletionSource<object> EndMethod = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource<object> StartedMethod;
+        public TaskCompletionSource<object> EndMethod;
+
+        public TcsService()
+        {
+            Reset();
+        }
+
+        public void Reset()
+        {
+            StartedMethod = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            EndMethod = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
     }
 
     public interface ITypedHubClient

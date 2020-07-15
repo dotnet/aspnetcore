@@ -7,10 +7,8 @@
     <!-- Even though RuntimeIdentifier is set, shared framework projects are not self-contained projects -->
     <SelfContained>false</SelfContained>
     <PackageId>$(MSBuildProjectName).$(RuntimeIdentifier)</PackageId>
-    <IsShippingPackage>true</IsShippingPackage>
     <!-- Do not exclude this project from source build -->
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains assets used for self-contained deployments.
 
 This package is an internal implementation of the .NET Core SDK and is not meant to be used as a normal PackageReference.
@@ -98,15 +96,17 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <PathSeparator Condition="'$(PathSeparator)' == ''">:</PathSeparator>
     <PathSeparator Condition=" '$(TargetOsName)' == 'win' ">%3B</PathSeparator>
 
+    <CrossCompileDirectory Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm' ">x64_arm</CrossCompileDirectory>
+    <CrossCompileDirectory Condition=" '$(TargetArchitecture)' == 'arm64' AND '$(BuildArchitecture)' != 'arm64' ">x64_arm64</CrossCompileDirectory>
+    <CrossCompileDirectory Condition=" '$(TargetRuntimeIdentifier)' == 'win-arm' ">x86_arm</CrossCompileDirectory>
+
     <!-- Crossgen executable name -->
     <CrossgenToolFileName>crossgen</CrossgenToolFileName>
     <CrossgenToolFileName Condition=" '$(TargetOsName)' == 'win' ">$(CrossgenToolFileName).exe</CrossgenToolFileName>
     <!-- Default crossgen executable relative path -->
     <CrossgenToolPackagePath>$(CrossgenToolFileName)</CrossgenToolPackagePath>
     <!-- Disambiguated RID-specific crossgen executable relative path -->
-    <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm' ">x64_arm\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
-    <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'win-arm64' OR '$(TargetRuntimeIdentifier)' == 'linux-arm64' OR '$(TargetRuntimeIdentifier)' == 'linux-musl-arm64' ">x64_arm64\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
-    <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'win-arm' ">x86_arm\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
+    <CrossgenToolPackagePath Condition=" '$(CrossCompileDirectory)' != '' ">$(CrossCompileDirectory)\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
 
     <RuntimePackageRoot>$([System.IO.Path]::Combine('$(NuGetPackageRoot)', 'microsoft.netcore.app.runtime.$(RuntimeIdentifier)', '$(MicrosoftNETCoreAppRuntimeVersion)'))</RuntimePackageRoot>
     <RuntimePackageRoot>$([MSBuild]::EnsureTrailingSlash('$(RuntimePackageRoot)'))</RuntimePackageRoot>
@@ -115,6 +115,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <FrameworkListFileName>RuntimeList.xml</FrameworkListFileName>
     <FrameworkListOutputPath>$(ArtifactsObjDir)$(FrameworkListFileName)</FrameworkListOutputPath>
+
+    <NativePlatform>$(TargetArchitecture)</NativePlatform>
+    <NativePlatform Condition=" '$(NativePlatform)' == 'x86' ">Win32</NativePlatform>
   </PropertyGroup>
 
   <ItemGroup>
@@ -125,9 +128,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <Reference Include="microsoft.netcore.app.runtime.$(RuntimeIdentifier)" ExcludeAssets="All" PrivateAssets="All" />
 
-    <ProjectReference Condition="'$(BuildIisNativeProjects)' == 'true' AND '$(BuildNative)' != 'false' AND '$(VCTargetsPath)' != ''" Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
-      <SetPlatform>Platform=$(TargetArchitecture)</SetPlatform>
-      <SetPlatform Condition="'$(TargetArchitecture)' == 'x86'">Platform=Win32</SetPlatform>
+    <ProjectReference Condition=" '$(BuildIisNativeProjects)' == 'true' AND $(BuildNative) "
+        Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
+      <SetPlatform>Platform=$(NativePlatform)</SetPlatform>
       <!-- Custom attribute used to distinguish managed from native references. -->
       <IsNativeImage>true</IsNativeImage>
       <!-- A custom item group to be used in targets later.  -->
@@ -135,6 +138,11 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <!-- C++ projects don't invoke GetTargetPath by default when building. -->
       <Targets>Build;GetTargetPath</Targets>
     </ProjectReference>
+
+    <_ResolvedNativeProjectReferencePaths Condition=" '$(BuildIisNativeProjects)' == 'true' AND !$(BuildNative) "
+        Include="$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.dll">
+      <IsNativeImage>true</IsNativeImage>
+    </_ResolvedNativeProjectReferencePaths>
   </ItemGroup>
 
   <ItemGroup>
@@ -213,7 +221,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <Target Name="_WarnAboutUnbuiltNativeDependencies"
           BeforeTargets="Build"
-          Condition=" '$(BuildIisNativeProjects)' == 'true' AND '$(BuildNative)' == 'false' ">
+          Condition=" '$(BuildIisNativeProjects)' == 'true' AND !$(BuildNative) AND
+              !EXISTS('$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.dll') ">
     <Warning Text="This project has native dependencies which were not built. Without this, tests may not function correctly. Run `build.cmd -BuildNative -BuildManaged` to build both C# and C++." />
   </Target>
 
@@ -307,7 +316,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <PropertyGroup>
     <CrossgenToolDir>$(IntermediateOutputPath)crossgen\</CrossgenToolDir>
     <CrossgenPlatformAssembliesDir>$(IntermediateOutputPath)platformAssemblies\</CrossgenPlatformAssembliesDir>
-    <CoreCLRJitPath>$(CrossgenToolDir)$(LibPrefix)clrjit$(LibExtension)</CoreCLRJitPath>
+    <!-- Pick the right coreclr jit based on whether we are cross-compiling or not -->
+    <CoreCLRJitPath Condition="'$(CrossCompileDirectory)' == ''">$(RuntimePackageRoot)runtimes\$(RuntimeIdentifier)\native\$(LibPrefix)clrjit$(LibExtension)</CoreCLRJitPath>
+    <CoreCLRJitPath Condition="'$(CrossCompileDirectory)' != ''">$(RuntimepackageRoot)runtimes\$(CrossCompileDirectory)\native\$(LibPrefix)clrjit$(LibExtension)</CoreCLRJitPath>
   </PropertyGroup>
 
   <ItemGroup>

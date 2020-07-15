@@ -14,15 +14,43 @@ namespace Microsoft.AspNetCore
     {
         private readonly string _expectedTfm;
         private readonly string _expectedRid;
+        private readonly string _expectedVersionFileName;
         private readonly string _sharedFxRoot;
         private readonly ITestOutputHelper _output;
 
         public SharedFxTests(ITestOutputHelper output)
         {
             _output = output;
-            _expectedTfm = "netcoreapp" + TestData.GetSharedFxVersion().Substring(0, 3);
+            _expectedTfm = "net" + TestData.GetSharedFxVersion().Substring(0, 3);
             _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
-            _sharedFxRoot = Path.Combine(TestData.GetTestDataValue("SharedFrameworkLayoutRoot"), "shared", "Microsoft.AspNetCore.App", TestData.GetTestDataValue("RuntimePackageVersion"));
+            _sharedFxRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH"))
+                ? Path.Combine(TestData.GetTestDataValue("SharedFrameworkLayoutRoot"), "shared", "Microsoft.AspNetCore.App", TestData.GetTestDataValue("RuntimePackageVersion"))
+                : Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH");
+            _expectedVersionFileName = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNET_RUNTIME_PATH")) ? ".version" : "Microsoft.AspNetCore.App.versions.txt";
+        }
+
+        [Fact]
+        public void SharedFrameworkContainsListedAssemblies()
+        {
+            var actualAssemblies = Directory.GetFiles(_sharedFxRoot, "*.dll")
+                .Select(Path.GetFileNameWithoutExtension)
+                .ToHashSet();
+
+            _output.WriteLine("==== actual assemblies ====");
+            _output.WriteLine(string.Join('\n', actualAssemblies.OrderBy(i => i)));
+            _output.WriteLine("==== expected assemblies ====");
+            _output.WriteLine(string.Join('\n', TestData.ListedSharedFxAssemblies.OrderBy(i => i)));
+
+            var missing = TestData.ListedSharedFxAssemblies.Except(actualAssemblies);
+            var unexpected = actualAssemblies.Except(TestData.ListedSharedFxAssemblies);
+
+            _output.WriteLine("==== missing assemblies from the framework ====");
+            _output.WriteLine(string.Join('\n', missing));
+            _output.WriteLine("==== unexpected assemblies in the framework ====");
+            _output.WriteLine(string.Join('\n', unexpected));
+
+            Assert.Empty(missing);
+            Assert.Empty(unexpected);
         }
 
         [Fact]
@@ -154,7 +182,7 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void ItContainsVersionFile()
         {
-            var versionFile = Path.Combine(_sharedFxRoot, ".version");
+            var versionFile = Path.Combine(_sharedFxRoot, _expectedVersionFileName);
             AssertEx.FileExists(versionFile);
             var lines = File.ReadAllLines(versionFile);
             Assert.Equal(2, lines.Length);

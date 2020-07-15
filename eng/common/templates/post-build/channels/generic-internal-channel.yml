@@ -1,4 +1,7 @@
 parameters:
+  artifactsPublishingAdditionalParameters: ''
+  dependsOn:
+  - Validate
   publishInstallersAndChecksums: false
   symbolPublishingAdditionalParameters: ''
   stageName: ''
@@ -10,37 +13,54 @@ parameters:
 
 stages:
 - stage: ${{ parameters.stageName }}
-  dependsOn: validate
+  dependsOn: ${{ parameters.dependsOn }}
   variables:
     - template: ../common-variables.yml
   displayName: ${{ parameters.channelName }} Publishing
   jobs:
   - template: ../setup-maestro-vars.yml
 
-  - job:
+  - job: publish_symbols
     displayName: Symbol Publishing
     dependsOn: setupMaestroVars
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', ${{ parameters.channelId }} ))
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.TargetChannels'], format('[{0}]', ${{ parameters.channelId }} ))
     variables:
       - group: DotNet-Symbol-Server-Pats
+      - name: AzDOProjectName
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOProjectName'] ]
+      - name: AzDOPipelineId
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOPipelineId'] ]
+      - name: AzDOBuildId
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
     pool:
       vmImage: 'windows-2019'
     steps:
+      - task: DownloadBuildArtifacts@0
+        displayName: Download Build Assets
+        continueOnError: true
+        inputs:
+          buildType: specific
+          buildVersionToDownload: specific
+          project: $(AzDOProjectName)
+          pipeline: $(AzDOPipelineId)
+          buildId: $(AzDOBuildId)
+          downloadType: 'specific'
+          itemPattern: |
+            PdbArtifacts/**
+            BlobArtifacts/**
+          downloadPath: '$(Build.ArtifactStagingDirectory)'
+
       # This is necessary whenever we want to publish/restore to an AzDO private feed
+      # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
+      # otherwise it'll complain about accessing a private feed.
       - task: NuGetAuthenticate@0
         displayName: 'Authenticate to AzDO Feeds'
 
-      - task: DownloadBuildArtifacts@0
-        displayName: Download Blob Artifacts
+      - task: PowerShell@2
+        displayName: Enable cross-org publishing
         inputs:
-          artifactName: 'BlobArtifacts'
-        continueOnError: true
-
-      - task: DownloadBuildArtifacts@0
-        displayName: Download PDB Artifacts
-        inputs:
-          artifactName: 'PDBArtifacts'
-        continueOnError: true
+          filePath: eng\common\enable-cross-org-publishing.ps1
+          arguments: -token $(dn-bot-dnceng-artifact-feeds-rw)
 
       - task: PowerShell@2
         displayName: Publish
@@ -53,39 +73,48 @@ stages:
             /p:BlobBasePath='$(Build.ArtifactStagingDirectory)/BlobArtifacts/'
             /p:SymbolPublishingExclusionsFile='$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt'
             /p:Configuration=Release
+            /p:PublishToMSDL=false
             ${{ parameters.symbolPublishingAdditionalParameters }}
+
+      - template: ../../steps/publish-logs.yml
+        parameters:
+          StageLabel: '${{ parameters.stageName }}'
+          JobLabel: 'SymbolPublishing'
 
   - job: publish_assets
     displayName: Publish Assets
     dependsOn: setupMaestroVars
+    timeoutInMinutes: 120
     variables:
-      - group: DotNet-Blob-Feed
-      - group: AzureDevOps-Artifact-Feeds-Pats
       - name: BARBuildId
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
       - name: IsStableBuild
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.IsStableBuild'] ]
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', ${{ parameters.channelId }}))
+      - name: AzDOProjectName
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOProjectName'] ]
+      - name: AzDOPipelineId
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOPipelineId'] ]
+      - name: AzDOBuildId
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.TargetChannels'], format('[{0}]', ${{ parameters.channelId }} ))
     pool:
       vmImage: 'windows-2019'
     steps:
       - task: DownloadBuildArtifacts@0
-        displayName: Download Package Artifacts
+        displayName: Download Build Assets
+        continueOnError: true
         inputs:
-          buildType: current
-          artifactName: PackageArtifacts
-
-      - task: DownloadBuildArtifacts@0
-        displayName: Download Blob Artifacts
-        inputs:
-          buildType: current
-          artifactName: BlobArtifacts
-
-      - task: DownloadBuildArtifacts@0
-        displayName: Download Asset Manifests
-        inputs:
-          buildType: current
-          artifactName: AssetManifests
+          buildType: specific
+          buildVersionToDownload: specific
+          project: $(AzDOProjectName)
+          pipeline: $(AzDOPipelineId)
+          buildId: $(AzDOBuildId)
+          downloadType: 'specific'
+          itemPattern: |
+            PackageArtifacts/**
+            BlobArtifacts/**
+            AssetManifests/**
+          downloadPath: '$(Build.ArtifactStagingDirectory)'
 
       - task: NuGetToolInstaller@1
         displayName: 'Install NuGet.exe'
@@ -124,7 +153,6 @@ stages:
             /p:ChecksumsAzureAccountKey=$(InternalChecksumsBlobFeedKey)
             /p:InstallersTargetStaticFeed=$(InternalInstallersBlobFeedUrl)
             /p:InstallersAzureAccountKey=$(InternalInstallersBlobFeedKey)
-            /p:PublishToAzureDevOpsNuGetFeeds=true
             /p:AzureDevOpsStaticShippingFeed='${{ parameters.shippingFeed }}'
             /p:AzureDevOpsStaticShippingFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
             /p:AzureDevOpsStaticTransportFeed='${{ parameters.transportFeed }}'
@@ -134,6 +162,11 @@ stages:
             /p:PublishToMSDL=false
             ${{ parameters.artifactsPublishingAdditionalParameters }}
 
-      - template: ../../steps/promote-build.yml
+      - template: ../../steps/publish-logs.yml
+        parameters:
+          StageLabel: '${{ parameters.stageName }}'
+          JobLabel: 'AssetsPublishing'
+
+      - template: ../../steps/add-build-to-channel.yml
         parameters:
           ChannelId: ${{ parameters.channelId }}

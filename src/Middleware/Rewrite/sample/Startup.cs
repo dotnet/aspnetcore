@@ -3,11 +3,13 @@
 
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace RewriteSample
 {
@@ -42,23 +44,26 @@ namespace RewriteSample
             });
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .UseKestrel(options =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.Listen(IPAddress.Loopback, 5000);
-                    options.Listen(IPAddress.Loopback, 5001, listenOptions =>
+                    webHostBuilder
+                    .UseKestrel(options =>
                     {
-                        // Configure SSL
-                        listenOptions.UseHttps("testCert.pfx", "testPassword");
-                    });
-                })
-                .UseStartup<Startup>()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .Build();
+                        options.Listen(IPAddress.Loopback, 5000);
+                        options.Listen(IPAddress.Loopback, 5001, listenOptions =>
+                        {
+                            // Configure SSL
+                            listenOptions.UseHttps("testCert.pfx", "testPassword");
+                        });
+                    })
+                    .UseStartup<Startup>()
+                    .UseContentRoot(Directory.GetCurrentDirectory());
+                }).Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }

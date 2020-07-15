@@ -511,9 +511,12 @@
     <value>Unexcepted end when reading JSON.</value>
   </data>
   <data name="ApiConventions_Title_500" xml:space="preserve">
-    <value>An error occured while processing your request.</value>
+    <value>An error occurred while processing your request.</value>
   </data>
   <data name="FailedToReadRequestForm" xml:space="preserve">
     <value>Failed to read the request form. {0}</value>
+  </data>
+  <data name="ValidationVisitor_ContainerCannotBeSpecified" xml:space="preserve">
+    <value>A container cannot be specified when the ModelMetada is of kind '{0}'.</value>
   </data>
 </root>

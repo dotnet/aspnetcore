@@ -115,7 +115,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Null(serverOptions.DefaultCertificate);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)] // Investigation: https://github.com/dotnet/aspnetcore/issues/22917
         public async Task EmptyRequestLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -142,7 +143,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 userMessage: string.Join(Environment.NewLine, loggerProvider.ErrorLogger.ErrorMessages));
         }
 
-        [Fact]
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)] // Investigation: https://github.com/dotnet/aspnetcore/issues/22917
         public async Task ClientHandshakeFailureLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -203,7 +205,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var sslStream = new SslStream(connection.Stream, true, (sender, certificate, chain, errors) => true))
                 {
                     await sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
-                        enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12,
+                        enabledSslProtocols: SslProtocols.None,
                         checkCertificateRevocation: false);
 
                     var request = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
@@ -217,10 +219,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        [Repeat(20)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23405")]
         public async Task DoesNotThrowObjectDisposedExceptionFromWriteAsyncAfterConnectionIsAborted()
         {
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var loggerProvider = new HandshakeErrorLoggerProvider();
             LoggerFactory.AddProvider(loggerProvider);
 
@@ -230,7 +232,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     try
                     {
                         await httpContext.Response.WriteAsync($"hello, world");
-                        tcs.SetResult(null);
+                        tcs.SetResult();
                     }
                     catch (Exception ex)
                     {
@@ -247,7 +249,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var sslStream = new SslStream(connection.Stream, true, (sender, certificate, chain, errors) => true))
                 {
                     await sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
-                        enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12,
+                        enabledSslProtocols: SslProtocols.None,
                         checkCertificateRevocation: false);
 
                     var request = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
@@ -278,7 +280,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var sslStream = new SslStream(connection.Stream, true, (sender, certificate, chain, errors) => true))
                 {
                     await sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
-                        enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12,
+                        enabledSslProtocols: SslProtocols.None,
                         checkCertificateRevocation: false);
                 }
             }
@@ -316,7 +318,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var testContext = new TestServiceContext(LoggerFactory);
             var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
-            var handshakeStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var handshakeStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             TimeSpan handshakeTimeout = default;
 
             await using (var server = new TestServer(context => Task.CompletedTask,
@@ -328,7 +330,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         o.ServerCertificate = new X509Certificate2(TestResources.GetTestCertificate());
                         o.OnAuthenticate = (_, __) =>
                         {
-                            handshakeStartedTcs.SetResult(null);
+                            handshakeStartedTcs.SetResult();
                         };
 
                         handshakeTimeout = o.HandshakeTimeout;
@@ -364,14 +366,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 new TestServiceContext(LoggerFactory),
                 listenOptions =>
                 {
-                    listenOptions.UseHttps(TestResources.GetTestCertificate("no_extensions.pfx"));
+                    listenOptions.UseHttps(TestResources.GetTestCertificate("no_extensions.pfx"), httpsOptions =>
+                    {
+                        httpsOptions.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11;
+                    });
                 }))
             {
                 using (var connection = server.CreateConnection())
                 using (var sslStream = new SslStream(connection.Stream, true, (sender, certificate, chain, errors) => true))
                 {
                     // SslProtocols.Tls is TLS 1.0 which isn't supported by Kestrel by default.
-                    await Assert.ThrowsAsync<IOException>(() =>
+                    await Assert.ThrowsAnyAsync<Exception>(() =>
                         sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
                             enabledSslProtocols: SslProtocols.Tls,
                             checkCertificateRevocation: false));
@@ -381,35 +386,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             await loggerProvider.FilterLogger.LogTcs.Task.DefaultTimeout();
             Assert.Equal(1, loggerProvider.FilterLogger.LastEventId);
             Assert.Equal(LogLevel.Debug, loggerProvider.FilterLogger.LastLogLevel);
-        }
-
-        [Fact]
-        public async Task DevCertWithInvalidPrivateKeyProducesCustomWarning()
-        {
-            var loggerProvider = new HandshakeErrorLoggerProvider();
-            LoggerFactory.AddProvider(loggerProvider);
-
-            await using (var server = new TestServer(context => Task.CompletedTask,
-                new TestServiceContext(LoggerFactory),
-                listenOptions =>
-                {
-                    listenOptions.UseHttps(TestResources.GetTestCertificate());
-                }))
-            {
-                using (var connection = server.CreateConnection())
-                using (var sslStream = new SslStream(connection.Stream, true, (sender, certificate, chain, errors) => true))
-                {
-                    // SslProtocols.Tls is TLS 1.0 which isn't supported by Kestrel by default.
-                    await Assert.ThrowsAsync<IOException>(() =>
-                        sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
-                            enabledSslProtocols: SslProtocols.Tls,
-                            checkCertificateRevocation: false));
-                }
-            }
-
-            await loggerProvider.FilterLogger.LogTcs.Task.DefaultTimeout();
-            Assert.Equal(3, loggerProvider.FilterLogger.LastEventId);
-            Assert.Equal(LogLevel.Error, loggerProvider.FilterLogger.LastLogLevel);
         }
 
         [Fact]
@@ -440,7 +416,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var sslStream = new SslStream(connection.Stream, true, (sender, certificate, chain, errors) => true))
                 {
                     await sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
-                            enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12,
+                            enabledSslProtocols: SslProtocols.None,
                             checkCertificateRevocation: false);
                 }
             }
@@ -479,7 +455,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var sslStream = new SslStream(connection.Stream, true, (sender, certificate, chain, errors) => true))
                 {
                     await sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
-                            enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12,
+                            enabledSslProtocols: SslProtocols.None,
                             checkCertificateRevocation: false);
                 }
             }
@@ -513,13 +489,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             public LogLevel LastLogLevel { get; set; }
             public EventId LastEventId { get; set; }
-            public TaskCompletionSource<object> LogTcs { get; } = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            public TaskCompletionSource LogTcs { get; } = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
             {
                 LastLogLevel = logLevel;
                 LastEventId = eventId;
-                LogTcs.SetResult(null);
+                LogTcs.SetResult();
             }
 
             public bool IsEnabled(LogLevel logLevel)

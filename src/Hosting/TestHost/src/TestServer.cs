@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.TestHost
                 var pathBase = PathString.FromUriComponent(BaseAddress);
                 if (pathBase.HasValue && pathBase.Value.EndsWith("/"))
                 {
-                    pathBase = new PathString(pathBase.Value.Substring(0, pathBase.Value.Length - 1));
+                    pathBase = new PathString(pathBase.Value[..^1]); // All but the last character.
                 }
                 request.PathBase = pathBase;
             });

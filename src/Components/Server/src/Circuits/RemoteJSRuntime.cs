@@ -17,12 +17,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly ILogger<RemoteJSRuntime> _logger;
         private CircuitClientProxy _clientProxy;
 
+        public ElementReferenceContext ElementReferenceContext { get; }
+
         public RemoteJSRuntime(IOptions<CircuitOptions> options, ILogger<RemoteJSRuntime> logger)
         {
             _options = options.Value;
             _logger = logger;
             DefaultAsyncTimeout = _options.JSInteropDefaultCallTimeout;
-            JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter());
+            ElementReferenceContext = new WebElementReferenceContext(this);
+            JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
         }
 
         internal void Initialize(CircuitClientProxy clientProxy)
@@ -74,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 throw new InvalidOperationException(
                     "JavaScript interop calls cannot be issued at this time. This is because the component is being " +
-                    $"statically rendererd. When prerendering is enabled, JavaScript interop calls can only be performed " +
+                    $"statically rendered. When prerendering is enabled, JavaScript interop calls can only be performed " +
                     $"during the OnAfterRenderAsync lifecycle method.");
             }
 

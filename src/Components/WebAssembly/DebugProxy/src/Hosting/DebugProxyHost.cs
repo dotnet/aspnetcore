@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.Hosting
         /// </summary>
         /// <param name="args">Command line arguments passed in</param>
         /// <param name="browserHost">Host where browser is listening for debug connections</param>
-        /// <returns><see cref="IHostBuilder"></returns>
+        /// <returns><see cref="IHostBuilder" /></returns>
         public static IHostBuilder CreateDefaultBuilder(string[] args, string browserHost)
         {
             var builder = new HostBuilder();

@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.TestHost
         private readonly HeaderDictionary _headers = new HeaderDictionary();
         private readonly Action<Exception> _abort;
 
-        private Func<Task> _responseStartingAsync = () => Task.FromResult(true);
-        private Func<Task> _responseCompletedAsync = () => Task.FromResult(true);
+        private Func<Task> _responseStartingAsync = () => Task.CompletedTask;
+        private Func<Task> _responseCompletedAsync = () => Task.CompletedTask;
         private int _statusCode;
         private string _reasonPhrase;
 

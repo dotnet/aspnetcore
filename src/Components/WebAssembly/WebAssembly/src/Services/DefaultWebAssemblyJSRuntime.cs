@@ -10,9 +10,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
     {
         internal static readonly DefaultWebAssemblyJSRuntime Instance = new DefaultWebAssemblyJSRuntime();
 
+        public ElementReferenceContext ElementReferenceContext { get; }
+
         private DefaultWebAssemblyJSRuntime()
         {
-            JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter());
+            ElementReferenceContext = new WebElementReferenceContext(this);
+            JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
         }
 
         #pragma warning disable IDE0051 // Remove unused private members. Invoked via Mono's JS interop mechanism (invoke_method)

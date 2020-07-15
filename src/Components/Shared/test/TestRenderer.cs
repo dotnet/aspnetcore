@@ -29,6 +29,12 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
             Dispatcher = Dispatcher.CreateDefault();
         }
 
+        public TestRenderer(IServiceProvider serviceProvider, IComponentActivator componentActivator)
+            : base(serviceProvider, NullLoggerFactory.Instance, componentActivator)
+        {
+            Dispatcher = Dispatcher.CreateDefault();
+        }
+
         public override Dispatcher Dispatcher { get; }
 
         public Action OnExceptionHandled { get; set; }
@@ -88,8 +94,8 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
             return task;
         }
 
-        public T InstantiateComponent<T>() where T : IComponent
-            => (T)InstantiateComponent(typeof(T));
+        public IComponent InstantiateComponent<T>()
+            => InstantiateComponent(typeof(T));
 
         protected override void HandleException(Exception exception)
         {

@@ -30,13 +30,13 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> that contains the extra meta-data arriving with the authentication.</param>
         /// <returns>A task.</returns>
-        Task ChallengeAsync(AuthenticationProperties properties);
+        Task ChallengeAsync(AuthenticationProperties? properties);
 
         /// <summary>
         /// Forbid behavior.
         /// </summary>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> that contains the extra meta-data arriving with the authentication.</param>
         /// <returns>A task.</returns>
-        Task ForbidAsync(AuthenticationProperties properties);
+        Task ForbidAsync(AuthenticationProperties? properties);
     }
 }

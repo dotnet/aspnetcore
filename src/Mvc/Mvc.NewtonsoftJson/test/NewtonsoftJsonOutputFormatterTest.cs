@@ -305,6 +305,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var stream = new Mock<Stream> { CallBase = true };
             stream.Setup(v => v.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
+            stream.Setup(v => v.FlushAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
             stream.SetupGet(s => s.CanWrite).Returns(true);
 
             var formatter = new NewtonsoftJsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared, new MvcOptions());
@@ -322,6 +323,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             stream.Verify(v => v.Write(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never());
             stream.Verify(v => v.Flush(), Times.Never());
+            Assert.NotNull(outputFormatterContext.HttpContext.Response.ContentLength);
         }
 
         [Fact]

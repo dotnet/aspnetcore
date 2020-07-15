@@ -26,10 +26,10 @@ namespace Microsoft.AspNetCore.Builder
     }
     public static partial class MapRouteRouteBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Routing.IRouteBuilder MapRoute(this Microsoft.AspNetCore.Routing.IRouteBuilder routeBuilder, string name, string template) { throw null; }
-        public static Microsoft.AspNetCore.Routing.IRouteBuilder MapRoute(this Microsoft.AspNetCore.Routing.IRouteBuilder routeBuilder, string name, string template, object defaults) { throw null; }
-        public static Microsoft.AspNetCore.Routing.IRouteBuilder MapRoute(this Microsoft.AspNetCore.Routing.IRouteBuilder routeBuilder, string name, string template, object defaults, object constraints) { throw null; }
-        public static Microsoft.AspNetCore.Routing.IRouteBuilder MapRoute(this Microsoft.AspNetCore.Routing.IRouteBuilder routeBuilder, string name, string template, object defaults, object constraints, object dataTokens) { throw null; }
+        public static Microsoft.AspNetCore.Routing.IRouteBuilder MapRoute(this Microsoft.AspNetCore.Routing.IRouteBuilder routeBuilder, string? name, string? template) { throw null; }
+        public static Microsoft.AspNetCore.Routing.IRouteBuilder MapRoute(this Microsoft.AspNetCore.Routing.IRouteBuilder routeBuilder, string? name, string? template, object? defaults) { throw null; }
+        public static Microsoft.AspNetCore.Routing.IRouteBuilder MapRoute(this Microsoft.AspNetCore.Routing.IRouteBuilder routeBuilder, string? name, string? template, object? defaults, object? constraints) { throw null; }
+        public static Microsoft.AspNetCore.Routing.IRouteBuilder MapRoute(this Microsoft.AspNetCore.Routing.IRouteBuilder routeBuilder, string? name, string? template, object? defaults, object? constraints, object? dataTokens) { throw null; }
     }
     public partial class RouterMiddleware
     {
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Routing
     public sealed partial class DataTokensMetadata : Microsoft.AspNetCore.Routing.IDataTokensMetadata
     {
         public DataTokensMetadata(System.Collections.Generic.IReadOnlyDictionary<string, object> dataTokens) { }
-        public System.Collections.Generic.IReadOnlyDictionary<string, object> DataTokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> DataTokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public sealed partial class DefaultEndpointDataSource : Microsoft.AspNetCore.Routing.EndpointDataSource
     {
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Routing
     public partial class DefaultInlineConstraintResolver : Microsoft.AspNetCore.Routing.IInlineConstraintResolver
     {
         public DefaultInlineConstraintResolver(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Routing.RouteOptions> routeOptions, System.IServiceProvider serviceProvider) { }
-        public virtual Microsoft.AspNetCore.Routing.IRouteConstraint ResolveConstraint(string inlineConstraint) { throw null; }
+        public virtual Microsoft.AspNetCore.Routing.IRouteConstraint? ResolveConstraint(string inlineConstraint) { throw null; }
     }
     public abstract partial class EndpointDataSource
     {
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Routing
     public partial class EndpointNameMetadata : Microsoft.AspNetCore.Routing.IEndpointNameMetadata
     {
         public EndpointNameMetadata(string endpointName) { }
-        public string EndpointName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string EndpointName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false, Inherited=false)]
     [System.Diagnostics.DebuggerDisplayAttribute("{DebuggerToString(),nq}")]
@@ -94,15 +94,15 @@ namespace Microsoft.AspNetCore.Routing
     {
         public HostAttribute(string host) { }
         public HostAttribute(params string[] hosts) { }
-        public System.Collections.Generic.IReadOnlyList<string> Hosts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IReadOnlyList<string> Hosts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.Diagnostics.DebuggerDisplayAttribute("{DebuggerToString(),nq}")]
     public sealed partial class HttpMethodMetadata : Microsoft.AspNetCore.Routing.IHttpMethodMetadata
     {
         public HttpMethodMetadata(System.Collections.Generic.IEnumerable<string> httpMethods) { }
         public HttpMethodMetadata(System.Collections.Generic.IEnumerable<string> httpMethods, bool acceptCorsPreflight) { }
-        public bool AcceptCorsPreflight { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IReadOnlyList<string> HttpMethods { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool AcceptCorsPreflight { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IReadOnlyList<string> HttpMethods { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial interface IDataTokensMetadata
     {
@@ -137,11 +137,11 @@ namespace Microsoft.AspNetCore.Routing
     }
     public partial interface IInlineConstraintResolver
     {
-        Microsoft.AspNetCore.Routing.IRouteConstraint ResolveConstraint(string inlineConstraint);
+        Microsoft.AspNetCore.Routing.IRouteConstraint? ResolveConstraint(string inlineConstraint);
     }
     public partial interface INamedRouter : Microsoft.AspNetCore.Routing.IRouter
     {
-        string Name { get; }
+        string? Name { get; }
     }
     public static partial class InlineRouteParameterParser
     {
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Routing
     public partial interface IRouteBuilder
     {
         Microsoft.AspNetCore.Builder.IApplicationBuilder ApplicationBuilder { get; }
-        Microsoft.AspNetCore.Routing.IRouter DefaultHandler { get; set; }
+        Microsoft.AspNetCore.Routing.IRouter? DefaultHandler { get; set; }
         System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.IRouter> Routes { get; }
         System.IServiceProvider ServiceProvider { get; }
         Microsoft.AspNetCore.Routing.IRouter Build();
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Routing
         protected ParameterPolicyFactory() { }
         public abstract Microsoft.AspNetCore.Routing.IParameterPolicy Create(Microsoft.AspNetCore.Routing.Patterns.RoutePatternParameterPart parameter, Microsoft.AspNetCore.Routing.IParameterPolicy parameterPolicy);
         public Microsoft.AspNetCore.Routing.IParameterPolicy Create(Microsoft.AspNetCore.Routing.Patterns.RoutePatternParameterPart parameter, Microsoft.AspNetCore.Routing.Patterns.RoutePatternParameterPolicyReference reference) { throw null; }
-        public abstract Microsoft.AspNetCore.Routing.IParameterPolicy Create(Microsoft.AspNetCore.Routing.Patterns.RoutePatternParameterPart parameter, string inlineText);
+        public abstract Microsoft.AspNetCore.Routing.IParameterPolicy Create(Microsoft.AspNetCore.Routing.Patterns.RoutePatternParameterPart? parameter, string inlineText);
     }
     public static partial class RequestDelegateRouteBuilderExtensions
     {
@@ -230,37 +230,37 @@ namespace Microsoft.AspNetCore.Routing
     public partial class Route : Microsoft.AspNetCore.Routing.RouteBase
     {
         public Route(Microsoft.AspNetCore.Routing.IRouter target, string routeTemplate, Microsoft.AspNetCore.Routing.IInlineConstraintResolver inlineConstraintResolver) : base (default(string), default(string), default(Microsoft.AspNetCore.Routing.IInlineConstraintResolver), default(Microsoft.AspNetCore.Routing.RouteValueDictionary), default(System.Collections.Generic.IDictionary<string, object>), default(Microsoft.AspNetCore.Routing.RouteValueDictionary)) { }
-        public Route(Microsoft.AspNetCore.Routing.IRouter target, string routeTemplate, Microsoft.AspNetCore.Routing.RouteValueDictionary defaults, System.Collections.Generic.IDictionary<string, object> constraints, Microsoft.AspNetCore.Routing.RouteValueDictionary dataTokens, Microsoft.AspNetCore.Routing.IInlineConstraintResolver inlineConstraintResolver) : base (default(string), default(string), default(Microsoft.AspNetCore.Routing.IInlineConstraintResolver), default(Microsoft.AspNetCore.Routing.RouteValueDictionary), default(System.Collections.Generic.IDictionary<string, object>), default(Microsoft.AspNetCore.Routing.RouteValueDictionary)) { }
-        public Route(Microsoft.AspNetCore.Routing.IRouter target, string routeName, string routeTemplate, Microsoft.AspNetCore.Routing.RouteValueDictionary defaults, System.Collections.Generic.IDictionary<string, object> constraints, Microsoft.AspNetCore.Routing.RouteValueDictionary dataTokens, Microsoft.AspNetCore.Routing.IInlineConstraintResolver inlineConstraintResolver) : base (default(string), default(string), default(Microsoft.AspNetCore.Routing.IInlineConstraintResolver), default(Microsoft.AspNetCore.Routing.RouteValueDictionary), default(System.Collections.Generic.IDictionary<string, object>), default(Microsoft.AspNetCore.Routing.RouteValueDictionary)) { }
+        public Route(Microsoft.AspNetCore.Routing.IRouter target, string routeTemplate, Microsoft.AspNetCore.Routing.RouteValueDictionary? defaults, System.Collections.Generic.IDictionary<string, object>? constraints, Microsoft.AspNetCore.Routing.RouteValueDictionary? dataTokens, Microsoft.AspNetCore.Routing.IInlineConstraintResolver inlineConstraintResolver) : base (default(string), default(string), default(Microsoft.AspNetCore.Routing.IInlineConstraintResolver), default(Microsoft.AspNetCore.Routing.RouteValueDictionary), default(System.Collections.Generic.IDictionary<string, object>), default(Microsoft.AspNetCore.Routing.RouteValueDictionary)) { }
+        public Route(Microsoft.AspNetCore.Routing.IRouter target, string? routeName, string? routeTemplate, Microsoft.AspNetCore.Routing.RouteValueDictionary? defaults, System.Collections.Generic.IDictionary<string, object>? constraints, Microsoft.AspNetCore.Routing.RouteValueDictionary? dataTokens, Microsoft.AspNetCore.Routing.IInlineConstraintResolver inlineConstraintResolver) : base (default(string), default(string), default(Microsoft.AspNetCore.Routing.IInlineConstraintResolver), default(Microsoft.AspNetCore.Routing.RouteValueDictionary), default(System.Collections.Generic.IDictionary<string, object>), default(Microsoft.AspNetCore.Routing.RouteValueDictionary)) { }
         public string RouteTemplate { get { throw null; } }
         protected override System.Threading.Tasks.Task OnRouteMatched(Microsoft.AspNetCore.Routing.RouteContext context) { throw null; }
-        protected override Microsoft.AspNetCore.Routing.VirtualPathData OnVirtualPathGenerated(Microsoft.AspNetCore.Routing.VirtualPathContext context) { throw null; }
+        protected override Microsoft.AspNetCore.Routing.VirtualPathData? OnVirtualPathGenerated(Microsoft.AspNetCore.Routing.VirtualPathContext context) { throw null; }
     }
     public abstract partial class RouteBase : Microsoft.AspNetCore.Routing.INamedRouter, Microsoft.AspNetCore.Routing.IRouter
     {
-        public RouteBase(string template, string name, Microsoft.AspNetCore.Routing.IInlineConstraintResolver constraintResolver, Microsoft.AspNetCore.Routing.RouteValueDictionary defaults, System.Collections.Generic.IDictionary<string, object> constraints, Microsoft.AspNetCore.Routing.RouteValueDictionary dataTokens) { }
-        protected virtual Microsoft.AspNetCore.Routing.IInlineConstraintResolver ConstraintResolver { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.Routing.IRouteConstraint> Constraints { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
-        public virtual Microsoft.AspNetCore.Routing.RouteValueDictionary DataTokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
-        public virtual Microsoft.AspNetCore.Routing.RouteValueDictionary Defaults { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
-        public virtual string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
-        public virtual Microsoft.AspNetCore.Routing.Template.RouteTemplate ParsedTemplate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
-        protected static System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.Routing.IRouteConstraint> GetConstraints(Microsoft.AspNetCore.Routing.IInlineConstraintResolver inlineConstraintResolver, Microsoft.AspNetCore.Routing.Template.RouteTemplate parsedTemplate, System.Collections.Generic.IDictionary<string, object> constraints) { throw null; }
-        protected static Microsoft.AspNetCore.Routing.RouteValueDictionary GetDefaults(Microsoft.AspNetCore.Routing.Template.RouteTemplate parsedTemplate, Microsoft.AspNetCore.Routing.RouteValueDictionary defaults) { throw null; }
-        public virtual Microsoft.AspNetCore.Routing.VirtualPathData GetVirtualPath(Microsoft.AspNetCore.Routing.VirtualPathContext context) { throw null; }
+        public RouteBase(string? template, string? name, Microsoft.AspNetCore.Routing.IInlineConstraintResolver constraintResolver, Microsoft.AspNetCore.Routing.RouteValueDictionary? defaults, System.Collections.Generic.IDictionary<string, object>? constraints, Microsoft.AspNetCore.Routing.RouteValueDictionary? dataTokens) { }
+        protected virtual Microsoft.AspNetCore.Routing.IInlineConstraintResolver ConstraintResolver { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.Routing.IRouteConstraint> Constraints { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
+        public virtual Microsoft.AspNetCore.Routing.RouteValueDictionary DataTokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
+        public virtual Microsoft.AspNetCore.Routing.RouteValueDictionary Defaults { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
+        public virtual string? Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
+        public virtual Microsoft.AspNetCore.Routing.Template.RouteTemplate ParsedTemplate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
+        protected static System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.Routing.IRouteConstraint> GetConstraints(Microsoft.AspNetCore.Routing.IInlineConstraintResolver inlineConstraintResolver, Microsoft.AspNetCore.Routing.Template.RouteTemplate parsedTemplate, System.Collections.Generic.IDictionary<string, object>? constraints) { throw null; }
+        protected static Microsoft.AspNetCore.Routing.RouteValueDictionary GetDefaults(Microsoft.AspNetCore.Routing.Template.RouteTemplate parsedTemplate, Microsoft.AspNetCore.Routing.RouteValueDictionary? defaults) { throw null; }
+        public virtual Microsoft.AspNetCore.Routing.VirtualPathData? GetVirtualPath(Microsoft.AspNetCore.Routing.VirtualPathContext context) { throw null; }
         protected abstract System.Threading.Tasks.Task OnRouteMatched(Microsoft.AspNetCore.Routing.RouteContext context);
-        protected abstract Microsoft.AspNetCore.Routing.VirtualPathData OnVirtualPathGenerated(Microsoft.AspNetCore.Routing.VirtualPathContext context);
+        protected abstract Microsoft.AspNetCore.Routing.VirtualPathData? OnVirtualPathGenerated(Microsoft.AspNetCore.Routing.VirtualPathContext context);
         public virtual System.Threading.Tasks.Task RouteAsync(Microsoft.AspNetCore.Routing.RouteContext context) { throw null; }
         public override string ToString() { throw null; }
     }
     public partial class RouteBuilder : Microsoft.AspNetCore.Routing.IRouteBuilder
     {
         public RouteBuilder(Microsoft.AspNetCore.Builder.IApplicationBuilder applicationBuilder) { }
-        public RouteBuilder(Microsoft.AspNetCore.Builder.IApplicationBuilder applicationBuilder, Microsoft.AspNetCore.Routing.IRouter defaultHandler) { }
-        public Microsoft.AspNetCore.Builder.IApplicationBuilder ApplicationBuilder { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Routing.IRouter DefaultHandler { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.IRouter> Routes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.IServiceProvider ServiceProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public RouteBuilder(Microsoft.AspNetCore.Builder.IApplicationBuilder applicationBuilder, Microsoft.AspNetCore.Routing.IRouter? defaultHandler) { }
+        public Microsoft.AspNetCore.Builder.IApplicationBuilder ApplicationBuilder { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Routing.IRouter? DefaultHandler { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.IRouter> Routes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.IServiceProvider ServiceProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Routing.IRouter Build() { throw null; }
     }
     public partial class RouteCollection : Microsoft.AspNetCore.Routing.IRouteCollection, Microsoft.AspNetCore.Routing.IRouter
@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.Routing
         public int Count { get { throw null; } }
         public Microsoft.AspNetCore.Routing.IRouter this[int index] { get { throw null; } }
         public void Add(Microsoft.AspNetCore.Routing.IRouter router) { }
-        public virtual Microsoft.AspNetCore.Routing.VirtualPathData GetVirtualPath(Microsoft.AspNetCore.Routing.VirtualPathContext context) { throw null; }
+        public virtual Microsoft.AspNetCore.Routing.VirtualPathData? GetVirtualPath(Microsoft.AspNetCore.Routing.VirtualPathContext context) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task RouteAsync(Microsoft.AspNetCore.Routing.RouteContext context) { throw null; }
     }
@@ -293,37 +293,37 @@ namespace Microsoft.AspNetCore.Routing
     public sealed partial class RouteEndpoint : Microsoft.AspNetCore.Http.Endpoint
     {
         public RouteEndpoint(Microsoft.AspNetCore.Http.RequestDelegate requestDelegate, Microsoft.AspNetCore.Routing.Patterns.RoutePattern routePattern, int order, Microsoft.AspNetCore.Http.EndpointMetadataCollection metadata, string displayName) : base (default(Microsoft.AspNetCore.Http.RequestDelegate), default(Microsoft.AspNetCore.Http.EndpointMetadataCollection), default(string)) { }
-        public int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Routing.Patterns.RoutePattern RoutePattern { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Routing.Patterns.RoutePattern RoutePattern { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public sealed partial class RouteEndpointBuilder : Microsoft.AspNetCore.Builder.EndpointBuilder
     {
         public RouteEndpointBuilder(Microsoft.AspNetCore.Http.RequestDelegate requestDelegate, Microsoft.AspNetCore.Routing.Patterns.RoutePattern routePattern, int order) { }
-        public int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Routing.Patterns.RoutePattern RoutePattern { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.Patterns.RoutePattern RoutePattern { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override Microsoft.AspNetCore.Http.Endpoint Build() { throw null; }
     }
     public partial class RouteHandler : Microsoft.AspNetCore.Routing.IRouteHandler, Microsoft.AspNetCore.Routing.IRouter
     {
         public RouteHandler(Microsoft.AspNetCore.Http.RequestDelegate requestDelegate) { }
         public Microsoft.AspNetCore.Http.RequestDelegate GetRequestHandler(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.RouteData routeData) { throw null; }
-        public Microsoft.AspNetCore.Routing.VirtualPathData GetVirtualPath(Microsoft.AspNetCore.Routing.VirtualPathContext context) { throw null; }
+        public Microsoft.AspNetCore.Routing.VirtualPathData? GetVirtualPath(Microsoft.AspNetCore.Routing.VirtualPathContext context) { throw null; }
         public System.Threading.Tasks.Task RouteAsync(Microsoft.AspNetCore.Routing.RouteContext context) { throw null; }
     }
     [System.Diagnostics.DebuggerDisplayAttribute("{DebuggerToString(),nq}")]
     public sealed partial class RouteNameMetadata : Microsoft.AspNetCore.Routing.IRouteNameMetadata
     {
         public RouteNameMetadata(string routeName) { }
-        public string RouteName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string RouteName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class RouteOptions
     {
         public RouteOptions() { }
-        public bool AppendTrailingSlash { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool AppendTrailingSlash { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public System.Collections.Generic.IDictionary<string, System.Type> ConstraintMap { get { throw null; } set { } }
-        public bool LowercaseQueryStrings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool LowercaseUrls { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool SuppressCheckForUnhandledSecurityMetadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool LowercaseQueryStrings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool LowercaseUrls { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool SuppressCheckForUnhandledSecurityMetadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class RouteValueEqualityComparer : System.Collections.Generic.IEqualityComparer<object>
     {
@@ -335,14 +335,14 @@ namespace Microsoft.AspNetCore.Routing
     public partial class RouteValuesAddress
     {
         public RouteValuesAddress() { }
-        public Microsoft.AspNetCore.Routing.RouteValueDictionary AmbientValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Routing.RouteValueDictionary ExplicitValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string RouteName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Routing.RouteValueDictionary? AmbientValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.RouteValueDictionary ExplicitValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string? RouteName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class RoutingFeature : Microsoft.AspNetCore.Routing.IRoutingFeature
     {
         public RoutingFeature() { }
-        public Microsoft.AspNetCore.Routing.RouteData RouteData { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Routing.RouteData? RouteData { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public sealed partial class SuppressLinkGenerationMetadata : Microsoft.AspNetCore.Routing.ISuppressLinkGenerationMetadata
     {
@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     public partial class CompositeRouteConstraint : Microsoft.AspNetCore.Routing.IParameterPolicy, Microsoft.AspNetCore.Routing.IRouteConstraint
     {
         public CompositeRouteConstraint(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Routing.IRouteConstraint> constraints) { }
-        public System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Routing.IRouteConstraint> Constraints { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Routing.IRouteConstraint> Constraints { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool Match(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.IRouter route, string routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection) { throw null; }
     }
     public partial class DateTimeRouteConstraint : Microsoft.AspNetCore.Routing.IParameterPolicy, Microsoft.AspNetCore.Routing.IRouteConstraint
@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     public partial class HttpMethodRouteConstraint : Microsoft.AspNetCore.Routing.IParameterPolicy, Microsoft.AspNetCore.Routing.IRouteConstraint
     {
         public HttpMethodRouteConstraint(params string[] allowedMethods) { }
-        public System.Collections.Generic.IList<string> AllowedMethods { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IList<string> AllowedMethods { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public virtual bool Match(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.IRouter route, string routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection) { throw null; }
     }
     public partial class IntRouteConstraint : Microsoft.AspNetCore.Routing.IParameterPolicy, Microsoft.AspNetCore.Routing.IRouteConstraint
@@ -417,8 +417,8 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     {
         public LengthRouteConstraint(int length) { }
         public LengthRouteConstraint(int minLength, int maxLength) { }
-        public int MaxLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public int MinLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int MaxLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public int MinLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool Match(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.IRouter route, string routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection) { throw null; }
     }
     public partial class LongRouteConstraint : Microsoft.AspNetCore.Routing.IParameterPolicy, Microsoft.AspNetCore.Routing.IRouteConstraint
@@ -429,25 +429,25 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     public partial class MaxLengthRouteConstraint : Microsoft.AspNetCore.Routing.IParameterPolicy, Microsoft.AspNetCore.Routing.IRouteConstraint
     {
         public MaxLengthRouteConstraint(int maxLength) { }
-        public int MaxLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int MaxLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool Match(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.IRouter route, string routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection) { throw null; }
     }
     public partial class MaxRouteConstraint : Microsoft.AspNetCore.Routing.IParameterPolicy, Microsoft.AspNetCore.Routing.IRouteConstraint
     {
         public MaxRouteConstraint(long max) { }
-        public long Max { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public long Max { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool Match(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.IRouter route, string routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection) { throw null; }
     }
     public partial class MinLengthRouteConstraint : Microsoft.AspNetCore.Routing.IParameterPolicy, Microsoft.AspNetCore.Routing.IRouteConstraint
     {
         public MinLengthRouteConstraint(int minLength) { }
-        public int MinLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int MinLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool Match(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.IRouter route, string routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection) { throw null; }
     }
     public partial class MinRouteConstraint : Microsoft.AspNetCore.Routing.IParameterPolicy, Microsoft.AspNetCore.Routing.IRouteConstraint
     {
         public MinRouteConstraint(long min) { }
-        public long Min { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public long Min { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool Match(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.IRouter route, string routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection) { throw null; }
     }
     public partial class NonFileNameRouteConstraint : Microsoft.AspNetCore.Routing.IParameterPolicy, Microsoft.AspNetCore.Routing.IRouteConstraint
@@ -458,14 +458,14 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     public partial class OptionalRouteConstraint : Microsoft.AspNetCore.Routing.IParameterPolicy, Microsoft.AspNetCore.Routing.IRouteConstraint
     {
         public OptionalRouteConstraint(Microsoft.AspNetCore.Routing.IRouteConstraint innerConstraint) { }
-        public Microsoft.AspNetCore.Routing.IRouteConstraint InnerConstraint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Routing.IRouteConstraint InnerConstraint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool Match(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.IRouter route, string routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection) { throw null; }
     }
     public partial class RangeRouteConstraint : Microsoft.AspNetCore.Routing.IParameterPolicy, Microsoft.AspNetCore.Routing.IRouteConstraint
     {
         public RangeRouteConstraint(long min, long max) { }
-        public long Max { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public long Min { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public long Max { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public long Min { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool Match(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.IRouter route, string routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection) { throw null; }
     }
     public partial class RegexInlineRouteConstraint : Microsoft.AspNetCore.Routing.Constraints.RegexRouteConstraint
@@ -476,7 +476,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     {
         public RegexRouteConstraint(string regexPattern) { }
         public RegexRouteConstraint(System.Text.RegularExpressions.Regex regex) { }
-        public System.Text.RegularExpressions.Regex Constraint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Text.RegularExpressions.Regex Constraint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool Match(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.IRouter route, string routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection) { throw null; }
     }
     public partial class RequiredRouteConstraint : Microsoft.AspNetCore.Routing.IParameterPolicy, Microsoft.AspNetCore.Routing.IRouteConstraint
@@ -515,21 +515,22 @@ namespace Microsoft.AspNetCore.Routing.Matching
     {
         private object _dummy;
         private int _dummyPrimitive;
-        public Microsoft.AspNetCore.Http.Endpoint Endpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public int Score { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Http.Endpoint Endpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public int Score { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Routing.RouteValueDictionary Values { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public sealed partial class EndpointMetadataComparer : System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint>
     {
         internal EndpointMetadataComparer() { }
-        int System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint>.Compare(Microsoft.AspNetCore.Http.Endpoint x, Microsoft.AspNetCore.Http.Endpoint y) { throw null; }
+        int System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint>.Compare(Microsoft.AspNetCore.Http.Endpoint? x, Microsoft.AspNetCore.Http.Endpoint? y) { throw null; }
     }
     public abstract partial class EndpointMetadataComparer<TMetadata> : System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint> where TMetadata : class
     {
         public static readonly Microsoft.AspNetCore.Routing.Matching.EndpointMetadataComparer<TMetadata> Default;
         protected EndpointMetadataComparer() { }
-        public int Compare(Microsoft.AspNetCore.Http.Endpoint x, Microsoft.AspNetCore.Http.Endpoint y) { throw null; }
-        protected virtual int CompareMetadata(TMetadata x, TMetadata y) { throw null; }
-        protected virtual TMetadata GetMetadata(Microsoft.AspNetCore.Http.Endpoint endpoint) { throw null; }
+        public int Compare(Microsoft.AspNetCore.Http.Endpoint? x, Microsoft.AspNetCore.Http.Endpoint? y) { throw null; }
+        protected virtual int CompareMetadata(TMetadata? x, TMetadata? y) { throw null; }
+        protected virtual TMetadata? GetMetadata(Microsoft.AspNetCore.Http.Endpoint endpoint) { throw null; }
     }
     public abstract partial class EndpointSelector
     {
@@ -539,8 +540,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
     public sealed partial class HostMatcherPolicy : Microsoft.AspNetCore.Routing.MatcherPolicy, Microsoft.AspNetCore.Routing.Matching.IEndpointComparerPolicy, Microsoft.AspNetCore.Routing.Matching.IEndpointSelectorPolicy, Microsoft.AspNetCore.Routing.Matching.INodeBuilderPolicy
     {
         public HostMatcherPolicy() { }
-        public System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint> Comparer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public override int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint> Comparer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public override int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public System.Threading.Tasks.Task ApplyAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.Matching.CandidateSet candidates) { throw null; }
         public Microsoft.AspNetCore.Routing.Matching.PolicyJumpTable BuildJumpTable(int exitDestination, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Matching.PolicyJumpTableEdge> edges) { throw null; }
         public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Matching.PolicyNodeEdge> GetEdges(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> endpoints) { throw null; }
@@ -584,16 +585,17 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private readonly object _dummy;
         private readonly int _dummyPrimitive;
         public PolicyJumpTableEdge(object state, int destination) { throw null; }
-        public int Destination { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public object State { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int Destination { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public object State { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct PolicyNodeEdge
     {
         private readonly object _dummy;
+        private readonly int _dummyPrimitive;
         public PolicyNodeEdge(object state, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> endpoints) { throw null; }
-        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> Endpoints { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public object State { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> Endpoints { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public object State { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
 }
 namespace Microsoft.AspNetCore.Routing.Patterns
@@ -603,20 +605,20 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     {
         internal RoutePattern() { }
         public static readonly object RequiredValueAny;
-        public System.Collections.Generic.IReadOnlyDictionary<string, object> Defaults { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public decimal InboundPrecedence { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public decimal OutboundPrecedence { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Patterns.RoutePatternParameterPolicyReference>> ParameterPolicies { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Patterns.RoutePatternParameterPart> Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Patterns.RoutePatternPathSegment> PathSegments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string RawText { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IReadOnlyDictionary<string, object> RequiredValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> Defaults { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public decimal InboundPrecedence { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public decimal OutboundPrecedence { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IReadOnlyDictionary<string, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Patterns.RoutePatternParameterPolicyReference>> ParameterPolicies { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Patterns.RoutePatternParameterPart> Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Patterns.RoutePatternPathSegment> PathSegments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string RawText { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> RequiredValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Routing.Patterns.RoutePatternParameterPart GetParameter(string name) { throw null; }
     }
     public sealed partial class RoutePatternException : System.Exception
     {
         public RoutePatternException(string pattern, string message) { }
-        public string Pattern { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Pattern { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public override void GetObjectData(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) { }
     }
     public static partial class RoutePatternFactory
@@ -651,7 +653,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     public sealed partial class RoutePatternLiteralPart : Microsoft.AspNetCore.Routing.Patterns.RoutePatternPart
     {
         internal RoutePatternLiteralPart() { }
-        public string Content { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Content { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public enum RoutePatternParameterKind
     {
@@ -663,20 +665,20 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     public sealed partial class RoutePatternParameterPart : Microsoft.AspNetCore.Routing.Patterns.RoutePatternPart
     {
         internal RoutePatternParameterPart() { }
-        public object Default { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool EncodeSlashes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public object Default { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public bool EncodeSlashes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool IsCatchAll { get { throw null; } }
         public bool IsOptional { get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Routing.Patterns.RoutePatternParameterKind ParameterKind { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Patterns.RoutePatternParameterPolicyReference> ParameterPolicies { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Routing.Patterns.RoutePatternParameterKind ParameterKind { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Patterns.RoutePatternParameterPolicyReference> ParameterPolicies { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.Diagnostics.DebuggerDisplayAttribute("{DebuggerToString()}")]
     public sealed partial class RoutePatternParameterPolicyReference
     {
         internal RoutePatternParameterPolicyReference() { }
-        public string Content { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Routing.IParameterPolicy ParameterPolicy { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Content { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Routing.IParameterPolicy ParameterPolicy { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public abstract partial class RoutePatternPart
     {
@@ -684,7 +686,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         public bool IsLiteral { get { throw null; } }
         public bool IsParameter { get { throw null; } }
         public bool IsSeparator { get { throw null; } }
-        public Microsoft.AspNetCore.Routing.Patterns.RoutePatternPartKind PartKind { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Routing.Patterns.RoutePatternPartKind PartKind { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public enum RoutePatternPartKind
     {
@@ -697,13 +699,13 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     {
         internal RoutePatternPathSegment() { }
         public bool IsSimple { get { throw null; } }
-        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Patterns.RoutePatternPart> Parts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Patterns.RoutePatternPart> Parts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     [System.Diagnostics.DebuggerDisplayAttribute("{DebuggerToString()}")]
     public sealed partial class RoutePatternSeparatorPart : Microsoft.AspNetCore.Routing.Patterns.RoutePatternPart
     {
         internal RoutePatternSeparatorPart() { }
-        public string Content { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Content { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public abstract partial class RoutePatternTransformer
     {
@@ -717,7 +719,7 @@ namespace Microsoft.AspNetCore.Routing.Template
     {
         public InlineConstraint(Microsoft.AspNetCore.Routing.Patterns.RoutePatternParameterPolicyReference other) { }
         public InlineConstraint(string constraint) { }
-        public string Constraint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Constraint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public static partial class RoutePrecedence
     {
@@ -729,20 +731,20 @@ namespace Microsoft.AspNetCore.Routing.Template
     {
         public RouteTemplate(Microsoft.AspNetCore.Routing.Patterns.RoutePattern other) { }
         public RouteTemplate(string template, System.Collections.Generic.List<Microsoft.AspNetCore.Routing.Template.TemplateSegment> segments) { }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.Template.TemplatePart> Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.Template.TemplateSegment> Segments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string TemplateText { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Routing.Template.TemplatePart GetParameter(string name) { throw null; }
-        public Microsoft.AspNetCore.Routing.Template.TemplateSegment GetSegment(int index) { throw null; }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.Template.TemplatePart> Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.Template.TemplateSegment> Segments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string TemplateText { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Routing.Template.TemplatePart? GetParameter(string name) { throw null; }
+        public Microsoft.AspNetCore.Routing.Template.TemplateSegment? GetSegment(int index) { throw null; }
         public Microsoft.AspNetCore.Routing.Patterns.RoutePattern ToRoutePattern() { throw null; }
     }
     public partial class TemplateBinder
     {
         internal TemplateBinder() { }
-        public string BindValues(Microsoft.AspNetCore.Routing.RouteValueDictionary acceptedValues) { throw null; }
-        public Microsoft.AspNetCore.Routing.Template.TemplateValuesResult GetValues(Microsoft.AspNetCore.Routing.RouteValueDictionary ambientValues, Microsoft.AspNetCore.Routing.RouteValueDictionary values) { throw null; }
-        public static bool RoutePartsEqual(object a, object b) { throw null; }
-        public bool TryProcessConstraints(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.RouteValueDictionary combinedValues, out string parameterName, out Microsoft.AspNetCore.Routing.IRouteConstraint constraint) { throw null; }
+        public string? BindValues(Microsoft.AspNetCore.Routing.RouteValueDictionary acceptedValues) { throw null; }
+        public Microsoft.AspNetCore.Routing.Template.TemplateValuesResult? GetValues(Microsoft.AspNetCore.Routing.RouteValueDictionary? ambientValues, Microsoft.AspNetCore.Routing.RouteValueDictionary values) { throw null; }
+        public static bool RoutePartsEqual(object? a, object? b) { throw null; }
+        public bool TryProcessConstraints(Microsoft.AspNetCore.Http.HttpContext? httpContext, Microsoft.AspNetCore.Routing.RouteValueDictionary combinedValues, out string? parameterName, out Microsoft.AspNetCore.Routing.IRouteConstraint? constraint) { throw null; }
     }
     public abstract partial class TemplateBinderFactory
     {
@@ -753,8 +755,8 @@ namespace Microsoft.AspNetCore.Routing.Template
     public partial class TemplateMatcher
     {
         public TemplateMatcher(Microsoft.AspNetCore.Routing.Template.RouteTemplate template, Microsoft.AspNetCore.Routing.RouteValueDictionary defaults) { }
-        public Microsoft.AspNetCore.Routing.RouteValueDictionary Defaults { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Routing.Template.RouteTemplate Template { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Routing.RouteValueDictionary Defaults { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Routing.Template.RouteTemplate Template { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public bool TryMatch(Microsoft.AspNetCore.Http.PathString path, Microsoft.AspNetCore.Routing.RouteValueDictionary values) { throw null; }
     }
     public static partial class TemplateParser
@@ -766,15 +768,15 @@ namespace Microsoft.AspNetCore.Routing.Template
     {
         public TemplatePart() { }
         public TemplatePart(Microsoft.AspNetCore.Routing.Patterns.RoutePatternPart other) { }
-        public object DefaultValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Routing.Template.InlineConstraint> InlineConstraints { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool IsCatchAll { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool IsLiteral { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool IsOptional { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool IsOptionalSeperator { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool IsParameter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Text { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public object DefaultValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Routing.Template.InlineConstraint> InlineConstraints { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public bool IsCatchAll { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public bool IsLiteral { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public bool IsOptional { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public bool IsOptionalSeperator { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public bool IsParameter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Text { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public static Microsoft.AspNetCore.Routing.Template.TemplatePart CreateLiteral(string text) { throw null; }
         public static Microsoft.AspNetCore.Routing.Template.TemplatePart CreateParameter(string name, bool isCatchAll, bool isOptional, object defaultValue, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Routing.Template.InlineConstraint> inlineConstraints) { throw null; }
         public Microsoft.AspNetCore.Routing.Patterns.RoutePatternPart ToRoutePatternPart() { throw null; }
@@ -785,14 +787,14 @@ namespace Microsoft.AspNetCore.Routing.Template
         public TemplateSegment() { }
         public TemplateSegment(Microsoft.AspNetCore.Routing.Patterns.RoutePatternPathSegment other) { }
         public bool IsSimple { get { throw null; } }
-        public System.Collections.Generic.List<Microsoft.AspNetCore.Routing.Template.TemplatePart> Parts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.List<Microsoft.AspNetCore.Routing.Template.TemplatePart> Parts { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Routing.Patterns.RoutePatternPathSegment ToRoutePatternPathSegment() { throw null; }
     }
     public partial class TemplateValuesResult
     {
         public TemplateValuesResult() { }
-        public Microsoft.AspNetCore.Routing.RouteValueDictionary AcceptedValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Routing.RouteValueDictionary CombinedValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Routing.RouteValueDictionary AcceptedValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.RouteValueDictionary CombinedValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
 }
 namespace Microsoft.AspNetCore.Routing.Tree
@@ -801,44 +803,44 @@ namespace Microsoft.AspNetCore.Routing.Tree
     public partial class InboundMatch
     {
         public InboundMatch() { }
-        public Microsoft.AspNetCore.Routing.Tree.InboundRouteEntry Entry { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Routing.Template.TemplateMatcher TemplateMatcher { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Routing.Tree.InboundRouteEntry Entry { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.Template.TemplateMatcher TemplateMatcher { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class InboundRouteEntry
     {
         public InboundRouteEntry() { }
-        public System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.Routing.IRouteConstraint> Constraints { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Routing.RouteValueDictionary Defaults { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Routing.IRouter Handler { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public decimal Precedence { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string RouteName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Routing.Template.RouteTemplate RouteTemplate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.Routing.IRouteConstraint> Constraints { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.RouteValueDictionary Defaults { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.IRouter Handler { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public decimal Precedence { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string RouteName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.Template.RouteTemplate RouteTemplate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class OutboundMatch
     {
         public OutboundMatch() { }
-        public Microsoft.AspNetCore.Routing.Tree.OutboundRouteEntry Entry { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Routing.Template.TemplateBinder TemplateBinder { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Routing.Tree.OutboundRouteEntry Entry { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.Template.TemplateBinder TemplateBinder { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class OutboundRouteEntry
     {
         public OutboundRouteEntry() { }
-        public System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.Routing.IRouteConstraint> Constraints { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public object Data { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Routing.RouteValueDictionary Defaults { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Routing.IRouter Handler { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public decimal Precedence { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Routing.RouteValueDictionary RequiredLinkValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string RouteName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Routing.Template.RouteTemplate RouteTemplate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.Routing.IRouteConstraint> Constraints { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public object Data { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.RouteValueDictionary Defaults { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.IRouter Handler { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public decimal Precedence { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.RouteValueDictionary RequiredLinkValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string RouteName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.Template.RouteTemplate RouteTemplate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class TreeRouteBuilder
     {
         internal TreeRouteBuilder() { }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.Tree.InboundRouteEntry> InboundEntries { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.Tree.OutboundRouteEntry> OutboundEntries { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.Tree.InboundRouteEntry> InboundEntries { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.Tree.OutboundRouteEntry> OutboundEntries { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Routing.Tree.TreeRouter Build() { throw null; }
         public Microsoft.AspNetCore.Routing.Tree.TreeRouter Build(int version) { throw null; }
         public void Clear() { }
@@ -849,7 +851,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
     {
         internal TreeRouter() { }
         public static readonly string RouteGroupKey;
-        public int Version { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int Version { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public Microsoft.AspNetCore.Routing.VirtualPathData GetVirtualPath(Microsoft.AspNetCore.Routing.VirtualPathContext context) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task RouteAsync(Microsoft.AspNetCore.Routing.RouteContext context) { throw null; }
@@ -858,20 +860,20 @@ namespace Microsoft.AspNetCore.Routing.Tree
     public partial class UrlMatchingNode
     {
         public UrlMatchingNode(int length) { }
-        public Microsoft.AspNetCore.Routing.Tree.UrlMatchingNode CatchAlls { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Routing.Tree.UrlMatchingNode ConstrainedCatchAlls { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Routing.Tree.UrlMatchingNode ConstrainedParameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int Depth { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool IsCatchAll { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.Dictionary<string, Microsoft.AspNetCore.Routing.Tree.UrlMatchingNode> Literals { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.List<Microsoft.AspNetCore.Routing.Tree.InboundMatch> Matches { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Routing.Tree.UrlMatchingNode Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Routing.Tree.UrlMatchingNode CatchAlls { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.Tree.UrlMatchingNode ConstrainedCatchAlls { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Routing.Tree.UrlMatchingNode ConstrainedParameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int Depth { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public bool IsCatchAll { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.Dictionary<string, Microsoft.AspNetCore.Routing.Tree.UrlMatchingNode> Literals { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.List<Microsoft.AspNetCore.Routing.Tree.InboundMatch> Matches { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Routing.Tree.UrlMatchingNode Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class UrlMatchingTree
     {
         public UrlMatchingTree(int order) { }
-        public int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Routing.Tree.UrlMatchingNode Root { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Routing.Tree.UrlMatchingNode Root { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection

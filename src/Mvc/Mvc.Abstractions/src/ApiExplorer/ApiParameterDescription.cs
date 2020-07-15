@@ -15,32 +15,37 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <summary>
         /// Gets or sets the <see cref="ModelMetadata"/>.
         /// </summary>
-        public ModelMetadata ModelMetadata { get; set; }
+        public ModelMetadata ModelMetadata { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the name.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="ApiParameterRouteInfo"/>.
         /// </summary>
-        public ApiParameterRouteInfo RouteInfo { get; set; }
+        public ApiParameterRouteInfo? RouteInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="BindingSource"/>.
         /// </summary>
-        public BindingSource Source { get; set; }
+        public BindingSource Source { get; set; } = default!;
+
+        /// <summary>
+        /// Gets or sets the <see cref="BindingInfo"/>.
+        /// </summary>
+        public BindingInfo? BindingInfo { get; set; }
 
         /// <summary>
         /// Gets or sets the parameter type.
         /// </summary>
-        public Type Type { get; set; }
+        public Type Type { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the parameter descriptor.
         /// </summary>
-        public ParameterDescriptor ParameterDescriptor { get; set; }
+        public ParameterDescriptor ParameterDescriptor { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets a value that determines if the parameter is required.
@@ -58,6 +63,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <summary>
         /// Gets or sets the default value for a parameter.
         /// </summary>
-        public object DefaultValue { get; set; }
+        public object? DefaultValue { get; set; }
     }
 }

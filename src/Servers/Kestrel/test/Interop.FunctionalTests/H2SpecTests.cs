@@ -21,7 +21,6 @@ namespace Interop.FunctionalTests
     {
         [ConditionalTheory]
         [MemberData(nameof(H2SpecTestCases))]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2225", FlakyOn.Helix.All)]
         public async Task RunIndividualTestCase(H2SpecTestCase testCase)
         {
             var hostBuilder = new WebHostBuilder()
@@ -56,7 +55,7 @@ namespace Interop.FunctionalTests
                 var dataset = new TheoryData<H2SpecTestCase>();
                 var toSkip = new string[] { /*"http2/5.1/8"*/ };
 
-                var supportsAlpn = Utilities.CurrentPlatformSupportsAlpn();
+                var supportsAlpn = Utilities.CurrentPlatformSupportsHTTP2OverTls();
 
                 foreach (var testcase in H2SpecCommands.EnumerateTestCases())
                 {
@@ -74,7 +73,7 @@ namespace Interop.FunctionalTests
                         Skip = skip,
                     });
 
-                    // https://github.com/aspnet/AspNetCore/issues/11301 We should use Skip but it's broken at the moment.
+                    // https://github.com/dotnet/aspnetcore/issues/11301 We should use Skip but it's broken at the moment.
                     if (supportsAlpn)
                     {
                         dataset.Add(new H2SpecTestCase

@@ -1,0 +1,17 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Discussions
+    url: https://github.com/dotnet/aspnetcore/discussions/new
+    about: Is your issue perhaps more of a discussion? Please open topics for discussion using the new GitHub Discussions feature.
+  - name: Issue with .NET runtime or core .NET libraries
+    url:  https://github.com/dotnet/runtime/issues/new/choose
+    about: Please open issues relating to the .NET runtime or core .NET libraries in dotnet/runtime.
+  - name: Issue with .NET SDK
+    url:  https://github.com/dotnet/sdk/issues/new/choose
+    about: Please open issues relating to the .NET SDK itself in dotnet/sdk.
+  - name: Issue with Entity Framework Core
+    url:  https://github.com/dotnet/efcore/issues/new/choose
+    about: Please open issues relating to Entity Framework Core in dotnet/efcore.
+  - name: Issue with Roslyn compiler
+    url:  https://github.com/dotnet/roslyn/issues/new/choose
+    about: Please open issues relating to the Roslyn .NET compiler in dotnet/roslyn.

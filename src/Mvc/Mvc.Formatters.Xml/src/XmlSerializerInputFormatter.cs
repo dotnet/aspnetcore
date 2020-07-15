@@ -134,8 +134,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             try
             {
-                using var xmlReader = CreateXmlReader(readStream, encoding);
-                var type = GetSerializableType(context.ModelType);
+                var type = GetSerializableType(context.ModelType);                
+                using var xmlReader = CreateXmlReader(readStream, encoding, type);
 
                 var serializer = GetCachedSerializer(type);
 
@@ -204,6 +204,18 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                                                     new WrapperProviderContext(declaredType, isSerialization: false));
 
             return wrapperProvider?.WrappingType ?? declaredType;
+        }
+
+        /// <summary>
+        /// Called during deserialization to get the <see cref="XmlReader"/>.
+        /// </summary>
+        /// <param name="readStream">The <see cref="Stream"/> from which to read.</param>
+        /// <param name="encoding">The <see cref="Encoding"/> used to read the stream.</param>
+        /// <param name="type">The <see cref="Type"/> that is to be deserialized.</param>
+        /// <returns>The <see cref="XmlReader"/> used during deserialization.</returns>
+        protected virtual XmlReader CreateXmlReader(Stream readStream, Encoding encoding, Type type)
+        {
+            return CreateXmlReader(readStream, encoding);
         }
 
         /// <summary>

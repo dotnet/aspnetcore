@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.JsonPatch.IntegrationTests
         }
 
         [Fact]
-        public void TestIntegerProperty_IsSucessful()
+        public void TestIntegerProperty_IsSuccessful()
         {
             // Arrange
             dynamic targetObject = new ExpandoObject();
