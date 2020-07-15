@@ -29,13 +29,9 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         public IReadOnlyDictionary<string, object>? Attributes { get; set; }
 
         /// <summary>
-        /// Instantiates a new <see cref="HeadTagBase"/> instance.
+        /// Gets the name of the tag being represented.
         /// </summary>
-        /// <param name="tagName">The name of the tag being represented.</param>
-        protected HeadTagBase(string tagName)
-        {
-            _tagElement = new TagElement(tagName);
-        }
+        protected abstract string TagName { get; }
 
         /// <inheritdoc />
         protected override void OnInitialized()
@@ -47,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
-            _tagElement.Attributes = Attributes;
+            _tagElement = new TagElement(TagName, Attributes);
         }
 
         /// <inheritdoc />

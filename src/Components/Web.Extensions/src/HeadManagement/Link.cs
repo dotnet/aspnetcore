@@ -8,11 +8,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
     /// </summary>
     public class Link : HeadTagBase
     {
-        /// <summary>
-        /// Instantiates a new <see cref="Link"/> instance.
-        /// </summary>
-        public Link() : base("link")
-        {
-        }
+        /// <inheritdoc />
+        protected override string TagName => "link";
     }
 }

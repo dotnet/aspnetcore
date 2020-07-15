@@ -8,11 +8,6 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
     /// </summary>
     public class Meta : HeadTagBase
     {
-        /// <summary>
-        /// Instantiates a new <see cref="Meta"/> instance.
-        /// </summary>
-        public Meta() : base("meta")
-        {
-        }
+        protected override string TagName => "meta";
     }
 }

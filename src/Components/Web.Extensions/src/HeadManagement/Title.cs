@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         {
             if (_headManager.IsPrerendering)
             {
-                _headManager.BuildHeadElementComment(builder, new TitleElement { Title = Value });
+                _headManager.BuildHeadElementComment(builder, new TitleElement(Value));
             }
         }
     }

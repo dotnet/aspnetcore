@@ -3,10 +3,15 @@
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
-    internal struct TitleElement : IHeadElement
+    internal readonly struct TitleElement : IHeadElement
     {
         public string Type => "title";
 
-        public string Title { get; set; }
+        public string Title { get; }
+
+        public TitleElement(string title)
+        {
+            Title = title;
+        }
     }
 }

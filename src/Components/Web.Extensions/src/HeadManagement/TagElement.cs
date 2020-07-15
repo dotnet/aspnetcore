@@ -5,18 +5,18 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
-    internal struct TagElement : IHeadElement
+    internal readonly struct TagElement : IHeadElement
     {
         public string Type => "tag";
 
         public string TagName { get; }
 
-        public IReadOnlyDictionary<string, object>? Attributes { get; set; }
+        public IReadOnlyDictionary<string, object>? Attributes { get; }
 
-        public TagElement(string tagName)
+        public TagElement(string tagName, IReadOnlyDictionary<string, object>? attributes)
         {
             TagName = tagName;
-            Attributes = null;
+            Attributes = attributes;
         }
     }
 }
