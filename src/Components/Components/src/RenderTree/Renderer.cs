@@ -679,7 +679,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var innerExceptions = aggregateException.Flatten().InnerExceptions;
             for (var i = 0; i < innerExceptions.Count; i++)
             {
-                var exception = exceptions[i];
+                var exception = innerExceptions[i];
                 if (exception is TaskCanceledException)
                 {
                     continue;
