@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private CancellationTokenSource _onNavigateCts;
 
+        private Task _previousOnNavigateTask = Task.CompletedTask;
+
         private readonly HashSet<Assembly> _assemblies = new HashSet<Assembly>();
 
         private bool _onNavigateCalled = false;
@@ -112,7 +114,8 @@ namespace Microsoft.AspNetCore.Components.Routing
             if (!_onNavigateCalled)
             {
                 _onNavigateCalled = true;
-                await RunOnNavigateAsync(NavigationManager.ToBaseRelativePath(_locationAbsolute));
+                await RunOnNavigateWithRefreshAsync(NavigationManager.ToBaseRelativePath(_locationAbsolute), isNavigationIntercepted: false);
+                return;
             }
 
             Refresh(isNavigationIntercepted: false);
@@ -122,7 +125,6 @@ namespace Microsoft.AspNetCore.Components.Routing
         public void Dispose()
         {
             NavigationManager.LocationChanged -= OnLocationChanged;
-            _onNavigateCts?.Dispose();
         }
 
         private static string StringUntilAny(string str, char[] chars)
@@ -147,7 +149,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         }
 
-        private void Refresh(bool isNavigationIntercepted)
+        internal virtual void Refresh(bool isNavigationIntercepted)
         {
             RefreshRouteTable();
 
@@ -190,18 +192,21 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
         }
 
-        private async Task RunOnNavigateAsync(string path)
+        private async ValueTask<bool> RunOnNavigateAsync(string path, Task previousOnNavigate)
         {
             // If this router instance does not provide an OnNavigateAsync parameter
             // then we render the component associated with the route as per usual.
             if (!OnNavigateAsync.HasDelegate)
             {
-                return;
+                return true;
             }
 
             // If we've already invoked a task and stored its CTS, then
-            // cancel the existing task.
-            _onNavigateCts?.Dispose();
+            // cancel that existing CTS.
+            _onNavigateCts?.Cancel();
+            // Then make sure that the task has been completed cancelled or
+            // completed before continuing with the execution of this current task.
+            await previousOnNavigate;
 
             // Create a new cancellation token source for this instance
             _onNavigateCts = new CancellationTokenSource();
@@ -209,9 +214,9 @@ namespace Microsoft.AspNetCore.Components.Routing
 
             // Create a cancellation task based on the cancellation token
             // associated with the current running task.
-            var cancellationTaskSource = new TaskCompletionSource();
+            var cancellationTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             navigateContext.CancellationToken.Register(state =>
-                ((TaskCompletionSource)state).SetResult(), cancellationTaskSource);
+                ((TaskCompletionSource)state).SetResult(), cancellationTcs);
 
             var task = OnNavigateAsync.InvokeAsync(navigateContext);
 
@@ -221,13 +226,34 @@ namespace Microsoft.AspNetCore.Components.Routing
                 _renderHandle.Render(Navigating);
             }
 
-            await Task.WhenAny(task, cancellationTaskSource.Task);
+            var completedTask = await Task.WhenAny(task, cancellationTcs.Task);
+            return task == completedTask;
         }
 
-        private async Task RunOnNavigateWithRefreshAsync(string path, bool isNavigationIntercepted)
+        internal async Task RunOnNavigateWithRefreshAsync(string path, bool isNavigationIntercepted)
         {
-            await RunOnNavigateAsync(path);
-            Refresh(isNavigationIntercepted);
+            // We cache the Task representing the previously invoked RunOnNavigateWithRefreshAsync
+            // that is stored
+            var previousTask = _previousOnNavigateTask;
+            // Then we create a new one that represents our current invocation and store it
+            // globally for the next invocation. Note to the developer, if the WASM runtime
+            // support multi-threading then we'll need to implement the appropriate locks
+            // here to ensure that the cached previous task is overwritten incorrectly.
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _previousOnNavigateTask = tcs.Task;
+            try
+            {
+                // And pass an indicator for the previous task to the currently running one.
+                var shouldRefresh = await RunOnNavigateAsync(path, previousTask);
+                if (shouldRefresh)
+                {
+                    Refresh(isNavigationIntercepted);
+                }
+            }
+            finally
+            {
+                tcs.SetResult();
+            }
         }
 
         private void OnLocationChanged(object sender, LocationChangedEventArgs args)
