@@ -1,6 +1,7 @@
 ---
 name: 🐞 Razor Tooling Bug report
-about: Create a report about something that is not working in the new Razor tooling
+about: Report an issue about something that is not working in the new Razor tooling
+labels: area-razor.tooling, feature-razor.vs
 ---
 
 <!--
@@ -53,7 +54,7 @@ Paste log output here
 </details>
 
 ### Further technical details
-- VS version (Help => About Microsoft Visual Studio, i.e. 16.8.0 Preview 1 30313.27...). If in Codespaces there will be
+- VS version (Help => About Microsoft Visual Studio, i.e. 16.8.0 Preview 1 30313.27...). If in Codespaces there will be two versions (server and client), please provide both.
 - Scenario (Local, LiveShare, Codespaces)
 
 ### Pre-requisite checklist
