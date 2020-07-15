@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Profiling;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -101,6 +102,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 exception = ex;
             }
 
+            CleanupComponentStateResources(batchBuilder);
+
+            return exception == null;
+        }
+
+        private void CleanupComponentStateResources(RenderBatchBuilder batchBuilder)
+        {
             // We don't expect these things to throw.
             RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrentRenderTree.GetFrames());
 
@@ -110,8 +118,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             DisposeBuffers();
-
-            return exception == null;
         }
 
         // Callers expect this method to always return a faulted task.
@@ -225,24 +231,35 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         internal bool RequiresAsyncDisposal() => Component is IAsyncDisposable;
 
-        internal async Task DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
+        internal Task DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
         {
             _componentWasDisposed = true;
 
-            // We don't expect these things to throw.
-            RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrentRenderTree.GetFrames());
-
-            if (_hasAnyCascadingParameterSubscriptions)
-            {
-                RemoveCascadingParameterSubscriptions();
-            }
-
-            DisposeBuffers();
+            CleanupComponentStateResources(batchBuilder);
 
             if (Component is IAsyncDisposable asyncDisposable)
             {
-                await asyncDisposable.DisposeAsync();
+                try
+                {
+                    var result = asyncDisposable.DisposeAsync();
+                    if (result.IsCompletedSuccessfully)
+                    {
+                        return Task.CompletedTask;
+                    }
+                    else
+                    {
+                        return Awaited(result);
+                    }
+                }
+                catch (Exception e)
+                {
+                    return Task.FromException(e);
+                }
             }
+
+            return Task.CompletedTask;
+
+            static async Task Awaited(ValueTask res) => await res;
         }
     }
 }

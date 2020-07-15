@@ -2127,7 +2127,6 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // Arrange
             var renderer = new TestRenderer { ShouldHandleExceptions = true };
-            var exception1 = new InvalidOperationException();
 
             var firstRender = true;
             var component = new TestComponent(builder =>
@@ -2153,8 +2152,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Outer component is still alive and not disposed.
             Assert.False(component.Disposed);
-            var aex = Assert.IsType<InvalidOperationException>(Assert.Single(renderer.HandledExceptions));
-            Assert.Same(exception1, aex);
+            Assert.Empty(renderer.HandledExceptions);
         }
 
         [Fact]
