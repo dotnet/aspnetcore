@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
@@ -17,10 +18,10 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
         private TagElement _tagElement;
 
-        private HeadManager _headManager = default!;
+        private bool _hasRendered = false;
 
         [Inject]
-        private IServiceProvider ServiceProvider { get; set; } = default!;
+        private IJSRuntime JSRuntime { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be applied to the meta element.
@@ -34,13 +35,6 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         protected abstract string TagName { get; }
 
         /// <inheritdoc />
-        protected override void OnInitialized()
-        {
-            _headManager = ServiceProvider.GetHeadManager() ??
-                throw new InvalidOperationException($"{GetType()} requires a {typeof(HeadManager)} service.");
-        }
-
-        /// <inheritdoc />
         protected override void OnParametersSet()
         {
             _tagElement = new TagElement(TagName, Attributes);
@@ -49,24 +43,23 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// <inheritdoc />
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            await _headManager.ApplyTagAsync(_tagElement, _id);
+            _hasRendered = true;
+
+            await JSRuntime.ApplyTagAsync(_tagElement, _id);
         }
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            if (_headManager.IsPrerendering)
-            {
-                _headManager.BuildHeadElementComment(builder, _tagElement);
-            }
+            builder.BuildHeadElementComment(0, _tagElement);
         }
 
         /// <inheritdoc />
         public void Dispose()
         {
-            if (!_headManager.IsPrerendering)
+            if (_hasRendered)
             {
-                _ = _headManager.RemoveTagAsync(_id);
+                _ = JSRuntime.RemoveTagAsync(_id);
             }
         }
     }

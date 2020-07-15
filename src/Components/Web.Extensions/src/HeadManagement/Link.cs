@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
     /// <summary>
     /// A component that adds a link tag to the HTML head.
     /// </summary>
-    public class Link : HeadTagBase
+    public sealed class Link : HeadTagBase
     {
         /// <inheritdoc />
         protected override string TagName => "link";

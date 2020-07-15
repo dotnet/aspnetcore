@@ -8,16 +8,15 @@
     function createHeadTag({ tagName, attributes }, id) {
         const tagElement = document.createElement(tagName);
 
+        // The id is undefined during prerendering
         if (id) {
             tagElement.setAttribute(blazorIdAttributeName, id);
         }
 
         if (attributes) {
-            for (const key in attributes) {
-                if (attributes.hasOwnProperty(key)) {
-                    tagElement.setAttribute(key, attributes[key]);
-                }
-            }
+            Object.keys(attributes).forEach(key => {
+                tagElement.setAttribute(key, attributes[key]);
+            });
         }
 
         document.head.appendChild(tagElement);
@@ -46,6 +45,8 @@
                 const tag = createHeadTag(headElement);
                 prerenderedTags.push(tag);
                 break;
+            default:
+                throw new Error(`Invalid head element type '${headElement.type}'.`);
         }
     }
 
@@ -60,35 +61,10 @@
             return;
         }
 
-        const headStartComment = new RegExp(headCommentRegularExpression);
-        const definition = headStartComment.exec(commentText);
+        const definition = headCommentRegularExpression.exec(commentText);
         const json = definition && definition[1];
 
-        if (json) {
-            try {
-                return JSON.parse(json);
-            } catch (error) {
-                throw new Error(`Found malformed head comment '${commentText}'.`);
-            }
-        } else {
-            return;
-        }
-    }
-
-    // Exported functions
-
-    function setTitle(title) {
-        document.title = title;
-    }
-
-    function applyHeadTag(tag, id) {
-        removeHeadTag(id);
-        createHeadTag(tag, id);
-    }
-
-    function removeHeadTag(id) {
-        let tag = document.head.querySelector(`[${blazorIdAttributeName}='${id}']`);
-        tag && tag.remove();
+        return json && JSON.parse(json);
     }
 
     function removePrerenderedHeadTags() {
@@ -99,11 +75,27 @@
         prerenderedTags.length = 0;
     }
 
+    // Exported functions
+
+    function setTitle(title) {
+        document.title = title;
+    }
+
+    function applyHeadTag(tag, id) {
+        removePrerenderedHeadTags();
+        removeHeadTag(id);
+        createHeadTag(tag, id);
+    }
+
+    function removeHeadTag(id) {
+        let tag = document.head.querySelector(`[${blazorIdAttributeName}='${id}']`);
+        tag && tag.remove();
+    }
+
     window._blazorHeadManager = {
         setTitle,
         applyHeadTag,
         removeHeadTag,
-        removePrerenderedHeadTags,
     };
 
     resolvePrerenderedHeadComponents(document);

@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
-using Microsoft.JSInterop;
 using Microsoft.AspNetCore.Components.Web.Extensions;
 
 namespace TestServer
@@ -24,7 +23,7 @@ namespace TestServer
         {
             services.AddMvc();
             services.AddServerSideBlazor();
-            services.AddHeadManagement();
+            services.AddWebExtensions();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
             services.AddSingleton<LazyAssemblyLoader>();
         }

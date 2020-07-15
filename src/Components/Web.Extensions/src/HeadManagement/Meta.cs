@@ -6,8 +6,9 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
     /// <summary>
     /// A component that adds a meta tag to the HTML head.
     /// </summary>
-    public class Meta : HeadTagBase
+    public sealed class Meta : HeadTagBase
     {
+        /// <inheritdoc />
         protected override string TagName => "meta";
     }
 }

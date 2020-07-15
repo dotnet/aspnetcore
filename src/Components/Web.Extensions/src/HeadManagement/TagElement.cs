@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
-    internal readonly struct TagElement : IHeadElement
+    internal readonly struct TagElement
     {
         public string Type => "tag";
 

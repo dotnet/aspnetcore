@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
-    internal readonly struct TitleElement : IHeadElement
+    internal readonly struct TitleElement
     {
         public string Type => "title";
 
