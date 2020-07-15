@@ -167,7 +167,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                 case StreamInvocationMessage streamInvocationMessage:
                     Log.ReceivedStreamHubInvocation(_logger, streamInvocationMessage);
-                    return ProcessInvocation(connection, streamInvocationMessage, isStreamResponse: true);
+                    return connection.ActiveInvocationLimit.RunAsync(state =>
+                    {
+                        var (dispatcher, connection, invocationMessage) = state;
+                        return dispatcher.ProcessInvocation(connection, invocationMessage, isStreamResponse: true);
+                    }, (this, connection, streamInvocationMessage));
 
                 case CancelInvocationMessage cancelInvocationMessage:
                     // Check if there is an associated active stream and cancel it if it exists.
@@ -278,6 +282,30 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             THub hub = null;
             try
             {
+                var clientStreamLength = hubMethodInvocationMessage.StreamIds?.Length ?? 0;
+                var serverStreamLength = descriptor.StreamingParameters?.Count ?? 0;
+                if (clientStreamLength != serverStreamLength)
+                {
+                    var ex = new HubException($"Client sent {clientStreamLength} stream(s), Hub method expects {serverStreamLength}.");
+                    Log.InvalidHubParameters(_logger, hubMethodInvocationMessage.Target, ex);
+                    await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
+                        ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
+                    return;
+                }
+
+                var arguments = hubMethodInvocationMessage.Arguments;
+                CancellationTokenSource cts = null;
+                if (descriptor.HasSyntheticArguments)
+                {
+                    ReplaceArguments(descriptor, hubMethodInvocationMessage, isStreamCall, connection, ref arguments, out cts);
+                }
+
+                if (isStreamResponse)
+                {
+                    cts = cts ?? CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
+                    connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId, cts);
+                }
+
                 hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
                 hub = hubActivator.Create();
 
@@ -296,33 +324,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                 try
                 {
-                    var clientStreamLength = hubMethodInvocationMessage.StreamIds?.Length ?? 0;
-                    var serverStreamLength = descriptor.StreamingParameters?.Count ?? 0;
-                    if (clientStreamLength != serverStreamLength)
-                    {
-                        var ex = new HubException($"Client sent {clientStreamLength} stream(s), Hub method expects {serverStreamLength}.");
-                        Log.InvalidHubParameters(_logger, hubMethodInvocationMessage.Target, ex);
-                        await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
-                            ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
-                        return;
-                    }
-
                     InitializeHub(hub, connection);
                     Task invocation = null;
 
-                    var arguments = hubMethodInvocationMessage.Arguments;
-                    CancellationTokenSource cts = null;
-                    if (descriptor.HasSyntheticArguments)
-                    {
-                        ReplaceArguments(descriptor, hubMethodInvocationMessage, isStreamCall, connection, ref arguments, out cts);
-                    }
-
                     if (isStreamResponse)
                     {
-                        // TODO: Need to sync this with CancelInvocationMessage
-                        cts = cts ?? CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
-                        connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId, cts);
-
                         var result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
 
                         if (result == null)

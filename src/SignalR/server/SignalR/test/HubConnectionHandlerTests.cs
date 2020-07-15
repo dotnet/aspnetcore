@@ -3577,17 +3577,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task UploadStreamParallel()
+        // Test to check if StreamItems can be processed before the Stream from the invocation is properly registered internally
+        public async Task UploadStreamStreamItemsSentAsSoonAsPossible()
         {
             // Use Auth as the delay injection point because it is one of the first things to run after the invocation message has been parsed
             var tcsService = new TcsService();
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                services.AddSignalR(options =>
-                {
-                    options.MaxParallelInvocationsPerClient = 1;
-                });
-
                 services.AddAuthorization(options =>
                 {
                     options.AddPolicy("test", policy =>
