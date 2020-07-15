@@ -551,7 +551,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             SetUrlViaPushState("/LongPage2");
             SetUrlViaPushState("/LongPage1");
 
-            Assert.True(app.FindElement(By.Id("error-banner")) != null);
+            AssertDidNotLog("I'm not happening...");
         }
 
         [Fact]
@@ -563,7 +563,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // cancel the previous OnNavigate Task
             SetUrlViaPushState("/Other");
 
-            AssertDidNotLog("I'm not happening...");
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(2)).Until(
+                driver => driver.FindElement(By.Id("blazor-error-ui")) != null);
+
+            Assert.True(app.FindElement(By.Id("blazor-error-ui")) != null);
         }
 
         private long BrowserScrollY
