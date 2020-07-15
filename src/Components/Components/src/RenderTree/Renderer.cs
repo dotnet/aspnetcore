@@ -648,7 +648,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     var result = disposeComponentState.DisposeInBatchAsync(_batchBuilder);
                     if (result.IsCompleted)
                     {
-                        if (result.IsFaulted && !result.IsCanceled)
+                        if (result.IsFaulted)
                         {
                             exceptions ??= new List<Exception>();
                             ProcessAggregateException(exceptions, result.Exception);
