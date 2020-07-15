@@ -32,6 +32,8 @@ We will close this issue if:
 
 ### Logs & Exceptions
 
+Please collect the data below before reporting your issue to aid us in diagnosing the root cause.
+
 #### Activity log
 [Here](https://docs.microsoft.com/en-us/visualstudio/extensibility/how-to-use-the-activity-log?view=vs-2019#to-examine-the-activity-log) are the instructions on how to generate/acquire one.
 
