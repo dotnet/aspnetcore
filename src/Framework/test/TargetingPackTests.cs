@@ -37,17 +37,23 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void TargetingPackContainsListedAssemblies()
         {
+            if (!_isTargetingPackBuilding)
+            {
+                return;
+            }
+
             var actualAssemblies = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll")
                 .Select(Path.GetFileNameWithoutExtension)
                 .ToHashSet();
+            var listedTargetingPackAssemblies = TestData.ListedTargetingPackAssemblies.Keys.ToHashSet();
 
             _output.WriteLine("==== actual assemblies ====");
             _output.WriteLine(string.Join('\n', actualAssemblies.OrderBy(i => i)));
             _output.WriteLine("==== expected assemblies ====");
-            _output.WriteLine(string.Join('\n', TestData.ListedTargetingPackAssemblies.OrderBy(i => i)));
+            _output.WriteLine(string.Join('\n', listedTargetingPackAssemblies.OrderBy(i => i)));
 
-            var missing = TestData.ListedTargetingPackAssemblies.Except(actualAssemblies);
-            var unexpected = actualAssemblies.Except(TestData.ListedTargetingPackAssemblies);
+            var missing = listedTargetingPackAssemblies.Except(actualAssemblies);
+            var unexpected = actualAssemblies.Except(listedTargetingPackAssemblies);
 
             _output.WriteLine("==== missing assemblies from the framework ====");
             _output.WriteLine(string.Join('\n', missing));
@@ -59,7 +65,7 @@ namespace Microsoft.AspNetCore
         }
 
         [Fact]
-        public void AssembliesHavePatchVersion0()
+        public void RefAssembliesHaveExpectedAssemblyVersions()
         {
             if (!_isTargetingPackBuilding)
             {
@@ -71,15 +77,15 @@ namespace Microsoft.AspNetCore
 
             Assert.All(dlls, path =>
             {
+                var fileName = Path.GetFileNameWithoutExtension(path);
                 var assemblyName = AssemblyName.GetAssemblyName(path);
                 using var fileStream = File.OpenRead(path);
                 using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
                 var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
                 var assemblyDefinition = reader.GetAssemblyDefinition();
 
-                Assert.True(
-                    assemblyDefinition.Version.Revision == 0 && assemblyDefinition.Version.Build == 0,
-                    $"{path} has version {assemblyDefinition.Version} should have a 0.0 revision number and build number version, e.g. major.minor.0.0");
+                TestData.ListedTargetingPackAssemblies.TryGetValue(fileName, out var expectedVersion);
+                Assert.Equal(expectedVersion, assemblyDefinition.Version.ToString());
             });
         }
 
