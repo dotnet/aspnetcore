@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Profiling;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -229,35 +228,28 @@ namespace Microsoft.AspNetCore.Components.Rendering
             _latestDirectParametersSnapshot?.Dispose();
         }
 
-        internal bool RequiresAsyncDisposal() => Component is IAsyncDisposable;
-
         internal Task DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
         {
             _componentWasDisposed = true;
 
             CleanupComponentStateResources(batchBuilder);
 
-            if (Component is IAsyncDisposable asyncDisposable)
+            try
             {
-                try
+                var result = ((IAsyncDisposable)Component).DisposeAsync();
+                if (result.IsCompletedSuccessfully)
                 {
-                    var result = asyncDisposable.DisposeAsync();
-                    if (result.IsCompletedSuccessfully)
-                    {
-                        return Task.CompletedTask;
-                    }
-                    else
-                    {
-                        return Awaited(result);
-                    }
+                    return Task.CompletedTask;
                 }
-                catch (Exception e)
+                else
                 {
-                    return Task.FromException(e);
+                    return Awaited(result);
                 }
             }
-
-            return Task.CompletedTask;
+            catch (Exception e)
+            {
+                return Task.FromException(e);
+            }
 
             static async Task Awaited(ValueTask res) => await res;
         }

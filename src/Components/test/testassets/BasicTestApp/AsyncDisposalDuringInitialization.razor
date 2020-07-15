@@ -1,0 +1,25 @@
+﻿@page "/prerendered-async-disposal"
+
+<p>
+    This component shows that prerendering will work for components that implement IAsyncDisposable to finish
+    disposing before rendering the output as html.
+</p>
+
+<p id="disposal-message">@_message</p>
+
+@if (!_hideComponent)
+{
+    <AsyncDisposableComponent SetMessage="@SetMessage" />
+}
+
+@code {
+    private bool _hideComponent = false;
+    private string _message = "Uninitialized";
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
+        _hideComponent = true;
+    }
+
+    private void SetMessage(string message) => _message = message;
+}

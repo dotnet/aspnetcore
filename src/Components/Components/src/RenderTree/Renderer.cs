@@ -635,7 +635,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 var disposeComponentId = _batchBuilder.ComponentDisposalQueue.Dequeue();
                 var disposeComponentState = GetRequiredComponentState(disposeComponentId);
                 Log.DisposingComponent(_logger, disposeComponentState);
-                if (!disposeComponentState.RequiresAsyncDisposal())
+                if (!(disposeComponentState.Component is IAsyncDisposable))
                 {
                     if (!disposeComponentState.TryDisposeInBatch(_batchBuilder, out var exception))
                     {
@@ -648,15 +648,27 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     var result = disposeComponentState.DisposeInBatchAsync(_batchBuilder);
                     if (result.IsCompleted)
                     {
-                        if (result.IsFaulted)
+                        if (!result.IsCompletedSuccessfully)
                         {
                             exceptions ??= new List<Exception>();
-                            ProcessAggregateException(exceptions, result.Exception);
+                            exceptions.Add(result.Exception);
                         }
                     }
                     else
                     {
-                        _ = GetErrorHandledTask(result);
+                        AddToPendingTasks(GetHandledAsynchronousDisposalErrorsTask(result));
+
+                        async Task GetHandledAsynchronousDisposalErrorsTask(Task result)
+                        {
+                            try
+                            {
+                                await result;
+                            }
+                            catch (Exception e)
+                            {
+                                HandleException(e);
+                            }
+                        }
                     }
                 }
 
@@ -671,21 +683,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             else if (exceptions?.Count == 1)
             {
                 HandleException(exceptions[0]);
-            }
-        }
-
-        private static void ProcessAggregateException(List<Exception> exceptions, AggregateException aggregateException)
-        {
-            var innerExceptions = aggregateException.Flatten().InnerExceptions;
-            for (var i = 0; i < innerExceptions.Count; i++)
-            {
-                var exception = innerExceptions[i];
-                if (exception is TaskCanceledException)
-                {
-                    continue;
-                }
-
-                exceptions.Add(exception);
             }
         }
 

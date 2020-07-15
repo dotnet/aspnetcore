@@ -2118,8 +2118,9 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Outer component is still alive and not disposed.
             Assert.False(component.Disposed);
-            var aex = Assert.IsType<InvalidOperationException>(Assert.Single(renderer.HandledExceptions));
-            Assert.Same(exception1, aex);
+            var aex = Assert.IsType<AggregateException>(Assert.Single(renderer.HandledExceptions));
+            var innerException = Assert.Single(aex.Flatten().InnerExceptions);
+            Assert.Same(exception1, innerException);
         }
 
         [Fact]
@@ -2240,11 +2241,10 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void RenderBatch_DoesNotReportSynchronousCancelationsAsErrors()
+        public void RenderBatch_ReportsSynchronousCancelationsAsErrors()
         {
             // Arrange
             var renderer = new TestRenderer { ShouldHandleExceptions = true };
-            var exception1 = new InvalidOperationException();
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var firstRender = true;
@@ -2271,20 +2271,19 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Outer component is still alive and not disposed.
             Assert.False(component.Disposed);
-            Assert.Empty(renderer.HandledExceptions);
+            var aex = Assert.IsType<AggregateException>(Assert.Single(renderer.HandledExceptions));
+            Assert.IsType<TaskCanceledException>(Assert.Single(aex.Flatten().InnerExceptions));
         }
 
         [Fact]
-        public void RenderBatch_DoesNotReportAsynchronousCancelationsAsErrors()
+        public void RenderBatch_ReportsAsynchronousCancelationsAsErrors()
         {
             // Arrange
             var semaphore = new Semaphore(0, 1);
             var renderer = new TestRenderer { ShouldHandleExceptions = true };
             renderer.OnExceptionHandled += () => semaphore.Release();
-            var exception1 = new InvalidOperationException();
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var firstRender = true;
-            var canceled = false;
             var component = new TestComponent(builder =>
             {
                 if (firstRender)
@@ -2294,18 +2293,7 @@ namespace Microsoft.AspNetCore.Components.Test
                     builder.AddAttribute(
                         1,
                         nameof(AsyncDisposableComponent.AsyncDisposeAction),
-                        (Func<ValueTask>)(async () =>
-                        {
-                            try
-                            {
-                                await new ValueTask(tcs.Task);
-                            }
-                            catch (TaskCanceledException)
-                            {
-                                canceled = true;
-                                throw;
-                            }
-                        }));
+                        (Func<ValueTask>)(() => new ValueTask(tcs.Task)));
                     builder.CloseComponent();
                 }
             });
@@ -2326,9 +2314,9 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Cancel execution
             tcs.SetCanceled();
-            Assert.False(semaphore.WaitOne(10));
-            Assert.True(canceled);
-            Assert.Empty(renderer.HandledExceptions);
+
+            semaphore.WaitOne();
+            var aex = Assert.IsType<TaskCanceledException>(Assert.Single(renderer.HandledExceptions));
         }
 
         [Fact]
@@ -2620,8 +2608,8 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Collection(batch.DiffsInOrder,
                 diff =>
                 {
-                        // First we triggered the root component to re-render
-                        Assert.Equal(rootComponentId, diff.ComponentId);
+                    // First we triggered the root component to re-render
+                    Assert.Equal(rootComponentId, diff.ComponentId);
                     Assert.Collection(diff.Edits, edit =>
                     {
                         Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
@@ -2632,8 +2620,8 @@ namespace Microsoft.AspNetCore.Components.Test
                 },
                 diff =>
                 {
-                        // Then the root re-render will have triggered an update to the child
-                        Assert.Equal(childComponentId, diff.ComponentId);
+                    // Then the root re-render will have triggered an update to the child
+                    Assert.Equal(childComponentId, diff.ComponentId);
                     Assert.Collection(diff.Edits, edit =>
                     {
                         Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
@@ -2644,8 +2632,8 @@ namespace Microsoft.AspNetCore.Components.Test
                 },
                 diff =>
                 {
-                        // Finally we explicitly requested a re-render of the child
-                        Assert.Equal(childComponentId, diff.ComponentId);
+                    // Finally we explicitly requested a re-render of the child
+                    Assert.Equal(childComponentId, diff.ComponentId);
                     Assert.Collection(diff.Edits, edit =>
                     {
                         Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
@@ -2777,10 +2765,10 @@ namespace Microsoft.AspNetCore.Components.Test
                     builder.OpenComponent<RendersSelfAfterEventComponent>(1);
                     builder.AddAttribute(2, "onclick", (Action<object>)((object obj) =>
                     {
-                            // First we queue (1) a re-render of the root component, then the child component
-                            // will queue (2) its own re-render. But by the time (1) completes, the child will
-                            // have been disposed, even though (2) is still in the queue
-                            shouldRenderChild = false;
+                        // First we queue (1) a re-render of the root component, then the child component
+                        // will queue (2) its own re-render. But by the time (1) completes, the child will
+                        // have been disposed, even though (2) is still in the queue
+                        shouldRenderChild = false;
                         component.TriggerRender();
                     }));
                     builder.CloseComponent();
@@ -2984,17 +2972,17 @@ namespace Microsoft.AspNetCore.Components.Test
             var showComponent3 = true;
             var parentComponent = new TestComponent(builder =>
             {
-                    // First child will be re-rendered because we'll change its param
-                    builder.OpenComponent<AfterRenderCaptureComponent>(0);
+                // First child will be re-rendered because we'll change its param
+                builder.OpenComponent<AfterRenderCaptureComponent>(0);
                 builder.AddAttribute(1, "some param", showComponent3);
                 builder.CloseComponent();
 
-                    // Second child will not be re-rendered because nothing changes
-                    builder.OpenComponent<AfterRenderCaptureComponent>(2);
+                // Second child will not be re-rendered because nothing changes
+                builder.OpenComponent<AfterRenderCaptureComponent>(2);
                 builder.CloseComponent();
 
-                    // Third component will be disposed
-                    if (showComponent3)
+                // Third component will be disposed
+                if (showComponent3)
                 {
                     builder.OpenComponent<AfterRenderCaptureComponent>(3);
                     builder.CloseComponent();
@@ -3083,9 +3071,9 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 numEventsFired++;
 
-                    // Replace the old event handler with a different one,
-                    // (old the old handler ID will be disposed) then re-render.
-                    component.OnTest = args => eventHandler(args);
+                // Replace the old event handler with a different one,
+                // (old the old handler ID will be disposed) then re-render.
+                component.OnTest = args => eventHandler(args);
                 component.TriggerRender();
             };
 
