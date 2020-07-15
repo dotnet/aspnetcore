@@ -85,16 +85,16 @@ namespace RunTests
             return options;
         }
 
-        public string Target { get; set; }
-        public string SdkVersion { get; set; }
-        public string RuntimeVersion { get; set; }
-        public string AspNetRuntime { get; set; }
-        public string AspNetRef { get; set; }
-        public string HelixQueue { get; set; }
-        public string Architecture { get; set; }
-        public bool Quarantined { get; set; }
-        public string EfVersion { get; set; }
-        public string HELIX_WORKITEM_ROOT { get; set; }
+        public string Target { get; set;}
+        public string SdkVersion { get; set;}
+        public string RuntimeVersion { get; set;}
+        public string AspNetRuntime { get; set;}
+        public string AspNetRef { get; set;}
+        public string HelixQueue { get; set;}
+        public string Architecture { get; set;}
+        public bool Quarantined { get; set;}
+        public string EfVersion { get; set;}
+        public string HELIX_WORKITEM_ROOT { get; set;}
         public string DotnetRoot { get; set; }
         public string Path { get; set; }
         public TimeSpan Timeout { get; set; }

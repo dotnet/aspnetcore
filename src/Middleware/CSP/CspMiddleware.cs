@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Csp
 
         public Task Invoke(HttpContext context, IContentSecurityPolicyProvider cspProvider)
         {
-            return null;
+
         }
     }
 }
