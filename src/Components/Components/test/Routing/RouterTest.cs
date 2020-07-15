@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
     public class RouterTest
     {
         [Fact]
-        public void CanRunOnNavigateAsync()
+        public async Task CanRunOnNavigateAsync()
         {
             // Arrange
             var router = CreateMockRouter();
@@ -32,14 +32,14 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             router.Object.OnNavigateAsync = new EventCallbackFactory().Create<NavigationContext>(router, OnNavigateAsync);
 
             // Act
-            router.Object.RunOnNavigateWithRefreshAsync("http://example.com/jan", false);
+            await router.Object.RunOnNavigateWithRefreshAsync("http://example.com/jan", false);
 
             // Assert
             Assert.True(called);
         }
 
         [Fact]
-        public void CanCancelPreviousOnNavigateAsync()
+        public async Task CanCancelPreviousOnNavigateAsync()
         {
             // Arrange
             var router = CreateMockRouter();
@@ -52,8 +52,8 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             router.Object.OnNavigateAsync = new EventCallbackFactory().Create<NavigationContext>(router, OnNavigateAsync);
 
             // Act
-            router.Object.RunOnNavigateWithRefreshAsync("jan", false);
-            router.Object.RunOnNavigateWithRefreshAsync("feb", false);
+            await router.Object.RunOnNavigateWithRefreshAsync("jan", false);
+            await router.Object.RunOnNavigateWithRefreshAsync("feb", false);
 
             // Assert
             var expected = "jan";

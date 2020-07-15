@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
 
             // If we've already invoked a task and stored its CTS, then
-            // cancel that existing task.
+            // cancel that existing CTS.
             _onNavigateCts?.Cancel();
             // Then make sure that the task has been completed cancelled or
             // completed before continuing with the execution of this current task.
@@ -236,7 +236,9 @@ namespace Microsoft.AspNetCore.Components.Routing
             // that is stored
             var previousTask = _previousOnNavigateTask;
             // Then we create a new one that represents our current invocation and store it
-            // globally for the next invocation.
+            // globally for the next invocation. Note to the developer, if the WASM runtime
+            // support multi-threading then we'll need to implement the appropriate locks
+            // here to ensure that the cached previous task is overwritten incorrectly.
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _previousOnNavigateTask = tcs.Task;
             try
