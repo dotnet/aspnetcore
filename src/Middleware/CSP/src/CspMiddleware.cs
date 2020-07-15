@@ -8,15 +8,18 @@ namespace Microsoft.AspNetCore.Csp
     {
         private readonly RequestDelegate _next;
         private readonly ICspService _cspService;
+        private readonly ContentSecurityPolicy _csp;
 
-        public CspMiddleware(RequestDelegate next, ICspService cspService)
+        public CspMiddleware(RequestDelegate next, ICspService cspService, ContentSecurityPolicy csp)
         {
             _next = next;
             _cspService = cspService;
+            _csp = csp;
         }
 
-        public Task Invoke(HttpContext context, IContentSecurityPolicyProvider cspProvider)
+        public Task Invoke(HttpContext context)
         {
+            context.Response.Headers[CspConstants.CspHeaderKey] = _csp.GetPolicy();
             return _next(context);
         }
     }

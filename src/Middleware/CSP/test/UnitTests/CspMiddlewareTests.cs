@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Http;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Csp.Test
 {
@@ -17,10 +18,14 @@ namespace Microsoft.AspNetCore.Csp.Test
             var hostBuilder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseCsp();
+                    app.UseCsp(policyBuilder =>
+                    {
+                        policyBuilder
+                            .WithCspMode(CspMode.ENFORCING);
+                    });
                     app.Run(async context =>
                     {
-                        await context.Response.WriteAsync("Cross origin response");
+                        await context.Response.WriteAsync("Test response");
                     });
                 })
                 .ConfigureServices(services => services.AddCsp());
@@ -35,7 +40,9 @@ namespace Microsoft.AspNetCore.Csp.Test
                 // Assert
                 response.EnsureSuccessStatusCode();
                 Assert.Single(response.Headers);
-                Assert.Equal("Cross origin response", await response.Content.ReadAsStringAsync());
+                var expectedPolicy = "object-src 'none'; script-src 'nonce-{random}' 'strict-dynamic' https: http:; base-uri 'none'; ";
+                Assert.Equal(expectedPolicy, response.Headers.GetValues(CspConstants.CspHeaderKey).FirstOrDefault());
+                Assert.Equal("Test response", await response.Content.ReadAsStringAsync());
             }
         }
     }
