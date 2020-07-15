@@ -27,13 +27,11 @@ namespace Microsoft.AspNetCore.Csp.Test
                     {
                         await context.Response.WriteAsync("Test response");
                     });
-                })
-                .ConfigureServices(services => services.AddCsp());
+                });
 
             using (var server = new TestServer(hostBuilder))
             {
                 // Act
-                // Actual request.
                 var response = await server.CreateRequest("/")
                     .SendAsync("GET");
 
