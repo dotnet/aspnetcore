@@ -28,6 +28,10 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         [Parameter(CaptureUnmatchedValues = true)]
         public IReadOnlyDictionary<string, object>? Attributes { get; set; }
 
+        /// <summary>
+        /// Instantiates a new <see cref="HeadTagBase"/> instance.
+        /// </summary>
+        /// <param name="tagName">The name of the tag being represented.</param>
         protected HeadTagBase(string tagName)
         {
             _tagElement = new TagElement(tagName);

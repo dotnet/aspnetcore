@@ -63,6 +63,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
                 .Select(i => (i, Browser.FindElement(By.Id($"button-meta-{i}"))))
                 .ToList();
 
+            // Validate adding elements
             Assert.All(metaButtonsById, buttonById =>
             {
                 var (id, button) = buttonById;
@@ -71,6 +72,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
                 Browser.Exists(By.Id($"Meta {id}"));
             });
 
+            // Validate removing elements
             Assert.All(metaButtonsById, buttonById =>
             {
                 var (id, button) = buttonById;
@@ -87,20 +89,25 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             var metaAttributeInput2 = Browser.FindElement(By.Id("meta-attr-input-2"));
             var metaElement = FindMetaElement();
 
+            // Validate initial attribute values
             Browser.Equal("First attribute", () => metaElement.GetAttribute("attr1"));
             Browser.Equal("Second attribute", () => metaElement.GetAttribute("attr2"));
 
+            // Update the first parameter of the component
             metaAttributeInput1.Clear();
             metaAttributeInput1.SendKeys("hello\n");
             metaElement = FindMetaElement();
 
+            // Validate first attribute updated
             Browser.Equal("hello", () => metaElement.GetAttribute("attr1"));
             Browser.Equal("Second attribute", () => metaElement.GetAttribute("attr2"));
 
+            // Update the second parameter of the component
             metaAttributeInput2.Clear();
             metaAttributeInput2.SendKeys("world\n");
             metaElement = FindMetaElement();
 
+            // Validate second attribute updated
             Browser.Equal("hello", () => metaElement.GetAttribute("attr1"));
             Browser.Equal("world", () => metaElement.GetAttribute("attr2"));
 
@@ -115,6 +122,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
                 .Select(i => (i, Browser.FindElement(By.Id($"button-link-{i}"))))
                 .ToList();
 
+            // Validate adding elements
             Assert.All(linkButtonsById, buttonById =>
             {
                 var (id, button) = buttonById;
@@ -123,6 +131,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
                 Browser.Exists(By.Id($"Link {id}"));
             });
 
+            // Validate removing elements
             Assert.All(linkButtonsById, buttonById =>
             {
                 var (id, button) = buttonById;
@@ -139,20 +148,25 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             var linkAttributeInput2 = Browser.FindElement(By.Id("link-attr-input-2"));
             var linkElement = FindLinkElement();
 
+            // Validate initial attribute values
             Browser.Equal("First attribute", () => linkElement.GetAttribute("attr1"));
             Browser.Equal("Second attribute", () => linkElement.GetAttribute("attr2"));
 
+            // Update the first parameter of the component
             linkAttributeInput1.Clear();
             linkAttributeInput1.SendKeys("hello\n");
             linkElement = FindLinkElement();
 
+            // Validate first attribute updated
             Browser.Equal("hello", () => linkElement.GetAttribute("attr1"));
             Browser.Equal("Second attribute", () => linkElement.GetAttribute("attr2"));
 
+            // Update the second parameter of the component
             linkAttributeInput2.Clear();
             linkAttributeInput2.SendKeys("world\n");
             linkElement = FindLinkElement();
 
+            // Validate second attribute updated
             Browser.Equal("hello", () => linkElement.GetAttribute("attr1"));
             Browser.Equal("world", () => linkElement.GetAttribute("attr2"));
 
