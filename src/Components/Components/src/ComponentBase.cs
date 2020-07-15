@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Components
         /// Notifies the component that its state has changed. When applicable, this will
         /// cause the component to be re-rendered.
         /// </summary>
-        protected void StateHasChanged()
+        public void StateHasChanged()
         {
             if (_hasPendingQueuedRender)
             {
