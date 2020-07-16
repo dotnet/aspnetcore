@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -133,6 +132,40 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await connectionHandlerTask.OrTimeout();
 
                 await tcsService.EndMethod.Task.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task HubFilterDoesNotNeedToImplementMethods()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR().AddHubOptions<DynamicTestHub>(options =>
+                    {
+                        options.AddFilter(typeof(EmptyFilter));
+                    });
+                }, LoggerFactory);
+
+
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<DynamicTestHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    await client.Connected.OrTimeout();
+
+                    var completion = await client.InvokeAsync(nameof(DynamicTestHub.Echo), "hello");
+                    Assert.Null(completion.Error);
+                    Assert.Equal("hello", completion.Result);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
             }
         }
 

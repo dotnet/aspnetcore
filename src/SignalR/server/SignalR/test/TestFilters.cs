@@ -233,4 +233,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return next(context);
         }
     }
+
+    public class EmptyFilter : IHubFilter
+    {
+        // Purposefully not implementing any methods
+    }
 }
