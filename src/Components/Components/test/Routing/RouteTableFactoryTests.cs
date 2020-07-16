@@ -476,7 +476,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
 
 
         [Fact]
-        public void PrefersLiteralTemplateOverParmeterizedTemplates()
+        public void PrefersLiteralTemplateOverParameterizedTemplates()
         {
             // Arrange
             var routeTable = new TestRouteTableBuilder()
