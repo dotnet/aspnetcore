@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -7,7 +10,8 @@ namespace Microsoft.AspNetCore.Components.Forms
 {
     internal static class InputRenderer
     {
-        public static async Task<TComponent> RenderAndGetComponent<TValue, TComponent>(TestInputHostComponent<TValue, TComponent> hostComponent) where TComponent : InputBase<TValue>
+        public static async Task<TComponent> RenderAndGetComponent<TValue, TComponent>(TestInputHostComponent<TValue, TComponent> hostComponent) 
+        where TComponent : InputBase<TValue>
         {
             var testRenderer = new TestRenderer();
             var componentId = testRenderer.AssignRootComponentId(hostComponent);
