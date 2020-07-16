@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     }
                 }
 
-                var result = await BindParameter(bindingContext, parameter, parameterBinder, fieldName, modelName);
+                var result = await BindParameterAsync(bindingContext, parameter, parameterBinder, fieldName, modelName);
 
                 if (result.IsModelSet)
                 {
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         var fieldName = parameter.BinderModelName ?? parameter.ParameterName;
                         var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
 
-                        var result = await BindParameter(bindingContext, parameter, parameterBinder, fieldName, modelName);
+                        var result = await BindParameterAsync(bindingContext, parameter, parameterBinder, fieldName, modelName);
 
                         if (result.IsModelSet)
                         {
@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     }
                 }
 
-                var result = await BindProperty(bindingContext, property, propertyBinder, fieldName, modelName);
+                var result = await BindPropertyAsync(bindingContext, property, propertyBinder, fieldName, modelName);
 
                 if (result.IsModelSet)
                 {
@@ -355,7 +355,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         var fieldName = property.BinderModelName ?? property.PropertyName;
                         var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
 
-                        await BindProperty(bindingContext, property, propertyBinder, fieldName, modelName);
+                        await BindPropertyAsync(bindingContext, property, propertyBinder, fieldName, modelName);
                     }
                 }
             }
@@ -390,7 +390,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             return true;
         }
 
-        private async Task<ModelBindingResult> BindProperty(
+        private async ValueTask<ModelBindingResult> BindPropertyAsync(
             ModelBindingContext bindingContext,
             ModelMetadata property,
             IModelBinder propertyBinder,
@@ -435,7 +435,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             return result;
         }
 
-        private async Task<ModelBindingResult> BindParameter(
+        private async ValueTask<ModelBindingResult> BindParameterAsync(
             ModelBindingContext bindingContext,
             ModelMetadata parameter,
             IModelBinder parameterBinder,
@@ -717,7 +717,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
         }
 
-        public static class Log
+        private static class Log
         {
             private static readonly Action<ILogger, string, Type, Exception> _noPublicSettableProperties = LoggerMessage.Define<string, Type>(
                LogLevel.Debug,
