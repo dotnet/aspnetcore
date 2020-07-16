@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         private readonly Func<Task> _handleSubmitDelegate; // Cache to avoid per-render allocations
 
         private EditContext? _fixedEditContext;
-        private EditContext? _providedEditContext;
+        private bool _hasSetEditContextExplicity;
 
         /// <summary>
         /// Constructs an instance of <see cref="EditForm"/>.
@@ -41,7 +41,14 @@ namespace Microsoft.AspNetCore.Components.Forms
         public EditContext? EditContext
         {
             get => _fixedEditContext;
-            set => _providedEditContext = value;
+            set
+            {
+                if (value != null)
+                {
+                    _fixedEditContext = value;
+                    _hasSetEditContextExplicity = true;
+                }
+            }
         }
 
         /// <summary>
@@ -79,10 +86,15 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
-            if ((_providedEditContext == null) == (Model == null))
+            if (_hasSetEditContextExplicity && Model != null)
             {
                 throw new InvalidOperationException($"{nameof(EditForm)} requires a {nameof(Model)} " +
                     $"parameter, or an {nameof(EditContext)} parameter, but not both.");
+            }
+            else if (EditContext == null && Model == null)
+            {
+                throw new InvalidOperationException($"{nameof(EditForm)} requires either a {nameof(Model)} " +
+                    $"parameter, or an {nameof(EditContext)} parameter, please provide one of these.");
             }
 
             // If you're using OnSubmit, it becomes your responsibility to trigger validation manually
@@ -97,9 +109,9 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             // Update _fixedEditContext if we don't have one yet, or if they are supplying a
             // potentially new EditContext, or if they are supplying a different Model
-            if (_fixedEditContext == null || _providedEditContext != null || Model != _fixedEditContext.Model)
+            if (_fixedEditContext == null || (!_hasSetEditContextExplicity && Model != _fixedEditContext.Model))
             {
-                _fixedEditContext = _providedEditContext ?? new EditContext(Model!);
+                _fixedEditContext = new EditContext(Model!);
             }
         }
 
