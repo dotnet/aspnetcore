@@ -40,7 +40,7 @@ If your Visual Studio instance has presented you with a [yellow or red bar](http
 If you were not presented with either you can delete this section.
 
 #### Razor Language Server Client log
-<!-- In Visual Studio's `Output` window, the drop-down contains a `Razor Language Server Client` item. Include that below. -->
+<!-- Set the environment variable RAZOR_TRACE then boot Visual Studio. In Visual Studio's `Output` window, the drop-down contains a `Razor Language Server Client` item. Include that content below after reproducing the issue. -->
 <details>
 <summary>Razor Language Server Client Log Output</summary>
 
@@ -53,7 +53,7 @@ If you were not presented with either you can delete this section.
 </details>
 
 #### HTML Language Server Client log
-<!-- In Visual Studio's `Output` window, the drop-down contains a `HtmlyLanguageClient` item. Include that below. -->
+<!-- Set the environment variable RAZOR_TRACE then boot Visual Studio. In Visual Studio's `Output` window, the drop-down contains a `HtmlyLanguageClient` item. Include that content below after reproducing the issue. -->
 <details>
 <summary>HTML Language Server Client Log Output</summary>
 
