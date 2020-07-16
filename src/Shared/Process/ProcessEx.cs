@@ -52,7 +52,18 @@ namespace Microsoft.AspNetCore.Internal
             _processTimeoutCts = new CancellationTokenSource(timeout);
             _processTimeoutCts.Token.Register(() =>
             {
-                _exited.TrySetException(new TimeoutException($"Process proc {proc.ProcessName} {proc.StartInfo.Arguments} timed out after {DefaultProcessTimeout}."));
+                string exMessage;
+
+                try
+                {
+                    exMessage = $"Process proc {proc.ProcessName} {proc.StartInfo.Arguments} timed out after {DefaultProcessTimeout}.";
+                }
+                catch (Exception ex)
+                {
+                    exMessage = $"Process timed out after {DefaultProcessTimeout}. Deails about the process could not be provided because: {ex}";
+                }
+
+                _exited.TrySetException(new TimeoutException(exMessage));
             });
         }
 
