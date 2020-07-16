@@ -81,7 +81,7 @@
         document.title = title;
     }
 
-    function applyHeadTag(tag, id) {
+    function addOrUpdateHeadTag(tag, id) {
         removePrerenderedHeadTags();
         removeHeadTag(id);
         createHeadTag(tag, id);
@@ -94,7 +94,7 @@
 
     window._blazorHeadManager = {
         setTitle,
-        applyHeadTag,
+        addOrUpdateHeadTag,
         removeHeadTag,
     };
 

@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         {
             _hasRendered = true;
 
-            await JSRuntime.ApplyTagAsync(_tagElement, _id);
+            await JSRuntime.AddOrUpdateHeadTagAsync(_tagElement, _id);
         }
 
         /// <inheritdoc />
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         {
             if (_hasRendered)
             {
-                _ = JSRuntime.RemoveTagAsync(_id);
+                _ = JSRuntime.RemoveHeadTagAsync(_id);
             }
         }
     }

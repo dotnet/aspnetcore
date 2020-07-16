@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
@@ -12,12 +15,12 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             return jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.setTitle", title);
         }
 
-        public static ValueTask ApplyTagAsync(this IJSRuntime jsRuntime, TagElement tag, string id)
+        public static ValueTask AddOrUpdateHeadTagAsync(this IJSRuntime jsRuntime, TagElement tag, string id)
         {
-            return jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.applyHeadTag", tag, id);
+            return jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.addOrUpdateHeadTag", tag, id);
         }
 
-        public static ValueTask RemoveTagAsync(this IJSRuntime jsRuntime, string id)
+        public static ValueTask RemoveHeadTagAsync(this IJSRuntime jsRuntime, string id)
         {
             return jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.removeHeadTag", id);
         }
