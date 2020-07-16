@@ -331,8 +331,19 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         {
                             cts = cts ?? CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
                             connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId, cts);
+                            object result;
 
-                            var result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
+                            try
+                            {
+                                result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.FailedInvokingHubMethod(_logger, hubMethodInvocationMessage.Target, ex);
+                                await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
+                                    ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
+                                return;
+                            }
 
                             if (result == null)
                             {

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -78,11 +79,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             serviceCollection.AddSignalR().AddHubOptions<CustomHub>(options =>
             {
                 options.SupportedProtocols.Clear();
+                options.AddFilter(new CustomHubFilter());
             });
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
             Assert.Equal(1, serviceProvider.GetRequiredService<IOptions<HubOptions>>().Value.SupportedProtocols.Count);
             Assert.Equal(0, serviceProvider.GetRequiredService<IOptions<HubOptions<CustomHub>>>().Value.SupportedProtocols.Count);
+
+            Assert.Null(serviceProvider.GetRequiredService<IOptions<HubOptions>>().Value.HubFilters);
+            Assert.Single(serviceProvider.GetRequiredService<IOptions<HubOptions<CustomHub>>>().Value.HubFilters);
         }
 
         [Fact]
@@ -338,6 +343,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         public void WriteMessage(HubMessage message, IBufferWriter<byte> output)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    internal class CustomHubFilter : IHubFilter
+    {
+        public ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
         {
             throw new NotImplementedException();
         }

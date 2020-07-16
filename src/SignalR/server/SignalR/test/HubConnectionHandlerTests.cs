@@ -2794,7 +2794,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
                     await client.Connected.OrTimeout();
                     await client.SendHubMessageAsync(PingMessage.Instance);
-                    await client.InvokeAsync(nameof(MethodHub.ValueMethod));
 
                     clock.UtcNow = clock.UtcNow.AddMilliseconds(timeout + 1);
                     client.TickHeartbeat();
@@ -2945,7 +2944,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     // Invoke another hub method (which will be blocked by the first method) in order to stop the timeout
                     // This is how a real-world example would behave
-                    await client.SendInvocationAsync(nameof(LongRunningHub.LongRunningMethod));
+                    await client.SendInvocationAsync(nameof(LongRunningHub.LongRunningMethod)).OrTimeout();
 
                     // Tick heartbeat while hub method is running to show that close isn't triggered
                     client.TickHeartbeat();
