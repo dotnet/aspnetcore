@@ -1,0 +1,26 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<!-- Try loading JS in a couple of different ways. -->
+<script src="~/js/example.js" asp-append-version="true"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', e => {
+        let counter = 0;
+        document.getElementById('js-button').addEventListener('click', e1 => {
+            let item = document.createElement('li');
+            item.appendChild(document.createTextNode('Clicked ' + counter + ' times!'));
+            document.getElementById('js-controlled-list').appendChild(item);
+            counter += 1;
+        })
+    });
+</script>
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <button id="js-button">Click me!</button>
+    <ul id="js-controlled-list"></ul>
+</div>
