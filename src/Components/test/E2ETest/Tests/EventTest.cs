@@ -288,6 +288,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Contains(expectedMessage, () => errorLog.Text);
         }
 
+        [Fact]
+        public void RenderAttributesBeforeConnectedCallBack()
+        {
+            Browser.MountTestComponent<RenderAttributesBeforeConnectedCallback>();
+            var element = Browser.FindElement(By.TagName("custom-web-component-data-from-attribute"));
+
+            var expectedContent = "success";
+
+            Browser.Contains(expectedContent, () => element.Text);
+        }
+
         void SendKeysSequentially(IWebElement target, string text)
         {
             // Calling it for each character works around some chars being skipped
