@@ -343,6 +343,7 @@ namespace Microsoft.AspNetCore.Components.Web
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onsuspend", typeof(System.EventArgs), true, true)]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontimeout", typeof(Microsoft.AspNetCore.Components.Web.ProgressEventArgs), true, true)]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontimeupdate", typeof(System.EventArgs), true, true)]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontoggle", typeof(System.EventArgs), true, true)]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontouchcancel", typeof(Microsoft.AspNetCore.Components.Web.TouchEventArgs), true, true)]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontouchend", typeof(Microsoft.AspNetCore.Components.Web.TouchEventArgs), true, true)]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontouchenter", typeof(Microsoft.AspNetCore.Components.Web.TouchEventArgs), true, true)]

@@ -90,7 +90,7 @@ export class EventForDotNet<TData extends UIEventArgs> {
         return new EventForDotNet<UIWheelEventArgs>('wheel', parseWheelEvent(event as WheelEvent));
 
       case 'toggle':
-        return new EventForDotNet<UIEventArgs>('toggle', {type: event.type});
+        return new EventForDotNet<UIEventArgs>('toggle', { type: event.type });
 
       default:
         return new EventForDotNet<UIEventArgs>('unknown', { type: event.type });
