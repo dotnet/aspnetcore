@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         private readonly Func<Task> _handleSubmitDelegate; // Cache to avoid per-render allocations
 
         private EditContext? _fixedEditContext;
-        private bool _hasSetEditContextExplicity;
+        private bool _hasSetEditContextExplicitly;
 
         /// <summary>
         /// Constructs an instance of <see cref="EditForm"/>.
@@ -43,11 +43,8 @@ namespace Microsoft.AspNetCore.Components.Forms
             get => _fixedEditContext;
             set
             {
-                if (value != null)
-                {
-                    _fixedEditContext = value;
-                    _hasSetEditContextExplicity = true;
-                }
+                _fixedEditContext = value;
+                _hasSetEditContextExplicitly = value != null;
             }
         }
 
@@ -86,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
-            if (_hasSetEditContextExplicity && Model != null)
+            if (_hasSetEditContextExplicitly && Model != null)
             {
                 throw new InvalidOperationException($"{nameof(EditForm)} requires a {nameof(Model)} " +
                     $"parameter, or an {nameof(EditContext)} parameter, but not both.");
@@ -109,7 +106,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             // Update _fixedEditContext if we don't have one yet, or if they are supplying a
             // potentially new EditContext, or if they are supplying a different Model
-            if (_fixedEditContext == null || (!_hasSetEditContextExplicity && Model != _fixedEditContext.Model))
+            if (_fixedEditContext == null || (!_hasSetEditContextExplicitly && Model != _fixedEditContext.Model))
             {
                 _fixedEditContext = new EditContext(Model!);
             }
