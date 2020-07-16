@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            builder.BuildHeadElementComment(0, new TitleElement(Value));
+            builder.AddMarkupContent(0, $"<!--Head:{JsonSerializer.Serialize(new TitleElement(Value), JsonSerializerOptionsProvider.Options)}-->");
         }
     }
 }

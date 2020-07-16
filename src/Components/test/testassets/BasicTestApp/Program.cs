@@ -44,8 +44,6 @@ namespace BasicTestApp
             builder.Services.AddTransient<ProtectedLocalStorage>();
             builder.Services.AddTransient<ProtectedSessionStorage>();
 
-            builder.Services.AddWebExtensions();
-
             builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 
             builder.Logging.Services.AddSingleton<ILoggerProvider, PrependMessageLoggerProvider>(s =>

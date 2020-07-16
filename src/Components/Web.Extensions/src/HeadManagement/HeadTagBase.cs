@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
         private TagElement _tagElement;
 
-        private bool _hasRendered = false;
+        private bool _hasRendered;
 
         [Inject]
         private IJSRuntime JSRuntime { get; set; } = default!;
@@ -51,7 +52,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            builder.BuildHeadElementComment(0, _tagElement);
+            builder.AddMarkupContent(0, $"<!--Head:{JsonSerializer.Serialize(_tagElement, JsonSerializerOptionsProvider.Options)}-->");
         }
 
         /// <inheritdoc />
