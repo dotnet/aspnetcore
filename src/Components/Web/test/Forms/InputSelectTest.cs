@@ -3,12 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Forms
@@ -20,12 +15,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             // Arrange
             var model = new TestModel();
-            var rootComponent = new TestInputSelectHostComponent<TestEnum>
+            var rootComponent = new TestInputHostComponent<TestEnum, TestInputSelect<TestEnum>>
             {
                 EditContext = new EditContext(model),
                 ValueExpression = () => model.NotNullableEnum
             };
-            var inputSelectComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
             // Act
             inputSelectComponent.CurrentValueAsString = "Two";
@@ -39,12 +34,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             // Arrange
             var model = new TestModel();
-            var rootComponent = new TestInputSelectHostComponent<TestEnum>
+            var rootComponent = new TestInputHostComponent<TestEnum, TestInputSelect<TestEnum>>
             {
                 EditContext = new EditContext(model),
                 ValueExpression = () => model.NotNullableEnum
             };
-            var inputSelectComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
             // Act
             inputSelectComponent.CurrentValueAsString = "";
@@ -58,12 +53,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             // Arrange
             var model = new TestModel();
-            var rootComponent = new TestInputSelectHostComponent<TestEnum?>
+            var rootComponent = new TestInputHostComponent<TestEnum?, TestInputSelect<TestEnum?>>
             {
                 EditContext = new EditContext(model),
                 ValueExpression = () => model.NullableEnum
             };
-            var inputSelectComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
             // Act
             inputSelectComponent.CurrentValueAsString = "Two";
@@ -77,12 +72,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             // Arrange
             var model = new TestModel();
-            var rootComponent = new TestInputSelectHostComponent<TestEnum?>
+            var rootComponent = new TestInputHostComponent<TestEnum?, TestInputSelect<TestEnum?>>
             {
                 EditContext = new EditContext(model),
                 ValueExpression = () => model.NullableEnum
             };
-            var inputSelectComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
             // Act
             inputSelectComponent.CurrentValueAsString = "";
@@ -97,12 +92,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             // Arrange
             var model = new TestModel();
-            var rootComponent = new TestInputSelectHostComponent<Guid>
+            var rootComponent = new TestInputHostComponent<Guid, TestInputSelect<Guid>>
             {
                 EditContext = new EditContext(model),
                 ValueExpression = () => model.NotNullableGuid
             };
-            var inputSelectComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
             // Act
             var guid = Guid.NewGuid();
@@ -118,12 +113,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             // Arrange
             var model = new TestModel();
-            var rootComponent = new TestInputSelectHostComponent<Guid?>
+            var rootComponent = new TestInputHostComponent<Guid?, TestInputSelect<Guid?>>
             {
                 EditContext = new EditContext(model),
                 ValueExpression = () => model.NullableGuid
             };
-            var inputSelectComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
             // Act
             var guid = Guid.NewGuid();
@@ -139,12 +134,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             // Arrange
             var model = new TestModel();
-            var rootComponent = new TestInputSelectHostComponent<int>
+            var rootComponent = new TestInputHostComponent<int, TestInputSelect<int>>
             {
                 EditContext = new EditContext(model),
                 ValueExpression = () => model.NotNullableInt
             };
-            var inputSelectComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
             // Act
             inputSelectComponent.CurrentValueAsString = "42";
@@ -159,12 +154,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             // Arrange
             var model = new TestModel();
-            var rootComponent = new TestInputSelectHostComponent<int?>
+            var rootComponent = new TestInputHostComponent<int?, TestInputSelect<int?>>
             {
                 EditContext = new EditContext(model),
                 ValueExpression = () => model.NullableInt
             };
-            var inputSelectComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
             // Act
             inputSelectComponent.CurrentValueAsString = "42";
@@ -197,21 +192,6 @@ namespace Microsoft.AspNetCore.Components.Forms
             var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
             Assert.NotEmpty(validationMessages);
             Assert.Contains("The Some number field is not valid.", validationMessages);
-        }
-
-        private static TestInputSelect<TValue> FindInputSelectComponent<TValue>(CapturedBatch batch)
-            => batch.ReferenceFrames
-                    .Where(f => f.FrameType == RenderTreeFrameType.Component)
-                    .Select(f => f.Component)
-                    .OfType<TestInputSelect<TValue>>()
-                    .Single();
-
-        private static async Task<TestInputSelect<TValue>> RenderAndGetTestInputComponentAsync<TValue>(TestInputSelectHostComponent<TValue> hostComponent)
-        {
-            var testRenderer = new TestRenderer();
-            var componentId = testRenderer.AssignRootComponentId(hostComponent);
-            await testRenderer.RenderRootComponentAsync(componentId);
-            return FindInputSelectComponent<TValue>(testRenderer.Batches.Single());
         }
 
         enum TestEnum
@@ -252,26 +232,6 @@ namespace Microsoft.AspNetCore.Components.Forms
                 // here. In production code it wouldn't normally be required because @bind
                 // calls run on the sync context anyway.
                 await InvokeAsync(() => { base.CurrentValueAsString = value; });
-            }
-        }
-
-        class TestInputSelectHostComponent<TValue> : AutoRenderComponent
-        {
-            public EditContext EditContext { get; set; }
-
-            public Expression<Func<TValue>> ValueExpression { get; set; }
-
-            protected override void BuildRenderTree(RenderTreeBuilder builder)
-            {
-                builder.OpenComponent<CascadingValue<EditContext>>(0);
-                builder.AddAttribute(1, "Value", EditContext);
-                builder.AddAttribute(2, "ChildContent", new RenderFragment(childBuilder =>
-                {
-                    childBuilder.OpenComponent<TestInputSelect<TValue>>(0);
-                    childBuilder.AddAttribute(0, "ValueExpression", ValueExpression);
-                    childBuilder.CloseComponent();
-                }));
-                builder.CloseComponent();
             }
         }
     }
