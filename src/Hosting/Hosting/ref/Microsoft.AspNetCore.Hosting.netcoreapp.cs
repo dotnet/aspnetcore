@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Hosting
         public static void Run(this Microsoft.AspNetCore.Hosting.IWebHost host) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public static System.Threading.Tasks.Task RunAsync(this Microsoft.AspNetCore.Hosting.IWebHost host, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
         public static System.Threading.Tasks.Task StopAsync(this Microsoft.AspNetCore.Hosting.IWebHost host, System.TimeSpan timeout) { throw null; }
         public static void WaitForShutdown(this Microsoft.AspNetCore.Hosting.IWebHost host) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
