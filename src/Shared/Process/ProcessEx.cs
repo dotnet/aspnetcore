@@ -49,21 +49,15 @@ namespace Microsoft.AspNetCore.Internal
 
             _exited = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
+            // We greedily create a timeout exception message even though a timeout is unlikely to happen for two reasons:
+            // 1. To make it less likely for Process getters to throw exceptions like "System.InvalidOperationException: Process has exited, ..."
+            // 2. To ensure if/when exceptions are thrown from Process getters, these exceptions can easily be observed.
+            var timeoutExMessage = $"Process proc {proc.ProcessName} {proc.StartInfo.Arguments} timed out after {DefaultProcessTimeout}.";
+
             _processTimeoutCts = new CancellationTokenSource(timeout);
             _processTimeoutCts.Token.Register(() =>
             {
-                string exMessage;
-
-                try
-                {
-                    exMessage = $"Process proc {proc.ProcessName} {proc.StartInfo.Arguments} timed out after {DefaultProcessTimeout}.";
-                }
-                catch (Exception ex)
-                {
-                    exMessage = $"Process timed out after {DefaultProcessTimeout}. Details about the process could not be provided because: {ex}";
-                }
-
-                _exited.TrySetException(new TimeoutException(exMessage));
+                _exited.TrySetException(new TimeoutException(timeoutExMessage));
             });
         }
 
