@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Internal
                 }
                 catch (Exception ex)
                 {
-                    exMessage = $"Process timed out after {DefaultProcessTimeout}. Deails about the process could not be provided because: {ex}";
+                    exMessage = $"Process timed out after {DefaultProcessTimeout}. Details about the process could not be provided because: {ex}";
                 }
 
                 _exited.TrySetException(new TimeoutException(exMessage));
