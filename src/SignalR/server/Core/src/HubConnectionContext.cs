@@ -74,8 +74,12 @@ namespace Microsoft.AspNetCore.SignalR
             _systemClock = contextOptions.SystemClock ?? new SystemClock();
             _lastSendTimeStamp = _systemClock.UtcNowTicks;
 
-            var maxInvokes = contextOptions.MaximumParallelInvocations;
-            ActiveInvocationLimit = new SemaphoreSlim(maxInvokes, maxInvokes);
+            // We'll be avoiding using the semaphore when the limit is set to 1, so no need to allocate it
+            var maxInvokeLimit = contextOptions.MaximumParallelInvocations;
+            if (maxInvokeLimit != 1)
+            {
+                ActiveInvocationLimit = new SemaphoreSlim(maxInvokeLimit, maxInvokeLimit);
+            }
         }
 
         internal StreamTracker StreamTracker
