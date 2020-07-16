@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             _latestDirectParametersSnapshot?.Dispose();
         }
 
-        internal Task DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
+        public Task DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
         {
             _componentWasDisposed = true;
 
@@ -243,15 +243,15 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 }
                 else
                 {
-                    return Awaited(result);
+                    // We know we are dealing with an exception that happened asynchronously, so return a task
+                    // to the caller so that he can unwrap it.
+                    return result.AsTask();
                 }
             }
             catch (Exception e)
             {
                 return Task.FromException(e);
             }
-
-            static async Task Awaited(ValueTask res) => await res;
         }
     }
 }
