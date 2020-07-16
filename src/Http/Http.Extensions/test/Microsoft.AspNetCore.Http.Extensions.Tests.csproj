@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="testfile1kb.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />

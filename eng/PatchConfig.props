@@ -102,6 +102,8 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.13' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.Http.Extensions;
+      Microsoft.AspNetCore.ResponseCompression;
     </PackagesInPatch>
   </PropertyGroup>
 </Project>

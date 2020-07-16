@@ -21,6 +21,7 @@
       https://dotnet.myget.org/F/roslyn/api/v3/index.json;
       https://pkgs.dev.azure.com/azure-public/vside/_packaging/vssdk/nuget/v3/index.json;
       https://pkgs.dev.azure.com/azure-public/vside/_packaging/vs-impl/nuget/v3/index.json;
+      https://dotnetfeedmsrc.azurewebsites.net/sig/7Jp1zkoGf94LO2vK8CwVORJ1GDPsIyPAb7ia6Ka8BMM/se/2020-08-27/orchestrated-release-2-2/20200417-02/final/index.json;
     </RestoreSources>
 
     <PublicCoreFeedPrefix>https://dotnetcli.blob.core.windows.net/dotnet/</PublicCoreFeedPrefix>
