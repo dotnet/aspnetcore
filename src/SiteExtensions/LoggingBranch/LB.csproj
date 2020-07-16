@@ -52,7 +52,7 @@
   <Target Name="CopyPackageToTransportDir"
           AfterTargets="Pack"
           Condition="'$(OfficialBuild)' == 'true'">
-    <Copy SourceFiles="$(ArtifactsNonShippingPackagesDir)$(PackageId).$(PackageVersion)"
+    <Copy SourceFiles="$(ArtifactsNonShippingPackagesDir)$(PackageId).$(PackageVersion).nupkg"
           DestinationFolder="$(TransportOutputPath)"
           SkipUnchangedFiles="true" />
   </Target>
