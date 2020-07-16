@@ -25,6 +25,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Trimmer defaults -->
     <PublishTrimmed Condition="'$(PublishTrimmed)' == ''">true</PublishTrimmed>
     <TrimMode Condition="'$(TrimMode)' == ''">link</TrimMode>
+    <TrimmerRemoveSymbols Condition="'$(TrimmerRemoveSymbols)' == ''">false</TrimmerRemoveSymbols>
+
+    <!-- Runtime feature defaults to trim unnecessary code -->
+    <EventSourceSupport Condition="'$(EventSourceSupport)' == ''">false</EventSourceSupport>
+    <UseSystemResourceKeys Condition="'$(UseSystemResourceKeys)' == ''">true</UseSystemResourceKeys>
+    <EnableUnsafeUTF7Encoding Condition="'$(EnableUnsafeUTF7Encoding)' == ''">false</EnableUnsafeUTF7Encoding>
+    <HttpActivityPropagationSupport Condition="'$(HttpActivityPropagationSupport)' == ''">false</HttpActivityPropagationSupport>
+    <DebuggerSupport Condition="'$(DebuggerSupport)' == '' and '$(Configuration)' == 'Release'">false</DebuggerSupport>
 
     <StaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">/</StaticWebAssetBasePath>
     <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
@@ -414,7 +422,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         Condition="'%(ResolvedFileToPublish.RelativePath)' != 'web.config' AND !$([System.String]::Copy('%(ResolvedFileToPublish.RelativePath)').Replace('\','/').StartsWith('wwwroot/'))" />
 
       <!-- Remove pdbs from the publish output -->
-      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'$(BlazorWebAssemblyEnableDebugging)' != 'true' AND '%(Extension)' == '.pdb'" />
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'$(DebuggerSupport)' == 'false' AND '%(Extension)' == '.pdb'" />
     </ItemGroup>
 
     <ItemGroup Condition="'@(ResolvedFileToPublish->AnyHaveMetadataValue('RelativePath', 'web.config'))' != 'true'">
