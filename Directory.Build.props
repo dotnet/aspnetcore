@@ -187,6 +187,7 @@
   <PropertyGroup>
     <InstallersOutputPath>$(ArtifactsDir)installers\$(Configuration)\</InstallersOutputPath>
     <SymbolsOutputPath>$(ArtifactsDir)symbols\$(Configuration)\</SymbolsOutputPath>
+    <TransportOutputPath>$(ArtifactsDir)transport\</TransportOutputPath>
   </PropertyGroup>
 
   <!-- Ensure these output paths exist. -->

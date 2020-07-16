@@ -22,7 +22,9 @@
     <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
 
     <!-- Grab packages LB.csproj should have just built. -->
-    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsNonShippingPackagesDir)</RestoreAdditionalProjectSources>
+    <AdditionalPackageSource Condition="Exists('$(TransportOutputPath)')">$(TransportOutputPath)</AdditionalPackageSource>
+    <AdditionalPackageSource Condition="Exists('$(ArtifactsNonShippingPackagesDir)')">$(AdditionalPackageSource);$(ArtifactsNonShippingPackagesDir)</AdditionalPackageSource>
+    <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(AdditionalPackageSource)</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <ItemGroup>

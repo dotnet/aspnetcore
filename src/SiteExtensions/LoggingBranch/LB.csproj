@@ -47,4 +47,13 @@
       <HostingStartupPackageReference Include="%(_ResolvedPackageVersionInfo.PackageId)" Version="%(_ResolvedPackageVersionInfo.PackageVersion)" />
     </ItemGroup>
   </Target>
+
+  <!-- For official builds, copy this package to the transport dir so it can be used by Windows-join-build -->
+  <Target Name="CopyPackageToTransportDir"
+          AfterTargets="Pack"
+          Condition="'$(OfficialBuild)' == 'true'">
+    <Copy SourceFiles="$(ArtifactsNonShippingPackagesDir)$(PackageId).$(PackageVersion)"
+          DestinationFolder="$(TransportOutputPath)"
+          SkipUnchangedFiles="true" />
+  </Target>
 </Project>
