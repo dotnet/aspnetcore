@@ -110,6 +110,7 @@ namespace Microsoft.AspNetCore.Components.Authorization
             Assert.Collection(pageDiff.Edits,
                 edit => AssertPrependText(batch, edit, "Hello from the page with message: Hello, world!"));
 
+            // Assert: Asserts that the Resource is present and set to "foo"
             Assert.Collection(_testAuthorizationService.AuthorizeCalls, call=>{
                 Assert.Equal(resource,call.resource.ToString());
             });
@@ -136,6 +137,8 @@ namespace Microsoft.AspNetCore.Components.Authorization
                 edit => AssertPrependText(batch, edit, "Layout starts here"),
                 edit => AssertPrependText(batch, edit, "Not authorized"),
                 edit => AssertPrependText(batch, edit, "Layout ends here"));
+
+            // Assert: Asserts that the Resource is Null
             Assert.Collection(_testAuthorizationService.AuthorizeCalls, call=>{
                 Assert.Null(call.resource);
             });
