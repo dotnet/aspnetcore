@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     {
         private readonly Func<Task> _handleSubmitDelegate; // Cache to avoid per-render allocations
 
-        private EditContext? _fixedEditContext;
+        private EditContext? _editContext;
         private bool _hasSetEditContextExplicitly;
 
         /// <summary>
@@ -40,10 +40,10 @@ namespace Microsoft.AspNetCore.Components.Forms
         [Parameter]
         public EditContext? EditContext
         {
-            get => _fixedEditContext;
+            get => _editContext;
             set
             {
-                _fixedEditContext = value;
+                _editContext = value;
                 _hasSetEditContextExplicitly = value != null;
             }
         }
@@ -104,31 +104,31 @@ namespace Microsoft.AspNetCore.Components.Forms
                     $"{nameof(EditForm)}, do not also supply {nameof(OnValidSubmit)} or {nameof(OnInvalidSubmit)}.");
             }
 
-            // Update _fixedEditContext if we don't have one yet, or if they are supplying a
+            // Update _editContext if we don't have one yet, or if they are supplying a
             // potentially new EditContext, or if they are supplying a different Model
-            if (_fixedEditContext == null || (!_hasSetEditContextExplicitly && Model != _fixedEditContext.Model))
+            if (_editContext == null || (!_hasSetEditContextExplicitly && Model != _editContext.Model))
             {
-                _fixedEditContext = new EditContext(Model!);
+                _editContext = new EditContext(Model!);
             }
         }
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            Debug.Assert(_fixedEditContext != null);
+            Debug.Assert(_editContext != null);
 
-            // If _fixedEditContext changes, tear down and recreate all descendants.
+            // If _editContext changes, tear down and recreate all descendants.
             // This is so we can safely use the IsFixed optimization on CascadingValue,
-            // optimizing for the common case where _fixedEditContext never changes.
-            builder.OpenRegion(_fixedEditContext.GetHashCode());
+            // optimizing for the common case where _editContext never changes.
+            builder.OpenRegion(_editContext.GetHashCode());
 
             builder.OpenElement(0, "form");
             builder.AddMultipleAttributes(1, AdditionalAttributes);
             builder.AddAttribute(2, "onsubmit", _handleSubmitDelegate);
             builder.OpenComponent<CascadingValue<EditContext>>(3);
             builder.AddAttribute(4, "IsFixed", true);
-            builder.AddAttribute(5, "Value", _fixedEditContext);
-            builder.AddAttribute(6, "ChildContent", ChildContent?.Invoke(_fixedEditContext));
+            builder.AddAttribute(5, "Value", _editContext);
+            builder.AddAttribute(6, "ChildContent", ChildContent?.Invoke(_editContext));
             builder.CloseComponent();
             builder.CloseElement();
 
@@ -137,26 +137,26 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         private async Task HandleSubmitAsync()
         {
-            Debug.Assert(_fixedEditContext != null);
+            Debug.Assert(_editContext != null);
 
             if (OnSubmit.HasDelegate)
             {
                 // When using OnSubmit, the developer takes control of the validation lifecycle
-                await OnSubmit.InvokeAsync(_fixedEditContext);
+                await OnSubmit.InvokeAsync(_editContext);
             }
             else
             {
                 // Otherwise, the system implicitly runs validation on form submission
-                var isValid = _fixedEditContext.Validate(); // This will likely become ValidateAsync later
+                var isValid = _editContext.Validate(); // This will likely become ValidateAsync later
 
                 if (isValid && OnValidSubmit.HasDelegate)
                 {
-                    await OnValidSubmit.InvokeAsync(_fixedEditContext);
+                    await OnValidSubmit.InvokeAsync(_editContext);
                 }
 
                 if (!isValid && OnInvalidSubmit.HasDelegate)
                 {
-                    await OnInvalidSubmit.InvokeAsync(_fixedEditContext);
+                    await OnInvalidSubmit.InvokeAsync(_editContext);
                 }
             }
         }
