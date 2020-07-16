@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 throw new InvalidOperationException($"{nameof(EditForm)} requires a {nameof(Model)} " +
                     $"parameter, or an {nameof(EditContext)} parameter, but not both.");
             }
-            else if (EditContext == null && Model == null)
+            else if (!_hasSetEditContextExplicitly && Model == null)
             {
                 throw new InvalidOperationException($"{nameof(EditForm)} requires either a {nameof(Model)} " +
                     $"parameter, or an {nameof(EditContext)} parameter, please provide one of these.");
