@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -118,6 +119,36 @@ namespace Microsoft.AspNetCore.StaticFiles
             Assert.False(result);
 
             Assert.Equal(HttpsCompressionMode.Default, httpsCompressionFeature.Mode);
+        }
+
+        [Fact]
+        public async Task RequestAborted_DoesntThrow()
+        {
+            var options = new StaticFileOptions();
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile("/foo.txt", new TestFileInfo
+            {
+                LastModified = new DateTimeOffset(2014, 1, 2, 3, 4, 5, TimeSpan.Zero)
+            });
+            var pathString = new PathString("/test");
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Path = new PathString("/test/foo.txt");
+            httpContext.RequestAborted = new CancellationToken(canceled: true);
+            var body = new MemoryStream();
+            httpContext.Response.Body = body;
+            var validateResult = StaticFileMiddleware.ValidatePath(httpContext, pathString, out var subPath);
+            var contentTypeResult = StaticFileMiddleware.LookupContentType(new FileExtensionContentTypeProvider(), options, subPath, out var contentType);
+
+            var context = new StaticFileContext(httpContext, options, NullLogger.Instance, fileProvider, contentType, subPath);
+
+            var result = context.LookupFileInfo();
+            Assert.True(validateResult);
+            Assert.True(contentTypeResult);
+            Assert.True(result);
+
+            await context.SendAsync();
+
+            Assert.Equal(0, body.Length);
         }
 
         private sealed class TestFileProvider : IFileProvider
