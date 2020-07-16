@@ -83,6 +83,51 @@ namespace Microsoft.AspNetCore.Components.Routing
             Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
         }
 
+        [Theory]
+        [InlineData("{*p}")]
+        [InlineData("{**p}")]
+        public void Parse_SingleCatchAllParameter(string template)
+        {
+            // Arrange
+            var expected = new ExpectedTemplateBuilder().Parameter("p");
+
+            // Act
+            var actual = TemplateParser.ParseTemplate(template);
+
+            // Assert
+            Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
+        }
+
+        [Theory]
+        [InlineData("awesome/wow/{*p}")]
+        [InlineData("awesome/wow/{**p}")]
+        public void Parse_MixedLiteralAndCatchAllParameter(string template)
+        {
+            // Arrange
+            var expected = new ExpectedTemplateBuilder().Literal("awesome").Literal("wow").Parameter("p");
+
+            // Act
+            var actual = TemplateParser.ParseTemplate(template);
+
+            // Assert
+            Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
+        }
+
+        [Theory]
+        [InlineData("awesome/{p1}/{*p2}")]
+        [InlineData("awesome/{p1}/{**p2}")]
+        public void Parse_MixedLiteralParameterAndCatchAllParameter(string template)
+        {
+            // Arrange
+            var expected = new ExpectedTemplateBuilder().Literal("awesome").Parameter("p1").Parameter("p2");
+
+            // Act
+            var actual = TemplateParser.ParseTemplate(template);
+
+            // Assert
+            Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
+        }
+
         [Fact]
         public void InvalidTemplate_WithRepeatedParameter()
         {
@@ -113,7 +158,8 @@ namespace Microsoft.AspNetCore.Components.Routing
         }
 
         [Theory]
-        [InlineData("{*}", "Invalid template '{*}'. The character '*' in parameter segment '{*}' is not allowed.")]
+        // * is only allowed at beginning for catch-all parameters
+        [InlineData("{p*}", "Invalid template '{p*}'. The character '*' in parameter segment '{p*}' is not allowed.")]
         [InlineData("{{}", "Invalid template '{{}'. The character '{' in parameter segment '{{}' is not allowed.")]
         [InlineData("{}}", "Invalid template '{}}'. The character '}' in parameter segment '{}}' is not allowed.")]
         [InlineData("{=}", "Invalid template '{=}'. The character '=' in parameter segment '{=}' is not allowed.")]
@@ -162,6 +208,16 @@ namespace Microsoft.AspNetCore.Components.Routing
             var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("/test/{a?}/{b}"));
 
             var expectedMessage = "Invalid template 'test/{a?}/{b}'. Non-optional parameters or literal routes cannot appear after optional parameters.";
+
+            Assert.Equal(expectedMessage, ex.Message);
+        }
+
+        [Fact]
+        public void InvalidTemplate_CatchAllParamNotLast()
+        {
+            var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("/test/{*a}/{b}"));
+
+            var expectedMessage = "Invalid template 'test/{*a}/{b}'. A catch-all parameter can only appear as the last segment of the route template.";
 
             Assert.Equal(expectedMessage, ex.Message);
         }
