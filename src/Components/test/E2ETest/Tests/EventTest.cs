@@ -115,6 +115,24 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("onmousedown,onmouseup,", () => output.Text);
         }
 
+
+        [Fact]
+        public void Toggle_CanTrigger()
+        {
+            Browser.MountTestComponent<ToggleEventComponent>();
+
+            var detailsToggle = Browser.FindElement(By.Id("details-toggle"));
+
+            var output = Browser.FindElement(By.Id("output"));
+            Assert.Equal(string.Empty, output.Text);
+
+            // Click
+            var actions = new Actions(Browser).Click(detailsToggle);
+
+            actions.Perform();
+            Browser.Equal("ontoggle,", () => output.Text);
+        }
+
         [Fact]
         public void PointerDown_CanTrigger()
         {
