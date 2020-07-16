@@ -52,6 +52,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         /// <summary>
         /// Gets or sets the display name for this field.
+        /// <para>This value is used when generating error messages when the input value fails to parse correctly.</para>
         /// </summary>
         [Parameter] public string? DisplayName { get; set; }
 
