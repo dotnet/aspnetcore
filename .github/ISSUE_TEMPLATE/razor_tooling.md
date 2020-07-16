@@ -18,7 +18,7 @@ For other types of questions, consider using [StackOverflow](https://stackoverfl
 <!-- NOTE: This issue template is meant specifically to be used for issues with the new experimental Razor tooling experience provided in Visual Studio's Preview Feature pane -->
 
 ### Describe the bug
-[[A clear and concise description of what the bug is.]]
+[[A clear and concise description of what the bug is. (Screenshots if applicable)]]
 
 ### To Reproduce
 <!--
