@@ -60,6 +60,8 @@ namespace Microsoft.AspNetCore.Components.Forms
         [System.Diagnostics.CodeAnalysis.AllowNullAttribute]
         protected TValue CurrentValue { get { throw null; } set { } }
         protected string? CurrentValueAsString { get { throw null; } set { } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public string? DisplayName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected Microsoft.AspNetCore.Components.Forms.EditContext EditContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected internal Microsoft.AspNetCore.Components.Forms.FieldIdentifier FieldIdentifier { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
