@@ -167,7 +167,7 @@ async function getCacheToUseIfEnabled(bootConfig: BootJsonData): Promise<Cache |
 
   // cache integrity is compromised if the first request has been served over http
   // in this case, we want to disable caching and integrity validation
-  if (document.location.protocol === 'http:') {
+  if (document.location.protocol !== 'https:') {
     return null;
   }
 
