@@ -61,6 +61,13 @@ namespace Microsoft.AspNetCore.Components
             return Receiver.HandleEventAsync(new EventCallbackWorkItem(Delegate), arg);
         }
 
+        /// <summary>
+        /// Invokes the delegate associated with this binding and dispatches an event notification to the
+        /// appropriate component.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> which completes asynchronously once event processing has completed.</returns>
+        public Task InvokeAsync() => InvokeAsync(null!);
+
         object? IEventCallback.UnpackForRenderTree()
         {
             return RequiresExplicitReceiver ? (object)this : Delegate;
