@@ -191,6 +191,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_dependencies", "_dependencies", "{ACA6DDB9-7592-47CE-A740-D15BF307E9E0}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IISIntegration", "..\Servers\IIS\IISIntegration\src\Microsoft.AspNetCore.Server.IISIntegration.csproj", "{F05215CF-F754-47BF-ACED-259C53C8B223}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1005,6 +1007,18 @@ Global
 		{260E77CB-800F-4A13-BE92-9CAA097705C2}.Release|x64.Build.0 = Release|Any CPU
 		{260E77CB-800F-4A13-BE92-9CAA097705C2}.Release|x86.ActiveCfg = Release|Any CPU
 		{260E77CB-800F-4A13-BE92-9CAA097705C2}.Release|x86.Build.0 = Release|Any CPU
+		{F05215CF-F754-47BF-ACED-259C53C8B223}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F05215CF-F754-47BF-ACED-259C53C8B223}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F05215CF-F754-47BF-ACED-259C53C8B223}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F05215CF-F754-47BF-ACED-259C53C8B223}.Debug|x64.Build.0 = Debug|Any CPU
+		{F05215CF-F754-47BF-ACED-259C53C8B223}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F05215CF-F754-47BF-ACED-259C53C8B223}.Debug|x86.Build.0 = Debug|Any CPU
+		{F05215CF-F754-47BF-ACED-259C53C8B223}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F05215CF-F754-47BF-ACED-259C53C8B223}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F05215CF-F754-47BF-ACED-259C53C8B223}.Release|x64.ActiveCfg = Release|Any CPU
+		{F05215CF-F754-47BF-ACED-259C53C8B223}.Release|x64.Build.0 = Release|Any CPU
+		{F05215CF-F754-47BF-ACED-259C53C8B223}.Release|x86.ActiveCfg = Release|Any CPU
+		{F05215CF-F754-47BF-ACED-259C53C8B223}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1086,6 +1100,7 @@ Global
 		{0186A5D0-6D05-4C19-BB81-E49A51745FFF} = {ACA6DDB9-7592-47CE-A740-D15BF307E9E0}
 		{17B7BFF6-4E72-410C-B690-02741505500A} = {ACA6DDB9-7592-47CE-A740-D15BF307E9E0}
 		{260E77CB-800F-4A13-BE92-9CAA097705C2} = {ACA6DDB9-7592-47CE-A740-D15BF307E9E0}
+		{F05215CF-F754-47BF-ACED-259C53C8B223} = {ACA6DDB9-7592-47CE-A740-D15BF307E9E0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {83786312-A93B-4BB4-AB06-7C6913A59AFA}
