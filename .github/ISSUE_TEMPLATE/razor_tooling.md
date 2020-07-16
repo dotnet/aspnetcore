@@ -35,7 +35,7 @@ We will close this issue if:
 [[Please collect the data below before reporting your issue to aid us in diagnosing the root cause.]]
 
 #### Activity log
-If your Visual Studio instance has presented you with a [yellow or red bar](https://i.imgur.com/Rf6DBPq.png) or an error dialog pop-up about something unexpected happening please attach the mentioned Activity log. If you are unsure on where to locate the activity log [here](https://docs.microsoft.com/en-us/visualstudio/extensibility/how-to-use-the-activity-log?view=vs-2019#to-examine-the-activity-log) are the instructions on how to generate/acquire one.
+If your Visual Studio instance has presented you with a [yellow or red bar](https://user-images.githubusercontent.com/14852843/87709444-1c5b8c80-c759-11ea-9536-2af5e060bda4.png) or an error dialog pop-up about something unexpected happening please attach the mentioned Activity log. If you are unsure on where to locate the activity log [here](https://docs.microsoft.com/en-us/visualstudio/extensibility/how-to-use-the-activity-log?view=vs-2019#to-examine-the-activity-log) are the instructions on how to generate/acquire one.
 
 If you were not presented with either you can delete this section.
 
