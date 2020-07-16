@@ -1,7 +1,7 @@
 ---
 name: 🐞 Razor Tooling Bug report
 about: Report an issue about something that is not working in the new Razor tooling
-labels: area-razor.tooling, feature-razor.vs
+labels: area-razor.tooling, feature-razor.vs, bug
 ---
 
 <!--
@@ -18,7 +18,7 @@ For other types of questions, consider using [StackOverflow](https://stackoverfl
 <!-- NOTE: This issue template is meant specifically to be used for issues with the new experimental Razor tooling experience provided in Visual Studio's Preview Feature pane -->
 
 ### Describe the bug
-A clear and concise description of what the bug is.
+[[A clear and concise description of what the bug is.]]
 
 ### To Reproduce
 <!--
@@ -32,17 +32,23 @@ We will close this issue if:
 
 ### Logs & Exceptions
 
-Please collect the data below before reporting your issue to aid us in diagnosing the root cause.
+[[Please collect the data below before reporting your issue to aid us in diagnosing the root cause.]]
 
 #### Activity log
-[Here](https://docs.microsoft.com/en-us/visualstudio/extensibility/how-to-use-the-activity-log?view=vs-2019#to-examine-the-activity-log) are the instructions on how to generate/acquire one.
+If your Visual Studio instance has presented you with a [yellow or red bar](https://i.imgur.com/Rf6DBPq.png) or an error dialog pop-up about something unexpected happening please attach the mentioned Activity log. If you are unsure on where to locate the activity log [here](https://docs.microsoft.com/en-us/visualstudio/extensibility/how-to-use-the-activity-log?view=vs-2019#to-examine-the-activity-log) are the instructions on how to generate/acquire one.
+
+If you were not presented with either you can delete this section.
 
 #### Razor Language Server Client log
 <!-- In Visual Studio's `Output` window, the drop-down contains a `Razor Language Server Client` item. Include that below. -->
 <details>
 <summary>Razor Language Server Client Log Output</summary>
 
-Paste log output here
+```
+
+[[Paste log output here]]
+
+```
 
 </details>
 
@@ -51,16 +57,20 @@ Paste log output here
 <details>
 <summary>HTML Language Server Client Log Output</summary>
 
-Paste log output here
+```
+
+[[Paste log output here]]
+
+```
 
 </details>
 
 ### Further technical details
-- VS version (Help => About Microsoft Visual Studio, i.e. 16.8.0 Preview 1 30313.27...). If in Codespaces there will be two versions (server and client), please provide both.
-- Scenario (Local, LiveShare, Codespaces)
+- VS version: [[(Help => About Microsoft Visual Studio, i.e. 16.8.0 Preview 1 30313.27...). If in Codespaces there will be two versions (server and client), please provide both.]]
+- Scenario: [[(Local, LiveShare, Codespaces)]]
 
 ### Pre-requisite checklist
 - [ ] Steps to reproduce the issue
-- [ ] Visual Studio Activity Log attached.
 - [ ] Razor Language Server client logs included.
 - [ ] HTML Language Server client logs included
+- [ ] Visual Studio Activity Log attached (only required if you were presented with an error)
