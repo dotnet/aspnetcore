@@ -159,19 +159,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                 case InvocationMessage invocationMessage:
                     Log.ReceivedHubInvocation(_logger, invocationMessage);
-                    return connection.ActiveInvocationLimit.RunAsync(state =>
-                    {
-                        var (dispatcher, connection, invocationMessage) = state;
-                        return dispatcher.ProcessInvocation(connection, invocationMessage, isStreamResponse: false);
-                    }, (this, connection, invocationMessage));
+                    return ProcessInvocation(connection, invocationMessage, isStreamResponse: false);
 
                 case StreamInvocationMessage streamInvocationMessage:
                     Log.ReceivedStreamHubInvocation(_logger, streamInvocationMessage);
-                    return connection.ActiveInvocationLimit.RunAsync(state =>
-                    {
-                        var (dispatcher, connection, invocationMessage) = state;
-                        return dispatcher.ProcessInvocation(connection, invocationMessage, isStreamResponse: true);
-                    }, (this, connection, streamInvocationMessage));
+                    return ProcessInvocation(connection, streamInvocationMessage, isStreamResponse: true);
 
                 case CancelInvocationMessage cancelInvocationMessage:
                     // Check if there is an associated active stream and cancel it if it exists.
@@ -267,7 +259,18 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             else
             {
                 bool isStreamCall = descriptor.StreamingParameters != null;
-                return Invoke(descriptor, connection, hubMethodInvocationMessage, isStreamResponse, isStreamCall);
+                if (!isStreamCall && !isStreamResponse)
+                {
+                    return connection.ActiveInvocationLimit.RunAsync(state =>
+                    {
+                        var (dispatcher, descriptor, connection, invocationMessage) = state;
+                        return dispatcher.Invoke(descriptor, connection, invocationMessage, isStreamResponse: false, isStreamCall: false);
+                    }, (this, descriptor, connection, hubMethodInvocationMessage));
+                }
+                else
+                {
+                    return Invoke(descriptor, connection, hubMethodInvocationMessage, isStreamResponse, isStreamCall);
+                }
             }
         }
 
@@ -282,30 +285,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             THub hub = null;
             try
             {
-                var clientStreamLength = hubMethodInvocationMessage.StreamIds?.Length ?? 0;
-                var serverStreamLength = descriptor.StreamingParameters?.Count ?? 0;
-                if (clientStreamLength != serverStreamLength)
-                {
-                    var ex = new HubException($"Client sent {clientStreamLength} stream(s), Hub method expects {serverStreamLength}.");
-                    Log.InvalidHubParameters(_logger, hubMethodInvocationMessage.Target, ex);
-                    await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
-                        ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
-                    return;
-                }
-
-                var arguments = hubMethodInvocationMessage.Arguments;
-                CancellationTokenSource cts = null;
-                if (descriptor.HasSyntheticArguments)
-                {
-                    ReplaceArguments(descriptor, hubMethodInvocationMessage, isStreamCall, connection, ref arguments, out cts);
-                }
-
-                if (isStreamResponse)
-                {
-                    cts = cts ?? CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
-                    connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId, cts);
-                }
-
                 hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
                 hub = hubActivator.Create();
 
@@ -324,25 +303,50 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                 try
                 {
+                    var clientStreamLength = hubMethodInvocationMessage.StreamIds?.Length ?? 0;
+                    var serverStreamLength = descriptor.StreamingParameters?.Count ?? 0;
+                    if (clientStreamLength != serverStreamLength)
+                    {
+                        var ex = new HubException($"Client sent {clientStreamLength} stream(s), Hub method expects {serverStreamLength}.");
+                        Log.InvalidHubParameters(_logger, hubMethodInvocationMessage.Target, ex);
+                        await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
+                            ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
+                        return;
+                    }
+
                     InitializeHub(hub, connection);
                     Task invocation = null;
 
+                    var arguments = hubMethodInvocationMessage.Arguments;
+                    CancellationTokenSource cts = null;
+                    if (descriptor.HasSyntheticArguments)
+                    {
+                        ReplaceArguments(descriptor, hubMethodInvocationMessage, isStreamCall, connection, ref arguments, out cts);
+                    }
+
                     if (isStreamResponse)
                     {
-                        var result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
-
-                        if (result == null)
+                        _ = ExecuteStreamInvocation();
+                        async Task ExecuteStreamInvocation()
                         {
-                            Log.InvalidReturnValueFromStreamingMethod(_logger, methodExecutor.MethodInfo.Name);
-                            await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
-                                $"The value returned by the streaming method '{methodExecutor.MethodInfo.Name}' is not a ChannelReader<> or IAsyncEnumerable<>.");
-                            return;
+                            cts = cts ?? CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
+                            connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId, cts);
+
+                            var result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
+
+                            if (result == null)
+                            {
+                                Log.InvalidReturnValueFromStreamingMethod(_logger, methodExecutor.MethodInfo.Name);
+                                await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
+                                    $"The value returned by the streaming method '{methodExecutor.MethodInfo.Name}' is not a ChannelReader<> or IAsyncEnumerable<>.");
+                                return;
+                            }
+
+                            var enumerable = descriptor.FromReturnedStream(result, cts.Token);
+
+                            Log.StreamingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
+                            await StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerable, scope, hubActivator, hub, cts, hubMethodInvocationMessage);
                         }
-
-                        var enumerable = descriptor.FromReturnedStream(result, cts.Token);
-
-                        Log.StreamingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
-                        _ = StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerable, scope, hubActivator, hub, cts, hubMethodInvocationMessage);
                     }
                     else
                     {

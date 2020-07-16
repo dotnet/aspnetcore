@@ -1026,6 +1026,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return 21;
         }
 
+        public async Task Upload(ChannelReader<string> stream)
+        {
+            _tcsService.StartedMethod.SetResult(null);
+            _ = await stream.ReadAndCollectAllAsync();
+            _tcsService.EndMethod.SetResult(null);
+        }
+
         private class CustomAsyncEnumerable : IAsyncEnumerable<int>
         {
             private readonly TcsService _tcsService;
