@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         private readonly Func<Task> _handleSubmitDelegate; // Cache to avoid per-render allocations
 
         private EditContext? _fixedEditContext;
+        private EditContext? _providedEditContext;
 
         /// <summary>
         /// Constructs an instance of <see cref="EditForm"/>.
@@ -36,7 +37,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// also supply <see cref="Model"/>, since the model value will be taken
         /// from the <see cref="EditContext.Model"/> property.
         /// </summary>
-        [Parameter] public EditContext? EditContext { get; set; }
+        [Parameter]
+        public EditContext? EditContext
+        {
+            get => _fixedEditContext;
+            set => _providedEditContext = value;
+        }
 
         /// <summary>
         /// Specifies the top-level model object for the form. An edit context will
@@ -73,7 +79,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
-            if ((EditContext == null) == (Model == null))
+            if ((_providedEditContext == null) == (Model == null))
             {
                 throw new InvalidOperationException($"{nameof(EditForm)} requires a {nameof(Model)} " +
                     $"parameter, or an {nameof(EditContext)} parameter, but not both.");
@@ -91,9 +97,9 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             // Update _fixedEditContext if we don't have one yet, or if they are supplying a
             // potentially new EditContext, or if they are supplying a different Model
-            if (_fixedEditContext == null || EditContext != null || Model != _fixedEditContext.Model)
+            if (_fixedEditContext == null || _providedEditContext != null || Model != _fixedEditContext.Model)
             {
-                _fixedEditContext = EditContext ?? new EditContext(Model!);
+                _fixedEditContext = _providedEditContext ?? new EditContext(Model!);
             }
         }
 
