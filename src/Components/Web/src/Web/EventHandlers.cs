@@ -123,6 +123,7 @@ namespace Microsoft.AspNetCore.Components.Web
     [EventHandler("onreadystatechange", typeof(EventArgs), true, true)]
     [EventHandler("onscroll", typeof(EventArgs), true, true)]
 
+    // Specific events
     [EventHandler("ontoggle", typeof(EventArgs), true, true)]
     public static class EventHandlers
     {
