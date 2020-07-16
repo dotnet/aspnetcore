@@ -122,7 +122,7 @@ public class HttpHubConnectionBuilder {
      * @param configureBuilder Callback for configuring the OkHttpClient.Builder.
      * @return This instance of the HttpHubConnectionBuilder.
      */
-    public HttpHubConnectionBuilder setConfigureHttpClient(Action1<OkHttpClient.Builder> configureBuilder) {
+    public HttpHubConnectionBuilder setHttpClientBuilderCallback(Action1<OkHttpClient.Builder> configureBuilder) {
         this.configureBuilder = configureBuilder;
         return this;
     }
