@@ -142,6 +142,7 @@ namespace Microsoft.AspNetCore.Components
         public static readonly Microsoft.AspNetCore.Components.EventCallbackFactory Factory;
         public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent? receiver, System.MulticastDelegate? @delegate) { throw null; }
         public bool HasDelegate { get { throw null; } }
+        public System.Threading.Tasks.Task InvokeAsync() { throw null; }
         public System.Threading.Tasks.Task InvokeAsync(object arg) { throw null; }
     }
     public sealed partial class EventCallbackFactory
@@ -217,6 +218,7 @@ namespace Microsoft.AspNetCore.Components
         public static readonly Microsoft.AspNetCore.Components.EventCallback<TValue> Empty;
         public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent? receiver, System.MulticastDelegate? @delegate) { throw null; }
         public bool HasDelegate { get { throw null; } }
+        public System.Threading.Tasks.Task InvokeAsync() { throw null; }
         public System.Threading.Tasks.Task InvokeAsync(TValue arg) { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=true)]
