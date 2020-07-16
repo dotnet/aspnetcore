@@ -51,6 +51,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         [Parameter] public Expression<Func<TValue>>? ValueExpression { get; set; }
 
         /// <summary>
+        /// Gets or sets the display name for this field.
+        /// </summary>
+        [Parameter] public string? DisplayName { get; set; }
+
+        /// <summary>
         /// Gets the associated <see cref="Forms.EditContext"/>.
         /// </summary>
         protected EditContext EditContext { get; set; } = default!;
