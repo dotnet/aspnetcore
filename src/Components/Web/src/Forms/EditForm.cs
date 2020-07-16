@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             // Update _editContext if we don't have one yet, or if they are supplying a
             // potentially new EditContext, or if they are supplying a different Model
-            if (_editContext == null || (!_hasSetEditContextExplicitly && Model != _editContext.Model))
+            if (Model != null && Model != _editContext?.Model)
             {
                 _editContext = new EditContext(Model!);
             }
