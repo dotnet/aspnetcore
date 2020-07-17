@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             var janTaskException = await Assert.ThrowsAsync<InvalidOperationException>(() => janTask);
 
             // Assert
-            Assert.Equal("OnNavigateAsync callback cannot be canceled.", janTaskException.Message);
+            Assert.Equal("OnNavigateAsync can only be cancelled via he NavigateContext.CancellationToken.", janTaskException.Message);
         }
 
         [Fact]
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             {
                 if (args.Path.EndsWith("jan"))
                 {
-                    await Task.Delay(Timeout.Infinite);
+                    await Task.Delay(Timeout.Infinite, args.CancellationToken);
                 }
             };
             var refreshCalled = false;
