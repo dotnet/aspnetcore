@@ -2124,7 +2124,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void RenderBatch_CanDisposeSynchrounousAsyncDisposableImplementations()
+        public void RenderBatch_CanDisposeSynchronousAsyncDisposableImplementations()
         {
             // Arrange
             var renderer = new TestRenderer { ShouldHandleExceptions = true };
