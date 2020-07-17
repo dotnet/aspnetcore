@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Forms.EditContext>? ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.Forms.EditContext? EditContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Components.Forms.EditContext? EditContext { get { throw null; } set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public object? Model { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
