@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             var janTaskException = await Record.ExceptionAsync(() => janTask);
             var febTaskException = await Record.ExceptionAsync(() => febTask);
 
-            // Assert neither exceution threw an exception
+            // Assert neither execution threw an exception
             Assert.Null(janTaskException);
             Assert.Null(febTaskException);
             // Assert refresh should've only been called once for the second route
