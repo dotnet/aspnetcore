@@ -47,7 +47,8 @@ namespace Microsoft.AspNetCore.Authentication
 
             if (configureOptions != null)
             {
-                optionsBuilder.Configure(configureOptions);
+                Services.AddSingleton<IConfigureOptions<TOptions>>(sp =>
+                    new ConfigureNamedOptions<TOptions, TService>(authenticationScheme, sp.GetRequiredService<TService>(), configureOptions));
             }
 
             Services.AddTransient<THandler>();
