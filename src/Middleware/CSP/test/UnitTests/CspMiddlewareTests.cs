@@ -10,13 +10,17 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using System.IO;
 using System.Text;
+using Moq;
 
 namespace Microsoft.AspNetCore.Csp.Test
 {
     public class CspMiddlewareTests
     {
-        [Fact]
-        public async Task test()
+        [Theory]
+        [InlineData("/")]
+        [InlineData("/cheese")]
+        [InlineData("/foo")]
+        public async Task cspHeaderIsSetOnAllResponses(string requestPath)
         {
             // Arrange
             var hostBuilder = new WebHostBuilder()
@@ -36,7 +40,7 @@ namespace Microsoft.AspNetCore.Csp.Test
             using (var server = new TestServer(hostBuilder))
             {
                 // Act
-                var response = await server.CreateRequest("/")
+                var response = await server.CreateRequest(requestPath)
                     .SendAsync("GET");
 
                 // Assert
@@ -47,8 +51,16 @@ namespace Microsoft.AspNetCore.Csp.Test
             }
         }
 
-        [Fact]
-        public async void ProcessesMalformedReportRequestsCorrectly()
+        [Theory]
+        [InlineData("GET", "foo")]
+        [InlineData("GET", "application/csp-report")]
+        [InlineData("POST", "foo")]
+        [InlineData("POST", "application/csp-report")]
+        [InlineData("PUT", "foo")]
+        [InlineData("PUT", "application/csp-report")]
+        [InlineData("HEAD", "foo")]
+        [InlineData("HEAD", "application/csp-report")]
+        public async void ProcessesMalformedReportRequestsCorrectly(string method, string contentType)
         {
             // Arrange
             var hostBuilder = new WebHostBuilder()
@@ -71,15 +83,70 @@ namespace Microsoft.AspNetCore.Csp.Test
                 // Act
                 var context = await server.SendAsync(c =>
                 {
-                    c.Request.Method = "POST";
+                    c.Request.Method = method;
                     c.Request.Path = "/cspreport";
-                    c.Request.Headers[HeaderNames.ContentType] = CspConstants.CspReportContentType;
+                    c.Request.Headers[HeaderNames.ContentType] = contentType;
                     c.Request.Body = new MemoryStream(Encoding.ASCII.GetBytes("malformed"));
                 });
 
                 // Assert
                 Assert.Equal(204, context.Response.StatusCode);
                 Assert.Empty(new StreamReader(context.Response.Body).ReadToEnd());
+            }
+        }
+
+        [Fact]
+        public async void ProcessesCspReportRequestsCorrectly()
+        {
+            // Arrange
+            var logger = new Mock<ILogger<CspReportingMiddleware>>();
+
+            var hostBuilder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseCsp(policyBuilder =>
+                    {
+                        policyBuilder
+                            .WithCspMode(CspMode.ENFORCING)
+                            .WithReportingUri("/cspreport");
+                    });
+                    app.Run(async context =>
+                    {
+                        await context.Response.WriteAsync("Test response");
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton(typeof(ILogger<CspReportingMiddleware>), logger.Object);
+                });
+
+            using (var server = new TestServer(hostBuilder))
+            {
+                // Act
+                var context = await server.SendAsync(c =>
+                {
+                    c.Request.Method = "POST";
+                    c.Request.Path = "/cspreport";
+                    c.Request.Headers[HeaderNames.ContentType] = CspConstants.CspReportContentType;
+                    c.Request.Body = new MemoryStream(Encoding.ASCII.GetBytes(
+                        @"{
+                          ""csp-report"": {
+                            ""document-uri"": ""http://example.com/signup.html"",
+                            ""referrer"": ""http://evil.com"",
+                            ""blocked-uri"": ""http://example.com/css/style.css"",
+                            ""violated-directive"": ""style-src cdn.example.com"",
+                            ""original-policy"": ""default-src 'none'; style-src cdn.example.com; report-uri /_/csp-reports"",
+                            ""disposition"": ""report""
+                          }
+                        }"
+                    ));
+                });
+
+                // Assert
+                Assert.Equal(204, context.Response.StatusCode);
+                Assert.Empty(new StreamReader(context.Response.Body).ReadToEnd());
+                //TODO: ASSERT ON THE LOGGING STATEMENT!
+                //logger.Verify(m => m.Log(LogLevel.Information, ""));
             }
         }
     }

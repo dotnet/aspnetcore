@@ -44,9 +44,11 @@ namespace Microsoft.AspNetCore.Csp
             try
             {
                 CspReport cspReport = await JsonSerializer.DeserializeAsync<CspReport>(body, _serializerOptions);
-                _logger.Log(_loggingConfig.LogLevel, TextualizeReport(cspReport, _loggingConfig.LogLevel));
-                // TODO: Perhaps catch something more specific
-            } catch (Exception)
+                if (cspReport.ReportData != null)
+                {
+                    _logger.Log(_loggingConfig.LogLevel, TextualizeReport(cspReport, _loggingConfig.LogLevel));
+                }
+            } catch (JsonException)
             {
                 return;
             }
