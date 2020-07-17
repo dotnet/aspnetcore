@@ -223,6 +223,8 @@
     <IdentityServer4StoragePackageVersion>3.0.0</IdentityServer4StoragePackageVersion>
     <IdentityServer4EntityFrameworkStoragePackageVersion>3.0.0</IdentityServer4EntityFrameworkStoragePackageVersion>
     <MessagePackPackageVersion>2.1.90</MessagePackPackageVersion>
+    <MicrosoftIdentityWebPackageVersion>0.2.0-preview</MicrosoftIdentityWebPackageVersion>
+    <MicrosoftIdentityWebUIPackageVersion>0.2.0-preview</MicrosoftIdentityWebUIPackageVersion>
     <MoqPackageVersion>4.10.0</MoqPackageVersion>
     <MonoCecilPackageVersion>0.11.2</MonoCecilPackageVersion>
     <NewtonsoftJsonBsonPackageVersion>1.0.2</NewtonsoftJsonBsonPackageVersion>

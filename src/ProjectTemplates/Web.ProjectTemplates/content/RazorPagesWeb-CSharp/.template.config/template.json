@@ -34,9 +34,28 @@
       ],
       "modifiers": [
         {
-          "condition": "(!IndividualAuth)",
+          "condition": "(!OrganizationalAuth && !IndividualAuth)",
           "exclude": [
-            "Pages/Shared/_LoginPartial.cshtml"
+            "Pages/Shared/_LoginPartial.Identity.cshtml",
+            "Pages/Shared/_LoginPartial.OrgAuth.cshtml"
+          ]
+        },
+        {
+          "condition": "(OrganizationalAuth || IndividualB2CAuth)",
+          "rename": {
+            "Pages/Shared/_LoginPartial.OrgAuth.cshtml": "Pages/Shared/_LoginPartial.cshtml"
+          },
+          "exclude": [
+            "Pages/Shared/_LoginPartial.Identity.cshtml"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth)",
+          "rename": {
+            "Pages/Shared/_LoginPartial.Identity.cshtml": "Pages/Shared/_LoginPartial.cshtml"
+          },
+          "exclude": [
+            "Pages/Shared/_LoginPartial.OrgAuth.cshtml"
           ]
         },
         {
@@ -75,6 +94,19 @@
           "exclude": [
             "Data/SqlServer/**"
           ]
+        },
+        {
+          "condition": "(!GenerateApi)",
+            "exclude": [
+                "Services/DownstreamWebApi.cs"
+            ]
+        },
+        {
+          "condition": "(!CallsMicrosoftGraph)",
+          "exclude": [
+             "Services/MicrosoftGraphServiceExtensions.cs",
+             "Services/TokenAcquisitionCredentialProvider.cs"
+            ]
         }
       ]
     }
@@ -93,6 +125,18 @@
           "description": "Individual authentication"
         },
         {
+          "choice": "IndividualB2C",
+          "description": "Individual authentication with Azure AD B2C"
+        },
+        {
+          "choice": "SingleOrg",
+          "description": "Organizational authentication for a single tenant"
+        },
+        {
+          "choice": "MultiOrg",
+          "description": "Organizational authentication for multiple tenants"
+        },
+        {
           "choice": "Windows",
           "description": "Windows authentication"
         }
@@ -100,12 +144,85 @@
       "defaultValue": "None",
       "description": "The type of authentication to use"
     },
+    "AAdB2CInstance": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "https://login.microsoftonline.com/tfp/",
+      "replaces": "https:////login.microsoftonline.com/tfp/",
+      "description": "The Azure Active Directory B2C instance to connect to (use with IndividualB2C auth)."
+    },
+    "SignUpSignInPolicyId": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "b2c_1_susi",
+      "replaces": "MySignUpSignInPolicyId",
+      "description": "The sign-in and sign-up policy ID for this project (use with IndividualB2C auth)."
+    },
+    "SignedOutCallbackPath": {
+        "type": "parameter",
+        "datatype": "string",
+        "defaultValue": "/signout/B2C_1_susi",
+        "replaces": "/signout/MySignUpSignInPolicyId",
+        "description": "The global signout callback (use with IndividualB2C auth)."
+    },
+    "ResetPasswordPolicyId": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "b2c_1_reset",
+      "replaces": "MyResetPasswordPolicyId",
+      "description": "The reset password policy ID for this project (use with IndividualB2C auth)."
+    },
+    "EditProfilePolicyId": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "b2c_1_edit_profile",
+      "replaces": "MyEditProfilePolicyId",
+      "description": "The edit profile policy ID for this project (use with IndividualB2C auth)."
+    },
+    "AADInstance": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "https://login.microsoftonline.com/",
+      "replaces": "https:////login.microsoftonline.com/",
+      "description": "The Azure Active Directory instance to connect to (use with SingleOrg or MultiOrg auth)."
+    },
+    "ClientId": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "11111111-1111-1111-11111111111111111",
+      "description": "The Client ID for this project (use with IndividualB2C, SingleOrg or MultiOrg auth)."
+    },
+    "Domain": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "qualified.domain.name",
+      "description": "The domain for the directory tenant (use with SingleOrg or IndividualB2C auth)."
+    },
+    "TenantId": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "22222222-2222-2222-2222-222222222222",
+      "description": "The TenantId ID of the directory to connect to (use with SingleOrg auth)."
+    },
+    "CallbackPath": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "/signin-oidc",
+      "defaultValue": "/signin-oidc",
+      "description": "The request path within the application's base path of the redirect URI (use with SingleOrg or IndividualB2C auth)."
+    },
+    "OrgReadAccess": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether or not to allow this application read access to the directory (only applies to SingleOrg or MultiOrg auth)."
+    },
     "UserSecretsId": {
       "type": "parameter",
       "datatype": "string",
       "replaces": "aspnet-Company.WebApplication1-53bc9b9d-9d6a-45d4-8429-2a2761773502",
       "defaultValue": "aspnet-Company.WebApplication1-53bc9b9d-9d6a-45d4-8429-2a2761773502",
-      "description": "The ID to use for secrets (use with Individual auth)."
+      "description": "The ID to use for secrets (use with OrgReadAccess or Individual auth)."
     },
     "ExcludeLaunchSettings": {
       "type": "parameter",
@@ -159,9 +276,21 @@
       },
       "replaces": "44300"
     },
+    "OrganizationalAuth": {
+      "type": "computed",
+      "value": "(auth == \"SingleOrg\" || auth == \"MultiOrg\")"
+    },
     "WindowsAuth": {
       "type": "computed",
       "value": "(auth == \"Windows\")"
+    },
+    "MultiOrgAuth": {
+      "type": "computed",
+      "value": "(auth == \"MultiOrg\")"
+    },
+    "SingleOrgAuth": {
+      "type": "computed",
+      "value": "(auth == \"SingleOrg\")"
     },
     "IndividualLocalAuth": {
       "type": "computed",
@@ -169,27 +298,31 @@
     },
     "IndividualAuth": {
       "type": "computed",
-      "value": "(auth == \"Individual\")"
+      "value": "(auth == \"Individual\" || auth == \"IndividualB2C\")"
+    },
+    "IndividualB2CAuth": {
+      "type": "computed",
+      "value": "(auth == \"IndividualB2C\")"
     },
     "NoAuth": {
       "type": "computed",
-      "value": "(!(IndividualAuth || WindowsAuth))"
+      "value": "(!(IndividualAuth || OrganizationalAuth || WindowsAuth))"
     },
     "RequiresHttps": {
       "type": "computed",
-      "value": "(IndividualAuth || !NoHttps)"
+      "value": "(OrganizationalAuth || IndividualAuth || !NoHttps)"
     },
     "NoHttps": {
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
-      "description": "Whether to turn off HTTPS. This option only applies if Individual isn't used for --auth."
+      "description": "Whether to turn off HTTPS. This option only applies if Individual, IndividualB2C, SingleOrg, or MultiOrg aren't used for --auth."
     },
     "UseLocalDB": {
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
-      "description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual is specified."
+      "description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual or --auth IndividualB2C is specified."
     },
     "RazorRuntimeCompilation": {
       "type": "parameter",
@@ -217,6 +350,33 @@
       "parameters": {
         "format": "yyyy"
       }
+    },
+    "CalledApiUrl": {
+        "type": "parameter",
+        "datatype": "string",
+        "replaces": "[WebApiUrl]",
+        "defaultValue" : "https://graph.microsoft.com/v1.0/me",
+        "description": "URL of the API to call from the web app."
+    },
+    "CallsMicrosoftGraph": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "false",
+        "description": "Specifies if the web app calls Microsoft Graph."
+    },
+    "CalledApiScopes": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces" :  "user.read",
+      "description": "Scopes to request to call the API from the web app."
+    },
+    "GenerateApi": {
+        "type": "computed",
+        "value": "(CalledApiUrl != \"https://graph.microsoft.com/v1.0/me\" || CalledApiScopes != \"user.read\")"
+    },
+    "GenerateApiOrGraph": {
+        "type": "computed",
+        "value": "(GenerateApi || CallsMicrosoftGraph)"
     }
   },
   "primaryOutputs": [
@@ -226,6 +386,19 @@
   ],
   "defaultName": "WebApplication",
   "postActions": [
+    {
+      "condition": "(CallsMicrosoftGraph)",
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+       "description": "Adds Microsoft Graph package.",
+      "manualInstructions": [
+      ],
+      "args": {
+        "referenceType": "package",
+        "reference": "Microsoft.Graph",
+        "version": "3.8.0"
+      },
+     "continueOnError": true
+    },
     {
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages required by this project.",

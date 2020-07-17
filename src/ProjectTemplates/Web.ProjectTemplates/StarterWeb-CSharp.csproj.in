@@ -13,9 +13,10 @@
     <None Update="app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
   </ItemGroup>
   <!--#endif -->
-  <!--#if (IndividualLocalAuth || RazorRuntimeCompilation) -->
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebPackageVersion}" />
+    <PackageReference Include="Microsoft.Identity.Web.UI" Version="${MicrosoftIdentityWebUIPackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="${MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="${MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="${MicrosoftAspNetCoreIdentityUIPackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
@@ -24,6 +25,5 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="${MicrosoftEntityFrameworkCoreToolsPackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="${MicrosoftAspNetCoreMvcRazorRuntimeCompilationPackageVersion}" Condition="'$(RazorRuntimeCompilation)' == 'True'" />
   </ItemGroup>
-  <!--#endif-->
 
 </Project>

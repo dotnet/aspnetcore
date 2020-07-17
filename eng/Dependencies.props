@@ -167,6 +167,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Libuv" Version="$(LibuvPackageVersion)" />
     <LatestPackageReference Include="MessagePack" Version="$(MessagePackPackageVersion)" />
     <LatestPackageReference Include="MessagePackAnalyzer" Version="$(MessagePackPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Identity.Web" Version="$(MicrosoftIdentityWebPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Identity.Web.UI" Version="$(MicrosoftIdentityWebUIPackageVersion)" />
     <LatestPackageReference Include="Mono.Cecil" Version="$(MonoCecilPackageVersion)" />
     <LatestPackageReference Include="Moq" Version="$(MoqPackageVersion)" />
     <LatestPackageReference Include="Newtonsoft.Json.Bson" Version="$(NewtonsoftJsonBsonPackageVersion)" />

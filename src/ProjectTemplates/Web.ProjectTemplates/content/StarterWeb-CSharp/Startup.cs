@@ -2,6 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+#if (OrganizationalAuth || IndividualB2CAuth)
+using Microsoft.AspNetCore.Authentication;
+#endif
+#if (OrganizationalAuth)
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
+using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
+#if (MultiOrgAuth)
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+#endif
+using Microsoft.AspNetCore.Authorization;
+#endif
+#if (IndividualB2CAuth)
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
+using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
+#endif
 using Microsoft.AspNetCore.Builder;
 #if (IndividualLocalAuth)
 using Microsoft.AspNetCore.Identity;
@@ -11,6 +28,9 @@ using Microsoft.AspNetCore.Hosting;
 #if (RequiresHttps)
 using Microsoft.AspNetCore.HttpsPolicy;
 #endif
+#if (OrganizationalAuth)
+using Microsoft.AspNetCore.Mvc.Authorization;
+#endif
 #if (IndividualLocalAuth)
 using Microsoft.EntityFrameworkCore;
 using Company.WebApplication1.Data;
@@ -18,6 +38,15 @@ using Company.WebApplication1.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+#if(MultiOrgAuth)
+using Microsoft.IdentityModel.Tokens;
+#endif
+#if (GenerateApiOrGraph)
+using Company.WebApplication1.Services;
+#endif
+#if (CallsMicrosoftGraph)
+using Microsoft.Graph;
+#endif
 
 namespace Company.WebApplication1
 {
@@ -44,8 +73,50 @@ namespace Company.WebApplication1
 #endif
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+#elif (OrganizationalAuth)
+            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAd")
+#if (GenerateApiOrGraph)
+                    .AddMicrosoftWebAppCallsWebApi(Configuration, 
+                                                   "AzureAd")
+                    .AddInMemoryTokenCaches();
+#else
+                    ;
 #endif
+#if (GenerateApi)
+            services.AddDownstreamWebApiService(Configuration);
+#endif
+#if (CallsMicrosoftGraph)
+            services.AddMicrosoftGraph(Configuration.GetValue<string>("CalledApi:CalledApiScopes")?.Split(' '),
+                                       Configuration.GetValue<string>("CalledApi:CalledApiUrl"));
+#endif
+#elif (IndividualB2CAuth)
+            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAdB2C")
+#if (GenerateApi)
+                    .AddMicrosoftWebAppCallsWebApi(Configuration, 
+                                                   "AzureAdB2C")
+                    .AddInMemoryTokenCaches();
+
+            services.AddDownstreamWebApiService(Configuration);
+#else
+                    ;
+#endif
+#endif
+#if (OrganizationalAuth)
+
+            services.AddControllersWithViews(options =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
+            });
+#else
             services.AddControllersWithViews();
+#endif
+#if (OrganizationalAuth || IndividualAuth)
+           services.AddRazorPages()
+                   .AddMicrosoftIdentityUI();
+#endif
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -73,7 +144,7 @@ namespace Company.WebApplication1
 
             app.UseRouting();
 
-#if (IndividualAuth)
+#if (OrganizationalAuth || IndividualAuth)
             app.UseAuthentication();
 #endif
             app.UseAuthorization();
@@ -83,7 +154,7 @@ namespace Company.WebApplication1
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
-#if (IndividualAuth)
+#if (OrganizationalAuth || IndividualAuth)
                 endpoints.MapRazorPages();
 #endif
             });
