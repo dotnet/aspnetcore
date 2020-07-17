@@ -83,46 +83,40 @@ namespace Microsoft.AspNetCore.Components.Routing
             Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
         }
 
-        [Theory]
-        [InlineData("{*p}")]
-        [InlineData("{**p}")]
-        public void Parse_SingleCatchAllParameter(string template)
+        [Fact]
+        public void Parse_SingleCatchAllParameter()
         {
             // Arrange
             var expected = new ExpectedTemplateBuilder().Parameter("p");
 
             // Act
-            var actual = TemplateParser.ParseTemplate(template);
+            var actual = TemplateParser.ParseTemplate("{*p}");
 
             // Assert
             Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
         }
 
-        [Theory]
-        [InlineData("awesome/wow/{*p}")]
-        [InlineData("awesome/wow/{**p}")]
-        public void Parse_MixedLiteralAndCatchAllParameter(string template)
+        [Fact]
+        public void Parse_MixedLiteralAndCatchAllParameter()
         {
             // Arrange
             var expected = new ExpectedTemplateBuilder().Literal("awesome").Literal("wow").Parameter("p");
 
             // Act
-            var actual = TemplateParser.ParseTemplate(template);
+            var actual = TemplateParser.ParseTemplate("awesome/wow/{*p}");
 
             // Assert
             Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
         }
 
-        [Theory]
-        [InlineData("awesome/{p1}/{*p2}")]
-        [InlineData("awesome/{p1}/{**p2}")]
-        public void Parse_MixedLiteralParameterAndCatchAllParameter(string template)
+        [Fact]
+        public void Parse_MixedLiteralParameterAndCatchAllParameter()
         {
             // Arrange
             var expected = new ExpectedTemplateBuilder().Literal("awesome").Parameter("p1").Parameter("p2");
 
             // Act
-            var actual = TemplateParser.ParseTemplate(template);
+            var actual = TemplateParser.ParseTemplate("awesome/{p1}/{*p2}");
 
             // Assert
             Assert.Equal(expected, actual, RouteTemplateTestComparer.Instance);
@@ -208,6 +202,16 @@ namespace Microsoft.AspNetCore.Components.Routing
             var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("/test/{a?}/{b}"));
 
             var expectedMessage = "Invalid template 'test/{a?}/{b}'. Non-optional parameters or literal routes cannot appear after optional parameters.";
+
+            Assert.Equal(expectedMessage, ex.Message);
+        }
+
+        [Fact]
+        public void InvalidTemplate_CatchAllParamWithMultipleAsterisks()
+        {
+            var ex = Assert.Throws<InvalidOperationException>(() => TemplateParser.ParseTemplate("/test/{a}/{**b}"));
+
+            var expectedMessage = "Invalid template '/test/{a}/{**b}'. A catch-all parameter may only have one '*' at the beginning of the segment.";
 
             Assert.Equal(expectedMessage, ex.Message);
         }

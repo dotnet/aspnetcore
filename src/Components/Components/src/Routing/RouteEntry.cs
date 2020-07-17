@@ -37,18 +37,11 @@ namespace Microsoft.AspNetCore.Components.Routing
             // PathSegments:    /foo/bar/one/two/three
             if (Template.ContainsCatchAllSegment && context.Segments.Length >= Template.Segments.Length)
             {
-                if(Template.Segments.Last().EncodeSlashes)
-                {
-                    catchAllValue = string.Join("%2F", context.Segments[Range.StartAt(Template.Segments.Length - 1)]);
-                }
-                else
-                {
-                    catchAllValue = string.Join('/', context.Segments[Range.StartAt(Template.Segments.Length - 1)]);
-                }
+                catchAllValue = string.Join('/', context.Segments[Range.StartAt(Template.Segments.Length - 1)]);
+            }
             // If there are no optional segments on the route and the length of the route
             // and the template do not match, then there is no chance of this matching and
             // we can bail early.
-            }
             else if (Template.OptionalSegmentsCount == 0 && Template.Segments.Length != context.Segments.Length)
             {
                 return;

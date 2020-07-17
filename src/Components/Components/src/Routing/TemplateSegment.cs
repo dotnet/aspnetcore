@@ -16,11 +16,14 @@ namespace Microsoft.AspNetCore.Components.Routing
 
             if (IsCatchAll)
             {
-                // *  > encodes slashes
-                // ** > doesn't encode slashes
-                EncodeSlashes = !segment.StartsWith("**");
+                // Only one '*' currently allowed
+                Value = segment.Substring(1);
 
-                Value = segment.TrimStart('*');
+                var invalidCharacter = Value.IndexOf('*');
+                if (Value.IndexOf('*') != -1)
+                {
+                    throw new InvalidOperationException($"Invalid template '{template}'. A catch-all parameter may only have one '*' at the beginning of the segment.");
+                }
             }
             else
             {
@@ -74,10 +77,10 @@ namespace Microsoft.AspNetCore.Components.Routing
                 }
 
                 // Moving the check for this here instead of TemplateParser so we can allow catch-all.
-                var invalidCharacter = Value.IndexOf('*');
-                if (invalidCharacter != -1)
+                // We checked for '*' up above specifically for catch-all segments, this one checks for all others
+                if (Value.IndexOf('*') != -1)
                 {
-                    throw new InvalidOperationException($"Invalid template '{template}'. The character '{segment[invalidCharacter]}' in parameter segment '{{{segment}}}' is not allowed.");
+                    throw new InvalidOperationException($"Invalid template '{template}'. The character '*' in parameter segment '{{{segment}}}' is not allowed.");
                 }
             }
         }
@@ -91,9 +94,6 @@ namespace Microsoft.AspNetCore.Components.Routing
         public bool IsOptional { get;  }
 
         public bool IsCatchAll { get; }
-
-        // When true, slashes in a catchAll parameter will be encoded.
-        public bool EncodeSlashes { get; }
 
         public RouteConstraint[] Constraints { get; }
 

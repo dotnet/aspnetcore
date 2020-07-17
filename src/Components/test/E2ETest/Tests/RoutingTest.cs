@@ -110,23 +110,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void CanArriveAtPageWithCatchAllParameterWithEscapedSlashes()
+        public void CanArriveAtPageWithCatchAllParameter()
         {
-            SetUrlViaPushState("/WithCatchAllParameterWithEscapedSlashes/life/the/universe/and/everything%20%3D%2042");
+            SetUrlViaPushState("/WithCatchAllParameter/life/the/universe/and/everything%20%3D%2042");
 
             var app = Browser.MountTestComponent<TestRouter>();
-            var expected = $"The answer: life%2Fthe%2Funiverse%2Fand%2Feverything%20%3D%2042";
-
-            Assert.Equal(expected, app.FindElement(By.Id("test-info")).Text);
-        }
-
-        [Fact]
-        public void CanArriveAtPageWithCatchAllParameterWithoutEscapedSlashes()
-        {
-            SetUrlViaPushState("/WithCatchAllParameterWithoutEscapedSlashes/life/the/universe/and/everything%20%3D%2042");
-
-            var app = Browser.MountTestComponent<TestRouter>();
-            var expected = $"The answer: life/the/universe/and/everything%20%3D%2042";
+            var expected = $"The answer: life/the/universe/and/everything = 42";
 
             Assert.Equal(expected, app.FindElement(By.Id("test-info")).Text);
         }

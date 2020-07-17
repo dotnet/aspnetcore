@@ -228,29 +228,11 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
 
         [Theory]
         [InlineData("/blog/value1", "value1")]
-        [InlineData("/blog/value1/test", "value1%2Ftest")]
-        public void CanMatchCatchAllParameterTemplate_WhenEncodeSlashes_IsTrue(string path, string expectedValue)
+        [InlineData("/blog/value1/foo%20bar", "value1/foo bar")]
+        public void CanMatchCatchAllParameterTemplate(string path, string expectedValue)
         {
             // Arrange
             var routeTable = new TestRouteTableBuilder().AddRoute("/blog/{*parameter}").Build();
-            var context = new RouteContext(path);
-
-            // Act
-            routeTable.Route(context);
-
-            // Assert
-            Assert.NotNull(context.Handler);
-            Assert.Single(context.Parameters, p => p.Key == "parameter" && (string)p.Value == expectedValue);
-        }
-
-
-        [Theory]
-        [InlineData("/blog/value1", "value1")]
-        [InlineData("/blog/value1/test", "value1/test")]
-        public void CanMatchCatchAllParameterTemplate_WhenEncodeSlashes_IsFalse(string path, string expectedValue)
-        {
-            // Arrange
-            var routeTable = new TestRouteTableBuilder().AddRoute("/blog/{**parameter}").Build();
             var context = new RouteContext(path);
 
             // Act
@@ -287,7 +269,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         public void CanMatchTemplateWithMultipleParametersAndCatchAllParameter()
         {
             // Arrange
-            var routeTable = new TestRouteTableBuilder().AddRoute("/{some}/awesome/{route}/with/{**catchAll}").Build();
+            var routeTable = new TestRouteTableBuilder().AddRoute("/{some}/awesome/{route}/with/{*catchAll}").Build();
             var context = new RouteContext("/an/awesome/path/with/some/catch/all/stuff");
 
             var expectedParameters = new Dictionary<string, object>
