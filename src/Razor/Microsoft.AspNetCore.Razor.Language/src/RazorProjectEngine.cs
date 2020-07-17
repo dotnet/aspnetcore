@@ -119,6 +119,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 InheritsDirective.Register(builder);
                 NamespaceDirective.Register(builder);
                 AttributeDirective.Register(builder);
+                AccessibilityModificatorDirectives.Register(builder);
 
                 AddComponentFeatures(builder, configuration.LanguageVersion);
             }
