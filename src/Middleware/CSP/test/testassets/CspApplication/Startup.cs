@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -29,6 +30,10 @@ namespace CspApplication
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // CSP configuration. Must come first because other middleware might skip any following middleware.
+            app.UseCsp(policyBuilder => policyBuilder.WithCspMode(CspMode.REPORTING)
+                .WithReportingUri("/csp"));
+
             // Not sure how many of these we absolutely need to do a basic templated HTML page with a reporting endpoint.
             app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
@@ -38,15 +43,12 @@ namespace CspApplication
             {
                 endpoints.MapRazorPages();
             });
-
-            // CSP configuration.
-            app.UseCsp(policyBuilder => policyBuilder.WithCspMode(CspMode.REPORTING)
-                .WithReportingUri("/csp"));
         }
 
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
+                .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseKestrel()
                 .UseIISIntegration()
                 .UseStartup<Startup>()
