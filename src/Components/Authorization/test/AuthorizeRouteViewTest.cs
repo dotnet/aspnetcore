@@ -126,7 +126,6 @@ namespace Microsoft.AspNetCore.Components.Authorization
             var routeData = new RouteData(typeof(TestPageRequiringAuthorization), EmptyParametersDictionary);
             _testAuthorizationService.NextResult = AuthorizationResult.Failed();
 
-
             // Act
             _renderer.RenderRootComponent(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
             {
