@@ -25,16 +25,6 @@
       "allowUnsecured": true
     },
     {
-      "auth": "Individual",
-      "authenticationType": "IndividualAuth",
-      "b2cAuthenticationOptions": "CloudExisting"
-    },
-    {
-      "auth": "SingleOrg",
-      "authenticationType": "OrgAuth",
-      "orgAuthenticationOptions": "SSO"
-    },
-    {
       "auth": "Windows",
       "authenticationType": "WindowsAuth"
     }

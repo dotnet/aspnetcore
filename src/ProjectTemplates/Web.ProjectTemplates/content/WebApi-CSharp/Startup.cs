@@ -44,9 +44,6 @@ namespace Company.WebApplication1
 
             app.UseRouting();
 
-#if (IndividualAuth)
-            app.UseAuthentication();
-#endif
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
