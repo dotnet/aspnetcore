@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         public void DefaultUniqueClaimTypes_NotPresent_SerializesAllClaimTypes()
         {
             var identity = new ClaimsIdentity("someAuthentication");
-            identity.AddClaim(new Claim(ClaimTypes.Email, "someone@antifrogery.com"));
+            identity.AddClaim(new Claim(ClaimTypes.Email, "someone@antiforgery.com"));
             identity.AddClaim(new Claim(ClaimTypes.GivenName, "some"));
             identity.AddClaim(new Claim(ClaimTypes.Surname, "one"));
             identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, string.Empty));
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var claimsIdentity = (ClaimsIdentity)identity;
 
             // Act
-            var identiferParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters(new ClaimsIdentity[] { claimsIdentity })
+            var identiferParameters = DefaultClaimUidExtractor.GetUniqueIdentifierParameters(new ClaimsIdentity[] { claimsIdentity })!
                                                               .ToArray();
             var claims = claimsIdentity.Claims.ToList();
             claims.Sort((a, b) => string.Compare(a.Type, b.Type, StringComparison.Ordinal));

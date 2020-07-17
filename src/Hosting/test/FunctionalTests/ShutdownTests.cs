@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
         public ShutdownTests(ITestOutputHelper output) : base(output) { }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23610")]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ShutdownTestRun()
@@ -32,6 +33,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             await ExecuteShutdownTest(nameof(ShutdownTestRun), "Run");
         }
 
+        [QuarantinedTest]
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
@@ -46,7 +48,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger(testName);
 
-// https://github.com/aspnet/AspNetCore/issues/8247
+// https://github.com/dotnet/aspnetcore/issues/8247
 #pragma warning disable 0618
                 var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "testassets",
                     "Microsoft.AspNetCore.Hosting.TestSites");
@@ -59,7 +61,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     RuntimeArchitecture.x64)
                 {
                     EnvironmentName = "Shutdown",
-                    TargetFramework = Tfm.NetCoreApp31,
+                    TargetFramework = Tfm.Net50,
                     ApplicationType = ApplicationType.Portable,
                     PublishApplicationBeforeDeployment = true,
                     StatusMessagesEnabled = false
@@ -133,7 +135,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 
         private static void WaitForExitOrKill(Process process)
         {
-            process.WaitForExit(1000);
+            process.WaitForExit(5 * 1000);
             if (!process.HasExited)
             {
                 process.Kill();

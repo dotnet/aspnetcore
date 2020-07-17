@@ -1,15 +1,18 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+#nullable enable
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Internal
 {
-    internal struct CopyOnWriteDictionaryHolder<TKey, TValue>
+    internal struct CopyOnWriteDictionaryHolder<TKey, TValue> where TKey : notnull
     {
         private readonly Dictionary<TKey, TValue> _source;
-        private Dictionary<TKey, TValue> _copy;
+        private Dictionary<TKey, TValue>? _copy;
 
         public CopyOnWriteDictionaryHolder(Dictionary<TKey, TValue> source)
         {
@@ -128,7 +131,7 @@ namespace Microsoft.Extensions.Internal
             return WriteDictionary.Remove(key);
         }
 
-        public bool TryGetValue(TKey key, out TValue value)
+        public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
         {
             return ReadDictionary.TryGetValue(key, out value);
         }

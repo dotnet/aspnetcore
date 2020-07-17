@@ -18,6 +18,12 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         /// <summary>
         /// The branch taken for a positive match.
         /// </summary>
-        public RequestDelegate Branch { get; set; }
+        public RequestDelegate? Branch { get; set; }
+
+        /// <summary>
+        /// If false, matched path would be removed from Request.Path and added to Request.PathBase
+        /// Defaults to false.
+        /// </summary>
+        public bool PreserveMatchedPathSegment { get; set; }
     }
 }

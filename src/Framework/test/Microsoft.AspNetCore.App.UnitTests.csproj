@@ -3,9 +3,10 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
-    <!-- https://github.com/aspnet/AspNetCore/issues/7939: This unit test requires the shared framework be available in Helix. -->
-    <BuildHelixPayload>false</BuildHelixPayload>
     <VerifyAncmBinary Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'">true</VerifyAncmBinary>
+    <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
+    <TestDependsOnAspNetRef>true</TestDependsOnAspNetRef>
+    <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
 
   <ItemGroup>
@@ -87,6 +88,28 @@
       <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
         <_Parameter1>TargetingPackDependencies</_Parameter1>
         <_Parameter2>@(_TargetingPackDependencies->'%(FileName)')</_Parameter2>
+      </AssemblyAttribute>
+
+      <AspNetCoreTargetingPackDependencies
+        Include="@(_TargetingPackDependencies)"
+        Condition="'%(_TargetingPackDependencies.ReferenceSourceTarget)' == 'ProjectReference'" />
+      <RuntimeTargetingPackDependencies
+        Include="@(_TargetingPackDependencies)"
+        Exclude="@(AspNetCoreTargetingPackDependencies)" />
+
+      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+        <_Parameter1>AspNetCoreTargetingPackDependencies</_Parameter1>
+        <_Parameter2>@(AspNetCoreTargetingPackDependencies->'%(FileName)')</_Parameter2>
+      </AssemblyAttribute>
+
+      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+        <_Parameter1>RuntimeTargetingPackDependencies</_Parameter1>
+        <_Parameter2>@(RuntimeTargetingPackDependencies->'%(FileName)')</_Parameter2>
+      </AssemblyAttribute>
+
+      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+        <_Parameter1>ReferencePackSharedFxVersion</_Parameter1>
+        <_Parameter2>$(ReferencePackSharedFxVersion)</_Parameter2>
       </AssemblyAttribute>
 
       <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">

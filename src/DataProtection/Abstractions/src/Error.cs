@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.DataProtection
 {
     internal static class Error
     {
-        public static CryptographicException CryptCommon_GenericError(Exception inner = null)
+        public static CryptographicException CryptCommon_GenericError(Exception? inner = null)
         {
             return new CryptographicException(Resources.CryptCommon_GenericError, inner);
         }

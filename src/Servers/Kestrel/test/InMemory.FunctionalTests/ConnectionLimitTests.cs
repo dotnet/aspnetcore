@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -13,7 +14,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Server.Kestrel.Tests;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
@@ -23,12 +23,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task ResetsCountWhenConnectionClosed()
         {
-            var requestTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var releasedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var releasedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var lockedTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             var counter = new EventRaisingResourceCounter(ResourceCounter.Quota(1));
             counter.OnLock += (s, e) => lockedTcs.TrySetResult(e);
-            counter.OnRelease += (s, e) => releasedTcs.TrySetResult(null);
+            counter.OnRelease += (s, e) => releasedTcs.TrySetResult();
 
             await using (var server = CreateServerWithMaxConnections(async context =>
             {
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.SendEmptyGetAsKeepAlive(); ;
                     await connection.Receive("HTTP/1.1 200 OK");
                     Assert.True(await lockedTcs.Task.DefaultTimeout());
-                    requestTcs.TrySetResult(null);
+                    requestTcs.TrySetResult();
                 }
             }
 
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task RejectsConnectionsWhenLimitReached()
         {
             const int max = 10;
-            var requestTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = CreateServerWithMaxConnections(async context =>
             {
@@ -136,20 +136,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         }
                     }
 
-                    requestTcs.TrySetResult(null);
+                    requestTcs.TrySetResult();
                 }
             }
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/KestrelHttpServer/issues/2282", FlakyOn.AzP.macOS)]
         public async Task ConnectionCountingReturnsToZero()
         {
             const int count = 100;
             var opened = 0;
             var closed = 0;
-            var openedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var closedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var openedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var closedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var counter = new EventRaisingResourceCounter(ResourceCounter.Quota(uint.MaxValue));
 
@@ -157,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 if (e && Interlocked.Increment(ref opened) >= count)
                 {
-                    openedTcs.TrySetResult(null);
+                    openedTcs.TrySetResult();
                 }
             };
 
@@ -165,7 +164,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 if (Interlocked.Increment(ref closed) >= count)
                 {
-                    closedTcs.TrySetResult(null);
+                    closedTcs.TrySetResult();
                 }
             };
 
@@ -211,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
             listenOptions.Use(next =>
             {
-                var middleware = new ConnectionLimitMiddleware(next, concurrentConnectionCounter, serviceContext.Log);
+                var middleware = new ConnectionLimitMiddleware<ConnectionContext>(c => next(c), concurrentConnectionCounter, serviceContext.Log);
                 return middleware.OnConnectionAsync;
             });
 

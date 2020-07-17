@@ -74,12 +74,7 @@ namespace Microsoft.AspNetCore.Analyzers
                 return false;
             }
 
-            if (symbol.Parameters[0].Type != symbols.IServiceCollection)
-            {
-                return false;
-            }
-
-            return true;
+            return SymbolEqualityComparer.Default.Equals(symbol.Parameters[0].Type, symbols.IServiceCollection);
         }
 
         // Based on StartupLoader. The philosophy is that we want to do analysis only on things
@@ -114,7 +109,7 @@ namespace Microsoft.AspNetCore.Analyzers
             // IApplicationBuilder can appear in any parameter, but must appear.
             for (var i = 0; i < symbol.Parameters.Length; i++)
             {
-                if (symbol.Parameters[i].Type == symbols.IApplicationBuilder)
+                if (SymbolEqualityComparer.Default.Equals(symbol.Parameters[i].Type, symbols.IApplicationBuilder))
                 {
                     return true;
                 }
@@ -138,6 +133,8 @@ namespace Microsoft.AspNetCore.Analyzers
                 throw new ArgumentNullException(nameof(symbol));
             }
 
+            // UseSignalR has been removed in 5.0, but we should probably still check for it in this analyzer in case the user
+            // installs it into a pre-5.0 app.
             if (string.Equals(symbol.Name, SymbolNames.SignalRAppBuilderExtensions.UseSignalRMethodName, StringComparison.Ordinal) ||
                 string.Equals(symbol.Name, SymbolNames.HubEndpointRouteBuilderExtensions.MapHubMethodName, StringComparison.Ordinal) ||
                 string.Equals(symbol.Name, SymbolNames.ComponentEndpointRouteBuilderExtensions.MapBlazorHubMethodName, StringComparison.Ordinal))

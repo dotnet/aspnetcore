@@ -1,0 +1,18 @@
+RazorDocument - [0..21)::21 - [@tagHelperPrefix "Foo]
+    MarkupBlock - [0..21)::21
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..21)::21
+            RazorDirective - [0..21)::21
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                RazorDirectiveBody - [1..21)::20
+                    RazorMetaCode - [1..16)::15 - Gen<None> - SpanEditHandler;Accepts:None
+                        Identifier;[tagHelperPrefix];
+                    CSharpCodeBlock - [16..21)::5
+                        MarkupTextLiteral - [16..17)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:None
+                            Whitespace;[ ];
+                        CSharpStatementLiteral - [17..21)::4 - ["Foo] - Gen<TagHelperPrefix:{"Foo;"Foo} [RZ1000(17:0,17 [1] ), RZ1019(17:0,17 [4] ), RZ1020(17:0,17 [4] )]> - SpanEditHandler;Accepts:AnyExceptNewline
+                            StringLiteral;["Foo];RZ1000(17:0,17 [1] )
+        MarkupTextLiteral - [21..21)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

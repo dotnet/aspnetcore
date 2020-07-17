@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         private static Task ClearCacheHeaders(object state)
         {
             var headers = ((HttpResponse)state).Headers;
-            headers[HeaderNames.CacheControl] = "no-cache";
+            headers[HeaderNames.CacheControl] = "no-cache,no-store";
             headers[HeaderNames.Pragma] = "no-cache";
             headers[HeaderNames.Expires] = "-1";
             headers.Remove(HeaderNames.ETag);

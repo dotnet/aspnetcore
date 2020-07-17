@@ -2,14 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Text.Json;
+using System.Net;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Ignitor;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
-using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
@@ -19,11 +16,38 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19666")]
     public class ComponentHubReliabilityTest : IgnitorTest<ServerStartup>
     {
         public ComponentHubReliabilityTest(BasicTestAppServerSiteFixture<ServerStartup> serverFixture, ITestOutputHelper output)
             : base(serverFixture, output)
         {
+        }
+
+        protected override async Task InitializeAsync()
+        {
+            await base.InitializeAsync();
+
+            var rootUri = ServerFixture.RootUri;
+            var baseUri = new Uri(rootUri, "/subdir");
+            var client = new HttpClient();
+            for (var i = 0; i < 10; i++)
+            {
+                try
+                {
+                    var response = await client.GetAsync(baseUri + "/_negotiate");
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        break;
+                    }
+                }
+                catch
+                {
+                    await Task.Delay(500);
+                    throw;
+                }
+            }
+
         }
 
         [Fact]

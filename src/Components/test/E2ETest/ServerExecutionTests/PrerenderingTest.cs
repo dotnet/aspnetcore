@@ -45,6 +45,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        public void PrerenderingWaitsForAsyncDisposableComponents()
+        {
+            Navigate("/prerendered/prerendered-async-disposal");
+
+            // Prerendered output shows "not connected"
+            Browser.Equal("After async disposal", () => Browser.FindElement(By.Id("disposal-message")).Text);
+        }
+
+        [Fact]
         public void CanUseJSInteropFromOnAfterRenderAsync()
         {
             Navigate("/prerendered/prerendered-interop");
@@ -58,6 +67,18 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Once connected, we can
             Browser.Equal("Hello from interop call", () => Browser.FindElement(By.Id("val-get-by-interop")).Text);
             Browser.Equal("Hello from interop call", () => Browser.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
+        }
+
+        [Fact]
+        public void IsCompatibleWithLazyLoadWebAssembly()
+        {
+            Navigate("/prerendered/WithLazyAssembly");
+
+            var button = Browser.FindElement(By.Id("use-package-button"));
+
+            button.Click();
+
+            AssertLogDoesNotContainCriticalMessages("Could not load file or assembly 'Newtonsoft.Json");
         }
 
         [Fact]
@@ -119,6 +140,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         private void BeginInteractivity()
         {
             Browser.FindElement(By.Id("load-boot-script")).Click();
+        }
+
+        private void AssertLogDoesNotContainCriticalMessages(params string[] messages)
+        {
+            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+            foreach (var message in messages)
+            {
+                Assert.DoesNotContain(log, entry =>
+                {
+                    return entry.Level == LogLevel.Severe
+                    && entry.Message.Contains(message);
+                });
+            }
         }
 
         private void SignInAs(string userName, string roles, bool useSeparateTab = false) =>

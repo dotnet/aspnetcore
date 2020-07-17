@@ -1,21 +1,21 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Http.Headers;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
     internal static class Constants
     {
-        public static readonly ProductInfoHeaderValue UserAgentHeader;
+        public const string UserAgent = "User-Agent";
+        public static readonly string UserAgentHeader;
 
         static Constants()
         {
-            var userAgent = "Microsoft.AspNetCore.Http.Connections.Client";
-
             var assemblyVersion = typeof(Constants)
                 .Assembly
                 .GetCustomAttributes<AssemblyInformationalVersionAttribute>()
@@ -23,14 +23,68 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             Debug.Assert(assemblyVersion != null);
 
-            // assembly version attribute should always be present
-            // but in case it isn't then don't include version in user-agent
-            if (assemblyVersion != null)
+            var runtime = ".NET";
+            var runtimeVersion = RuntimeInformation.FrameworkDescription;
+
+            UserAgentHeader = ConstructUserAgent(typeof(Constants).Assembly.GetName().Version, assemblyVersion?.InformationalVersion, GetOS(), runtime, runtimeVersion);
+        }
+
+        private static string GetOS()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                userAgent += "/" + assemblyVersion.InformationalVersion;
+                return "Windows NT";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return "macOS";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return "Linux";
+            }
+            else
+            {
+                return "";
+            }
+        }
+
+        public static string ConstructUserAgent(Version version, string detailedVersion, string os, string runtime, string runtimeVersion)
+        {
+            var userAgent = $"Microsoft SignalR/{version.Major}.{version.Minor} (";
+
+            if (!string.IsNullOrEmpty(detailedVersion))
+            {
+                userAgent += $"{detailedVersion}";
+            }
+            else
+            {
+                userAgent += "Unknown Version";
             }
 
-            UserAgentHeader = ProductInfoHeaderValue.Parse(userAgent);
+            if (!string.IsNullOrEmpty(os))
+            {
+                userAgent += $"; {os}";
+            }
+            else
+            {
+                userAgent += "; Unknown OS";
+            }
+
+            userAgent += $"; {runtime}";
+
+            if (!string.IsNullOrEmpty(runtimeVersion))
+            {
+                userAgent += $"; {runtimeVersion}";
+            }
+            else
+            {
+                userAgent += "; Unknown Runtime Version";
+            }
+
+            userAgent += ")";
+
+            return userAgent;
         }
     }
 }

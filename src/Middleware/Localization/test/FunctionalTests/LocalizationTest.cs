@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Net;
@@ -8,12 +8,22 @@ using System.Threading.Tasks;
 using LocalizationWebsite;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Localization.FunctionalTests
 {
     public class LocalizationTest
     {
+        [Fact]
+        public Task Localization_ContentLanguageHeader()
+        {
+            return RunTest(
+                typeof(StartupContentLanguageHeader),
+                "ar-YE",
+                "True ar-YE");
+        }
+
         [Fact]
         public Task Localization_CustomCulture()
         {
@@ -88,8 +98,17 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
 
         private async Task RunTest(Type startupType, string culture, string expected)
         {
-            var webHostBuilder = new WebHostBuilder().UseStartup(startupType);
-            var testHost = new TestServer(webHostBuilder);
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .UseStartup(startupType);
+                }).Build();
+
+            await host.StartAsync();
+
+            var testHost = host.GetTestServer();
 
             var client = testHost.CreateClient();
             var request = new HttpRequestMessage();
@@ -100,6 +119,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expected, await response.Content.ReadAsStringAsync());
-    }
+        }
     }
 }

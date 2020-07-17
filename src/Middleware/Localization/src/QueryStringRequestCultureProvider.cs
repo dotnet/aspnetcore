@@ -64,8 +64,7 @@ namespace Microsoft.AspNetCore.Localization
                 // Value for culture but not for UI culture so default to culture value for both
                 queryUICulture = queryCulture;
             }
-
-            if (queryCulture == null && queryUICulture != null)
+            else if (queryCulture == null && queryUICulture != null)
             {
                 // Value for UI culture but not for culture so default to UI culture value for both
                 queryCulture = queryUICulture;

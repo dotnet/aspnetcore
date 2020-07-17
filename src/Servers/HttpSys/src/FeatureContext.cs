@@ -35,7 +35,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpRequestIdentifierFeature,
         IHttpMaxRequestBodySizeFeature,
         IHttpBodyControlFeature,
-        IHttpSysRequestInfoFeature
+        IHttpSysRequestInfoFeature,
+        IHttpResponseTrailersFeature,
+        IHttpResetFeature
     {
         private RequestContext _requestContext;
         private IFeatureCollection _features;
@@ -63,6 +65,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private PipeWriter _pipeWriter;
         private bool _bodyCompleted;
         private IHeaderDictionary _responseHeaders;
+        private IHeaderDictionary _responseTrailers;
 
         private Fields _initializedFields;
 
@@ -85,7 +88,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _query = Request.QueryString;
             _rawTarget = Request.RawUrl;
             _scheme = Request.Scheme;
-            _user = _requestContext.User;
+
+            if (requestContext.Server.Options.Authentication.AutomaticAuthentication)
+            {
+                _user = _requestContext.User;
+            }
 
             _responseStream = new ResponseStream(requestContext.Response.Body, OnResponseStart);
             _responseHeaders = Response.Headers;
@@ -174,23 +181,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (IsNotInitialized(Fields.Protocol))
                 {
-                    var protocol = Request.ProtocolVersion;
-                    if (protocol == Constants.V2)
-                    {
-                        _httpProtocolVersion = "HTTP/2";
-                    }
-                    else if (protocol == Constants.V1_1)
-                    {
-                        _httpProtocolVersion = "HTTP/1.1";
-                    }
-                    else if (protocol == Constants.V1_0)
-                    {
-                        _httpProtocolVersion = "HTTP/1.0";
-                    }
-                    else
-                    {
-                        _httpProtocolVersion = "HTTP/" + protocol.ToString(2);
-                    }
+                    _httpProtocolVersion = HttpProtocol.GetHttpProtocol(Request.ProtocolVersion);
                     SetInitialized(Fields.Protocol);
                 }
                 return _httpProtocolVersion;
@@ -342,7 +333,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (IsNotInitialized(Fields.ClientCertificate))
             {
-                _clientCert = await Request.GetClientCertificateAsync(cancellationToken);
+                var method = _requestContext.Server.Options.ClientCertificateMethod;
+                if (method != ClientCertificateMethod.NoCertificate)
+                {
+                    // Check if a cert was already available on the connection.
+                    _clientCert = Request.ClientCertificate;
+                }
+
+                if (_clientCert == null && method == ClientCertificateMethod.AllowRenegotation)
+                {
+                    _clientCert = await Request.GetClientCertificateAsync(cancellationToken);
+                }
+
                 SetInitialized(Fields.ClientCertificate);
             }
             return _clientCert;
@@ -356,6 +358,24 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal ITlsHandshakeFeature GetTlsHandshakeFeature()
         {
             return Request.IsHttps ? this : null;
+        }
+
+        internal IHttpResponseTrailersFeature GetResponseTrailersFeature()
+        {
+            if (Request.ProtocolVersion >= HttpVersion.Version20 && HttpApi.SupportsTrailers)
+            {
+                return this;
+            }
+            return null;
+        }
+
+        internal IHttpResetFeature GetResetFeature()
+        {
+            if (Request.ProtocolVersion >= HttpVersion.Version20 && HttpApi.SupportsReset)
+            {
+                return this;
+            }
+            return null;
         }
 
         /* TODO: https://github.com/aspnet/HttpSysServer/issues/231
@@ -401,7 +421,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             set { _responseHeaders = value; }
         }
 
-        bool IHttpResponseFeature.HasStarted => Response.HasStarted;
+        bool IHttpResponseFeature.HasStarted => _responseStarted;
 
         void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
         {
@@ -455,6 +475,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         Task IHttpResponseBodyFeature.CompleteAsync() => CompleteAsync();
+
+        void IHttpResetFeature.Reset(int errorCode)
+        {
+            _requestContext.SetResetCode(errorCode);
+            _requestContext.Abort();
+        }
 
         internal async Task CompleteAsync()
         {
@@ -559,6 +585,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         IReadOnlyDictionary<int, ReadOnlyMemory<byte>> IHttpSysRequestInfoFeature.RequestInfo => Request.RequestInfo;
 
+        IHeaderDictionary IHttpResponseTrailersFeature.Trailers
+        {
+            get => _responseTrailers ??= Response.Trailers;
+            set => _responseTrailers = value;
+        }
+
         internal async Task OnResponseStart()
         {
             if (_responseStarted)
@@ -603,6 +635,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private static TimeSpan? GetCacheTtl(RequestContext requestContext)
         {
             var response = requestContext.Response;
+            // A 304 response is supposed to have the same headers as its associated 200 response, including Cache-Control, but the 304 response itself
+            // should not be cached. Otherwise Http.Sys will serve the 304 response to all requests without checking conditional headers like If-None-Match.
+            if (response.StatusCode == StatusCodes.Status304NotModified)
+            {
+                return null;
+            }
+
             // Only consider kernel-mode caching if the Cache-Control response header is present.
             var cacheControlHeader = response.Headers[HeaderNames.CacheControl];
             if (string.IsNullOrEmpty(cacheControlHeader))

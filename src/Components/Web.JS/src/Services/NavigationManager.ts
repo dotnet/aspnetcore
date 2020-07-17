@@ -1,4 +1,4 @@
-import '@dotnet/jsinterop';
+import '@microsoft/dotnet-js-interop';
 import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/EventDelegator';
 
@@ -81,7 +81,7 @@ export function navigateTo(uri: string, forceLoad: boolean, replace: boolean = f
   } else if (forceLoad && location.href === uri) {
     // Force-loading the same URL you're already on requires special handling to avoid
     // triggering browser-specific behavior issues.
-    // For details about what this fixes and why, see https://github.com/aspnet/AspNetCore/pull/10839
+    // For details about what this fixes and why, see https://github.com/dotnet/aspnetcore/pull/10839
     const temporaryUri = uri + '?';
     history.replaceState(null, '', temporaryUri);
     location.replace(uri);

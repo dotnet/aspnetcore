@@ -87,9 +87,9 @@ namespace Microsoft.AspNetCore.StaticFiles
             }
         }
 
-        private RequestHeaders RequestHeaders => (_requestHeaders ??= _request.GetTypedHeaders());
+        private RequestHeaders RequestHeaders => _requestHeaders ??= _request.GetTypedHeaders();
 
-        private ResponseHeaders ResponseHeaders => (_responseHeaders ??= _response.GetTypedHeaders());
+        private ResponseHeaders ResponseHeaders => _responseHeaders ??= _response.GetTypedHeaders();
 
         public bool IsHeadMethod => _requestType.HasFlag(RequestType.IsHead);
 
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             // 14.24 If-Match
             var ifMatch = requestHeaders.IfMatch;
-            if (ifMatch != null && ifMatch.Any())
+            if (ifMatch?.Count > 0)
             {
                 _ifMatchState = PreconditionState.PreconditionFailed;
                 foreach (var etag in ifMatch)
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             // 14.26 If-None-Match
             var ifNoneMatch = requestHeaders.IfNoneMatch;
-            if (ifNoneMatch != null && ifNoneMatch.Any())
+            if (ifNoneMatch?.Count > 0)
             {
                 _ifNoneMatchState = PreconditionState.ShouldProcess;
                 foreach (var etag in ifNoneMatch)
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 responseHeaders.ETag = _etag;
                 responseHeaders.Headers[HeaderNames.AcceptRanges] = "bytes";
             }
-            if (statusCode == Constants.Status200Ok)
+            if (statusCode == StatusCodes.Status200OK)
             {
                 // this header is only returned here for 200
                 // it already set to the returned range for 206
@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 case PreconditionState.ShouldProcess:
                     if (IsHeadMethod)
                     {
-                        await SendStatusAsync(Constants.Status200Ok);
+                        await SendStatusAsync(StatusCodes.Status200OK);
                         return;
                     }
 
@@ -328,11 +328,11 @@ namespace Microsoft.AspNetCore.StaticFiles
                     return;
                 case PreconditionState.NotModified:
                     _logger.FileNotModified(SubPath);
-                    await SendStatusAsync(Constants.Status304NotModified);
+                    await SendStatusAsync(StatusCodes.Status304NotModified);
                     return;
                 case PreconditionState.PreconditionFailed:
                     _logger.PreconditionFailed(SubPath);
-                    await SendStatusAsync(Constants.Status412PreconditionFailed);
+                    await SendStatusAsync(StatusCodes.Status412PreconditionFailed);
                     return;
                 default:
                     var exception = new NotImplementedException(GetPreconditionState().ToString());
@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         public async Task SendAsync()
         {
             SetCompressionMode();
-            ApplyResponseHeaders(Constants.Status200Ok);
+            ApplyResponseHeaders(StatusCodes.Status200OK);
             string physicalPath = _fileInfo.PhysicalPath;
             var sendFile = _context.Features.Get<IHttpResponseBodyFeature>();
             if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
@@ -380,7 +380,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 // SHOULD include a Content-Range field with a byte-range-resp-spec of "*". The instance-length specifies
                 // the current length of the selected resource.  e.g. */length
                 ResponseHeaders.ContentRange = new ContentRangeHeaderValue(_length);
-                ApplyResponseHeaders(Constants.Status416RangeNotSatisfiable);
+                ApplyResponseHeaders(StatusCodes.Status416RangeNotSatisfiable);
 
                 _logger.RangeNotSatisfiable(SubPath);
                 return;
@@ -389,7 +389,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             ResponseHeaders.ContentRange = ComputeContentRange(_range, out var start, out var length);
             _response.ContentLength = length;
             SetCompressionMode();
-            ApplyResponseHeaders(Constants.Status206PartialContent);
+            ApplyResponseHeaders(StatusCodes.Status206PartialContent);
 
             string physicalPath = _fileInfo.PhysicalPath;
             var sendFile = _context.Features.Get<IHttpResponseBodyFeature>();

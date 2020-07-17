@@ -3,8 +3,6 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
-    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,7 +22,6 @@
 
   <ItemGroup>
     <Reference Include="BenchmarkDotNet" />
-    <Reference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" />
     <Reference Include="Microsoft.AspNetCore.Http.Connections.Client" />
     <Reference Include="Microsoft.AspNetCore.Http.Connections" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Client.Core" />
@@ -34,10 +31,13 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
     <Reference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" />
     <Reference Include="Moq" />
     <Reference Include="System.Reactive.Linq" />
     <Reference Include="System.Threading.Channels" />
     <Reference Include="System.Threading.Tasks.Extensions" />
+
+
+    <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
   </ItemGroup>
 </Project>

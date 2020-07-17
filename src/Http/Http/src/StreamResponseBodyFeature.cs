@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public class StreamResponseBodyFeature : IHttpResponseBodyFeature
     {
-        private PipeWriter _pipeWriter;
+        private PipeWriter? _pipeWriter;
         private bool _started;
         private bool _completed;
         private bool _disposed;
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// The prior feature, if any.
         /// </summary>
-        public IHttpResponseBodyFeature PriorFeature { get; }
+        public IHttpResponseBodyFeature? PriorFeature { get; }
 
         /// <summary>
         /// A PipeWriter adapted over the given stream.

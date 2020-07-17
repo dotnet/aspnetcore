@@ -122,6 +122,8 @@ namespace Microsoft.AspNetCore.Components.Web
     [EventHandler("onpointerlockerror", typeof(EventArgs), true, true)]
     [EventHandler("onreadystatechange", typeof(EventArgs), true, true)]
     [EventHandler("onscroll", typeof(EventArgs), true, true)]
+
+    [EventHandler("ontoggle", typeof(EventArgs), true, true)]
     public static class EventHandlers
     {
     }

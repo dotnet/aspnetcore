@@ -1,33 +1,7 @@
 # EditorConfig is awesome:http://EditorConfig.org
 
-# top-most EditorConfig file
-root = true
-
-# Don't use tabs for indentation.
-[*]
-indent_style = space
-# (Please don't specify an indent_size here; that has too many unintended consequences.)
-
-# Code files
-[*.{cs,csx,vb,vbx}]
-indent_size = 4
-
-# Xml project files
-[*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
-indent_size = 2
-
-# Xml config files
-[*.{props,targets,ruleset,config,nuspec,resx,vsixmanifest,vsct}]
-indent_size = 2
-
-# JSON files
-[*.json]
-indent_size = 2
-
 # Dotnet code style settings:
 [*.cs]
-# Sort using and Import directives with System.* appearing first
-dotnet_sort_system_directives_first = true
 
 # Don't use this. qualifier
 dotnet_style_qualification_for_field = false:suggestion

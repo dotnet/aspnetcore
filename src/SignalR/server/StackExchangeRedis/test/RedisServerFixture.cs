@@ -2,13 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Testing;
+using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
 {
-    public class RedisServerFixture<TStartup> : IDisposable
+    public class RedisServerFixture<TStartup> : IAsyncLifetime
         where TStartup : class
     {
         public InProcessTestServer<TStartup> FirstServer { get; private set; }
@@ -32,32 +34,40 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
             _logger = _loggerFactory.CreateLogger<RedisServerFixture<TStartup>>();
 
             Docker.Default.Start(_logger);
-
-            FirstServer = StartServer();
-            SecondServer = StartServer();
         }
 
-        private InProcessTestServer<TStartup> StartServer()
+        public async Task DisposeAsync()
+        {
+            if (Docker.Default != null)
+            {
+                await FirstServer.DisposeAsync();
+                await SecondServer.DisposeAsync();
+                Docker.Default.Stop(_logger);
+                _logToken.Dispose();
+            }
+        }
+
+        public async Task InitializeAsync()
+        {
+            if (Docker.Default == null)
+            {
+                return;
+            }
+
+            FirstServer = await StartServer();
+            SecondServer = await StartServer();
+        }
+
+        private async Task<InProcessTestServer<TStartup>> StartServer()
         {
             try
             {
-                return new InProcessTestServer<TStartup>(_loggerFactory);
+                return await InProcessTestServer<TStartup>.StartServer(_loggerFactory);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Server failed to start.");
                 throw;
-            }
-        }
-
-        public void Dispose()
-        {
-            if (Docker.Default != null)
-            {
-                FirstServer.Dispose();
-                SecondServer.Dispose();
-                Docker.Default.Stop(_logger);
-                _logToken.Dispose();
             }
         }
     }

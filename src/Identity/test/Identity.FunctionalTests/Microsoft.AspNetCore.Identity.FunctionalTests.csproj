@@ -2,10 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <!-- Test asset publishing not working on arm64 https://github.com/aspnet/AspNetCore/issues/11205 -->
+    <!-- Test asset publishing not working on arm64 https://github.com/dotnet/aspnetcore/issues/11205 -->
     <SkipHelixArm>true</SkipHelixArm>
-    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
-    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
    </PropertyGroup>
 
   <ItemGroup>
@@ -25,7 +23,6 @@
     <ProjectReference Include="..\..\testassets\Identity.DefaultUI.WebSite\Identity.DefaultUI.WebSite.csproj" />
 
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <Reference Include="AngleSharp" />
   </ItemGroup>
@@ -35,9 +32,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Testing.DefaultWebSite.StaticWebAssets.V4.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="Testing.DefaultWebSite.StaticWebAssets.V3.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

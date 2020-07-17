@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
             LocalCommand.Register(app);
             AgentCommand.Register(app);
             WorkerCommand.Register(app);
+            ServerCommand.Register(app);
 
             app.Command("help", cmd =>
             {

@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var builder = new StringBuilder();
             builder.Append("{ ");
 
-            builder.Append(string.Join(", ", _entries.Select(e => $"{e.text}: {e.destination}")));
+            builder.AppendJoin(", ", _entries.Select(e => $"{e.text}: {e.destination}"));
 
             builder.Append("$+: ");
             builder.Append(_defaultDestination);

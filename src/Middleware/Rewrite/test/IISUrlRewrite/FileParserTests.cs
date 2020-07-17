@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                                 <rule name=""redirect-aspnet-mvc"" enabled=""true"" stopProcessing=""true"">
                                     <match url=""^aspnet/Mvc"" />
                                     <conditions logicalGrouping=""MatchAll"" trackAllCaptures=""false"" />
-                                    <action type=""Redirect"" url=""https://github.com/aspnet/AspNetCore"" />
+                                    <action type=""Redirect"" url=""https://github.com/dotnet/aspnetcore"" />
                                 </rule>
                             </rules>
                         </rewrite>";

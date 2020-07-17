@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <DebugType>portable</DebugType>
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
 </Project>

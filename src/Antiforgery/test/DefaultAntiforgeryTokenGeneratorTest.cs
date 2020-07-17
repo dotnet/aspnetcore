@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
 using System;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -149,10 +150,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             httpContext.User = new ClaimsPrincipal(identity);
 
             byte[] data = new byte[256 / 8];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(data);
-            }
+            RandomNumberGenerator.Fill(data);
             var base64ClaimUId = Convert.ToBase64String(data);
             var expectedClaimUid = new BinaryBlob(256, data);
 
@@ -624,3 +622,4 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
     }
 }
+#nullable restore

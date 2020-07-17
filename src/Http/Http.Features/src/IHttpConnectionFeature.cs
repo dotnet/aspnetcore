@@ -18,12 +18,12 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <summary>
         /// The IPAddress of the client making the request. Note this may be for a proxy rather than the end user.
         /// </summary>
-        IPAddress RemoteIpAddress { get; set; }
+        IPAddress? RemoteIpAddress { get; set; }
 
         /// <summary>
         /// The local IPAddress on which the request was received.
         /// </summary>
-        IPAddress LocalIpAddress { get; set; }
+        IPAddress? LocalIpAddress { get; set; }
 
         /// <summary>
         /// The remote port of the client making the request.

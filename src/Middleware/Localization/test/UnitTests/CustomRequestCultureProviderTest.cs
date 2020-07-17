@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.Extensions.Localization
@@ -19,38 +20,45 @@ namespace Microsoft.Extensions.Localization
         [Fact]
         public async Task CustomRequestCultureProviderThatGetsCultureInfoFromUrl()
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    var options = new RequestLocalizationOptions
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-                        DefaultRequestCulture = new RequestCulture("en-US"),
-                        SupportedCultures = new List<CultureInfo>
+                        var options = new RequestLocalizationOptions
                         {
-                            new CultureInfo("ar")
-                        },
-                        SupportedUICultures = new List<CultureInfo>
+                            DefaultRequestCulture = new RequestCulture("en-US"),
+                            SupportedCultures = new List<CultureInfo>
+                            {
+                                new CultureInfo("ar")
+                            },
+                            SupportedUICultures = new List<CultureInfo>
+                            {
+                                new CultureInfo("ar")
+                            }
+                        };
+                        options.RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(context =>
                         {
-                            new CultureInfo("ar")
-                        }
-                    };
-                    options.RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(context =>
-                    {
-                        var culture = GetCultureInfoFromUrl(context, options.SupportedCultures);
-                        var requestCulture = new ProviderCultureResult(culture);
-                        return Task.FromResult(requestCulture);
-                    }));
-                    app.UseRequestLocalization(options);
-                    app.Run(context =>
-                    {
-                        var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
-                        var requestCulture = requestCultureFeature.RequestCulture;
-                        Assert.Equal("ar", requestCulture.Culture.Name);
-                        return Task.FromResult(0);
+                            var culture = GetCultureInfoFromUrl(context, options.SupportedCultures);
+                            var requestCulture = new ProviderCultureResult(culture);
+                            return Task.FromResult(requestCulture);
+                        }));
+                        app.UseRequestLocalization(options);
+                        app.Run(context =>
+                        {
+                            var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
+                            var requestCulture = requestCultureFeature.RequestCulture;
+                            Assert.Equal("ar", requestCulture.Culture.Name);
+                            return Task.FromResult(0);
+                        });
                     });
-                });
+                }).Build();
 
-            using (var server = new TestServer(builder))
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
             {
                 var client = server.CreateClient();
                 var response = await client.GetAsync("/ar/page");

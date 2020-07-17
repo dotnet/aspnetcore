@@ -1,3 +1,3 @@
 @ECHO OFF
 
-%~dp0..\..\startvs.cmd %~dp0Blazor.sln
+%~dp0..\..\startvs.cmd %~dp0Components.slnf

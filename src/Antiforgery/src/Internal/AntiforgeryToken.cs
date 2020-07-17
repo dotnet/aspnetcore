@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Antiforgery
 
         private string _additionalData = string.Empty;
         private string _username = string.Empty;
-        private BinaryBlob _securityToken;
+        private BinaryBlob? _securityToken;
 
         public string AdditionalData
         {
@@ -21,11 +21,11 @@ namespace Microsoft.AspNetCore.Antiforgery
             }
         }
 
-        public BinaryBlob ClaimUid { get; set; }
+        public BinaryBlob? ClaimUid { get; set; }
 
         public bool IsCookieToken { get; set; }
 
-        public BinaryBlob SecurityToken
+        public BinaryBlob? SecurityToken
         {
             get
             {
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             }
         }
 
-        public string Username
+        public string? Username
         {
             get { return _username; }
             set

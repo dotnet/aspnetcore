@@ -2,7 +2,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <!-- Workaround for https://github.com/aspnet/AspNetCore/issues/5486 which requires the bin and obj directory be in the project directory -->
+    <!-- Workaround for https://github.com/dotnet/aspnetcore/issues/5486 which requires the bin and obj directory be in the project directory -->
     <BaseIntermediateOutputPath />
     <IntermediateOutputPath />
     <BaseOutputPath />

@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Localization
 {
@@ -13,7 +12,7 @@ namespace Microsoft.AspNetCore.Localization
     /// </summary>
     public class CookieRequestCultureProvider : RequestCultureProvider
     {
-        private static readonly char[] _cookieSeparator = new[] { '|' };
+        private static readonly char _cookieSeparator = '|';
         private static readonly string _culturePrefix = "c=";
         private static readonly string _uiCulturePrefix = "uic=";
 
@@ -60,9 +59,7 @@ namespace Microsoft.AspNetCore.Localization
                 throw new ArgumentNullException(nameof(requestCulture));
             }
 
-            var seperator = _cookieSeparator[0].ToString();
-
-            return string.Join(seperator,
+            return string.Join(_cookieSeparator,
                 $"{_culturePrefix}{requestCulture.Culture.Name}",
                 $"{_uiCulturePrefix}{requestCulture.UICulture.Name}");
         }
@@ -109,8 +106,7 @@ namespace Microsoft.AspNetCore.Localization
                 // Value for culture but not for UI culture so default to culture value for both
                 uiCultureName = cultureName;
             }
-
-            if (cultureName == null && uiCultureName != null)
+            else if (cultureName == null && uiCultureName != null)
             {
                 // Value for UI culture but not for culture so default to UI culture value for both
                 cultureName = uiCultureName;

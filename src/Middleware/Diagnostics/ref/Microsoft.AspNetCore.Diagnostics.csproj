@@ -15,6 +15,5 @@
     <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" />
   </ItemGroup>
 </Project>

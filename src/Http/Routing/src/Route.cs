@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -28,9 +30,9 @@ namespace Microsoft.AspNetCore.Routing
         public Route(
             IRouter target,
             string routeTemplate,
-            RouteValueDictionary defaults,
-            IDictionary<string, object> constraints,
-            RouteValueDictionary dataTokens,
+            RouteValueDictionary? defaults,
+            IDictionary<string, object>? constraints,
+            RouteValueDictionary? dataTokens,
             IInlineConstraintResolver inlineConstraintResolver)
             : this(target, null, routeTemplate, defaults, constraints, dataTokens, inlineConstraintResolver)
         {
@@ -38,11 +40,11 @@ namespace Microsoft.AspNetCore.Routing
 
         public Route(
             IRouter target,
-            string routeName,
-            string routeTemplate,
-            RouteValueDictionary defaults,
-            IDictionary<string, object> constraints,
-            RouteValueDictionary dataTokens,
+            string? routeName,
+            string? routeTemplate,
+            RouteValueDictionary? defaults,
+            IDictionary<string, object>? constraints,
+            RouteValueDictionary? dataTokens,
             IInlineConstraintResolver inlineConstraintResolver)
             : base(
                   routeTemplate, 
@@ -68,7 +70,7 @@ namespace Microsoft.AspNetCore.Routing
             return _target.RouteAsync(context);
         }
 
-        protected override VirtualPathData OnVirtualPathGenerated(VirtualPathContext context)
+        protected override VirtualPathData? OnVirtualPathGenerated(VirtualPathContext context)
         {
             return _target.GetVirtualPath(context);
         }

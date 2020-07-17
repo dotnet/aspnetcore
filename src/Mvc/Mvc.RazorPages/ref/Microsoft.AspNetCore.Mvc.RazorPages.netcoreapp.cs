@@ -59,18 +59,18 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public PageApplicationModel(Microsoft.AspNetCore.Mvc.ApplicationModels.PageApplicationModel other) { }
         public PageApplicationModel(Microsoft.AspNetCore.Mvc.RazorPages.PageActionDescriptor actionDescriptor, System.Reflection.TypeInfo handlerType, System.Collections.Generic.IReadOnlyList<object> handlerAttributes) { }
         public PageApplicationModel(Microsoft.AspNetCore.Mvc.RazorPages.PageActionDescriptor actionDescriptor, System.Reflection.TypeInfo declaredModelType, System.Reflection.TypeInfo handlerType, System.Collections.Generic.IReadOnlyList<object> handlerAttributes) { }
-        public Microsoft.AspNetCore.Mvc.RazorPages.PageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.RazorPages.PageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string AreaName { get { throw null; } }
-        public System.Reflection.TypeInfo DeclaredModelType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IList<object> EndpointMetadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata> Filters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.PageHandlerModel> HandlerMethods { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.PagePropertyModel> HandlerProperties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Reflection.TypeInfo HandlerType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IReadOnlyList<object> HandlerTypeAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Reflection.TypeInfo ModelType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Reflection.TypeInfo PageType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.IDictionary<object, object> Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Reflection.TypeInfo DeclaredModelType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IList<object> EndpointMetadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata> Filters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.PageHandlerModel> HandlerMethods { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.PagePropertyModel> HandlerProperties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Reflection.TypeInfo HandlerType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IReadOnlyList<object> HandlerTypeAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Reflection.TypeInfo ModelType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Reflection.TypeInfo PageType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IDictionary<object, object> Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string RelativePath { get { throw null; } }
         public string RouteTemplate { get { throw null; } }
         public string ViewEnginePath { get { throw null; } }
@@ -78,9 +78,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     public partial class PageApplicationModelProviderContext
     {
         public PageApplicationModelProviderContext(Microsoft.AspNetCore.Mvc.RazorPages.PageActionDescriptor descriptor, System.Reflection.TypeInfo pageTypeInfo) { }
-        public Microsoft.AspNetCore.Mvc.RazorPages.PageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.ApplicationModels.PageApplicationModel PageApplicationModel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Reflection.TypeInfo PageType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.RazorPages.PageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ApplicationModels.PageApplicationModel PageApplicationModel { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Reflection.TypeInfo PageType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class PageConventionCollection : System.Collections.ObjectModel.Collection<Microsoft.AspNetCore.Mvc.ApplicationModels.IPageConvention>
     {
@@ -102,39 +102,39 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     {
         public PageHandlerModel(Microsoft.AspNetCore.Mvc.ApplicationModels.PageHandlerModel other) { }
         public PageHandlerModel(System.Reflection.MethodInfo handlerMethod, System.Collections.Generic.IReadOnlyList<object> attributes) { }
-        public System.Collections.Generic.IReadOnlyList<object> Attributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string HandlerName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string HttpMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Reflection.MethodInfo MethodInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IReadOnlyList<object> Attributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string HandlerName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string HttpMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Reflection.MethodInfo MethodInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         System.Reflection.MemberInfo Microsoft.AspNetCore.Mvc.ApplicationModels.ICommonModel.MemberInfo { get { throw null; } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Mvc.ApplicationModels.PageApplicationModel Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.PageParameterModel> Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IDictionary<object, object> Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Mvc.ApplicationModels.PageApplicationModel Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.PageParameterModel> Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IDictionary<object, object> Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public sealed partial class PageRouteMetadata
     {
         public PageRouteMetadata(string pageRoute, string routeTemplate) { }
-        public string PageRoute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string RouteTemplate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string PageRoute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string RouteTemplate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class PageRouteModel
     {
         public PageRouteModel(Microsoft.AspNetCore.Mvc.ApplicationModels.PageRouteModel other) { }
         public PageRouteModel(string relativePath, string viewEnginePath) { }
         public PageRouteModel(string relativePath, string viewEnginePath, string areaName) { }
-        public string AreaName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IDictionary<object, object> Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string RelativePath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Routing.IOutboundParameterTransformer RouteParameterTransformer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.IDictionary<string, string> RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel> Selectors { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string ViewEnginePath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string AreaName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IDictionary<object, object> Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string RelativePath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Routing.IOutboundParameterTransformer RouteParameterTransformer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IDictionary<string, string> RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.SelectorModel> Selectors { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string ViewEnginePath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class PageRouteModelProviderContext
     {
         public PageRouteModelProviderContext() { }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.PageRouteModel> RouteModels { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.PageRouteModel> RouteModels { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class PageRouteTransformerConvention : Microsoft.AspNetCore.Mvc.ApplicationModels.IPageConvention, Microsoft.AspNetCore.Mvc.ApplicationModels.IPageRouteModelConvention
     {
@@ -149,123 +149,123 @@ namespace Microsoft.AspNetCore.Mvc.Diagnostics
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterHandlerMethod";
         public AfterHandlerMethodEventData(Microsoft.AspNetCore.Mvc.ActionContext actionContext, System.Collections.Generic.IReadOnlyDictionary<string, object> arguments, Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerMethodDescriptor handlerMethodDescriptor, object instance, Microsoft.AspNetCore.Mvc.IActionResult result) { }
-        public Microsoft.AspNetCore.Mvc.ActionContext ActionContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IReadOnlyDictionary<string, object> Arguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ActionContext ActionContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> Arguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override int Count { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerMethodDescriptor HandlerMethodDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public object Instance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerMethodDescriptor HandlerMethodDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public object Instance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.IActionResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.IActionResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public sealed partial class AfterPageFilterOnPageHandlerExecutedEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterOnPageHandlerExecuted";
         public AfterPageFilterOnPageHandlerExecutedEventData(Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutedContext handlerExecutedContext, Microsoft.AspNetCore.Mvc.Filters.IPageFilter filter) { }
-        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override int Count { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.IPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutedContext HandlerExecutedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.IPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutedContext HandlerExecutedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
     public sealed partial class AfterPageFilterOnPageHandlerExecutingEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterOnPageHandlerExecuting";
         public AfterPageFilterOnPageHandlerExecutingEventData(Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutingContext handlerExecutingContext, Microsoft.AspNetCore.Mvc.Filters.IPageFilter filter) { }
-        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override int Count { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.IPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutingContext HandlerExecutingContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.IPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutingContext HandlerExecutingContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
     public sealed partial class AfterPageFilterOnPageHandlerExecutionEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterOnPageHandlerExecution";
         public AfterPageFilterOnPageHandlerExecutionEventData(Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutedContext handlerExecutedContext, Microsoft.AspNetCore.Mvc.Filters.IAsyncPageFilter filter) { }
-        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override int Count { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.IAsyncPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutedContext HandlerExecutedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.IAsyncPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutedContext HandlerExecutedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
     public sealed partial class AfterPageFilterOnPageHandlerSelectedEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterOnPageHandlerSelected";
         public AfterPageFilterOnPageHandlerSelectedEventData(Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.PageHandlerSelectedContext handlerSelectedContext, Microsoft.AspNetCore.Mvc.Filters.IPageFilter filter) { }
-        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override int Count { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.IPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerSelectedContext HandlerSelectedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.IPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerSelectedContext HandlerSelectedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
     public sealed partial class AfterPageFilterOnPageHandlerSelectionEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.AfterOnPageHandlerSelection";
         public AfterPageFilterOnPageHandlerSelectionEventData(Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.PageHandlerSelectedContext handlerSelectedContext, Microsoft.AspNetCore.Mvc.Filters.IAsyncPageFilter filter) { }
-        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override int Count { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.IAsyncPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerSelectedContext HandlerSelectedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.IAsyncPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerSelectedContext HandlerSelectedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
     public sealed partial class BeforeHandlerMethodEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeHandlerMethod";
         public BeforeHandlerMethodEventData(Microsoft.AspNetCore.Mvc.ActionContext actionContext, System.Collections.Generic.IReadOnlyDictionary<string, object> arguments, Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerMethodDescriptor handlerMethodDescriptor, object instance) { }
-        public Microsoft.AspNetCore.Mvc.ActionContext ActionContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Collections.Generic.IReadOnlyDictionary<string, object> Arguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.ActionContext ActionContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> Arguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override int Count { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerMethodDescriptor HandlerMethodDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public object Instance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerMethodDescriptor HandlerMethodDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public object Instance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
     public sealed partial class BeforePageFilterOnPageHandlerExecutedEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerExecuted";
         public BeforePageFilterOnPageHandlerExecutedEventData(Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutedContext handlerExecutedContext, Microsoft.AspNetCore.Mvc.Filters.IPageFilter filter) { }
-        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override int Count { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.IPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutedContext HandlerExecutedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.IPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutedContext HandlerExecutedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
     public sealed partial class BeforePageFilterOnPageHandlerExecutingEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerExecuting";
         public BeforePageFilterOnPageHandlerExecutingEventData(Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutingContext handlerExecutingContext, Microsoft.AspNetCore.Mvc.Filters.IPageFilter filter) { }
-        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override int Count { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.IPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutingContext HandlerExecutingContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.IPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutingContext HandlerExecutingContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
     public sealed partial class BeforePageFilterOnPageHandlerExecutionEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerExecution";
         public BeforePageFilterOnPageHandlerExecutionEventData(Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutingContext handlerExecutionContext, Microsoft.AspNetCore.Mvc.Filters.IAsyncPageFilter filter) { }
-        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override int Count { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.IAsyncPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutingContext HandlerExecutionContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.IAsyncPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutingContext HandlerExecutionContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
     public sealed partial class BeforePageFilterOnPageHandlerSelectedEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerSelected";
         public BeforePageFilterOnPageHandlerSelectedEventData(Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.PageHandlerSelectedContext handlerSelectedContext, Microsoft.AspNetCore.Mvc.Filters.IPageFilter filter) { }
-        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override int Count { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.IPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerSelectedContext HandlerSelectedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.IPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerSelectedContext HandlerSelectedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
     public sealed partial class BeforePageFilterOnPageHandlerSelectionEventData : Microsoft.AspNetCore.Mvc.Diagnostics.EventData
     {
         public const string EventName = "Microsoft.AspNetCore.Mvc.BeforeOnPageHandlerSelection";
         public BeforePageFilterOnPageHandlerSelectionEventData(Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor actionDescriptor, Microsoft.AspNetCore.Mvc.Filters.PageHandlerSelectedContext handlerSelectedContext, Microsoft.AspNetCore.Mvc.Filters.IAsyncPageFilter filter) { }
-        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override int Count { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.IAsyncPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerSelectedContext HandlerSelectedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.IAsyncPageFilter Filter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public Microsoft.AspNetCore.Mvc.Filters.PageHandlerSelectedContext HandlerSelectedContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         protected override System.Collections.Generic.KeyValuePair<string, object> this[int index] { get { throw null; } }
     }
 }
@@ -286,30 +286,30 @@ namespace Microsoft.AspNetCore.Mvc.Filters
     {
         public PageHandlerExecutedContext(Microsoft.AspNetCore.Mvc.RazorPages.PageContext pageContext, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata> filters, Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerMethodDescriptor handlerMethod, object handlerInstance) : base (default(Microsoft.AspNetCore.Mvc.ActionContext), default(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata>)) { }
         public virtual new Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { get { throw null; } }
-        public virtual bool Canceled { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual bool Canceled { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual System.Exception Exception { get { throw null; } set { } }
         public virtual System.Runtime.ExceptionServices.ExceptionDispatchInfo ExceptionDispatchInfo { get { throw null; } set { } }
-        public virtual bool ExceptionHandled { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual object HandlerInstance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public virtual Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerMethodDescriptor HandlerMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public virtual Microsoft.AspNetCore.Mvc.IActionResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual bool ExceptionHandled { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public virtual object HandlerInstance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public virtual Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerMethodDescriptor HandlerMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public virtual Microsoft.AspNetCore.Mvc.IActionResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class PageHandlerExecutingContext : Microsoft.AspNetCore.Mvc.Filters.FilterContext
     {
         public PageHandlerExecutingContext(Microsoft.AspNetCore.Mvc.RazorPages.PageContext pageContext, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata> filters, Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerMethodDescriptor handlerMethod, System.Collections.Generic.IDictionary<string, object> handlerArguments, object handlerInstance) : base (default(Microsoft.AspNetCore.Mvc.ActionContext), default(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata>)) { }
         public virtual new Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { get { throw null; } }
-        public virtual System.Collections.Generic.IDictionary<string, object> HandlerArguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public virtual object HandlerInstance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public virtual Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerMethodDescriptor HandlerMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public virtual Microsoft.AspNetCore.Mvc.IActionResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual System.Collections.Generic.IDictionary<string, object> HandlerArguments { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public virtual object HandlerInstance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public virtual Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerMethodDescriptor HandlerMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public virtual Microsoft.AspNetCore.Mvc.IActionResult Result { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public delegate System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutedContext> PageHandlerExecutionDelegate();
     public partial class PageHandlerSelectedContext : Microsoft.AspNetCore.Mvc.Filters.FilterContext
     {
         public PageHandlerSelectedContext(Microsoft.AspNetCore.Mvc.RazorPages.PageContext pageContext, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata> filters, object handlerInstance) : base (default(Microsoft.AspNetCore.Mvc.ActionContext), default(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata>)) { }
         public virtual new Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor ActionDescriptor { get { throw null; } }
-        public virtual object HandlerInstance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public virtual Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerMethodDescriptor HandlerMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public virtual object HandlerInstance { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public virtual Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerMethodDescriptor HandlerMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
 }
 namespace Microsoft.AspNetCore.Mvc.RazorPages
@@ -318,12 +318,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     {
         public CompiledPageActionDescriptor() { }
         public CompiledPageActionDescriptor(Microsoft.AspNetCore.Mvc.RazorPages.PageActionDescriptor actionDescriptor) { }
-        public System.Reflection.TypeInfo DeclaredModelTypeInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Http.Endpoint Endpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerMethodDescriptor> HandlerMethods { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Reflection.TypeInfo HandlerTypeInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Reflection.TypeInfo ModelTypeInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Reflection.TypeInfo PageTypeInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Reflection.TypeInfo DeclaredModelTypeInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Http.Endpoint Endpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerMethodDescriptor> HandlerMethods { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Reflection.TypeInfo HandlerTypeInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Reflection.TypeInfo ModelTypeInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Reflection.TypeInfo PageTypeInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial interface IPageActivatorProvider
     {
@@ -359,10 +359,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     {
         public PageActionDescriptor() { }
         public PageActionDescriptor(Microsoft.AspNetCore.Mvc.RazorPages.PageActionDescriptor other) { }
-        public string AreaName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string AreaName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override string DisplayName { get { throw null; } set { } }
-        public string RelativePath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string ViewEnginePath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string RelativePath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string ViewEnginePath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public abstract partial class PageBase : Microsoft.AspNetCore.Mvc.Razor.RazorPageBase
     {
@@ -370,11 +370,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         public Microsoft.AspNetCore.Http.HttpContext HttpContext { get { throw null; } }
         public Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider MetadataProvider { get { throw null; } set { } }
         public Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary ModelState { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.RazorPages.PageContext PageContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Mvc.RazorPages.PageContext PageContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public Microsoft.AspNetCore.Http.HttpRequest Request { get { throw null; } }
         public Microsoft.AspNetCore.Http.HttpResponse Response { get { throw null; } }
         public Microsoft.AspNetCore.Routing.RouteData RouteData { get { throw null; } }
-        public override Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public override Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public virtual Microsoft.AspNetCore.Mvc.BadRequestResult BadRequest() { throw null; }
         public virtual Microsoft.AspNetCore.Mvc.BadRequestObjectResult BadRequest(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) { throw null; }
         public virtual Microsoft.AspNetCore.Mvc.BadRequestObjectResult BadRequest(object error) { throw null; }
@@ -627,16 +627,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     public partial class PageResult : Microsoft.AspNetCore.Mvc.ActionResult
     {
         public PageResult() { }
-        public string ContentType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string ContentType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public object Model { get { throw null; } }
-        public Microsoft.AspNetCore.Mvc.RazorPages.PageBase Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int? StatusCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary ViewData { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Mvc.RazorPages.PageBase Page { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public int? StatusCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary ViewData { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public override System.Threading.Tasks.Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) { throw null; }
     }
     public partial class RazorPagesOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>, System.Collections.IEnumerable
     {
         public RazorPagesOptions() { }
+        public Microsoft.AspNetCore.Mvc.ApplicationModels.PageConventionCollection Conventions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string RootDirectory { get { throw null; } set { } }
         System.Collections.Generic.IEnumerator<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>.GetEnumerator() { throw null; }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
@@ -647,15 +648,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     public partial class HandlerMethodDescriptor
     {
         public HandlerMethodDescriptor() { }
-        public string HttpMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Reflection.MethodInfo MethodInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerParameterDescriptor> Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public string HttpMethod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Reflection.MethodInfo MethodInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerParameterDescriptor> Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial class HandlerParameterDescriptor : Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor, Microsoft.AspNetCore.Mvc.Infrastructure.IParameterInfoParameterDescriptor
     {
         public HandlerParameterDescriptor() { }
-        public System.Reflection.ParameterInfo ParameterInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Reflection.ParameterInfo ParameterInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public partial interface IPageHandlerMethodSelector
     {
@@ -669,7 +670,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     public partial class PageActionDescriptorProvider : Microsoft.AspNetCore.Mvc.Abstractions.IActionDescriptorProvider
     {
         public PageActionDescriptorProvider(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ApplicationModels.IPageRouteModelProvider> pageRouteModelProviders, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions> mvcOptionsAccessor, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.RazorPages.RazorPagesOptions> pagesOptionsAccessor) { }
-        public int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.PageRouteModel> BuildModel() { throw null; }
         public void OnProvidersExecuted(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptorProviderContext context) { }
         public void OnProvidersExecuting(Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptorProviderContext context) { }
@@ -678,7 +679,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     {
         public PageBoundPropertyDescriptor() { }
         System.Reflection.PropertyInfo Microsoft.AspNetCore.Mvc.Infrastructure.IPropertyInfoParameterDescriptor.PropertyInfo { get { throw null; } }
-        public System.Reflection.PropertyInfo Property { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Reflection.PropertyInfo Property { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
     }
     public abstract partial class PageLoader : Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.IPageLoader
     {
@@ -719,7 +720,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     public partial class RazorPageAttribute : Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute
     {
         public RazorPageAttribute(string path, System.Type viewType, string routeTemplate) : base (default(string), default(System.Type)) { }
-        public string RouteTemplate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string RouteTemplate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
     public partial class ServiceBasedPageModelActivatorProvider : Microsoft.AspNetCore.Mvc.RazorPages.IPageModelActivatorProvider
     {

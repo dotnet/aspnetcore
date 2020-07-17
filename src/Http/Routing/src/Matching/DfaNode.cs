@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             builder.Append(" c: ");
             if (Literals != null)
             {
-                builder.Append(string.Join(", ", Literals.Select(kvp => $"{kvp.Key}->({FormatNode(kvp.Value)})")));
+                builder.AppendJoin(", ", Literals.Select(kvp => $"{kvp.Key}->({FormatNode(kvp.Value)})"));
             }
             return builder.ToString();
             

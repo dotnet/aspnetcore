@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         {
             get
             {
-                if (Headers == null || Headers.Count != 1 || Headers.Count == 1 && Headers[0] != "*")
+                if (Headers == null || Headers.Count != 1 || Headers[0] != "*")
                 {
                     return false;
                 }
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         {
             get
             {
-                if (Methods == null || Methods.Count != 1 || Methods.Count == 1 && Methods[0] != "*")
+                if (Methods == null || Methods.Count != 1 || Methods[0] != "*")
                 {
                     return false;
                 }
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         {
             get
             {
-                if (Origins == null || Origins.Count != 1 || Origins.Count == 1 && Origins[0] != "*")
+                if (Origins == null || Origins.Count != 1 || Origins[0] != "*")
                 {
                     return false;
                 }
@@ -142,16 +142,16 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             builder.Append(", SupportsCredentials: ");
             builder.Append(SupportsCredentials);
             builder.Append(", Origins: {");
-            builder.Append(string.Join(",", Origins));
+            builder.AppendJoin(",", Origins);
             builder.Append("}");
             builder.Append(", Methods: {");
-            builder.Append(string.Join(",", Methods));
+            builder.AppendJoin(",", Methods);
             builder.Append("}");
             builder.Append(", Headers: {");
-            builder.Append(string.Join(",", Headers));
+            builder.AppendJoin(",", Headers);
             builder.Append("}");
             builder.Append(", ExposedHeaders: {");
-            builder.Append(string.Join(",", ExposedHeaders));
+            builder.AppendJoin(",", ExposedHeaders);
             builder.Append("}");
             return builder.ToString();
         }

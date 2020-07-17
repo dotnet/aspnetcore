@@ -1,8 +1,10 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace StaticFilesSample
@@ -25,22 +27,25 @@ namespace StaticFilesSample
             });
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .ConfigureLogging(factory =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    factory.AddFilter("Console", level => level >= LogLevel.Debug);
-                    factory.AddConsole();
-                })
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseKestrel()
-                // .UseHttpSys()
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
+                    webHostBuilder
+                    .ConfigureLogging(factory =>
+                    {
+                        factory.AddFilter("Console", level => level >= LogLevel.Debug);
+                        factory.AddConsole();
+                    })
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .UseKestrel()
+                    // .UseHttpSys()
+                    .UseIISIntegration()
+                    .UseStartup<Startup>();
+                }).Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }

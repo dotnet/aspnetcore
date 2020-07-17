@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// A flag indicating whether authorization has succeeded.
         /// This value is <value>true</value> when the user fulfills the policy otherwise <value>false</value>.
         /// </returns>
-        public async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object resource, IEnumerable<IAuthorizationRequirement> requirements)
+        public virtual async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object? resource, IEnumerable<IAuthorizationRequirement> requirements)
         {
             if (requirements == null)
             {
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Authorization
             }
             else
             {
-                _logger.UserAuthorizationFailed();
+                _logger.UserAuthorizationFailed(result.Failure!);
             }
             return result;
         }
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// A flag indicating whether authorization has succeeded.
         /// This value is <value>true</value> when the user fulfills the policy otherwise <value>false</value>.
         /// </returns>
-        public async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object resource, string policyName)
+        public virtual async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object? resource, string policyName)
         {
             if (policyName == null)
             {

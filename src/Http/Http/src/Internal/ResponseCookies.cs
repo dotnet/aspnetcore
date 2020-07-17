@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
-using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -15,12 +13,14 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     internal class ResponseCookies : IResponseCookies
     {
+        internal const string EnableCookieNameEncoding = "Microsoft.AspNetCore.Http.EnableCookieNameEncoding";
+        internal bool _enableCookieNameEncoding = AppContext.TryGetSwitch(EnableCookieNameEncoding, out var enabled) && enabled;
+
         /// <summary>
         /// Create a new wrapper.
         /// </summary>
         /// <param name="headers">The <see cref="IHeaderDictionary"/> for the response.</param>
-        /// <param name="builderPool">The <see cref="ObjectPool{T}"/>, if available.</param>
-        public ResponseCookies(IHeaderDictionary headers, ObjectPool<StringBuilder> builderPool)
+        public ResponseCookies(IHeaderDictionary headers)
         {
             if (headers == null)
             {
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Http
         public void Append(string key, string value)
         {
             var setCookieHeaderValue = new SetCookieHeaderValue(
-                Uri.EscapeDataString(key),
+                _enableCookieNameEncoding ? Uri.EscapeDataString(key) : key,
                 Uri.EscapeDataString(value))
             {
                 Path = "/"
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             var setCookieHeaderValue = new SetCookieHeaderValue(
-                Uri.EscapeDataString(key),
+                _enableCookieNameEncoding ? Uri.EscapeDataString(key) : key,
                 Uri.EscapeDataString(value))
             {
                 Domain = options.Domain,
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(options));
             }
 
-            var encodedKeyPlusEquals = Uri.EscapeDataString(key) + "=";
+            var encodedKeyPlusEquals = (_enableCookieNameEncoding ? Uri.EscapeDataString(key) : key) + "=";
             bool domainHasValue = !string.IsNullOrEmpty(options.Domain);
             bool pathHasValue = !string.IsNullOrEmpty(options.Path);
 
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 Path = options.Path,
                 Domain = options.Domain,
-                Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                Expires = DateTimeOffset.UnixEpoch,
                 Secure = options.Secure,
                 HttpOnly = options.HttpOnly,
                 SameSite = options.SameSite

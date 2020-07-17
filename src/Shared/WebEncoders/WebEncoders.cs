@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
 using System;
 #if NETCOREAPP
 using System.Buffers;
@@ -25,8 +26,6 @@ namespace Microsoft.Extensions.Internal
 #endif
     static class WebEncoders
     {
-        private static readonly byte[] EmptyBytes = new byte[0];
-
         /// <summary>
         /// Decodes a base64url-encoded string.
         /// </summary>
@@ -69,7 +68,7 @@ namespace Microsoft.Extensions.Internal
             // Special-case empty input
             if (count == 0)
             {
-                return EmptyBytes;
+                return Array.Empty<byte>();
             }
 
             // Create array large enough for the Base64 characters, not just shorter Base64-URL-encoded form.
@@ -116,7 +115,7 @@ namespace Microsoft.Extensions.Internal
 
             if (count == 0)
             {
-                return EmptyBytes;
+                return Array.Empty<byte>();
             }
 
             // Assumption: input is base64url encoded without padding and contains no whitespace.
@@ -353,7 +352,7 @@ namespace Microsoft.Extensions.Internal
 
             int bufferSize = GetArraySizeRequiredToEncode(input.Length);
 
-            char[] bufferToReturnToPool = null;
+            char[]? bufferToReturnToPool = null;
             Span<char> buffer = bufferSize <= 128
                 ? stackalloc char[bufferSize]
                 : bufferToReturnToPool = ArrayPool<char>.Shared.Rent(bufferSize);

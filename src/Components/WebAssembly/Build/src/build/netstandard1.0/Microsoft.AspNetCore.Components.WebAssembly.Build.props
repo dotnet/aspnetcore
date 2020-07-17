@@ -1,7 +1,0 @@
-﻿<Project>
-  <Import Project="$(MSBuildThisFileDirectory)..\..\targets\All.props" />
-
-  <PropertyGroup>
-    <ReferencesComponentsWebAssemblyBuild>true</ReferencesComponentsWebAssemblyBuild>
-  </PropertyGroup>
-</Project>

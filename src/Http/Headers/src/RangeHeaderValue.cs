@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Text;
 using Microsoft.Extensions.Primitives;
@@ -12,10 +13,10 @@ namespace Microsoft.Net.Http.Headers
     public class RangeHeaderValue
     {
         private static readonly HttpHeaderParser<RangeHeaderValue> Parser
-            = new GenericHeaderParser<RangeHeaderValue>(false, GetRangeLength);
+            = new GenericHeaderParser<RangeHeaderValue>(false, GetRangeLength!);
 
         private StringSegment _unit;
-        private ICollection<RangeItemHeaderValue> _ranges;
+        private ICollection<RangeItemHeaderValue>? _ranges;
 
         public RangeHeaderValue()
         {
@@ -77,7 +78,7 @@ namespace Microsoft.Net.Http.Headers
             return sb.ToString();
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as RangeHeaderValue;
 
@@ -105,16 +106,16 @@ namespace Microsoft.Net.Http.Headers
         public static RangeHeaderValue Parse(StringSegment input)
         {
             var index = 0;
-            return Parser.ParseValue(input, ref index);
+            return Parser.ParseValue(input, ref index)!;
         }
 
-        public static bool TryParse(StringSegment input, out RangeHeaderValue parsedValue)
+        public static bool TryParse(StringSegment input, [NotNullWhen(true)] out RangeHeaderValue parsedValue)
         {
             var index = 0;
-            return Parser.TryParseValue(input, ref index, out parsedValue);
+            return Parser.TryParseValue(input, ref index, out parsedValue!);
         }
 
-        private static int GetRangeLength(StringSegment input, int startIndex, out RangeHeaderValue parsedValue)
+        private static int GetRangeLength(StringSegment input, int startIndex, out RangeHeaderValue? parsedValue)
         {
             Contract.Requires(startIndex >= 0);
 

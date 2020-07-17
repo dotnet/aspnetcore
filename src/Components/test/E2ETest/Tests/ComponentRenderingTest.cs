@@ -12,6 +12,7 @@ using BasicTestApp.HierarchicalImportsTest.Subdir;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Xunit;
@@ -41,6 +42,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23366")]
         public void CanRenderTextOnlyComponent()
         {
             var appElement = Browser.MountTestComponent<TextOnlyComponent>();
@@ -399,6 +401,26 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanUseFocusExtensionToFocusElement()
+        {
+            var appElement = Browser.MountTestComponent<ElementFocusComponent>();
+            var buttonElement = appElement.FindElement(By.Id("focus-button"));
+
+            // Make sure the input element isn't focused when the test begins; we don't want
+            // the test to pass just because the input started as the focused element
+            Browser.NotEqual("focus-input", getFocusedElementId);
+
+            // Click the button whose callback focuses the input element
+            buttonElement.Click();
+
+            // Verify that the input element is focused
+            Browser.Equal("focus-input", getFocusedElementId);
+
+            // A local helper that gets the ID of the focused element.
+            string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetAttribute("id");
+        }
+
+        [Fact]
         public void CanCaptureReferencesToDynamicallyAddedElements()
         {
             var appElement = Browser.MountTestComponent<ElementRefComponent>();
@@ -462,6 +484,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void CanRenderMarkupBlocks()
         {
             var appElement = Browser.MountTestComponent<MarkupBlockComponent>();
@@ -625,7 +648,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Exists(incompleteItemsSelector);
 
             // Mark first item as done; observe the remaining incomplete item appears unchecked
-            // because the diff algoritm explicitly unchecks it
+            // because the diff algorithm explicitly unchecks it
             appElement.FindElement(By.CssSelector(".incomplete-items .item-isdone")).Click();
             Browser.True(() =>
             {
@@ -635,7 +658,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             });
 
             // Mark first done item as not done; observe the remaining complete item appears checked
-            // because the diff algoritm explicitly re-checks it
+            // because the diff algorithm explicitly re-checks it
             appElement.FindElement(By.CssSelector(".complete-items .item-isdone")).Click();
             Browser.True(() =>
             {

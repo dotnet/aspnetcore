@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
         private void UpdateStaticAssets(IWebHostBuilder builder)
         {
-            var manifestPath = Path.GetDirectoryName(new Uri(typeof(ServerFactory<,>).Assembly.CodeBase).LocalPath);
+            var manifestPath = Path.GetDirectoryName(typeof(ServerFactory<,>).Assembly.Location);
             builder.ConfigureAppConfiguration((ctx, cb) =>
             {
                 if (ctx.HostingEnvironment.WebRootFileProvider is CompositeFileProvider composite)
@@ -156,7 +156,6 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var _assemblyMap =
                 new Dictionary<UIFramework, string>()
                 {
-                    [UIFramework.Bootstrap3] = "Microsoft.AspNetCore.Identity.UI.Views.V3",
                     [UIFramework.Bootstrap4] = "Microsoft.AspNetCore.Identity.UI.Views.V4",
                 };
 
@@ -170,7 +169,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                         ra => ra,
                         CompiledRazorAssemblyApplicationPartFactory.GetDefaultApplicationParts);
 
-                    var selectedFrameworkAssembly = _assemblyMap[framework == "V3" ? UIFramework.Bootstrap3 : UIFramework.Bootstrap4];
+                    var selectedFrameworkAssembly = _assemblyMap[UIFramework.Bootstrap4];
 
                     foreach (var kvp in relatedParts)
                     {
