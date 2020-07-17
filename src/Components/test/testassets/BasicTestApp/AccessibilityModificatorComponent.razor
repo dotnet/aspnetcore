@@ -1,0 +1,23 @@
+﻿@using TestContentPackage
+
+<div>
+    <p>Public container can be used here</p>
+    <p>
+        <ContainerForInternalComponentFromPackage></ContainerForInternalComponentFromPackage>
+    </p>
+</div>
+
+
+<div>
+    <p>Internal component can not be used here</p>
+    <p>
+        @*
+            <InternalComponentFromPackage></InternalComponentFromPackage>
+        *@
+    </p>
+</div>
+
+
+@code {
+
+}
