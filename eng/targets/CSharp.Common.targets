@@ -9,7 +9,6 @@
   <Target Name="GetCustomAssemblyAttributes"
           BeforeTargets="GetAssemblyAttributes"
           DependsOnTargets="InitializeSourceControlInformation">
-
     <ItemGroup>
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(SourceRevisionId)' != ''">
         <_Parameter1>CommitHash</_Parameter1>
@@ -25,6 +24,13 @@
         <_Parameter1>Serviceable</_Parameter1>
         <_Parameter2>True</_Parameter2>
       </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
+
+  <!-- Reference assemblies are shipped only in targeting packs. -->
+  <Target Name="_RemoveReferenceAssembly" BeforeTargets="_GetPackageFiles;GenerateNuspec" Condition="$(HasReferenceAssembly)">
+    <ItemGroup>
+      <_PackageFilesToExclude Include="@(IntermediateRefAssembly);$(TargetRefPath)" />
     </ItemGroup>
   </Target>
 
