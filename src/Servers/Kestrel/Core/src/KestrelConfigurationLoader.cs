@@ -293,6 +293,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     httpsOptions.ServerCertificate = LoadCertificate(endpoint.Certificate, endpoint.Name)
                         ?? httpsOptions.ServerCertificate;
 
+                    httpsOptions.ClientCertificateMode = ConfigurationReader.ClientCertificateMode ?? httpsOptions.ClientCertificateMode;
+
                     if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
                     {
                         // Fallback

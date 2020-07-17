@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Authentication;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
@@ -18,12 +19,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private const string EndpointDefaultsKey = "EndpointDefaults";
         private const string EndpointsKey = "Endpoints";
         private const string UrlKey = "Url";
+        private const string ClientCertificateModeKey = "ClientCertificateMode";
 
         private readonly IConfiguration _configuration;
 
         private IDictionary<string, CertificateConfig> _certificates;
         private EndpointDefaults _endpointDefaults;
         private IEnumerable<EndpointConfig> _endpoints;
+        private ClientCertificateMode? _clientCertificateMode;
 
         public ConfigurationReader(IConfiguration configuration)
         {
@@ -33,6 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public IDictionary<string, CertificateConfig> Certificates => _certificates ??= ReadCertificates();
         public EndpointDefaults EndpointDefaults => _endpointDefaults ??= ReadEndpointDefaults();
         public IEnumerable<EndpointConfig> Endpoints => _endpoints ??= ReadEndpoints();
+        public ClientCertificateMode? ClientCertificateMode => _clientCertificateMode ??= ReadClientCertificateMode();
 
         private IDictionary<string, CertificateConfig> ReadCertificates()
         {
@@ -98,6 +102,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
 
             return endpoints;
+        }
+
+        private ClientCertificateMode? ReadClientCertificateMode()
+        {
+            if (Enum.TryParse<ClientCertificateMode>(_configuration[ClientCertificateModeKey], ignoreCase: true, out var result))
+            {
+                return result;
+            }
+
+            return null;
         }
 
         private static HttpProtocols? ParseProtocols(string protocols)

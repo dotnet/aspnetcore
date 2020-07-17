@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Authentication;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 
@@ -14,6 +15,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 {
     public class ConfigurationReaderTests
     {
+        [Fact]
+        public void ReadClientCertificateMode_ReturnsValue()
+        {
+            // Arrange
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    ["ClientCertificateMode"] = "AllowCertificate"
+                })
+                .Build();
+
+            // Act
+            var reader = new ConfigurationReader(config);
+
+            // Assert
+            Assert.NotNull(reader.ClientCertificateMode);
+            Assert.Equal(ClientCertificateMode.AllowCertificate, reader.ClientCertificateMode);
+        }
+
+        [Fact]
+        public void ReadClientCertificateModeWhenNoClientCertificateMode_ReturnsNull()
+        {
+            // Arrange
+            var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
+
+            // Act
+            var reader = new ConfigurationReader(config);
+
+            // Assert
+            Assert.Null(reader.ClientCertificateMode);
+        }
+
         [Fact]
         public void ReadCertificatesWhenNoCertificatesSection_ReturnsEmptyCollection()
         {
