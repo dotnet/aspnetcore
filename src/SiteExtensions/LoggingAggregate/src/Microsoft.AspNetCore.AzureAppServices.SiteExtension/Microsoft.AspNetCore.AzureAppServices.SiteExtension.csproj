@@ -18,8 +18,6 @@
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
     <IsShipping Condition=" '$(PreReleaseVersionLabel)' == 'preview' ">false</IsShipping>
-    <ReferenceReferenceAssemblies>false</ReferenceReferenceAssemblies>
-    <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
 
     <!-- Grab packages LB.csproj should have just built. -->
     <RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);$(ArtifactsNonShippingPackagesDir)</RestoreAdditionalProjectSources>

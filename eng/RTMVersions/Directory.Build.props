@@ -1,0 +1,6 @@
+<Project>
+  <!-- Minimize what gets set to avoid useless references in this simple project. -->
+  <Import Project="..\Common.props" />
+  <Import Project="..\Versions.props" />
+  <Import Project="..\Dependencies.props" />
+</Project>
