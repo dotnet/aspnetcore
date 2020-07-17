@@ -37,7 +37,7 @@ namespace InteropTestsWebsite
             Host.CreateDefaultBuilder(args)
                 .ConfigureLogging(builder =>
                 {
-                    builder.AddConsole(o => o.DisableColors = true);
+                    builder.AddSimpleConsole(o => o.DisableColors = true);
                     builder.SetMinimumLevel(LogLevel.Trace);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
