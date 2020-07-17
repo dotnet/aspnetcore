@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public static class SendFileResponseExtensions
     {
+        private const int StreamCopyBufferSize = 64 * 1024;
+
         /// <summary>
         /// Sends the given file using the SendFile extension.
         /// </summary>
@@ -110,15 +112,21 @@ namespace Microsoft.AspNetCore.Http
             if (string.IsNullOrEmpty(file.PhysicalPath))
             {
                 CheckRange(offset, count, file.Length);
+                using var fileContent = file.CreateReadStream();
 
-                using (var fileContent = file.CreateReadStream())
+                var useRequestAborted = !cancellationToken.CanBeCanceled;
+                var localCancel = useRequestAborted ? response.HttpContext.RequestAborted : cancellationToken;
+
+                try
                 {
+                    localCancel.ThrowIfCancellationRequested();
                     if (offset > 0)
                     {
                         fileContent.Seek(offset, SeekOrigin.Begin);
                     }
-                    await StreamCopyOperation.CopyToAsync(fileContent, response.Body, count, cancellationToken);
+                    await StreamCopyOperation.CopyToAsync(fileContent, response.Body, count, StreamCopyBufferSize, localCancel);
                 }
+                catch (OperationCanceledException) when (useRequestAborted) { }
             }
             else
             {
@@ -126,10 +134,17 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        private static Task SendFileAsyncCore(HttpResponse response, string fileName, long offset, long? count, CancellationToken cancellationToken = default)
+        private static async Task SendFileAsyncCore(HttpResponse response, string fileName, long offset, long? count, CancellationToken cancellationToken = default)
         {
+            var useRequestAborted = !cancellationToken.CanBeCanceled;
+            var localCancel = useRequestAborted ? response.HttpContext.RequestAborted : cancellationToken;
             var sendFile = response.HttpContext.Features.Get<IHttpResponseBodyFeature>();
-            return sendFile.SendFileAsync(fileName, offset, count, cancellationToken);
+
+            try
+            {
+                await sendFile.SendFileAsync(fileName, offset, count, localCancel);
+            }
+            catch (OperationCanceledException) when (useRequestAborted) { }
         }
 
         private static void CheckRange(long offset, long? count, long fileLength)

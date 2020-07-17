@@ -5,11 +5,9 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Internal;
@@ -21,8 +19,6 @@ namespace Microsoft.AspNetCore.StaticFiles
 {
     internal struct StaticFileContext
     {
-        private const int StreamCopyBufferSize = 64 * 1024;
-
         private readonly HttpContext _context;
         private readonly StaticFileOptions _options;
         private readonly HttpRequest _request;
@@ -345,29 +341,14 @@ namespace Microsoft.AspNetCore.StaticFiles
         {
             SetCompressionMode();
             ApplyResponseHeaders(StatusCodes.Status200OK);
-            string physicalPath = _fileInfo.PhysicalPath;
-            var sendFile = _context.Features.Get<IHttpResponseBodyFeature>();
-            if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
-            {
-                // We don't need to directly cancel this, if the client disconnects it will fail silently.
-                await sendFile.SendFileAsync(physicalPath, 0, _length, CancellationToken.None);
-                return;
-            }
-
             try
             {
-                using (var readStream = _fileInfo.CreateReadStream())
-                {
-                    // Larger StreamCopyBufferSize is required because in case of FileStream readStream isn't going to be buffering
-                    await StreamCopyOperation.CopyToAsync(readStream, _response.Body, _length, StreamCopyBufferSize, _context.RequestAborted);
-                }
+                await _context.Response.SendFileAsync(_fileInfo, 0, _length, _context.RequestAborted);
             }
             catch (OperationCanceledException ex)
             {
-                _logger.WriteCancelled(ex);
                 // Don't throw this exception, it's most likely caused by the client disconnecting.
-                // However, if it was cancelled for any other reason we need to prevent empty responses.
-                _context.Abort();
+                _logger.WriteCancelled(ex);
             }
         }
 
@@ -391,31 +372,16 @@ namespace Microsoft.AspNetCore.StaticFiles
             SetCompressionMode();
             ApplyResponseHeaders(StatusCodes.Status206PartialContent);
 
-            string physicalPath = _fileInfo.PhysicalPath;
-            var sendFile = _context.Features.Get<IHttpResponseBodyFeature>();
-            if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
-            {
-                _logger.SendingFileRange(_response.Headers[HeaderNames.ContentRange], physicalPath);
-                // We don't need to directly cancel this, if the client disconnects it will fail silently.
-                await sendFile.SendFileAsync(physicalPath, start, length, CancellationToken.None);
-                return;
-            }
-
             try
             {
-                using (var readStream = _fileInfo.CreateReadStream())
-                {
-                    readStream.Seek(start, SeekOrigin.Begin); // TODO: What if !CanSeek?
-                    _logger.CopyingFileRange(_response.Headers[HeaderNames.ContentRange], SubPath);
-                    await StreamCopyOperation.CopyToAsync(readStream, _response.Body, length, _context.RequestAborted);
-                }
+                var logPath = !string.IsNullOrEmpty(_fileInfo.PhysicalPath) ? _fileInfo.PhysicalPath : SubPath;
+                _logger.SendingFileRange(_response.Headers[HeaderNames.ContentRange], logPath);
+                await _context.Response.SendFileAsync(_fileInfo, start, length, _context.RequestAborted);
             }
             catch (OperationCanceledException ex)
             {
-                _logger.WriteCancelled(ex);
                 // Don't throw this exception, it's most likely caused by the client disconnecting.
-                // However, if it was cancelled for any other reason we need to prevent empty responses.
-                _context.Abort();
+                _logger.WriteCancelled(ex);
             }
         }
 
