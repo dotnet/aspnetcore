@@ -1,14 +1,11 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
-
-using Microsoft.Graph;
+﻿using Microsoft.Graph;
 using Microsoft.Identity.Web;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Company.WebApplication1.Services
+namespace Company.WebApplication1
 {
     internal class TokenAcquisitionCredentialProvider : IAuthenticationProvider
     {

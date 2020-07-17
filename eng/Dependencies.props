@@ -169,6 +169,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="MessagePackAnalyzer" Version="$(MessagePackPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Identity.Web" Version="$(MicrosoftIdentityWebPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Identity.Web.UI" Version="$(MicrosoftIdentityWebUIPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Graph" Version="$(MicrosoftGraphPackageVersion)" />
     <LatestPackageReference Include="Mono.Cecil" Version="$(MonoCecilPackageVersion)" />
     <LatestPackageReference Include="Moq" Version="$(MoqPackageVersion)" />
     <LatestPackageReference Include="Newtonsoft.Json.Bson" Version="$(NewtonsoftJsonBsonPackageVersion)" />

@@ -22,6 +22,7 @@
       MicrosoftIdentityWebUIPackageVersion=$(MicrosoftIdentityWebUIPackageVersion);
       MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
       SystemNetHttpJsonPackageVersion=$(SystemNetHttpJsonPackageVersion);
+      MicrosoftGraphPackageVersion=$(MicrosoftGraphPackageVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 

@@ -1,7 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
@@ -9,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Graph;
 using Microsoft.Identity.Web;
 
-namespace Company.WebApplication1.Services
+namespace Company.WebApplication1
 {
     public static class MicrosoftGraphServiceExtensions
     {
@@ -20,7 +17,7 @@ namespace Company.WebApplication1.Services
         /// <param name="initialScopes">Initial scopes.</param>
         /// <param name="graphBaseUrl">Base URL for Microsoft graph. This can be
         /// changed for instance for applications running in national clouds</param>
-        public static void AddMicrosoftGraph(this IServiceCollection services, 
+        public static void AddMicrosoftGraph(this IServiceCollection services,
                                              IEnumerable<string> initialScopes,
                                              string graphBaseUrl = "https://graph.microsoft.com/v1.0")
         {

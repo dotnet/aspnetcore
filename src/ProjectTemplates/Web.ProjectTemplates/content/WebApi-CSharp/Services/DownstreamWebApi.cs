@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Web;
 
-namespace Company.WebApplication1.Services
+namespace Company.WebApplication1
 {
     public interface IDownstreamWebApi
     {

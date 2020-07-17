@@ -279,19 +279,6 @@
   "defaultName": "WebApplication",
   "postActions": [
     {
-       "condition": "(CallsMicrosoftGraph)",
-       "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
-       "description": "Adds Microsoft Graph package.",
-      "manualInstructions": [
-      ],
-      "args": {
-          "referenceType": "package",
-          "reference": "Microsoft.Graph",
-          "version": "3.8.0"
-      },
-     "continueOnError": true
-    },
-    {
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [
