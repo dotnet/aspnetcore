@@ -8,15 +8,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 #endif
 using Microsoft.AspNetCore.Mvc;
-#if (OrganizationalAuth || IndividualB2CAuth)
-using Microsoft.AspNetCore.Authentication;
-#endif
-#if (OrganizationalAuth)
-using Microsoft.AspNetCore.Authentication.AzureAD.UI;
-#endif
-#if (IndividualB2CAuth)
-using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
-#endif
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -36,13 +27,6 @@ namespace Company.WebApplication1
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-#if (OrganizationalAuth)
-            services.AddAuthentication(AzureADDefaults.BearerAuthenticationScheme)
-                .AddAzureADBearer(options => Configuration.Bind("AzureAd", options));
-#elif (IndividualB2CAuth)
-            services.AddAuthentication(AzureADB2CDefaults.BearerAuthenticationScheme)
-                .AddAzureADB2CBearer(options => Configuration.Bind("AzureAdB2C", options));
-#endif
             services.AddControllers();
         }
 
@@ -60,7 +44,7 @@ namespace Company.WebApplication1
 
             app.UseRouting();
 
-#if (OrganizationalAuth || IndividualAuth)
+#if (IndividualAuth)
             app.UseAuthentication();
 #endif
             app.UseAuthorization();
