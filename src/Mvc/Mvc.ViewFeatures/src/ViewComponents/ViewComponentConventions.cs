@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             }
 
             if (!typeInfo.IsClass ||
-                !typeInfo.IsPublic ||
+                // !typeInfo.IsPublic // we do not need check accessibility anymore
                 typeInfo.IsAbstract ||
                 typeInfo.ContainsGenericParameters ||
                 typeInfo.IsDefined(typeof(NonViewComponentAttribute)))

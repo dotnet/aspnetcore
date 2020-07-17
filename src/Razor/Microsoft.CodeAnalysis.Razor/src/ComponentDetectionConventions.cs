@@ -20,7 +20,7 @@ namespace Microsoft.CodeAnalysis.Razor
             }
 
             return
-                symbol.DeclaredAccessibility == Accessibility.Public &&
+                //symbol.DeclaredAccessibility == Accessibility.Public && // we do not need check accessibility anymore
                 !symbol.IsAbstract &&
                 symbol.AllInterfaces.Contains(icomponentSymbol);
         }
