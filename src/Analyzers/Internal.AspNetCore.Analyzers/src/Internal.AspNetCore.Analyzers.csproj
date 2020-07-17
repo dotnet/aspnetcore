@@ -8,7 +8,7 @@
     <BuildOutputTargetFolder>analyzers/dotnet/cs/</BuildOutputTargetFolder>
     <!--
       Except for analyzer unit tests, analyzers should not be referenced by other projects in this repo. Analyzers cannot be used as
-      a project reference. The SDK currently only supports using analyzers as a PackageReference. This flag prevents this project from
+      a project reference unless referenced with OutputItemType="Analyzer". The SDK currently only supports using analyzers as a PackageReference. This flag prevents this project from
       being used as a `<Reference>`, which indicates that a reference is interchangeable between ProjectRef and PackageRef.
     -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>

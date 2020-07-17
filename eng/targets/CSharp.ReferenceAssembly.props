@@ -1,7 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-    <NoWarn>$(NoWarn);CS0618;PUB0001</NoWarn>
-  </PropertyGroup>
-</Project>
