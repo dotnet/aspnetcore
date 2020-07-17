@@ -153,6 +153,8 @@
       AND '$(MSBuildProjectExtension)' == '.csproj'">
     <ProjectReference
       Include="$(RepoRoot)src\Analyzers\Internal.AspNetCore.Analyzers\src\Internal.AspNetCore.Analyzers.csproj"
+      ReferenceOutputAssembly="false"
+      OutputItemType="Analyzer"
       PrivateAssets="All"
       Version="$(InternalAspNetCoreAnalyzersPackageVersion)"
       IsImplicitlyDefined="true" />
