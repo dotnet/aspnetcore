@@ -4,6 +4,24 @@ namespace Microsoft.AspNetCore.Csp.Test
 {
     public class ContentSecurityPolicyTest
     {
+        /// <summary>
+        ///  Mocking a INonce for generating policies with a testable, fixed nonce.
+        /// </summary>
+        private class TestNonce : INonce
+        {
+            private readonly string _val;
+
+            public TestNonce(string value)
+            {
+                _val = value;
+            }
+
+            public string GetValue()
+            {
+                return _val;
+            }
+        }
+
         [Fact]
         public void SetsCorrectHeaderNameInReportingMode()
         {
@@ -97,6 +115,18 @@ namespace Microsoft.AspNetCore.Csp.Test
                 .Build();
 
             Assert.Matches("script-src .* https: http:", policy.GetPolicy());
+        }
+
+        [Theory]
+        [InlineData("ABCDE")]
+        [InlineData("1234567890")]
+        public void SetNonceIfProvided(string nonce)
+        {
+            var policy = new ContentSecurityPolicyBuilder()
+                .WithCspMode(CspMode.ENFORCING)
+                .Build();
+
+            Assert.Matches(string.Format("'nonce-{0}", nonce), policy.GetPolicy(new TestNonce(nonce)));
         }
     }
 }

@@ -3,4 +3,4 @@
 
 // Write your Javascript code.
 
-alert('hi');
+alert("I'm a link-loaded script!");

@@ -24,6 +24,7 @@ namespace CspApplication
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddNonces();
             services.AddRazorPages();
         }
 
@@ -33,6 +34,7 @@ namespace CspApplication
             // CSP configuration. Must come first because other middleware might skip any following middleware.
             app.UseCsp(policyBuilder => policyBuilder.WithCspMode(CspMode.REPORTING)
                 .WithReportingUri("/csp"));
+
 
             // Not sure how many of these we absolutely need to do a basic templated HTML page with a reporting endpoint.
             app.UseDeveloperExceptionPage();

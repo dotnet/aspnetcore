@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
     <Reference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />

@@ -39,10 +39,11 @@ namespace Microsoft.AspNetCore.Csp
         {
             return _cspMode == CspMode.REPORTING ? CspConstants.CspReportingHeaderName : CspConstants.CspEnforcedHeaderName;
         }
-        public string GetPolicy()
+        public string GetPolicy(INonce nonce=null)
         {
             return string.Format(
-                "script-src 'nonce-random' {0} {1} https: http:; {2}; {3}",
+                "script-src {0} {1} {2} https: http:; {3}; {4}",
+                nonce == null ? "" : string.Format("'nonce-{0}'", nonce.GetValue()),
                 _strictDynamic ? "'strict-dynamic'" : "",
                 _unsafeEval ? "'unsafe-eval'" : "",
                 _baseAndObject,

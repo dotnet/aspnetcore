@@ -1,5 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Csp
 {
@@ -25,6 +26,18 @@ namespace Microsoft.AspNetCore.Csp
             }
 
             return app.UseMiddleware<CspMiddleware>(policyBuilder.Build());
+        }
+
+        public static IServiceCollection AddNonces(this IServiceCollection services)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            services.AddScoped<INonce, Nonce>();
+
+            return services;
         }
     }
 }

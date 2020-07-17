@@ -20,10 +20,11 @@ namespace Microsoft.AspNetCore.Csp.Test
         [InlineData("/")]
         [InlineData("/cheese")]
         [InlineData("/foo")]
-        public async Task cspHeaderIsSetOnAllResponses(string requestPath)
+        public async Task CspHeaderIsSetOnAllResponses(string requestPath)
         {
             // Arrange
             var hostBuilder = new WebHostBuilder()
+                .ConfigureServices(services => services.AddNonces())
                 .Configure(app =>
                 {
                     app.UseCsp(policyBuilder =>
@@ -55,10 +56,11 @@ namespace Microsoft.AspNetCore.Csp.Test
         [InlineData("text/html", true)]
         [InlineData("application/json", false)]
         [InlineData(null, true)]
-        public async Task cspHeaderIsSetOnlyOnValidResponses(string contentType, bool headerShouldExist)
+        public async Task CspHeaderIsSetOnlyOnValidResponses(string contentType, bool headerShouldExist)
         {
             // Arrange
             var hostBuilder = new WebHostBuilder()
+                .ConfigureServices(services => services.AddNonces())
                 .Configure(app =>
                 {
                     app.UseCsp(policyBuilder =>
@@ -90,6 +92,43 @@ namespace Microsoft.AspNetCore.Csp.Test
                 {
                     Assert.Empty(response.Headers);
                 }
+            }
+        }
+
+        [Theory]
+        [InlineData("/")]
+        public async Task CspNonceExistsInHeader(string requestPath)
+        {
+            // Arrange
+            var hostBuilder = new WebHostBuilder()
+                .ConfigureServices(services => services.AddNonces())
+                .Configure(app =>
+                {
+                    app.UseCsp(policyBuilder =>
+                    {
+                        policyBuilder
+                            .WithCspMode(CspMode.ENFORCING);
+                    });
+                    app.Run(async context =>
+                    {
+                        await context.Response.WriteAsync("Test response");
+                    });
+                });
+
+            using (var server = new TestServer(hostBuilder))
+            {
+                // Act
+                var response = await server.CreateRequest(requestPath)
+                    .SendAsync("GET");
+
+                // Assert
+                response.EnsureSuccessStatusCode();
+                Assert.Equal("Test response", await response.Content.ReadAsStringAsync());
+
+                Assert.Single(response.Headers);
+                var header = response.Headers.GetValues(CspConstants.CspEnforcedHeaderName).FirstOrDefault();
+                Assert.NotEmpty(header);
+                Assert.Matches("'nonce-", header);
             }
         }
 
