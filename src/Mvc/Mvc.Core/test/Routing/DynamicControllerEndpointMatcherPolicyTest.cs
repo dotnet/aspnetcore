@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 _ => Task.CompletedTask,
                 new EndpointMetadataCollection(new object[]
                 {
-                    new DynamicControllerRouteValueTransformerMetadata(typeof(CustomTransformer)),
+                    new DynamicControllerRouteValueTransformerMetadata(typeof(CustomTransformer), null),
                 }),
                 "dynamic");
 
