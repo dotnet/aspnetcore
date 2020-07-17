@@ -15,9 +15,13 @@ namespace Microsoft.AspNetCore.Csp
             var policyBuilder = new ContentSecurityPolicyBuilder();
             configurePolicy(policyBuilder);
 
+            // TODO: Has local reporting
             if (policyBuilder.HasReporting())
             {
-                //TODO: Register reporting endpoint and implement default handler
+                var loggingConfig = policyBuilder.LoggingConfiguration();
+                app.UseWhen(
+                    context => context.Request.Path.StartsWithSegments(loggingConfig.ReportUri),
+                    appBuilder => appBuilder.UseMiddleware<CspReportingMiddleware>(loggingConfig));
             }
 
             return app.UseMiddleware<CspMiddleware>(policyBuilder.Build());

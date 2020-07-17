@@ -10,5 +10,6 @@ namespace Microsoft.AspNetCore.Csp
     {
         public static readonly string CspEnforcedHeaderName = "Content-Security-Policy";
         public static readonly string CspReportingHeaderName = "Content-Security-Policy-Report-Only";
+        public static readonly string CspReportContentType = "application/csp-report";
     }
 }

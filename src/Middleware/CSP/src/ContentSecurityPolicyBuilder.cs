@@ -1,21 +1,15 @@
 using System;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Csp
 {
     public class ContentSecurityPolicyBuilder
     {
-        private LoggingConfiguration _loggingConfiguration;
         private CspMode _cspMode;
         private bool _strictDynamic;
         private bool _unsafeEval;
         private string _reportingUri;
-
-        public ContentSecurityPolicyBuilder()
-        {
-            // TODO: Consider adding builder for logging config
-            _loggingConfiguration = new LoggingConfiguration();
-            _loggingConfiguration.LogLevel = Extensions.Logging.LogLevel.Information;
-        }
+        private LogLevel _logLevel = LogLevel.Information;
 
         public ContentSecurityPolicyBuilder WithCspMode(CspMode cspMode)
         {
@@ -41,15 +35,24 @@ namespace Microsoft.AspNetCore.Csp
             return this;
         }
 
-        public ContentSecurityPolicyBuilder WithLoggingConfiguration(LoggingConfiguration loggingConfiguration)
+        public ContentSecurityPolicyBuilder WithLogLevel(LogLevel logLevel)
         {
-            _loggingConfiguration = loggingConfiguration;
+            _logLevel = logLevel;
             return this;
         }
 
         public bool HasReporting()
         {
             return _reportingUri != null;
+        }
+
+        public LoggingConfiguration LoggingConfiguration()
+        {
+            return new LoggingConfiguration
+            {
+                LogLevel = _logLevel,
+                ReportUri = _reportingUri
+            };
         }
 
         public ContentSecurityPolicy Build()

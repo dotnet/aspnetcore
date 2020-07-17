@@ -4,6 +4,8 @@ namespace Microsoft.AspNetCore.Csp
 {
     public class LoggingConfiguration
     {
-        public LogLevel LogLevel { get; internal set; }
+        public LogLevel LogLevel { get; set; }
+
+        public string ReportUri { get; set; }
     }
 }
