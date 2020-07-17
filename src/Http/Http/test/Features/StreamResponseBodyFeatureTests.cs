@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Http.Features
             await streamResponseBodyFeature.CompleteAsync();
 
             //Assert
-            Assert.Equals(1, streamResponseBodyFeature.StartCalled);
+            Assert.Equal(1, streamResponseBodyFeature.StartCalled);
         }
 
         [Fact]
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Http.Features
             await streamResponseBodyFeature.CompleteAsync();
 
             //Assert
-            Assert.Equals(1, streamResponseBodyFeature.StartCalled);
+            Assert.Equal(1, streamResponseBodyFeature.StartCalled);
         }
     }
 
