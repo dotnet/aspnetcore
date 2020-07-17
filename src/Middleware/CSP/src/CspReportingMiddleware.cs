@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Csp
         {
             // TODO: Is this first condition guaranteed?
             return request.Path.StartsWithSegments(_loggingConfig.ReportUri)
-                && request.ContentType.StartsWith(CspConstants.CspReportContentType)
+                && request.ContentType?.StartsWith(CspConstants.CspReportContentType) == true
                 && request.ContentLength != 0;
         }
 
