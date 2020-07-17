@@ -1,0 +1,26 @@
+@page "/inputdate"
+
+<h1>InputDate sample</h1>
+
+<label>Selected date: @AccessibilityModel.SelectedDate</label>
+
+<EditForm Model="@AccessibilityModel">
+    <DataAnnotationsValidator />
+    <label for="accessibleDateBox">Select date:</label>
+    <InputDate id="accessibleDateBox" @bind-Value="AccessibilityModel.SelectedDate" />
+</EditForm>
+
+@code {
+    private SampleModel AccessibilityModel { get; set; }
+
+    protected override void OnInitialized()
+    {
+        this.AccessibilityModel = new SampleModel() { SelectedDate = DateTimeOffset.Now };
+        base.OnInitialized();
+    }
+
+    class SampleModel
+    {
+        public DateTimeOffset SelectedDate { get; set; }
+    }
+}

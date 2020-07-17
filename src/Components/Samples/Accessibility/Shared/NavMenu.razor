@@ -1,0 +1,57 @@
+<div class="top-row pl-4 navbar navbar-dark">
+    <a class="navbar-brand" href="">Accessibility</a>
+    <button class="navbar-toggler" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <ul class="nav flex-column">
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> Home
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="inputcheckbox" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> InputCheckbox sample
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="inputdate" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> InputDate sample
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="inputnumber" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> InputNumber sample
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="inputselect" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> InputSelect sample
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="inputtext" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> InputText sample
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="inputtextarea" Match="NavLinkMatch.All">
+                <span class="oi oi-home" aria-hidden="true"></span> InputTextArea sample
+            </NavLink>
+        </li>
+    </ul>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

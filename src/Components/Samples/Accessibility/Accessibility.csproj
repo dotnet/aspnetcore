@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsShippingPackage>false</IsShippingPackage>
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    <UseBlazorWebAssembly>true</UseBlazorWebAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+    <Reference Include="Microsoft.Extensions.Http" />
+    <Reference Include="System.Net.Http.Json" />
+  </ItemGroup>
+
+</Project>

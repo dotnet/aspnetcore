@@ -1,0 +1,26 @@
+@page "/inputcheckbox"
+
+<h1>InputCheckbox sample</h1>
+
+<p>Checkbox is @(AccessibilityModel.IsSelected? "checked" : "not checked")</p>
+
+<EditForm Model="@AccessibilityModel">
+    <DataAnnotationsValidator />
+    <label for="accessibleCheckbox">Do you want to check: </label>
+    <InputCheckbox id="accessibleCheckbox" @bind-Value="AccessibilityModel.IsSelected" />
+</EditForm>
+
+@code {
+    private SampleModel AccessibilityModel { get; set; }
+
+    protected override void OnInitialized()
+    {
+        this.AccessibilityModel = new SampleModel();
+        base.OnInitialized();
+    }
+
+    class SampleModel
+    {
+        public bool IsSelected { get; set; }
+    }
+}

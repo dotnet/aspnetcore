@@ -1,0 +1,32 @@
+@page "/inputselect"
+
+<h1>InputSelect sample</h1>
+
+<p>Selected value is @AccessibilityModel.SelectedValue</p>
+
+<EditForm Model="@AccessibilityModel">
+    <DataAnnotationsValidator />
+    <label for="accessibleSelect">Select option: </label>
+    <InputSelect id="accessibleSelect" @bind-Value="AccessibilityModel.SelectedValue">
+        @foreach (var optionValue in optionValues)
+        {
+            <option value="@optionValue">@optionValue</option>
+        }
+    </InputSelect>
+</EditForm>
+
+@code {
+    private string[] optionValues = new[] { "option1", "option2", "option3" };
+    private SampleModel AccessibilityModel { get; set; }
+
+    protected override void OnInitialized()
+    {
+        this.AccessibilityModel = new SampleModel() { SelectedValue = optionValues[0] };
+        base.OnInitialized();
+    }
+
+    class SampleModel
+    {
+        public string SelectedValue { get; set; }
+    }
+}

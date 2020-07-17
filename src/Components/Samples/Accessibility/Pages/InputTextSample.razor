@@ -1,0 +1,26 @@
+@page "/inputtext"
+
+<h1>InputText sample</h1>
+
+<p>You've typed: @AccessibilityModel.Value</p>
+
+<EditForm Model="@AccessibilityModel">
+    <DataAnnotationsValidator />
+    <label for="textField">Type text:</label>
+    <InputText id="textField" @bind-Value="AccessibilityModel.Value" />
+</EditForm>
+
+@code {
+    private SampleModel AccessibilityModel { get; set; }
+
+    protected override void OnInitialized()
+    {
+        this.AccessibilityModel = new SampleModel();
+        base.OnInitialized();
+    }
+
+    class SampleModel
+    {
+        public string Value { get; set; }
+    }
+}

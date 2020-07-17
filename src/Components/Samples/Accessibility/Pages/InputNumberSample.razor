@@ -1,0 +1,26 @@
+@page "/inputnumber"
+
+<h1>InputNumber sample</h1>
+
+<p>Selected value is @AccessibilityModel.Value</p>
+
+<EditForm Model="@AccessibilityModel">
+    <DataAnnotationsValidator />
+    <label for="numberField">Select number: </label>
+    <InputNumber id="numberField" @bind-Value="AccessibilityModel.Value" />
+</EditForm>
+
+@code {
+    private SampleModel AccessibilityModel { get; set; }
+
+    protected override void OnInitialized()
+    {
+        this.AccessibilityModel = new SampleModel();
+        base.OnInitialized();
+    }
+
+    class SampleModel
+    {
+        public int Value { get; set; }
+    }
+}
