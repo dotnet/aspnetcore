@@ -17,7 +17,10 @@ namespace Microsoft.AspNetCore.Csp
 
         public Task Invoke(HttpContext context)
         {
-            context.Response.Headers[_csp.GetHeaderName()] = _csp.GetPolicy();
+            if (context.Request.ContentType == null || context.Request.ContentType.Equals("text/html"))
+            {
+                context.Response.Headers[_csp.GetHeaderName()] = _csp.GetPolicy();
+            }
             return _next(context);
         }
     }
