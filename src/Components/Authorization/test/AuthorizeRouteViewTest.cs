@@ -77,7 +77,9 @@ namespace Microsoft.AspNetCore.Components.Authorization
         }
 
         [Fact]
-        public void AuthorizesWhenResourceIsSet(){
+        public void AuthorizesWhenResourceIsSet()
+        {
+            // Arrange
             var routeData = new RouteData(typeof(TestPageRequiringAuthorization), new Dictionary<string, object>
             {
                 { nameof(TestPageRequiringAuthorization.Message), "Hello, world!" }
@@ -117,7 +119,8 @@ namespace Microsoft.AspNetCore.Components.Authorization
         }
 
         [Fact]
-        public void NotAuthorizedWhenResourceMissing(){
+        public void NotAuthorizedWhenResourceMissing()
+        {
             // Arrange
             var routeData = new RouteData(typeof(TestPageRequiringAuthorization), EmptyParametersDictionary);
             _testAuthorizationService.NextResult = AuthorizationResult.Failed();

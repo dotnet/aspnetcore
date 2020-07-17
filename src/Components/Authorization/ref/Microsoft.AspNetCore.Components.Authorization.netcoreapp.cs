@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Components.Authorization
         public Microsoft.AspNetCore.Components.RenderFragment Authorizing { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Authorization.AuthenticationState> NotAuthorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public object Resource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected override void Render(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder) { }
     }
     public partial class AuthorizeView : Microsoft.AspNetCore.Components.Authorization.AuthorizeViewCore
