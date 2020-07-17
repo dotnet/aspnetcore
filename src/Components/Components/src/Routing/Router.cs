@@ -213,24 +213,38 @@ namespace Microsoft.AspNetCore.Components.Routing
             _onNavigateCts = new CancellationTokenSource();
             var navigateContext = new NavigationContext(path, _onNavigateCts.Token);
 
-            var cancellationTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            navigateContext.CancellationToken.Register(state =>
-                ((TaskCompletionSource)state).SetResult(), cancellationTcs);
-
             var task = OnNavigateAsync.InvokeAsync(navigateContext);
+            Task completedTask;
 
-            if (Navigating != null && task.Status != TaskStatus.RanToCompletion)
+            if (task.Status == TaskStatus.RanToCompletion)
+            {
+                completedTask = task;
+                return await ProcessCompletedOnNavigateTask(task, completedTask, navigateContext);
+            }
+
+            if (Navigating != null)
             {
                 _renderHandle.Render(Navigating);
             }
 
-            var completedTask = await Task.WhenAny(task, cancellationTcs.Task);
+            var cancellationTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var cancellationRegistration = navigateContext.CancellationToken.Register(state =>
+                ((TaskCompletionSource)state).SetResult(), cancellationTcs);
 
-            // We should not render the component associated with the route we
-            // are navigating to if:
-            // - The OnNavigateAsync task threw an exception
-            // - The OnNavigateAsync task wasn't cancelled by our CTS
-            // - The cancellation task completes first
+            completedTask = await Task.WhenAny(task, cancellationTcs.Task);
+            cancellationRegistration.Unregister();
+
+            return await ProcessCompletedOnNavigateTask(task, completedTask, navigateContext);
+        }
+
+        // We should not render the component associated with the route we
+        // are navigating to if:
+        // - The OnNavigateAsync task threw an exception
+        // - The OnNavigateAsync task wasn't cancelled by our CTS
+        // - The cancellation task completes first
+        private async Task<bool> ProcessCompletedOnNavigateTask(Task task, Task completedTask, NavigationContext context)
+        {
+
             if (task == completedTask)
             {
                 if (completedTask.IsCompletedSuccessfully)
@@ -244,27 +258,17 @@ namespace Microsoft.AspNetCore.Components.Routing
                 }
                 catch (Exception ex)
                 {
-                    if (completedTask.IsCanceled && !_onNavigateCts.IsCancellationRequested)
+                    if (completedTask.IsCanceled && !context.CancellationToken.IsCancellationRequested)
                     {
                         throw new InvalidOperationException("OnNavigateAsync callback cannot be canceled.", ex);
                     }
-                    ThrowExceptionInRenderer(completedTask);
+                    _renderHandle.Render(builder => ExceptionDispatchInfo.Capture(ex).Throw());
                     return false;
                 }
 
             }
 
             return false;
-        }
-
-        private void ThrowExceptionInRenderer(Task task)
-        {
-            var exception = task.Exception.Flatten().InnerException;
-            while (exception is AggregateException e)
-            {
-                exception = e.InnerException;
-            }
-            _renderHandle.Render(builder => ExceptionDispatchInfo.Capture(exception).Throw());
         }
 
         internal async Task RunOnNavigateWithRefreshAsync(string path, bool isNavigationIntercepted)

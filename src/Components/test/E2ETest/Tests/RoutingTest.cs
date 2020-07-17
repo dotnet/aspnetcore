@@ -563,10 +563,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // cancel the previous OnNavigate Task
             SetUrlViaPushState("/Other");
 
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(2)).Until(
-                driver => driver.FindElement(By.Id("blazor-error-ui")) != null);
-
-            Assert.True(app.FindElement(By.Id("blazor-error-ui")) != null);
+            var errorUiElem = Browser.Exists(By.Id("blazor-error-ui"), TimeSpan.FromSeconds(10));
+            Assert.NotNull(errorUiElem);
         }
 
         private long BrowserScrollY

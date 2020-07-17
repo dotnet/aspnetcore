@@ -19,9 +19,9 @@
 @code {
     private Dictionary<string, Func<NavigationContext, Task>> preNavigateTasks = new Dictionary<string, Func<NavigationContext, Task>>()
     {
-    { "LongPage1", new Func<NavigationContext, Task>(TestLoadingPageShows) },
-    { "LongPage2", new Func<NavigationContext, Task>(TestOnNavCancel) },
-    { "Other", new Func<NavigationContext, Task>(TestOnNavException) }
+        { "LongPage1", new Func<NavigationContext, Task>(TestLoadingPageShows) },
+        { "LongPage2", new Func<NavigationContext, Task>(TestOnNavCancel) },
+        { "Other", new Func<NavigationContext, Task>(TestOnNavException) }
     };
 
     private async Task OnNavigateAsync(NavigationContext args)
