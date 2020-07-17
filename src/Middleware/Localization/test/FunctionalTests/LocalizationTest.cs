@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using LocalizationWebsite;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Localization.FunctionalTests
@@ -97,8 +98,17 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
 
         private async Task RunTest(Type startupType, string culture, string expected)
         {
-            var webHostBuilder = new WebHostBuilder().UseStartup(startupType);
-            var testHost = new TestServer(webHostBuilder);
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .UseStartup(startupType);
+                }).Build();
+
+            await host.StartAsync();
+
+            var testHost = host.GetTestServer();
 
             var client = testHost.CreateClient();
             var request = new HttpRequestMessage();
@@ -109,6 +119,6 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expected, await response.Content.ReadAsStringAsync());
-    }
+        }
     }
 }

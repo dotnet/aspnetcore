@@ -37,15 +37,15 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var bootJson = ReadBootJsonData(result, Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json"));
 
             // And that it has been labelled as a dynamic assembly in the boot.json
-            var dynamicAssemblies = bootJson.resources.dynamicAssembly;
+            var lazyAssemblies = bootJson.resources.lazyAssembly;
             var assemblies = bootJson.resources.assembly;
 
-            Assert.NotNull(dynamicAssemblies);
-            Assert.Contains("RazorClassLibrary.dll", dynamicAssemblies.Keys);
+            Assert.NotNull(lazyAssemblies);
+            Assert.Contains("RazorClassLibrary.dll", lazyAssemblies.Keys);
             Assert.DoesNotContain("RazorClassLibrary.dll", assemblies.Keys);
 
             // App assembly should not be lazy loaded
-            Assert.DoesNotContain("blazorwasm.dll", dynamicAssemblies.Keys);
+            Assert.DoesNotContain("blazorwasm.dll", lazyAssemblies.Keys);
             Assert.Contains("blazorwasm.dll", assemblies.Keys);
         }
 
@@ -75,15 +75,15 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var bootJson = ReadBootJsonData(result, Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json"));
 
             // And that it has been labelled as a dynamic assembly in the boot.json
-            var dynamicAssemblies = bootJson.resources.dynamicAssembly;
+            var lazyAssemblies = bootJson.resources.lazyAssembly;
             var assemblies = bootJson.resources.assembly;
 
-            Assert.NotNull(dynamicAssemblies);
-            Assert.Contains("RazorClassLibrary.dll", dynamicAssemblies.Keys);
+            Assert.NotNull(lazyAssemblies);
+            Assert.Contains("RazorClassLibrary.dll", lazyAssemblies.Keys);
             Assert.DoesNotContain("RazorClassLibrary.dll", assemblies.Keys);
 
             // App assembly should not be lazy loaded
-            Assert.DoesNotContain("blazorwasm.dll", dynamicAssemblies.Keys);
+            Assert.DoesNotContain("blazorwasm.dll", lazyAssemblies.Keys);
             Assert.Contains("blazorwasm.dll", assemblies.Keys);
         }
 
@@ -113,15 +113,15 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var bootJson = ReadBootJsonData(result, Path.Combine(publishDirectory, "wwwroot", "_framework", "blazor.boot.json"));
 
             // And that it has been labelled as a dynamic assembly in the boot.json
-            var dynamicAssemblies = bootJson.resources.dynamicAssembly;
+            var lazyAssemblies = bootJson.resources.lazyAssembly;
             var assemblies = bootJson.resources.assembly;
 
-            Assert.NotNull(dynamicAssemblies);
-            Assert.Contains("RazorClassLibrary.dll", dynamicAssemblies.Keys);
+            Assert.NotNull(lazyAssemblies);
+            Assert.Contains("RazorClassLibrary.dll", lazyAssemblies.Keys);
             Assert.DoesNotContain("RazorClassLibrary.dll", assemblies.Keys);
 
             // App assembly should not be lazy loaded
-            Assert.DoesNotContain("blazorwasm.dll", dynamicAssemblies.Keys);
+            Assert.DoesNotContain("blazorwasm.dll", lazyAssemblies.Keys);
             Assert.Contains("blazorwasm.dll", assemblies.Keys);
         }
 
@@ -151,15 +151,15 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var bootJson = ReadBootJsonData(result, Path.Combine(publishDirectory, "wwwroot", "_framework", "blazor.boot.json"));
 
             // And that it has been labelled as a dynamic assembly in the boot.json
-            var dynamicAssemblies = bootJson.resources.dynamicAssembly;
+            var lazyAssemblies = bootJson.resources.lazyAssembly;
             var assemblies = bootJson.resources.assembly;
 
-            Assert.NotNull(dynamicAssemblies);
-            Assert.Contains("RazorClassLibrary.dll", dynamicAssemblies.Keys);
+            Assert.NotNull(lazyAssemblies);
+            Assert.Contains("RazorClassLibrary.dll", lazyAssemblies.Keys);
             Assert.DoesNotContain("RazorClassLibrary.dll", assemblies.Keys);
 
             // App assembly should not be lazy loaded
-            Assert.DoesNotContain("blazorwasm.dll", dynamicAssemblies.Keys);
+            Assert.DoesNotContain("blazorwasm.dll", lazyAssemblies.Keys);
             Assert.Contains("blazorwasm.dll", assemblies.Keys);
         }
 

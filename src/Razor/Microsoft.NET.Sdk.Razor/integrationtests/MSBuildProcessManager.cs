@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             ProcessStartInfo processStartInfo,
             TimeSpan? timeout = null)
         {
-            timeout = timeout ?? TimeSpan.FromSeconds(5 * 60);
+            timeout = timeout ?? TimeSpan.FromSeconds(8 * 60);
 
             var process = new Process()
             {

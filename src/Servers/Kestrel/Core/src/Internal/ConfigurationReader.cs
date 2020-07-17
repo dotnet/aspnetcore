@@ -205,6 +205,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public string Path { get; set; }
 
+        public string KeyPath { get; set; }
+
         public string Password { get; set; }
 
         // Cert store

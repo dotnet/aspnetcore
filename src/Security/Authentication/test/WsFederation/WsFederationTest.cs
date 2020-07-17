@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -43,20 +44,25 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         [Fact]
         public async Task MissingConfigurationThrows()
         {
-            var builder = new WebHostBuilder()
-                .Configure(ConfigureApp)
-                .ConfigureServices(services =>
-                {
-                    services.AddAuthentication(sharedOptions =>
-                    {
-                        sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                        sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                        sharedOptions.DefaultChallengeScheme = WsFederationDefaults.AuthenticationScheme;
-                    })
-                    .AddCookie()
-                    .AddWsFederation();
-                });
-            var server = new TestServer(builder);
+            using var host = new HostBuilder()
+                .ConfigureWebHost(builder =>
+                    builder.UseTestServer()
+                        .Configure(ConfigureApp)
+                        .ConfigureServices(services =>
+                        {
+                            services.AddAuthentication(sharedOptions =>
+                            {
+                                sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                                sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                                sharedOptions.DefaultChallengeScheme = WsFederationDefaults.AuthenticationScheme;
+                            })
+                            .AddCookie()
+                            .AddWsFederation();
+                        }))
+                .Build();
+
+            await host.StartAsync();
+            using var server = host.GetTestServer();
             var httpClient = server.CreateClient();
 
             // Verify if the request is redirected to STS with right parameters
@@ -67,7 +73,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         [Fact]
         public async Task ChallengeRedirects()
         {
-            var httpClient = CreateClient();
+            var httpClient = await CreateClient();
 
             // Verify if the request is redirected to STS with right parameters
             var response = await httpClient.GetAsync("/");
@@ -83,7 +89,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         [Fact]
         public async Task MapWillNotAffectRedirect()
         {
-            var httpClient = CreateClient();
+            var httpClient = await CreateClient();
 
             // Verify if the request is redirected to STS with right parameters
             var response = await httpClient.GetAsync("/mapped-challenge");
@@ -99,7 +105,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         [Fact]
         public async Task PreMappedWillAffectRedirect()
         {
-            var httpClient = CreateClient();
+            var httpClient = await CreateClient();
 
             // Verify if the request is redirected to STS with right parameters
             var response = await httpClient.GetAsync("/premapped-challenge");
@@ -115,7 +121,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         [Fact]
         public async Task ValidTokenIsAccepted()
         {
-            var httpClient = CreateClient();
+            var httpClient = await CreateClient();
 
             // Verify if the request is redirected to STS with right parameters
             var response = await httpClient.GetAsync("/");
@@ -139,7 +145,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         [Fact]
         public async Task ValidUnsolicitedTokenIsRefused()
         {
-            var httpClient = CreateClient();
+            var httpClient = await CreateClient();
             var form = CreateSignInContent("WsFederation/ValidToken.xml", suppressWctx: true);
             var exception = await Assert.ThrowsAsync<Exception>(() => httpClient.PostAsync(httpClient.BaseAddress + "signin-wsfed", form));
             Assert.Contains("Unsolicited logins are not allowed.", exception.InnerException.Message);
@@ -148,7 +154,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         [Fact]
         public async Task ValidUnsolicitedTokenIsAcceptedWhenAllowed()
         {
-            var httpClient = CreateClient(allowUnsolicited: true);
+            var httpClient = await CreateClient(allowUnsolicited: true);
 
             var form = CreateSignInContent("WsFederation/ValidToken.xml", suppressWctx: true);
             var response = await httpClient.PostAsync(httpClient.BaseAddress + "signin-wsfed", form);
@@ -166,7 +172,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         [Fact]
         public async Task InvalidTokenIsRejected()
         {
-            var httpClient = CreateClient();
+            var httpClient = await CreateClient();
 
             // Verify if the request is redirected to STS with right parameters
             var response = await httpClient.GetAsync("/");
@@ -184,7 +190,7 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         [Fact]
         public async Task RemoteSignoutRequestTriggersSignout()
         {
-            var httpClient = CreateClient();
+            var httpClient = await CreateClient();
 
             var response = await httpClient.GetAsync("/signin-wsfed?wa=wsignoutcleanup1.0");
             response.EnsureSuccessStatusCode();
@@ -198,30 +204,35 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
         [Fact]
         public async Task EventsResolvedFromDI()
         {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
-                {
-                    services.AddSingleton<MyWsFedEvents>();
-                    services.AddAuthentication(sharedOptions =>
-                    {
-                        sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                        sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                        sharedOptions.DefaultChallengeScheme = WsFederationDefaults.AuthenticationScheme;
-                    })
-                    .AddCookie()
-                    .AddWsFederation(options =>
-                    {
-                        options.Wtrealm = "http://Automation1";
-                        options.MetadataAddress = "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/federationmetadata/2007-06/federationmetadata.xml";
-                        options.BackchannelHttpHandler = new WaadMetadataDocumentHandler();
-                        options.EventsType = typeof(MyWsFedEvents);
-                    });
-                })
-                .Configure(app =>
-                {
-                    app.Run(context => context.ChallengeAsync());
-                });
-            var server = new TestServer(builder);
+            using var host = new HostBuilder()
+                .ConfigureWebHost(builder =>
+                    builder.UseTestServer()
+                        .ConfigureServices(services =>
+                        {
+                            services.AddSingleton<MyWsFedEvents>();
+                            services.AddAuthentication(sharedOptions =>
+                            {
+                                sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                                sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                                sharedOptions.DefaultChallengeScheme = WsFederationDefaults.AuthenticationScheme;
+                            })
+                            .AddCookie()
+                            .AddWsFederation(options =>
+                            {
+                                options.Wtrealm = "http://Automation1";
+                                options.MetadataAddress = "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/federationmetadata/2007-06/federationmetadata.xml";
+                                options.BackchannelHttpHandler = new WaadMetadataDocumentHandler();
+                                options.EventsType = typeof(MyWsFedEvents);
+                            });
+                        })
+                        .Configure(app =>
+                        {
+                            app.Run(context => context.ChallengeAsync());
+                        }))
+                .Build();
+
+            await host.StartAsync();
+            using var server = host.GetTestServer();
 
             var result = await server.CreateClient().GetAsync("");
             Assert.Contains("CustomKey=CustomValue", result.Headers.Location.Query);
@@ -264,86 +275,91 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation
             }
         }
 
-        private HttpClient CreateClient(bool allowUnsolicited = false)
+        private async Task<HttpClient> CreateClient(bool allowUnsolicited = false)
         {
-            var builder = new WebHostBuilder()
-                .Configure(ConfigureApp)
-                .ConfigureServices(services =>
-                {
-                    services.AddAuthentication(sharedOptions =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(builder =>
+                    builder.UseTestServer()
+                    .Configure(ConfigureApp)
+                    .ConfigureServices(services =>
                     {
-                        sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                        sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                        sharedOptions.DefaultChallengeScheme = WsFederationDefaults.AuthenticationScheme;
-                    })
-                    .AddCookie()
-                    .AddWsFederation(options =>
-                    {
-                        options.Wtrealm = "http://Automation1";
-                        options.MetadataAddress = "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/federationmetadata/2007-06/federationmetadata.xml";
-                        options.BackchannelHttpHandler = new WaadMetadataDocumentHandler();
-                        options.StateDataFormat = new CustomStateDataFormat();
-                        options.SecurityTokenHandlers = new List<ISecurityTokenValidator>() { new TestSecurityTokenValidator() };
-                        options.UseTokenLifetime = false;
-                        options.AllowUnsolicitedLogins = allowUnsolicited;
-                        options.Events = new WsFederationEvents()
+                        services.AddAuthentication(sharedOptions =>
                         {
-                            OnMessageReceived = context =>
+                            sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                            sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                            sharedOptions.DefaultChallengeScheme = WsFederationDefaults.AuthenticationScheme;
+                        })
+                        .AddCookie()
+                        .AddWsFederation(options =>
+                        {
+                            options.Wtrealm = "http://Automation1";
+                            options.MetadataAddress = "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/federationmetadata/2007-06/federationmetadata.xml";
+                            options.BackchannelHttpHandler = new WaadMetadataDocumentHandler();
+                            options.StateDataFormat = new CustomStateDataFormat();
+                            options.SecurityTokenHandlers = new List<ISecurityTokenValidator>() { new TestSecurityTokenValidator() };
+                            options.UseTokenLifetime = false;
+                            options.AllowUnsolicitedLogins = allowUnsolicited;
+                            options.Events = new WsFederationEvents()
                             {
-                                if (!context.ProtocolMessage.Parameters.TryGetValue("suppressWctx", out var suppress))
+                                OnMessageReceived = context =>
                                 {
-                                    Assert.True(context.ProtocolMessage.Wctx.Equals("customValue"), "wctx is not my custom value");
-                                }
-                                context.HttpContext.Items["MessageReceived"] = true;
-                                return Task.FromResult(0);
-                            },
-                            OnRedirectToIdentityProvider = context =>
-                            {
-                                if (context.ProtocolMessage.IsSignInMessage)
+                                    if (!context.ProtocolMessage.Parameters.TryGetValue("suppressWctx", out var suppress))
+                                    {
+                                        Assert.True(context.ProtocolMessage.Wctx.Equals("customValue"), "wctx is not my custom value");
+                                    }
+                                    context.HttpContext.Items["MessageReceived"] = true;
+                                    return Task.FromResult(0);
+                                },
+                                OnRedirectToIdentityProvider = context =>
                                 {
-                                    // Sign in message
-                                    context.ProtocolMessage.Wctx = "customValue";
-                                }
+                                    if (context.ProtocolMessage.IsSignInMessage)
+                                    {
+                                        // Sign in message
+                                        context.ProtocolMessage.Wctx = "customValue";
+                                    }
 
-                                return Task.FromResult(0);
-                            },
-                            OnSecurityTokenReceived = context =>
-                            {
-                                context.HttpContext.Items["SecurityTokenReceived"] = true;
-                                return Task.FromResult(0);
-                            },
-                            OnSecurityTokenValidated = context =>
-                            {
-                                Assert.True((bool)context.HttpContext.Items["MessageReceived"], "MessageReceived notification not invoked");
-                                Assert.True((bool)context.HttpContext.Items["SecurityTokenReceived"], "SecurityTokenReceived notification not invoked");
-
-                                if (context.Principal != null)
+                                    return Task.FromResult(0);
+                                },
+                                OnSecurityTokenReceived = context =>
                                 {
-                                    var identity = context.Principal.Identities.Single();
-                                    identity.AddClaim(new Claim("ReturnEndpoint", "true"));
-                                    identity.AddClaim(new Claim("Authenticated", "true"));
-                                    identity.AddClaim(new Claim(identity.RoleClaimType, "Guest", ClaimValueTypes.String));
-                                }
+                                    context.HttpContext.Items["SecurityTokenReceived"] = true;
+                                    return Task.FromResult(0);
+                                },
+                                OnSecurityTokenValidated = context =>
+                                {
+                                    Assert.True((bool)context.HttpContext.Items["MessageReceived"], "MessageReceived notification not invoked");
+                                    Assert.True((bool)context.HttpContext.Items["SecurityTokenReceived"], "SecurityTokenReceived notification not invoked");
 
-                                return Task.FromResult(0);
-                            },
-                            OnAuthenticationFailed = context =>
-                            {
-                                context.HttpContext.Items["AuthenticationFailed"] = true;
-                                //Change the request url to something different and skip Wsfed. This new url will handle the request and let us know if this notification was invoked.
-                                context.HttpContext.Request.Path = new PathString("/AuthenticationFailed");
-                                context.SkipHandler();
-                                return Task.FromResult(0);
-                            },
-                            OnRemoteSignOut = context =>
-                            {
-                                context.Response.Headers["EventHeader"] = "OnRemoteSignOut";
-                                return Task.FromResult(0);
-                            }
-                        };
-                    });
-                });
-            var server = new TestServer(builder);
+                                    if (context.Principal != null)
+                                    {
+                                        var identity = context.Principal.Identities.Single();
+                                        identity.AddClaim(new Claim("ReturnEndpoint", "true"));
+                                        identity.AddClaim(new Claim("Authenticated", "true"));
+                                        identity.AddClaim(new Claim(identity.RoleClaimType, "Guest", ClaimValueTypes.String));
+                                    }
+
+                                    return Task.FromResult(0);
+                                },
+                                OnAuthenticationFailed = context =>
+                                {
+                                    context.HttpContext.Items["AuthenticationFailed"] = true;
+                                    //Change the request url to something different and skip Wsfed. This new url will handle the request and let us know if this notification was invoked.
+                                    context.HttpContext.Request.Path = new PathString("/AuthenticationFailed");
+                                    context.SkipHandler();
+                                    return Task.FromResult(0);
+                                },
+                                OnRemoteSignOut = context =>
+                                {
+                                    context.Response.Headers["EventHeader"] = "OnRemoteSignOut";
+                                    return Task.FromResult(0);
+                                }
+                            };
+                        });
+                    }))
+                .Build();
+
+            await host.StartAsync();
+            var server = host.GetTestServer();
             return server.CreateClient();
         }
 

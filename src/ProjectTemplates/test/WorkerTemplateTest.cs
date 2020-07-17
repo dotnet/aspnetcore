@@ -22,7 +22,6 @@ namespace Templates.Test
         public ITestOutputHelper Output { get; }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
         public async Task WorkerTemplateAsync()
         {
             Project = await ProjectFactory.GetOrCreateProject("worker", Output);

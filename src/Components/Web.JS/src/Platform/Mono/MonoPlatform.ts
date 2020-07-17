@@ -2,16 +2,17 @@ import { DotNet } from '@microsoft/dotnet-js-interop';
 import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
 import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResourceLoader';
-import { Platform, System_Array, Pointer, System_Object, System_String } from '../Platform';
+import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock } from '../Platform';
 import { loadTimezoneData } from './TimezoneDataFile';
 import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
 import { initializeProfiling } from '../Profiling';
 
-let mono_string_get_utf8: (managedString: System_String) => Pointer;
 let mono_wasm_add_assembly: (name: string, heapAddress: number, length: number) => void;
 const appBinDirName = 'appBinDir';
 const uint64HighOrderShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
+
+let currentHeapLock: MonoHeapLock | null = null;
 
 // Memory access helpers
 // The implementations are exactly equivalent to what the global getValue(addr, type) function does,
@@ -124,12 +125,38 @@ export const monoPlatform: Platform = {
       return unboxedValue;
     }
 
-    return BINDING.conv_string(fieldValue as any as System_String);
+    let decodedString: string | null | undefined;
+    if (currentHeapLock) {
+      decodedString = currentHeapLock.stringCache.get(fieldValue);
+      if (decodedString === undefined) {
+        decodedString = BINDING.conv_string(fieldValue as any as System_String);
+        currentHeapLock.stringCache.set(fieldValue, decodedString);
+      }
+    } else {
+      decodedString = BINDING.conv_string(fieldValue as any as System_String);
+    }
+
+    return decodedString;
   },
 
   readStructField: function readStructField<T extends Pointer>(baseAddress: Pointer, fieldOffset?: number): T {
     return ((baseAddress as any as number) + (fieldOffset || 0)) as any as T;
   },
+
+  beginHeapLock: function() {
+    assertHeapIsNotLocked();
+    currentHeapLock = new MonoHeapLock();
+    return currentHeapLock;
+  },
+
+  invokeWhenHeapUnlocked: function(callback) {
+    // This is somewhat like a sync context. If we're not locked, just pass through the call directly.
+    if (!currentHeapLock) {
+      callback();
+    } else {
+      currentHeapLock.enqueuePostReleaseAction(callback);
+    }
+  }
 };
 
 function addScriptTagsToDocument(resourceLoader: WebAssemblyResourceLoader) {
@@ -246,7 +273,6 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
   module.preRun.push(() => {
     // By now, emscripten should be initialised enough that we can capture these methods for later use
     mono_wasm_add_assembly = cwrap('mono_wasm_add_assembly', null, ['string', 'number', 'number']);
-    mono_string_get_utf8 = cwrap('mono_wasm_string_get_utf8', 'number', ['number']);
     MONO.loaded_files = [];
 
     if (timeZoneResource) {
@@ -280,6 +306,34 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
           resourcePromises.then(resourcesToLoad => {
             if (resourcesToLoad.length) {
               window['Blazor']._internal.readSatelliteAssemblies = () => {
+                const array = BINDING.mono_obj_array_new(resourcesToLoad.length);
+                for (var i = 0; i < resourcesToLoad.length; i++) {
+                  BINDING.mono_obj_array_set(array, i, BINDING.js_typed_array_to_array(new Uint8Array(resourcesToLoad[i])));
+                }
+                return array;
+            };
+          }
+
+          return resourcesToLoad.length;
+        }));
+      }
+      return BINDING.js_to_mono_obj(Promise.resolve(0));
+    }
+
+    window['Blazor']._internal.getLazyAssemblies = (assembliesToLoadDotNetArray: System_Array<System_String>) : System_Object =>  {
+      const assembliesToLoad = BINDING.mono_array_to_js_array<System_String, string>(assembliesToLoadDotNetArray);
+      const lazyAssemblies = resourceLoader.bootConfig.resources.lazyAssembly;
+
+      if (lazyAssemblies) {
+        const resourcePromises = Promise.all(assembliesToLoad
+            .filter(assembly => lazyAssemblies.hasOwnProperty(assembly))
+            .map(assembly => resourceLoader.loadResource(assembly, `_framework/${assembly}`, lazyAssemblies[assembly], 'assembly'))
+            .map(async resource => (await resource.response).arrayBuffer()));
+
+        return BINDING.js_to_mono_obj(
+          resourcePromises.then(resourcesToLoad => {
+            if (resourcesToLoad.length) {
+              window['Blazor']._internal.readLazyAssemblies = () => {
                 const array = BINDING.mono_obj_array_new(resourcesToLoad.length);
                 for (var i = 0; i < resourcesToLoad.length; i++) {
                   BINDING.mono_obj_array_set(array, i, BINDING.js_typed_array_to_array(new Uint8Array(resourcesToLoad[i])));
@@ -359,6 +413,7 @@ function attachInteropInvoker(): void {
 
   DotNet.attachDispatcher({
     beginInvokeDotNetFromJS: (callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: any | null, argsJson: string): void => {
+      assertHeapIsNotLocked();
       if (!dotNetObjectId && !assemblyName) {
         throw new Error('Either assemblyName or dotNetObjectId must have a non null value.');
       }
@@ -381,6 +436,7 @@ function attachInteropInvoker(): void {
       );
     },
     invokeDotNetFromJS: (assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
+      assertHeapIsNotLocked();
       return dotNetDispatcherInvokeMethodHandle(
         assemblyName ? assemblyName : null,
         methodIdentifier,
@@ -431,4 +487,43 @@ function changeExtension(filename: string, newExtensionWithLeadingDot: string) {
   }
 
   return filename.substr(0, lastDotIndex) + newExtensionWithLeadingDot;
+}
+
+function assertHeapIsNotLocked() {
+  if (currentHeapLock) {
+    throw new Error('Assertion failed - heap is currently locked');
+  }
+}
+
+class MonoHeapLock implements HeapLock {
+  // Within a given heap lock, it's safe to cache decoded strings since the memory can't change
+  stringCache = new Map<number, string | null>();
+
+  private postReleaseActions?: Function[];
+
+  enqueuePostReleaseAction(callback: Function) {
+    if (!this.postReleaseActions) {
+      this.postReleaseActions = [];
+    }
+
+    this.postReleaseActions.push(callback);
+  }
+
+  release() {
+    if (currentHeapLock !== this) {
+      throw new Error('Trying to release a lock which isn\'t current');
+    }
+
+    currentHeapLock = null;
+
+    while (this.postReleaseActions?.length) {
+      const nextQueuedAction = this.postReleaseActions.shift()!;
+
+      // It's possible that the action we invoke here might itself take a succession of heap locks,
+      // but since heap locks must be released synchronously, by the time we get back to this stack
+      // frame, we know the heap should no longer be locked.
+      nextQueuedAction();
+      assertHeapIsNotLocked();
+    }
+  }
 }

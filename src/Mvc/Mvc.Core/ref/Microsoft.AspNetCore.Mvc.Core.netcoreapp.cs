@@ -541,9 +541,17 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.RedirectToRouteResult RedirectToRoutePreserveMethod(string routeName = null, object routeValues = null, string fragment = null) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
+        public virtual Microsoft.AspNetCore.Mvc.SignInResult SignIn(System.Security.Claims.ClaimsPrincipal principal) { throw null; }
+        [Microsoft.AspNetCore.Mvc.NonActionAttribute]
+        public virtual Microsoft.AspNetCore.Mvc.SignInResult SignIn(System.Security.Claims.ClaimsPrincipal principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { throw null; }
+        [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.SignInResult SignIn(System.Security.Claims.ClaimsPrincipal principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties, string authenticationScheme) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.SignInResult SignIn(System.Security.Claims.ClaimsPrincipal principal, string authenticationScheme) { throw null; }
+        [Microsoft.AspNetCore.Mvc.NonActionAttribute]
+        public virtual Microsoft.AspNetCore.Mvc.SignOutResult SignOut() { throw null; }
+        [Microsoft.AspNetCore.Mvc.NonActionAttribute]
+        public virtual Microsoft.AspNetCore.Mvc.SignOutResult SignOut(Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.SignOutResult SignOut(Microsoft.AspNetCore.Authentication.AuthenticationProperties properties, params string[] authenticationSchemes) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
@@ -1170,6 +1178,8 @@ namespace Microsoft.AspNetCore.Mvc
     }
     public partial class SignInResult : Microsoft.AspNetCore.Mvc.ActionResult
     {
+        public SignInResult(System.Security.Claims.ClaimsPrincipal principal) { }
+        public SignInResult(System.Security.Claims.ClaimsPrincipal principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { }
         public SignInResult(string authenticationScheme, System.Security.Claims.ClaimsPrincipal principal) { }
         public SignInResult(string authenticationScheme, System.Security.Claims.ClaimsPrincipal principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { }
         public string AuthenticationScheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
@@ -1181,6 +1191,7 @@ namespace Microsoft.AspNetCore.Mvc
     public partial class SignOutResult : Microsoft.AspNetCore.Mvc.ActionResult
     {
         public SignOutResult() { }
+        public SignOutResult(Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { }
         public SignOutResult(System.Collections.Generic.IList<string> authenticationSchemes) { }
         public SignOutResult(System.Collections.Generic.IList<string> authenticationSchemes, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) { }
         public SignOutResult(string authenticationScheme) { }

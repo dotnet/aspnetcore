@@ -1,5 +1,7 @@
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace WelcomePageSample
 {
@@ -10,15 +12,18 @@ namespace WelcomePageSample
             app.UseWelcomePage();
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseKestrel()
+                    .UseIISIntegration()
+                    .UseStartup<Startup>();
+                }).Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }

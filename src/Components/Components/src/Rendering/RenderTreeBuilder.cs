@@ -159,6 +159,29 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         /// <summary>
         /// <para>
+        /// Appends a frame representing a bool-valued attribute with value 'true'.
+        /// </para>
+        /// <para>
+        /// The attribute is associated with the most recently added element.
+        /// </para>
+        /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        /// <param name="name">The name of the attribute.</param>
+        public void AddAttribute(int sequence, string name)
+        {
+            ProfilingStart();
+
+            if (_lastNonAttributeFrameType != RenderTreeFrameType.Element)
+            {
+                throw new InvalidOperationException($"Valueless attributes may only be added immediately after frames of type {RenderTreeFrameType.Element}");
+            }
+
+            Append(RenderTreeFrame.Attribute(sequence, name, BoxedTrue));
+            ProfilingEnd();
+        }
+
+        /// <summary>
+        /// <para>
         /// Appends a frame representing a bool-valued attribute.
         /// </para>
         /// <para>

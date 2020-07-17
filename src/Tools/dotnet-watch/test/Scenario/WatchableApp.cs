@@ -39,6 +39,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         public AwaitableProcess Process { get; protected set; }
 
+        public List<string> DotnetWatchArgs { get; } = new List<string>();
+
         public string SourceDirectory { get; }
 
         public Task HasRestarted()
@@ -86,6 +88,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             {
                 Scenario.DotNetWatchPath,
             };
+            args.AddRange(DotnetWatchArgs);
             args.AddRange(arguments);
 
             var dotnetPath = "dotnet";

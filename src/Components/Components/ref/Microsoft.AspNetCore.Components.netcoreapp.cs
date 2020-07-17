@@ -142,6 +142,7 @@ namespace Microsoft.AspNetCore.Components
         public static readonly Microsoft.AspNetCore.Components.EventCallbackFactory Factory;
         public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent? receiver, System.MulticastDelegate? @delegate) { throw null; }
         public bool HasDelegate { get { throw null; } }
+        public System.Threading.Tasks.Task InvokeAsync() { throw null; }
         public System.Threading.Tasks.Task InvokeAsync(object arg) { throw null; }
     }
     public sealed partial class EventCallbackFactory
@@ -217,6 +218,7 @@ namespace Microsoft.AspNetCore.Components
         public static readonly Microsoft.AspNetCore.Components.EventCallback<TValue> Empty;
         public EventCallback(Microsoft.AspNetCore.Components.IHandleEvent? receiver, System.MulticastDelegate? @delegate) { throw null; }
         public bool HasDelegate { get { throw null; } }
+        public System.Threading.Tasks.Task InvokeAsync() { throw null; }
         public System.Threading.Tasks.Task InvokeAsync(TValue arg) { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=true)]
@@ -233,6 +235,10 @@ namespace Microsoft.AspNetCore.Components
     {
         void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle);
         System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters);
+    }
+    public partial interface IComponentActivator
+    {
+        Microsoft.AspNetCore.Components.IComponent CreateInstance(System.Type componentType);
     }
     public partial interface IHandleAfterRender
     {
@@ -403,6 +409,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     {
         public RenderTreeBuilder() { }
         public void AddAttribute(int sequence, in Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame frame) { }
+        public void AddAttribute(int sequence, string name) { }
         public void AddAttribute(int sequence, string name, Microsoft.AspNetCore.Components.EventCallback value) { }
         public void AddAttribute(int sequence, string name, bool value) { }
         public void AddAttribute(int sequence, string name, System.MulticastDelegate? value) { }
@@ -473,6 +480,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     public abstract partial class Renderer : System.IDisposable
     {
         public Renderer(System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public Renderer(System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Components.IComponentActivator componentActivator) { }
         public abstract Microsoft.AspNetCore.Components.Dispatcher Dispatcher { get; }
         protected internal Microsoft.AspNetCore.Components.ElementReferenceContext? ElementReferenceContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] protected set { } }
         public event System.UnhandledExceptionEventHandler UnhandledSynchronizationException { add { } remove { } }
@@ -551,6 +559,12 @@ namespace Microsoft.AspNetCore.Components.Routing
         public bool IsNavigationIntercepted { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
         public string Location { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
     }
+    public sealed partial class NavigationContext
+    {
+        internal NavigationContext() { }
+        public System.Threading.CancellationToken CancellationToken { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+        public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } }
+    }
     public partial class Router : Microsoft.AspNetCore.Components.IComponent, Microsoft.AspNetCore.Components.IHandleAfterRender, System.IDisposable
     {
         public Router() { }
@@ -561,10 +575,15 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.RouteData> Found { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment Navigating { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment NotFound { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Routing.NavigationContext> OnNavigateAsync { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         public void Dispose() { }
         System.Threading.Tasks.Task Microsoft.AspNetCore.Components.IHandleAfterRender.OnAfterRenderAsync() { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) { throw null; }
     }
 }

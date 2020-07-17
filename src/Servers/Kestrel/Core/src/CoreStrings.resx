@@ -614,4 +614,10 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="ArgumentTimeSpanGreaterOrEqual" xml:space="preserve">
     <value>A TimeSpan value greater than or equal to {value} is required.</value>
   </data>
+  <data name="InvalidPemKey" xml:space="preserve">
+    <value>The provided key file is missing or invalid.</value>
+  </data>
+  <data name="UnrecognizedCertificateKeyOid" xml:space="preserve">
+    <value>Unknown algorithm for certificate with public key type '{0}'.</value>
+  </data>
 </root>

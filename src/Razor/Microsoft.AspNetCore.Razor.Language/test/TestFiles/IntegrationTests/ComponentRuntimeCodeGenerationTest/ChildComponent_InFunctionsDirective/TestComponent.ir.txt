@@ -12,10 +12,6 @@ Document -
                     LazyIntermediateToken - (55:2,2 [34] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderChildComponent(__builder); 
             CSharpCode - (101:4,7 [69] x:\dir\subdir\Test\TestComponent.cshtml)
                 LazyIntermediateToken - (101:4,7 [69] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    void RenderChildComponent(RenderTreeBuilder __builder)\n    {\n
-            HtmlContent - (170:7,0 [8] x:\dir\subdir\Test\TestComponent.cshtml)
-                LazyIntermediateToken - (170:7,0 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html -         
             Component - (178:7,8 [15] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-            HtmlContent - (193:7,23 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                LazyIntermediateToken - (193:7,23 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
             CSharpCode - (195:8,0 [7] x:\dir\subdir\Test\TestComponent.cshtml)
                 LazyIntermediateToken - (195:8,0 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -     }\n

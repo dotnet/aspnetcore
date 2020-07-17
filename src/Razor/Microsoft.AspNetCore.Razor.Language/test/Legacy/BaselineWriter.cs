@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Conditional("GENERATE_BASELINES")]
         public static void WriteBaseline(string baselineFile, string output)
         {
-            var root = RecursiveFind("Razor.sln", Path.GetFullPath("."));
+            var root = RecursiveFind("Razor.slnf", Path.GetFullPath("."));
             var baselinePath = Path.Combine(root, baselineFile);
 
             // Serialize writes to minimize contention for file handles and directory access.

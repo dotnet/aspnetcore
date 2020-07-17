@@ -90,8 +90,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
                     if (IsLazyLoadedAssembly(fileName))
                     {
-                        resourceData.dynamicAssembly ??= new ResourceHashesByNameDictionary();
-                        resourceList = resourceData.dynamicAssembly;
+                        resourceData.lazyAssembly ??= new ResourceHashesByNameDictionary();
+                        resourceList = resourceData.lazyAssembly;
                     }
                     else if (!string.IsNullOrEmpty(resourceCulture))
                     {

@@ -316,8 +316,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(ComponentsApi.RenderTreeBuilder.AddAttribute)}")
                 .Write("-1")
                 .WriteParameterSeparator()
-                .WriteStringLiteral(key)
-                .WriteParameterSeparator();
+                .WriteStringLiteral(key);
         }
 
         protected override void BeginWriteAttribute(CodeRenderingContext context, IntermediateNode expression)
@@ -341,8 +340,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 context.CodeWriter.Write(tokens[i].Content);
             }
-
-            context.CodeWriter.WriteParameterSeparator();
         }
 
         public override void WriteComponent(CodeRenderingContext context, ComponentIntermediateNode node)
@@ -731,6 +728,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // OR
             // __builder.AddAttribute(1, "ChildContent", (RenderFragment<Person>)((person) => (__builder73) => { ... }));
             BeginWriteAttribute(context, node.AttributeName);
+            context.CodeWriter.WriteParameterSeparator();
             context.CodeWriter.Write($"({node.TypeName})(");
 
             WriteComponentChildContentInnards(context, node);

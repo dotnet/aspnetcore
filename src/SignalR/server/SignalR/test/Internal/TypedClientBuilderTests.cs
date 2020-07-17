@@ -39,6 +39,30 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
         }
 
         [Fact]
+        public async Task ProducesImplementationThatProxiesMethodsToIRenamedClientProxyAsync()
+        {
+            var clientProxy = new MockProxy();
+            var typedProxy = TypedClientBuilder<IRenamedTestClient>.Build(clientProxy);
+
+            var objArg = new object();
+            var task = typedProxy.MethodAsync("foo", 42, objArg);
+            Assert.False(task.IsCompleted);
+
+            Assert.Collection(clientProxy.Sends,
+                send =>
+                {
+                    Assert.Equal("Method", send.Method);
+                    Assert.Equal("foo", send.Arguments[0]);
+                    Assert.Equal(42, send.Arguments[1]);
+                    Assert.Equal(CancellationToken.None, send.CancellationToken);
+                    Assert.Same(objArg, send.Arguments[2]);
+                    send.Complete();
+                });
+
+            await task.OrTimeout();
+        }
+
+        [Fact]
         public async Task SupportsSubInterfaces()
         {
             var clientProxy = new MockProxy();
@@ -187,6 +211,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
         public interface ITestClient
         {
             Task Method(string arg1, int arg2, object arg3);
+        }
+
+        public interface IRenamedTestClient
+        {
+            [HubMethodName("Method")]
+            Task MethodAsync(string arg1, int arg2, object arg3);
         }
 
         public interface IVoidMethodClient

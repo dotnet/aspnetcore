@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Forms.EditContext>? ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.Forms.EditContext? EditContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
+        public Microsoft.AspNetCore.Components.Forms.EditContext? EditContext { get { throw null; } set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public object? Model { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
@@ -60,6 +60,8 @@ namespace Microsoft.AspNetCore.Components.Forms
         [System.Diagnostics.CodeAnalysis.AllowNullAttribute]
         protected TValue CurrentValue { get { throw null; } set { } }
         protected string? CurrentValueAsString { get { throw null; } set { } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public string? DisplayName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected Microsoft.AspNetCore.Components.Forms.EditContext EditContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         protected internal Microsoft.AspNetCore.Components.Forms.FieldIdentifier FieldIdentifier { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
@@ -343,6 +345,7 @@ namespace Microsoft.AspNetCore.Components.Web
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("onsuspend", typeof(System.EventArgs), true, true)]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontimeout", typeof(Microsoft.AspNetCore.Components.Web.ProgressEventArgs), true, true)]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontimeupdate", typeof(System.EventArgs), true, true)]
+    [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontoggle", typeof(System.EventArgs), true, true)]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontouchcancel", typeof(Microsoft.AspNetCore.Components.Web.TouchEventArgs), true, true)]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontouchend", typeof(Microsoft.AspNetCore.Components.Web.TouchEventArgs), true, true)]
     [Microsoft.AspNetCore.Components.EventHandlerAttribute("ontouchenter", typeof(Microsoft.AspNetCore.Components.Web.TouchEventArgs), true, true)]

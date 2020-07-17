@@ -7,13 +7,15 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 #nullable enable
 
-namespace Microsoft.AspNetCore.Http.Json
+namespace Microsoft.AspNetCore.Http
 {
     public static class HttpRequestJsonExtensions
     {
@@ -136,6 +138,47 @@ namespace Microsoft.AspNetCore.Http.Json
                 }
             }
         }
+
+        /// <summary>
+        /// Checks the Content-Type header for JSON types.
+        /// </summary>
+        /// <returns>true if the Content-Type header represents a JSON content type; otherwise, false.</returns>
+        public static bool HasJsonContentType(this HttpRequest request)
+        {
+            return request.HasJsonContentType(out _);
+        }
+
+        private static bool HasJsonContentType(this HttpRequest request, out StringSegment charset)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (!MediaTypeHeaderValue.TryParse(request.ContentType, out var mt))
+            {
+                charset = StringSegment.Empty;
+                return false;
+            }
+
+            // Matches application/json
+            if (mt.MediaType.Equals(JsonConstants.JsonContentType, StringComparison.OrdinalIgnoreCase))
+            {
+                charset = mt.Charset;
+                return true;
+            }
+
+            // Matches +json, e.g. application/ld+json
+            if (mt.Suffix.Equals("json", StringComparison.OrdinalIgnoreCase))
+            {
+                charset = mt.Charset;
+                return true;
+            }
+
+            charset = StringSegment.Empty;
+            return false;
+        }
+
 
         private static JsonSerializerOptions ResolveSerializerOptions(HttpContext httpContext)
         {

@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 #nullable enable
 using System.Net.Sockets;
@@ -46,7 +45,7 @@ namespace System.Net.Quic.Implementations.Mock
             int bytesRead = 0;
             do
             {
-                bytesRead += await socket.ReceiveAsync(buffer.AsMemory().Slice(bytesRead), SocketFlags.None).ConfigureAwait(false);
+                bytesRead += await socket.ReceiveAsync(buffer.AsMemory().Slice(bytesRead), SocketFlags.None, cancellationToken).ConfigureAwait(false);
             } while (bytesRead != buffer.Length);
 
             int peerListenPort = BinaryPrimitives.ReadInt32LittleEndian(buffer);

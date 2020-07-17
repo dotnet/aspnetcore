@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         private static readonly char[] PathSeparators = new char[] { '/', '\\' };
         private static readonly char[] NamespaceSeparators = new char[] { '.' };
+        private static object CssScopeKey = new object();
 
         public static TagHelperDocumentContext GetTagHelperContext(this RazorCodeDocument document)
         {
@@ -214,6 +215,26 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             document.Items[typeof(FileKinds)] = fileKind;
+        }
+
+        public static string GetCssScope(this RazorCodeDocument document)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            return (string)document.Items[CssScopeKey];
+        }
+
+        public static void SetCssScope(this RazorCodeDocument document, string cssScope)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            document.Items[CssScopeKey] = cssScope;
         }
 
         // In general documents will have a relative path (relative to the project root).

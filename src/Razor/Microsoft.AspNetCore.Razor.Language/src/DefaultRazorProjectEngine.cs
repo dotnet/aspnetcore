@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             var importSourceDocuments = GetImportSourceDocuments(importItems);
-            return CreateCodeDocumentCore(sourceDocument, projectItem.FileKind, importSourceDocuments, tagHelpers: null, configureParser, configureCodeGeneration);
+            return CreateCodeDocumentCore(sourceDocument, projectItem.FileKind, importSourceDocuments, tagHelpers: null, configureParser, configureCodeGeneration, cssScope: projectItem.CssScope);
         }
 
         protected internal RazorCodeDocument CreateCodeDocumentCore(
@@ -94,7 +94,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             IReadOnlyList<RazorSourceDocument> importSourceDocuments = null, 
             IReadOnlyList<TagHelperDescriptor> tagHelpers = null,
             Action<RazorParserOptionsBuilder> configureParser = null,
-            Action<RazorCodeGenerationOptionsBuilder> configureCodeGeneration = null)
+            Action<RazorCodeGenerationOptionsBuilder> configureCodeGeneration = null,
+            string cssScope = null)
         {
             if (sourceDocument == null)
             {
@@ -120,6 +121,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             if (fileKind != null)
             {
                 codeDocument.SetFileKind(fileKind);
+            }
+
+            if (cssScope != null)
+            {
+                codeDocument.SetCssScope(cssScope);
             }
 
             return codeDocument;

@@ -57,6 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/22049")]
         [InitializeTestProject("AppWithPackageAndP2PReference", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Publish_CopiesStaticWebAssetsToDestinationFolder()
         {
@@ -81,6 +82,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/18543")]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InitializeTestProject("AppWithPackageAndP2PReferenceAndRID", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Publish_CopiesStaticWebAssetsToDestinationFolder_PublishSingleFile()
@@ -166,6 +168,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23756")]
         [InitializeTestProject("AppWithPackageAndP2PReference", language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Clean_Success_RemovesManifestAndCache()
         {

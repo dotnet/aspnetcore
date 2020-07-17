@@ -1,8 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Logging;
@@ -16,18 +20,18 @@ namespace Microsoft.AspNetCore.Routing
     {
         private readonly object _loggersLock = new object();
 
-        private TemplateMatcher _matcher;
-        private TemplateBinder _binder;
-        private ILogger _logger;
-        private ILogger _constraintLogger;
+        private TemplateMatcher? _matcher;
+        private TemplateBinder? _binder;
+        private ILogger? _logger;
+        private ILogger? _constraintLogger;
 
         public RouteBase(
-            string template,
-            string name,
+            string? template,
+            string? name,
             IInlineConstraintResolver constraintResolver,
-            RouteValueDictionary defaults,
-            IDictionary<string, object> constraints,
-            RouteValueDictionary dataTokens)
+            RouteValueDictionary? defaults,
+            IDictionary<string, object>? constraints,
+            RouteValueDictionary? dataTokens)
         {
             if (constraintResolver == null)
             {
@@ -62,13 +66,13 @@ namespace Microsoft.AspNetCore.Routing
 
         public virtual RouteValueDictionary Defaults { get; protected set; }
 
-        public virtual string Name { get; protected set; }
+        public virtual string? Name { get; protected set; }
 
         public virtual RouteTemplate ParsedTemplate { get; protected set; }
 
         protected abstract Task OnRouteMatched(RouteContext context);
 
-        protected abstract VirtualPathData OnVirtualPathGenerated(VirtualPathContext context);
+        protected abstract VirtualPathData? OnVirtualPathGenerated(VirtualPathContext context);
 
         /// <inheritdoc />
         public virtual Task RouteAsync(RouteContext context)
@@ -106,13 +110,13 @@ namespace Microsoft.AspNetCore.Routing
             {
                 return Task.CompletedTask;
             }
-            _logger.RequestMatchedRoute(Name, ParsedTemplate.TemplateText);
+            _logger.RequestMatchedRoute(Name!, ParsedTemplate.TemplateText);
 
             return OnRouteMatched(context);
         }
 
         /// <inheritdoc />
-        public virtual VirtualPathData GetVirtualPath(VirtualPathContext context)
+        public virtual VirtualPathData? GetVirtualPath(VirtualPathContext context)
         {
             EnsureBinder(context.HttpContext);
             EnsureLoggers(context.HttpContext);
@@ -169,7 +173,7 @@ namespace Microsoft.AspNetCore.Routing
         protected static IDictionary<string, IRouteConstraint> GetConstraints(
             IInlineConstraintResolver inlineConstraintResolver,
             RouteTemplate parsedTemplate,
-            IDictionary<string, object> constraints)
+            IDictionary<string, object>? constraints)
         {
             var constraintBuilder = new RouteConstraintBuilder(inlineConstraintResolver, parsedTemplate.TemplateText);
 
@@ -199,7 +203,7 @@ namespace Microsoft.AspNetCore.Routing
 
         protected static RouteValueDictionary GetDefaults(
             RouteTemplate parsedTemplate,
-            RouteValueDictionary defaults)
+            RouteValueDictionary? defaults)
         {
             var result = defaults == null ? new RouteValueDictionary() : new RouteValueDictionary(defaults);
 
@@ -245,6 +249,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+        [MemberNotNull(nameof(_binder))]
         private void EnsureBinder(HttpContext context)
         {
             if (_binder == null)
@@ -254,6 +259,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+        [MemberNotNull(nameof(_logger), nameof(_constraintLogger))]
         private void EnsureLoggers(HttpContext context)
         {
             // We check first using the _logger to see if the loggers have been initialized to avoid taking
@@ -268,6 +274,8 @@ namespace Microsoft.AspNetCore.Routing
                         // Multiple threads might have tried to acquire the lock at the same time. Technically
                         // there is nothing wrong if things get reinitialized by a second thread, but its easy
                         // to prevent by just rechecking and returning here.
+                        Debug.Assert(_constraintLogger != null);
+
                         return;
                     }
 
@@ -275,9 +283,13 @@ namespace Microsoft.AspNetCore.Routing
                     _constraintLogger = factory.CreateLogger(typeof(RouteConstraintMatcher).FullName);
                     _logger = factory.CreateLogger(typeof(RouteBase).FullName);
                 }
+
             }
+
+            Debug.Assert(_constraintLogger != null);
         }
 
+        [MemberNotNull(nameof(_matcher))]
         private void EnsureMatcher()
         {
             if (_matcher == null)

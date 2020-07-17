@@ -16,10 +16,10 @@ namespace Test
             __builder.OpenElement(0, "div");
             __builder.OpenElement(1, "a");
             __builder.AddAttribute(2, "href", "/cool-url");
-            __builder.AddAttribute(3, "style", true);
-            __builder.AddAttribute(4, "disabled", true);
+            __builder.AddAttribute(3, "style");
+            __builder.AddAttribute(4, "disabled");
             __builder.AddAttribute(5, "href", "/even-cooler-url");
-            __builder.AddAttribute(6, "href", true);
+            __builder.AddAttribute(6, "href");
             __builder.AddContent(7, "Learn the ten cool tricks your compiler author will hate!");
             __builder.CloseElement();
             __builder.CloseElement();

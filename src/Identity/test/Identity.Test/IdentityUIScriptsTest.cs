@@ -109,9 +109,8 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         private static List<ScriptTag> GetScriptTags()
         {
-            var uiDirV3 = Path.Combine(GetProjectBasePath(), "Areas", "Identity", "Pages", "V3");
             var uiDirV4 = Path.Combine(GetProjectBasePath(), "Areas", "Identity", "Pages", "V4");
-            var cshtmlFiles = GetRazorFiles(uiDirV3).Concat(GetRazorFiles(uiDirV4));
+            var cshtmlFiles = GetRazorFiles(uiDirV4);
 
             var scriptTags = new List<ScriptTag>();
             foreach (var cshtmlFile in cshtmlFiles)
@@ -144,7 +143,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
                 scriptTags.Add(new ScriptTag
                 {
-                    Version = cshtmlFile.Contains("V3") ? "V3" : "V4",
+                    Version = "V4",
                     Src = scriptElement.Source,
                     Integrity = scriptElement.Integrity,
                     FallbackSrc = fallbackSrcAttribute?.Value,

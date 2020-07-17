@@ -1,3 +1,6 @@
+// Import type definitions to ensure that the global declaration
+// is of BINDING is included when tests run
+import './Mono/MonoTypes';
 import { System_String } from './Platform';
 
 interface TimingEntry {

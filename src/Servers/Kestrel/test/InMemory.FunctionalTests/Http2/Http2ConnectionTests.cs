@@ -1595,6 +1595,68 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task OutputFlowControl_ConnectionAndRequestAborted_NoException()
+        {
+            // Ensure the stream window size is bigger than the connection window size
+            _clientSettings.InitialWindowSize = _clientSettings.InitialWindowSize * 2;
+
+            var connectionAbortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var requestAbortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await InitializeConnectionAsync(async context =>
+            {
+                // Exceed connection window size
+                await context.Response.WriteAsync(new string('!', 65536));
+
+                await connectionAbortedTcs.Task;
+
+                try
+                {
+                    context.Abort();
+                    requestAbortedTcs.SetResult();
+                }
+                catch (Exception ex)
+                {
+                    requestAbortedTcs.SetException(ex);
+                }
+            }).DefaultTimeout();
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true).DefaultTimeout();
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 32,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
+                withStreamId: 1).DefaultTimeout();
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 16384,
+                withFlags: (byte)(Http2DataFrameFlags.NONE),
+                withStreamId: 1).DefaultTimeout();
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 16384,
+                withFlags: (byte)(Http2DataFrameFlags.NONE),
+                withStreamId: 1).DefaultTimeout();
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 16384,
+                withFlags: (byte)(Http2DataFrameFlags.NONE),
+                withStreamId: 1).DefaultTimeout();
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 16383,
+                withFlags: (byte)(Http2DataFrameFlags.NONE),
+                withStreamId: 1).DefaultTimeout();
+
+            _connection.HandleReadDataRateTimeout();
+
+            connectionAbortedTcs.SetResult();
+
+            // Task completing successfully means HttpContext.Abort didn't throw
+            await requestAbortedTcs.Task.DefaultTimeout();
+        }
+
+        [Fact]
         public async Task DATA_Sent_DespiteStreamOutputFlowControl_IfEmptyAndEndsStream()
         {
             // Zero-length data frames are allowed to be sent even if there is no space available in the flow control window.

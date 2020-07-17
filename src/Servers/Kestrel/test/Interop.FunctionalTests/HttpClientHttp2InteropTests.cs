@@ -1416,7 +1416,6 @@ namespace Interop.FunctionalTests
         // Settings_InitialWindowSize_Lower_Client - Not configurable.
 
         [Theory]
-        [QuarantinedTest]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_InitialWindowSize_Server(string scheme)
         {

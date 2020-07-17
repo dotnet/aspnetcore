@@ -80,6 +80,21 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
+        public async Task UseTestServerRegistersNoopHostLifetime()
+        {
+            using var host = await new HostBuilder()
+                .ConfigureWebHost(webBuilder =>
+                {
+                    webBuilder
+                        .UseTestServer()
+                        .Configure(app => { });
+                })
+                .StartAsync();
+
+            Assert.IsType<NoopHostLifetime>(host.Services.GetService<IHostLifetime>());
+        }
+
+        [Fact]
         public void CreateWithDelegate()
         {
             // Arrange

@@ -38,10 +38,8 @@ using Microsoft.AspNetCore.Components.Rendering;
 #line default
 #line hidden
 #nullable disable
-        __builder.AddContent(0, "        ");
-        __builder.OpenComponent<Test.MyComponent>(1);
+        __builder.OpenComponent<Test.MyComponent>(0);
         __builder.CloseComponent();
-        __builder.AddMarkupContent(2, "\r\n");
 #nullable restore
 #line 9 "x:\dir\subdir\Test\TestComponent.cshtml"
     }
