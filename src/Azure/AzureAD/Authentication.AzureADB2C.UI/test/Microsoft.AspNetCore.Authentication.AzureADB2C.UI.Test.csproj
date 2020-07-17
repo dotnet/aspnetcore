@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore.Authentication.AzureADB2C.UI</RootNamespace>
+    <!-- This package will be deprecated -->
+    <NoWarn>$(NoWarn);CS0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

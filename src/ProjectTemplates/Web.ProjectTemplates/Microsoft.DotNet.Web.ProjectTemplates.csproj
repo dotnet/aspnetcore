@@ -18,8 +18,11 @@
       MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
       MicrosoftExtensionsHostingPackageVersion=$(MicrosoftExtensionsHostingPackageVersion);
       MicrosoftExtensionsHttpPackageVersion=$(MicrosoftExtensionsHttpPackageVersion);
+      MicrosoftIdentityWebPackageVersion=$(MicrosoftIdentityWebPackageVersion);
+      MicrosoftIdentityWebUIPackageVersion=$(MicrosoftIdentityWebUIPackageVersion);
       MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
       SystemNetHttpJsonPackageVersion=$(SystemNetHttpJsonPackageVersion);
+      MicrosoftGraphPackageVersion=$(MicrosoftGraphPackageVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 
