@@ -700,11 +700,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Channel.CreateUnbounded<string>().Reader;
         }
 
-        public ChannelReader<int> ThrowStream()
+        public ChannelReader<int> ExceptionStream()
         {
             var channel = Channel.CreateUnbounded<int>();
             channel.Writer.TryComplete(new Exception("Exception from channel"));
             return channel.Reader;
+        }
+
+        public ChannelReader<int> ThrowStream()
+        {
+            throw new Exception("Throw from hub method");
+        }
+
+        public ChannelReader<int> NullStream()
+        {
+            return null;
         }
 
         public int NonStream()

@@ -2087,7 +2087,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     await client.Connected.OrTimeout();
 
-                    var messages = await client.StreamAsync(nameof(StreamingHub.ThrowStream));
+                    var messages = await client.StreamAsync(nameof(StreamingHub.ExceptionStream));
 
                     Assert.Equal(1, messages.Count);
                     var completion = messages[0] as CompletionMessage;
@@ -3101,6 +3101,118 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     Assert.Equal(42L, completion.Result);
 
                     // Shut down
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StreamMethodThatThrowsWillCleanup()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                       writeContext.EventId.Name == "FailedInvokingHubMethod";
+            }
+
+            using (StartVerifiableLog(ExpectedErrors))
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+                {
+                    builder.AddSingleton(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    await client.Connected.OrTimeout();
+
+                    var messages = await client.StreamAsync(nameof(StreamingHub.ThrowStream));
+
+                    Assert.Equal(1, messages.Count);
+                    var completion = messages[0] as CompletionMessage;
+                    Assert.NotNull(completion);
+
+                    var hubActivator = serviceProvider.GetService<IHubActivator<StreamingHub>>() as CustomHubActivator<StreamingHub>;
+
+                    // OnConnectedAsync and ThrowStream hubs have been disposed
+                    Assert.Equal(2, hubActivator.ReleaseCount);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StreamMethodThatReturnsNullWillCleanup()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+                {
+                    builder.AddSingleton(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    await client.Connected.OrTimeout();
+
+                    var messages = await client.StreamAsync(nameof(StreamingHub.NullStream));
+
+                    Assert.Equal(1, messages.Count);
+                    var completion = messages[0] as CompletionMessage;
+                    Assert.NotNull(completion);
+
+                    var hubActivator = serviceProvider.GetService<IHubActivator<StreamingHub>>() as CustomHubActivator<StreamingHub>;
+
+                    // OnConnectedAsync and NullStream hubs have been disposed
+                    Assert.Equal(2, hubActivator.ReleaseCount);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StreamMethodWithDuplicateIdFails()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+                {
+                    builder.AddSingleton(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    await client.Connected.OrTimeout();
+
+                    await client.SendHubMessageAsync(new StreamInvocationMessage("123", nameof(StreamingHub.BlockingStream), Array.Empty<object>())).OrTimeout();
+
+                    await client.SendHubMessageAsync(new StreamInvocationMessage("123", nameof(StreamingHub.BlockingStream), Array.Empty<object>())).OrTimeout();
+
+                    var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().OrTimeout());
+                    Assert.Equal("Invocation ID '123' is already in use.", completion.Error);
+
+                    var hubActivator = serviceProvider.GetService<IHubActivator<StreamingHub>>() as CustomHubActivator<StreamingHub>;
+
+                    // OnConnectedAsync and BlockingStream hubs have been disposed
+                    Assert.Equal(2, hubActivator.ReleaseCount);
+
                     client.Dispose();
 
                     await connectionHandlerTask.OrTimeout();

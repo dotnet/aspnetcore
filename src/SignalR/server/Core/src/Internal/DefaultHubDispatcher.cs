@@ -326,38 +326,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                     if (isStreamResponse)
                     {
-                        _ = ExecuteStreamInvocation();
-                        async Task ExecuteStreamInvocation()
-                        {
-                            cts = cts ?? CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
-                            connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId, cts);
-                            object result;
-
-                            try
-                            {
-                                result = await ExecuteHubMethod(methodExecutor, hub, arguments, connection, scope.ServiceProvider);
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.FailedInvokingHubMethod(_logger, hubMethodInvocationMessage.Target, ex);
-                                await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
-                                    ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
-                                return;
-                            }
-
-                            if (result == null)
-                            {
-                                Log.InvalidReturnValueFromStreamingMethod(_logger, methodExecutor.MethodInfo.Name);
-                                await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
-                                    $"The value returned by the streaming method '{methodExecutor.MethodInfo.Name}' is not a ChannelReader<> or IAsyncEnumerable<>.");
-                                return;
-                            }
-
-                            var enumerable = descriptor.FromReturnedStream(result, cts.Token);
-
-                            Log.StreamingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
-                            await StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerable, scope, hubActivator, hub, cts, hubMethodInvocationMessage);
-                        }
+                        _ = StreamAsync(hubMethodInvocationMessage.InvocationId, connection, arguments, scope, hubActivator, hub, cts, hubMethodInvocationMessage, descriptor);
                     }
                     else
                     {
@@ -447,13 +416,45 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return scope.DisposeAsync();
         }
 
-        private async Task StreamResultsAsync(string invocationId, HubConnectionContext connection, IAsyncEnumerable<object> enumerable, IServiceScope scope,
-            IHubActivator<THub> hubActivator, THub hub, CancellationTokenSource streamCts, HubMethodInvocationMessage hubMethodInvocationMessage)
+        private async Task StreamAsync(string invocationId, HubConnectionContext connection, object[] arguments, IServiceScope scope,
+            IHubActivator<THub> hubActivator, THub hub, CancellationTokenSource streamCts, HubMethodInvocationMessage hubMethodInvocationMessage, HubMethodDescriptor descriptor)
         {
             string error = null;
 
+            streamCts = streamCts ?? CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
+
             try
             {
+                if (!connection.ActiveRequestCancellationSources.TryAdd(invocationId, streamCts))
+                {
+                    Log.InvocationIdInUse(_logger, invocationId);
+                    error = $"Invocation ID '{invocationId}' is already in use.";
+                    return;
+                }
+
+                object result;
+                try
+                {
+                    result = await ExecuteHubMethod(descriptor.MethodExecutor, hub, arguments, connection, scope.ServiceProvider);
+                }
+                catch (Exception ex)
+                {
+                    Log.FailedInvokingHubMethod(_logger, hubMethodInvocationMessage.Target, ex);
+                    error = ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors);
+                    return;
+                }
+
+                if (result == null)
+                {
+                    Log.InvalidReturnValueFromStreamingMethod(_logger, descriptor.MethodExecutor.MethodInfo.Name);
+                    error = $"The value returned by the streaming method '{descriptor.MethodExecutor.MethodInfo.Name}' is not a ChannelReader<> or IAsyncEnumerable<>.";
+                    return;
+                }
+
+                var enumerable = descriptor.FromReturnedStream(result, streamCts.Token);
+
+                Log.StreamingResult(_logger, hubMethodInvocationMessage.InvocationId, descriptor.MethodExecutor);
+
                 await foreach (var streamItem in enumerable)
                 {
                     // Send the stream item
@@ -468,8 +469,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             catch (Exception ex)
             {
                 // If the streaming method was canceled we don't want to send a HubException message - this is not an error case
-                if (!(ex is OperationCanceledException && connection.ActiveRequestCancellationSources.TryGetValue(invocationId, out var cts)
-                    && cts.IsCancellationRequested))
+                if (!(ex is OperationCanceledException && streamCts.IsCancellationRequested))
                 {
                     error = ErrorMessageHelper.BuildErrorMessage("An error occurred on the server while streaming results.", ex, _enableDetailedErrors);
                 }
@@ -478,15 +478,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
 
-                // Dispose the linked CTS for the stream.
                 streamCts.Dispose();
+                connection.ActiveRequestCancellationSources.TryRemove(invocationId, out _);
 
                 await connection.WriteAsync(CompletionMessage.WithError(invocationId, error));
-
-                if (connection.ActiveRequestCancellationSources.TryRemove(invocationId, out var cts))
-                {
-                    cts.Dispose();
-                }
             }
         }
 
