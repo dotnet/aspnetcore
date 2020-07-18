@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 message: new InvocationMessage(null, "Target", new object[] { 42 }, new string[] { "__test_id__" }),
                 binary: "lgGAwKZUYXJnZXSRKpGrX190ZXN0X2lkX18="),
             new ProtocolTestData(
-                name: "InvocationWithMulitpleStreams",
+                name: "InvocationWithMultipleStreams",
                 message: new InvocationMessage(null, "Target", Array.Empty<object>(), new string[] { "__test_id__", "__test_id2__" }),
                 binary: "lgGAwKZUYXJnZXSQkqtfX3Rlc3RfaWRfX6xfX3Rlc3RfaWQyX18="),
 

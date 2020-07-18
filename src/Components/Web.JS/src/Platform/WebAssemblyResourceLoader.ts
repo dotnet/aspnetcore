@@ -165,6 +165,12 @@ async function getCacheToUseIfEnabled(bootConfig: BootJsonData): Promise<Cache |
     return null;
   }
 
+  // cache integrity is compromised if the first request has been served over http
+  // in this case, we want to disable caching and integrity validation
+  if (document.location.protocol !== 'https:') {
+    return null;
+  }
+
   // Define a separate cache for each base href, so we're isolated from any other
   // Blazor application running on the same origin. We need this so that we're free
   // to purge from the cache anything we're not using and don't let it keep growing,

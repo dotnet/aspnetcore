@@ -93,7 +93,7 @@ namespace System.Net.Quic.Implementations.Mock
             int bytesRead = 0;
             do
             {
-                bytesRead += await socket.ReceiveAsync(buffer.AsMemory().Slice(bytesRead), SocketFlags.None).ConfigureAwait(false);
+                bytesRead += await socket.ReceiveAsync(buffer.AsMemory().Slice(bytesRead), SocketFlags.None, cancellationToken).ConfigureAwait(false);
             } while (bytesRead != buffer.Length);
 
             int peerListenPort = BinaryPrimitives.ReadInt32LittleEndian(buffer);
@@ -163,7 +163,7 @@ namespace System.Net.Quic.Implementations.Mock
             int bytesRead = 0;
             do
             {
-                bytesRead += await socket.ReceiveAsync(buffer.AsMemory().Slice(bytesRead), SocketFlags.None).ConfigureAwait(false);
+                bytesRead += await socket.ReceiveAsync(buffer.AsMemory().Slice(bytesRead), SocketFlags.None, cancellationToken).ConfigureAwait(false);
             } while (bytesRead != buffer.Length);
 
             long streamId = BinaryPrimitives.ReadInt64LittleEndian(buffer);

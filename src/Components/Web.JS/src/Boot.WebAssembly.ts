@@ -66,8 +66,11 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     );
   });
 
+  // Get the custom environment setting if defined
+  const environment = options?.environment;
+
   // Fetch the resources and prepare the Mono runtime
-  const bootConfigResult = await BootConfigResult.initAsync();
+  const bootConfigResult = await BootConfigResult.initAsync(environment);
 
   const [resourceLoader] = await Promise.all([
     WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, options || {}),
