@@ -76,7 +76,7 @@ namespace Company.WebApplication1
 #elif (OrganizationalAuth)
             services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAd")
 #if (GenerateApiOrGraph)
-                    .AddMicrosoftWebAppCallsWebApi(Configuration, 
+                    .AddMicrosoftWebAppCallsWebApi(Configuration,
                                                    "AzureAd")
                     .AddInMemoryTokenCaches();
 #else
@@ -92,7 +92,7 @@ namespace Company.WebApplication1
 #elif (IndividualB2CAuth)
             services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAdB2C")
 #if (GenerateApi)
-                    .AddMicrosoftWebAppCallsWebApi(Configuration, 
+                    .AddMicrosoftWebAppCallsWebApi(Configuration,
                                                    "AzureAdB2C")
                     .AddInMemoryTokenCaches();
 
@@ -113,7 +113,7 @@ namespace Company.WebApplication1
 #else
             services.AddControllersWithViews();
 #endif
-#if (OrganizationalAuth || IndividualAuth)
+#if (OrganizationalAuth || IndividualB2CAuth)
            services.AddRazorPages()
                    .AddMicrosoftIdentityUI();
 #endif

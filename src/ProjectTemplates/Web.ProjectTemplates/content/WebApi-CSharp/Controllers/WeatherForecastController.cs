@@ -100,8 +100,10 @@ namespace Company.WebApplication1.Controllers
         [HttpGet]
         public IEnumerable<WeatherForecast> Get()
         {
+#if (!NoAuth)
             HttpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
+#endif
             var rng = new Random();
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
