@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebPackageVersion}" />
-    <PackageReference Include="Microsoft.Graph" Version="${MicrosoftGraphPackageVersion}" Condition=" '$(CallsMicrosoftGraph)' == 'True' "/>
+    <PackageReference Include="Microsoft.Graph" Version="${MicrosoftGraphPackageVersion}" Condition=" '$(GenerateGraph)' == 'True' "/>
   </ItemGroup>
   <!--#endif -->
 

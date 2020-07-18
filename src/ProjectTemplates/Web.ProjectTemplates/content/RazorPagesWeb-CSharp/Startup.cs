@@ -41,7 +41,7 @@ using Microsoft.Extensions.Hosting;
 #if(MultiOrgAuth)
 using Microsoft.IdentityModel.Tokens;
 #endif
-#if (CallsMicrosoftGraph)
+#if (GenerateGraph)
 using Microsoft.Graph;
 #endif
 
@@ -72,7 +72,7 @@ namespace Company.WebApplication1
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 #elif (OrganizationalAuth)
             services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAd")
-#if (GenerateApi || CallsMicrosoftGraph)
+#if (GenerateApiOrGraph)
                     .AddMicrosoftWebAppCallsWebApi(Configuration,
                                                    "AzureAd")
                     .AddInMemoryTokenCaches();
@@ -82,7 +82,7 @@ namespace Company.WebApplication1
 #if (GenerateApi)
             services.AddDownstreamWebApiService(Configuration);
 #endif
-#if (CallsMicrosoftGraph)
+#if (GenerateGraph)
             services.AddMicrosoftGraph(Configuration.GetValue<string>("CalledApi:CalledApiScopes")?.Split(' '),
                                        Configuration.GetValue<string>("CalledApi:CalledApiUrl"));
 #endif

@@ -44,7 +44,7 @@
             ]
         },
         {
-          "condition": "(!CallsMicrosoftGraph)",
+          "condition": "(!GenerateGraph)",
           "exclude": [
              "Services/MicrosoftGraphServiceExtensions.cs",
             "Services/TokenAcquisitionCredentialProvider.cs"
@@ -264,11 +264,15 @@
     },
     "GenerateApi": {
         "type": "computed",
-        "value": "(CalledApiUrl != \"https://graph.microsoft.com/v1.0/me\" || CalledApiScopes != \"user.read\")"
+        "value": "((IndividualB2CAuth || OrganizationalAuth) && (CalledApiUrl != \"https://graph.microsoft.com/v1.0/me\" || CalledApiScopes != \"user.read\"))"
+    },
+    "GenerateGraph": {
+        "type": "computed",
+        "value": "((IndividualB2CAuth || OrganizationalAuth) && CallsMicrosoftGraph)"
     },
     "GenerateApiOrGraph": {
         "type": "computed",
-        "value": "(GenerateApi || CallsMicrosoftGraph)"
+        "value": "(GenerateApi || GenerateGraph)"
     }
   },
   "primaryOutputs": [

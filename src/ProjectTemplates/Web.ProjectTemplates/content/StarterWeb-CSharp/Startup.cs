@@ -44,7 +44,7 @@ using Microsoft.IdentityModel.Tokens;
 #if (GenerateApiOrGraph)
 using Company.WebApplication1.Services;
 #endif
-#if (CallsMicrosoftGraph)
+#if (GenerateGraph)
 using Microsoft.Graph;
 #endif
 
@@ -85,7 +85,7 @@ namespace Company.WebApplication1
 #if (GenerateApi)
             services.AddDownstreamWebApiService(Configuration);
 #endif
-#if (CallsMicrosoftGraph)
+#if (GenerateGraph)
             services.AddMicrosoftGraph(Configuration.GetValue<string>("CalledApi:CalledApiScopes")?.Split(' '),
                                        Configuration.GetValue<string>("CalledApi:CalledApiUrl"));
 #endif

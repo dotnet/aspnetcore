@@ -24,7 +24,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-#if (CallsMicrosoftGraph)
+#if (GenerateGraph)
 using Microsoft.Graph;
 #endif
 namespace Company.WebApplication1
@@ -44,7 +44,7 @@ namespace Company.WebApplication1
 #if (OrganizationalAuth)
             // Adds Microsoft Identity platform (AAD v2.0) support to protect this Api
             services.AddMicrosoftWebApiAuthentication(Configuration, "AzureAd")
-#if (GenerateApi || CallsMicrosoftGraph)
+#if (GenerateApiOrGraph)
                     .AddMicrosoftWebAppCallsWebApi(Configuration,
                                                    "AzureAd")
                     .AddInMemoryTokenCaches();
@@ -55,7 +55,7 @@ namespace Company.WebApplication1
 #if (GenerateApi)
             services.AddDownstreamWebApiService(Configuration);
 #endif
-#if (CallsMicrosoftGraph)
+#if (GenerateGraph)
             services.AddMicrosoftGraph(Configuration.GetValue<string>("CalledApi:CalledApiScopes")?.Split(' '),
                                        Configuration.GetValue<string>("CalledApi:CalledApiUrl"));
 #endif
