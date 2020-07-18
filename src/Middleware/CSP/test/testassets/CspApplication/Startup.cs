@@ -47,15 +47,16 @@ namespace CspApplication
             });
         }
 
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args)
+        {
+            return new WebHostBuilder()
+                .UseKestrel()
+                .UseIISIntegration();
+        }
+
         public static void Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseKestrel()
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
-
+            var host = CreateWebHostBuilder(args).UseContentRoot(Directory.GetCurrentDirectory()).UseStartup<Startup>().Build();
             host.Run();
         }
     }

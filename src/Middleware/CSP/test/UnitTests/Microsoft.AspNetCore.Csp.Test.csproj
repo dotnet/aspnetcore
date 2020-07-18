@@ -2,10 +2,22 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\testassets\CspApplication\CspMiddlewareWebSite.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Csp" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
   </ItemGroup>
+
+  <!-- This step was supposed to be done by Microsoft.AspNetCore.Mvc.Testing. It was not. See https://stackoverflow.com/questions/55131379/integration-testing-asp-net-core-with-net-framework-cant-find-deps-json. -->
+  <Target Name="ManualCopyDepsJsonBecauseMvcTestingBuildTaskIsNotWorking" AfterTargets="Build">
+    <Copy SourceFiles="$(ArtifactsBinDir)\CspMiddlewareWebsite\$(Configuration)\$(DefaultNetCoreTargetFramework)\CspMiddlewareWebsite.deps.json" DestinationFolder="$(ArtifactsBinDir)\Microsoft.AspNetCore.Csp.Test\$(Configuration)\$(DefaultNetCoreTargetFramework)" />
+  </Target>
 </Project>
