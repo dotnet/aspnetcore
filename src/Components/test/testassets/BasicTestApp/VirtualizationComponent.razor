@@ -1,0 +1,19 @@
+﻿@using Microsoft.AspNetCore.Components.Virtualization
+
+<input type="number" @bind-value="itemSize" />
+
+<div style="background-color: #eee; height: 500px; overflow-y: auto">
+    <Virtualize Items="@Items" ItemSize="itemSize">
+        <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+    </Virtualize>
+    <Virtualize Items="@Items" ItemSize="itemSize">
+        <div @key="@context" style="height: @(itemSize)px; background-color: rgb(0, @((context % 2) * 255), @((1-(context % 2)) * 255));">Item @context</div>
+    </Virtualize>
+</div>
+
+
+@code {
+    int itemSize = 100;
+    Random rng = new Random();
+    ICollection<int> Items = Enumerable.Range(1, 1000).ToList();
+}

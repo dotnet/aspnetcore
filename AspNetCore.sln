@@ -1430,12 +1430,20 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sdk", "Sdk", "{FED4267E-E5E4-49C5-98DB-8B3F203596EE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.BlazorWebAssembly", "src\Components\WebAssembly\Sdk\src\Microsoft.NET.Sdk.BlazorWebAssembly.csproj", "{6B2734BF-C61D-4889-ABBF-456A4075D59B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BasicTestApp", "src\Components\test\testassets\BasicTestApp\BasicTestApp.csproj", "{46FB7E93-1294-4068-B80A-D4864F78277A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "src\Components\WebAssembly\Sdk\test\Microsoft.NET.Sdk.BlazorWebAssembly.Tests.csproj", "{83371889-9A3E-4D16-AE77-EB4F83BC6374}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.BlazorWebAssembly.IntegrationTests", "src\Components\WebAssembly\Sdk\integrationtests\Microsoft.NET.Sdk.BlazorWebAssembly.IntegrationTests.csproj", "{525EBCB4-A870-470B-BC90-845306C337D1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.BlazorWebAssembly.Tools", "src\Components\WebAssembly\Sdk\tools\Microsoft.NET.Sdk.BlazorWebAssembly.Tools.csproj", "{175E5CD8-92D4-46BB-882E-3A930D3302D4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComponentsApp.Server", "src\Components\test\testassets\ComponentsApp.Server\ComponentsApp.Server.csproj", "{19974360-4A63-425A-94DB-C2C940A3A97A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LazyTestContentPackage", "src\Components\test\testassets\LazyTestContentPackage\LazyTestContentPackage.csproj", "{ADF9C126-F322-4E34-AFD3-E626A4487206}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestContentPackage", "src\Components\test\testassets\TestContentPackage\TestContentPackage.csproj", "{3D3C7D9B-E356-4DC6-80B1-3F6D7F15EE31}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Components.TestServer", "src\Components\test\testassets\TestServer\Components.TestServer.csproj", "{8A59AF88-4A82-46ED-977D-D909001F8107}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
