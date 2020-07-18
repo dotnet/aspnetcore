@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// Creates a new <see cref="ViewResultExecutor"/>.
         /// </summary>
         /// <param name="viewOptions">The <see cref="IOptions{MvcViewOptions}"/>.</param>
-        /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
+        /// <param name="writerFactory">The <see cref="IHttpResponseWriterFactory"/>.</param>
         /// <param name="viewEngine">The <see cref="ICompositeViewEngine"/>.</param>
         /// <param name="tempDataFactory">The <see cref="ITempDataDictionaryFactory"/>.</param>
         /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/>.</param>
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         public ViewResultExecutor(
             IOptions<MvcViewOptions> viewOptions,
-            IHttpResponseStreamWriterFactory writerFactory,
+            IHttpResponseWriterFactory writerFactory,
             ICompositeViewEngine viewEngine,
             ITempDataDictionaryFactory tempDataFactory,
             DiagnosticListener diagnosticListener,

@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var context = new OutputFormatterWriteContext(
                 new DefaultHttpContext(),
-                (s, e) => new StreamWriter(s, e),
+                (s, e) => new StreamWriter(s.AsStream(), e),
                 typeof(object),
                 new object());
 

@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
 
         private class BenchmarkViewExecutor : ViewExecutor
         {
-            public BenchmarkViewExecutor(IOptions<MvcViewOptions> viewOptions, IHttpResponseStreamWriterFactory writerFactory, ICompositeViewEngine viewEngine, ITempDataDictionaryFactory tempDataFactory, DiagnosticListener diagnosticListener, IModelMetadataProvider modelMetadataProvider)
+            public BenchmarkViewExecutor(IOptions<MvcViewOptions> viewOptions, IHttpResponseWriterFactory writerFactory, ICompositeViewEngine viewEngine, ITempDataDictionaryFactory tempDataFactory, DiagnosticListener diagnosticListener, IModelMetadataProvider modelMetadataProvider)
                 : base(viewOptions, writerFactory, viewEngine, tempDataFactory, diagnosticListener, modelMetadataProvider)
             {
             }

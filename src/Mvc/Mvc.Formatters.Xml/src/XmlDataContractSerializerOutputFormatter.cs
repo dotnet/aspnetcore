@@ -264,17 +264,17 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             _mvcOptions ??= httpContext.RequestServices.GetRequiredService<IOptions<MvcOptions>>().Value;
 
-            var responseStream = response.Body;
-            FileBufferingWriteStream fileBufferingWriteStream = null;
+            var responseWriter = response.BodyWriter;
+            FileBufferingPipeWriter fileBufferigWriter = null;
             if (!_mvcOptions.SuppressOutputFormatterBuffering)
             {
-                fileBufferingWriteStream = new FileBufferingWriteStream();
-                responseStream = fileBufferingWriteStream;
+                fileBufferigWriter = new FileBufferingPipeWriter(response.BodyWriter);
+                responseWriter = fileBufferigWriter;
             }
 
             try
             {
-                await using (var textWriter = context.WriterFactory(responseStream, writerSettings.Encoding))
+                await using (var textWriter = context.WriterFactory(responseWriter, writerSettings.Encoding))
                 {
                     using (var xmlWriter = CreateXmlWriter(context, textWriter, writerSettings))
                     {
@@ -282,17 +282,17 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     }
                 }
 
-                if (fileBufferingWriteStream != null)
+                if (fileBufferigWriter != null)
                 {
-                    response.ContentLength = fileBufferingWriteStream.Length;
-                    await fileBufferingWriteStream.DrainBufferAsync(response.Body);
+                    // response.ContentLength = fileBufferingWriteStream.Length;
+                    await fileBufferigWriter.DrainBufferAsync();
                 }
             }
             finally
             {
-                if (fileBufferingWriteStream != null)
+                if (fileBufferigWriter != null)
                 {
-                    await fileBufferingWriteStream.DisposeAsync();
+                    await fileBufferigWriter.DisposeAsync();
                 }
             }
         }

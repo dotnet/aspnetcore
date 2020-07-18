@@ -684,7 +684,7 @@ namespace Microsoft.AspNetCore.Mvc
             services.AddSingleton<HtmlEncoder, HtmlTestEncoder>();
             services.AddSingleton<IViewBufferScope, TestViewBufferScope>();
             services.AddSingleton<IActionResultExecutor<ViewComponentResult>, ViewComponentResultExecutor>();
-            services.AddSingleton<IHttpResponseStreamWriterFactory, TestHttpResponseStreamWriterFactory>();
+            services.AddSingleton<IHttpResponseWriterFactory, TestHttpResponseStreamWriterFactory>();
 
             return services;
         }

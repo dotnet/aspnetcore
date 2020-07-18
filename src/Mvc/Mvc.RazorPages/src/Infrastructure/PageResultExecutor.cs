@@ -26,14 +26,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         /// <summary>
         /// Creates a new <see cref="PageResultExecutor"/>.
         /// </summary>
-        /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
+        /// <param name="writerFactory">The <see cref="IHttpResponseWriterFactory"/>.</param>
         /// <param name="compositeViewEngine">The <see cref="ICompositeViewEngine"/>.</param>
         /// <param name="razorViewEngine">The <see cref="IRazorViewEngine"/>.</param>
         /// <param name="razorPageActivator">The <see cref="IRazorPageActivator"/>.</param>
         /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
         public PageResultExecutor(
-            IHttpResponseStreamWriterFactory writerFactory,
+            IHttpResponseWriterFactory writerFactory,
             ICompositeViewEngine compositeViewEngine,
             IRazorViewEngine razorViewEngine,
             IRazorPageActivator razorPageActivator,

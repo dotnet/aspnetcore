@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -26,12 +27,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// Creates a new <see cref="ObjectResultExecutor"/>.
         /// </summary>
         /// <param name="formatterSelector">The <see cref="OutputFormatterSelector"/>.</param>
-        /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
+        /// <param name="writerFactory">The <see cref="IHttpResponseWriterFactory"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         [Obsolete("This constructor is obsolete and will be removed in a future release.")]
         public ObjectResultExecutor(
             OutputFormatterSelector formatterSelector,
-            IHttpResponseStreamWriterFactory writerFactory,
+            IHttpResponseWriterFactory writerFactory,
             ILoggerFactory loggerFactory)
             : this(formatterSelector, writerFactory, loggerFactory, mvcOptions: null)
         {
@@ -41,12 +42,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// Creates a new <see cref="ObjectResultExecutor"/>.
         /// </summary>
         /// <param name="formatterSelector">The <see cref="OutputFormatterSelector"/>.</param>
-        /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
+        /// <param name="writerFactory">The <see cref="IHttpResponseWriterFactory"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
         public ObjectResultExecutor(
             OutputFormatterSelector formatterSelector,
-            IHttpResponseStreamWriterFactory writerFactory,
+            IHttpResponseWriterFactory writerFactory,
             ILoggerFactory loggerFactory,
             IOptions<MvcOptions> mvcOptions)
         {
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <summary>
         /// Gets the writer factory delegate.
         /// </summary>
-        protected Func<Stream, Encoding, TextWriter> WriterFactory { get; }
+        protected Func<PipeWriter, Encoding, TextWriter> WriterFactory { get; }
 
         /// <summary>
         /// Executes the <see cref="ObjectResult"/>.

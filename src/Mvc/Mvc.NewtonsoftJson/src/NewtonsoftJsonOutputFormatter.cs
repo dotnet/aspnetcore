@@ -131,17 +131,17 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var response = context.HttpContext.Response;
 
-            var responseStream = response.Body;
-            FileBufferingWriteStream fileBufferingWriteStream = null;
+            var responseWriter = response.BodyWriter;
+            FileBufferingPipeWriter fileBufferingWriteStream = null;
             if (!_mvcOptions.SuppressOutputFormatterBuffering)
             {
-                fileBufferingWriteStream = new FileBufferingWriteStream();
-                responseStream = fileBufferingWriteStream;
+                fileBufferingWriteStream = new FileBufferingPipeWriter(responseWriter);
+                responseWriter = fileBufferingWriteStream;
             }
 
             try
             {
-                await using (var writer = context.WriterFactory(responseStream, selectedEncoding))
+                await using (var writer = context.WriterFactory(responseWriter, selectedEncoding))
                 {
                     using (var jsonWriter = CreateJsonWriter(writer))
                     {
@@ -152,8 +152,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
                 if (fileBufferingWriteStream != null)
                 {
-                    response.ContentLength = fileBufferingWriteStream.Length;
-                    await fileBufferingWriteStream.DrainBufferAsync(response.BodyWriter);
+                    // response.ContentLength = fileBufferingWriteStream.Length;
+                    await fileBufferingWriteStream.DrainBufferAsync();
                 }
             }
             finally

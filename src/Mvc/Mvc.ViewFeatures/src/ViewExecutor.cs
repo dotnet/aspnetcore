@@ -29,14 +29,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// Creates a new <see cref="ViewExecutor"/>.
         /// </summary>
         /// <param name="viewOptions">The <see cref="IOptions{MvcViewOptions}"/>.</param>
-        /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
+        /// <param name="writerFactory">The <see cref="IHttpResponseWriterFactory"/>.</param>
         /// <param name="viewEngine">The <see cref="ICompositeViewEngine"/>.</param>
         /// <param name="tempDataFactory">The <see cref="ITempDataDictionaryFactory"/>.</param>
         /// <param name="diagnosticListener">The <see cref="DiagnosticListener"/>.</param>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider" />.</param>
         public ViewExecutor(
             IOptions<MvcViewOptions> viewOptions,
-            IHttpResponseStreamWriterFactory writerFactory,
+            IHttpResponseWriterFactory writerFactory,
             ICompositeViewEngine viewEngine,
             ITempDataDictionaryFactory tempDataFactory,
             DiagnosticListener diagnosticListener,
@@ -66,11 +66,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <summary>
         /// Creates a new <see cref="ViewExecutor"/>.
         /// </summary>
-        /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
+        /// <param name="writerFactory">The <see cref="IHttpResponseWriterFactory"/>.</param>
         /// <param name="viewEngine">The <see cref="ICompositeViewEngine"/>.</param>
         /// <param name="diagnosticListener">The <see cref="System.Diagnostics.DiagnosticListener"/>.</param>
         protected ViewExecutor(
-            IHttpResponseStreamWriterFactory writerFactory,
+            IHttpResponseWriterFactory writerFactory,
             ICompositeViewEngine viewEngine,
             DiagnosticListener diagnosticListener)
         {
@@ -120,9 +120,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         protected IModelMetadataProvider ModelMetadataProvider { get; }
 
         /// <summary>
-        /// Gets the <see cref="IHttpResponseStreamWriterFactory"/>.
+        /// Gets the <see cref="IHttpResponseWriterFactory"/>.
         /// </summary>
-        protected IHttpResponseStreamWriterFactory WriterFactory { get; }
+        protected IHttpResponseWriterFactory WriterFactory { get; }
 
         /// <summary>
         /// Executes a view asynchronously.
@@ -233,7 +233,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             OnExecuting(viewContext);
 
-            await using (var writer = WriterFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
+            //await using (var writer = WriterFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
+            await using (var writer = WriterFactory.CreateWriter(response.BodyWriter, resolvedContentTypeEncoding))
             {
                 var view = viewContext.View;
 

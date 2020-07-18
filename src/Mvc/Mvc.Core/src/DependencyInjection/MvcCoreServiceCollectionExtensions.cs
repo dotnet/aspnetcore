@@ -241,7 +241,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<ITypeActivatorCache, TypeActivatorCache>();
             services.TryAddSingleton<IUrlHelperFactory, UrlHelperFactory>();
             services.TryAddSingleton<IHttpRequestStreamReaderFactory, MemoryPoolHttpRequestStreamReaderFactory>();
-            services.TryAddSingleton<IHttpResponseStreamWriterFactory, MemoryPoolHttpResponseStreamWriterFactory>();
+            services.TryAddSingleton<IHttpResponseWriterFactory, MemoryPoolHttpResponseStreamWriterFactory>();
             services.TryAddSingleton(ArrayPool<byte>.Shared);
             services.TryAddSingleton(ArrayPool<char>.Shared);
             services.TryAddSingleton<OutputFormatterSelector, DefaultOutputFormatterSelector>();
