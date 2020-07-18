@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
     /// <summary>
     /// Options for configuring authentication using Azure Active Directory.
     /// </summary>
-    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead")]
+    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
     public class AzureADOptions
     {
         /// <summary>

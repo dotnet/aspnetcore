@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
     /// <summary>
     /// Constants for different Azure Active Directory authentication components.
     /// </summary>
-    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead")]
+    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
     public static class AzureADDefaults
     {
         /// <summary>

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
     /// <summary>
     /// Options for configuring authentication using Azure Active Directory B2C.
     /// </summary>
-    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead")]
+    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
     public class AzureADB2COptions
     {
         /// <summary>
