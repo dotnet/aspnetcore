@@ -27,6 +27,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly long? _bufferLimit;
         private readonly Func<string> _tempFileDirectoryAccessor;
 
+        private long _pipeWrittenBytes = 0;
+
         /// <summary>
         /// Initializes a new instance of <see cref="FileBufferingWriteStream"/>.
         /// </summary>
@@ -121,6 +123,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override void Advance(int bytes)
         {
+            _pipeWrittenBytes += bytes;
             _pipeWriter.Advance(bytes);
         }
 
@@ -136,16 +139,21 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override Memory<byte> GetMemory(int sizeHint = 0)
         {
+            if (_pipeWrittenBytes + sizeHint > _memoryThreshold) throw new NotImplementedException();
+
             return _pipeWriter.GetMemory(sizeHint);
         }
 
         public override Span<byte> GetSpan(int sizeHint = 0)
         {
+            if (_pipeWrittenBytes + sizeHint > _memoryThreshold) throw new NotImplementedException();
+
             return _pipeWriter.GetSpan(sizeHint);
         }
 
         public override ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
         {
+            _pipeWrittenBytes = 0;
             return _pipeWriter.FlushAsync(cancellationToken);
         }
 

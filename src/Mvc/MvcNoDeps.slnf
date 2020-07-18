@@ -2,6 +2,9 @@
   "solution": {
     "path": "..\\..\\AspNetCore.sln",
     "projects": [
+      "src\\Http\\WebUtilities\\perf\\Microsoft.AspNetCore.WebUtilities.Performance\\Microsoft.AspNetCore.WebUtilities.Performance.csproj",
+      "src\\Http\\WebUtilities\\src\\Microsoft.AspNetCore.WebUtilities.csproj",
+      "src\\Http\\WebUtilities\\test\\Microsoft.AspNetCore.WebUtilities.Tests.csproj",
       "src\\Mvc\\Mvc.Abstractions\\src\\Microsoft.AspNetCore.Mvc.Abstractions.csproj",
       "src\\Mvc\\Mvc.Abstractions\\test\\Microsoft.AspNetCore.Mvc.Abstractions.Test.csproj",
       "src\\Mvc\\Mvc.Analyzers\\src\\Microsoft.AspNetCore.Mvc.Analyzers.csproj",
@@ -36,6 +39,7 @@
       "src\\Mvc\\Mvc.ViewFeatures\\test\\Microsoft.AspNetCore.Mvc.ViewFeatures.Test.csproj",
       "src\\Mvc\\Mvc\\src\\Microsoft.AspNetCore.Mvc.csproj",
       "src\\Mvc\\Mvc\\test\\Microsoft.AspNetCore.Mvc.Test.csproj",
+      "src\\Mvc\\benchmarks\\Microsoft.AspNetCore.Mvc.Performance.Views\\Microsoft.AspNetCore.Mvc.Performance.Views.csproj",
       "src\\Mvc\\benchmarks\\Microsoft.AspNetCore.Mvc.Performance\\Microsoft.AspNetCore.Mvc.Performance.csproj",
       "src\\Mvc\\samples\\MvcSandbox\\MvcSandbox.csproj",
       "src\\Mvc\\shared\\Mvc.Core.TestCommon\\Microsoft.AspNetCore.Mvc.Core.TestCommon.csproj",

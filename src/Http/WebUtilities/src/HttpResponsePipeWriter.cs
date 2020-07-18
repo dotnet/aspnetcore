@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override Encoding Encoding { get; }
 
+        private int _uncommittedBytes = 0;
         private bool _disposed;
 
         public HttpResponsePipeWriter(
@@ -38,164 +39,126 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override void Write(char value)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
-            }
-
             _singleCharArray[0] = value;
-            var span = new Span<char>(_singleCharArray, 0, 1);
-            Write(span);
+            WriteInternal(_singleCharArray.AsSpan(0, 1));
         }
 
         public override void Write(char[] values, int index, int count)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
-            }
-
-            if (values == null || count == 0)
+            if (values == null)
             {
                 return;
             }
 
-            var value = new Span<char>(values, index, count);
-            Write(value);
+            WriteInternal(values.AsSpan(index, count));
         }
 
         public override void Write(ReadOnlySpan<char> value)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
-            }
-
             if (value == null)
             {
                 return;
             }
 
-            var length = _encoder.GetByteCount(value, false);
-            var buffer = _writer.GetSpan(length);
-            _encoder.GetBytes(value, buffer, false);
-            _writer.Advance(length);
+            WriteInternal(value);
         }
 
         public override void Write(string? value)
         {
-            if (_disposed)
-            {
-                throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
-            }
-
             if (value == null)
             {
                 return;
             }
 
-            Write(value.AsSpan());
+            WriteInternal(value.AsSpan());
         }
 
         public override void WriteLine(ReadOnlySpan<char> value)
+            => WriteInternal(value, addNewLine: true);
+
+        public override Task WriteAsync(char value)
+        {
+            _singleCharArray[0] = value;
+
+            return WriteInternalAsync(_singleCharArray.AsSpan(0, 1));
+        }
+
+        public override Task WriteAsync(char[] values, int index, int count)
+            => WriteInternalAsync(values.AsSpan(index, count));
+
+        public override Task WriteAsync(string? value)
+        {
+            if (value == null)
+            {
+                return Task.CompletedTask;
+            }
+
+            return WriteInternalAsync(value.AsSpan());
+        }
+
+        public override Task WriteAsync(ReadOnlyMemory<char> value, CancellationToken cancellationToken = default)
+            => WriteInternalAsync(value.Span, cancellationToken);
+            
+
+        public override Task WriteLineAsync(ReadOnlyMemory<char> value, CancellationToken cancellationToken = default)
+            => WriteInternalAsync(value.Span, cancellationToken, addNewLine: true);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private Task WriteInternalAsync(ReadOnlySpan<char> value, CancellationToken cancellationToken = default, bool addNewLine = false)
+        {
+            if (_disposed)
+            {
+                return GetObjectDisposedTask();
+            }
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return Task.FromCanceled(cancellationToken);
+            }
+
+            if (value.IsEmpty && !addNewLine)
+            {
+                return Task.CompletedTask;
+            }
+
+            WriteInternal(value, addNewLine);
+
+            return LazyFlushAsync(cancellationToken);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private Task LazyFlushAsync(CancellationToken cancellationToken = default)
+        {
+            // The max size of a chunk is 4089.
+            if (_uncommittedBytes >= 4089)
+            {
+                _uncommittedBytes = 0;
+                return _writer.FlushAsync(cancellationToken).AsTask();
+            }
+
+            return Task.CompletedTask;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void WriteInternal(ReadOnlySpan<char> value, bool addNewLine = false)
         {
             if (_disposed)
             {
                 throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
             }
 
-            Write(value);
-            Write(NewLine);
+            WriteSpan(value);
+            if (addNewLine) WriteSpan(NewLine);
         }
 
-        public override Task WriteAsync(char value)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void WriteSpan(ReadOnlySpan<char> value)
         {
-            if (_disposed)
-            {
-                return GetObjectDisposedTask();
-            }
-
-            _singleCharArray[0] = value;
-
-            return WriteAsync(_singleCharArray, 0, 1);
-        }
-
-        public override Task WriteAsync(char[] values, int index, int count)
-        {
-            if (_disposed)
-            {
-                return GetObjectDisposedTask();
-            }
-
-            if (values == null || count == 0)
-            {
-                return Task.CompletedTask;
-            }
-
-            var value = new Span<char>(values, index, count);
-            Write(value);
-
-            return Task.CompletedTask;
-        }
-
-        public override Task WriteAsync(string? value)
-        {
-            if (_disposed)
-            {
-                return GetObjectDisposedTask();
-            }
-
             var length = _encoder.GetByteCount(value, false);
             var buffer = _writer.GetSpan(length);
+            _uncommittedBytes += length;
             _encoder.GetBytes(value, buffer, false);
             _writer.Advance(length);
-
-            return Task.CompletedTask;
-        }
-
-        public override Task WriteAsync(ReadOnlyMemory<char> value, CancellationToken cancellationToken = default)
-        {
-            if (_disposed)
-            {
-                return GetObjectDisposedTask();
-            }
-
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return Task.FromCanceled(cancellationToken);
-            }
-
-            if (value.IsEmpty)
-            {
-                return Task.CompletedTask;
-            }
-
-            Write(value.Span);
-
-            return Task.CompletedTask;
-        }
-
-        public override Task WriteLineAsync(ReadOnlyMemory<char> value, CancellationToken cancellationToken = default)
-        {
-            if (_disposed)
-            {
-                return GetObjectDisposedTask();
-            }
-
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return Task.FromCanceled(cancellationToken);
-            }
-
-            if (value.IsEmpty && NewLine.Length == 0)
-            {
-                return Task.CompletedTask;
-            }
-
-            Write(value.Span);
-            Write(NewLine);
-
-            return Task.CompletedTask;
         }
 
         public override void Flush()
@@ -206,7 +169,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             FlushEncoder();
-            // TOOD: flush
+            // TOOD: flush?
         }
 
         // Perf: FlushAsync is invoked to ensure any buffered content is asynchronously written to the underlying
@@ -228,7 +191,6 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                 _disposed = true;
                 await FlushInternalAsync();
-                _writer.Complete();
             }
 
             await base.DisposeAsync();
@@ -240,8 +202,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                 _disposed = true;
                 FlushEncoder();
-                // TOOD: flush
-                _writer.Complete();
+                // Flush not needed
             }
 
             base.Dispose(disposing);
@@ -255,7 +216,6 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         private void FlushEncoder()
         {
-            // flush encoder
             var empty = new ReadOnlySpan<char>();
             var length = _encoder.GetByteCount(empty, true);
             if (length > 0)
