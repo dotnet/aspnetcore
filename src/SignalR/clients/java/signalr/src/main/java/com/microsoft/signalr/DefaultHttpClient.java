@@ -20,13 +20,13 @@ final class DefaultHttpClient extends HttpClient {
     private OkHttpClient client = null;
 
     public DefaultHttpClient(Action1<OkHttpClient.Builder> configureBuilder) {
-        this(0, null, configureBuilder);
+        this(null, configureBuilder);
     }
 
     public DefaultHttpClient cloneWithTimeOut(int timeoutInMilliseconds) {
         OkHttpClient newClient = client.newBuilder().readTimeout(timeoutInMilliseconds, TimeUnit.MILLISECONDS)
                 .build();
-        return new DefaultHttpClient(timeoutInMilliseconds, newClient, null);
+        return new DefaultHttpClient(newClient, null);
     }
 
     @Override
@@ -36,7 +36,7 @@ final class DefaultHttpClient extends HttpClient {
         }
     }
 
-    public DefaultHttpClient(int timeoutInMilliseconds, OkHttpClient client, Action1<OkHttpClient.Builder> configureBuilder) {
+    public DefaultHttpClient(OkHttpClient client, Action1<OkHttpClient.Builder> configureBuilder) {
         if (client != null) {
             this.client = client;
         } else {
@@ -89,10 +89,6 @@ final class DefaultHttpClient extends HttpClient {
                     }
                 }
             });
-
-            if (timeoutInMilliseconds > 0) {
-                builder.readTimeout(timeoutInMilliseconds, TimeUnit.MILLISECONDS);
-            }
 
             if (configureBuilder != null) {
                 configureBuilder.invoke(builder);
