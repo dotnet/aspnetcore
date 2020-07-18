@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <summary>
         /// Gets or sets a handler that should be called before navigating to a new page.
         /// </summary>
-        [Parameter] public EventCallback<NavigationContext> OnNavigateAsync { get; set; }
+        [Parameter] public Func<NavigationContext, Task> OnNavigateAsync { get; set; }
 
         private RouteTable Routes { get; set; }
 
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private async ValueTask<bool> RunOnNavigateAsync(string path, Task previousOnNavigate)
         {
-            if (!OnNavigateAsync.HasDelegate)
+            if (OnNavigateAsync == null)
             {
                 return true;
             }
@@ -213,22 +213,22 @@ namespace Microsoft.AspNetCore.Components.Routing
             _onNavigateCts = new CancellationTokenSource();
             var navigateContext = new NavigationContext(path, _onNavigateCts.Token);
 
-            var task = OnNavigateAsync.InvokeAsync(navigateContext);
-
             try
             {
                 if (Navigating != null)
                 {
                     _renderHandle.Render(Navigating);
                 }
-                await task;
+                await OnNavigateAsync(navigateContext);
                 return true;
             }
             catch (OperationCanceledException e)
             {
-                if (task.IsCanceled && !navigateContext.CancellationToken.IsCancellationRequested)
+                if (!navigateContext.CancellationToken.IsCancellationRequested)
                 {
-                    throw new InvalidOperationException("OnNavigateAsync can only be cancelled via he NavigateContext.CancellationToken.", e);
+                    var rethrownException =  new InvalidOperationException("OnNavigateAsync can only be cancelled via he NavigateContext.CancellationToken.", e);
+                    _renderHandle.Render(builder => ExceptionDispatchInfo.Capture(rethrownException).Throw());
+                    return false;
                 }
             }
             catch (Exception e)

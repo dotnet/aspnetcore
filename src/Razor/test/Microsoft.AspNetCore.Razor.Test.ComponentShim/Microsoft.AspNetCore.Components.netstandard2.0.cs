@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Components
         public static bool TryConvertToString(object obj, System.Globalization.CultureInfo culture, out string value) { throw null; }
         public static bool TryConvertTo<T>(object obj, System.Globalization.CultureInfo culture, out T value) { throw null; }
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
+    [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=true)]
     public sealed partial class BindElementAttribute : System.Attribute
     {
         public BindElementAttribute(string element, string suffix, string valueAttribute, string changeAttribute) { }
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components
         public string Suffix { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string ValueAttribute { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class CascadingParameterAttribute : System.Attribute
     {
         public CascadingParameterAttribute() { }
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Components
         public bool HasDelegate { get { throw null; } }
         public System.Threading.Tasks.Task InvokeAsync(TValue arg) { throw null; }
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
+    [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=true)]
     public sealed partial class EventHandlerAttribute : System.Attribute
     {
         public EventHandlerAttribute(string attributeName, System.Type eventArgsType) { }
@@ -226,12 +226,12 @@ namespace Microsoft.AspNetCore.Components
     {
         System.Threading.Tasks.Task HandleEventAsync(Microsoft.AspNetCore.Components.EventCallbackWorkItem item, object arg);
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class InjectAttribute : System.Attribute
     {
         public InjectAttribute() { }
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
     public sealed partial class LayoutAttribute : System.Attribute
     {
         public LayoutAttribute(System.Type layoutType) { }
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Components
         private readonly object _dummy;
         public MarkupString(string value) { throw null; }
         public string Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public static explicit operator Microsoft.AspNetCore.Components.MarkupString(string value) { throw null; }
+        public static explicit operator Microsoft.AspNetCore.Components.MarkupString (string value) { throw null; }
         public override string ToString() { throw null; }
     }
     public partial class NavigationException : System.Exception
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Components
         protected OwningComponentBase() { }
         protected TService Service { get { throw null; } }
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
     public sealed partial class ParameterAttribute : System.Attribute
     {
         public ParameterAttribute() { }
@@ -346,7 +346,7 @@ namespace Microsoft.AspNetCore.Components
         public bool IsInitialized { get { throw null; } }
         public void Render(Microsoft.AspNetCore.Components.RenderFragment renderFragment) { }
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
+    [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=false)]
     public sealed partial class RouteAttribute : System.Attribute
     {
         public RouteAttribute(string template) { }
@@ -525,7 +525,6 @@ namespace Microsoft.AspNetCore.Components.Routing
         public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.RouteData> Found { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment NotFound { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.Routing.NavigationContext> OnNavigateAsync { [System.Runtime.CompilerServices.CompilerGeneratedAttribute] get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute] set { } }
         public void Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
         public void Dispose() { }
         System.Threading.Tasks.Task Microsoft.AspNetCore.Components.IHandleAfterRender.OnAfterRenderAsync() { throw null; }
