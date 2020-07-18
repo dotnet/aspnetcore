@@ -13,17 +13,23 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI.AzureAD.Controllers.Int
     [Route("[area]/[controller]/[action]")]
     internal class AccountController : Controller
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         public AccountController(IOptionsMonitor<AzureADOptions> options)
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             Options = options;
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         public IOptionsMonitor<AzureADOptions> Options { get; }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         [HttpGet("{scheme?}")]
         public IActionResult SignIn([FromRoute] string scheme)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             scheme = scheme ?? AzureADDefaults.AuthenticationScheme;
+#pragma warning restore CS0618 // Type or member is obsolete
             var redirectUrl = Url.Content("~/");
             return Challenge(
                 new AuthenticationProperties { RedirectUri = redirectUrl },
@@ -33,7 +39,9 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI.AzureAD.Controllers.Int
         [HttpGet("{scheme?}")]
         public IActionResult SignOut([FromRoute] string scheme)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             scheme = scheme ?? AzureADDefaults.AuthenticationScheme;
+#pragma warning restore CS0618 // Type or member is obsolete
             var options = Options.Get(scheme);
             var callbackUrl = Url.Page("/Account/SignedOut", pageHandler: null, values: null, protocol: Request.Scheme);
             return SignOut(

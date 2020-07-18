@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
 {
+    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead")]
     internal class AzureADOpenIdConnectOptionsConfiguration : IConfigureNamedOptions<OpenIdConnectOptions>
     {
         private readonly IOptions<AzureADSchemeOptions> _schemeOptions;
