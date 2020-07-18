@@ -13,6 +13,7 @@
     <None Update="app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
   </ItemGroup>
   <!--#endif -->
+  <!--#if (IndividualB2CAuth || IndividualLocalAuth || OrganizationalAuth || RazorRuntimeCompilation) -->
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="${MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
@@ -22,9 +23,10 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="${MicrosoftEntityFrameworkCoreSqlitePackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' != 'True'" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="${MicrosoftEntityFrameworkCoreSqlServerPackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' == 'True'" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="${MicrosoftEntityFrameworkCoreToolsPackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
-    <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebPackageVersion}" />
-    <PackageReference Include="Microsoft.Identity.Web.UI" Version="${MicrosoftIdentityWebUIPackageVersion}" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebPackageVersion}" Condition=" '$(IndividualB2CAuth)' == 'True' AND '$(OrganizationalAuth)' == 'True'" />
+    <PackageReference Include="Microsoft.Identity.Web.UI" Version="${MicrosoftIdentityWebUIPackageVersion}" Condition=" '$(IndividualB2CAuth)' == 'True' AND '$(OrganizationalAuth)' == 'True'" />
     <PackageReference Include="Microsoft.Graph" Version="${MicrosoftGraphPackageVersion}" Condition=" '$(CallsMicrosoftGraph)' == 'True' "/>
   </ItemGroup>
+  <!--#endif -->
 
 </Project>

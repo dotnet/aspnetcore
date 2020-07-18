@@ -5,10 +5,12 @@
     <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">True</NoDefaultLaunchSettingsFile>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.WebApplication1</RootNamespace>
   </PropertyGroup>
+  <!--#if (OrganizationalAuth || IndividualB2CAuth) -->
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebPackageVersion}" />
     <PackageReference Include="Microsoft.Graph" Version="${MicrosoftGraphPackageVersion}" Condition=" '$(CallsMicrosoftGraph)' == 'True' "/>
   </ItemGroup>
+  <!--#endif -->
 
 </Project>
