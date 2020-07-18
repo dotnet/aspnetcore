@@ -7,9 +7,10 @@
     <PackageTags>aspnetcore</PackageTags>
     <NoWarn>CS1591;$(NoWarn)</NoWarn>
   </PropertyGroup>
-
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <ProjectReference Include="..\..\..\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="Microsoft.Extensions.ActivatorUtilities.Sources" PrivateAssets="All" />
     <Reference Include="System.IO.Pipelines" />
   </ItemGroup>

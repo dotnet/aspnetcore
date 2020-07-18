@@ -6,11 +6,12 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership</PackageTags>
   </PropertyGroup>
-
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
-    <Reference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <ProjectReference Include="..\..\..\Security\Authentication\Cookies\src\Microsoft.AspNetCore.Authentication.Cookies.csproj" />
+    <ProjectReference Include="..\..\..\DataProtection\Cryptography.KeyDerivation\src\Microsoft.AspNetCore.Cryptography.KeyDerivation.csproj" />
+    <ProjectReference Include="..\..\..\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="Microsoft.Extensions.Identity.Core" />
   </ItemGroup>
 

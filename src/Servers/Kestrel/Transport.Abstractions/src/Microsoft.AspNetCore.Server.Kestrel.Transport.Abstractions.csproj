@@ -14,9 +14,7 @@
     <Compile Include="$(KestrelSharedSourceRoot)src\ThrowHelper.cs" />
     <Compile Include="$(RepositoryRoot)src\Shared\Buffers.MemoryPool\*.cs" />
   </ItemGroup>
-
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
+    <ProjectReference Include="..\..\..\..\Servers\Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj" />
   </ItemGroup>
-
 </Project>

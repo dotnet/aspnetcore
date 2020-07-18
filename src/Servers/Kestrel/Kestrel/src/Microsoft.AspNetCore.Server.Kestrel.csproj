@@ -8,11 +8,13 @@
     <NoWarn>CS1591;$(NoWarn)</NoWarn>
   </PropertyGroup>
 
+
+
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Https" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <ProjectReference Include="..\..\..\..\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj" />
+    <ProjectReference Include="..\..\..\..\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\Servers\Kestrel\Https\src\Microsoft.AspNetCore.Server.Kestrel.Https.csproj" />
+    <ProjectReference Include="..\..\..\..\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj" />
   </ItemGroup>
 
 </Project>

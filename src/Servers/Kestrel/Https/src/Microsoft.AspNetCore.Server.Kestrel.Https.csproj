@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>HTTPS support for the ASP.NET Core Kestrel cross-platform web server.</Description>
@@ -7,10 +7,9 @@
     <PackageTags>aspnetcore;kestrel</PackageTags>
     <NoWarn>CS1591;$(NoWarn)</NoWarn>
   </PropertyGroup>
-
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
+    <ProjectReference Include="..\..\..\..\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\..\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
   </ItemGroup>
 
 </Project>

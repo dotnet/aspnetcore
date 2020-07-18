@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core default HTTP feature implementations.</Description>
@@ -14,7 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <ProjectReference Include="..\..\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.Extensions.ObjectPool" />
     <Reference Include="Microsoft.Extensions.Options" />

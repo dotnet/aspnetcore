@@ -27,15 +27,18 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
-    <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
-    <Reference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <ProjectReference Include="..\..\..\Http\Http\src\Microsoft.AspNetCore.Http.csproj" />
+    <ProjectReference Include="..\..\..\Mvc\Mvc.Abstractions\src\Microsoft.AspNetCore.Mvc.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\Http\Authentication.Core\src\Microsoft.AspNetCore.Authentication.Core.csproj" />
+    <ProjectReference Include="..\..\..\Security\Authorization\Policy\src\Microsoft.AspNetCore.Authorization.Policy.csproj" />
+    <ProjectReference Include="..\..\..\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\Http\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj" />
+    <ProjectReference Include="..\..\..\Middleware\ResponseCaching.Abstractions\src\Microsoft.AspNetCore.ResponseCaching.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.DependencyModel" />
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
