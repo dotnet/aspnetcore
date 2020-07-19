@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>
@@ -11,8 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <ProjectReference Include="..\..\..\Http\Http\src\Microsoft.AspNetCore.Http.csproj" />
+    <ProjectReference Include="..\..\..\Http\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj" />
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" /> 

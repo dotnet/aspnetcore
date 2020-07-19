@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
@@ -9,15 +9,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Diagnostics" PrivateAssets="None" />
-    <Reference Include="Microsoft.AspNetCore.HostFiltering" PrivateAssets="None" />
-    <Reference Include="Microsoft.AspNetCore.Hosting" PrivateAssets="None" />
-    <Reference Include="Microsoft.AspNetCore.Routing" PrivateAssets="None" />
-    <Reference Include="Microsoft.AspNetCore.Server.IIS" PrivateAssets="None" />
-    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" PrivateAssets="None" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" PrivateAssets="None" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Https" PrivateAssets="None" />
-    <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" PrivateAssets="None" />
+    <ProjectReference Include="..\..\Middleware\Diagnostics\src\Microsoft.AspNetCore.Diagnostics.csproj" PrivateAssets="None" />
+    <ProjectReference Include="..\..\Middleware\HostFiltering\src\Microsoft.AspNetCore.HostFiltering.csproj" PrivateAssets="None" />
+    <ProjectReference Include="..\..\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj" PrivateAssets="None" />
+    <ProjectReference Include="..\..\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" PrivateAssets="None" />
+    <!--<ProjectReference Include="..\..\Servers\IIS\IIS\src\Microsoft.AspNetCore.Server.IIS.csproj" PrivateAssets="None" />
+    <ProjectReference Include="..\..\Servers\IIS\IISIntegration\src\Microsoft.AspNetCore.Server.IISIntegration.csproj" PrivateAssets="None" />-->
+    <ProjectReference Include="..\..\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj" PrivateAssets="None" />
+    <ProjectReference Include="..\..\Servers\Kestrel\Https\src\Microsoft.AspNetCore.Server.Kestrel.Https.csproj" PrivateAssets="None" />
+    <!--<Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" PrivateAssets="None" />-->
     <Reference Include="Microsoft.Extensions.Configuration.FileExtensions" PrivateAssets="None" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" PrivateAssets="None" />
     <Reference Include="Microsoft.Extensions.Configuration.CommandLine" PrivateAssets="None" />

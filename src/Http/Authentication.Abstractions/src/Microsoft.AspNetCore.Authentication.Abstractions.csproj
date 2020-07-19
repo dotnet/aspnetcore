@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <Description>ASP.NET Core common types used by the various authentication components.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -7,9 +7,8 @@
     <PackageTags>aspnetcore;authentication;security</PackageTags>
     <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
-
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <ProjectReference Include="..\..\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>

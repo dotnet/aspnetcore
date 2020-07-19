@@ -11,10 +11,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
-    <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
-    <Reference Include="Microsoft.CodeAnalysis.Razor" />
+    <ProjectReference Include="..\..\Mvc.ViewFeatures\src\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj" />
+    <ProjectReference Include="..\..\..\Razor\Mvc.Razor.Extensions\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" />
+    <ProjectReference Include="..\..\..\Razor\Razor.Runtime\src\Microsoft.AspNetCore.Razor.Runtime.csproj" />
+    <ProjectReference Include="..\..\..\Razor\CodeAnalysis.Razor\src\Microsoft.CodeAnalysis.Razor.csproj" />
     <Reference Include="Microsoft.CodeAnalysis.CSharp" />
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <Reference Include="Microsoft.Extensions.FileProviders.Composite" />

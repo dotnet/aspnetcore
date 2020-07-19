@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Additional APIs for ASP.NET Core data protection.</Description>
@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.DataProtection" />
+    <ProjectReference Include="..\..\DataProtection\src\Microsoft.AspNetCore.DataProtection.csproj" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
 

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Support for storing keys using Entity Framework Core.</Description>
@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.DataProtection" />
+    <ProjectReference Include="..\..\DataProtection\src\Microsoft.AspNetCore.DataProtection.csproj" />
     <Reference Include="Microsoft.EntityFrameworkCore" />
   </ItemGroup>
 

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core abstractions for routing requests to application logic and for generating links.
@@ -16,6 +16,6 @@ Microsoft.AspNetCore.Routing.RouteData</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <ProjectReference Include="..\..\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
   </ItemGroup>
 </Project>

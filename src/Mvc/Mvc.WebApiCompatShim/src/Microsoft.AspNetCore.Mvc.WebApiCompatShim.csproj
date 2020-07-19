@@ -15,11 +15,11 @@ System.Web.Http.ApiController</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" />
-
+    <ProjectReference Include="..\..\Mvc.Core\src\Microsoft.AspNetCore.Mvc.Core.csproj" />
+    <ProjectReference Include="..\..\Mvc.Formatters.Json\src\Microsoft.AspNetCore.Mvc.Formatters.Json.csproj" />
+    
     <Reference Include="Microsoft.AspNet.WebApi.Client" />
-    <Reference Include="Microsoft.AspNetCore.WebUtilities" />
+    <ProjectReference Include="..\..\..\Http\WebUtilities\src\Microsoft.AspNetCore.WebUtilities.csproj" />
   </ItemGroup>
 
 </Project>

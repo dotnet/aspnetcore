@@ -12,9 +12,9 @@ Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
-
-    <Reference Include="Microsoft.AspNetCore.Localization" />
+    <ProjectReference Include="..\..\Mvc.Razor\src\Microsoft.AspNetCore.Mvc.Razor.csproj" />
+    
+    <ProjectReference Include="..\..\..\Middleware\Localization\src\Microsoft.AspNetCore.Localization.csproj" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Localization" />
   </ItemGroup>

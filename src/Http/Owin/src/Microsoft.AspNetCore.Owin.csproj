@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core component for running OWIN middleware in an ASP.NET Core application, and to run ASP.NET Core middleware in an OWIN application.</Description>
@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http" />
+    <ProjectReference Include="..\..\Http\src\Microsoft.AspNetCore.Http.csproj" />
   </ItemGroup>
 
 </Project>

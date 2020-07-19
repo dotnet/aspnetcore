@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core middleware for Entity Framework Core error pages. Use this middleware to detect and diagnose errors with Entity Framework Core migrations.</Description>
@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <ProjectReference Include="..\..\..\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
     <Reference Include="Microsoft.EntityFrameworkCore.Relational" />
   </ItemGroup>
 

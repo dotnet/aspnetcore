@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core middleware for analyzing middleware in the request pipeline with System.Diagnostics.DiagnosticSource.</Description>
@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <ProjectReference Include="..\..\..\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <Reference Include="System.Diagnostics.DiagnosticSource" />
   </ItemGroup>

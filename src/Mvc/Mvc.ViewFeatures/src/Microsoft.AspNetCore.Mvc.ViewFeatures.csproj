@@ -14,13 +14,13 @@ Microsoft.AspNetCore.Mvc.ViewComponent</Description>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" />
-
-    <Reference Include="Microsoft.AspNetCore.Antiforgery" />
-    <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
+    <ProjectReference Include="..\..\Mvc.Core\src\Microsoft.AspNetCore.Mvc.Core.csproj" />
+    <ProjectReference Include="..\..\Mvc.DataAnnotations\src\Microsoft.AspNetCore.Mvc.DataAnnotations.csproj" />
+    <ProjectReference Include="..\..\Mvc.Formatters.Json\src\Microsoft.AspNetCore.Mvc.Formatters.Json.csproj" />
+    
+    <ProjectReference Include="..\..\..\Antiforgery\src\Microsoft.AspNetCore.Antiforgery.csproj" />
+    <ProjectReference Include="..\..\..\Middleware\Diagnostics.Abstractions\src\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\Html\Abstractions\src\Microsoft.AspNetCore.Html.Abstractions.csproj" />
     <Reference Include="Microsoft.Extensions.WebEncoders" />
     <Reference Include="Newtonsoft.Json.Bson" />
   </ItemGroup>

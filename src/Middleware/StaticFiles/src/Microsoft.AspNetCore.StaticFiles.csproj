@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core static files middleware. Includes middleware for serving static files, directory browsing, and default files.</Description>
@@ -13,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <ProjectReference Include="..\..\..\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\Http\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj" />
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.WebEncoders" />

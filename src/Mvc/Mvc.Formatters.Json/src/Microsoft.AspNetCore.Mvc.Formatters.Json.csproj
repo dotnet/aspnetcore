@@ -13,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
-
-    <Reference Include="Microsoft.AspNetCore.JsonPatch" />
+    <ProjectReference Include="..\..\Mvc.Core\src\Microsoft.AspNetCore.Mvc.Core.csproj" />
+    
+    <ProjectReference Include="..\..\..\Features\JsonPatch\src\Microsoft.AspNetCore.JsonPatch.csproj" />
   </ItemGroup>
 </Project>

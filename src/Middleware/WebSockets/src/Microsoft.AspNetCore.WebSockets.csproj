@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <ProjectReference Include="..\..\..\Http\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="System.Net.WebSockets.WebSocketProtocol" />

@@ -29,9 +29,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
-    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <ProjectReference Include="..\..\..\..\Http\Authentication.Core\src\Microsoft.AspNetCore.Authentication.Core.csproj" />
+    <ProjectReference Include="..\..\..\Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\..\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
     <Reference Include="System.IO.Pipelines" />
     <Reference Include="System.Security.Principal.Windows" />
   </ItemGroup>

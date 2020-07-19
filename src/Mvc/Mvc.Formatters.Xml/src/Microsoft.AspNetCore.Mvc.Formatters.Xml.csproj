@@ -9,6 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <ProjectReference Include="..\..\Mvc.Core\src\Microsoft.AspNetCore.Mvc.Core.csproj" />
   </ItemGroup>
 </Project>

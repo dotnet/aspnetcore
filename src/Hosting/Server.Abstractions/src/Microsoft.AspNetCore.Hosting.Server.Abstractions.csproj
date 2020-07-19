@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core hosting server abstractions for web applications.</Description>
@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http.Features" />
+    <ProjectReference Include="..\..\..\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj" />
     <Reference Include="Microsoft.Extensions.Configuration.Abstractions" />
   </ItemGroup>
 

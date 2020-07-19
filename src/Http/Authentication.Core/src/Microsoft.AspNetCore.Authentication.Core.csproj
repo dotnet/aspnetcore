@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core common types used by the various authentication middleware components.</Description>
@@ -10,9 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <ProjectReference Include="..\..\Authentication.Abstractions\src\Microsoft.AspNetCore.Authentication.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Http\src\Microsoft.AspNetCore.Http.csproj" />
+    <ProjectReference Include="..\..\Http.Extensions\src\Microsoft.AspNetCore.Http.Extensions.csproj" />
   </ItemGroup>
 
 </Project>

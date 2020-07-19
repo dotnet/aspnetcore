@@ -13,10 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
+    <ProjectReference Include="..\..\Mvc.Razor\src\Microsoft.AspNetCore.Mvc.Razor.csproj" />
 
-    <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
-    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <ProjectReference Include="..\..\..\Razor\Razor.Runtime\src\Microsoft.AspNetCore.Razor.Runtime.csproj" />
+    <ProjectReference Include="..\..\..\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <Reference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <Reference Include="Microsoft.Extensions.Primitives" />

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core authorization policy helper classes.</Description>
@@ -13,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Authorization" />
-    <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions" />
+    <ProjectReference Include="..\..\Core\src\Microsoft.AspNetCore.Authorization.csproj" />
+    <ProjectReference Include="..\..\..\..\Http\Authentication.Abstractions\src\Microsoft.AspNetCore.Authentication.Abstractions.csproj" />
   </ItemGroup>
-
+  
 </Project>

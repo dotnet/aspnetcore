@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core utilities for key derivation.</Description>
@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Cryptography.Internal" />
+    <ProjectReference Include="..\..\Cryptography.Internal\src\Microsoft.AspNetCore.Cryptography.Internal.csproj" />
   </ItemGroup>
 
 </Project>

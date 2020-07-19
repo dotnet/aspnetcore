@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
@@ -10,8 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Localization" />
-    <Reference Include="Microsoft.AspNetCore.Routing.Abstractions" />
+    <ProjectReference Include="..\..\Localization\src\Microsoft.AspNetCore.Localization.csproj" />
+    <ProjectReference Include="..\..\..\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

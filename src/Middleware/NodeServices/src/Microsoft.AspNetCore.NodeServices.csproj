@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Invoke Node.js modules at runtime in ASP.NET Core applications.</Description>
@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <ProjectReference Include="..\..\..\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Newtonsoft.Json" />
   </ItemGroup>

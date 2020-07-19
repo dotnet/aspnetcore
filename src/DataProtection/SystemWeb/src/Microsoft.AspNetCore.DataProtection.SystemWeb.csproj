@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>A component to allow the ASP.NET Core data protection stack to work with the ASP.NET 4.x &lt;machineKey&gt; element.</Description>
@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.DataProtection" />
+    <ProjectReference Include="..\..\DataProtection\src\Microsoft.AspNetCore.DataProtection.csproj" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web" />

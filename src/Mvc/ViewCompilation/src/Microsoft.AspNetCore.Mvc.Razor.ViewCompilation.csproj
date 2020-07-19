@@ -16,9 +16,9 @@
 
   <ItemGroup>
     <ProjectReference Include="$(TasksProjectDirectory)Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.csproj" PrivateAssets="true" ReferenceOutputAssembly="false" />
-
-    <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
+    
+    <ProjectReference Include="..\..\..\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj" />
+    <ProjectReference Include="..\..\Mvc.RazorPages\src\Microsoft.AspNetCore.Mvc.RazorPages.csproj" />
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
 
     <PackageReference Update="Microsoft.NETCore.App" PrivateAssets="All" />

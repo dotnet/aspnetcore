@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core middleware for returning the results of Health Checks in the application</Description>
@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <ProjectReference Include="..\..\..\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
     <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Net.Http.Headers" />

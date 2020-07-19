@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core common extension methods for HTTP abstractions, HTTP headers, HTTP request/response, and session state.</Description>
@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <ProjectReference Include="..\..\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
     <Reference Include="Microsoft.Net.Http.Headers" />
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
     <Reference Include="System.Buffers" />

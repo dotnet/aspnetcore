@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core Identity provider that uses Entity Framework Core.</Description>
@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Identity" />
+    <ProjectReference Include="..\..\Core\src\Microsoft.AspNetCore.Identity.csproj" />
     <Reference Include="Microsoft.Extensions.Identity.Stores" />
     <Reference Include="Microsoft.EntityFrameworkCore.Relational" />
   </ItemGroup>

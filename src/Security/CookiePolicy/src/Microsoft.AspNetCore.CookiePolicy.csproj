@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core cookie policy classes to control the behavior of cookies.</Description>
@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <ProjectReference Include="..\..\..\Http\Http\src\Microsoft.AspNetCore.Http.csproj" />
+      <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 

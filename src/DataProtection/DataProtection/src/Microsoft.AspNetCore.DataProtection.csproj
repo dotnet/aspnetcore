@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core logic to protect and unprotect data, similar to DPAPI.</Description>
@@ -14,9 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Cryptography.Internal" />
-    <Reference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <ProjectReference Include="..\..\Cryptography.Internal\src\Microsoft.AspNetCore.Cryptography.Internal.csproj" />
+    <ProjectReference Include="..\..\Abstractions\src\Microsoft.AspNetCore.DataProtection.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />

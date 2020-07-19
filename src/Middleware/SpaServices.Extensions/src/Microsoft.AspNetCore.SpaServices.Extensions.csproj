@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Helpers for building single-page applications on ASP.NET MVC Core.</Description>
@@ -6,12 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.SpaServices" />
+    <ProjectReference Include="..\..\SpaServices\src\Microsoft.AspNetCore.SpaServices.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
-    <Reference Include="Microsoft.AspNetCore.WebSockets" />
+  <ItemGroup>    
+    <ProjectReference Include="..\..\StaticFiles\src\Microsoft.AspNetCore.StaticFiles.csproj" />
+    <ProjectReference Include="..\..\WebSockets\src\Microsoft.AspNetCore.WebSockets.csproj" />
     <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
   </ItemGroup>
 

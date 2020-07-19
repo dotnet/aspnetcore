@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <Description>ASP.NET Core Identity UI is the default Razor Pages built-in UI for the ASP.NET Core Identity framework.</Description>
@@ -24,9 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Identity" />
-    <Reference Include="Microsoft.AspNetCore.Mvc" />
-    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <ProjectReference Include="..\..\Core\src\Microsoft.AspNetCore.Identity.csproj" />
+    <ProjectReference Include="..\..\..\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj" />
+    <ProjectReference Include="..\..\..\Middleware\StaticFiles\src\Microsoft.AspNetCore.StaticFiles.csproj" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.Extensions.Identity.Stores" />
   </ItemGroup>
@@ -114,8 +114,8 @@
 
   <Target Name="BuildForUI" DependsOnTargets="SetupRazorInputs;RazorCompile" />
 
-<Target
-    Name="_GetRazorDlls" BeforeTargets="GetCopyToOutputDirectoryItems">
+  <Target
+      Name="_GetRazorDlls" BeforeTargets="GetCopyToOutputDirectoryItems">
 
     <ItemGroup>
       <_GeneratedRazorViews Include="$(TargetDir)$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).dll" />

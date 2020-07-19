@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core session state middleware.</Description>
@@ -10,8 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.DataProtection" />
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <ProjectReference Include="..\..\..\DataProtection\DataProtection\src\Microsoft.AspNetCore.DataProtection.csproj" />
+    <ProjectReference Include="..\..\..\Http\Http.Abstractions\src\Microsoft.AspNetCore.Http.Abstractions.csproj" />
     <Reference Include="Microsoft.Extensions.Caching.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
