@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -226,9 +227,24 @@ namespace Templates.Test
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23993")]
         public async Task MvcTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
         {
-            Project = await ProjectFactory.GetOrCreateProject("mvc_rc", Output);
+            await MvcTemplateBuildsAndPublishes(auth: null, args: new[] { "--razor-runtime-compilation" });
 
-            var createResult = await Project.RunDotNetNewAsync("mvc", args: new[] { "--razor-runtime-compilation" });
+            Assert.False(Directory.Exists(Path.Combine(Project.TemplatePublishDir, "refs")), "The refs directory should not be published.");
+        }
+
+        [Theory]
+        [InlineData("IndividualB2C", null)]
+        [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+        [InlineData("SingleOrg", null)]
+        [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+        [InlineData("SingleOrg", new string[] { "--calls-graph" })]
+        public Task MvcTemplate_IdentityWeb_BuildsAndPublishes(string auth, string[] args) => MvcTemplateBuildsAndPublishes(auth: auth, args: args);
+
+        private async Task MvcTemplateBuildsAndPublishes(string auth, string[] args)
+        {
+            Project = await ProjectFactory.GetOrCreateProject("mvc" + Guid.NewGuid().ToString().Substring(0, 10).ToLower(), Output);
+
+            var createResult = await Project.RunDotNetNewAsync("mvc", auth: auth, args: args);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             // Verify building in debug works
@@ -238,8 +254,6 @@ namespace Templates.Test
             // Publish builds in "release" configuration. Running publish should ensure we can compile in release and that we can publish without issues.
             buildResult = await Project.RunDotNetPublishAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, buildResult));
-
-            Assert.False(Directory.Exists(Path.Combine(Project.TemplatePublishDir, "refs")), "The refs directory should not be published.");
-       }
+        }
     }
 }
