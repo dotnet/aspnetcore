@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+    <PreserveCompilationContext>true</PreserveCompilationContext>    
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\..\src\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj" />
+    <ProjectReference Include="..\..\src\Http\Authentication.Abstractions\src\Microsoft.AspNetCore.Authentication.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\Http\Authentication.Core\src\Microsoft.AspNetCore.Authentication.Core.csproj" />
+    <ProjectReference Include="..\..\src\Http\Http\src\Microsoft.AspNetCore.Http.csproj" />
+    <ProjectReference Include="..\..\src\Middleware\StaticFiles\src\Microsoft.AspNetCore.StaticFiles.csproj" />
+    <ProjectReference Include="..\..\src\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj" />
+    <ProjectReference Include="..\..\src\Security\Authentication\Cookies\src\Microsoft.AspNetCore.Authentication.Cookies.csproj" />
+    <ProjectReference Include="..\..\src\Security\Authentication\Core\src\Microsoft.AspNetCore.Authentication.csproj" />
+    <ProjectReference Include="..\..\src\Security\CookiePolicy\src\Microsoft.AspNetCore.CookiePolicy.csproj" />
+  </ItemGroup>
+
+</Project>
