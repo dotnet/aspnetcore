@@ -17,7 +17,7 @@ namespace Company.WebApplication1
         /// <param name="initialScopes">Initial scopes.</param>
         /// <param name="graphBaseUrl">Base URL for Microsoft graph. This can be
         /// changed for instance for applications running in national clouds</param>
-        public static void AddMicrosoftGraph(this IServiceCollection services,
+        public static IServiceCollection AddMicrosoftGraph(this IServiceCollection services,
                                              IEnumerable<string> initialScopes,
                                              string graphBaseUrl = "https://graph.microsoft.com/v1.0")
         {
@@ -30,6 +30,8 @@ namespace Company.WebApplication1
                             new GraphServiceClient(graphBaseUrl, new TokenAcquisitionCredentialProvider(tokenAquisitionService, initialScopes));
                 return client;
             });
+
+            return services;
         }
     }
 }

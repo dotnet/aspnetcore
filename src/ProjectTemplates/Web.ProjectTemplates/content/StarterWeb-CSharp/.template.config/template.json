@@ -352,19 +352,19 @@
         "datatype": "string",
         "replaces": "[WebApiUrl]",
         "defaultValue" : "https://graph.microsoft.com/v1.0/me",
-        "description": "URL of the API to call from the web app."
+        "description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C is specified."
     },
     "CallsMicrosoftGraph": {
         "type": "parameter",
         "datatype": "bool",
         "defaultValue": "false",
-        "description": "Specifies if the web app calls Microsoft Graph."
+        "description": "Specifies if the web app calls Microsoft Graph. This option only applies if --auth SingleOrg or --auth MultiOrg is specified."
     },
     "CalledApiScopes": {
       "type": "parameter",
       "datatype": "string",
       "replaces" :  "user.read",
-      "description": "Scopes to request to call the API from the web app."
+      "description": "Scopes to request to call the API from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C is specified."
     },
     "GenerateApi": {
         "type": "computed",
@@ -372,7 +372,7 @@
     },
     "GenerateGraph": {
         "type": "computed",
-        "value": "((IndividualB2CAuth || OrganizationalAuth) && CallsMicrosoftGraph)"
+        "value": "(OrganizationalAuth && CallsMicrosoftGraph)"
     },
     "GenerateApiOrGraph": {
         "type": "computed",
