@@ -65,5 +65,15 @@ namespace Microsoft.AspNetCore.Components.Analyzers
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
             description: new LocalizableResourceString(nameof(Resources.DoNotUseRenderTreeTypes_Description), Resources.ResourceManager, typeof(Resources)));
+
+        public static DiagnosticDescriptor ClosureOverLoopVariables = new DiagnosticDescriptor(
+            "BL0007",
+            new LocalizableResourceString(nameof(Resources.ComponentClosureOverLoopVariables_Title), Resources.ResourceManager, typeof(Resources)),
+            new LocalizableResourceString(nameof(Resources.ComponentClosureOverLoopVariables_Description), Resources.ResourceManager, typeof(Resources)),
+            "Usage",
+            DiagnosticSeverity.Warning,
+            isEnabledByDefault: true,
+            description: new LocalizableResourceString(nameof(Resources.ComponentClosureOverLoopVariables_Description), Resources.ResourceManager, typeof(Resources)));
+
     }
 }
