@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.TestHost
                     }
                     else if (string.Equals(header.Key, HeaderNames.ContentLength, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (int.TryParse(header.Value.First(), out var contentLength))
+                        if (long.TryParse(header.Value.First(), out var contentLength))
                         {
                             req.ContentLength = contentLength;
                         }
