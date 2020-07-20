@@ -1,0 +1,20 @@
+<!--
+***********************************************************************************************
+Sdk.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project ToolsVersion="14.0">
+
+  <PropertyGroup>
+    <_BlazorWebAssemblyTargetsFile Condition="'$(_BlazorWebAssemblyTargetsFile)' == ''">$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.BlazorWebAssembly.Current.targets</_BlazorWebAssemblyTargetsFile>
+  </PropertyGroup>
+
+  <Import Project="$(_BlazorWebAssemblyTargetsFile)" />
+
+</Project>

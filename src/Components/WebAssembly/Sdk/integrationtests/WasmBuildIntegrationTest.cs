@@ -4,7 +4,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.Tasks;
+using Microsoft.NET.Sdk.BlazorWebAssembly;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 

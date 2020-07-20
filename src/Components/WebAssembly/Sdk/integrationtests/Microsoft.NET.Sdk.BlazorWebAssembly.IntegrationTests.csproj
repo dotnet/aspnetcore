@@ -9,11 +9,10 @@
     -->
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <DefineConstants Condition="'$(PreserveWorkingDirectory)'=='true'">$(DefineConstants);PRESERVE_WORKING_DIRECTORY</DefineConstants>
 
     <!-- Tests do not work on Helix yet -->
     <BuildHelixPayload>false</BuildHelixPayload>
-    <TestAppsRoot>$(MSBuildProjectDirectory)\..\..\test\testassets\</TestAppsRoot>
+    <TestAppsRoot>$(MSBuildProjectDirectory)\..\testassets\</TestAppsRoot>
   </PropertyGroup>
 
   <Import Project="$(SharedSourceRoot)MSBuild.Testing\MSBuild.Testing.targets" />
@@ -28,10 +27,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="rzc" />
-    <ProjectReference Include="..\..\test\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Razor\test\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj" />
 
-    <ProjectReference Include="..\src\Microsoft.NET.Sdk.Razor.csproj">
+    <ProjectReference Include="..\src\Microsoft.NET.Sdk.BlazorWebAssembly.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+
+    <ProjectReference Include="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\Microsoft.NET.Sdk.Razor.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
@@ -40,6 +43,7 @@
   <ItemGroup>
     <Compile Include="..\src\BootJsonData.cs" LinkBase="Wasm" />
     <Compile Include="..\src\AssetsManifestFile.cs" LinkBase="Wasm" />
+    <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
   </ItemGroup>
 
   <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes">
@@ -64,9 +68,7 @@
   </Target>
 
   <Target Name="RestoreTestProjects" BeforeTargets="Restore;Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
-    <MSBuild Projects="..\..\test\testassets\RestoreTestProjects\RestoreTestProjects.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);RepoRoot=$(RepoRoot)" />
-    <MSBuild Projects="..\..\test\testassets\PackageLibraryDirectDependency\PackageLibraryDirectDependency.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);RepoRoot=$(RepoRoot)" />
-    <MSBuild Projects="..\..\test\testassets\PackageLibraryTransitiveDependency\PackageLibraryTransitiveDependency.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);RepoRoot=$(RepoRoot)" />
+    <MSBuild Projects="..\testassets\RestoreBlazorWasmTestProjects\RestoreBlazorWasmTestProjects.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);RepoRoot=$(RepoRoot)" />
   </Target>
 
   <Target Name="EnsureLogFolder" AfterTargets="Build">

@@ -1,10 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <Import Project="$(RepoRoot)src\Components\WebAssembly\Sdk\src\Sdk\Sdk.props" />
+
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <UseBlazorWebAssembly>true</UseBlazorWebAssembly>
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
+    <BlazorWebAssemblySdkDirectoryRoot>$(BlazorWebAssemblySdkArtifactsDirectory)$(Configuration)\sdk-output\</BlazorWebAssemblySdkDirectoryRoot>
     <ServiceWorkerAssetsManifest>custom-service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
 
@@ -49,5 +51,7 @@
     <!-- The content from my-prod-service-worker.js should be published under the name my-service-worker.js -->
     <ServiceWorker Include="wwwroot\serviceworkers\my-service-worker.js" PublishedContent="wwwroot\serviceworkers\my-prod-service-worker.js" />
   </ItemGroup>
+
+  <Import Project="$(RepoRoot)src\Components\WebAssembly\Sdk\src\Sdk\Sdk.targets" />
 
 </Project>

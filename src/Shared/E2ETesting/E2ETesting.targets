@@ -66,14 +66,9 @@
       <_DefaultProjectRoot>$([System.IO.Path]::GetFullPath($(_DefaultProjectFilter)))</_DefaultProjectRoot>
     </PropertyGroup>
     <ItemGroup>
-      <_ContentRootProjectReferencesUnfiltered
-        Include="@(ReferencePath)"
-        Condition="'%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference'" />
-      <_ContentRootProjectReferencesFilter
-        Include="@(_ContentRootProjectReferencesUnfiltered->StartsWith('$(_DefaultProjectRoot)'))" />
       <_ContentRootProjectReferences
-        Include="@(_ContentRootProjectReferencesFilter)"
-        Condition="'%(Identity)' == 'True'" />
+        Include="@(ReferencePath)"
+        Condition="'%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' AND $([System.String]::Copy(%(ReferencePath.MSBuildSourceProjectFile)).StartsWith('$(_DefaultProjectRoot)'))" />
     </ItemGroup>
   </Target>
 

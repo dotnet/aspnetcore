@@ -172,6 +172,7 @@
                           @(ProjectToBuild);
                           @(ProjectToExclude);
                           $(RepoRoot)src\Razor\test\testassets\**\*.*proj;
+                          $(RepoRoot)src\Components\WebAssembly\Sdk\testassets\**\*.*proj;
                           $(RepoRoot)**\node_modules\**\*;
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;"
