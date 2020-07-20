@@ -41,9 +41,9 @@ namespace Microsoft.AspNetCore.Csp
             return this;
         }
 
-        public bool HasReporting()
+        public bool HasLocalReporting()
         {
-            return _reportingUri != null;
+            return _reportingUri != null && _reportingUri.StartsWith("/");
         }
 
         public LoggingConfiguration LoggingConfiguration()

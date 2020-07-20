@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Csp
     public class ContentSecurityPolicy
     {
         private readonly string _baseAndObject = "base-uri 'none'; object-src 'none'";
+        private readonly Func<INonce, string> policyBuilder;
 
         private readonly CspMode _cspMode;
         private readonly bool _strictDynamic;
@@ -33,21 +34,28 @@ namespace Microsoft.AspNetCore.Csp
             _strictDynamic = strictDynamic;
             _unsafeEval = unsafeEval;
             _reportingUri = reportingUri;
+
+            var policyFormat = new StringBuilder()
+                .Append("script-src")
+                .Append(" 'nonce-{0}' ")  // nonce
+                .Append(_strictDynamic ? "'strict-dynamic'" : "")
+                .Append(_unsafeEval ? "'unsafe-eval'" : "")
+                .Append(" https: http:;")  // fall-back allowlist-based CSP for browsers that don't support nonces
+                .Append(_baseAndObject)
+                .Append(";")               // end of script-src
+                .Append(_reportingUri != null ? "report-uri " + _reportingUri : "")
+                .ToString();
+
+            policyBuilder = nonce => string.Format(policyFormat, nonce.GetValue());
         }
 
         public string GetHeaderName()
         {
             return _cspMode == CspMode.REPORTING ? CspConstants.CspReportingHeaderName : CspConstants.CspEnforcedHeaderName;
         }
-        public string GetPolicy(INonce nonce=null)
+        public string GetPolicy(INonce nonce)
         {
-            return string.Format(
-                "script-src {0} {1} {2} https: http:; {3}; {4}",
-                nonce == null ? "" : string.Format("'nonce-{0}'", nonce.GetValue()),
-                _strictDynamic ? "'strict-dynamic'" : "",
-                _unsafeEval ? "'unsafe-eval'" : "",
-                _baseAndObject,
-                _reportingUri != null ? "report-uri " + _reportingUri : "");
+            return policyBuilder.Invoke(nonce);
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Csp.Test
         {
             // Arrange
             var hostBuilder = new WebHostBuilder()
-                .ConfigureServices(services => services.AddNonces())
+                .ConfigureServices(services => services.AddCsp())
                 .Configure(app =>
                 {
                     app.UseCsp(policyBuilder =>
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Csp.Test
         {
             // Arrange
             var hostBuilder = new WebHostBuilder()
-                .ConfigureServices(services => services.AddNonces())
+                .ConfigureServices(services => services.AddCsp())
                 .Configure(app =>
                 {
                     app.UseCsp(policyBuilder =>
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Csp.Test
         {
             // Arrange
             var hostBuilder = new WebHostBuilder()
-                .ConfigureServices(services => services.AddNonces())
+                .ConfigureServices(services => services.AddCsp())
                 .Configure(app =>
                 {
                     app.UseCsp(policyBuilder =>
@@ -228,6 +228,60 @@ namespace Microsoft.AspNetCore.Csp.Test
                 Assert.Empty(new StreamReader(context.Response.Body).ReadToEnd());
                 //TODO: ASSERT ON THE LOGGING STATEMENT!
                 //logger.Verify(m => m.Log(LogLevel.Information, ""));
+            }
+        }
+
+        [Fact]
+        public async void DoesNotCollectReportsIfReportingUriIsNotRelative()
+        {
+            // Arrange
+            var logger = new Mock<ILogger<CspReportingMiddleware>>();
+
+            var hostBuilder = new WebHostBuilder()
+                .ConfigureServices(services => services.AddCsp())
+                .Configure(app =>
+                {
+                    app.UseCsp(policyBuilder =>
+                    {
+                        policyBuilder
+                            .WithCspMode(CspMode.ENFORCING)
+                            .WithReportingUri("https://cheese.com/cspreport");
+                    });
+                    app.Run(async context =>
+                    {
+                        await context.Response.WriteAsync("Test response");
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton(typeof(ILogger<CspReportingMiddleware>), logger.Object);
+                });
+
+            using (var server = new TestServer(hostBuilder))
+            {
+                // Act
+                var context = await server.SendAsync(c =>
+                {
+                    c.Request.Method = "POST";
+                    c.Request.Path = "/cspreport";
+                    c.Request.Headers[HeaderNames.ContentType] = CspConstants.CspReportContentType;
+                    c.Request.Body = new MemoryStream(Encoding.ASCII.GetBytes(
+                        @"{
+                          ""csp-report"": {
+                            ""document-uri"": ""http://example.com/signup.html"",
+                            ""referrer"": ""http://evil.com"",
+                            ""blocked-uri"": ""http://example.com/css/style.css"",
+                            ""violated-directive"": ""style-src cdn.example.com"",
+                            ""original-policy"": ""default-src 'none'; style-src cdn.example.com; report-uri /_/csp-reports"",
+                            ""disposition"": ""report""
+                          }
+                        }"
+                    ));
+                });
+
+                // Assert
+                Assert.NotEqual(204, context.Response.StatusCode);
+                Assert.NotEmpty(new StreamReader(context.Response.Body, Encoding.UTF8).ReadToEnd());
             }
         }
     }

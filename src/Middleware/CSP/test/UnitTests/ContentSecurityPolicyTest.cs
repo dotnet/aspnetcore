@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Csp.Test
                 .WithCspMode(CspMode.ENFORCING)
                 .Build();
 
-            Assert.DoesNotContain("strict-dynamic", policy.GetPolicy());
+            Assert.DoesNotContain("strict-dynamic", policy.GetPolicy(new InertNonce()));
         }
 
         [Fact]
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Csp.Test
                 .WithStrictDynamic()
                 .Build();
 
-            Assert.Contains("strict-dynamic", policy.GetPolicy());
+            Assert.Contains("strict-dynamic", policy.GetPolicy(new InertNonce()));
         }
 
         [Fact]
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Csp.Test
                 .WithCspMode(CspMode.ENFORCING)
                 .Build();
 
-            Assert.DoesNotContain("unsafe-eval", policy.GetPolicy());
+            Assert.DoesNotContain("unsafe-eval", policy.GetPolicy(new InertNonce()));
         }
 
         [Fact]
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Csp.Test
                 .WithUnsafeEval()
                 .Build();
 
-            Assert.Contains("unsafe-eval", policy.GetPolicy());
+            Assert.Contains("unsafe-eval", policy.GetPolicy(new InertNonce()));
         }
 
         // TODO: Add more coverage around reporting URLs
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Csp.Test
                 .WithReportingUri("/cspreport")
                 .Build();
 
-            Assert.Contains("report-uri /cspreport", policy.GetPolicy());
+            Assert.Contains("report-uri /cspreport", policy.GetPolicy(new InertNonce()));
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Csp.Test
                 .WithCspMode(CspMode.ENFORCING)
                 .Build();
 
-            Assert.Contains("base-uri 'none'; object-src 'none';", policy.GetPolicy());
+            Assert.Contains("base-uri 'none'; object-src 'none';", policy.GetPolicy(new InertNonce()));
         }
 
         [Fact]
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Csp.Test
                 .WithCspMode(CspMode.ENFORCING)
                 .Build();
 
-            Assert.Matches("script-src .* https: http:", policy.GetPolicy());
+            Assert.Matches("script-src .* https: http:", policy.GetPolicy(new InertNonce()));
         }
 
         [Theory]
@@ -127,6 +127,14 @@ namespace Microsoft.AspNetCore.Csp.Test
                 .Build();
 
             Assert.Matches(string.Format("'nonce-{0}", nonce), policy.GetPolicy(new TestNonce(nonce)));
+        }
+    }
+
+    public class InertNonce : INonce
+    {
+        public string GetValue()
+        {
+            return "inert";
         }
     }
 }

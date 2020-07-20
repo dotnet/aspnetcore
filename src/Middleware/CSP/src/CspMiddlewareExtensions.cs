@@ -16,8 +16,7 @@ namespace Microsoft.AspNetCore.Csp
             var policyBuilder = new ContentSecurityPolicyBuilder();
             configurePolicy(policyBuilder);
 
-            // TODO: Has local reporting
-            if (policyBuilder.HasReporting())
+            if (policyBuilder.HasLocalReporting())
             {
                 var loggingConfig = policyBuilder.LoggingConfiguration();
                 app.UseWhen(
@@ -28,7 +27,7 @@ namespace Microsoft.AspNetCore.Csp
             return app.UseMiddleware<CspMiddleware>(policyBuilder.Build());
         }
 
-        public static IServiceCollection AddNonces(this IServiceCollection services)
+        public static IServiceCollection AddCsp(this IServiceCollection services)
         {
             if (services == null)
             {

@@ -2,6 +2,9 @@ using Xunit;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using CspApplication;
+using Microsoft.AspNetCore.TestHost;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.Csp.Test
 {
