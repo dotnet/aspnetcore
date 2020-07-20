@@ -71,7 +71,9 @@ namespace Microsoft.AspNetCore.Cryptography
         }
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+#if NETSTANDARD2_0
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+#endif
         public static bool TimeConstantBuffersAreEqual(byte* bufA, byte* bufB, uint count)
         {
             bool areEqual = true;

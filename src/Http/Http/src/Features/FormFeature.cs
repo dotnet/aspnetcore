@@ -276,9 +276,9 @@ namespace Microsoft.AspNetCore.Http.Features
         private static Encoding FilterEncoding(Encoding? encoding)
         {
             // UTF-7 is insecure and should not be honored. UTF-8 will succeed for most cases.
-#pragma warning disable CS0618, MSLIB0001 // Type or member is obsolete
+#pragma warning disable CS0618, SYSLIB0001 // Type or member is obsolete
             if (encoding == null || Encoding.UTF7.Equals(encoding))
-#pragma warning restore CS0618, MSLIB0001 // Type or member is obsolete
+#pragma warning restore CS0618, SYSLIB0001 // Type or member is obsolete
             {
                 return Encoding.UTF8;
             }

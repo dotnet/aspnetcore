@@ -82,13 +82,17 @@ namespace Microsoft.AspNetCore.Cryptography
             [In] uint dwFlags);
 
         [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
+#if NETSTANDARD2_0
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+#endif
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375399(v=vs.85).aspx
         internal static extern int BCryptDestroyHash(
             [In] IntPtr hHash);
 
         [DllImport(BCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
+#if NETSTANDARD2_0
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+#endif
         // http://msdn.microsoft.com/en-us/library/windows/desktop/aa375404(v=vs.85).aspx
         internal static extern int BCryptDestroyKey(
             [In] IntPtr hKey);
@@ -240,7 +244,9 @@ namespace Microsoft.AspNetCore.Cryptography
          */
 
         [DllImport(NCRYPT_LIB, CallingConvention = CallingConvention.Winapi)]
+#if NETSTANDARD2_0
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+#endif
         // http://msdn.microsoft.com/en-us/library/windows/desktop/hh706799(v=vs.85).aspx
         internal static extern int NCryptCloseProtectionDescriptor(
             [In] IntPtr hDescriptor);

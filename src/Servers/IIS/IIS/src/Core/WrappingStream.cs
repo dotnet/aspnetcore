@@ -107,9 +107,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         public override void EndWrite(IAsyncResult asyncResult)
             => _inner.EndWrite(asyncResult);
 
-        public override object InitializeLifetimeService()
-            => _inner.InitializeLifetimeService();
-
         public override void Close()
             => _inner.Close();
 
