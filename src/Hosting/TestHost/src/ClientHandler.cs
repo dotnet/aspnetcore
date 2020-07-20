@@ -117,13 +117,6 @@ namespace Microsoft.AspNetCore.TestHost
                     {
                         req.Headers.Append(header.Key, string.Join(" ", header.Value));
                     }
-                    else if (string.Equals(header.Key, HeaderNames.ContentLength, StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (long.TryParse(header.Value.First(), out var contentLength))
-                        {
-                            req.ContentLength = contentLength;
-                        }
-                    }
                     else
                     {
                         req.Headers.Append(header.Key, header.Value.ToArray());
@@ -151,6 +144,10 @@ namespace Microsoft.AspNetCore.TestHost
 
                 if (requestContent != null)
                 {
+                    // Reading the ContentLength will add it to the Headers‼
+                    // https://github.com/dotnet/runtime/blob/874399ab15e47c2b4b7c6533cc37d27d47cb5242/src/libraries/System.Net.Http/src/System/Net/Http/Headers/HttpContentHeaders.cs#L68-L87
+                    _ = requestContent.Headers.ContentLength;
+
                     foreach (var header in requestContent.Headers)
                     {
                         req.Headers.Append(header.Key, header.Value.ToArray());
