@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
-        public Task ContentLengthWorks()
+        public Task ContentLengthWithBodyWorks()
         {
             var contentBytes = Encoding.UTF8.GetBytes("This is a content!");
             var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
@@ -116,7 +116,22 @@ namespace Microsoft.AspNetCore.TestHost
             }));
             var httpClient = new HttpClient(handler);
             var content = new ByteArrayContent(contentBytes);
+
             return httpClient.PostAsync("http://example.com", content);
+        }
+
+        [Fact]
+        public Task ContentLengthWithNoBodyWorks()
+        {
+            var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
+            {
+                Assert.Equal(0, context.Request.ContentLength);
+
+                return Task.CompletedTask;
+            }));
+            var httpClient = new HttpClient(handler);
+
+            return httpClient.GetAsync("http://example.com");
         }
 
         [Fact]
