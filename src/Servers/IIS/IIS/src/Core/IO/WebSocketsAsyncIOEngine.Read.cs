@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             };
 
             private readonly WebSocketsAsyncIOEngine _engine;
-            private readonly GCHandle _thisHandle;
+            private GCHandle _thisHandle;
             private MemoryHandle _inputHandle;
             private IntPtr _requestHandler;
             private Memory<byte> _memory;
@@ -33,11 +33,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             public WebSocketReadOperation(WebSocketsAsyncIOEngine engine)
             {
                 _engine = engine;
-                _thisHandle = GCHandle.Alloc(this);
             }
 
             protected override unsafe bool InvokeOperation(out int hr, out int bytes)
             {
+                _thisHandle = GCHandle.Alloc(this);
                 _inputHandle = _memory.Pin();
 
                 hr = NativeMethods.HttpWebsocketsReadBytes(
@@ -66,6 +66,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             protected override void ResetOperation()
             {
                 base.ResetOperation();
+
+                _thisHandle.Free();
 
                 _memory = default;
                 _inputHandle.Dispose();
