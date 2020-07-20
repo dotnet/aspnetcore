@@ -17,7 +17,7 @@ namespace WebAssembly.Net.Debugging {
 		HashSet<SessionId> sessions = new HashSet<SessionId> ();
 		Dictionary<SessionId, ExecutionContext> contexts = new Dictionary<SessionId, ExecutionContext> ();
 
-		public MonoProxy (ILoggerFactory loggerFactory, bool hideWebDriver = true) : base(loggerFactory) { this.hideWebDriver = hideWebDriver; }
+		public MonoProxy (ILoggerFactory loggerFactory, bool hideWebDriver = true) : base(loggerFactory) { hideWebDriver = true; }
 
 		readonly bool hideWebDriver;
 
@@ -45,8 +45,24 @@ namespace WebAssembly.Net.Debugging {
 			case "Runtime.consoleAPICalled": {
 					var type = args["type"]?.ToString ();
 					if (type == "debug") {
-						if (args["args"]?[0]?["value"]?.ToString () == MonoConstants.RUNTIME_IS_READY && args["args"]?[1]?["value"]?.ToString () == "fe00e07a-5519-4dfe-b35a-f867dbaf2e28")
+						var a = args ["args"];
+						if (a? [0]? ["value"]?.ToString () == MonoConstants.RUNTIME_IS_READY &&
+							a? [1]? ["value"]?.ToString () == "fe00e07a-5519-4dfe-b35a-f867dbaf2e28") {
+							if (a.Count () > 2) {
+								try {
+									// The optional 3rd argument is the stringified assembly
+									// list so that we don't have to make more round trips
+									var context = GetContext (sessionId);
+									var loaded = a? [2]? ["value"]?.ToString ();
+									if (loaded != null)
+										context.LoadedFiles = JToken.Parse (loaded).ToObject<string []> ();
+								} catch (InvalidCastException ice) {
+									Log ("verbose", ice.ToString ());
+								}
+							}
 							await RuntimeReady (sessionId, token);
+						}
+
 					}
 					break;
 				}
@@ -106,11 +122,12 @@ namespace WebAssembly.Net.Debugging {
 
 		async Task<bool> IsRuntimeAlreadyReadyAlready (SessionId sessionId, CancellationToken token)
 		{
+			if (contexts.TryGetValue (sessionId, out var context) && context.IsRuntimeReady)
+				return true;
+
 			var res = await SendMonoCommand (sessionId, MonoCommands.IsRuntimeReady (), token);
 			return res.Value? ["result"]? ["value"]?.Value<bool> () ?? false;
 		}
-
-		static int bpIdGenerator;
 
 		protected override async Task<bool> AcceptCommand (MessageId id, string method, JObject args, CancellationToken token)
 		{
@@ -269,7 +286,7 @@ namespace WebAssembly.Net.Debugging {
 				}
 
 				// Protocol extensions
-			case "Dotnet-test.setBreakpointByMethod": {
+			case "DotnetDebugger.getMethodLocation": {
 				Console.WriteLine ("set-breakpoint-by-method: " + id + " " + args);
 
 				var store = await RuntimeReady (id, token);
@@ -304,27 +321,9 @@ namespace WebAssembly.Net.Debugging {
 					return true;
 				}
 
-				bpIdGenerator ++;
-				string bpid = "by-method-" + bpIdGenerator.ToString ();
-				var request = new BreakpointRequest (bpid, methodInfo);
-				context.BreakpointRequests[bpid] = request;
-
-				var loc = methodInfo.StartLocation;
-				var bp = await SetMonoBreakpoint (id, bpid, loc, token);
-				if (bp.State != BreakpointState.Active) {
-					// FIXME:
-					throw new NotImplementedException ();
-				}
-
-				var resolvedLocation = new {
-					breakpointId = bpid,
-					location = loc.AsLocation ()
-				};
-
-				SendEvent (id, "Debugger.breakpointResolved", JObject.FromObject (resolvedLocation), token);
-
+				var src_url = methodInfo.Assembly.Sources.Single (sf => sf.SourceId == methodInfo.SourceId).Url;
 				SendResponse (id, Result.OkFromObject (new {
-						result = new { breakpointId = bpid, locations = new object [] { loc.AsLocation () }}
+						result = new { line = methodInfo.StartLocation.Line, column = methodInfo.StartLocation.Column, url = src_url }
 					}), token);
 
 				return true;
@@ -341,15 +340,12 @@ namespace WebAssembly.Net.Debugging {
 						return true;
 					}
 
-					var returnByValue = args ["returnByValue"]?.Value<bool> () ?? false;
 					var res = await SendMonoCommand (id, MonoCommands.CallFunctionOn (args), token);
+					var res_value_type  = res.Value? ["result"]? ["value"]?.Type;
 
-					if (!returnByValue &&
-						DotnetObjectId.TryParse (res.Value?["result"]?["value"]?["objectId"], out var resultObjectId) &&
-						resultObjectId.Scheme == "cfo_res")
+					if (res.IsOk && res_value_type == JTokenType.Object || res_value_type == JTokenType.Object)
 						res = Result.OkFromObject (new { result = res.Value ["result"]["value"] });
-
-					if (res.IsErr && silent)
+					else if (res.IsErr && silent)
 						res = Result.OkFromObject (new { result = new { } });
 
 					SendResponse (id, res, token);
@@ -522,11 +518,16 @@ namespace WebAssembly.Net.Debugging {
 				await RuntimeReady (sessionId, token);
 		}
 
-		async Task OnResume (MessageId msd_id, CancellationToken token)
+		async Task OnResume (MessageId msg_id, CancellationToken token)
 		{
+			var ctx = GetContext (msg_id);
+			if (ctx.CallStack != null) {
+				// Stopped on managed code
+				await SendMonoCommand (msg_id, MonoCommands.Resume (), token);
+			}
+
 			//discard managed frames
-			GetContext (msd_id).ClearState ();
-			await Task.CompletedTask;
+			GetContext (msg_id).ClearState ();
 		}
 
 		async Task<bool> Step (MessageId msg_id, StepKind kind, CancellationToken token)
@@ -712,11 +713,14 @@ namespace WebAssembly.Net.Debugging {
 				return await context.Source.Task;
 
 			try {
-				var loaded_pdbs = await SendMonoCommand (sessionId, MonoCommands.GetLoadedFiles(), token);
-				var the_value = loaded_pdbs.Value? ["result"]? ["value"];
-				var the_pdbs = the_value?.ToObject<string[]> ();
+				var loaded_files = context.LoadedFiles;
 
-				await foreach (var source in context.store.Load(sessionId, the_pdbs, token).WithCancellation (token)) {
+				if (loaded_files == null) {
+					var loaded = await SendMonoCommand (sessionId, MonoCommands.GetLoadedFiles (), token);
+					loaded_files = loaded.Value? ["result"]? ["value"]?.ToObject<string []> ();
+				}
+
+				await foreach (var source in context.store.Load(sessionId, loaded_files, token).WithCancellation (token)) {
 					var scriptSource = JObject.FromObject (source.ToScriptSource (context.Id, context.AuxData));
 					Log ("verbose", $"\tsending {source.Url} {context.Id} {sessionId.sessionId}");
 

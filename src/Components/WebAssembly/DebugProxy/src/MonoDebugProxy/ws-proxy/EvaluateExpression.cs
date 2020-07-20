@@ -78,42 +78,58 @@ namespace WebAssembly.Net.Debugging {
 					if (value == null)
 						throw new Exception ($"The name {var.Identifier.Text} does not exist in the current context");
 
-					values.Add (ConvertJSToCSharpType (value ["value"] ["value"].ToString (), value ["value"] ["type"].ToString ()));
+					values.Add (ConvertJSToCSharpType (value ["value"]));
 
 					var updatedMethod = method.AddParameterListParameters (
 						SyntaxFactory.Parameter (
 							SyntaxFactory.Identifier (var.Identifier.Text))
-							.WithType (SyntaxFactory.ParseTypeName (GetTypeFullName(value["value"]["type"].ToString()))));
+							.WithType (SyntaxFactory.ParseTypeName (GetTypeFullName(value["value"]))));
 					root = root.ReplaceNode (method, updatedMethod);
 				}
 				syntaxTree = syntaxTree.WithRootAndOptions (root, syntaxTree.Options);
 				return syntaxTree;
 			}
 
-			private object ConvertJSToCSharpType (string v, string type)
+			private object ConvertJSToCSharpType (JToken variable)
 			{
-				switch (type) {
-				case "number":
-					return Convert.ChangeType (v, typeof (int));
-				case "string":
-					return v;
-				}
+				var value = variable["value"];
+				var type = variable["type"].Value<string>();
+				var subType = variable["subtype"]?.Value<string>();
 
+				switch (type) {
+					case "string":
+						return value?.Value<string> ();
+					case "number":
+						return value?.Value<double> ();
+					case "boolean":
+						return value?.Value<bool> ();
+					case "object":
+						if (subType == "null")
+							return null;
+						break;
+				}
 				throw new Exception ($"Evaluate of this datatype {type} not implemented yet");
 			}
 
-			private string GetTypeFullName (string type)
+			private string GetTypeFullName (JToken variable)
 			{
-				switch (type) {
-					case "number":
-						return typeof (int).FullName;
-					case "string":
-						return typeof (string).FullName;
-				}
+				var type = variable["type"].ToString ();
+				var subType = variable["subtype"]?.Value<string>();
+				object value = ConvertJSToCSharpType (variable);
 
+				switch (type) {
+				case "object": {
+						if (subType == "null")
+							return variable["className"].Value<string>();
+						break;
+					}
+				default:
+					return value.GetType ().FullName;
+				}
 				throw new Exception ($"Evaluate of this datatype {type} not implemented yet");
 			}
 		}
+
 		static SyntaxNode GetExpressionFromSyntaxTree (SyntaxTree syntaxTree)
 		{
 			CompilationUnitSyntax root = syntaxTree.GetCompilationUnitRoot ();
@@ -126,6 +142,7 @@ namespace WebAssembly.Net.Debugging {
 			ParenthesizedExpressionSyntax expressionParenthesized = expressionMember.Expression as ParenthesizedExpressionSyntax;
 			return expressionParenthesized.Expression;
 		}
+
 		internal static async Task<string> CompileAndRunTheExpression (MonoProxy proxy, MessageId msg_id, int scope_id, string expression, CancellationToken token)
 		{
 			FindVariableNMethodCall findVarNMethodCall = new FindVariableNMethodCall ();
@@ -172,7 +189,6 @@ namespace WebAssembly.Net.Debugging {
 					BindingFlags.Default | BindingFlags.InvokeMethod,
 					null,
 					obj,
-					//new object [] { 10 }
 					findVarNMethodCall.values.ToArray ());
 				retString = ret.ToString ();
 			}

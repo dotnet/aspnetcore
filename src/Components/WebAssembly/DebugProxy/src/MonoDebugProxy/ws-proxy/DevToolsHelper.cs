@@ -204,6 +204,9 @@ namespace WebAssembly.Net.Debugging {
 
 		public static MonoCommands CallFunctionOn (JToken args)
 			=> new MonoCommands ($"MONO.mono_wasm_call_function_on ({args.ToString ()})");
+
+		public static MonoCommands Resume ()
+			=> new MonoCommands ($"MONO.mono_wasm_debugger_resume ()");
 	}
 
 	internal enum MonoErrorCodes {
@@ -274,6 +277,7 @@ namespace WebAssembly.Net.Debugging {
 
 		public List<Frame> CallStack { get; set; }
 
+		public string[] LoadedFiles { get; set; }
 		internal DebugStore store;
 		public TaskCompletionSource<DebugStore> Source { get; } = new TaskCompletionSource<DebugStore> ();
 
