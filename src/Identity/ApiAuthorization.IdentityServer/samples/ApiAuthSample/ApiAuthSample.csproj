@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
@@ -6,21 +6,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" />
-    <Reference Include="Microsoft.AspNetCore.CookiePolicy" />
-    <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
-    <Reference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
-    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
-    <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
-    <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
-    <Reference Include="Microsoft.AspNetCore.Identity.UI" />
-    <Reference Include="Microsoft.AspNetCore.Mvc" />
-    <Reference Include="Microsoft.AspNetCore.Rewrite" />
-    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Https" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj" />
+    <ProjectReference Include="..\..\..\..\Security\CookiePolicy\src\Microsoft.AspNetCore.CookiePolicy.csproj" />
+    <ProjectReference Include="..\..\..\..\DataProtection\Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj" />
+    <ProjectReference Include="..\..\..\..\Middleware\Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\..\Middleware\Diagnostics\src\Microsoft.AspNetCore.Diagnostics.csproj" />
+    <ProjectReference Include="..\..\..\..\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj" />
+    <ProjectReference Include="..\..\..\..\Middleware\HttpsPolicy\src\Microsoft.AspNetCore.HttpsPolicy.csproj" />
+    <ProjectReference Include="..\..\..\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\..\UI\src\Microsoft.AspNetCore.Identity.UI.csproj" />
+    <ProjectReference Include="..\..\..\..\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj" />
+    <ProjectReference Include="..\..\..\..\Middleware\Rewrite\src\Microsoft.AspNetCore.Rewrite.csproj" />
+    
+    <ProjectReference Include="..\..\..\..\Servers\Kestrel\Https\src\Microsoft.AspNetCore.Server.Kestrel.Https.csproj" />
+    <ProjectReference Include="..\..\..\..\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj" />
+    <ProjectReference Include="..\..\..\..\Middleware\StaticFiles\src\Microsoft.AspNetCore.StaticFiles.csproj" />
     <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <Reference Include="Microsoft.EntityFrameworkCore.SqlServer" />
     <Reference Include="Microsoft.EntityFrameworkCore.Tools" PrivateAssets="All" />
