@@ -15,14 +15,12 @@ namespace Microsoft.AspNetCore.Csp
 {
     public class CspReportingMiddleware
     {
-        private readonly LoggingConfiguration _loggingConfig;
-        private readonly ILogger<CspReportingMiddleware> _logger;
+        private readonly CspReportLogger _loggingConfig;
         private readonly JsonSerializerOptions _serializerOptions;
 
-        public CspReportingMiddleware(RequestDelegate next, LoggingConfiguration loggingConfiguration, ILogger<CspReportingMiddleware> logger)
+        public CspReportingMiddleware(RequestDelegate next, CspReportLogger reportLogger)
         {
-            _loggingConfig = loggingConfiguration;
-            _logger = logger;
+            _loggingConfig = reportLogger;
             _serializerOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
@@ -33,7 +31,6 @@ namespace Microsoft.AspNetCore.Csp
 
         private bool IsReportRequest(HttpRequest request)
         {
-            // TODO: Is this first condition guaranteed?
             return request.Path.StartsWithSegments(_loggingConfig.ReportUri)
                 && request.ContentType?.StartsWith(CspConstants.CspReportContentType) == true
                 && request.ContentLength != 0;
@@ -46,18 +43,12 @@ namespace Microsoft.AspNetCore.Csp
                 CspReport cspReport = await JsonSerializer.DeserializeAsync<CspReport>(body, _serializerOptions);
                 if (cspReport.ReportData != null)
                 {
-                    _logger.Log(_loggingConfig.LogLevel, TextualizeReport(cspReport, _loggingConfig.LogLevel));
+                    _loggingConfig.Log(_loggingConfig.LogLevel, cspReport);
                 }
             } catch (JsonException)
             {
                 return;
             }
-        }
-
-        // TODO: Implement ToString on reportData
-        private string TextualizeReport(CspReport cspReport, LogLevel logLevel)
-        {
-            return cspReport.ReportData.ToString();
         }
 
         public Task Invoke(HttpContext context)
@@ -68,8 +59,7 @@ namespace Microsoft.AspNetCore.Csp
             }
 
             context.Response.StatusCode = (int) HttpStatusCode.NoContent;
-            // TODO: Is there a better way to write an empty response?
-            return context.Response.WriteAsync("");
+            return Task.FromResult(0);
         }
     }
 }

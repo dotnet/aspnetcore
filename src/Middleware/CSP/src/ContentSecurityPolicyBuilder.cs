@@ -46,13 +46,9 @@ namespace Microsoft.AspNetCore.Csp
             return _reportingUri != null && _reportingUri.StartsWith("/");
         }
 
-        public LoggingConfiguration LoggingConfiguration()
+        public CspReportLogger ReportLogger(ICspReportLoggerFactory loggerFactory)
         {
-            return new LoggingConfiguration
-            {
-                LogLevel = _logLevel,
-                ReportUri = _reportingUri
-            };
+            return loggerFactory.BuildLogger(_logLevel, _reportingUri);
         }
 
         public ContentSecurityPolicy Build()

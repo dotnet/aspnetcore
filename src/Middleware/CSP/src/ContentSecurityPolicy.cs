@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Csp
             _unsafeEval = unsafeEval;
             _reportingUri = reportingUri;
 
+            // compute the static directives of the policy up front to avoid doing so on every request
             var policyFormat = new StringBuilder()
                 .Append("script-src")
                 .Append(" 'nonce-{0}' ")  // nonce
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Csp
                 .Append(_unsafeEval ? "'unsafe-eval'" : "")
                 .Append(" https: http:;")  // fall-back allowlist-based CSP for browsers that don't support nonces
                 .Append(_baseAndObject)
-                .Append(";")               // end of script-src
+                .Append("; ")               // end of script-src
                 .Append(_reportingUri != null ? "report-uri " + _reportingUri : "")
                 .ToString();
 

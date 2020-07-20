@@ -1,6 +1,7 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Csp
 {
@@ -18,10 +19,11 @@ namespace Microsoft.AspNetCore.Csp
 
             if (policyBuilder.HasLocalReporting())
             {
-                var loggingConfig = policyBuilder.LoggingConfiguration();
+                var loggerFactory = app.ApplicationServices.GetService<ICspReportLoggerFactory>();
+                var reportLogger = policyBuilder.ReportLogger(loggerFactory);
                 app.UseWhen(
-                    context => context.Request.Path.StartsWithSegments(loggingConfig.ReportUri),
-                    appBuilder => appBuilder.UseMiddleware<CspReportingMiddleware>(loggingConfig));
+                    context => context.Request.Path.StartsWithSegments(reportLogger.ReportUri),
+                    appBuilder => appBuilder.UseMiddleware<CspReportingMiddleware>(reportLogger));
             }
 
             return app.UseMiddleware<CspMiddleware>(policyBuilder.Build());
@@ -35,6 +37,7 @@ namespace Microsoft.AspNetCore.Csp
             }
 
             services.AddScoped<INonce, Nonce>();
+            services.AddSingleton<ICspReportLoggerFactory, CspReportLoggerFactory>();
 
             return services;
         }

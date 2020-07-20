@@ -157,7 +157,8 @@ namespace Microsoft.AspNetCore.Csp.Test
                     {
                         await context.Response.WriteAsync("Test response");
                     });
-                });
+                })
+                .ConfigureServices(services => services.AddCsp());
 
             using (var server = new TestServer(hostBuilder))
             {
@@ -180,7 +181,8 @@ namespace Microsoft.AspNetCore.Csp.Test
         public async void ProcessesCspReportRequestsCorrectly()
         {
             // Arrange
-            var logger = new Mock<ILogger<CspReportingMiddleware>>();
+            var mockLogger = new Mock<CspReportLogger>();
+            var loggerFactory = new FakeReportLoggerFactory(mockLogger.Object);
 
             var hostBuilder = new WebHostBuilder()
                 .Configure(app =>
@@ -189,6 +191,7 @@ namespace Microsoft.AspNetCore.Csp.Test
                     {
                         policyBuilder
                             .WithCspMode(CspMode.ENFORCING)
+                            .WithLogLevel(LogLevel.Trace)
                             .WithReportingUri("/cspreport");
                     });
                     app.Run(async context =>
@@ -196,9 +199,9 @@ namespace Microsoft.AspNetCore.Csp.Test
                         await context.Response.WriteAsync("Test response");
                     });
                 })
-                .ConfigureServices(services =>
-                {
-                    services.AddSingleton(typeof(ILogger<CspReportingMiddleware>), logger.Object);
+                .ConfigureServices(services => {
+                    services.AddCsp();
+                    services.AddSingleton<ICspReportLoggerFactory>(loggerFactory);
                 });
 
             using (var server = new TestServer(hostBuilder))
@@ -226,8 +229,7 @@ namespace Microsoft.AspNetCore.Csp.Test
                 // Assert
                 Assert.Equal(204, context.Response.StatusCode);
                 Assert.Empty(new StreamReader(context.Response.Body).ReadToEnd());
-                //TODO: ASSERT ON THE LOGGING STATEMENT!
-                //logger.Verify(m => m.Log(LogLevel.Information, ""));
+                mockLogger.Verify(m => m.Log(It.IsAny<LogLevel>(), It.IsNotNull<CspReport>()));
             }
         }
 
@@ -235,8 +237,6 @@ namespace Microsoft.AspNetCore.Csp.Test
         public async void DoesNotCollectReportsIfReportingUriIsNotRelative()
         {
             // Arrange
-            var logger = new Mock<ILogger<CspReportingMiddleware>>();
-
             var hostBuilder = new WebHostBuilder()
                 .ConfigureServices(services => services.AddCsp())
                 .Configure(app =>
@@ -252,10 +252,7 @@ namespace Microsoft.AspNetCore.Csp.Test
                         await context.Response.WriteAsync("Test response");
                     });
                 })
-                .ConfigureServices(services =>
-                {
-                    services.AddSingleton(typeof(ILogger<CspReportingMiddleware>), logger.Object);
-                });
+                .ConfigureServices(services => services.AddCsp());
 
             using (var server = new TestServer(hostBuilder))
             {
@@ -283,6 +280,19 @@ namespace Microsoft.AspNetCore.Csp.Test
                 Assert.NotEqual(204, context.Response.StatusCode);
                 Assert.NotEmpty(new StreamReader(context.Response.Body, Encoding.UTF8).ReadToEnd());
             }
+        }
+    }
+
+    public class FakeReportLoggerFactory : ICspReportLoggerFactory
+    {
+        readonly CspReportLogger logger;
+        public FakeReportLoggerFactory(CspReportLogger logger)
+        {
+            this.logger = logger;
+        }
+        public CspReportLogger BuildLogger(LogLevel logLevel, string reportUri)
+        {
+            return logger;
         }
     }
 }
