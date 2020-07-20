@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -13,13 +14,12 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI.AzureADB2C.Controlle
     [AllowAnonymous]
     [Area("AzureADB2C")]
     [Route("[area]/[controller]/[action]")]
+    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
     internal class AccountController : Controller
     {
-#pragma warning disable CS0618 // Type or member is obsolete
         private readonly IOptionsMonitor<AzureADB2COptions> _options;
 
         public AccountController(IOptionsMonitor<AzureADB2COptions> AzureADB2COptions)
-#pragma warning restore CS0618 // Type or member is obsolete
         {
             _options = AzureADB2COptions;
         }
@@ -27,9 +27,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI.AzureADB2C.Controlle
         [HttpGet("{scheme?}")]
         public IActionResult SignIn([FromRoute] string scheme)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
             scheme = scheme ?? AzureADB2CDefaults.AuthenticationScheme;
-#pragma warning restore CS0618 // Type or member is obsolete
             var redirectUrl = Url.Content("~/");
             return Challenge(
                 new AuthenticationProperties { RedirectUri = redirectUrl },
@@ -39,25 +37,19 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI.AzureADB2C.Controlle
         [HttpGet("{scheme?}")]
         public IActionResult ResetPassword([FromRoute] string scheme)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
             scheme = scheme ?? AzureADB2CDefaults.AuthenticationScheme;
-#pragma warning restore CS0618 // Type or member is obsolete
             var options = _options.Get(scheme);
 
             var redirectUrl = Url.Content("~/");
             var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
-#pragma warning disable CS0618 // Type or member is obsolete
             properties.Items[AzureADB2CDefaults.PolicyKey] = options.ResetPasswordPolicyId;
-#pragma warning restore CS0618 // Type or member is obsolete
             return Challenge(properties, scheme);
         }
 
         [HttpGet("{scheme?}")]
         public async Task<IActionResult> EditProfile([FromRoute] string scheme)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
             scheme = scheme ?? AzureADB2CDefaults.AuthenticationScheme;
-#pragma warning restore CS0618 // Type or member is obsolete
             var authenticated = await HttpContext.AuthenticateAsync(scheme);
             if (!authenticated.Succeeded)
             {
@@ -68,18 +60,14 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI.AzureADB2C.Controlle
 
             var redirectUrl = Url.Content("~/");
             var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
-#pragma warning disable CS0618 // Type or member is obsolete
             properties.Items[AzureADB2CDefaults.PolicyKey] = options.EditProfilePolicyId;
-#pragma warning restore CS0618 // Type or member is obsolete
             return Challenge(properties, scheme);
         }
 
         [HttpGet("{scheme?}")]
         public async Task<IActionResult> SignOut([FromRoute] string scheme)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
             scheme = scheme ?? AzureADB2CDefaults.AuthenticationScheme;
-#pragma warning restore CS0618 // Type or member is obsolete
             var authenticated = await HttpContext.AuthenticateAsync(scheme);
             if (!authenticated.Succeeded)
             {
