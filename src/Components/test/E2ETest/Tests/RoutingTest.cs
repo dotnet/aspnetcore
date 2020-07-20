@@ -554,6 +554,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             AssertDidNotLog("I'm not happening...");
         }
 
+        [Fact]
+        public void OnNavigate_CanRenderUIForExceptions()
+        {
+            var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
+
+            // Navigating from one page to another should
+            // cancel the previous OnNavigate Task
+            SetUrlViaPushState("/Other");
+
+            var errorUiElem = Browser.Exists(By.Id("blazor-error-ui"), TimeSpan.FromSeconds(10));
+            Assert.NotNull(errorUiElem);
+        }
+
         private long BrowserScrollY
         {
             get => (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.scrollY");
