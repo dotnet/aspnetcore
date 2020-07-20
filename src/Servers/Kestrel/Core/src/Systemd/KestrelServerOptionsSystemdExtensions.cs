@@ -42,9 +42,7 @@ namespace Microsoft.AspNetCore.Hosting
                     listenFds = 1;
                 }
 
-                for (ulong handle = SdListenFdsStart, lastHandle = SdListenFdsStart + listenFds;
-                    handle <= lastHandle;
-                    ++handle)
+                for (ulong handle = SdListenFdsStart; handle < SdListenFdsStart + listenFds; ++handle)
                 {
                     options.ListenHandle(handle, configure);
                 }
