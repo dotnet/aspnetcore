@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.TestHost
                 if (request.Version == HttpVersion.Version20)
                 {
                     // https://tools.ietf.org/html/rfc7540
-                    req.Protocol =  HttpProtocol.Http2;
+                    req.Protocol = HttpProtocol.Http2;
                 }
                 else
                 {
@@ -116,6 +116,13 @@ namespace Microsoft.AspNetCore.TestHost
                     if (string.Equals(header.Key, HeaderNames.UserAgent, StringComparison.OrdinalIgnoreCase))
                     {
                         req.Headers.Append(header.Key, string.Join(" ", header.Value));
+                    }
+                    else if (string.Equals(header.Key, HeaderNames.ContentLength, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (int.TryParse(header.Value.First(), out var contentLength))
+                        {
+                            req.ContentLength = contentLength;
+                        }
                     }
                     else
                     {

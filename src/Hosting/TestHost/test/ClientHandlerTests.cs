@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -101,6 +102,21 @@ namespace Microsoft.AspNetCore.TestHost
             httpClient.DefaultRequestHeaders.Add(HeaderNames.UserAgent, userAgent);
 
             return httpClient.GetAsync("http://example.com");
+        }
+
+        [Fact]
+        public Task ContentLengthWorks()
+        {
+            var contentBytes = Encoding.UTF8.GetBytes("This is a content!");
+            var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
+            {
+                Assert.Equal(contentBytes.LongLength, context.Request.ContentLength);
+
+                return Task.CompletedTask;
+            }));
+            var httpClient = new HttpClient(handler);
+            var content = new ByteArrayContent(contentBytes);
+            return httpClient.PostAsync("http://example.com", content);
         }
 
         [Fact]
