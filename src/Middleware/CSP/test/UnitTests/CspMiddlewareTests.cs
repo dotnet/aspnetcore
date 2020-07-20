@@ -53,49 +53,6 @@ namespace Microsoft.AspNetCore.Csp.Test
         }
 
         [Theory]
-        [InlineData("text/html", true)]
-        [InlineData("application/json", false)]
-        [InlineData(null, true)]
-        public async Task CspHeaderIsSetOnlyOnValidResponses(string contentType, bool headerShouldExist)
-        {
-            // Arrange
-            var hostBuilder = new WebHostBuilder()
-                .ConfigureServices(services => services.AddCsp())
-                .Configure(app =>
-                {
-                    app.UseCsp(policyBuilder =>
-                    {
-                        policyBuilder
-                            .WithCspMode(CspMode.ENFORCING);
-                    });
-                    app.Run(async context =>
-                    {
-                        await context.Response.WriteAsync("Test response");
-                    });
-                });
-
-            using (var server = new TestServer(hostBuilder))
-            {
-                // Act
-                var response = await server.CreateRequest("/").AddHeader("content-type", contentType)
-                    .SendAsync("GET");
-
-                // Assert
-                response.EnsureSuccessStatusCode();
-                if (headerShouldExist)
-                {
-                    Assert.Single(response.Headers);
-                    Assert.NotEmpty(response.Headers.GetValues(CspConstants.CspEnforcedHeaderName).FirstOrDefault());
-                    Assert.Equal("Test response", await response.Content.ReadAsStringAsync());
-                }
-                else
-                {
-                    Assert.Empty(response.Headers);
-                }
-            }
-        }
-
-        [Theory]
         [InlineData("/")]
         public async Task CspNonceExistsInHeader(string requestPath)
         {
