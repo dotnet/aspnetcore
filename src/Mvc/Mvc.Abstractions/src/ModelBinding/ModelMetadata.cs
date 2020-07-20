@@ -118,13 +118,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
                 if (_boundProperties is null)
                 {
-                    var boundParameters = BoundConstructor.Parameters;
+                    var boundParameters = BoundConstructor.Parameters!;
                     var boundProperties = new List<ModelMetadata>();
 
                     foreach (var metadata in Properties)
                     {
                         if (!boundParameters.Any(p =>
-                            string.Equals(p.ParameterName, metadata.PropertyName, StringComparison.OrdinalIgnoreCase)
+                            string.Equals(p.ParameterName, metadata.PropertyName, StringComparison.Ordinal)
                             && p.ModelType == metadata.ModelType))
                         {
                             boundProperties.Add(metadata);
@@ -153,13 +153,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     return _parameterMapping;
                 }
 
-                var boundParameters = BoundConstructor.Parameters;
+                var boundParameters = BoundConstructor.Parameters!;
                 var parameterMapping = new Dictionary<ModelMetadata, ModelMetadata>();
 
                 foreach (var parameter in boundParameters)
                 {
                     var property = Properties.FirstOrDefault(p =>
-                        string.Equals(p.Name, parameter.ParameterName, StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(p.Name, parameter.ParameterName, StringComparison.Ordinal) &&
                         p.ModelType == parameter.ModelType);
 
                     if (property != null)
@@ -175,11 +175,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         /// <summary>
         /// Gets <see cref="ModelMetadata"/> instance for a constructor that is used during binding and validation.
-        /// <para>
-        /// A constructor is used during model binding and validation if it is the only constructor on the type,
-        /// is a parameterless constructor on a type with multiple constructors, or is a constructor with the
-        /// <c>ModelBindingConstructorAttribute</c>.
-        /// </para>
         /// </summary>
         public virtual ModelMetadata? BoundConstructor { get; }
 
@@ -187,7 +182,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets the collection of <see cref="ModelMetadata"/> instances for a constructor's parameters.
         /// This is only available when <see cref="MetadataKind"/> is <see cref="ModelMetadataKind.Constructor"/>.
         /// </summary>
-        public abstract IReadOnlyList<ModelMetadata> Parameters { get; }
+        public virtual IReadOnlyList<ModelMetadata>? Parameters { get; }
 
         /// <summary>
         /// Gets the name of a model if specified explicitly using <see cref="IModelNameProvider"/>.

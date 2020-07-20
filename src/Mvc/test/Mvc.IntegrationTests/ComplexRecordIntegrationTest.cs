@@ -3714,15 +3714,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.True(modelState.IsValid);
         }
 
-        public record RecordTypesWithDifferentMetadataOnParameterAndProperty
+        public record RecordTypesWithDifferentMetadataOnParameterAndProperty([FromQuery] string Id, string Name)
         {
-            public RecordTypesWithDifferentMetadataOnParameterAndProperty([FromQuery] string id, string name)
-                => (Id, Name) = (id, name);
-
             [FromHeader]
-            public string Id { get; init; }
+            public string Id { get; init; } = Id;
 
-            public string Name { get; init; }
+            public string Name { get; init; } = Name;
         }
 
         [Fact]
@@ -3765,8 +3762,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("testId", model.Id);
             Assert.Equal("test", model.Name);
 
-            Assert.Single(modelState, e => e.Key == "name");
-            Assert.Single(modelState, e => e.Key == "id");
+            Assert.Single(modelState, e => e.Key == "Name");
+            Assert.Single(modelState, e => e.Key == "Id");
         }
 
         [Fact]
@@ -3809,7 +3806,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("test", model.Name);
 
             var entry = Assert.Single(modelState);
-            Assert.Equal("name", entry.Key);
+            Assert.Equal("Name", entry.Key);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }

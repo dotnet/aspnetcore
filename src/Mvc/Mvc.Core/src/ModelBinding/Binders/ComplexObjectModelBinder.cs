@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Logging;
 
@@ -17,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// <summary>
     /// <see cref="IModelBinder"/> implementation for binding complex types.
     /// </summary>
-    public class ComplexObjectModelBinder : IModelBinder
+    public sealed class ComplexObjectModelBinder : IModelBinder
     {
         // Don't want a new public enum because communication between the private and internal methods of this class
         // should not be exposed. Can't use an internal enum because types of [TheoryData] values must be public.
@@ -35,6 +34,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private readonly IDictionary<ModelMetadata, IModelBinder> _propertyBinders;
         private readonly IReadOnlyList<IModelBinder> _parameterBinders;
         private readonly ILogger _logger;
+        private Func<object> _modelCreator;
+
 
         internal ComplexObjectModelBinder(
             IDictionary<ModelMetadata, IModelBinder> propertyBinders,
@@ -79,15 +80,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             if (bindingContext.Model == null)
             {
                 var boundConstructor = modelMetadata.BoundConstructor;
-                if (boundConstructor is null)
+                if (boundConstructor != null)
                 {
-                    ThrowObjectCannotBeCreated(modelMetadata);
-                }
-
-                object[] values;
-                if (boundConstructor.Parameters.Count > 0)
-                {
-                    values = new object[boundConstructor.Parameters.Count];
+                    var values = new object[boundConstructor.Parameters.Count];
                     var (attemptedParameterBinding, parameterBindingSucceeded) = await BindParameters(
                         bindingContext,
                         propertyData,
@@ -96,15 +91,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
                     attemptedBinding |= attemptedParameterBinding;
                     bindingSucceeded |= parameterBindingSucceeded;
+
+                    if (!CreateModel(bindingContext, boundConstructor, values))
+                    {
+                        return;
+                    }
                 }
                 else
                 {
-                    values = Array.Empty<object>();
-                }
-
-                if (!CreateModel(bindingContext, boundConstructor, values))
-                {
-                    return;
+                    CreateModel(bindingContext);
                 }
             }
 
@@ -176,6 +171,58 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 bindingContext.Result = ModelBindingResult.Failed();
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Creates suitable <see cref="object"/> for given <paramref name="bindingContext"/>.
+        /// </summary>
+        /// <param name="bindingContext">The <see cref="ModelBindingContext"/>.</param>
+        /// <returns>An <see cref="object"/> compatible with <see cref="ModelBindingContext.ModelType"/>.</returns>
+        internal void CreateModel(ModelBindingContext bindingContext)
+        {
+            if (bindingContext == null)
+            {
+                throw new ArgumentNullException(nameof(bindingContext));
+            }
+
+            // If model creator throws an exception, we want to propagate it back up the call stack, since the
+            // application developer should know that this was an invalid type to try to bind to.
+            if (_modelCreator == null)
+            {
+                // The following check causes the ComplexTypeModelBinder to NOT participate in binding structs as
+                // reflection does not provide information about the implicit parameterless constructor for a struct.
+                // This binder would eventually fail to construct an instance of the struct as the Linq's NewExpression
+                // compile fails to construct it.
+                var modelTypeInfo = bindingContext.ModelType.GetTypeInfo();
+                if (modelTypeInfo.IsAbstract || modelTypeInfo.GetConstructor(Type.EmptyTypes) == null)
+                {
+                    var metadata = bindingContext.ModelMetadata;
+                    switch (metadata.MetadataKind)
+                    {
+                        case ModelMetadataKind.Parameter:
+                            throw new InvalidOperationException(
+                                Resources.FormatComplexObjectModelBinder_NoSuitableConstructor_ForParameter(
+                                    modelTypeInfo.FullName,
+                                    metadata.ParameterName));
+                        case ModelMetadataKind.Property:
+                            throw new InvalidOperationException(
+                                Resources.FormatComplexObjectModelBinder_NoSuitableConstructor_ForProperty(
+                                    modelTypeInfo.FullName,
+                                    metadata.PropertyName,
+                                    bindingContext.ModelMetadata.ContainerType.FullName));
+                        case ModelMetadataKind.Type:
+                            throw new InvalidOperationException(
+                                Resources.FormatComplexObjectModelBinder_NoSuitableConstructor_ForType(
+                                    modelTypeInfo.FullName));
+                    }
+                }
+
+                _modelCreator = Expression
+                    .Lambda<Func<object>>(Expression.New(bindingContext.ModelType))
+                    .Compile();
+            }
+
+            bindingContext.Model = _modelCreator();
         }
 
         private async ValueTask<(bool attemptedBinding, bool bindingSucceeded)> BindParameters(
@@ -668,32 +715,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             catch (Exception exception)
             {
                 AddModelError(exception, modelName, bindingContext);
-            }
-        }
-
-        private void ThrowObjectCannotBeCreated(ModelMetadata metadata)
-        {
-            var modelType = metadata.ModelType;
-            switch (metadata.MetadataKind)
-            {
-                case ModelMetadataKind.Parameter:
-                    throw new InvalidOperationException(
-                        Resources.FormatComplexObjectModelBinder_NoSuitableConstructor_ForParameter(
-                            modelType.FullName,
-                            metadata.ParameterName));
-                case ModelMetadataKind.Property:
-                    throw new InvalidOperationException(
-                        Resources.FormatComplexObjectModelBinder_NoSuitableConstructor_ForProperty(
-                            modelType.FullName,
-                            metadata.PropertyName,
-                            metadata.ContainerType.FullName));
-                case ModelMetadataKind.Type:
-                    throw new InvalidOperationException(
-                        Resources.FormatComplexObjectModelBinder_NoSuitableConstructor_ForType(
-                            modelType.FullName));
-                case ModelMetadataKind.Constructor:
-                    Debug.Fail("We do not expect constructors here.");
-                    break;
             }
         }
 

@@ -661,7 +661,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         private class DefaultConstructorType { }
 
         [Fact]
-        public void GetBoundConstructor_ReturnsDefaultConstructor()
+        public void GetBoundConstructor_DefaultConstructor_ReturnsNull()
         {
             // Arrange
             var type = typeof(DefaultConstructorType);
@@ -670,8 +670,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var result = DefaultBindingMetadataProvider.GetBoundConstructor(type);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Empty(result.GetParameters());
+            Assert.Null(result);
         }
 
         private class ParameterlessConstructorType
@@ -680,7 +679,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         [Fact]
-        public void GetBoundConstructor_ReturnsParameterlessConstructor()
+        public void GetBoundConstructor_ParameterlessConstructor_ReturnsNull()
         {
             // Arrange
             var type = typeof(ParameterlessConstructorType);
@@ -689,8 +688,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var result = DefaultBindingMetadataProvider.GetBoundConstructor(type);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Empty(result.GetParameters());
+            Assert.Null(result);
         }
 
         private class NonPublicParameterlessConstructorType
@@ -756,7 +754,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         [Fact]
-        public void GetBoundConstructor_ReturnsParameterlessConstructor_ForRecordTypeWithParameterlessConstructor()
+        public void GetBoundConstructor_ReturnsNull_ForRecordTypeWithParameterlessConstructor()
         {
             // Arrange
             var type = typeof(RecordTypeWithPrimaryAndParameterlessConstructor);
@@ -765,8 +763,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var result = DefaultBindingMetadataProvider.GetBoundConstructor(type);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Empty(result.GetParameters());
+            Assert.Null(result);
         }
 
         private record RecordTypeWithMultipleConstructors(string Name)
@@ -793,7 +790,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
         private record RecordTypeWithConformingSynthesizedConstructor
         {
-            public RecordTypeWithConformingSynthesizedConstructor(string name, int age)
+            public RecordTypeWithConformingSynthesizedConstructor(string Name, int Age)
             {
             }
 
@@ -815,8 +812,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             Assert.NotNull(result);
             Assert.Collection(
                 result.GetParameters(),
-                p => Assert.Equal("name", p.Name),
-                p => Assert.Equal("age", p.Name));
+                p => Assert.Equal("Name", p.Name),
+                p => Assert.Equal("Age", p.Name));
         }
 
         private record RecordTypeWithNonConformingSynthesizedConstructor

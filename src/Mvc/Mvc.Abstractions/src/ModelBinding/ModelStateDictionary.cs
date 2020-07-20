@@ -300,8 +300,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 // "The supplied value is invalid for Int32." (when error is for an element or parameter).
                 var messageProvider = metadata.ModelBindingMessageProvider;
 
-                var name = metadata.DisplayName ?? 
-                    ((metadata.MetadataKind == ModelMetadataKind.Parameter) ? metadata.ParameterName : metadata.PropertyName);
+                var name = metadata.DisplayName ?? metadata.PropertyName;
                 string errorMessage;
                 if (entry == null && name == null)
                 {

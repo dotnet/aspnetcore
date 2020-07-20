@@ -93,8 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 return null;
             }
 
-            var parameterlessConstructor = constructors.FirstOrDefault(f => f.GetParameters().Length == 0);
-            return GetRecordTypeConstructor(type, constructors) ?? parameterlessConstructor;
+            return GetRecordTypeConstructor(type, constructors);
         }
 
         private static ConstructorInfo GetRecordTypeConstructor(Type type, ConstructorInfo[] constructors)
@@ -121,19 +120,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             for (var i = 0; i < parameters.Length; i++)
             {
                 var parameter = parameters[i];
-                var mappedProperties = properties.Where(property =>
-                    string.Equals(property.Name, parameter.Name, StringComparison.OrdinalIgnoreCase) &&
-                    property.Property.PropertyType == parameter.ParameterType)
-                    .ToList();
+                var mappedProperty = properties.FirstOrDefault(property =>
+                    string.Equals(property.Name, parameter.Name, StringComparison.Ordinal) &&
+                    property.Property.PropertyType == parameter.ParameterType);
 
-                if (mappedProperties.Count == 0)
+                if (mappedProperty is null)
                 {
                     // No property found, this is not a primary constructor.
-                    return null;
-                }
-                else if (mappedProperties.Count > 1)
-                {
-                    // More than one property found that maps to a constructor parameter. This is ambigious.
                     return null;
                 }
             }

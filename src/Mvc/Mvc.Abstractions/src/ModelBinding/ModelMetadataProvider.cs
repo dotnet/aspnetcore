@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Supplies metadata describing a property.
+        /// Supplies metadata describing a constructor.
         /// </summary>
         /// <param name="constructor">The <see cref="ConstructorInfo"/>.</param>
         /// <param name="modelType">The type declaring the constructor.</param>

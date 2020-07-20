@@ -1108,7 +1108,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Single(entry.Errors);
 
             var error = entry.Errors[0];
-            Assert.Equal("The value 'bill' is not valid for Id.", error.ErrorMessage);
+            Assert.Equal("The value 'bill' is not valid.", error.ErrorMessage);
         }
 
         [Fact]
@@ -1148,7 +1148,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Single(entry.Errors);
 
             var error = entry.Errors[0];
-            Assert.Equal("The value '-123' is not valid for Zip.", error.ErrorMessage);
+            Assert.Equal("The value '-123' is not valid.", error.ErrorMessage);
         }
 
         private record NeverValid(string NeverValidProperty)  : IValidatableObject
