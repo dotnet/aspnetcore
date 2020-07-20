@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                         var handleAcquired = false;
 
 #if NETSTANDARD2_0
-            RuntimeHelpers.PrepareConstrainedRegions();
+                        RuntimeHelpers.PrepareConstrainedRegions();
 #endif
 
                         try
@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng
                 var handleAcquired = false;
 
 #if NETSTANDARD2_0
-            RuntimeHelpers.PrepareConstrainedRegions();
+                RuntimeHelpers.PrepareConstrainedRegions();
 #endif
 
                 try
