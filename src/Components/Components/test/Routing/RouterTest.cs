@@ -80,14 +80,16 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         }
 
         [Fact]
-        public void CanceledFailedOnNavigateAsyncDoesNothing()
+        public async Task CanceledFailedOnNavigateAsyncDoesNothing()
         {
             // Arrange
+            var onNavigateInvoked = 0;
             async Task OnNavigateAsync(NavigationContext args)
             {
+                onNavigateInvoked += 1;
                 if (args.Path.EndsWith("jan"))
                 {
-                    await Task.Delay(Timeout.Infinite);
+                    await Task.Delay(Timeout.Infinite, args.CancellationToken);
                     throw new Exception("This is an uncaught exception.");
                 }
             }
@@ -96,7 +98,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             {
                 if (!refreshCalled)
                 {
-                    Assert.True(true);
+                    refreshCalled = true;
                     return;
                 }
                 Assert.True(false, "OnUpdateDisplay called more than once.");
@@ -104,11 +106,15 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             _router.OnNavigateAsync = OnNavigateAsync;
 
             // Act
-            _ = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateWithRefreshAsync("http://example.com/jan", false));
-            _ = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateWithRefreshAsync("http://example.com/feb", false));
+            var janTask = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateWithRefreshAsync("http://example.com/jan", false));
+            var febTask = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateWithRefreshAsync("http://example.com/feb", false));
+
+            await janTask;
+            await febTask;
 
             // Assert that we render the second route component and don't throw an exception
             Assert.Empty(_renderer.HandledExceptions);
+            Assert.Equal(2, onNavigateInvoked);
         }
 
         [Fact]
@@ -130,7 +136,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             // Assert
             Assert.Single(_renderer.HandledExceptions);
             var unhandledException = _renderer.HandledExceptions[0];
-            Assert.Equal("OnNavigateAsync can only be cancelled via he NavigateContext.CancellationToken.", unhandledException.Message);
+            Assert.Equal("OnNavigateAsync can only be cancelled via NavigateContext.CancellationToken.", unhandledException.Message);
         }
 
         [Fact]

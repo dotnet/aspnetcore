@@ -224,9 +224,9 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
             catch (OperationCanceledException e)
             {
-                if (!navigateContext.CancellationToken.IsCancellationRequested)
+                if (e.CancellationToken != navigateContext.CancellationToken)
                 {
-                    var rethrownException =  new InvalidOperationException("OnNavigateAsync can only be cancelled via he NavigateContext.CancellationToken.", e);
+                    var rethrownException = new InvalidOperationException("OnNavigateAsync can only be cancelled via NavigateContext.CancellationToken.", e);
                     _renderHandle.Render(builder => ExceptionDispatchInfo.Capture(rethrownException).Throw());
                     return false;
                 }
