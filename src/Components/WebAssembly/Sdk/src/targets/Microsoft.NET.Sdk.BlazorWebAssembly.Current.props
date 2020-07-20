@@ -1,0 +1,36 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.BlazorWebAssembly.props
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project ToolsVersion="14.0" TreatAsLocalProperty="RuntimeIdentifier">
+  <PropertyGroup>
+    <!-- Blazor WASM projects are always browser-wasm -->
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+
+    <!-- Avoid having the rid show up in output paths -->
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+
+    <OutputType>exe</OutputType>
+
+    <IsPackable>false</IsPackable>
+
+    <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Determines if this Sdk is responsible for importing Microsoft.NET.Sdk.Razor. Temporary workaround until we can create a SDK. -->
+    <_RazorSdkImportsMicrosoftNetSdkRazor Condition="'$(UsingMicrosoftNETSdkRazor)' != 'true'">true</_RazorSdkImportsMicrosoftNetSdkRazor>
+  </PropertyGroup>
+
+  <Import Sdk="Microsoft.NET.Sdk.Razor" Project="Sdk.props" Condition="'$(_RazorSdkImportsMicrosoftNetSdkRazor)' == 'true'" />
+  <Import Sdk="Microsoft.NET.Sdk.Web.ProjectSystem" Project="Sdk.props" />
+  <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.props" />
+
+</Project>
