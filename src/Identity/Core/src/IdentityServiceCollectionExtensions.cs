@@ -111,21 +111,6 @@ namespace Microsoft.Extensions.DependencyInjection
             => services.Configure(IdentityConstants.ApplicationScheme, configure);
 
         /// <summary>
-        /// Configures the application cookie.
-        /// </summary>
-        /// <typeparam name="TService">TService: A service resolved from the IServiceProvider for use when configuring this authentication provider. If you need multiple services then specify IServiceProvider and resolve them directly.</typeparam>
-        /// <param name="services">The services available in the application.</param>
-        /// <param name="configure">An action to configure the <see cref="CookieAuthenticationOptions"/>.</param>
-        /// <returns>The services.</returns>
-        public static IServiceCollection ConfigureApplicationCookie<TService>(this IServiceCollection services, Action<CookieAuthenticationOptions, TService> configure) where TService : class
-        {
-            services.AddOptions<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme)
-                .Configure(configure);
-
-            return services;
-        }
-
-        /// <summary>
         /// Configure the external cookie.
         /// </summary>
         /// <param name="services">The services available in the application.</param>
@@ -133,20 +118,5 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The services.</returns>
         public static IServiceCollection ConfigureExternalCookie(this IServiceCollection services, Action<CookieAuthenticationOptions> configure)
             => services.Configure(IdentityConstants.ExternalScheme, configure);
-
-        /// <summary>
-        /// Configure the external cookie.
-        /// </summary>
-        /// <typeparam name="TService">TService: A service resolved from the IServiceProvider for use when configuring this authentication provider. If you need multiple services then specify IServiceProvider and resolve them directly.</typeparam>
-        /// <param name="services">The services available in the application.</param>
-        /// <param name="configure">An action to configure the <see cref="CookieAuthenticationOptions"/>.</param>
-        /// <returns>The services.</returns>
-        public static IServiceCollection ConfigureExternalCookie<TService>(this IServiceCollection services, Action<CookieAuthenticationOptions, TService> configure) where TService : class
-        {
-            services.AddOptions<CookieAuthenticationOptions>(IdentityConstants.ExternalScheme)
-                .Configure(configure);
-
-            return services;
-        }
     }
 }

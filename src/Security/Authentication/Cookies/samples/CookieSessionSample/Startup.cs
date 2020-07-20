@@ -14,14 +14,12 @@ namespace CookieSessionSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<MemoryCacheTicketStore>();
-
             // This can be removed after https://github.com/aspnet/IISIntegration/issues/371
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            }).AddCookie<MemoryCacheTicketStore>((o, ticketStore) => o.SessionStore = ticketStore);
+            }).AddCookie(o => o.SessionStore = new MemoryCacheTicketStore());
         }
 
         public void Configure(IApplicationBuilder app)
