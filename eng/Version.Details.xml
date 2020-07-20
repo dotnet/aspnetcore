@@ -233,6 +233,11 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>f37dd6fc8595e130909dcb3085a56342d04aa20c</Sha>
     </Dependency>
+    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RTMVersions.csproj. -->
+    <Dependency Name="System.Security.AccessControl" Version="5.0.0-preview.8.20361.2">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>f37dd6fc8595e130909dcb3085a56342d04aa20c</Sha>
+    </Dependency>
     <Dependency Name="System.Security.Cryptography.Cng" Version="5.0.0-preview.8.20361.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>f37dd6fc8595e130909dcb3085a56342d04aa20c</Sha>

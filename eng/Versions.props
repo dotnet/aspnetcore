@@ -116,6 +116,8 @@
     <SystemReflectionMetadataPackageVersion>5.0.0-preview.8.20361.2</SystemReflectionMetadataPackageVersion>
     <SystemResourcesExtensionsPackageVersion>5.0.0-preview.8.20361.2</SystemResourcesExtensionsPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>5.0.0-preview.8.20361.2</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RTMVersions.csproj. -->
+    <SystemSecurityAccessControlPackageVersion>5.0.0-preview.8.20361.2</SystemSecurityAccessControlPackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>5.0.0-preview.8.20361.2</SystemSecurityCryptographyCngPackageVersion>
     <SystemSecurityCryptographyPkcsPackageVersion>5.0.0-preview.8.20361.2</SystemSecurityCryptographyPkcsPackageVersion>
     <SystemSecurityCryptographyXmlPackageVersion>5.0.0-preview.8.20361.2</SystemSecurityCryptographyXmlPackageVersion>
@@ -163,6 +165,14 @@
     Upshot is we need Major.Minor.0 runtime packages for compilation and the targeting pack and Major.Minor.Latest
     runtime packages for everything else. This is not an issue for assemblies available in Microsoft.NETCore.App.Ref or
     Microsoft.Extensions.Internal.Transport because it is next to impossible we would service those packages.
+
+    System.Security.AccessControl should only be referenced in Dependencies.props and RTMVersions.csproj. Because
+    it's a transitive reference, we reship the ref/ assembly in Microsoft.AspNetCore.App.Ref. dotnet/runtime ships
+    the implementation assemblies in Microsoft.NETCore.App.Runtime.* packages.
+
+    If testing this configuration prior to servicing, update the versions of dependencies too. E.g. change
+    `$(SystemSecurityPrincipalWindowsV0PackageVersion)` if you change `$(SystemSecurityAccessControlV0PackageVersion)`
+    because System.Security.AccessControl will otherwise be loadable. This should not be necessary in servicing.
   -->
   <PropertyGroup Condition=" '$(IsServicingBuild)' == 'true' ">
     <MicrosoftWin32RegistryV0PackageVersion>$(MicrosoftWin32RegistryPackageVersion.Split('.')[0]).$(MicrosoftWin32RegistryPackageVersion.Split('.')[1]).0</MicrosoftWin32RegistryV0PackageVersion>

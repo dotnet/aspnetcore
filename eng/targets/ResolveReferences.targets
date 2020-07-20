@@ -127,7 +127,7 @@
   </Target>
 
   <!--
-    This target resolves remaining Referene items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
+    This target resolves remaining Reference items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
     This executes on NuGet restore and during DesignTimeBuild. It should not run in the outer, cross-targeting build.
    -->
   <Target Name="ResolveCustomReferences"
@@ -205,11 +205,9 @@
   </Target>
 
   <!--
-    Muck with @(ResolvedCompileFileDefinitions) items between generation and use in order to compile against RTM lib/
+    Change @(ResolvedCompileFileDefinitions) items between generation and use in order to compile against RTM lib/
     or ref/ assemblies. The approach works for all TFMs because it happens after a specific assembly is chosen for
     compilation; no need to restrict this to (say) the default TFM.
-
-    Condition checks for RTMVersions.csproj.nuget.g.props file only to ensure restore operation is complete.
 
     This target could get confused if the layout changes for one of the dozen special-cased packages during servicing.
     E.g. ResolvePackageAssets picks a compatible assembly from the 5.0.1 package and _UseRTMReferenceAssemblies
@@ -217,9 +215,13 @@
     about the "invalid strong name".
   -->
   <Target Name="_UseRTMReferenceAssemblies"
-      Condition=" '$(EnableCustomReferenceResolution)' == 'true' AND EXISTS('$(RepoRoot)eng\RTMVersions\obj\RTMVersions.csproj.nuget.g.props') "
+      Condition=" '$(MSBuildProjectName)' != 'RepoTasks' "
+      AfterTargets="ResolvePackageAssets"
       BeforeTargets="GenerateBuildDependencyFile;GeneratePublishDependencyFile;ILLink;ResolveLockFileReferences"
       DependsOnTargets="ResolvePackageAssets">
+    <Error Condition=" !EXISTS('$(RepoRoot)artifacts\obj\RepoTasks\RepoTasks.csproj.nuget.g.props') "
+        Text="The eng/tools/RepoTasks project must be restored before building other projects." />
+
     <JoinItems Left="@(ResolvedCompileFileDefinitions)"
         Right="@(LatestPackageReference->HasMetadata('RTMVersion'))"
         LeftKey="Filename"
