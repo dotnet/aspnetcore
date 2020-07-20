@@ -342,7 +342,7 @@ public class HubConnection implements AutoCloseable {
      */
     public Completable start() {
         if (hubConnectionState != HubConnectionState.DISCONNECTED) {
-            return Completable.complete();
+            return Completable.error(new RuntimeException("The HubConnection cannot be started if it is not in the 'Disconnected' state."));
         }
 
         handshakeResponseSubject = CompletableSubject.create();

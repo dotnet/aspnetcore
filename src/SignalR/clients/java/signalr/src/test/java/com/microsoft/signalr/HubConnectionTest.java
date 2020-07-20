@@ -2647,15 +2647,20 @@ class HubConnectionTest {
     }
 
     @Test
-    public void callingStartOnStartedHubConnectionNoOps()  {
+    public void callingStartOnStartedHubConnectionThrows()  {
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        try {
+            hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+            assertTrue(false);
+        } catch (Exception ex) {
+            assertEquals("The HubConnection cannot be started if it is not in the 'Disconnected' state.", ex.getMessage());
+        }
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
-        hubConnection.stop();
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
@@ -3595,9 +3600,6 @@ class HubConnectionTest {
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop().blockingAwait();
         assertEquals("ExampleValue", beforeRedirectHeader.get());
-
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertEquals("Bearer redirectToken", afterRedirectHeader.get());
 
         // Making sure you can do this after restarting the HubConnection.
@@ -3605,9 +3607,6 @@ class HubConnectionTest {
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop().blockingAwait();
         assertEquals("ExampleValue", beforeRedirectHeader.get());
-
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertEquals("Bearer redirectToken", afterRedirectHeader.get());
     }
 
