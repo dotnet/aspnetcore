@@ -35,6 +35,7 @@ namespace WebApplication1
             services.AddAuthentication().AddCookie("playerLogin");
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            //services.
         }
 
 
