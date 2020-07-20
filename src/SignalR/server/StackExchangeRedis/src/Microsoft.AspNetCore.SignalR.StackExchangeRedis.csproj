@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Provides scale-out support for ASP.NET Core SignalR using a Redis server and the StackExchange.Redis client.</Description>
@@ -14,7 +14,7 @@
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="StackExchange.Redis" />
     <Reference Include="MessagePack" />
-    <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
+    <ProjectReference Include="..\..\Core\src\Microsoft.AspNetCore.SignalR.Core.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Redis for ASP.NET Core SignalR.</Description>
@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
+    <ProjectReference Include="..\..\Core\src\Microsoft.AspNetCore.SignalR.Core.csproj" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="MessagePack" />
     <Reference Include="StackExchange.Redis.StrongName" />

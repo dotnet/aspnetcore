@@ -1,12 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Components for providing real-time bi-directional communication across the Web.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
-    <Reference Include="Microsoft.AspNetCore.Http.Connections" />
+    <ProjectReference Include="..\..\Core\src\Microsoft.AspNetCore.SignalR.Core.csproj" />
+    <ProjectReference Include="..\..\..\common\Http.Connections\src\Microsoft.AspNetCore.Http.Connections.csproj" />
   </ItemGroup>
 
 </Project>

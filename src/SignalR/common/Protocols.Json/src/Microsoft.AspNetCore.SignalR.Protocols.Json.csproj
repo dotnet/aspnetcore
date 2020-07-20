@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Implements the SignalR Hub Protocol over JSON.</Description>
@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
+    <ProjectReference Include="..\..\SignalR.Common\src\Microsoft.AspNetCore.SignalR.Common.csproj" />
     <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 

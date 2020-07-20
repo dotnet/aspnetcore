@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core middleware that enables an application to support the WsFederation authentication workflow.</Description>
@@ -7,9 +7,8 @@
     <PackageTags>aspnetcore;authentication;security</PackageTags>
   </PropertyGroup>
 
-
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Authentication" />
+    <ProjectReference Include="..\..\Core\src\Microsoft.AspNetCore.Authentication.csproj" />
     <Reference Include="Microsoft.IdentityModel.Protocols.WsFederation" />
     <Reference Include="System.IdentityModel.Tokens.Jwt" />
   </ItemGroup>
