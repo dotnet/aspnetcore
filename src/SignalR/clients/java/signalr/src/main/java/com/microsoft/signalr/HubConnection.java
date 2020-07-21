@@ -20,6 +20,7 @@ import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.subjects.*;
+import okhttp3.OkHttpClient;
 
 /**
  * A connection used to invoke hub methods on a SignalR Server.
@@ -126,7 +127,8 @@ public class HubConnection implements AutoCloseable {
     }
 
     HubConnection(String url, Transport transport, boolean skipNegotiate, HttpClient httpClient,
-                  Single<String> accessTokenProvider, long handshakeResponseTimeout, Map<String, String> headers, TransportEnum transportEnum) {
+                  Single<String> accessTokenProvider, long handshakeResponseTimeout, Map<String, String> headers, TransportEnum transportEnum,
+                  Action1<OkHttpClient.Builder> configureBuilder) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("A valid url is required.");
         }
@@ -143,7 +145,7 @@ public class HubConnection implements AutoCloseable {
         if (httpClient != null) {
             this.httpClient = httpClient;
         } else {
-            this.httpClient = new DefaultHttpClient();
+            this.httpClient = new DefaultHttpClient(configureBuilder);
         }
 
         if (transport != null) {
