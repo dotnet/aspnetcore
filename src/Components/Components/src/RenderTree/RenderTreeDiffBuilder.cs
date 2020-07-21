@@ -355,7 +355,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             return result;
         }
 
-        private static void ThrowExceptionForDuplicateKey(object key, RenderTreeFrame frame)
+        private static void ThrowExceptionForDuplicateKey(object key, in RenderTreeFrame frame)
         {
             switch (frame.FrameType)
             {
