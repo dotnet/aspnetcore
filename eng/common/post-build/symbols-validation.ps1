@@ -144,7 +144,7 @@ $CountMissingSymbols = {
 
   if ($MissingSymbols -ne 0)
   {
-    Write-PipelineTelemetryError -Category 'CheckSymbols' -Message "Missing symbols for $MissingSymbols modules in the package $FileName"
+    Write-PipelineTelemetryError -Category 'CheckSymbols' -Message "Missing symbols for $MissingSymbols modules in the package $PackagePath"
   }
   
   Pop-Location
