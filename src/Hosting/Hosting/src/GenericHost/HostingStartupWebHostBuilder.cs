@@ -75,5 +75,10 @@ namespace Microsoft.AspNetCore.Hosting
         {
             return _builder.UseStartup(startupType);
         }
+
+        public IWebHostBuilder UseStartup(Func<WebHostBuilderContext, object> startupFactory)
+        {
+            return _builder.UseStartup(startupFactory);
+        }
     }
 }

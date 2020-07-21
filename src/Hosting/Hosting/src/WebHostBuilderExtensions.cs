@@ -61,6 +61,37 @@ namespace Microsoft.AspNetCore.Hosting
             });
         }
 
+        /// <summary>
+        /// Specify a factory that creates the startup instance to be used by the web host.
+        /// </summary>
+        /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
+        /// <param name="startupFactory">A delegate that specifies a factory for the startup class.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public static IWebHostBuilder UseStartup(this IWebHostBuilder hostBuilder, Func<WebHostBuilderContext, object> startupFactory)
+        {
+            var startupAssemblyName = startupFactory.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name;
+
+            hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
+
+            // Light up the GenericWebHostBuilder implementation
+            if (hostBuilder is ISupportsStartup supportsStartup)
+            {
+                return supportsStartup.UseStartup(startupFactory);
+            }
+
+            return hostBuilder
+                .ConfigureServices((context, services) =>
+                {
+                    services.AddSingleton(typeof(IStartup), sp =>
+                    {
+                        var instance = startupFactory(context) ?? new InvalidOperationException("The specified factory returned null startup instance");
+
+                        var hostingEnvironment = sp.GetRequiredService<IHostEnvironment>();
+
+                        return new ConventionBasedStartup(StartupLoader.LoadMethods(sp, instance.GetType(), hostingEnvironment.EnvironmentName, instance));
+                    });
+                });
+        }
 
         /// <summary>
         /// Specify the startup type to be used by the web host.
