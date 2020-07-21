@@ -162,8 +162,8 @@ namespace Microsoft.DotNet.Watcher
                 _reporter.Output("Polling file watcher is enabled");
             }
 
-            await new DotNetWatcher(reporter, fileSetFactory)
-                .WatchAsync(processInfo, cancellationToken);
+            await using var watcher = new DotNetWatcher(reporter, fileSetFactory);
+            await watcher.WatchAsync(processInfo, cancellationToken);
 
             return 0;
         }
