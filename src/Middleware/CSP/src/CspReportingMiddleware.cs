@@ -1,15 +1,8 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Net.Mime;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Csp
 {
@@ -43,9 +36,10 @@ namespace Microsoft.AspNetCore.Csp
                 CspReport cspReport = await JsonSerializer.DeserializeAsync<CspReport>(body, _serializerOptions);
                 if (cspReport.ReportData != null)
                 {
-                    _loggingConfig.Log(_loggingConfig.LogLevel, cspReport);
+                    _loggingConfig.Log(cspReport);
                 }
-            } catch (JsonException)
+            }
+            catch (JsonException)
             {
                 return;
             }
@@ -58,7 +52,7 @@ namespace Microsoft.AspNetCore.Csp
                 HandleIncomingReport(context.Request.Body);
             }
 
-            context.Response.StatusCode = (int) HttpStatusCode.NoContent;
+            context.Response.StatusCode = (int)HttpStatusCode.NoContent;
             return Task.FromResult(0);
         }
     }

@@ -28,13 +28,23 @@ namespace Microsoft.AspNetCore.Csp
 
     public class CspReportLogger
     {
-        public virtual void Log(LogLevel logLevel, CspReport report)
+        public virtual void Log(CspReport report)
         {
-            Logger.Log(logLevel, TextualizeReport(report));
+            Logger.Log(LogLevel, TextualizeReport(report));
         }
 
         private string TextualizeReport(CspReport report)
         {
+            if (LogLevel.CompareTo(LogLevel.Information) > 0)
+            {
+                //switch (report.ReportData.ViolatedDirective)
+                //{
+
+                //}
+            } else
+            {
+
+            }
             return report.ToString();
         }
 

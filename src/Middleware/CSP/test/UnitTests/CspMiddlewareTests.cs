@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Csp.Test
                 // Assert
                 Assert.Equal(204, context.Response.StatusCode);
                 Assert.Empty(new StreamReader(context.Response.Body).ReadToEnd());
-                mockLogger.Verify(m => m.Log(It.IsAny<LogLevel>(), It.IsNotNull<CspReport>()));
+                mockLogger.Verify(m => m.Log(It.IsNotNull<CspReport>()));
             }
         }
 
