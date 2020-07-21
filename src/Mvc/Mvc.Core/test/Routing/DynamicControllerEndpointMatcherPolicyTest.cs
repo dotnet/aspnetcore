@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 _ => Task.CompletedTask,
                 new EndpointMetadataCollection(new object[]
                 {
-                    new DynamicControllerRouteValueTransformerMetadata(typeof(CustomTransformer), null),
+                    new DynamicControllerRouteValueTransformerMetadata(typeof(CustomTransformer), State),
                 }),
                 "dynamic");
 
@@ -71,7 +71,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             services.AddScoped<CustomTransformer>(s =>
             {
                 var transformer = new CustomTransformer();
-                transformer.Transform = (c, values) => Transform(c, values);
+                transformer.Transform = (c, values, state) => Transform(c, values, state);
+                transformer.Filter = (c, values, state, candidates) => Filter(c, values, state, candidates);
                 return transformer;
             });
             Services = services.BuildServiceProvider();
@@ -91,7 +92,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private IServiceProvider Services { get; }
 
-        private Func<HttpContext, RouteValueDictionary, ValueTask<RouteValueDictionary>> Transform { get; set; }
+        private Func<HttpContext, RouteValueDictionary, object, ValueTask<RouteValueDictionary>> Transform { get; set; }
+
+        private Func<HttpContext, RouteValueDictionary, object, IReadOnlyList<Endpoint>, ValueTask<IReadOnlyList<Endpoint>>> Filter { get; set; } = (_, __, ___, e) => new ValueTask<IReadOnlyList<Endpoint>>(e);
+
+        private object State { get; } = new object();
 
         [Fact]
         public async Task ApplyAsync_NoMatch()
@@ -106,7 +111,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var candidates = new CandidateSet(endpoints, values, scores);
             candidates.SetValidity(0, false);
 
-            Transform = (c, values) =>
+            Transform = (c, values, state) =>
             {
                 throw new InvalidOperationException();
             };
@@ -135,7 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             var candidates = new CandidateSet(endpoints, values, scores);
 
-            Transform = (c, values) =>
+            Transform = (c, values, state) =>
             {
                 return new ValueTask<RouteValueDictionary>(new RouteValueDictionary());
             };
@@ -166,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             var candidates = new CandidateSet(endpoints, values, scores);
 
-            Transform = (c, values) =>
+            Transform = (c, values, state) =>
             {
                 return new ValueTask<RouteValueDictionary>(new RouteValueDictionary(new
                 {
@@ -212,12 +217,13 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             var candidates = new CandidateSet(endpoints, values, scores);
 
-            Transform = (c, values) =>
+            Transform = (c, values, state) =>
             {
                 return new ValueTask<RouteValueDictionary>(new RouteValueDictionary(new
                 {
                     controller = "Home",
                     action = "Index",
+                    state
                 }));
             };
 
@@ -242,13 +248,162 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 {
                     Assert.Equal("controller", kvp.Key);
                     Assert.Equal("Home", kvp.Value);
-                }, 
+                },
                 kvp =>
                 {
                     Assert.Equal("slug", kvp.Key);
                     Assert.Equal("test", kvp.Value);
+                },
+                kvp =>
+                {
+                    Assert.Equal("state", kvp.Key);
+                    Assert.Same(State, kvp.Value);
                 });
             Assert.True(candidates.IsValidCandidate(0));
+        }
+
+        [Fact]
+        public async Task ApplyAsync_CanDiscardFoundEndpoints()
+        {
+            // Arrange
+            var policy = new DynamicControllerEndpointMatcherPolicy(Selector, Comparer);
+
+            var endpoints = new[] { DynamicEndpoint, };
+            var values = new RouteValueDictionary[] { new RouteValueDictionary(new { slug = "test", }), };
+            var scores = new[] { 0, };
+
+            var candidates = new CandidateSet(endpoints, values, scores);
+
+            Transform = (c, values, state) =>
+            {
+                return new ValueTask<RouteValueDictionary>(new RouteValueDictionary(new
+                {
+                    controller = "Home",
+                    action = "Index",
+                    state
+                }));
+            };
+
+            Filter = (c, values, state, endpoints) =>
+            {
+                return new ValueTask<IReadOnlyList<Endpoint>>(Array.Empty<Endpoint>());
+            };
+
+            var httpContext = new DefaultHttpContext()
+            {
+                RequestServices = Services,
+            };
+
+            // Act
+            await policy.ApplyAsync(httpContext, candidates);
+
+            // Assert
+            Assert.False(candidates.IsValidCandidate(0));
+        }
+
+        [Fact]
+        public async Task ApplyAsync_CanReplaceFoundEndpoints()
+        {
+            // Arrange
+            var policy = new DynamicControllerEndpointMatcherPolicy(Selector, Comparer);
+
+            var endpoints = new[] { DynamicEndpoint, };
+            var values = new RouteValueDictionary[] { new RouteValueDictionary(new { slug = "test", }), };
+            var scores = new[] { 0, };
+
+            var candidates = new CandidateSet(endpoints, values, scores);
+
+            Transform = (c, values, state) =>
+            {
+                return new ValueTask<RouteValueDictionary>(new RouteValueDictionary(new
+                {
+                    controller = "Home",
+                    action = "Index",
+                    state
+                }));
+            };
+
+            Filter = (c, values, state, endpoints) => new ValueTask<IReadOnlyList<Endpoint>>(new[]
+            {
+                new Endpoint((ctx) => Task.CompletedTask, new EndpointMetadataCollection(Array.Empty<object>()), "ReplacedEndpoint")
+            });
+
+            var httpContext = new DefaultHttpContext()
+            {
+                RequestServices = Services,
+            };
+
+            // Act
+            await policy.ApplyAsync(httpContext, candidates);
+
+            // Assert
+            Assert.Collection(
+                candidates[0].Values.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("action", kvp.Key);
+                    Assert.Equal("Index", kvp.Value);
+                },
+                kvp =>
+                {
+                    Assert.Equal("controller", kvp.Key);
+                    Assert.Equal("Home", kvp.Value);
+                },
+                kvp =>
+                {
+                    Assert.Equal("slug", kvp.Key);
+                    Assert.Equal("test", kvp.Value);
+                },
+                kvp =>
+                {
+                    Assert.Equal("state", kvp.Key);
+                    Assert.Same(State, kvp.Value);
+                });
+            Assert.Equal("ReplacedEndpoint", candidates[0].Endpoint.DisplayName);
+            Assert.True(candidates.IsValidCandidate(0));
+        }
+
+        [Fact]
+        public async Task ApplyAsync_CanExpandTheListOfFoundEndpoints()
+        {
+            // Arrange
+            var policy = new DynamicControllerEndpointMatcherPolicy(Selector, Comparer);
+
+            var endpoints = new[] { DynamicEndpoint, };
+            var values = new RouteValueDictionary[] { new RouteValueDictionary(new { slug = "test", }), };
+            var scores = new[] { 0, };
+
+            var candidates = new CandidateSet(endpoints, values, scores);
+
+            Transform = (c, values, state) =>
+            {
+                return new ValueTask<RouteValueDictionary>(new RouteValueDictionary(new
+                {
+                    controller = "Home",
+                    action = "Index",
+                    state
+                }));
+            };
+
+            Filter = (c, values, state, endpoints) => new ValueTask<IReadOnlyList<Endpoint>>(new[]
+            {
+                ControllerEndpoints[1], ControllerEndpoints[2]
+            });
+
+            var httpContext = new DefaultHttpContext()
+            {
+                RequestServices = Services,
+            };
+
+            // Act
+            await policy.ApplyAsync(httpContext, candidates);
+
+            // Assert
+            Assert.Equal(2, candidates.Count);
+            Assert.True(candidates.IsValidCandidate(0));
+            Assert.True(candidates.IsValidCandidate(1));
+            Assert.Same(ControllerEndpoints[1], candidates[0].Endpoint);
+            Assert.Same(ControllerEndpoints[2], candidates[1].Endpoint);
         }
 
         private class TestDynamicControllerEndpointSelector : DynamicControllerEndpointSelector
@@ -261,11 +416,18 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private class CustomTransformer : DynamicRouteValueTransformer
         {
-            public Func<HttpContext, RouteValueDictionary, ValueTask<RouteValueDictionary>> Transform { get; set; }
+            public Func<HttpContext, RouteValueDictionary, object, ValueTask<RouteValueDictionary>> Transform { get; set; }
+
+            public Func<HttpContext, RouteValueDictionary, object, IReadOnlyList<Endpoint>, ValueTask<IReadOnlyList<Endpoint>>> Filter { get; set; }
 
             public override ValueTask<RouteValueDictionary> TransformAsync(HttpContext httpContext, RouteValueDictionary values)
             {
-                return Transform(httpContext, values);
+                return Transform(httpContext, values, State);
+            }
+
+            public override ValueTask<IReadOnlyList<Endpoint>> FilterAsync(HttpContext httpContext, RouteValueDictionary values, IReadOnlyList<Endpoint> endpoints)
+            {
+                return Filter(httpContext, values, State, endpoints);
             }
         }
     }
