@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public IDictionary<string, CertificateConfig> Certificates => _certificates ??= ReadCertificates();
         public EndpointDefaults EndpointDefaults => _endpointDefaults ??= ReadEndpointDefaults();
         public IEnumerable<EndpointConfig> Endpoints => _endpoints ??= ReadEndpoints();
-        public ClientCertificateMode? ClientCertificateMode => _clientCertificateMode ??= ReadClientCertificateMode();
+        public ClientCertificateMode? ClientCertificateMode => _clientCertificateMode ??= ReadClientCertificateMode(_configuration[ClientCertificateModeKey]);
 
         private IDictionary<string, CertificateConfig> ReadCertificates()
         {
@@ -95,7 +95,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     Protocols = ParseProtocols(endpointConfig[ProtocolsKey]),
                     ConfigSection = endpointConfig,
                     Certificate = new CertificateConfig(endpointConfig.GetSection(CertificateKey)),
-                    SslProtocols = ParseSslProcotols(endpointConfig.GetSection(SslProtocolsKey))
+                    SslProtocols = ParseSslProcotols(endpointConfig.GetSection(SslProtocolsKey)),
+                    ClientCertificateMode = ReadClientCertificateMode(endpointConfig[ClientCertificateModeKey])
                 };
 
                 endpoints.Add(endpoint);
@@ -104,9 +105,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             return endpoints;
         }
 
-        private ClientCertificateMode? ReadClientCertificateMode()
+        private ClientCertificateMode? ReadClientCertificateMode(string clientCertificateMode)
         {
-            if (Enum.TryParse<ClientCertificateMode>(_configuration[ClientCertificateModeKey], ignoreCase: true, out var result))
+            if (Enum.TryParse<ClientCertificateMode>(clientCertificateMode, ignoreCase: true, out var result))
             {
                 return result;
             }
@@ -184,6 +185,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 _configSectionClone = new ConfigSectionClone(value);
             }
         }
+
+        public ClientCertificateMode? ClientCertificateMode { get; internal set; }
 
         public override bool Equals(object obj) =>
             obj is EndpointConfig other &&

@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                         httpsOptions.SslProtocols = endpoint.SslProtocols.Value;
                     }
 
-                    httpsOptions.ClientCertificateMode = ConfigurationReader.ClientCertificateMode ?? httpsOptions.ClientCertificateMode;
+                    httpsOptions.ClientCertificateMode = endpoint.ClientCertificateMode ?? ConfigurationReader.ClientCertificateMode ?? httpsOptions.ClientCertificateMode;
 
                     // Specified
                     httpsOptions.ServerCertificate = LoadCertificate(endpoint.Certificate, endpoint.Name)
