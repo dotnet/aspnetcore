@@ -15,6 +15,29 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         private static readonly string DotNetJsFileName = $"dotnet.{BuildVariables.MicrosoftNETCoreAppRuntimeVersion}.js";
 
         [Fact]
+        public async Task BuildMinimal_Works()
+        {
+            // Arrange
+            // Minimal has no project references, service worker etc. This is pretty close to the project template.
+            using var project = ProjectDirectory.Create("blazorwasm-minimal");
+            var result = await MSBuildProcessManager.DotnetMSBuild(project);
+
+            Assert.BuildPassed(result);
+
+            var buildOutputDirectory = project.BuildOutputDirectory;
+
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm.gz");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", DotNetJsFileName);
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazorwasm-minimal.dll");
+
+            var staticWebAssets = Assert.FileExists(result, buildOutputDirectory, "blazorwasm-minimal.StaticWebAssets.xml");
+            Assert.FileContains(result, staticWebAssets, Path.Combine(project.TargetFramework, "wwwroot"));
+        }
+
+        [Fact]
         public async Task Build_Works()
         {
             // Arrange
