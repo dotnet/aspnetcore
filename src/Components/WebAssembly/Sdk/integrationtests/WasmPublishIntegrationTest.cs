@@ -18,6 +18,35 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         private static readonly string DotNetJsFileName = $"dotnet.{BuildVariables.MicrosoftNETCoreAppRuntimeVersion}.js";
 
         [Fact]
+        public async Task Publish_MinimalApp_Works()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorwasm-minimal");
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
+
+            Assert.BuildPassed(result);
+
+            var publishDirectory = project.PublishOutputDirectory;
+
+            var blazorPublishDirectory = Path.Combine(publishDirectory, "wwwroot");
+
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.boot.json");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazor.webassembly.js");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "dotnet.wasm");
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", DotNetJsFileName);
+            Assert.FileExists(result, blazorPublishDirectory, "_framework", "blazorwasm-minimal.dll");
+
+            // Verify static assets are in the publish directory
+            Assert.FileExists(result, blazorPublishDirectory, "index.html");
+
+            // Verify web.config
+            Assert.FileExists(result, publishDirectory, "web.config");
+            Assert.FileCountEquals(result, 1, publishDirectory, "*", SearchOption.TopDirectoryOnly);
+
+            VerifyBootManifestHashes(result, blazorPublishDirectory);
+        }
+
+        [Fact]
         public async Task Publish_WithDefaultSettings_Works()
         {
             // Arrange
