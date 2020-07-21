@@ -498,6 +498,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 ProcessRenderQueue();
             }
+
             ComponentsProfiling.Instance.End();
         }
 
@@ -634,11 +635,43 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 var disposeComponentId = _batchBuilder.ComponentDisposalQueue.Dequeue();
                 var disposeComponentState = GetRequiredComponentState(disposeComponentId);
                 Log.DisposingComponent(_logger, disposeComponentState);
-                if (!disposeComponentState.TryDisposeInBatch(_batchBuilder, out var exception))
+                if (!(disposeComponentState.Component is IAsyncDisposable))
                 {
-                    exceptions ??= new List<Exception>();
-                    exceptions.Add(exception);
+                    if (!disposeComponentState.TryDisposeInBatch(_batchBuilder, out var exception))
+                    {
+                        exceptions ??= new List<Exception>();
+                        exceptions.Add(exception);
+                    }
                 }
+                else
+                {
+                    var result = disposeComponentState.DisposeInBatchAsync(_batchBuilder);
+                    if (result.IsCompleted)
+                    {
+                        if (!result.IsCompletedSuccessfully)
+                        {
+                            exceptions ??= new List<Exception>();
+                            exceptions.Add(result.Exception);
+                        }
+                    }
+                    else
+                    {
+                        AddToPendingTasks(GetHandledAsynchronousDisposalErrorsTask(result));
+
+                        async Task GetHandledAsynchronousDisposalErrorsTask(Task result)
+                        {
+                            try
+                            {
+                                await result;
+                            }
+                            catch (Exception e)
+                            {
+                                HandleException(e);
+                            }
+                        }
+                    }
+                }
+
                 _componentStateById.Remove(disposeComponentId);
                 _batchBuilder.DisposedComponentIds.Append(disposeComponentId);
             }

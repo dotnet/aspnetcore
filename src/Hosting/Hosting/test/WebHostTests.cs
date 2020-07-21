@@ -198,7 +198,6 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [ConditionalFact]
-        [QuarantinedTest]
         public async Task WebHostStopAsyncUsesDefaultTimeoutIfGivenTokenDoesNotFire()
         {
             var data = new Dictionary<string, string>
@@ -313,7 +312,6 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [ConditionalFact]
-        [QuarantinedTest]
         public void WebHostApplicationLifetimeEventsOrderedCorrectlyDuringShutdown()
         {
             using (var host = CreateBuilder()

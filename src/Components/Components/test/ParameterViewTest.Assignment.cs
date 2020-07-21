@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
-        public void IncomingParameterMatchesOverridenParameter_ThatDoesNotHasAttribute()
+        public void IncomingParameterMatchesOverriddenParameter_ThatDoesNotHaveAttribute()
         {
             // Test for https://github.com/dotnet/aspnetcore/issues/13162
             // Arrange

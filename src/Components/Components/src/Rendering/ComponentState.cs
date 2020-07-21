@@ -101,6 +101,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 exception = ex;
             }
 
+            CleanupComponentStateResources(batchBuilder);
+
+            return exception == null;
+        }
+
+        private void CleanupComponentStateResources(RenderBatchBuilder batchBuilder)
+        {
             // We don't expect these things to throw.
             RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrentRenderTree.GetFrames());
 
@@ -110,8 +117,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             DisposeBuffers();
-
-            return exception == null;
         }
 
         // Callers expect this method to always return a faulted task.
@@ -221,6 +226,32 @@ namespace Microsoft.AspNetCore.Components.Rendering
             ((IDisposable)_renderTreeBuilderPrevious).Dispose();
             ((IDisposable)CurrentRenderTree).Dispose();
             _latestDirectParametersSnapshot?.Dispose();
+        }
+
+        public Task DisposeInBatchAsync(RenderBatchBuilder batchBuilder)
+        {
+            _componentWasDisposed = true;
+
+            CleanupComponentStateResources(batchBuilder);
+
+            try
+            {
+                var result = ((IAsyncDisposable)Component).DisposeAsync();
+                if (result.IsCompletedSuccessfully)
+                {
+                    return Task.CompletedTask;
+                }
+                else
+                {
+                    // We know we are dealing with an exception that happened asynchronously, so return a task
+                    // to the caller so that he can unwrap it.
+                    return result.AsTask();
+                }
+            }
+            catch (Exception e)
+            {
+                return Task.FromException(e);
+            }
         }
     }
 }
