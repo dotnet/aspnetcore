@@ -705,6 +705,136 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         }
 
         [Fact]
+        public void EndpointConfigureSection_CanSetClientCertificateMode()
+        {
+            var serverOptions = CreateServerOptions();
+            var ranDefault = false;
+
+            serverOptions.ConfigureHttpsDefaults(opt =>
+            {
+                opt.ServerCertificate = TestResources.GetTestCertificate();
+
+                // Kestrel default
+                Assert.Equal(ClientCertificateMode.NoCertificate, opt.ClientCertificateMode);
+                ranDefault = true;
+            });
+
+            var ran1 = false;
+            var ran2 = false;
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:ClientCertificateMode", "AllowCertificate"),
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            }).Build();
+            serverOptions.Configure(config)
+                .Endpoint("End1", opt =>
+                {
+                    Assert.Equal(ClientCertificateMode.AllowCertificate, opt.HttpsOptions.ClientCertificateMode);
+                    ran1 = true;
+                })
+                .Load();
+            serverOptions.ListenAnyIP(0, opt =>
+            {
+                opt.UseHttps(httpsOptions =>
+                {
+                    // Kestrel default.
+                    Assert.Equal(ClientCertificateMode.NoCertificate, httpsOptions.ClientCertificateMode);
+                    ran2 = true;
+                });
+            });
+
+            Assert.True(ranDefault);
+            Assert.True(ran1);
+            Assert.True(ran2);
+        }
+
+        [Fact]
+        public void EndpointConfigureSection_CanOverrideClientCertificateModeFromConfigureHttpsDefaults()
+        {
+            var serverOptions = CreateServerOptions();
+
+            serverOptions.ConfigureHttpsDefaults(opt =>
+            {
+                opt.ServerCertificate = TestResources.GetTestCertificate();
+                opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+            });
+
+            var ran1 = false;
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:ClientCertificateMode", "AllowCertificate"),
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            }).Build();
+            serverOptions.Configure(config)
+                .Endpoint("End1", opt =>
+                {
+                    Assert.Equal(ClientCertificateMode.AllowCertificate, opt.HttpsOptions.ClientCertificateMode);
+                    ran1 = true;
+                })
+                .Load();
+
+            Assert.True(ran1);
+        }
+
+        [Fact]
+        public void DefaultEndpointConfigureSection_CanSetClientCertificateMode()
+        {
+            var serverOptions = CreateServerOptions();
+
+            serverOptions.ConfigureHttpsDefaults(opt =>
+            {
+                opt.ServerCertificate = TestResources.GetTestCertificate();
+            });
+
+            var ran1 = false;
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("EndpointDefaults:ClientCertificateMode", "AllowCertificate"),
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            }).Build();
+            serverOptions.Configure(config)
+                .Endpoint("End1", opt =>
+                {
+                    Assert.Equal(ClientCertificateMode.AllowCertificate, opt.HttpsOptions.ClientCertificateMode);
+                    ran1 = true;
+                })
+                .Load();
+
+            Assert.True(ran1);
+        }
+
+
+        [Fact]
+        public void DefaultEndpointConfigureSection_ConfigureHttpsDefaultsCanOverrideClientCertificateMode()
+        {
+            var serverOptions = CreateServerOptions();
+
+            serverOptions.ConfigureHttpsDefaults(opt =>
+            {
+                opt.ServerCertificate = TestResources.GetTestCertificate();
+
+                Assert.Equal(ClientCertificateMode.AllowCertificate, opt.ClientCertificateMode);
+                opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+            });
+
+            var ran1 = false;
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("EndpointDefaults:ClientCertificateMode", "AllowCertificate"),
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            }).Build();
+            serverOptions.Configure(config)
+                .Endpoint("End1", opt =>
+                {
+                    Assert.Equal(ClientCertificateMode.RequireCertificate, opt.HttpsOptions.ClientCertificateMode);
+                    ran1 = true;
+                })
+                .Load();
+
+            Assert.True(ran1);
+        }
+
+        [Fact]
         public void Reload_IdentifiesEndpointsToStartAndStop()
         {
             var serverOptions = CreateServerOptions();

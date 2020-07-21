@@ -16,38 +16,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
     public class ConfigurationReaderTests
     {
         [Fact]
-        public void ReadClientCertificateMode_ReturnsValue()
-        {
-            // Arrange
-            var config = new ConfigurationBuilder()
-                .AddInMemoryCollection(new Dictionary<string, string>
-                {
-                    ["ClientCertificateMode"] = "AllowCertificate"
-                })
-                .Build();
-
-            // Act
-            var reader = new ConfigurationReader(config);
-
-            // Assert
-            Assert.NotNull(reader.ClientCertificateMode);
-            Assert.Equal(ClientCertificateMode.AllowCertificate, reader.ClientCertificateMode);
-        }
-
-        [Fact]
-        public void ReadClientCertificateModeWhenNoClientCertificateMode_ReturnsNull()
-        {
-            // Arrange
-            var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
-
-            // Act
-            var reader = new ConfigurationReader(config);
-
-            // Assert
-            Assert.Null(reader.ClientCertificateMode);
-        }
-
-        [Fact]
         public void ReadCertificatesWhenNoCertificatesSection_ReturnsEmptyCollection()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection().Build();
@@ -326,6 +294,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             var endpoint = reader.EndpointDefaults;
             Assert.Null(endpoint.SslProtocols);
+        }
+
+        [Fact]
+        public void ReadEndpointWithNoClientCertificateModeSettings_ReturnsNull()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            }).Build();
+            var reader = new ConfigurationReader(config);
+
+            var endpoint = reader.Endpoints.First();
+            Assert.Null(endpoint.ClientCertificateMode);
+        }
+
+        [Fact]
+        public void ReadEndpointDefaultsWithClientCertificateModeSet_ReturnsCorrectValue()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("EndpointDefaults:ClientCertificateMode", "AllowCertificate"),
+            }).Build();
+            var reader = new ConfigurationReader(config);
+
+            var endpoint = reader.EndpointDefaults;
+            Assert.Equal(ClientCertificateMode.AllowCertificate, endpoint.ClientCertificateMode);
+        }
+
+        [Fact]
+        public void ReadEndpointDefaultsWithNoAllowCertificateSettings_ReturnsCorrectValue()
+        {
+            var config = new ConfigurationBuilder().Build();
+            var reader = new ConfigurationReader(config);
+
+            var endpoint = reader.EndpointDefaults;
+            Assert.Null(endpoint.ClientCertificateMode);
         }
     }
 }
