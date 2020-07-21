@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -35,7 +35,9 @@ namespace Microsoft.AspNetCore.Routing
         /// names from <c>RouteOptions</c>.
         /// </param>
         /// <returns>A URI with an absolute path, or <c>null</c> if a URI cannot be created.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
         public static string GetPathByPage(
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             this LinkGenerator generator,
             HttpContext httpContext,
             string page = default,
@@ -84,7 +86,9 @@ namespace Microsoft.AspNetCore.Routing
         /// names from <c>RouteOptions</c>.
         /// </param>
         /// <returns>A URI with an absolute path, or <c>null</c> if a URI cannot be created.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
         public static string GetPathByPage(
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             this LinkGenerator generator,
             string page,
             string handler = default,
@@ -143,7 +147,9 @@ namespace Microsoft.AspNetCore.Routing
         /// your deployment environment.
         /// </para>
         /// </remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
         public static string GetUriByPage(
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             this LinkGenerator generator,
             HttpContext httpContext,
             string page = default,
@@ -202,7 +208,9 @@ namespace Microsoft.AspNetCore.Routing
         /// your deployment environment.
         /// </para>
         /// </remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
         public static string GetUriByPage(
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             this LinkGenerator generator,
             string page,
             string handler,
