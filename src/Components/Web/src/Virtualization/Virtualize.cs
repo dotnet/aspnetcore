@@ -34,7 +34,10 @@ namespace Microsoft.AspNetCore.Components.Virtualization
 
         public void Dispose()
         {
-            _selfReference?.Dispose();
+            if (_selfReference != null)
+            {
+                _ = JSRuntime.InvokeVoidAsync("Blazor._internal.Virtualize.dispose", _selfReference);
+            }
         }
     }
 }

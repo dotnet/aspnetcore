@@ -1,3 +1,5 @@
+const observersByDotNetId = {};
+
 function findClosestScrollContainer(element: Element | null): Element | null {
   if (!element) {
     return null;
@@ -30,6 +32,11 @@ function init(component: any, topSpacer: Element, bottomSpacer: Element, rootMar
 
   mutationObserver.observe(topSpacer, { attributes: true });
 
+  observersByDotNetId[component._id] = {
+    intersection: intersectionObserver,
+    mutation: mutationObserver,
+  };
+
   function intersectionCallback(entries: IntersectionObserverEntry[]): void {
     entries.forEach((entry): void => {
       if (!entry.isIntersecting) {
@@ -49,6 +56,20 @@ function init(component: any, topSpacer: Element, bottomSpacer: Element, rootMar
   }
 }
 
+function dispose(component: any): void {
+  const observers = observersByDotNetId[component._id];
+
+  if (observers) {
+    observers.intersection.disconnect();
+    observers.mutation.disconnect();
+
+    component.dispose();
+
+    delete observersByDotNetId[component.id];
+  }
+}
+
 export const Virtualize = {
   init,
+  dispose,
 };
