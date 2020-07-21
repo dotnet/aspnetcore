@@ -24,6 +24,7 @@ import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.CompletableSubject;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.ReplaySubject;
@@ -2577,9 +2578,10 @@ class HubConnectionTest {
             value.getAndUpdate((val) -> val + 1);
         });
 
+        SingleSubject<String> handshakeMessageTask = mockTransport.getNextSentMessage();
         // On start we're going to receive the handshake response and also an invocation in the same payload.
         hubConnection.start();
-        mockTransport.getStartTask().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        String sentMessage = handshakeMessageTask.timeout(1, TimeUnit.SECONDS).blockingGet();
         String expectedSentMessage  = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
         assertEquals(expectedSentMessage, TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]));
 
@@ -2658,6 +2660,38 @@ class HubConnectionTest {
         } catch (Exception ex) {
             assertEquals("The HubConnection cannot be started if it is not in the 'Disconnected' state.", ex.getMessage());
         }
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
+
+    @Test
+    public void callingStartOnStartingHubConnectionThrows()  {
+        CompletableSubject startedAccessToken = CompletableSubject.create();
+        CompletableSubject continueAccessToken = CompletableSubject.create();
+        HubConnection hubConnection = HubConnectionBuilder.create("http://example.com")
+                .withTransportImplementation(new MockTransport(true))
+                .withHttpClient(new TestHttpClient())
+                .withAccessTokenProvider(Single.defer(() -> {
+                    startedAccessToken.onComplete();
+                    continueAccessToken.timeout(1, TimeUnit.SECONDS).blockingAwait();
+                    return Single.just("test");
+                }).subscribeOn(Schedulers.newThread()))
+                .shouldSkipNegotiate(true)
+                .build();
+        Completable start = hubConnection.start();
+        startedAccessToken.timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTING, hubConnection.getConnectionState());
+
+        try {
+            hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+            assertTrue(false);
+        } catch (Exception ex) {
+            assertEquals("The HubConnection cannot be started if it is not in the 'Disconnected' state.", ex.getMessage());
+        }
+        continueAccessToken.onComplete();
+        start.timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
         hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
@@ -3698,7 +3732,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void hubConnectionCloseCallsStop() throws Exception {
+    public void hubConnectionCloseCallsStop() {
         MockTransport mockTransport = new MockTransport();
         TestHttpClient client = new TestHttpClient()
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"url\":\"http://testexample.com/\"}"))))
