@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var ex = Assert.Throws<InvalidOperationException>(() => GetSingleUpdatedComponent());
-            Assert.Equal("More than one sibling has the same key value, 'key1'. Key values must be unique.", ex.Message);
+            Assert.Equal("More than one sibling of element 'el' has the same key value, 'key1'. Key values must be unique.", ex.Message);
         }
 
         [Fact]
@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var ex = Assert.Throws<InvalidOperationException>(() => GetSingleUpdatedComponent());
-            Assert.Equal("More than one sibling has the same key value, 'key1'. Key values must be unique.", ex.Message);
+            Assert.Equal("More than one sibling of element 'el' has the same key value, 'key1'. Key values must be unique.", ex.Message);
         }
 
         [Fact]
@@ -374,7 +374,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var ex = Assert.Throws<InvalidOperationException>(() => GetSingleUpdatedComponent());
-            Assert.Equal("More than one sibling has the same key value, 'key1'. Key values must be unique.", ex.Message);
+            Assert.Equal("More than one sibling of element 'el' has the same key value, 'key1'. Key values must be unique.", ex.Message);
         }
 
         [Fact]
