@@ -105,11 +105,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             get
             {
-                // An item may appear as both a constructor parameter and a property. For instance, in record types,
-                // each constructor parameter is also a settable property and will have the same name, possibly with a difference in case.
+                // In record types, each constructor parameter in the primary constructor is also a settable property with the same name.
                 // Executing model binding on these parameters twice may have detrimental effects, such as duplicate validation entries,
                 // or failures if a model expects to be bound exactly ones.
-                // Consequently when a bound constructor is present, we only bind and validate the subset of properties whose names
+                // Consequently when binding to a constructor, we only bind and validate the subset of properties whose names
                 // haven't appeared as parameters.
                 if (BoundConstructor is null)
                 {
@@ -118,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
                 if (_boundProperties is null)
                 {
-                    var boundParameters = BoundConstructor.Parameters!;
+                    var boundParameters = BoundConstructor.BoundConstructorParameters!;
                     var boundProperties = new List<ModelMetadata>();
 
                     foreach (var metadata in Properties)
@@ -138,7 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
-        internal IReadOnlyDictionary<ModelMetadata, ModelMetadata> ParameterMapping
+        internal IReadOnlyDictionary<ModelMetadata, ModelMetadata> BoundConstructorParameterMapping
         {
             get
             {
@@ -153,7 +152,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     return _parameterMapping;
                 }
 
-                var boundParameters = BoundConstructor.Parameters!;
+                var boundParameters = BoundConstructor.BoundConstructorParameters!;
                 var parameterMapping = new Dictionary<ModelMetadata, ModelMetadata>();
 
                 foreach (var parameter in boundParameters)
@@ -174,15 +173,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Gets <see cref="ModelMetadata"/> instance for a constructor that is used during binding and validation.
+        /// Gets <see cref="ModelMetadata"/> instance for a constructor of a record type that is used during binding and validation.
         /// </summary>
         public virtual ModelMetadata? BoundConstructor { get; }
 
         /// <summary>
-        /// Gets the collection of <see cref="ModelMetadata"/> instances for a constructor's parameters.
+        /// Gets the collection of <see cref="ModelMetadata"/> instances for parameters on a <see cref="BoundConstructor"/>.
         /// This is only available when <see cref="MetadataKind"/> is <see cref="ModelMetadataKind.Constructor"/>.
         /// </summary>
-        public virtual IReadOnlyList<ModelMetadata>? Parameters { get; }
+        public virtual IReadOnlyList<ModelMetadata>? BoundConstructorParameters { get; }
 
         /// <summary>
         /// Gets the name of a model if specified explicitly using <see cref="IModelNameProvider"/>.
@@ -491,9 +490,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract Action<object, object> PropertySetter { get; }
 
         /// <summary>
-        /// Gets a delegate that invokes the constructor.
+        /// Gets a delegate that invokes the bound constructor <see cref="BoundConstructor" /> if non-<see langword="null" />.
         /// </summary>
-        public virtual Func<object[], object>? ConstructorInvoker => null;
+        public virtual Func<object[], object>? BoundConstructorInvoker => null;
 
         /// <summary>
         /// Gets a display name for the model.

@@ -82,11 +82,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 var boundConstructor = modelMetadata.BoundConstructor;
                 if (boundConstructor != null)
                 {
-                    var values = new object[boundConstructor.Parameters.Count];
+                    var values = new object[boundConstructor.BoundConstructorParameters.Count];
                     var (attemptedParameterBinding, parameterBindingSucceeded) = await BindParameters(
                         bindingContext,
                         propertyData,
-                        boundConstructor.Parameters,
+                        boundConstructor.BoundConstructorParameters,
                         values);
 
                     attemptedBinding |= attemptedParameterBinding;
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             try
             {
-                bindingContext.Model = boundConstructor.ConstructorInvoker(values);
+                bindingContext.Model = boundConstructor.BoundConstructorInvoker(values);
                 return true;
             }
             catch (Exception ex)
@@ -552,7 +552,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var performsConstructorBinding = bindingContext.Model == null && modelMetadata.BoundConstructor != null;
 
             if (modelMetadata.Properties.Count == 0 &&
-                 (!performsConstructorBinding || modelMetadata.BoundConstructor.Parameters.Count == 0))
+                 (!performsConstructorBinding || modelMetadata.BoundConstructor.BoundConstructorParameters.Count == 0))
             {
                 Log.NoPublicSettableItems(_logger, bindingContext);
                 return NoDataAvailable;
@@ -617,7 +617,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             if (performsConstructorBinding)
             {
-                var parameters = bindingContext.ModelMetadata.BoundConstructor.Parameters;
+                var parameters = bindingContext.ModelMetadata.BoundConstructor.BoundConstructorParameters;
                 for (var i = 0; i < parameters.Count; i++)
                 {
                     var parameterMetadata = parameters[i];

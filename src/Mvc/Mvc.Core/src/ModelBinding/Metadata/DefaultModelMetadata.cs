@@ -407,7 +407,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
         }
 
-        public override IReadOnlyList<ModelMetadata> Parameters => _details.ConstructorParameters;
+        public override IReadOnlyList<ModelMetadata> BoundConstructorParameters => _details.BoundConstructorParameters;
 
         /// <inheritdoc />
         public override IPropertyFilterProvider PropertyFilterProvider => BindingMetadata.PropertyFilterProvider;
@@ -517,7 +517,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
             else if (defaultModelMetadata.IsComplexType)
             {
-                var parameters = defaultModelMetadata.BoundConstructor?.Parameters ?? Array.Empty<ModelMetadata>();
+                var parameters = defaultModelMetadata.BoundConstructor?.BoundConstructorParameters ?? Array.Empty<ModelMetadata>();
                 foreach (var parameter in parameters)
                 {
                     if (CalculateHasValidators(visited, parameter))
@@ -559,7 +559,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <inheritdoc />
         public override Action<object, object> PropertySetter => _details.PropertySetter;
 
-        public override Func<object[], object> ConstructorInvoker => _details.BoundConstructorInvoker;
+        public override Func<object[], object> BoundConstructorInvoker => _details.BoundConstructorInvoker;
 
         internal DefaultMetadataDetails Details => _details;
 

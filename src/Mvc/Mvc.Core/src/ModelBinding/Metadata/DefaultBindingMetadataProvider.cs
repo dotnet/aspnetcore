@@ -104,8 +104,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
 
             // For record types, we will support binding and validating the primary constructor.
-            // There isn't metadata to identify a primary constructor. We require that at most one constructor is defined on the type,
-            // and that every parameter on the constructor has a corresponding property.
+            // There isn't metadata to identify a primary constructor. Our heuristic is:
+            // We require exactly one constructor to be defined on the type, and that every parameter on
+            // that constructor is mapped to a property with the same name and type.
 
             if (constructors.Length > 1)
             {
@@ -135,7 +136,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
             static bool IsRecordType(Type type)
             {
-                return type.GetProperty("EqualityContract", BindingFlags.NonPublic | BindingFlags.Instance) != null;
+                // Based on the state of the art as described in https://github.com/dotnet/roslyn/issues/45777
+                var cloneMethod = type.GetMethod("<>Clone", BindingFlags.Public | BindingFlags.Instance);
+                return cloneMethod != null && cloneMethod.ReturnType == type;
             }
         }
 

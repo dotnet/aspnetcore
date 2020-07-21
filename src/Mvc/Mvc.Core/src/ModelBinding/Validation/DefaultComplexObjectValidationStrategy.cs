@@ -4,10 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
@@ -19,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <summary>
         /// Gets an instance of <see cref="DefaultComplexObjectValidationStrategy"/>.
         /// </summary>
-        public static readonly DefaultComplexObjectValidationStrategy Instance = new DefaultComplexObjectValidationStrategy();
+        public static readonly IValidationStrategy Instance = new DefaultComplexObjectValidationStrategy();
 
         private DefaultComplexObjectValidationStrategy()
         {
@@ -61,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 }
                 else
                 {
-                    _parameters = _modelMetadata.BoundConstructor.Parameters;
+                    _parameters = _modelMetadata.BoundConstructor.BoundConstructorParameters;
                 }
 
                 _properties = _modelMetadata.BoundProperties;
@@ -95,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                     }
                     else
                     {
-                        if (!_modelMetadata.ParameterMapping.TryGetValue(parameter, out var property))
+                        if (!_modelMetadata.BoundConstructorParameterMapping.TryGetValue(parameter, out var property))
                         {
                             throw new InvalidOperationException(
                                 Resources.FormatValidationStrategy_MappedPropertyNotFound(parameter, _modelMetadata.ModelType));

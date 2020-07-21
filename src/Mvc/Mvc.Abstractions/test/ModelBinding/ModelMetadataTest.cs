@@ -731,9 +731,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             public override ModelMetadata BoundConstructor => throw new NotImplementedException();
 
-            public override Func<object[], object> ConstructorInvoker => throw new NotImplementedException();
+            public override Func<object[], object> BoundConstructorInvoker => throw new NotImplementedException();
 
-            public override IReadOnlyList<ModelMetadata> Parameters => throw new NotImplementedException();
+            public override IReadOnlyList<ModelMetadata> BoundConstructorParameters => throw new NotImplementedException();
         }
 
         private class CollectionImplementation : ICollection<string>

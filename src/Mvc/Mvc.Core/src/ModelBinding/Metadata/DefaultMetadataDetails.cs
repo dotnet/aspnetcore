@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <summary>
         /// Gets or sets the <see cref="ModelMetadata"/> entries for constructor parameters.
         /// </summary>
-        public ModelMetadata[] ConstructorParameters { get; set; }
+        public ModelMetadata[] BoundConstructorParameters { get; set; }
 
         /// <summary>
         /// Gets or sets a property getter delegate to get the property value from a model object.
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public Action<object, object> PropertySetter { get; set; }
 
         /// <summary>
-        /// Gets or sets a delegate used to construct an object using the model binding constructor.
+        /// Gets or sets a delegate used to invoke the bound constructor for record types.
         /// </summary>
         public Func<object[], object> BoundConstructorInvoker { get; set; }
 

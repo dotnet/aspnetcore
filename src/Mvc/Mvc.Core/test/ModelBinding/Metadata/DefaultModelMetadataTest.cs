@@ -1275,7 +1275,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var parameterMetadata = CreateModelMetadata(parameterId, metadataProvider.Object, hasValidators: false);
 
             var constructorMetadata = CreateModelMetadata(ModelMetadataIdentity.ForConstructor(constructor, modelType), metadataProvider.Object, null);
-            constructorMetadata.Details.ConstructorParameters = new[]
+            constructorMetadata.Details.BoundConstructorParameters = new[]
             {
                 parameterMetadata,
             };
@@ -1316,7 +1316,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var parameterMetadata = CreateModelMetadata(parameterId, metadataProvider.Object, hasValidators: true);
 
             var constructorMetadata = CreateModelMetadata(ModelMetadataIdentity.ForConstructor(constructor, modelType), metadataProvider.Object, null);
-            constructorMetadata.Details.ConstructorParameters = new[]
+            constructorMetadata.Details.BoundConstructorParameters = new[]
             {
                 parameterMetadata,
             };
@@ -1365,7 +1365,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var parameterMetadata = CreateModelMetadata(parameterId, metadataProvider.Object, hasValidators: false);
 
             var constructorMetadata = CreateModelMetadata(ModelMetadataIdentity.ForConstructor(constructor, modelType), metadataProvider.Object, null);
-            constructorMetadata.Details.ConstructorParameters = new[]
+            constructorMetadata.Details.BoundConstructorParameters = new[]
             {
                 parameterMetadata,
             };
@@ -1409,7 +1409,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var parameterMetadata = CreateModelMetadata(parameterId, metadataProvider.Object, hasValidators: true);
 
             var constructorMetadata = CreateModelMetadata(ModelMetadataIdentity.ForConstructor(constructor, modelType), metadataProvider.Object, null);
-            constructorMetadata.Details.ConstructorParameters = new[]
+            constructorMetadata.Details.BoundConstructorParameters = new[]
             {
                 parameterMetadata,
             };
@@ -1453,7 +1453,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var parameterMetadata = CreateModelMetadata(parameterId, metadataProvider.Object, hasValidators: false);
 
             var constructorMetadata = CreateModelMetadata(ModelMetadataIdentity.ForConstructor(constructor, modelType), metadataProvider.Object, null);
-            constructorMetadata.Details.ConstructorParameters = new[]
+            constructorMetadata.Details.BoundConstructorParameters = new[]
             {
                 parameterMetadata,
             };

@@ -5,11 +5,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 
@@ -275,7 +272,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
 
             var constructorDetails = new DefaultMetadataDetails(constructorKey, ModelAttributes.Empty);
-            constructorDetails.ConstructorParameters = parameterMetadata;
+            constructorDetails.BoundConstructorParameters = parameterMetadata;
             constructorDetails.BoundConstructorInvoker = CreateObjectFactory(constructor);
 
             return constructorDetails;
@@ -452,14 +449,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             public ModelMetadata Metadata { get; }
 
             public DefaultMetadataDetails Details { get; }
-        }
-
-        private class NullServiceProvider : IServiceProvider
-        {
-            public static readonly NullServiceProvider Instance = new NullServiceProvider();
-
-            // We do not expect this to be invoked at all.
-            public object GetService(Type serviceType) => throw new NotSupportedException();
         }
     }
 }
