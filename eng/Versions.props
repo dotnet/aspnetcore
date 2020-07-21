@@ -116,6 +116,8 @@
     <SystemReflectionMetadataPackageVersion>5.0.0-rc.1.20370.4</SystemReflectionMetadataPackageVersion>
     <SystemResourcesExtensionsPackageVersion>5.0.0-rc.1.20370.4</SystemResourcesExtensionsPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>5.0.0-rc.1.20370.4</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RTMVersions.csproj. -->
+    <SystemSecurityAccessControlPackageVersion>5.0.0-rc.1.20370.4</SystemSecurityAccessControlPackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>5.0.0-rc.1.20370.4</SystemSecurityCryptographyCngPackageVersion>
     <SystemSecurityCryptographyPkcsPackageVersion>5.0.0-rc.1.20370.4</SystemSecurityCryptographyPkcsPackageVersion>
     <SystemSecurityCryptographyXmlPackageVersion>5.0.0-rc.1.20370.4</SystemSecurityCryptographyXmlPackageVersion>
@@ -162,6 +164,14 @@
     Upshot is we need Major.Minor.0 runtime packages for compilation and the targeting pack and Major.Minor.Latest
     runtime packages for everything else. This is not an issue for assemblies available in Microsoft.NETCore.App.Ref or
     Microsoft.Extensions.Internal.Transport because it is next to impossible we would service those packages.
+
+    System.Security.AccessControl should only be referenced in Dependencies.props and RTMVersions.csproj. Because
+    it's a transitive reference, we reship the ref/ assembly in Microsoft.AspNetCore.App.Ref. dotnet/runtime ships
+    the implementation assemblies in Microsoft.NETCore.App.Runtime.* packages.
+
+    If testing this configuration prior to servicing, update the versions of dependencies too. E.g. change
+    `$(SystemSecurityPrincipalWindowsV0PackageVersion)` if you change `$(SystemSecurityAccessControlV0PackageVersion)`
+    because System.Security.AccessControl will otherwise be loadable. This should not be necessary in servicing.
   -->
   <PropertyGroup Condition=" '$(IsServicingBuild)' == 'true' ">
     <MicrosoftWin32RegistryV0PackageVersion>$(MicrosoftWin32RegistryPackageVersion.Split('.')[0]).$(MicrosoftWin32RegistryPackageVersion.Split('.')[1]).0</MicrosoftWin32RegistryV0PackageVersion>
@@ -250,9 +260,6 @@
     <MonoCecilPackageVersion>0.11.2</MonoCecilPackageVersion>
     <NewtonsoftJsonBsonPackageVersion>1.0.2</NewtonsoftJsonBsonPackageVersion>
     <NewtonsoftJsonPackageVersion>12.0.2</NewtonsoftJsonPackageVersion>
-    <!-- Begin: STOP!!! Razor need to reference the version of JSON that our HOSTS support. -->
-    <Razor_NewtonsoftJsonPackageVersion>9.0.1</Razor_NewtonsoftJsonPackageVersion>
-    <!-- End: STOP!!! Razor need to reference the version of JSON that our HOSTS support. -->
     <NSwagApiDescriptionClientPackageVersion>13.0.4</NSwagApiDescriptionClientPackageVersion>
     <SeleniumSupportPackageVersion>3.12.1</SeleniumSupportPackageVersion>
     <SeleniumWebDriverMicrosoftDriverPackageVersion>17.17134.0</SeleniumWebDriverMicrosoftDriverPackageVersion>

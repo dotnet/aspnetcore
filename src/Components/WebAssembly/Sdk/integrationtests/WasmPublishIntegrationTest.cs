@@ -5,7 +5,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.Tasks;
+using Microsoft.NET.Sdk.BlazorWebAssembly;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 using static Microsoft.AspNetCore.Razor.Design.IntegrationTests.ServiceWorkerAssert;
@@ -609,6 +609,17 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        public async Task Publish_HostedApp_WithRidSpecifiedInCLI_Works()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorhosted-rid", additionalProjects: new[] { "blazorwasm", "razorclasslibrary", });
+            project.RuntimeIdentifier = "linux-x64";
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish", "/p:RuntimeIdentifier=linux-x64");
+
+            AssertRIDPublishOuput(project, result);
+        }
+
+        [Fact]
         public async Task Publish_HostedApp_WithRid_Works()
         {
             // Arrange
@@ -616,6 +627,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             project.RuntimeIdentifier = "linux-x64";
             var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
 
+            AssertRIDPublishOuput(project, result);
+        }
+
+        private static void AssertRIDPublishOuput(ProjectDirectory project, MSBuildResult result)
+        {
             Assert.BuildPassed(result);
 
             var publishDirectory = project.PublishOutputDirectory;

@@ -44,10 +44,6 @@
     <!-- Project selection can be overridden on the command line by passing in -projects. -->
     <When Condition="'$(ProjectToBuild)' != ''">
       <ItemGroup>
-        <!-- Include RTMVersions.csproj unless this invocation is building RepoTasks.csproj or won't compile C#. -->
-        <ProjectToBuild Include="$(RepoRoot)eng\RTMVersions\RTMVersions.csproj"
-            Exclude="@(ProjectToExclude)"
-            Condition=" $(ProjectToBuild.EndsWith('.csproj')) AND !$(ProjectToBuild.EndsWith('RepoTasks.csproj')) " />
         <ProjectToBuild Include="$(ProjectToBuild)" Exclude="@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*">
           <RestoreInParallel Condition="'%(Extension)' == '.npmproj'">false</RestoreInParallel>
         </ProjectToBuild>
@@ -125,11 +121,8 @@
         <!--
           Use caution to avoid deep recursion. If the globbing pattern picks up something which exceeds MAX_PATH,
           the entire pattern will silently fail to evaluate correctly.
-
-          Include RTMVersions.csproj when building any managed projects.
         -->
         <DotNetProjects Include="
-                          $(RepoRoot)eng\RTMVersions\RTMVersions.csproj;
                           $(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj;
                           $(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj;
                           $(RepoRoot)src\Framework\App.Ref.Internal\src\Microsoft.AspNetCore.App.Ref.Internal.csproj;
@@ -172,12 +165,12 @@
                           @(ProjectToBuild);
                           @(ProjectToExclude);
                           $(RepoRoot)src\Razor\test\testassets\**\*.*proj;
+                          $(RepoRoot)src\Components\WebAssembly\Sdk\testassets\**\*.*proj;
                           $(RepoRoot)**\node_modules\**\*;
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;"
                         Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
         <DotNetProjects Include="
-                          $(RepoRoot)eng\RTMVersions\RTMVersions.csproj;
                           $(RepoRoot)src\DefaultBuilder\**\src\*.csproj;
                           $(RepoRoot)src\Features\JsonPatch\**\src\*.csproj;
                           $(RepoRoot)src\DataProtection\**\src\*.csproj;

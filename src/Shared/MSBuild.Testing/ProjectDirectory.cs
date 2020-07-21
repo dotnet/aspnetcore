@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -49,12 +49,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 }
 
                 var repositoryRoot = BuildVariables.RepoRoot;
-                var solutionRoot = Path.Combine(repositoryRoot, "src", "Razor");
                 var binariesRoot = Path.GetDirectoryName(typeof(ProjectDirectory).Assembly.Location);
+                var testAppsRoot = BuildVariables.TestAppsRoot;
 
                 foreach (var project in new string[] { originalProjectName, }.Concat(additionalProjects))
                 {
-                    var testAppsRoot = Path.Combine(solutionRoot, "test", "testassets");
                     var projectRoot = Path.Combine(testAppsRoot, project);
                     if (!Directory.Exists(projectRoot))
                     {
@@ -146,6 +145,11 @@ $@"<Project>
                     .ForEach(file =>
                     {
                         var source = Path.Combine(testAppsRoot, file);
+                        if (!File.Exists(source))
+                        {
+                            return;
+                        }
+
                         var destination = Path.Combine(projectDestination, file);
                         File.Copy(source, destination);
                     });

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 $"/p:MicrosoftNETCoreAppRuntimeVersion={BuildVariables.MicrosoftNETCoreAppRuntimeVersion}",
                 $"/p:MicrosoftNetCompilersToolsetPackageVersion={BuildVariables.MicrosoftNetCompilersToolsetPackageVersion}",
                 $"/p:RazorSdkDirectoryRoot={BuildVariables.RazorSdkDirectoryRoot}",
+                $"/p:BlazorWebAssemblySdkDirectoryRoot={BuildVariables.BlazorWebAssemblySdkDirectoryRoot}",
                 $"/p:RepoRoot={BuildVariables.RepoRoot}",
                 $"/p:Configuration={project.Configuration}",
                 $"/t:{target}",

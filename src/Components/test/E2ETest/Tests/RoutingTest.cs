@@ -110,6 +110,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanArriveAtPageWithCatchAllParameter()
+        {
+            SetUrlViaPushState("/WithCatchAllParameter/life/the/universe/and/everything%20%3D%2042");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            var expected = $"The answer: life/the/universe/and/everything = 42.";
+
+            Assert.Equal(expected, app.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Fact]
         public void CanArriveAtNonDefaultPage()
         {
             SetUrlViaPushState("/Other");
@@ -552,6 +563,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             SetUrlViaPushState("/LongPage1");
 
             AssertDidNotLog("I'm not happening...");
+        }
+
+        [Fact]
+        public void OnNavigate_CanRenderUIForExceptions()
+        {
+            var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
+
+            // Navigating from one page to another should
+            // cancel the previous OnNavigate Task
+            SetUrlViaPushState("/Other");
+
+            var errorUiElem = Browser.Exists(By.Id("blazor-error-ui"), TimeSpan.FromSeconds(10));
+            Assert.NotNull(errorUiElem);
         }
 
         private long BrowserScrollY

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using Microsoft.AspNetCore.Razor.Tasks;
+using Microsoft.NET.Sdk.BlazorWebAssembly;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
