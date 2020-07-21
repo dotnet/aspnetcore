@@ -191,7 +191,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
-
         public override bool Equals(object obj) =>
             obj is EndpointConfig other &&
             Name == other.Name &&
