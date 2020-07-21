@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using Microsoft.AspNetCore.Components.Virtualization;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
@@ -189,6 +190,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
             Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
             Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
+            Services.AddSingleton<IVirtualizationService, WebVirtualizationService>();
             Services.AddSingleton(provider => new LazyAssemblyLoader(provider));
             Services.AddLogging(builder => {
                 builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));

@@ -20,9 +20,16 @@
 <p>
     Async items:<br />
     <div style="background-color: #eee; height: 500px; overflow-y: auto">
-        <Virtualize ItemsProvider="GetItems" InitialItemsCount="100" ItemSize="itemSize">
-            <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
-        </Virtualize>
+        <InfiniteScroll ItemsProvider="GetItems" ItemBatchSize="20" ItemSize="itemSize">
+            <Item>
+                <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+            </Item>
+            <InfiniteScrollFooter>
+                <div @key="@("infinite-scroll-footer")" style="height: @(itemSize)px; background-color: white;">
+                    Loading...
+                </div>
+            </InfiniteScrollFooter>
+        </InfiniteScroll>
     </div>
 </p>
 
@@ -39,7 +46,7 @@
 @code {
     float itemSize = 100;
     Random rng = new Random();
-    ICollection<int> Items = Enumerable.Range(1, 1000).ToList();
+    ICollection<int> Items = Enumerable.Range(0, 1000).ToList();
 
     Task<IEnumerable<int>> GetItems(Range range)
     {

@@ -1,102 +1,120 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Virtualization
 {
-    public abstract class VirtualizeBase<TItem> : ComponentBase
+    /// <summary>
+    /// Provides common functionality for virtualized lists.
+    /// </summary>
+    /// <typeparam name="TItem">The <c>context</c> type for the items being rendered.</typeparam>
+    public abstract class VirtualizeBase<TItem> : ComponentBase, IAsyncDisposable
     {
-        private readonly ConcurrentQueue<TItem> _loadedItems = new ConcurrentQueue<TItem>();
-
-        private readonly SemaphoreSlim _fetchSemaphore = new SemaphoreSlim(1);
-
         private int _itemsAbove;
 
         private int _itemsVisible;
 
-        private int _itemsBelow;
+        private ElementReference _topSpacer;
 
-        private IEnumerable<TItem> LoadedItems => Items ?? (IEnumerable<TItem>)_loadedItems;
+        private ElementReference _bottomSpacer;
 
-        private int ItemCount => Items?.Count ?? _loadedItems.Count;
+        private IVirtualizationHelper? _virtualizationHelper;
 
-        protected ElementReference TopSpacer { get; private set; }
+        [Inject]
+        private IVirtualizationService VirtualizationService { get; set; } = default!;
 
-        protected ElementReference BottomSpacer { get; private set; }
+        /// <summary>
+        /// Gets the total number of items in the collection.
+        /// </summary>
+        protected abstract int ItemCount { get; }
 
-        [Parameter]
-        public ICollection<TItem> Items { get; set; } = default!;
-
-        [Parameter]
-        public Func<Range, Task<IEnumerable<TItem>>> ItemsProvider { get; set; } = default!;
-
+        /// <summary>
+        /// Gets the size (height) of each item in pixels.
+        /// </summary>
         [Parameter]
         public float ItemSize { get; set; }
 
-        [Parameter]
-        public int InitialItemsCount { get; set; }
+        /// <summary>
+        /// Gets the <see cref="RenderFragment"/>s representing a range of items.
+        /// </summary>
+        /// <param name="start">The start index of the range of items.</param>
+        /// <param name="count">The number of items in the range.</param>
+        /// <returns>The <see cref="RenderFragment"/>s representing the given range.</returns>
+        protected abstract IEnumerable<RenderFragment> GetItems(int start, int count);
 
-        [Parameter]
-        public RenderFragment<TItem>? ChildContent { get; set; }
-
+        /// <inheritdoc />
         protected override void OnParametersSet()
         {
             if (ItemSize <= 0f)
             {
-                throw new InvalidOperationException(
-                    $"Parameter '{nameof(ItemSize)}' must be specified and greater than zero.");
-            }
-
-            if (Items != null)
-            {
-                if (ItemsProvider != null)
-                {
-                    throw new InvalidOperationException(
-                        $"{GetType()} cannot have both '{nameof(Items)}' and '{nameof(ItemsProvider)}' parameters.");
-                }
-
-                _itemsBelow = Items.Count;
-            }
-            else if (ItemsProvider != null)
-            {
-                _itemsBelow = 0;
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"{GetType()} requires either the '{nameof(Items)}' or '{nameof(ItemsProvider)}' parameter to " +
-                    $"be specified and non-null.");
+                throw new InvalidOperationException($"Parameter '{nameof(ItemSize)}' must be specified and greater than zero.");
             }
         }
 
-        protected void UpdateTopSpacer(float spacerSize, float containerSize)
+        /// <inheritdoc />
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            CalculateSpacerItemDistribution(spacerSize, containerSize, out _itemsAbove, out _itemsBelow);
-            Console.WriteLine($"Above: {_itemsAbove}, Visible: {_itemsVisible}");
-        }
-
-        protected void UpdateBottomSpacer(float spacerSize, float containerSize)
-        {
-            CalculateSpacerItemDistribution(spacerSize, containerSize, out _itemsBelow, out _itemsAbove);
-            Console.WriteLine($"Above: {_itemsAbove}, Visible: {_itemsVisible}");
-
-            if (ItemsProvider != null && _itemsAbove + _itemsVisible >= _loadedItems.Count)
+            if (firstRender)
             {
-                FetchItems(_itemsAbove + _itemsVisible + InitialItemsCount);
+                _virtualizationHelper = VirtualizationService.CreateVirtualizationHelper();
+                _virtualizationHelper.TopSpacerVisible += OnTopSpacerVisible;
+                _virtualizationHelper.BottomSpacerVisible += OnBottomSpacerVisible;
+
+                await _virtualizationHelper.InitAsync(_topSpacer, _bottomSpacer);
             }
         }
 
-        private void CalculateSpacerItemDistribution(float spacerSize, float containerSize, out int itemsInThisSpacer, out int itemsInOtherSpacer)
+        /// <inheritdoc />
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            _itemsVisible = Math.Max(0, (int)Math.Ceiling(containerSize / ItemSize) + 2);
-            itemsInThisSpacer = Math.Max(0, (int)Math.Floor(spacerSize / ItemSize) - 1);
-            itemsInOtherSpacer = Math.Max(0, ItemCount - itemsInThisSpacer - _itemsVisible);
+            var itemsBelow = Math.Max(0, ItemCount - _itemsVisible - _itemsAbove);
+
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "key", "top-spacer");
+            builder.AddAttribute(2, "style", GetSpacerStyle(_itemsAbove));
+            builder.AddElementReferenceCapture(3, elementReference => _topSpacer = elementReference);
+            builder.CloseElement();
+
+            builder.OpenRegion(4);
+
+            foreach (var item in GetItems(_itemsAbove, _itemsVisible))
+            {
+                item.Invoke(builder);
+            }
+
+            builder.CloseRegion();
+
+            builder.OpenElement(5, "div");
+            builder.AddAttribute(6, "key", "bottom-spacer");
+            builder.AddAttribute(7, "style", GetSpacerStyle(itemsBelow));
+            builder.AddElementReferenceCapture(8, elementReference => _bottomSpacer = elementReference);
+            builder.CloseElement();
+        }
+
+        private void OnTopSpacerVisible(object? sender, SpacerEventArgs e)
+        {
+            CalcualteItemDistribution(e, out _itemsVisible, out _itemsAbove);
 
             StateHasChanged();
+        }
+
+        private void OnBottomSpacerVisible(object? sender, SpacerEventArgs e)
+        {
+            CalcualteItemDistribution(e, out _itemsVisible, out var itemsBelow);
+
+            _itemsAbove = Math.Max(0, ItemCount - itemsBelow - _itemsVisible);
+
+            StateHasChanged();
+        }
+
+        private void CalcualteItemDistribution(SpacerEventArgs e, out int itemsVisible, out int itemsInSpacer)
+        {
+            itemsVisible = Math.Max(0, (int)Math.Ceiling(e.ContainerSize / ItemSize) + 2);
+            itemsInSpacer = Math.Max(0, (int)Math.Floor(e.SpacerSize / ItemSize) - 1);
         }
 
         private string GetSpacerStyle(int itemsInSpacer)
@@ -104,59 +122,13 @@ namespace Microsoft.AspNetCore.Components.Virtualization
             return $"height: {itemsInSpacer * ItemSize}px;";
         }
 
-        private void FetchItems(int newItemCount)
+        /// <inheritdoc />
+        public async ValueTask DisposeAsync()
         {
-            var currentScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-
-            _fetchSemaphore.WaitAsync().ContinueWith(t =>
+            if (_virtualizationHelper != null)
             {
-                if (_loadedItems.Count >= newItemCount)
-                {
-                    _fetchSemaphore.Release();
-                    return;
-                }
-
-                ItemsProvider(_loadedItems.Count..newItemCount).ContinueWith(t =>
-                {
-                    foreach (var item in t.Result)
-                    {
-                        _loadedItems.Enqueue(item);
-                    }
-
-                    StateHasChanged();
-
-                    _fetchSemaphore.Release();
-                }, currentScheduler);
-            });
-        }
-
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            _itemsBelow = Math.Max(1, ItemCount - (_itemsVisible + _itemsAbove));
-
-            builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "key", "top-spacer");
-            builder.AddAttribute(2, "style", GetSpacerStyle(_itemsAbove));
-            builder.AddElementReferenceCapture(3, elementReference => TopSpacer = elementReference);
-            builder.CloseElement();
-
-            builder.OpenRegion(4);
-
-            if (ChildContent != null)
-            {
-                foreach (var item in LoadedItems.Skip(_itemsAbove).Take(_itemsVisible))
-                {
-                    ChildContent(item)?.Invoke(builder);
-                }
+                await _virtualizationHelper.DisposeAsync();
             }
-
-            builder.CloseRegion();
-
-            builder.OpenElement(5, "div");
-            builder.AddAttribute(6, "key", "bottom-spacer");
-            builder.AddAttribute(7, "style", GetSpacerStyle(_itemsBelow));
-            builder.AddElementReferenceCapture(8, elementReference => BottomSpacer = elementReference);
-            builder.CloseElement();
         }
     }
 }

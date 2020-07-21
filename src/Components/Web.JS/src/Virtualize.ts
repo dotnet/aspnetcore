@@ -1,3 +1,8 @@
+export const Virtualize = {
+  init,
+  dispose,
+};
+
 const observersByDotNetId = {};
 
 function findClosestScrollContainer(element: Element | null): Element | null {
@@ -14,7 +19,7 @@ function findClosestScrollContainer(element: Element | null): Element | null {
   return findClosestScrollContainer(element.parentElement);
 }
 
-function init(component: any, topSpacer: Element, bottomSpacer: Element, rootMargin = 50): void {
+function init(dotNetHelper: any, topSpacer: Element, bottomSpacer: Element, rootMargin = 50): void {
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
     root: findClosestScrollContainer(topSpacer),
     rootMargin: `${rootMargin}px`,
@@ -30,9 +35,10 @@ function init(component: any, topSpacer: Element, bottomSpacer: Element, rootMar
     intersectionObserver.observe(bottomSpacer);
   });
 
-  mutationObserver.observe(topSpacer, { attributes: true });
+  // Observe the bottom spacer to account for collections that resize.
+  mutationObserver.observe(bottomSpacer, { attributes: true });
 
-  observersByDotNetId[component._id] = {
+  observersByDotNetId[dotNetHelper._id] = {
     intersection: intersectionObserver,
     mutation: mutationObserver,
   };
@@ -46,9 +52,9 @@ function init(component: any, topSpacer: Element, bottomSpacer: Element, rootMar
       const containerSize = entry.rootBounds?.height;
 
       if (entry.target === topSpacer) {
-        component.invokeMethodAsync('OnTopSpacerVisible', entry.intersectionRect.top - entry.boundingClientRect.top, containerSize);
+        dotNetHelper.invokeMethodAsync('OnTopSpacerVisible', entry.intersectionRect.top - entry.boundingClientRect.top, containerSize);
       } else if (entry.target === bottomSpacer) {
-        component.invokeMethodAsync('OnBottomSpacerVisible', entry.boundingClientRect.bottom - entry.intersectionRect.bottom, containerSize);
+        dotNetHelper.invokeMethodAsync('OnBottomSpacerVisible', entry.boundingClientRect.bottom - entry.intersectionRect.bottom, containerSize);
       } else {
         throw new Error('Unknown intersection target');
       }
@@ -56,20 +62,15 @@ function init(component: any, topSpacer: Element, bottomSpacer: Element, rootMar
   }
 }
 
-function dispose(component: any): void {
-  const observers = observersByDotNetId[component._id];
+function dispose(dotNetHelper: any): void {
+  const observers = observersByDotNetId[dotNetHelper._id];
 
   if (observers) {
     observers.intersection.disconnect();
     observers.mutation.disconnect();
 
-    component.dispose();
+    dotNetHelper.dispose();
 
-    delete observersByDotNetId[component.id];
+    delete observersByDotNetId[dotNetHelper._id];
   }
 }
-
-export const Virtualize = {
-  init,
-  dispose,
-};
