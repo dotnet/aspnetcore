@@ -65,11 +65,15 @@ namespace ComponentsWebAssembly_CSharp.Server
                 .AddIdentityServerJwt();
 #endif
 #if (OrganizationalAuth)
+#pragma warning disable CS0618 // Type or member is obsolete
             services.AddAuthentication(AzureADDefaults.BearerAuthenticationScheme)
                 .AddAzureADBearer(options => Configuration.Bind("AzureAd", options));
+#pragma warning restore CS0618 // Type or member is obsolete
 #elif (IndividualB2CAuth)
+#pragma warning disable CS0618 // Type or member is obsolete
             services.AddAuthentication(AzureADB2CDefaults.BearerAuthenticationScheme)
                 .AddAzureADB2CBearer(options => Configuration.Bind("AzureAdB2C", options));
+#pragma warning restore CS0618 // Type or member is obsolete
 #endif
 
             services.AddControllersWithViews();
