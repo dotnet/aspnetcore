@@ -502,6 +502,7 @@ namespace WebAssembly.Net.Debugging {
 		public IEnumerable<SourceFile> Sources
 			=> this.sources;
 
+		public Dictionary<string, TypeInfo> TypesByName => this.typesByName;
 		public int Id => id;
 		public string Name => image.Name;
 
