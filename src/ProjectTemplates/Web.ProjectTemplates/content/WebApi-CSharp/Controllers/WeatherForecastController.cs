@@ -15,8 +15,11 @@ using System.Net.Http;
 using Microsoft.Graph;
 #endif
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Identity.Web.Resource;
 using Microsoft.Extensions.Logging;
+#if (GenerateApiOrGraph)
+using Microsoft.Identity.Web.Resource;
+#endif
+
 namespace Company.WebApplication1.Controllers
 {
 #if (!NoAuth)

@@ -67,6 +67,12 @@ namespace Templates.Test
         {
             await PublishAndBuildWebApiTemplate(languageOverride, null, null);
 
+            // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022
+            if (languageOverride != null)
+            {
+                return;
+            }
+
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
             {
                 Assert.False(

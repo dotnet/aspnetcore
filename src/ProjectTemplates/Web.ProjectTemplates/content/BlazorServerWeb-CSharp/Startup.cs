@@ -70,11 +70,15 @@ namespace BlazorServerWeb_CSharp
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 #elif (OrganizationalAuth)
+#pragma warning disable CS0618 // Type or member is obsolete
             services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
                 .AddAzureAD(options => Configuration.Bind("AzureAd", options));
+#pragma warning restore CS0618 // Type or member is obsolete
 #if (MultiOrgAuth)
 
+#pragma warning disable CS0618 // Type or member is obsolete
             services.Configure<OpenIdConnectOptions>(AzureADDefaults.OpenIdScheme, options =>
+#pragma warning restore CS0618 // Type or member is obsolete
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
@@ -111,8 +115,10 @@ namespace BlazorServerWeb_CSharp
 #endif
 
 #elif (IndividualB2CAuth)
+#pragma warning disable CS0618 // Type or member is obsolete
             services.AddAuthentication(AzureADB2CDefaults.AuthenticationScheme)
                 .AddAzureADB2C(options => Configuration.Bind("AzureAdB2C", options));
+#pragma warning restore CS0618 // Type or member is obsolete
 
 #endif
 #if (OrganizationalAuth)
