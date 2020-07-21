@@ -11,7 +11,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Identity.Web;
 using System.Net;
 using System.Net.Http;
-using Company.WebApplication1.Services;
 #endif
 #if (GenerateGraph)
 using Microsoft.Graph;
