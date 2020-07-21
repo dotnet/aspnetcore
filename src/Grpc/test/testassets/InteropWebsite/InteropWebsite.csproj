@@ -14,6 +14,7 @@
     <Protobuf Include="..\Proto\grpc\testing\messages.proto" GrpcServices="None" Link="Protos\messages.proto" />
 
     <Reference Include="Grpc.AspNetCore" />
+    <Reference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
 
 </Project>
