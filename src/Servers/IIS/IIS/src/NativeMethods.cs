@@ -147,6 +147,9 @@ namespace Microsoft.AspNetCore.Server.IIS
         private static extern unsafe int http_response_set_trailer(IntPtr pInProcessHandler, byte* pszHeaderName, byte* pszHeaderValue, ushort usHeaderValueLength, bool replace);
 
         [DllImport(AspNetCoreModuleDll)]
+        private static extern unsafe int http_reset_stream(IntPtr pInProcessHandler, ulong errorCode);
+
+        [DllImport(AspNetCoreModuleDll)]
         private static extern unsafe int http_response_set_known_header(IntPtr pInProcessHandler, int headerId, byte* pHeaderValue, ushort length, bool fReplace);
 
         [DllImport(AspNetCoreModuleDll)]
@@ -316,6 +319,11 @@ namespace Microsoft.AspNetCore.Server.IIS
         internal static unsafe void HttpResponseSetTrailer(IntPtr pInProcessHandler, byte* pHeaderName, byte* pHeaderValue, ushort length, bool replace)
         {
             Validate(http_response_set_trailer(pInProcessHandler, pHeaderName, pHeaderValue, length, false));
+        }
+
+        internal static unsafe void HttpResetStream(IntPtr pInProcessHandler, ulong errorCode)
+        {
+            Validate(http_reset_stream(pInProcessHandler, errorCode));
         }
 
         internal static unsafe bool HttpSupportTrailer(IntPtr pInProcessHandler)

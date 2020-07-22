@@ -33,7 +33,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                                             ITlsConnectionFeature,
                                             IHttpBodyControlFeature,
                                             IHttpMaxRequestBodySizeFeature,
-                                            IHttpResponseTrailersFeature
+                                            IHttpResponseTrailersFeature,
+                                            IHttpResetFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -392,6 +393,35 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             get => ResponseTrailers ??= HttpResponseTrailers;
             set => ResponseTrailers = value;
+        }
+
+        internal IHttpResetFeature GetResetFeature()
+        {
+            // Check version is above 2.
+            if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpSupportTrailer(_pInProcessHandler))
+            {
+                return this;
+            }
+
+            return null;
+        }
+
+        void IHttpResetFeature.Reset(int errorCode)
+        {
+            SetResetCode(errorCode);
+            Abort(new Exception());
+        }
+
+        internal unsafe void SetResetCode(int errorCode)
+        {
+            try
+            {
+                NativeMethods.HttpResetStream(_pInProcessHandler, (ulong)errorCode);
+            }
+            catch (ObjectDisposedException)
+            {
+                // RequestQueueHandle may have been closed
+            }
         }
 
         void IHttpResponseBodyFeature.DisableBuffering()
