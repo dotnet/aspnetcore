@@ -220,6 +220,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             _builder.ConfigureServices((context, services) =>
             {
+                // UseStartup can be called multiple times. Only run the last one.
                 if (object.ReferenceEquals(_startupObject, startupFactory))
                 {
                     var webHostBuilderContext = GetWebHostBuilderContext(context);
