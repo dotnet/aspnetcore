@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     public abstract class DynamicRouteValueTransformer
     {
         /// <summary>
-        /// Gets or sets a state value. An arbitrary value passed to the transformer from where was registered.
+        /// Gets or sets a state value. An arbitrary value passed to the transformer from where it was registered.
         /// </summary>
         /// <remarks>
         /// Implementations that make use of <see cref="State" /> must be registered as transient with the service
