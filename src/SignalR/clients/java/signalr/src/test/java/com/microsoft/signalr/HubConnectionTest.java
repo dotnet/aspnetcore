@@ -2970,6 +2970,34 @@ class HubConnectionTest {
     }
 
     @Test
+    public void LongPollingTransportAccessTokenProviderThrows() {
+        TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                (req) -> Single.just(new HttpResponse(200, "",
+                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+
+        AtomicInteger accessTokenCount = new AtomicInteger(0);
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransport(TransportEnum.LONG_POLLING)
+                .withHttpClient(client)
+                .withAccessTokenProvider(Single.defer(() -> {
+                    if (accessTokenCount.getAndIncrement() == 0) {
+                        return Single.just("");
+                    }
+                    return Single.error(new RuntimeException("Error from accessTokenProvider"));
+                }))
+                .build();
+
+        try {
+            hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+            assertTrue(false);
+        } catch (RuntimeException ex) {
+            assertEquals("", ex.getMessage());
+        }
+    }
+
+    @Test
     public void receivingServerSentEventsTransportFromNegotiateFails() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
@@ -3263,6 +3291,21 @@ class HubConnectionTest {
         hubConnection.stop();
         assertNull(redirectToken.get());
         assertEquals("Bearer secondRedirectToken", token.get());
+    }
+
+    @Test
+    public void ErrorInAccessTokenProviderThrowsFromStart() {
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withAccessTokenProvider(Single.defer(() -> Single.error(new RuntimeException("Error from accessTokenProvider"))))
+                .build();
+
+        try {
+            hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+            assertTrue(false);
+        } catch (RuntimeException ex) {
+            assertEquals("Error from accessTokenProvider", ex.getMessage());
+        }
     }
 
     @Test
