@@ -110,6 +110,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanArriveAtPageWithCatchAllParameter()
+        {
+            SetUrlViaPushState("/WithCatchAllParameter/life/the/universe/and/everything%20%3D%2042");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            var expected = $"The answer: life/the/universe/and/everything = 42.";
+
+            Assert.Equal(expected, app.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Fact]
         public void CanArriveAtNonDefaultPage()
         {
             SetUrlViaPushState("/Other");

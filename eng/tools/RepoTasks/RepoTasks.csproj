@@ -36,5 +36,15 @@
     <Reference Include="Microsoft.Deployment.WindowsInstaller.Package">
       <HintPath>$(WiXSdkPath)\Microsoft.Deployment.WindowsInstaller.Package.dll</HintPath>
     </Reference>
+
+    <!--
+      Gather project references for compilation against RTM packages. %(RTMVersion) is set for about a dozen packages
+      in all servicing builds. Cannot reference two versions of a package, mandating this separation from projects
+      using the relevant packages.
+    -->
+    <PackageReference Include="@(LatestPackageReference->HasMetadata('RTMVersion'))"
+        IncludeAssets="None"
+        PrivateAssets="All"
+        Version="%(RTMVersion)" />
   </ItemGroup>
 </Project>

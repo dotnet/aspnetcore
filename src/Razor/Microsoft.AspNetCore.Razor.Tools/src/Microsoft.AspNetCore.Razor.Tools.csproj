@@ -37,12 +37,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json" Version="$(Razor_NewtonsoftJsonPackageVersion)" />
-    <Reference Include="Microsoft.Css.Parser" Version="$(MicrosoftCssParserPackageVersion)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.CodeAnalysis.Razor" />
+    <Reference Include="Microsoft.Css.Parser" />
+    <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 
   <!-- This makes it so that the runtimeconfig.json is included as part of the build output of the project that references this project. -->

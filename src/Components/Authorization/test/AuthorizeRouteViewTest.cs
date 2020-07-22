@@ -77,6 +77,78 @@ namespace Microsoft.AspNetCore.Components.Authorization
         }
 
         [Fact]
+        public void AuthorizesWhenResourceIsSet()
+        {
+            // Arrange
+            var routeData = new RouteData(typeof(TestPageRequiringAuthorization), new Dictionary<string, object>
+            {
+                { nameof(TestPageRequiringAuthorization.Message), "Hello, world!" }
+            });
+            var resource = "foo";
+            _testAuthorizationService.NextResult = AuthorizationResult.Success();
+
+            // Act
+            _renderer.RenderRootComponent(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(AuthorizeRouteView.RouteData), routeData },
+                { nameof(AuthorizeRouteView.DefaultLayout), typeof(TestLayout) },
+                { nameof(AuthorizeRouteView.Resource), resource }
+            }));
+
+            // Assert: renders layout
+            var batch = _renderer.Batches.Single();
+            var layoutDiff = batch.GetComponentDiffs<TestLayout>().Single();
+            Assert.Collection(layoutDiff.Edits,
+                edit => AssertPrependText(batch, edit, "Layout starts here"),
+                edit =>
+                {
+                    Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                    AssertFrame.Component<TestPageRequiringAuthorization>(batch.ReferenceFrames[edit.ReferenceFrameIndex]);
+                },
+                edit => AssertPrependText(batch, edit, "Layout ends here"));
+
+            // Assert: renders page
+            var pageDiff = batch.GetComponentDiffs<TestPageRequiringAuthorization>().Single();
+            Assert.Collection(pageDiff.Edits,
+                edit => AssertPrependText(batch, edit, "Hello from the page with message: Hello, world!"));
+
+            // Assert: Asserts that the Resource is present and set to "foo"
+            Assert.Collection(_testAuthorizationService.AuthorizeCalls, call=>
+            {
+                Assert.Equal(resource, call.resource.ToString());
+            });
+        }
+
+        [Fact]
+        public void NotAuthorizedWhenResourceMissing()
+        {
+            // Arrange
+            var routeData = new RouteData(typeof(TestPageRequiringAuthorization), EmptyParametersDictionary);
+            _testAuthorizationService.NextResult = AuthorizationResult.Failed();
+
+            // Act
+            _renderer.RenderRootComponent(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(AuthorizeRouteView.RouteData), routeData },
+                { nameof(AuthorizeRouteView.DefaultLayout), typeof(TestLayout) },
+            }));
+
+            // Assert: renders layout containing "not authorized" message
+            var batch = _renderer.Batches.Single();
+            var layoutDiff = batch.GetComponentDiffs<TestLayout>().Single();
+            Assert.Collection(layoutDiff.Edits,
+                edit => AssertPrependText(batch, edit, "Layout starts here"),
+                edit => AssertPrependText(batch, edit, "Not authorized"),
+                edit => AssertPrependText(batch, edit, "Layout ends here"));
+
+            // Assert: Asserts that the Resource is Null
+            Assert.Collection(_testAuthorizationService.AuthorizeCalls, call=>
+            {
+                Assert.Null(call.resource);
+            });
+        }
+
+        [Fact]
         public void WhenNotAuthorized_RendersDefaultNotAuthorizedContentInsideLayout()
         {
             // Arrange

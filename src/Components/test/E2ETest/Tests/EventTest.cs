@@ -115,6 +115,24 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("onmousedown,onmouseup,", () => output.Text);
         }
 
+
+        [Fact]
+        public void Toggle_CanTrigger()
+        {
+            Browser.MountTestComponent<ToggleEventComponent>();
+
+            var detailsToggle = Browser.FindElement(By.Id("details-toggle"));
+
+            var output = Browser.FindElement(By.Id("output"));
+            Assert.Equal(string.Empty, output.Text);
+
+            // Click
+            var actions = new Actions(Browser).Click(detailsToggle);
+
+            actions.Perform();
+            Browser.Equal("ontoggle,", () => output.Text);
+        }
+
         [Fact]
         public void PointerDown_CanTrigger()
         {
@@ -268,6 +286,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 : "There was an exception invoking 'SomeMethodThatDoesntNeedToExistForThisTest' on assembly 'SomeAssembly'";
 
             Browser.Contains(expectedMessage, () => errorLog.Text);
+        }
+
+        [Fact]
+        public void RenderAttributesBeforeConnectedCallBack()
+        {
+            Browser.MountTestComponent<RenderAttributesBeforeConnectedCallback>();
+            var element = Browser.FindElement(By.TagName("custom-web-component-data-from-attribute"));
+
+            var expectedContent = "success";
+
+            Browser.Contains(expectedContent, () => element.Text);
         }
 
         void SendKeysSequentially(IWebElement target, string text)

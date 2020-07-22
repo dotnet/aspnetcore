@@ -45,6 +45,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        public void PrerenderingWaitsForAsyncDisposableComponents()
+        {
+            Navigate("/prerendered/prerendered-async-disposal");
+
+            // Prerendered output shows "not connected"
+            Browser.Equal("After async disposal", () => Browser.FindElement(By.Id("disposal-message")).Text);
+        }
+
+        [Fact]
         public void CanUseJSInteropFromOnAfterRenderAsync()
         {
             Navigate("/prerendered/prerendered-interop");

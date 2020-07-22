@@ -17,6 +17,7 @@ const nonBubblingEvents = toLookup([
   'scroll',
   'submit',
   'unload',
+  'toggle',
   'DOMNodeInsertedIntoDocument',
   'DOMNodeRemovedFromDocument',
 ]);

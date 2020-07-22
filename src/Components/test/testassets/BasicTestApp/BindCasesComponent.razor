@@ -242,6 +242,7 @@
         <optgroup label="Some choices">
             <!-- Show it also works with optgroup -->
             <option value=@string.Empty>Empty value</option>
+            <option value="@variableValue">Variable value</option>
             <option value=@SelectableValue.First>First choice</option>
             <option value=@SelectableValue.Second>Second choice</option>
             <option value=@SelectableValue.Third>Third choice</option>
@@ -253,6 +254,7 @@
     </select>
     <span id="select-box-value">@selectValue</span>
     <button id="select-box-add-option" @onclick="AddAndSelectNewSelectOption">Add and select new item</button>
+    <button id="change-variable-value" @onclick="ChangeVariableValueToSixth">Change variable value to Sixth.</button>
 </p>
 
 <h2>Select (markup block)</h2>
@@ -383,13 +385,21 @@
     DateTime? timeStepTextboxNullableDateTimeValue = null;
 
     bool includeFourthOption = false;
-    enum SelectableValue { First, Second, Third, Fourth }
+    enum SelectableValue { First, Second, Third, Fourth, Fifth, Sixth }
     SelectableValue? selectValue = SelectableValue.Second;
     SelectableValue? selectMarkupValue = SelectableValue.Second;
+
+    SelectableValue variableValue = SelectableValue.Fifth;
 
     void AddAndSelectNewSelectOption()
     {
         includeFourthOption = true;
         selectValue = SelectableValue.Fourth;
+    }
+
+    void ChangeVariableValueToSixth()
+    {
+        selectValue = SelectableValue.Sixth;
+        variableValue = SelectableValue.Sixth;
     }
 }
