@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -300,6 +300,30 @@ namespace Microsoft.AspNetCore.Builder
         public static void MapDynamicPageRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern)
             where TTransformer : DynamicRouteValueTransformer
         {
+            MapDynamicPageRoute<TTransformer>(endpoints, pattern, state: null);
+        }
+
+        /// <summary>
+        /// Adds a specialized <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that will
+        /// attempt to select a page using the route values produced by <typeparamref name="TTransformer"/>.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The URL pattern of the route.</param>
+        /// <param name="state">A state object to provide to the <typeparamref name="TTransformer" /> instance.</param>
+        /// <typeparam name="TTransformer">The type of a <see cref="DynamicRouteValueTransformer"/>.</typeparam>
+        /// <remarks>
+        /// <para>
+        /// This method allows the registration of a <see cref="RouteEndpoint"/> and <see cref="DynamicRouteValueTransformer"/>
+        /// that combine to dynamically select a page using custom logic.
+        /// </para>
+        /// <para>
+        /// The instance of <typeparamref name="TTransformer"/> will be retrieved from the dependency injection container.
+        /// Register <typeparamref name="TTransformer"/> with the desired service lifetime in <c>ConfigureServices</c>.
+        /// </para>
+        /// </remarks>
+        public static void MapDynamicPageRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern, object state)
+            where TTransformer : DynamicRouteValueTransformer
+        {
             if (endpoints == null)
             {
                 throw new ArgumentNullException(nameof(endpoints));
@@ -316,14 +340,14 @@ namespace Microsoft.AspNetCore.Builder
             GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
 
             endpoints.Map(
-                pattern, 
+                pattern,
                 context =>
                 {
                     throw new InvalidOperationException("This endpoint is not expected to be executed directly.");
                 })
                 .Add(b =>
                 {
-                    b.Metadata.Add(new DynamicPageRouteValueTransformerMetadata(typeof(TTransformer)));
+                    b.Metadata.Add(new DynamicPageRouteValueTransformerMetadata(typeof(TTransformer), state));
                 });
         }
 
