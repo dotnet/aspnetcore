@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Components.Web.Extensions
+﻿@using Microsoft.AspNetCore.Components.Web.Extensions.Head
 
 <p>
     Multiple title elements:<br />
@@ -25,7 +25,7 @@
     {
         var metaId = i;
 
-        <button id="button-meta-@i" @onclick="() => Toggle(ref metas[metaId])">
+        <button id="button-meta-@i" @onclick="() => Toggle(metas, metaId)">
             @GetToggleString(metas[metaId]) meta @metaId</button>
 
         if (metas[metaId])
@@ -42,7 +42,7 @@
     {
         var linkId = i;
 
-        <button id="button-link-@i" @onclick="() => Toggle(ref links[linkId])">
+        <button id="button-link-@i" @onclick="() => Toggle(links, linkId)">
             @GetToggleString(links[linkId]) link @linkId</button>
 
         if (links[linkId])
@@ -102,9 +102,9 @@
     private string linkAttribute1 = "First attribute";
     private string linkAttribute2 = "Second attribute";
 
-    private void Toggle(ref bool b)
+    private void Toggle(bool[] states, int index)
     {
-        b = !b;
+        states[index] = !states[index];
         StateHasChanged();
     }
 

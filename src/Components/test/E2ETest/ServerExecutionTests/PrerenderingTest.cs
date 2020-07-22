@@ -88,8 +88,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             BeginInteractivity();
 
             // Wait for elements to be recreated with internal ids to permit mutation
-            WaitForNewElement(ref metaWithBindings, "meta-with-bindings");
-            WaitForNewElement(ref metaNoBindings, "meta-no-bindings");
+            metaWithBindings = WaitForNewElement(metaWithBindings, "meta-with-bindings");
+            metaNoBindings = WaitForNewElement(metaNoBindings, "meta-no-bindings");
 
             // Validate updated head after prerender
             Browser.Equal("Initial title", () => Browser.Title);
@@ -102,18 +102,18 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             inputMetaBinding.SendKeys("Updated meta content\n");
 
             // Wait for meta tag to be recreated with new attributes
-            WaitForNewElement(ref metaWithBindings, "meta-with-bindings");
+            metaWithBindings = WaitForNewElement(metaWithBindings, "meta-with-bindings");
 
             // Validate new meta content attribute
             Browser.Equal("Updated meta content", () => metaWithBindings.GetAttribute("content"));
 
-            void WaitForNewElement(ref IWebElement existingElement, string id)
+            IWebElement WaitForNewElement(IWebElement existingElement, string id)
             {
                 var newElement = existingElement;
 
                 Browser.NotEqual(existingElement, () => newElement = Browser.FindElement(By.Id(id)) ?? newElement);
 
-                existingElement = newElement;
+                return newElement;
             }
         }
 

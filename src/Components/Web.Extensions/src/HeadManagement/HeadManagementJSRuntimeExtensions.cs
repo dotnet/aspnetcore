@@ -4,7 +4,7 @@
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Web.Extensions
+namespace Microsoft.AspNetCore.Components.Web.Extensions.Head
 {
     internal static class HeadManagementJSRuntimeExtensions
     {
