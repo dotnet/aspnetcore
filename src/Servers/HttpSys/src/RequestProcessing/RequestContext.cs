@@ -289,7 +289,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         Response.Trailers.IsReadOnly = false;
                         Response.Headers.Clear();
                         Response.Trailers.Clear();
-                        SetFatalResponse(500);
+
+                        if (ex is BadHttpRequestException badHttpRequestException)
+                        {
+                            SetFatalResponse(badHttpRequestException.StatusCode);
+                        }
+                        else
+                        {
+                            SetFatalResponse(StatusCodes.Status500InternalServerError);
+                        }
                     }
                 }
                 finally

@@ -434,7 +434,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (contentLength.HasValue && _maxSize.HasValue && contentLength.Value > _maxSize.Value)
                 {
                     throw new BadHttpRequestException(
-                        $"The request's Content-Length {contentLength.Value} is larger than the request body size limit {_maxSize.Value}.");
+                        $"The request's Content-Length {contentLength.Value} is larger than the request body size limit {_maxSize.Value}.",
+                        StatusCodes.Status413PayloadTooLarge);
                 }
 
                 HasStarted = true;
@@ -451,7 +452,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _totalRead += bytesRead;
             if (_maxSize.HasValue && _totalRead > _maxSize.Value)
             {
-                exception = new BadHttpRequestException($"The total number of bytes read {_totalRead} has exceeded the request body size limit {_maxSize.Value}.");
+                exception = new BadHttpRequestException(
+                    $"The total number of bytes read {_totalRead} has exceeded the request body size limit {_maxSize.Value}.",
+                    StatusCodes.Status413PayloadTooLarge);
                 return true;
             }
             exception = null;
