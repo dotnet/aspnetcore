@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             var services = new ServiceCollection();
             services.AddRouting();
-            services.AddScoped<CustomTransformer>(s =>
+            services.AddTransient<CustomTransformer>(s =>
             {
                 var transformer = new CustomTransformer();
                 transformer.Transform = (c, values, state) => Transform(c, values, state);
@@ -266,6 +266,36 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Assert.Same(State, kvp.Value);
                 });
             Assert.True(candidates.IsValidCandidate(0));
+        }
+
+        [Fact]
+        public async Task ApplyAsync_Throws_ForTransformersWithInvalidLifetime()
+        {
+            // Arrange
+            var policy = new DynamicPageEndpointMatcherPolicy(Selector, Loader, Comparer);
+
+            var endpoints = new[] { DynamicEndpoint, };
+            var values = new RouteValueDictionary[] { new RouteValueDictionary(new { slug = "test", }), };
+            var scores = new[] { 0, };
+
+            var candidates = new CandidateSet(endpoints, values, scores);
+
+            Transform = (c, values, state) =>
+            {
+                return new ValueTask<RouteValueDictionary>(new RouteValueDictionary(new
+                {
+                    page = "/Index",
+                    state
+                }));
+            };
+
+            var httpContext = new DefaultHttpContext()
+            {
+                RequestServices = new ServiceCollection().AddScoped(sp => new CustomTransformer() { State = "Invalid" }).BuildServiceProvider()
+            };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(() => policy.ApplyAsync(httpContext, candidates));
         }
 
         [Fact]

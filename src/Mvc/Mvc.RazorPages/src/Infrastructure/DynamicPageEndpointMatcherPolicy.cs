@@ -113,6 +113,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 else if (transformerMetadata != null)
                 {
                     transformer = (DynamicRouteValueTransformer)httpContext.RequestServices.GetRequiredService(transformerMetadata.SelectorType);
+                    if (transformer.State != null)
+                    {
+                        throw new InvalidOperationException(Resources.FormatStateShouldBeNullForRouteValueTransformers(transformerMetadata.SelectorType.Name));
+                    }
                     transformer.State = transformerMetadata.State;
                     dynamicValues = await transformer.TransformAsync(httpContext, originalValues);
                 }

@@ -519,4 +519,7 @@
   <data name="ValidationVisitor_ContainerCannotBeSpecified" xml:space="preserve">
     <value>A container cannot be specified when the ModelMetada is of kind '{0}'.</value>
   </data>
+  <data name="StateShouldBeNullForRouteValueTransformers" xml:space="preserve">
+    <value>Transformer '{0}' was retrieved from dependency injection with a state value. State can only be specified using the MapDynamicControllerRoute method's state argument and a transient transformer. '{0}' may not be registered as transient in dependency injection.</value>
+  </data>
 </root>

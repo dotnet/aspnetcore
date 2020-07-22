@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             var services = new ServiceCollection();
             services.AddRouting();
-            services.AddScoped<CustomTransformer>(s =>
+            services.AddTransient<CustomTransformer>(s =>
             {
                 var transformer = new CustomTransformer();
                 transformer.Transform = (c, values, state) => Transform(c, values, state);
@@ -203,6 +203,37 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     Assert.Equal("Home", kvp.Value);
                 });
             Assert.True(candidates.IsValidCandidate(0));
+        }
+
+        [Fact]
+        public async Task ApplyAsync_ThrowsForTransformerWithInvalidLifetime()
+        {
+            // Arrange
+            var policy = new DynamicControllerEndpointMatcherPolicy(Selector, Comparer);
+
+            var endpoints = new[] { DynamicEndpoint, };
+            var values = new RouteValueDictionary[] { new RouteValueDictionary(new { slug = "test", }), };
+            var scores = new[] { 0, };
+
+            var candidates = new CandidateSet(endpoints, values, scores);
+
+            Transform = (c, values, state) =>
+            {
+                return new ValueTask<RouteValueDictionary>(new RouteValueDictionary(new
+                {
+                    controller = "Home",
+                    action = "Index",
+                    state
+                }));
+            };
+
+            var httpContext = new DefaultHttpContext()
+            {
+                RequestServices = new ServiceCollection().AddScoped(sp => new CustomTransformer { State = "Invalid" }).BuildServiceProvider(),
+            };
+
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(() => policy.ApplyAsync(httpContext, candidates));
         }
 
         [Fact]
