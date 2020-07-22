@@ -68,12 +68,12 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <summary>
         /// Get or sets the content to display when asynchronous navigation is in progress.
         /// </summary>
-        [Parameter] public RenderFragment Navigating { get; set; }
+        [Parameter] public RenderFragment? Navigating { get; set; }
 
         /// <summary>
         /// Gets or sets a handler that should be called before navigating to a new page.
         /// </summary>
-        [Parameter] public Func<NavigationContext, Task> OnNavigateAsync { get; set; }
+        [Parameter] public Func<NavigationContext, Task>? OnNavigateAsync { get; set; }
 
         private RouteTable Routes { get; set; }
 
@@ -195,10 +195,6 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         private async ValueTask<bool> RunOnNavigateAsync(string path, Task previousOnNavigate)
         {
-            if (OnNavigateAsync == null)
-            {
-                return true;
-            }
 
             // Cancel the CTS instead of disposing it, since disposing does not
             // actually cancel and can cause unintended Object Disposed Exceptions.
@@ -209,6 +205,11 @@ namespace Microsoft.AspNetCore.Components.Routing
             // for the previous task was set but not fully completed by the time we get to this
             // invocation.
             await previousOnNavigate;
+
+            if (OnNavigateAsync == null)
+            {
+                return true;
+            }
 
             _onNavigateCts = new CancellationTokenSource();
             var navigateContext = new NavigationContext(path, _onNavigateCts.Token);
@@ -227,14 +228,12 @@ namespace Microsoft.AspNetCore.Components.Routing
                 if (e.CancellationToken != navigateContext.CancellationToken)
                 {
                     var rethrownException = new InvalidOperationException("OnNavigateAsync can only be cancelled via NavigateContext.CancellationToken.", e);
-                    _renderHandle.Render(builder => ExceptionDispatchInfo.Capture(rethrownException).Throw());
-                    return false;
+                    _renderHandle.Render(builder => ExceptionDispatchInfo.Throw(rethrownException));
                 }
             }
             catch (Exception e)
             {
-                _renderHandle.Render(builder => ExceptionDispatchInfo.Capture(e).Throw());
-                return false;
+                _renderHandle.Render(builder => ExceptionDispatchInfo.Throw(e));
             }
 
             return false;
