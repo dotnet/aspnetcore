@@ -111,6 +111,21 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.True(renderedElement.Displayed);
         }
 
+        [Fact]
+        public void ThrowsErrorForUnavailableAssemblies()
+        {
+            // Navigate to a page with lazy loaded assemblies for the first time
+            SetUrlViaPushState("/Other");
+            var app = Browser.MountTestComponent<TestRouterWithLazyAssembly>();
+
+            // Should've thrown an error for unhandled error
+            var errorUiElem = Browser.Exists(By.Id("blazor-error-ui"), TimeSpan.FromSeconds(10));
+            Assert.NotNull(errorUiElem);
+
+
+            AssertLogContainsCriticalMessages("DoesNotExist.dll must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.");
+        }
+
         private string SetUrlViaPushState(string relativeUri)
         {
             var pathBaseWithoutHash = ServerPathBase.Split('#')[0];
@@ -139,6 +154,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             foreach (var message in messages)
             {
                 Assert.DoesNotContain(log, entry =>
+                {
+                    return entry.Level == LogLevel.Severe
+                    && entry.Message.Contains(message);
+                });
+            }
+        }
+
+        void AssertLogContainsCriticalMessages(params string[] messages)
+        {
+            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+            foreach (var message in messages)
+            {
+                Assert.Contains(log, entry =>
                 {
                     return entry.Level == LogLevel.Severe
                     && entry.Message.Contains(message);
