@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -105,13 +105,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 // no realistic way this could happen.
                 var dynamicPageMetadata = endpoint.Metadata.GetMetadata<DynamicPageMetadata>();
                 var transformerMetadata = endpoint.Metadata.GetMetadata<DynamicPageRouteValueTransformerMetadata>();
+                DynamicRouteValueTransformer transformer = null;
                 if (dynamicPageMetadata != null)
                 {
                     dynamicValues = dynamicPageMetadata.Values;
                 }
                 else if (transformerMetadata != null)
                 {
-                    var transformer = (DynamicRouteValueTransformer)httpContext.RequestServices.GetRequiredService(transformerMetadata.SelectorType);
+                    transformer = (DynamicRouteValueTransformer)httpContext.RequestServices.GetRequiredService(transformerMetadata.SelectorType);
+                    if (transformer.State != null)
+                    {
+                        throw new InvalidOperationException(Resources.FormatStateShouldBeNullForRouteValueTransformers(transformerMetadata.SelectorType.Name));
+                    }
+                    transformer.State = transformerMetadata.State;
                     dynamicValues = await transformer.TransformAsync(httpContext, originalValues);
                 }
                 else
@@ -151,6 +157,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     foreach (var kvp in originalValues)
                     {
                         values.TryAdd(kvp.Key, kvp.Value);
+                    }
+                }
+
+                if (transformer != null)
+                {
+                    endpoints = await transformer.FilterAsync(httpContext, values, endpoints);
+                    if (endpoints.Count == 0)
+                    {
+                        candidates.ReplaceEndpoint(i, null, null);
+                        continue;
                     }
                 }
 
