@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             Commands.Add(new GenerateCommand(this));
             Commands.Add(new BrotliCompressCommand(this));
             Commands.Add(new RewriteCssCommand(this));
+            Commands.Add(new ConcatenateCssFilesCommand(this));
         }
 
         public CancellationToken CancellationToken { get; }

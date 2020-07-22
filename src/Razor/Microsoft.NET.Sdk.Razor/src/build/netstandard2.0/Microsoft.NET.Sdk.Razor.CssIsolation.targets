@@ -1,0 +1,90 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.Razor.StaticWebAssets.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project ToolsVersion="14.0">
+
+<UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.RewriteCss" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+<UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.ConcatenateCssFiles" AssemblyFile="$(RazorSdkBuildTasksAssembly)" />
+
+<PropertyGroup>
+  <RazorGenerateComponentDeclarationDependsOn>$(RazorGenerateComponentDeclarationDependsOn);ResolveIsolatedCss</RazorGenerateComponentDeclarationDependsOn>
+  <ResolveIsolatedCssDependsOn>ResolveRazorComponentInputs;ResolveCssFiles;GenerateScopedCssFiles</ResolveIsolatedCssDependsOn>
+  <ResolveStaticWebAssetsInputsDependsOn>$(ResolveStaticWebAssetsInputsDependsOn);AddIsolatedCssFile</ResolveStaticWebAssetsInputsDependsOn>
+</PropertyGroup>
+
+<Target Name="ResolveIsolatedCss" BeforeTargets="AssignRazorComponentTargetPaths" DependsOnTargets="$(ResolveIsolatedCssDependsOn)" />
+
+<Target Name="ResolveCssFiles" DependsOnTargets="ResolveRazorComponentInputs">
+  <ItemGroup>
+    <_ScopedCssCandidates Include="@(RazorComponent->'%(RecursiveDir)%(FileName)%(Extension).css')">
+      <RazorComponent>%(Identity)</RazorComponent>
+    </_ScopedCssCandidates>
+    <ScopedCssInput Include="@(_ScopedCssCandidates)" Condition="Exists('%(Identity)')" />
+  </ItemGroup>
+</Target>
+
+<Target Name="GenerateScopedCssFiles">
+  <PropertyGroup>
+    <_ScopedCssIntermediatePath>$(IntermediateOutputPath)\scopedcss</_ScopedCssIntermediatePath>
+  </PropertyGroup>
+
+  <MakeDir Directories="$(_ScopedCssIntermediatePath)" />
+  <RewriteCss
+    FilesToProcess="@(ScopedCssInput)"
+    TargetName="$(TargetName)"
+    OutputDirectory="$(_ScopedCssIntermediatePath)"
+    ToolAssembly="$(_RazorSdkToolAssembly)">
+    <Output TaskParameter="ProcessedFiles" ItemName="ScopedCss" />
+    <Output TaskParameter="ProcessedFiles" ItemName="FileWrites" />
+  </RewriteCss>
+
+  <ItemGroup>
+    <_ScopesForComponent Include="@(ScopedCss->'%(OriginalItemSpec)')">
+      <CssScope>%(CssScope)</CssScope>
+    </_ScopesForComponent>
+    <_ComponentsWithoutScope Include="@(RazorComponent)" Exclude="%(ScopedCss.RazorComponent)" />
+    <_ComponentsWithScope Include="@(RazorComponent)" Exclude="@(_ComponentsWithoutScope)" />
+    <RazorComponent Remove="@(_ComponentsWithScope)" />
+    <RazorComponent Include="@(_ComponentsWithScope)">
+      <CssScope>@(ScopedCss->'%(CssScope)')</CssScope>
+    </RazorComponent>
+  </ItemGroup>
+</Target>
+
+<Target Name="AddIsolatedCssFile" AfterTargets="ResolveCssFiles">
+  <PropertyGroup>
+    <_ScopedCssOutputDirectoryPath>$(IntermediateOutputPath)scopedcss</_ScopedCssOutputDirectoryPath>
+    <_ScopedCssOutputPath>$(IntermediateOutputPath)scopedcss\_framework\scoped.styles.css</_ScopedCssOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <StaticWebAsset Include="$(_ScopedCssOutputPath)">
+      <SourceType></SourceType>
+      <SourceId>$(PackageId)</SourceId>
+      <ContentRoot>$(IntermediateOutputPath)scopedcss\</ContentRoot>
+      <BasePath>$(StaticWebAssetBasePath)</BasePath>
+      <RelativePath>_framework/scoped.styles.css</RelativePath>
+    </StaticWebAsset>
+    <_ExternalStaticWebAsset Include="$(_ScopedCssOutputPath)">
+      <SourceType>generated</SourceType>
+      <SourceId>$(PackageId)</SourceId>
+      <ContentRoot>$(IntermediateOutputPath)scopedcss\</ContentRoot>
+      <BasePath>$(StaticWebAssetBasePath)</BasePath>
+      <RelativePath>_framework/scoped.styles.css</RelativePath>
+    </_ExternalStaticWebAsset>
+  </ItemGroup>
+</Target>
+
+<Target Name="GenerateIsolatedCssFile" BeforeTargets="GetCopyToOutputDirectoryItems">
+  <ConcatenateCssFiles FilesToProcess="@(ScopedCss)" OutputFile="$(_ScopedCssOutputPath)" ToolAssembly="$(_RazorSdkToolAssembly)" />
+</Target>
+
+</Project>
