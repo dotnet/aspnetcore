@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Hosting
                 if (object.ReferenceEquals(_startupObject, startupFactory))
                 {
                     var webHostBuilderContext = GetWebHostBuilderContext(context);
-                    var instance = startupFactory(webHostBuilderContext) ?? new InvalidOperationException("The specified factory returned null startup instance");
+                    var instance = startupFactory(webHostBuilderContext) ?? throw new InvalidOperationException("The specified factory returned null startup instance.");
                     UseStartup(instance.GetType(), context, services, instance);
                 }
             });

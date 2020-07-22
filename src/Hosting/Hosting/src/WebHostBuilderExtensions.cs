@@ -69,6 +69,11 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder UseStartup(this IWebHostBuilder hostBuilder, Func<WebHostBuilderContext, object> startupFactory)
         {
+            if (startupFactory == null)
+            {
+                throw new ArgumentNullException(nameof(startupFactory));
+            }
+
             var startupAssemblyName = startupFactory.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name;
 
             hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
@@ -84,9 +89,15 @@ namespace Microsoft.AspNetCore.Hosting
                 {
                     services.AddSingleton(typeof(IStartup), sp =>
                     {
-                        var instance = startupFactory(context) ?? new InvalidOperationException("The specified factory returned null startup instance");
+                        var instance = startupFactory(context) ?? throw new InvalidOperationException("The specified factory returned null startup instance.");
 
                         var hostingEnvironment = sp.GetRequiredService<IHostEnvironment>();
+
+                        // Check if the instance implements IStartup before wrapping
+                        if (instance is IStartup startup)
+                        {
+                            return startup;
+                        }
 
                         return new ConventionBasedStartup(StartupLoader.LoadMethods(sp, instance.GetType(), hostingEnvironment.EnvironmentName, instance));
                     });
@@ -101,6 +112,11 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder UseStartup(this IWebHostBuilder hostBuilder, Type startupType)
         {
+            if (startupType == null)
+            {
+                throw new ArgumentNullException(nameof(startupType));
+            }
+
             var startupAssemblyName = startupType.GetTypeInfo().Assembly.GetName().Name;
 
             hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
