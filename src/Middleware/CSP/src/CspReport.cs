@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Csp
             [JsonPropertyName("source-file")]
             public string SourceFile { get; set; }
             [JsonPropertyName("line-number")]
-            public int LineNumber { get; set; }
+            public string LineNumber { get; set; }
 
             // Old browsers don't set the next two fields (e.g. Firefox v25/v26)
             [JsonPropertyName("original-policy")]
