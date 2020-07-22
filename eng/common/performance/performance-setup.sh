@@ -191,6 +191,10 @@ if [[ "$mono_dotnet" != "" ]]; then
     configurations="$configurations LLVM=$llvm MonoInterpreter=$monointerpreter MonoAOT=$monoaot"
 fi
 
+if [[ "$monointerpreter" == "true" ]]; then
+    extra_benchmark_dotnet_arguments="--category-exclusion-filter NoInterpreter"
+fi
+
 common_setup_arguments="--channel master --queue $queue --build-number $build_number --build-configs $configurations --architecture $architecture"
 setup_arguments="--repository https://github.com/$repository --branch $branch --get-perf-hash --commit-sha $commit_sha $common_setup_arguments"
 

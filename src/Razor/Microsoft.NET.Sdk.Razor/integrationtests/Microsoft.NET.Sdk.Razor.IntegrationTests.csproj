@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <!--
@@ -13,7 +13,10 @@
 
     <!-- Tests do not work on Helix yet -->
     <BuildHelixPayload>false</BuildHelixPayload>
+    <TestAppsRoot>$(MSBuildProjectDirectory)\..\..\test\testassets\</TestAppsRoot>
   </PropertyGroup>
+
+  <Import Project="$(SharedSourceRoot)MSBuild.Testing\MSBuild.Testing.targets" />
 
   <ItemGroup>
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
@@ -22,49 +25,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.Build.Utilities.Core" />
     <Reference Include="Microsoft.Extensions.DependencyModel" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>Testing.AdditionalRestoreSources</_Parameter1>
-      <_Parameter2>$(MSBuildThisFileDirectory)..\testassets\PregeneratedPackages</_Parameter2>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>ArtifactsLogDir</_Parameter1>
-      <_Parameter2>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'log', '$(_BuildConfig)'))</_Parameter2>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>ProcDumpToolPath</_Parameter1>
-      <_Parameter2>$(ProcDumpPath)</_Parameter2>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>Testing.RepoRoot</_Parameter1>
-      <_Parameter2>$(RepoRoot)</_Parameter2>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>MicrosoftNETCoreAppRuntimeVersion</_Parameter1>
-      <_Parameter2>$(MicrosoftNETCoreAppRuntimeVersion)</_Parameter2>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>DefaultNetCoreTargetFramework</_Parameter1>
-      <_Parameter2>$(DefaultNetCoreTargetFramework)</_Parameter2>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>MicrosoftNetCompilersToolsetPackageVersion</_Parameter1>
-      <_Parameter2>$(MicrosoftNetCompilersToolsetPackageVersion)</_Parameter2>
-    </AssemblyAttribute>
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>RazorSdkDirectoryRoot</_Parameter1>
-      <_Parameter2>$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor\$(Configuration)\sdk-output\</_Parameter2>
-    </AssemblyAttribute>
-
   </ItemGroup>
 
   <ItemGroup>

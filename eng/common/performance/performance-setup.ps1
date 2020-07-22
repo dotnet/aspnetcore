@@ -54,6 +54,11 @@ if ($Internal) {
     $HelixSourcePrefix = "official"
 }
 
+if($MonoInterpreter)
+{
+    $ExtraBenchmarkDotNetArguments = "--category-exclusion-filter NoInterpreter"
+}
+
 if($MonoDotnet -ne "")
 {
     $Configurations += " LLVM=$LLVM MonoInterpreter=$MonoInterpreter MonoAOT=$MonoAOT"
