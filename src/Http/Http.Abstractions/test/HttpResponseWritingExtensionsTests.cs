@@ -80,9 +80,9 @@ namespace Microsoft.AspNetCore.Http
                         { Encoding.BigEndianUnicode },
                         { Encoding.Unicode },
                         { Encoding.UTF32 },
-#pragma warning disable CS0618, MSLIB0001 // Type or member is obsolete
+#pragma warning disable CS0618, SYSLIB0001 // Type or member is obsolete
                         { Encoding.UTF7 },
-#pragma warning restore CS0618, MSLIB0001 // Type or member is obsolete
+#pragma warning restore CS0618, SYSLIB0001 // Type or member is obsolete
                         { Encoding.UTF8 }
             };
 

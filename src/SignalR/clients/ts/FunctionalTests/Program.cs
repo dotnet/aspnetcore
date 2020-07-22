@@ -35,7 +35,7 @@ namespace FunctionalTests
                     webHostBuilder
                     .ConfigureLogging(factory =>
                     {
-                        factory.AddConsole(options =>
+                        factory.AddSimpleConsole(options =>
                         {
                             options.IncludeScopes = true;
                             options.TimestampFormat = "[HH:mm:ss] ";

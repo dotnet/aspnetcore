@@ -385,7 +385,7 @@ function InitializeXCopyMSBuild([string]$packageVersion, [bool]$install) {
     Create-Directory $packageDir
     Write-Host "Downloading $packageName $packageVersion"
     $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
-    Invoke-WebRequest "https://dotnet.myget.org/F/roslyn-tools/api/v2/package/$packageName/$packageVersion/" -OutFile $packagePath
+    Invoke-WebRequest "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/flat2/$packageName/$packageVersion/$packageName.$packageVersion.nupkg" -OutFile $packagePath
     Unzip $packagePath $packageDir
   }
 
