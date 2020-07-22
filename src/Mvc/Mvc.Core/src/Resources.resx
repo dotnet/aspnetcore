@@ -520,6 +520,6 @@
     <value>A container cannot be specified when the ModelMetada is of kind '{0}'.</value>
   </data>
   <data name="StateShouldBeNullForRouteValueTransformers" xml:space="preserve">
-    <value>Transformer '{0}' was retrieved from dependency injection with a state value. State can only be specified using the MapDynamicControllerRoute method's state argument and a transient transformer. '{0}' may not be registered as transient in dependency injection.</value>
+    <value>Transformer '{0}' was retrieved from dependency injection with a state value. State can only be specified when the dynamic route is mapped using MapDynamicControllerRoute's state argument together with transient lifetime transformer. Ensure that '{0}' doesn't set its own state and that the transformer is registered with a transient lifetime in dependency injection.</value>
   </data>
 </root>
