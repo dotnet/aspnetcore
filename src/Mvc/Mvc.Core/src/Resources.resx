@@ -532,6 +532,6 @@
     <value>Could not create an instance of type '{0}'. Model bound complex types must not be abstract or value types and must have a parameterless constructor. Record types must have a single primary constructor.</value>
   </data>
   <data name="ValidationStrategy_MappedPropertyNotFound" xml:space="preserve">
-    <value>No property found that maps to pconstructor parameter '{0}' for type '{1}'. Validation requires that each bound parameter of a record type's primary constructor must have a property to read the value.</value>
+    <value>No property found that maps to constructor parameter '{0}' for type '{1}'. Validation requires that each bound parameter of a record type's primary constructor must have a property to read the value.</value>
   </data>
 </root>
