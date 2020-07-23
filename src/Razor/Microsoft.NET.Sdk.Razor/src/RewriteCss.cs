@@ -1,22 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
     public class RewriteCss : DotNetToolTask
     {
-        private static readonly char[] InvalidPathChars = Path.GetInvalidFileNameChars();
-
-        static char[] Alphabet = new char[16]{ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p' };
-
         [Required]
         public ITaskItem[] FilesToTransform { get; set; }
 
