@@ -1,7 +1,12 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace Microsoft.AspNetCore.Csp
 {
+    /// <summary>
+    /// Tag helper used to automatically a nonce attribute to existing script tags. This is required to support nonce-based content security policies.
+    /// </summary>
     [HtmlTargetElement("script")]
     public class NoncedScriptTagHelper : TagHelper
     {

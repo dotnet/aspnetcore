@@ -1,15 +1,14 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Csp
 {
-    public enum CspMode
-    {
-        NONE,
-        REPORTING,
-        ENFORCING
-    }
-
+    /// <summary>
+    /// A greedy Content Security Policy generator
+    /// </summary>
     public class ContentSecurityPolicy
     {
         private readonly string _baseAndObject = "base-uri 'none'; object-src 'none'";
@@ -20,6 +19,13 @@ namespace Microsoft.AspNetCore.Csp
         private readonly bool _unsafeEval;
         private readonly string _reportingUri;
 
+        /// <summary>
+        /// Instantiates a new <see cref="ContentSecurityPolicy"/>.
+        /// </summary>
+        /// <param name="cspMode">Represents whether the current policy is in enforcing or reporting mode.</param>
+        /// <param name="strictDynamic">Whether the policy should enable nonce propagation.</param>
+        /// <param name="unsafeEval">Whether JavaScript's eval should be allowed to run.</param>
+        /// <param name="reportingUri">An absolute or relative URI representing the reporting endpoint</param>
         public ContentSecurityPolicy(
             CspMode cspMode,
             bool strictDynamic,
@@ -55,5 +61,12 @@ namespace Microsoft.AspNetCore.Csp
         {
             return policyBuilder.Invoke(nonce);
         }
+    }
+
+    public enum CspMode
+    {
+        NONE,
+        REPORTING,
+        ENFORCING
     }
 }

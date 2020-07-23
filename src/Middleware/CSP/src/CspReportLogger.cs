@@ -1,14 +1,23 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.IO;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Csp
 {
+    /// <summary>
+    /// CSP report logger factory used to provide custom report loggers that handle violation reports.
+    /// </summary>
     public interface ICspReportLoggerFactory
     {
         CspReportLogger BuildLogger(LogLevel logLevel, string reportUri);
     }
 
+    /// <summary>
+    /// Default CSP report logger factory implementation. Registers a CspReportLogger as the default handler.
+    /// </summary>
     public class CspReportLoggerFactory : ICspReportLoggerFactory
     {
         private readonly ILogger<CspReportLogger> _logger;
@@ -28,6 +37,10 @@ namespace Microsoft.AspNetCore.Csp
         }
     }
 
+    /// <summary>
+    /// This CSP report logger marshals JSON violation reports asynchronously into objects that can be turned into textual descriptions of these reports, explaining their root cause.
+    /// This behavior is controlled by the log level set on the content security policy.
+    /// </summary>
     public class CspReportLogger
     {
         private readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions

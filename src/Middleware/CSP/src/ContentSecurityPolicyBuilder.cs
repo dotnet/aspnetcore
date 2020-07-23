@@ -1,8 +1,14 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Csp
 {
+    /// <summary>
+    /// Allows customizing content security policies
+    /// </summary>
     public class ContentSecurityPolicyBuilder
     {
         private CspMode _cspMode;
@@ -41,6 +47,12 @@ namespace Microsoft.AspNetCore.Csp
             return this;
         }
 
+        /// <summary>
+        /// Whether the policy specifies a relative reporting URI.
+        /// </summary>
+        /// <remarks>
+        /// If this method returns true, a handler for the reporting endpoint will be automatically added to this application.
+        /// </remarks>
         public bool HasLocalReporting()
         {
             return _reportingUri != null && _reportingUri.StartsWith("/");

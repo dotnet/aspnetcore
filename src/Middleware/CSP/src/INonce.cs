@@ -1,22 +1,30 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 using System;
 
 namespace Microsoft.AspNetCore.Csp
 {
+    /// <summary>
+    /// Simple interface representing a CSP nonce value.
+    /// </summary>
     public interface INonce
     {
         string GetValue();
     }
 
+    /// <summary>
+    /// Default nonce implementation. Computes a random nonce and returns its base64 value on instantiation.
+    /// </summary>
     public class Nonce : INonce
     {
         private readonly string _value;
-        // TODO: Make sure we use an actually crypto-safe random generator.
         private static readonly Lazy<Random> _gen = new Lazy<Random>(() => new Random());
 
         public Nonce()
         {
-            // TODO: Actually come up with an alphanumeric string of enough entropy rather than casting a random int to string.
-            _value = _gen.Value.Next().ToString();
+            byte[] bytes = new byte[7];
+            _gen.Value.NextBytes(bytes);
+            _value = Convert.ToBase64String(bytes);
         }
 
         public string GetValue()

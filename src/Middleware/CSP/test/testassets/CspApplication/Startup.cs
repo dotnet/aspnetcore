@@ -32,7 +32,7 @@ namespace CspApplication
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             // CSP configuration. Must come first because other middleware might skip any following middleware.
-            app.UseCsp(policyBuilder => policyBuilder.WithCspMode(CspMode.REPORTING)
+            app.UseCsp(policyBuilder => policyBuilder.WithCspMode(CspMode.ENFORCING)
                 .WithReportingUri("/csp"));
 
 
