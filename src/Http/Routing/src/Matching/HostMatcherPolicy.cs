@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private class HostMetadataEndpointComparer : EndpointMetadataComparer<IHostMetadata>
         {
-            protected override int CompareMetadata(IHostMetadata x, IHostMetadata y)
+            protected override int CompareMetadata(IHostMetadata? x, IHostMetadata? y)
             {
                 // Ignore the metadata if it has an empty list of hosts.
                 return base.CompareMetadata(
@@ -391,9 +391,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
             public readonly int? Port;
             public readonly string Host;
 
-            private readonly string _wildcardEndsWith;
+            private readonly string? _wildcardEndsWith;
 
-            public EdgeKey(string host, int? port)
+            public EdgeKey(string? host, int? port)
             {
                 Host = host ?? WildcardHost;
                 Port = port;
@@ -421,9 +421,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 return Comparer<int?>.Default.Compare(Port, other.Port);
             }
 
-            public int CompareTo(object obj)
+            public int CompareTo(object? obj)
             {
-                return CompareTo((EdgeKey)obj);
+                return CompareTo((EdgeKey)obj!);
             }
 
             public bool Equals(EdgeKey other)
@@ -437,7 +437,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 {
                     if (HasHostWildcard)
                     {
-                        return host.EndsWith(_wildcardEndsWith, StringComparison.OrdinalIgnoreCase);
+                        return host.EndsWith(_wildcardEndsWith!, StringComparison.OrdinalIgnoreCase);
                     }
                     else
                     {
@@ -454,7 +454,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 return (Host?.GetHashCode() ?? 0) ^ (Port?.GetHashCode() ?? 0);
             }
 
-            public override bool Equals(object obj)
+            public override bool Equals(object? obj)
             {
                 if (obj is EdgeKey key)
                 {

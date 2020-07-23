@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             // If someone messes with this, just let it crash.
-            endpointRouteBuilder = (DefaultEndpointRouteBuilder)obj;
+            endpointRouteBuilder = (DefaultEndpointRouteBuilder)obj!;
 
             // This check handles the case where Map or something else that forks the pipeline is called between the two
             // routing middleware.

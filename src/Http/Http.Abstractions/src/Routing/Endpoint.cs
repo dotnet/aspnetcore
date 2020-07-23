@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Http
         public Endpoint(
             RequestDelegate requestDelegate,
             EndpointMetadataCollection metadata,
-            string displayName)
+            string? displayName)
         {
             // All are allowed to be null
             RequestDelegate = requestDelegate;
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets the informational display name of this endpoint.
         /// </summary>
-        public string DisplayName { get; }
+        public string? DisplayName { get; }
 
         /// <summary>
         /// Gets the collection of metadata associated with this endpoint.

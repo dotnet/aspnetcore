@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
@@ -176,7 +177,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// The <see cref="RouteValueDictionary"/> to replace the original <see cref="RouteValueDictionary"/> at
         /// the <paramref name="index"/>.
         /// </param>
-        public void ReplaceEndpoint(int index, Endpoint endpoint, RouteValueDictionary values)
+        public void ReplaceEndpoint(int index, Endpoint? endpoint, RouteValueDictionary? values)
         {
             // Friendliness for inlining
             if ((uint)index >= Count)
@@ -184,7 +185,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 ThrowIndexArgumentOutOfRangeException();
             }
             
-            Candidates[index] = new CandidateState(endpoint, values, Candidates[index].Score);
+            Candidates[index] = new CandidateState(endpoint!, values, Candidates[index].Score);
 
             if (endpoint == null)
             {
@@ -354,7 +355,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 {
                     if (GetOriginalScore(i) == score)
                     {
-                        duplicates.Add(candidates[i].Endpoint);
+                        duplicates.Add(candidates[i].Endpoint!);
                     }
                 }
 
@@ -366,11 +367,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
+        [DoesNotReturn]
         private static void ThrowIndexArgumentOutOfRangeException()
         {
             throw new ArgumentOutOfRangeException("index");
         }
 
+        [DoesNotReturn]
         private static void ThrowArgumentNullException(string parameter)
         {
             throw new ArgumentNullException(parameter);

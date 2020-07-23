@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         // Also called from DefaultLinkGenerationTemplate
-        public static RouteValueDictionary? GetAmbientValues(HttpContext httpContext)
+        public static RouteValueDictionary? GetAmbientValues(HttpContext? httpContext)
         {
             return httpContext?.Features.Get<IRouteValuesFeature>()?.RouteValues;
         }

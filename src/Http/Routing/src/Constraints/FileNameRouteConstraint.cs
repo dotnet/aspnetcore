@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     {
         /// <inheritdoc />
         public bool Match(
-            HttpContext httpContext,
+            HttpContext? httpContext,
             IRouter route,
             string routeKey,
             RouteValueDictionary values,

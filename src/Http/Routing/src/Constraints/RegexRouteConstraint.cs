@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
         public Regex Constraint { get; private set; }
 
         public bool Match(
-            HttpContext httpContext,
+            HttpContext? httpContext,
             IRouter route,
             string routeKey,
             RouteValueDictionary values,
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             if (values.TryGetValue(routeKey, out var routeValue)
                 && routeValue != null)
             {
-                var parameterValueString = Convert.ToString(routeValue, CultureInfo.InvariantCulture);
+                var parameterValueString = Convert.ToString(routeValue, CultureInfo.InvariantCulture)!;
 
                 return Constraint.IsMatch(parameterValueString);
             }

@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
 
         /// <inheritdoc />
         public virtual bool Match(
-            HttpContext httpContext,
+            HttpContext? httpContext,
             IRouter route,
             string routeKey,
             RouteValueDictionary values,

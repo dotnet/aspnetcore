@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
         public IRouteConstraint InnerConstraint { get; }
 
         public bool Match(
-            HttpContext httpContext,
+            HttpContext? httpContext,
             IRouter route,
             string routeKey,
             RouteValueDictionary values,
