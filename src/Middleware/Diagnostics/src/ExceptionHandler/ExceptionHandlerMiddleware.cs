@@ -89,7 +89,11 @@ namespace Microsoft.AspNetCore.Diagnostics
 
         private async Task HandleException(HttpContext context, ExceptionDispatchInfo edi)
         {
-            _logger.UnhandledException(edi.SourceException);
+            if (!_options.SuppressExceptionLog)
+            {
+                _logger.UnhandledException(edi.SourceException);
+            }
+
             // We can't do anything if the response has already started, just abort.
             if (context.Response.HasStarted)
             {

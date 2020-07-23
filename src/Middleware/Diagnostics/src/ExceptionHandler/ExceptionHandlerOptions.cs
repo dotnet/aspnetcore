@@ -10,5 +10,7 @@ namespace Microsoft.AspNetCore.Builder
         public PathString ExceptionHandlingPath { get; set; }
 
         public RequestDelegate ExceptionHandler { get; set; }
+
+        public bool SuppressExceptionLog { get; set; }
     }
 }

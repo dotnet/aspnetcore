@@ -35,6 +35,19 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns></returns>
         public static IApplicationBuilder UseExceptionHandler(this IApplicationBuilder app, string errorHandlingPath)
         {
+            return app.UseExceptionHandler(errorHandlingPath, suppressExceptionLog: false);
+        }
+
+        /// <summary>
+        /// Adds a middleware to the pipeline that will catch exceptions, log them, reset the request path, and re-execute the request.
+        /// The request will not be re-executed if the response has already started.
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="errorHandlingPath"></param>
+        /// <param name="suppressExceptionLog"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseExceptionHandler(this IApplicationBuilder app, string errorHandlingPath, bool suppressExceptionLog)
+        {
             if (app == null)
             {
                 throw new ArgumentNullException(nameof(app));
@@ -42,7 +55,8 @@ namespace Microsoft.AspNetCore.Builder
 
             return app.UseExceptionHandler(new ExceptionHandlerOptions
             {
-                ExceptionHandlingPath = new PathString(errorHandlingPath)
+                ExceptionHandlingPath = new PathString(errorHandlingPath),
+                SuppressExceptionLog = suppressExceptionLog
             });
         }
 
@@ -54,6 +68,19 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="configure"></param>
         /// <returns></returns>
         public static IApplicationBuilder UseExceptionHandler(this IApplicationBuilder app, Action<IApplicationBuilder> configure)
+        {
+            return app.UseExceptionHandler(configure, suppressExceptionLog: false);
+        }
+
+        /// <summary>
+        /// Adds a middleware to the pipeline that will catch exceptions, log them, and re-execute the request in an alternate pipeline.
+        /// The request will not be re-executed if the response has already started.
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="configure"></param>
+        /// <param name="suppressExceptionLog"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseExceptionHandler(this IApplicationBuilder app, Action<IApplicationBuilder> configure, bool suppressExceptionLog)
         {
             if (app == null)
             {
@@ -70,7 +97,8 @@ namespace Microsoft.AspNetCore.Builder
 
             return app.UseExceptionHandler(new ExceptionHandlerOptions
             {
-                ExceptionHandler = exceptionHandlerPipeline
+                ExceptionHandler = exceptionHandlerPipeline,
+                SuppressExceptionLog = suppressExceptionLog
             });
         }
 
