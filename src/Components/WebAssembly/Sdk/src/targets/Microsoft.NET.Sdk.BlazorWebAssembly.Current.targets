@@ -246,6 +246,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <GetCurrentProjectStaticWebAssetsDependsOn>
       $(GetCurrentProjectStaticWebAssetsDependsOn);
+      AddScopedCssBundle;
       _BlazorWasmPrepareForRun;
     </GetCurrentProjectStaticWebAssetsDependsOn>
   </PropertyGroup>
