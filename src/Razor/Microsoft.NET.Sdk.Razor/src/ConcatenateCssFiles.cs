@@ -19,11 +19,14 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         [Required]
         public string OutputFile { get; set; }
 
-        public override bool Execute(){
-                        var builder = new StringBuilder();
-            for (var i = 0; i < FilesToProcess.Length; i++)
+        public override bool Execute()
+        {
+            var builder = new StringBuilder();
+            var orderedFiles = FilesToProcess.OrderBy(f => f.GetMetadata("FullPath")).ToArray();
+            for (var i = 0; i < orderedFiles.Length; i++)
             {
-                builder.AppendLine();
+                var current = orderedFiles[i];
+                builder.AppendLine($"/* {current.GetMetadata("BasePath").Replace("\\","/")}{current.GetMetadata("RelativePath").Replace("\\","/")} */");
                 foreach (var line in File.ReadLines(FilesToProcess[i].GetMetadata("FullPath")))
                 {
                     builder.AppendLine(line);

@@ -56,8 +56,8 @@ Integration with static web assets:
        sources like an additional itemgroup or metadata.
   -->
   <_ScopedCssExtension>.rz.scp.css</_ScopedCssExtension>
-  <ResolveStaticWebAssetsInputsDependsOn>$(ResolveStaticWebAssetsInputsDependsOn);CollectAllScopedCssAssets;AddScopedCssBundle</ResolveStaticWebAssetsInputsDependsOn>
-  <ResolveCurrentProjectStaticWebAssetsInputsDependsOn>$(ResolveCurrentProjectStaticWebAssetsInputsDependsOn);AddGeneratedScopedCssFiles</ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
+  <ResolveStaticWebAssetsInputsDependsOn>$(ResolveStaticWebAssetsInputsDependsOn);_CollectAllScopedCssAssets;_AddScopedCssBundle</ResolveStaticWebAssetsInputsDependsOn>
+  <ResolveCurrentProjectStaticWebAssetsInputsDependsOn>$(ResolveCurrentProjectStaticWebAssetsInputsDependsOn);_AddGeneratedScopedCssFiles</ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
 </PropertyGroup>
 
 <Target Name="ResolveScopedCssInputs">
@@ -83,7 +83,7 @@ Integration with static web assets:
 </Target>
 
 <!-- This target just generates a Scope identifier for the items that we deemed were scoped css files -->
-<Target Name="ComputeCssScope" DependsOnTargets="ResolveScopedCssInputs">
+<Target Name="_ComputeCssScope" DependsOnTargets="ResolveScopedCssInputs">
   <ComputeCssScope ScopedCssInput="@(ScopedCssInput)" Targetname="$(TargetName)">
     <Output TaskParameter="ScopedCss" ItemName="_ScopedCss" />
   </ComputeCssScope>
@@ -92,7 +92,7 @@ Integration with static web assets:
 <!-- This target validates that there is at most one scoped css file per component, that there are no scoped css files without a
      matching component, and then adds the associated scope to the razor components that have a matching scoped css file.
 -->
-<Target Name="ResolveComponentCssScopes" BeforeTargets="AssignRazorComponentTargetPaths" DependsOnTargets="ComputeCssScope;ResolveRazorComponentInputs">
+<Target Name="_ResolveComponentCssScopes" BeforeTargets="AssignRazorComponentTargetPaths" DependsOnTargets="_ComputeCssScope;ResolveRazorComponentInputs">
   <ApplyCssScopes RazorComponents="@(RazorComponent)" ScopedCss="@(_ScopedCss)">
     <Output TaskParameter="RazorComponentsWithScopes" ItemName="_RazorComponentsWithScopes" />
   </ApplyCssScopes>
@@ -104,20 +104,20 @@ Integration with static web assets:
 
 <!-- Sets the output path for the processed scoped css files. They will all have a '.rz.scp.css' extension to flag them as processed
      scoped css files. -->
-<Target Name="ResolveScopedCssOutputs" DependsOnTargets="ComputeCssScope">
+<Target Name="_ResolveScopedCssOutputs" DependsOnTargets="_ComputeCssScope">
   <PropertyGroup>
-    <_ScopedCssIntermediatePath>$(IntermediateOutputPath)\scopedcss</_ScopedCssIntermediatePath>
+    <_ScopedCssIntermediatePath>$(IntermediateOutputPath)scopedcss\</_ScopedCssIntermediatePath>
   </PropertyGroup>
 
   <ItemGroup>
     <_ScopedCss Condition="'%(_ScopedCss.Identity)' != ''">
-      <OutputFile>$(_ScopedCssIntermediatePath)%(RecursiveDir)%(FileName)$(_ScopedCssExtension)</OutputFile>
+      <OutputFile>$(_ScopedCssIntermediatePath)%(RelativeDir)%(RecursiveDir)%(FileName)$(_ScopedCssExtension)</OutputFile>
     </_ScopedCss>
   </ItemGroup>
 </Target>
 
 <!-- Transforms the original scoped CSS files into their scoped versions on their designated output paths -->
-<Target Name="GenerateScopedCssFiles" DependsOnTargets="ResolveScopedCssOutputs">
+<Target Name="_GenerateScopedCssFiles" DependsOnTargets="_ResolveScopedCssOutputs">
 
   <MakeDir Directories="$(_ScopedCssIntermediatePath)" />
   <RewriteCss
@@ -135,11 +135,14 @@ Integration with static web assets:
   This makes sure we only include the bundle file when we are processing an application for build/publish
   and avoids including it on razor class libraries.
 -->
-<Target Name="AddScopedCssBundle">
+<Target Name="_AddScopedCssBundle" DependsOnTargets="@(_AddScopedCssBundleDependsOn)" Condition="'$(ScopedCssDisableBundling)' != 'true'">
   <PropertyGroup>
     <_ScopedCssOutputPath>$(_ScopedCssIntermediatePath)_framework\scoped.styles.css</_ScopedCssOutputPath>
   </PropertyGroup>
   <ItemGroup>
+  <!-- When bundling is enabled we want to remove all identified generated scoped css files from the list of static web assets so that
+       they are not copied to the output folder. -->
+    <StaticWebAsset Remove="@(_AllScopedCss)" Condition="'$(ScopedCssDisableBundling)' != 'true'" />
     <StaticWebAsset Include="$(_ScopedCssOutputPath)">
       <SourceType></SourceType>
       <SourceId>$(PackageId)</SourceId>
@@ -157,7 +160,10 @@ Integration with static web assets:
   </ItemGroup>
 </Target>
 
-<Target Name="CollectAllScopedCssAssets">
+<!-- This target runs as part of ResolveStaticWebAssetInputs and collects all the generated scoped css files. When bundling is enabled
+     these files are removed from the list of static web assets by '_AddScopedCssBundle' -->
+
+<Target Name="_CollectAllScopedCssAssets">
   <ResolveAllScopedCssAssets StaticWebAssets="@(StaticWebAsset)">
     <Output TaskParameter="ScopedCssAssets" ItemName="_AllScopedCss" />
   </ResolveAllScopedCssAssets>
@@ -166,7 +172,7 @@ Integration with static web assets:
 <!-- This target is only called as part of GetCurrentProjectStaticWebAssets which is only invoked on referenced projects to get the list
      of their assets. We return the list of css outputs we will produce and let the main app do the final bundling. -->
 
-<Target Name="AddGeneratedScopedCssFiles" DependsOnTargets="ResolveScopedCssOutputs">
+<Target Name="_AddGeneratedScopedCssFiles" DependsOnTargets="_ResolveScopedCssOutputs">
   <ItemGroup>
     <StaticWebAsset Include="%(_ScopedCss.OutputFile)">
       <SourceType></SourceType>
@@ -178,7 +184,8 @@ Integration with static web assets:
   </ItemGroup>
 </Target>
 
-<Target Name="GenerateIsolatedCssFile" BeforeTargets="GetCopyToOutputDirectoryItems">
+<Target Name="BundleScopedCssFiles" Condition="'$(ScopedCssDisableBundling)' != 'true'" BeforeTargets="GetCopyToOutputDirectoryItems" DependsOnTargets="_GenerateScopedCssFiles">
+  <!-- Incrementalism is built into the task itself. -->
   <ConcatenateCssFiles FilesToProcess="@(_AllScopedCss)" OutputFile="$(_ScopedCssOutputPath)" />
 </Target>
 
