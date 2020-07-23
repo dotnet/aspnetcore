@@ -324,9 +324,18 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       const assembliesToLoad = BINDING.mono_array_to_js_array<System_String, string>(assembliesToLoadDotNetArray);
       const lazyAssemblies = resourceLoader.bootConfig.resources.lazyAssembly;
 
-      if (lazyAssemblies) {
-        const resourcePromises = Promise.all(assembliesToLoad
-            .filter(assembly => lazyAssemblies.hasOwnProperty(assembly))
+      if (!lazyAssemblies) {
+        throw new Error("No assemblies have been marked as lazy-loadable. Use the 'BlazorWebAssemblyLazyLoad' item group in your project file to enable lazy loading an assembly.");
+      }
+
+      var assembliesMarkedAsLazy = assembliesToLoad.filter(assembly => lazyAssemblies.hasOwnProperty(assembly));
+
+      if (assembliesMarkedAsLazy.length != assembliesToLoad.length) {
+        var notMarked = assembliesToLoad.filter(assembly => !assembliesMarkedAsLazy.includes(assembly));
+        throw new Error(`${notMarked.join()} must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.`);
+      }
+
+      const resourcePromises = Promise.all(assembliesMarkedAsLazy
             .map(assembly => resourceLoader.loadResource(assembly, `_framework/${assembly}`, lazyAssemblies[assembly], 'assembly'))
             .map(async resource => (await resource.response).arrayBuffer()));
 
@@ -345,8 +354,6 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
           return resourcesToLoad.length;
         }));
       }
-      return BINDING.js_to_mono_obj(Promise.resolve(0));
-    }
   });
 
   module.postRun.push(() => {
