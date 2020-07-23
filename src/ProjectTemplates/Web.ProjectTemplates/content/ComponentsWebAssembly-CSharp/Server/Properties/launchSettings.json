@@ -22,6 +22,7 @@
       },
       "ComponentsWebAssembly-CSharp.Server": {
         "commandName": "Project",
+        "dotnetRunMessages": "true",
         "launchBrowser": true,
         "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
         //#if(RequiresHttps)
