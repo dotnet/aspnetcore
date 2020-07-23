@@ -155,7 +155,7 @@ Integration with static web assets:
 <Target Name="AddScopedCssBundle" Condition="'$(ScopedCssDisableBundling)' != 'true'" DependsOnTargets="_CollectAllScopedCssAssets">
   <PropertyGroup>
     <_ScopedCssOutputPath>$(_ScopedCssIntermediatePath)_framework\scoped.styles.css</_ScopedCssOutputPath>
-    <_ScopedCssOutputFullPath>$([System.IO.Path]::Combine('$(MSBuildProjectFileDirectory)', '$(_ScopedCssIntermediatePath)_framework/scoped.styles.css'))</_ScopedCssOutputFullPath>
+    <_ScopedCssOutputFullPath>$([System.IO.Path]::Combine('$(MSBuildProjectFileDirectory)', '$(_ScopedCssIntermediatePath)_framework\scoped.styles.css'))</_ScopedCssOutputFullPath>
   </PropertyGroup>
   <ItemGroup>
   <!-- When bundling is enabled we want to remove all identified generated scoped css files from the list of static web assets so that
@@ -192,6 +192,9 @@ Integration with static web assets:
      of their assets. We return the list of css outputs we will produce and let the main app do the final bundling. -->
 
 <Target Name="_AddGeneratedScopedCssFiles" DependsOnTargets="_ResolveScopedCssOutputs">
+  <PropertyGroup>
+    <StaticWebAssetBasePath Condition="$(StaticWebAssetBasePath) == ''">_content/$(PackageId)</StaticWebAssetBasePath>
+  </PropertyGroup>
   <ItemGroup>
     <StaticWebAsset Include="%(_ScopedCss.OutputFile)" Condition="@(_ScopedCss) != ''">
       <SourceType></SourceType>
@@ -217,8 +220,16 @@ Integration with static web assets:
       <ContentRoot>$(_ScopedCssIntermediatePath)</ContentRoot>
       <BasePath>$(StaticWebAssetBasePath)</BasePath>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)','$([MSBuild]::NormalizePath('wwwroot/$(StaticWebAssetBasePath)/_framework/scoped.styles.css'))'))</RelativePath>
+      <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)',$([MSBuild]::NormalizePath('wwwroot/$(StaticWebAssetBasePath)/_framework/scoped.styles.css'))))</RelativePath>
     </_ExternalPublishStaticWebAsset>
+  </ItemGroup>
+</Target>
+
+<Target Name="_AdjustIsolatedCssPackageContents" BeforeTargets="_RemoveWebRootContentFromPackaging;_CreateStaticWebAssetsCustomPropsCacheFile" DependsOnTargets="_CollectAllScopedCssAssets">
+  <ItemGroup>
+    <_CurrentProjectStaticWebAsset Remove="$(_ScopedCssOutputFullPath)" />
+    <StaticWebAsset Remove="$(_ScopedCssOutputFullPath)" />
+    <StaticWebAsset Include="@(_AllScopedCss)" Condition="'%(SourceType)' == ''" />
   </ItemGroup>
 </Target>
 
