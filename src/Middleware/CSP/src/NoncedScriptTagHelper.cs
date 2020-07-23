@@ -14,9 +14,7 @@ namespace Microsoft.AspNetCore.Csp
 
         public override void Process(TagHelperContext context, TagHelperOutput output)
         {
-            //base.Process(context, output);
             output.TagName = "script";
-            output.Attributes.SetAttribute("debug-nonce", _nonce.GetValue());
             output.Attributes.SetAttribute("nonce", _nonce.GetValue());
         }
     }
