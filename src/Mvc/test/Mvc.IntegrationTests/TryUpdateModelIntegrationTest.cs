@@ -1217,6 +1217,108 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
 
+        private class ModelWithRecordTypeProperty
+        {
+            public AddressRecord Address { get; set; }
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_RecordTypeProperty()
+        {
+            // Arrange
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("Address.ZipCode", "98007").Add("Address.Street", "SomeStreet");
+            });
+
+            var modelState = testContext.ModelState;
+            var model = new ModelWithRecordTypeProperty();
+            var oldModel = model;
+
+            // Act
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
+
+            // Assert
+            Assert.True(result);
+
+            // Model
+            Assert.Same(oldModel, model);
+            Assert.NotNull(model.Address);
+            var address = model.Address;
+            Assert.Equal("SomeStreet", address.Street);
+            Assert.Null(address.City);
+            Assert.Equal("98007", address.ZipCode);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+
+            Assert.Equal(2, modelState.Count);
+            var entry = Assert.Single(modelState, k => k.Key == "Address.ZipCode");
+            var state = entry.Value;
+            Assert.Equal("98007", state.AttemptedValue);
+            Assert.Equal("98007", state.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+
+            entry = Assert.Single(modelState, k => k.Key == "Address.Street");
+            state = entry.Value;
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_RecordTypeProperty_InitializedDoesNotOverwriteConstructorParameters()
+        {
+            // Arrange
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("Address.ZipCode", "98007").Add("Address.Street", "SomeStreet");
+            });
+
+            var modelState = testContext.ModelState;
+            var model = new ModelWithRecordTypeProperty
+            {
+                Address = new AddressRecord("DefaultStreet", "DefaultCity")
+                {
+                    ZipCode = "98056",
+                },
+            };
+            var oldModel = model;
+
+            // Act
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
+
+            // Assert
+            Assert.True(result);
+
+            // Model
+            Assert.Same(oldModel, model);
+            Assert.NotNull(model.Address);
+            var address = model.Address;
+            Assert.Equal("DefaultStreet", address.Street);
+            Assert.Null(address.City);
+            Assert.Equal("98007", address.ZipCode);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState);
+            var state = entry.Value;
+            Assert.Equal("98007", state.AttemptedValue);
+            Assert.Equal("98007", state.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+
+            entry = Assert.Single(modelState, k => k.Key == "Address.Street");
+            state = entry.Value;
+            Assert.Equal("SomeStreet", state.AttemptedValue);
+            Assert.Equal("SomeStreet", state.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+        }
+
         private void UpdateRequest(HttpRequest request, string data, string name)
         {
             const string fileName = "text.txt";
