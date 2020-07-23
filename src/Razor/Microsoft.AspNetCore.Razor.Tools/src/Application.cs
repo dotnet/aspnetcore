@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Razor.Tools
             Commands.Add(new GenerateCommand(this));
             Commands.Add(new BrotliCompressCommand(this));
             Commands.Add(new RewriteCssCommand(this));
-            Commands.Add(new ConcatenateCssFilesCommand(this));
         }
 
         public CancellationToken CancellationToken { get; }

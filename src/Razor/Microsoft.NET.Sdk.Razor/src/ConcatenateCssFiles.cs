@@ -11,7 +11,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
-    public class ConcatenateCssFiles : DotNetToolTask
+    public class ConcatenateCssFiles : Task
     {
         [Required]
         public ITaskItem[] FilesToProcess { get; set; }
@@ -19,28 +19,51 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         [Required]
         public string OutputFile { get; set; }
 
-        internal override string Command => "concatenatecss";
-
-        protected override string GenerateResponseFileCommands()
-        {
-            var builder = new StringBuilder();
-
-            builder.AppendLine(Command);
-
-
+        public override bool Execute(){
+                        var builder = new StringBuilder();
             for (var i = 0; i < FilesToProcess.Length; i++)
             {
-                var input = FilesToProcess[i];
-                var inputFullPath = input.GetMetadata("FullPath");
-
-                builder.AppendLine("-s");
-                builder.AppendLine(inputFullPath);
-
+                builder.AppendLine();
+                foreach (var line in File.ReadLines(FilesToProcess[i].GetMetadata("FullPath")))
+                {
+                    builder.AppendLine(line);
+                }
             }
 
-            builder.AppendLine("-o");
-            builder.AppendLine(OutputFile);
-            return builder.ToString();
+            var content = builder.ToString();
+
+            if (!File.Exists(OutputFile) || !SameContent(content, OutputFile))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
+                File.WriteAllText(OutputFile, content);
+            }
+
+
+            return !Log.HasLoggedErrors;
+        }
+
+        private bool SameContent(string content, string outputFilePath)
+        {
+            var contentHash = GetContentHash(content);
+
+            var outputContent = File.ReadAllText(outputFilePath);
+            var outputContentHash = GetContentHash(outputContent);
+
+            for (int i = 0; i < outputContentHash.Length; i++)
+            {
+                if (outputContentHash[i] != contentHash[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+
+            static byte[] GetContentHash(string content)
+            {
+                using var sha256 = SHA256.Create();
+                return sha256.ComputeHash(Encoding.UTF8.GetBytes(content));
+            }
         }
     }
 }

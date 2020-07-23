@@ -64,7 +64,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Controls whether or not the static web assets feature is enabled. By default is enabled for netcoreapp3.0
          applications and RazorLangVersion 3 or above. -->
     <StaticWebAssetsEnabled Condition="'$(StaticWebAssetsEnabled)' == ''">$(_Targeting30OrNewerRazorLangVersion)</StaticWebAssetsEnabled>
-    <CssIsolationEnabled Condition="'$(CssIsolationEnabled)' == ''">$(_Targeting30OrNewerRazorLangVersion)</CssIsolationEnabled>
+
+    <!-- Controls whether or not the scoped css feature is enabled. By default is enabled for net5.0 applications and RazorLangVersion 5 or above -->
+    <ScopedCssEnabled Condition="'$(ScopedCssEnabled)' == ''">$(_Targeting50OrNewerRazorLangVersion)</ScopedCssEnabled>
   </PropertyGroup>
 
 
@@ -354,7 +356,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="Microsoft.NET.Sdk.Razor.StaticWebAssets.targets" Condition="'$(StaticWebAssetsEnabled)' == 'true'" />
 
-  <Import Project="Microsoft.NET.Sdk.Razor.CssIsolation.targets" Condition="'$(CssIsolationEnabled)' == 'true'" />
+  <Import Project="Microsoft.NET.Sdk.Razor.ScopedCss.targets" Condition="'$(ScopedCssEnabled)' == 'true'" />
 
   <Import Project="Microsoft.NET.Sdk.Razor.GenerateAssemblyInfo.targets" />
 
