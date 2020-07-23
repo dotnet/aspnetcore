@@ -35,27 +35,31 @@ public class HubConnection implements AutoCloseable {
     private static final int MAX_NEGOTIATE_ATTEMPTS = 100;
 
     private String baseUrl;
-    private Transport customTransport;
-    private OnReceiveCallBack callback;
     private final CallbackMap handlers = new CallbackMap();
-    private HubProtocol protocol;
-    private List<OnClosedCallback> onClosedCallbackList;
+    private final HubProtocol protocol;
     private final boolean skipNegotiate;
-    private Single<String> accessTokenProvider;
     private final Map<String, String> headers;
-    private String stopError;
-    private long keepAliveInterval = 15*1000;
-    private long serverTimeout = 30*1000;
-    private long tickRate = 1000;
-    private TransportEnum transportEnum = TransportEnum.ALL;
     private final int negotiateVersion = 1;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
-    private long handshakeResponseTimeout = 15*1000;
     private final HttpClient httpClient;
     private Completable start;
+    private final Transport customTransport;
+    private final OnReceiveCallBack callback;
+    private final Single<String> accessTokenProvider;
+
+    // These are all user-settable properties
+    private List<OnClosedCallback> onClosedCallbackList;
+    private long keepAliveInterval = 15 * 1000;
+    private long serverTimeout = 30 * 1000;
+    private long handshakeResponseTimeout = 15 * 1000;
+
+    // Private property, modified for testing
+    private long tickRate = 1000;
+
+    private TransportEnum transportEnum = TransportEnum.ALL;
 
     // Holds all mutable state other than user-defined handlers and settable properties.
-    private ReconnectingConnectionState state;
+    private final ReconnectingConnectionState state;
 
     /**
      * Sets the server timeout interval for the connection.
@@ -101,7 +105,7 @@ public class HubConnection implements AutoCloseable {
     public String getConnectionId() {
         ConnectionState state = this.state.getConnectionStateUnsynchronized();
         if (state != null) {
-            return state.getConnectionId();
+            return state.connectionId;
         }
         return null;
     }
@@ -118,7 +122,7 @@ public class HubConnection implements AutoCloseable {
 
     // For testing purposes
     Transport getTransport() {
-        return this.state.getConnectionState().getTransport();
+        return this.state.getConnectionState().transport;
     }
 
     HubConnection(String url, Transport transport, boolean skipNegotiate, HttpClient httpClient, HubProtocol protocol,
@@ -128,7 +132,7 @@ public class HubConnection implements AutoCloseable {
             throw new IllegalArgumentException("A valid url is required.");
         }
 
-        this.state = new ReconnectingConnectionState();
+        this.state = new ReconnectingConnectionState(this.logger);
         this.baseUrl = url;
         this.protocol = protocol;
 
@@ -148,6 +152,10 @@ public class HubConnection implements AutoCloseable {
             this.customTransport = transport;
         } else if (transportEnum != null) {
             this.transportEnum = transportEnum;
+            this.customTransport = null;
+        } else {
+            this.transportEnum = TransportEnum.ALL;
+            this.customTransport = null;
         }
 
         if (handshakeResponseTimeout > 0) {
@@ -285,8 +293,8 @@ public class HubConnection implements AutoCloseable {
 
                 return connectionState.transport.send(handshake).andThen(Completable.defer(() -> {
                     connectionState.timeoutHandshakeResponse(handshakeResponseTimeout, TimeUnit.MILLISECONDS);
-                    return connectionState.getHandshakeSubject().andThen(Completable.defer(() -> {
-                        connectionState.getLock().lock();
+                    return connectionState.handshakeResponseSubject.andThen(Completable.defer(() -> {
+                        connectionState.lock.lock();
                         try {
                             this.state.changeState(HubConnectionState.DISCONNECTED, HubConnectionState.CONNECTED);
                             logger.info("HubConnection started.");
@@ -296,7 +304,7 @@ public class HubConnection implements AutoCloseable {
                                 connectionState.activatePingTimer();
                             }
                         } finally {
-                            connectionState.getLock().unlock();
+                            connectionState.lock.unlock();
                         }
 
                             return Completable.complete();
@@ -346,11 +354,11 @@ public class HubConnection implements AutoCloseable {
 
                 String connectionToken = "";
                 if (response.getVersion() > 0) {
-                    this.state.getConnectionState().setConnectionId(response.getConnectionId());
+                    this.state.getConnectionState().connectionId = response.getConnectionId();
                     connectionToken = response.getConnectionToken();
                 } else {
                     connectionToken = response.getConnectionId();
-                    this.state.getConnectionState().setConnectionId(connectionToken);
+                    this.state.getConnectionState().connectionId = connectionToken;
                 }
 
                 String finalUrl = Utils.appendQueryString(url, "id=" + connectionToken);
@@ -371,22 +379,22 @@ public class HubConnection implements AutoCloseable {
      */
     private Completable stop(String errorMessage) {
         Transport transport;
-        this.state.getLock().lock();
+        this.state.lock();
         try {
             if (this.state.getHubConnectionState() == HubConnectionState.DISCONNECTED) {
                 return Completable.complete();
             }
 
             if (errorMessage != null) {
-                stopError = errorMessage;
+                this.state.getConnectionStateUnsynchronized().stopError = errorMessage;
                 logger.error("HubConnection disconnected with an error: {}.", errorMessage);
             } else {
                 logger.debug("Stopping HubConnection.");
             }
 
-            transport = this.state.getConnectionStateUnsynchronized().getTransport();
+            transport = this.state.getConnectionStateUnsynchronized().transport;
         } finally {
-            this.state.getLock().unlock();
+            this.state.unlock();
         }
 
         Completable stop = transport.stop();
@@ -476,12 +484,12 @@ public class HubConnection implements AutoCloseable {
 
     private void stopConnection(String errorMessage) {
         RuntimeException exception = null;
-        this.state.getLock().lock();
+        this.state.lock();
         try {
             // errorMessage gets passed in from the transport. An already existing stopError value
             // should take precedence.
-            if (stopError != null) {
-                errorMessage = stopError;
+            if (this.state.getConnectionStateUnsynchronized().stopError != null) {
+                errorMessage = this.state.getConnectionStateUnsynchronized().stopError;
             }
             if (errorMessage != null) {
                 exception = new RuntimeException(errorMessage);
@@ -499,7 +507,7 @@ public class HubConnection implements AutoCloseable {
             this.state.changeState(HubConnectionState.CONNECTED, HubConnectionState.DISCONNECTED);
             transportEnum = TransportEnum.ALL;
         } finally {
-            this.state.getLock().unlock();
+            this.state.unlock();
         }
 
         // Do not run these callbacks inside the hubConnectionStateLock
@@ -518,14 +526,14 @@ public class HubConnection implements AutoCloseable {
      * @param args   The arguments to be passed to the method.
      */
     public void send(String method, Object... args) {
-        this.state.getLock().lock();
+        this.state.lock();
         try {
             if (this.state.getHubConnectionState() != HubConnectionState.CONNECTED) {
                 throw new RuntimeException("The 'send' method cannot be called if the connection is not active.");
             }
             sendInvocationMessage(method, args);
         } finally {
-            this.state.getLock().unlock();
+            this.state.unlock();
         }
     }
 
@@ -534,26 +542,28 @@ public class HubConnection implements AutoCloseable {
     }
 
     private void sendInvocationMessage(String method, Object[] args, String id, Boolean isStreamInvocation) {
-        Map<String, Observable> streamIds = new HashMap<>();
-        args = checkUploadStream(args, streamIds);
+        List<String> streamIds = new ArrayList<>();
+        List<Observable> streams = new ArrayList<>();
+        args = checkUploadStream(args, streamIds, streams);
         InvocationMessage invocationMessage;
         if (isStreamInvocation) {
-            invocationMessage = new StreamInvocationMessage(null, id, method, args, streamIds.keySet());
+            invocationMessage = new StreamInvocationMessage(null, id, method, args, streamIds);
         } else {
-            invocationMessage = new InvocationMessage(null, id, method, args, streamIds.keySet());
+            invocationMessage = new InvocationMessage(null, id, method, args, streamIds);
         }
 
         sendHubMessageWithLock(invocationMessage);
-        launchStreams(streamIds);
+        launchStreams(streamIds, streams);
     }
 
-    void launchStreams(Map<String, Observable> streams) {
+    void launchStreams(List<String> streamIds, List<Observable> streams) {
         if (streams.isEmpty()) {
             return;
         }
 
-        for (String streamId : streams.keySet()) {
-            Observable stream = streams.get(streamId);
+        for (int i = 0; i < streamIds.size(); i++) {
+            String streamId = streamIds.get(i);
+            Observable stream = streams.get(i);
             stream.subscribe(
                 (item) -> sendHubMessageWithLock(new StreamItem(null, streamId, item)),
                 (error) -> {
@@ -565,7 +575,7 @@ public class HubConnection implements AutoCloseable {
         }
     }
 
-    Object[] checkUploadStream(Object[] args, Map<String, Observable> streamIds) {
+    Object[] checkUploadStream(Object[] args, List<String> streamIds, List<Observable> streams) {
         if (args == null) {
             return new Object[] { null };
         }
@@ -577,7 +587,8 @@ public class HubConnection implements AutoCloseable {
                 params.remove(arg);
                 Observable stream = (Observable)arg;
                 String streamId = connectionState.getNextInvocationId();
-                streamIds.put(streamId, stream);
+                streamIds.add(streamId);
+                streams.add(stream);
             }
         }
 
@@ -592,7 +603,7 @@ public class HubConnection implements AutoCloseable {
      * @return A Completable that indicates when the invocation has completed.
      */
     public Completable invoke(String method, Object... args) {
-        this.state.getLock().lock();
+        this.state.lock();
         try {
             if (this.state.getHubConnectionState() != HubConnectionState.CONNECTED) {
                 throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
@@ -616,7 +627,7 @@ public class HubConnection implements AutoCloseable {
             sendInvocationMessage(method, args, id, false);
             return subject;
         } finally {
-            this.state.getLock().unlock();
+            this.state.unlock();
         }
     }
 
@@ -650,7 +661,7 @@ public class HubConnection implements AutoCloseable {
     
     @SuppressWarnings("unchecked")
     private <T> Single<T> invoke(Type returnType, Class<?> returnClass, String method, Object... args) {
-        this.state.getLock().lock();
+        this.state.lock();
         try {
             if (this.state.getHubConnectionState() != HubConnectionState.CONNECTED) {
                 throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
@@ -675,7 +686,7 @@ public class HubConnection implements AutoCloseable {
             sendInvocationMessage(method, args, id, false);
             return subject;
         } finally {
-            this.state.getLock().unlock();
+            this.state.unlock();
         }
     }
 
@@ -710,7 +721,7 @@ public class HubConnection implements AutoCloseable {
     private <T> Observable<T> stream(Type returnType, Class<?> returnClass, String method, Object ... args) {
         String invocationId;
         InvocationRequest irq;
-        this.state.getLock().lock();
+        this.state.lock();
         try {
             if (this.state.getHubConnectionState() != HubConnectionState.CONNECTED) {
                 throw new RuntimeException("The 'stream' method cannot be called if the connection is not active.");
@@ -743,12 +754,12 @@ public class HubConnection implements AutoCloseable {
                 }
             });
         } finally {
-            this.state.getLock().unlock();
+            this.state.unlock();
         }
     }
 
     private void sendHubMessageWithLock(HubMessage message) {
-        this.state.getLock().lock();
+        this.state.lock();
         try {
             ByteBuffer serializedMessage = protocol.writeMessage(message);
             if (message.getMessageType() == HubMessageType.INVOCATION) {
@@ -760,10 +771,10 @@ public class HubConnection implements AutoCloseable {
             }
 
             ConnectionState connectionState = this.state.getConnectionStateUnsynchronized();
-            connectionState.getTransport().send(serializedMessage).subscribeWith(CompletableSubject.create());
+            connectionState.transport.send(serializedMessage).subscribeWith(CompletableSubject.create());
             connectionState.resetKeepAlive();
         } finally {
-            this.state.getLock().unlock();
+            this.state.unlock();
         }
     }
 
@@ -1228,15 +1239,17 @@ public class HubConnection implements AutoCloseable {
         private final HubConnection connection;
         private final AtomicInteger nextId = new AtomicInteger(0);
         private final HashMap<String, InvocationRequest> pendingInvocations = new HashMap<>();
-        private final Lock lock = new ReentrantLock();
-        private Transport transport;
-        private String connectionId;
         private final AtomicLong nextServerTimeout = new AtomicLong();
         private final AtomicLong nextPingActivation = new AtomicLong();
         private Timer pingTimer = null;
         private Boolean handshakeReceived = false;
-        private CompletableSubject handshakeResponseSubject = CompletableSubject.create();
         private ScheduledExecutorService handshakeTimeout = null;
+
+        public final Lock lock = new ReentrantLock();
+        public final CompletableSubject handshakeResponseSubject = CompletableSubject.create();
+        public Transport transport;
+        public String connectionId;
+        public String stopError;
 
         public ConnectionState(HubConnection connection) {
             this.connection = connection;
@@ -1296,36 +1309,12 @@ public class HubConnection implements AutoCloseable {
             }
         }
 
-        public Transport getTransport() {
-            return this.transport;
-        }
-
-        public void setTransport(Transport transport) {
-            this.transport = transport;
-        }
-
-        public Lock getLock() {
-            return this.lock;
-        }
-
-        public String getConnectionId() {
-            return this.connectionId;
-        }
-
-        public void setConnectionId(String connectionId) {
-            this.connectionId = connectionId;
-        }
-
         public void resetServerTimeout() {
             this.nextServerTimeout.set(System.currentTimeMillis() + serverTimeout);
         }
 
         public void resetKeepAlive() {
             this.nextPingActivation.set(System.currentTimeMillis() + keepAliveInterval);
-        }
-
-        public CompletableSubject getHandshakeSubject() {
-            return handshakeResponseSubject;
         }
 
         public void activatePingTimer() {
@@ -1447,9 +1436,14 @@ public class HubConnection implements AutoCloseable {
     // We don't have reconnect yet, but this helps align the Java client with the .NET client
     // and hopefully make it easier to implement reconnect in the future
     private final class ReconnectingConnectionState {
+        private final Logger logger;
+        private final Lock lock = new ReentrantLock();
         private ConnectionState state;
-        private Lock lock = new ReentrantLock();
         private HubConnectionState hubConnectionState = HubConnectionState.DISCONNECTED;
+
+        public ReconnectingConnectionState(Logger logger) {
+            this.logger = logger;
+        }
 
         public void setConnectionState(ConnectionState state) {
             this.lock.lock();
@@ -1480,22 +1474,29 @@ public class HubConnection implements AutoCloseable {
             return this.hubConnectionState;
         }
 
-        public Lock getLock() {
-            return this.lock;
-        }
-
         public void changeState(HubConnectionState from, HubConnectionState to) {
             this.lock.lock();
             try {
+                logger.debug("The HubConnection is attempting to transition from the {} state to the {} state.", from, to);
                 if (this.hubConnectionState != from) {
+                    logger.debug("The HubConnection failed to transition from the {} state to the {} state because it was actually in the {} state.",
+                        from, to, this.hubConnectionState);
                     throw new RuntimeException(String.format("The HubConnection failed to transition from the '%s' state to the '%s' state because it was actually in the '%s' state.",
-                    from, to, this.hubConnectionState));
+                        from, to, this.hubConnectionState));
                 }
 
                 this.hubConnectionState = to;
             } finally {
                 this.lock.unlock();
             }
+        }
+
+        public void lock() {
+            this.lock.lock();
+        }
+
+        public void unlock() {
+            this.lock.unlock();
         }
     }
 
