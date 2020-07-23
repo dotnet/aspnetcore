@@ -1817,6 +1817,8 @@ virtual Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Visit
 ~Microsoft.AspNetCore.Mvc.RouteAttribute.Name.set -> void
 ~Microsoft.AspNetCore.Mvc.RouteAttribute.RouteAttribute(string template) -> void
 ~Microsoft.AspNetCore.Mvc.RouteAttribute.Template.get -> string
+~Microsoft.AspNetCore.Mvc.Routing.DynamicRouteValueTransformer.State.get -> object
+~Microsoft.AspNetCore.Mvc.Routing.DynamicRouteValueTransformer.State.set -> void
 ~Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.HttpMethodAttribute(System.Collections.Generic.IEnumerable<string> httpMethods) -> void
 ~Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.HttpMethodAttribute(System.Collections.Generic.IEnumerable<string> httpMethods, string template) -> void
 ~Microsoft.AspNetCore.Mvc.Routing.HttpMethodAttribute.HttpMethods.get -> System.Collections.Generic.IEnumerable<string>
@@ -2066,6 +2068,7 @@ virtual Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Visit
 ~static Microsoft.AspNetCore.Builder.ControllerEndpointRouteBuilderExtensions.MapControllers(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints) -> Microsoft.AspNetCore.Builder.ControllerActionEndpointConventionBuilder
 ~static Microsoft.AspNetCore.Builder.ControllerEndpointRouteBuilderExtensions.MapDefaultControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints) -> Microsoft.AspNetCore.Builder.ControllerActionEndpointConventionBuilder
 ~static Microsoft.AspNetCore.Builder.ControllerEndpointRouteBuilderExtensions.MapDynamicControllerRoute<TTransformer>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern) -> void
+~static Microsoft.AspNetCore.Builder.ControllerEndpointRouteBuilderExtensions.MapDynamicControllerRoute<TTransformer>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, object state) -> void
 ~static Microsoft.AspNetCore.Builder.ControllerEndpointRouteBuilderExtensions.MapFallbackToAreaController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string action, string controller, string area) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder
 ~static Microsoft.AspNetCore.Builder.ControllerEndpointRouteBuilderExtensions.MapFallbackToAreaController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, string action, string controller, string area) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder
 ~static Microsoft.AspNetCore.Builder.ControllerEndpointRouteBuilderExtensions.MapFallbackToController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string action, string controller) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder
@@ -2442,6 +2445,7 @@ virtual Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Visit
 ~virtual Microsoft.AspNetCore.Mvc.ProducesAttribute.OnResultExecuting(Microsoft.AspNetCore.Mvc.Filters.ResultExecutingContext context) -> void
 ~virtual Microsoft.AspNetCore.Mvc.RequireHttpsAttribute.HandleNonHttpsRequest(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext filterContext) -> void
 ~virtual Microsoft.AspNetCore.Mvc.RequireHttpsAttribute.OnAuthorization(Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext filterContext) -> void
+~virtual Microsoft.AspNetCore.Mvc.Routing.DynamicRouteValueTransformer.FilterAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.RouteValueDictionary values, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> endpoints) -> System.Threading.Tasks.ValueTask<System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint>>
 ~virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelper.GenerateUrl(string protocol, string host, Microsoft.AspNetCore.Routing.VirtualPathData pathData, string fragment) -> string
 ~virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelper.GetVirtualPathData(string routeName, Microsoft.AspNetCore.Routing.RouteValueDictionary values) -> Microsoft.AspNetCore.Routing.VirtualPathData
 ~virtual Microsoft.AspNetCore.Mvc.Routing.UrlHelperBase.Content(string contentPath) -> string
