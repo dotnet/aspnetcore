@@ -41,10 +41,7 @@ namespace Company.WebApplication1.Controllers
         [AuthorizeForScopes(ScopeKeySection = "CalledApi:CalledApiScopes")]
         public async Task<IActionResult> Index()
         {
-            ViewData["ApiResult"] = await _downstreamWebApi.CallWebApi();
-
-            // You can also specify the relative endpoint and the scopes
-            // ViewData["ApiResult"] = await _downstreamWebApi.CallWebApi("me", new string[] {"user.read"});
+            ViewData["ApiResult"] = await _downstreamWebApi.CallWebApiAsync();
 
             return View();
         }
