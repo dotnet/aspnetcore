@@ -206,7 +206,7 @@ Integration with static web assets:
   </ItemGroup>
 </Target>
 
-<Target Name="BundleScopedCssFiles" Condition="'$(ScopedCssDisableBundling)' != 'true' and '@(_AllScopedCss)' != ''" BeforeTargets="GetCopyToOutputDirectoryItems" DependsOnTargets="_GenerateScopedCssFiles">
+<Target Name="BundleScopedCssFiles" Condition="'$(ScopedCssDisableBundling)' != 'true' and '@(_AllScopedCss)' != ''" BeforeTargets="GetCopyToOutputDirectoryItems;_StaticWebAssetsComputeFilesToPublish" DependsOnTargets="_GenerateScopedCssFiles">
   <!-- Incrementalism is built into the task itself. -->
   <ConcatenateCssFiles FilesToProcess="@(_AllScopedCss)" OutputFile="$(_ScopedCssOutputPath)" />
 </Target>
