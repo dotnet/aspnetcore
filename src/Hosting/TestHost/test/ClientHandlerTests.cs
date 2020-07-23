@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -132,6 +133,21 @@ namespace Microsoft.AspNetCore.TestHost
             var httpClient = new HttpClient(handler);
 
             return httpClient.GetAsync("http://example.com");
+        }
+
+        [Fact]
+        public Task ContentLengthWithChunkedTransferEncodingWorks()
+        {
+            var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
+            {
+                Assert.Null(context.Request.ContentLength);
+
+                return Task.CompletedTask;
+            }));
+
+            var httpClient = new HttpClient(handler);
+
+            return httpClient.PostAsync("http://example.com", new UnlimitedContent());
         }
 
         [Fact]
@@ -595,6 +611,20 @@ namespace Microsoft.AspNetCore.TestHost
                 public void Dispose()
                 {
                 }
+            }
+        }
+
+        private class UnlimitedContent : HttpContent
+        {
+            protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
+            {
+                return Task.CompletedTask;
+            }
+
+            protected override bool TryComputeLength(out long length)
+            {
+                length = -1;
+                return false;
             }
         }
     }
