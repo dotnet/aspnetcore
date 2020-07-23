@@ -56,7 +56,7 @@ Integration with static web assets:
        sources like an additional itemgroup or metadata.
   -->
   <_ScopedCssExtension>.rz.scp.css</_ScopedCssExtension>
-  <ResolveStaticWebAssetsInputsDependsOn>$(ResolveStaticWebAssetsInputsDependsOn);AddScopedCssBundle</ResolveStaticWebAssetsInputsDependsOn>
+  <ResolveStaticWebAssetsInputsDependsOn>$(ResolveStaticWebAssetsInputsDependsOn);_CollectAllScopedCssAssets;AddScopedCssBundle</ResolveStaticWebAssetsInputsDependsOn>
   <ResolveCurrentProjectStaticWebAssetsInputsDependsOn>$(ResolveCurrentProjectStaticWebAssetsInputsDependsOn);_AddGeneratedScopedCssFiles</ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
 </PropertyGroup>
 
@@ -106,7 +106,7 @@ Integration with static web assets:
      scoped css files. -->
 <Target Name="_ResolveScopedCssOutputs" DependsOnTargets="_ComputeCssScope">
   <PropertyGroup>
-    <_ScopedCssIntermediatePath>$(IntermediateOutputPath)scopedcss\</_ScopedCssIntermediatePath>
+    <_ScopedCssIntermediatePath>$([System.IO.Path]::GetFullPath($(IntermediateOutputPath)scopedcss\))</_ScopedCssIntermediatePath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -152,14 +152,16 @@ Integration with static web assets:
   If one single bundle is desired, bundling can be disabled in the Blazor application and the host will create a single big bundle file.
 
 -->
-<Target Name="AddScopedCssBundle" Condition="'$(ScopedCssDisableBundling)' != 'true' and @(_AllScopedCss) != ''" DependsOnTargets="_CollectAllScopedCssAssets">
+<Target Name="AddScopedCssBundle" Condition="'$(ScopedCssDisableBundling)' != 'true'" DependsOnTargets="_CollectAllScopedCssAssets">
   <PropertyGroup>
     <_ScopedCssOutputPath>$(_ScopedCssIntermediatePath)_framework\scoped.styles.css</_ScopedCssOutputPath>
+    <_ScopedCssOutputFullPath>$([System.IO.Path]::Combine('$(MSBuildProjectFileDirectory)', '$(_ScopedCssIntermediatePath)_framework/scoped.styles.css'))</_ScopedCssOutputFullPath>
   </PropertyGroup>
   <ItemGroup>
   <!-- When bundling is enabled we want to remove all identified generated scoped css files from the list of static web assets so that
        they are not copied to the output folder. -->
     <StaticWebAsset Remove="@(_AllScopedCss)" Condition="'$(ScopedCssDisableBundling)' != 'true'" />
+    <!-- https://github.com/dotnet/aspnetcore/issues/24245 -->
     <StaticWebAsset Include="$(_ScopedCssOutputPath)">
       <SourceType></SourceType>
       <SourceId>$(PackageId)</SourceId>
@@ -201,9 +203,20 @@ Integration with static web assets:
   </ItemGroup>
 </Target>
 
-<Target Name="BundleScopedCssFiles" Condition="'$(ScopedCssDisableBundling)' != 'true' and @(_AllScopedCss) != ''" BeforeTargets="GetCopyToOutputDirectoryItems" DependsOnTargets="_GenerateScopedCssFiles">
+<Target Name="BundleScopedCssFiles" Condition="'$(ScopedCssDisableBundling)' != 'true' and '@(_AllScopedCss)' != ''" BeforeTargets="GetCopyToOutputDirectoryItems" DependsOnTargets="_GenerateScopedCssFiles">
   <!-- Incrementalism is built into the task itself. -->
   <ConcatenateCssFiles FilesToProcess="@(_AllScopedCss)" OutputFile="$(_ScopedCssOutputPath)" />
+  <ItemGroup>
+    <!-- Manually add the file to the publish flow. See https://github.com/dotnet/aspnetcore/issues/24245 -->
+    <_ExternalPublishStaticWebAsset Include="$(_ScopedCssOutputFullPath)">
+      <SourceType>generated</SourceType>
+      <SourceId>$(PackageId)</SourceId>
+      <ContentRoot>$(_ScopedCssIntermediatePath)</ContentRoot>
+      <BasePath>$(StaticWebAssetBasePath)</BasePath>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)','$([MSBuild]::NormalizePath('wwwroot/$(StaticWebAssetBasePath)/_framework/scoped.styles.css'))'))</RelativePath>
+    </_ExternalPublishStaticWebAsset>
+  </ItemGroup>
 </Target>
 
 </Project>
