@@ -9,7 +9,7 @@ namespace Company.WebApplication1
 {
     public interface IDownstreamWebApi
     {
-        Task<string> CallWebApi(string relativeEndpoint = "", string[] requiredScopes = null);
+        Task<string> CallWebApiAsync(string relativeEndpoint = "", string[] requiredScopes = null);
     }
 
     public static class DownstreamWebApiExtensions
@@ -46,16 +46,17 @@ namespace Company.WebApplication1
         /// not specified, uses scopes from the configuration</param>
         /// <param name="relativeEndpoint">Endpoint relative to the CalledApiUrl configuration</param>
         /// <returns>A JSON string representing the result of calling the Web API</returns>
-        public async Task<string> CallWebApi(string relativeEndpoint = "", string[] requiredScopes = null)
+        public async Task<string> CallWebApiAsync(string relativeEndpoint = "", string[] requiredScopes = null)
         {
             string[] scopes = requiredScopes ?? _configuration["CalledApi:CalledApiScopes"]?.Split(' ');
             string apiUrl = (_configuration["CalledApi:CalledApiUrl"] as string)?.TrimEnd('/') + $"/{relativeEndpoint}";
 
             string accessToken = await _tokenAcquisition.GetAccessTokenForUserAsync(scopes);
-            _httpClient.DefaultRequestHeaders.Add("Authorization", $"bearer {accessToken}");
+            HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, apiUrl);
+            httpRequestMessage.Headers.Add("Authorization", $"bearer {accessToken}");
 
             string apiResult;
-            var response = await _httpClient.GetAsync($"{apiUrl}");
+            var response = await _httpClient.SendAsync(httpRequestMessage);
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 apiResult = await response.Content.ReadAsStringAsync();
