@@ -19,7 +19,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
-    [Obsolete]
+#pragma warning disable CS0618 // Type or member is obsolete
     public class ComplexTypeModelBinderTest
     {
         private static readonly IModelMetadataProvider _metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -1662,4 +1662,5 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
         }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 }

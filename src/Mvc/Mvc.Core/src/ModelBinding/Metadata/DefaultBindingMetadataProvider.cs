@@ -116,6 +116,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var constructor = constructors[0];
 
             var parameters = constructor.GetParameters();
+            if (parameters.Length == 0)
+            {
+                // We do not need to do special handling for parameterless constructors.
+                return null;
+            }
+
             var properties = PropertyHelper.GetVisibleProperties(type);
 
             for (var i = 0; i < parameters.Length; i++)

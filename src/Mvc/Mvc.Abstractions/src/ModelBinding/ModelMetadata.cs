@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             get
             {
                 // In record types, each constructor parameter in the primary constructor is also a settable property with the same name.
-                // Executing model binding on these parameters twice may have detrimental effects, such as duplicate validation entries,
+                // Executing model binding on these parameters twice may have detrimental effects, such as duplicate ModelState entries,
                 // or failures if a model expects to be bound exactly ones.
                 // Consequently when binding to a constructor, we only bind and validate the subset of properties whose names
                 // haven't appeared as parameters.

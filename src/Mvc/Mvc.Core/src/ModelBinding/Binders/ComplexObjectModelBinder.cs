@@ -36,7 +36,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private readonly ILogger _logger;
         private Func<object> _modelCreator;
 
-
         internal ComplexObjectModelBinder(
             IDictionary<ModelMetadata, IModelBinder> propertyBinders,
             IReadOnlyList<IModelBinder> parameterBinders,
@@ -83,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 if (boundConstructor != null)
                 {
                     var values = new object[boundConstructor.BoundConstructorParameters.Count];
-                    var (attemptedParameterBinding, parameterBindingSucceeded) = await BindParameters(
+                    var (attemptedParameterBinding, parameterBindingSucceeded) = await BindParametersAsync(
                         bindingContext,
                         propertyData,
                         boundConstructor.BoundConstructorParameters,
@@ -103,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 }
             }
 
-            var (attemptedPropertyBinding, propertyBindingSucceeded) = await BindProperties(
+            var (attemptedPropertyBinding, propertyBindingSucceeded) = await BindPropertiesAsync(
                 bindingContext,
                 propertyData,
                 modelMetadata.BoundProperties);
@@ -225,7 +224,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             bindingContext.Model = _modelCreator();
         }
 
-        private async ValueTask<(bool attemptedBinding, bool bindingSucceeded)> BindParameters(
+        private async ValueTask<(bool attemptedBinding, bool bindingSucceeded)> BindParametersAsync(
             ModelBindingContext bindingContext,
             int propertyData,
             IReadOnlyList<ModelMetadata> parameters,
@@ -322,7 +321,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             return (attemptedBinding, bindingSucceeded);
         }
 
-        private async ValueTask<(bool attemptedBinding, bool bindingSucceeded)> BindProperties(
+        private async ValueTask<(bool attemptedBinding, bool bindingSucceeded)> BindPropertiesAsync(
             ModelBindingContext bindingContext,
             int propertyData,
             IReadOnlyList<ModelMetadata> boundProperties)
@@ -343,9 +342,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 {
                     continue;
                 }
-
-                var fieldName = property.BinderModelName ?? property.PropertyName;
-                var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
 
                 var propertyBinder = _propertyBinders[property];
                 if (propertyBinder is PlaceholderBinder)
@@ -372,6 +368,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     }
                 }
 
+                var fieldName = property.BinderModelName ?? property.PropertyName;
+                var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
                 var result = await BindPropertyAsync(bindingContext, property, propertyBinder, fieldName, modelName);
 
                 if (result.IsModelSet)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             if (metadata.IsComplexType && !metadata.IsCollectionType)
             {
                 var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
+                var logger = loggerFactory.CreateLogger<ComplexObjectModelBinder>();
                 var parameterBinders = GetParameterBinders(context);
 
                 var propertyBinders = new Dictionary<ModelMetadata, IModelBinder>();
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     propertyBinders.Add(property, context.CreateBinder(property));
                 }
 
-                return new ComplexObjectModelBinder(propertyBinders, parameterBinders, loggerFactory.CreateLogger<ComplexObjectModelBinder>());
+                return new ComplexObjectModelBinder(propertyBinders, parameterBinders, logger);
             }
 
             return null;
@@ -48,7 +49,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 return Array.Empty<IModelBinder>();
             }
 
-            var parameterBinders = boundConstructor.BoundConstructorParameters.Count == 0 ? Array.Empty<IModelBinder>() : new IModelBinder[boundConstructor.BoundConstructorParameters.Count];
+            var parameterBinders = boundConstructor.BoundConstructorParameters.Count == 0 ?
+                Array.Empty<IModelBinder>() :
+                new IModelBinder[boundConstructor.BoundConstructorParameters.Count];
 
             for (var i = 0; i < parameterBinders.Length; i++)
             {

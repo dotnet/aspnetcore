@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -416,13 +417,13 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 exception.Message);
         }
 
-        public record ActionParameter_DefaultValueConstructor(string name = "test", int age = 23);
+        public record ActionParameter_DefaultValueConstructor(string Name = "test", int Age = 23);
 
         [Fact]
         public async Task ActionParameter_UsesDefaultConstructorParameters()
         {
             // Arrange
-            var parameterType = typeof(ActionParameter_MultipleConstructors_ParameterlessConstructorModel);
+            var parameterType = typeof(ActionParameter_DefaultValueConstructor);
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
@@ -441,8 +442,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Assert
             Assert.True(modelState.IsValid);
 
-            var model = Assert.IsType<ActionParameter_MultipleConstructors_ParameterlessConstructorModel>(result.Model);
+            var model = Assert.IsType<ActionParameter_DefaultValueConstructor>(result.Model);
             Assert.Equal("James", model.Name);
+            Assert.Equal(23, model.Age);
         }
 
         [Fact]
@@ -526,84 +528,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 exception.Message);
         }
 
-        public class ActionParameter_MultipleConstructors_ParameterlessConstructorModel
-        {
-            public ActionParameter_MultipleConstructors_ParameterlessConstructorModel(string name) => (Name) = name;
-
-            public ActionParameter_MultipleConstructors_ParameterlessConstructorModel(string name, int age) => (Name, Age) = (name, age);
-
-            public ActionParameter_MultipleConstructors_ParameterlessConstructorModel() { }
-
-            public string Name { get; set; }
-
-            public int Age { get; set; }
-        }
-
-        [Fact]
-        public async Task ActionParameter_MultipleConstructors_ParameterlessConstructor()
-        {
-            // Arrange
-            var parameterType = typeof(ActionParameter_MultipleConstructors_ParameterlessConstructorModel);
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
-            var parameter = new ParameterDescriptor()
-            {
-                Name = "p",
-                ParameterType = parameterType
-            };
-            var testContext = ModelBindingTestHelper.GetTestContext(request =>
-            {
-                request.QueryString = QueryString.Create("Name", "James");
-            });
-            var modelState = testContext.ModelState;
-
-            // Act
-            var result = await parameterBinder.BindModelAsync(parameter, testContext);
-
-            // Assert
-            Assert.True(modelState.IsValid);
-
-            var model = Assert.IsType<ActionParameter_MultipleConstructors_ParameterlessConstructorModel>(result.Model);
-            Assert.Equal("James", model.Name);
-        }
-
-        public class ActionParameter_MultipleConstructors_NoParameterlessConstructorModel
-        {
-            public ActionParameter_MultipleConstructors_NoParameterlessConstructorModel(string name) => (Name) = (name);
-
-            public ActionParameter_MultipleConstructors_NoParameterlessConstructorModel(string name, int age) => (Name, Age) = (name, age);
-
-            public string Name { get; init; }
-
-            public int Age { get; init; }
-        }
-
-        [Fact]
-        public async Task ActionParameter_MultipleConstructors_NoParameterlessConstructor_Throws()
-        {
-            // Arrange
-            var parameterType = typeof(ActionParameter_MultipleConstructors_NoParameterlessConstructorModel);
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
-            var parameter = new ParameterDescriptor()
-            {
-                Name = "p",
-                ParameterType = parameterType
-            };
-            var testContext = ModelBindingTestHelper.GetTestContext(request =>
-            {
-                request.QueryString = QueryString.Create("Name", "James");
-            });
-            var modelState = testContext.ModelState;
-
-            // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => parameterBinder.BindModelAsync(parameter, testContext));
-            Assert.Equal(
-                string.Format(
-                    "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
-                    "value types and must have a parameterless constructor. Record types must have a single primary constructor.",
-                    typeof(ActionParameter_MultipleConstructors_NoParameterlessConstructorModel).FullName),
-                exception.Message);
-        }
-
         public class ActionParameter_MultipleConstructorsWithDefaultValues_NoParameterlessConstructorModel
         {
             public ActionParameter_MultipleConstructorsWithDefaultValues_NoParameterlessConstructorModel(string name = "default-name") => (Name) = (name);
@@ -636,15 +560,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => parameterBinder.BindModelAsync(parameter, testContext));
             Assert.Equal(
                 string.Format(
-                    "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
-                    "value types and must have a parameterless constructor. Record types must have a single primary constructor.",
-                    typeof(ActionParameter_MultipleConstructorsWithDefaultValues_NoParameterlessConstructorModel).FullName),
-                exception.Message);
+                        "Could not create an instance of type '{0}'. Model bound complex types must not be abstract or " +
+                        "value types and must have a parameterless constructor. Record types must have a single primary constructor.",
+                        typeof(ActionParameter_MultipleConstructorsWithDefaultValues_NoParameterlessConstructorModel).FullName),
+                    exception.Message);
         }
 
         public record ActionParameter_RecordTypeWithMultipleConstructors(string Name, int Age)
         {
-            public ActionParameter_RecordTypeWithMultipleConstructors(string Name) : this(Name, 0) {}
+            public ActionParameter_RecordTypeWithMultipleConstructors(string Name) : this(Name, 0) { }
         }
 
         [Fact]
@@ -736,6 +660,46 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Assert
             Assert.False(modelBindingResult.IsModelSet);
             Assert.True(modelState.IsValid);
+        }
+
+        [Fact]
+        public async Task ActionParameter_WithValidateNever_DoesNotGetValidated()
+        {
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor()
+            {
+                Name = ParameterWithValidateNever.ValidateNeverParameterInfo.Name,
+                ParameterType = typeof(ModelWithIValidatableObject)
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create(nameof(ModelWithIValidatableObject.FirstName), "TestName");
+            });
+
+            var modelState = testContext.ModelState;
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelMetadata = modelMetadataProvider
+                .GetMetadataForParameter(ParameterWithValidateNever.ValidateNeverParameterInfo);
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                parameter,
+                testContext,
+                modelMetadataProvider,
+                modelMetadata);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+            var model = Assert.IsType<ModelWithIValidatableObject>(modelBindingResult.Model);
+            Assert.Equal("TestName", model.FirstName);
+
+            // No validation errors are expected.
+            // Assert.True(modelState.IsValid);
+
+            // Tracking bug to enable this scenario: https://github.com/dotnet/aspnetcore/issues/24241
+            Assert.False(modelState.IsValid);
         }
 
         [Theory]
@@ -1002,6 +966,29 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 => MyActionMethodInfo.GetParameters()[1];
 
             public static ParameterInfo ValidatableObjectParameterInfo => MyActionMethodInfo.GetParameters()[4];
+
+            public static ParameterInfo GetParameterInfo(string parameterName)
+            {
+                return MyActionMethodInfo
+                    .GetParameters()
+                    .Single(p => p.Name.Equals(parameterName, StringComparison.Ordinal));
+            }
+        }
+
+        private class ParameterWithValidateNever
+        {
+            public void MyAction([Required] string Name, [ValidateNever] ModelWithIValidatableObject validatableObject)
+            {
+            }
+
+            private static MethodInfo MyActionMethodInfo
+                => typeof(ParameterWithValidateNever).GetMethod(nameof(MyAction));
+
+            public static ParameterInfo NameParamterInfo
+                => MyActionMethodInfo.GetParameters()[0];
+
+            public static ParameterInfo ValidateNeverParameterInfo
+                => MyActionMethodInfo.GetParameters()[1];
 
             public static ParameterInfo GetParameterInfo(string parameterName)
             {

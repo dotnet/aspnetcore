@@ -1139,6 +1139,84 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
 
+        private record AddressRecord(string Street, string City)
+        {
+            public string ZipCode { get; set; }
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_RecordTypeModel_DoesNotOverwriteConstructorParameters()
+        {
+            // Arrange
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("Street", "SomeStreet");
+            });
+
+            var modelState = testContext.ModelState;
+            var model = new AddressRecord("DefaultStreet", "Toronto")
+            {
+                ZipCode = "98001",
+            };
+            var oldModel = model;
+
+            // Act
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
+
+            // Assert
+            Assert.True(result);
+
+            // Model
+            Assert.Same(oldModel, model);
+            Assert.Equal("DefaultStreet", model.Street);
+            Assert.Equal("Toronto", model.City);
+            Assert.Equal("98001", model.ZipCode);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+            Assert.Empty(modelState);
+        }
+
+        [Fact]
+        public async Task TryUpdateModel_RecordTypeModel_UpdatesProperties()
+        {
+            // Arrange
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("ZipCode", "98007").Add("Street", "SomeStreet");
+            });
+
+            var modelState = testContext.ModelState;
+            var model = new AddressRecord("DefaultStreet", "Toronto")
+            {
+                ZipCode = "98001",
+            };
+            var oldModel = model;
+
+            // Act
+            var result = await TryUpdateModelAsync(model, string.Empty, testContext);
+
+            // Assert
+            Assert.True(result);
+
+            // Model
+            Assert.Same(oldModel, model);
+            Assert.Equal("DefaultStreet", model.Street);
+            Assert.Equal("Toronto", model.City);
+            Assert.Equal("98007", model.ZipCode);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+
+            var entry = Assert.Single(modelState);
+            Assert.Equal("ZipCode", entry.Key);
+            var state = entry.Value;
+            Assert.Equal("98007", state.AttemptedValue);
+            Assert.Equal("98007", state.RawValue);
+            Assert.Empty(state.Errors);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
+        }
+
         private void UpdateRequest(HttpRequest request, string data, string name)
         {
             const string fileName = "text.txt";

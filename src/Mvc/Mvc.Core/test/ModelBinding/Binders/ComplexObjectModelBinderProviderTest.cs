@@ -8,7 +8,6 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
-    [Obsolete]
     public class ComplexObjectModelBinderProviderTest
     {
         [Theory]

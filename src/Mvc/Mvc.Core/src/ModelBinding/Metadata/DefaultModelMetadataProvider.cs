@@ -282,8 +282,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 var args = Expression.Parameter(typeof(object[]), "args");
                 var factoryExpressionBody = BuildFactoryExpression(constructor, args);
 
-                var factoryLamda = Expression.Lambda<Func<object[], object>>(
-                   factoryExpressionBody, args);
+                var factoryLamda = Expression.Lambda<Func<object[], object>>(factoryExpressionBody, args);
 
                 return factoryLamda.Compile();
             }

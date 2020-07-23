@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsNestedPOCO_WithBodyModelBinder_WithPrefix_Success()
+        public async Task ComplexBinder_BindsNestedPOCO_WithBodyModelBinder_WithPrefix_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsNestedPOCO_WithBodyModelBinder_WithEmptyPrefix_Success()
+        public async Task ComplexBinder_BindsNestedPOCO_WithBodyModelBinder_WithEmptyPrefix_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsNestedPOCO_WithBodyModelBinder_WithPrefix_NoBodyData()
+        public async Task ComplexBinder_BindsNestedPOCO_WithBodyModelBinder_WithPrefix_NoBodyData()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsNestedPOCO_WithByteArrayModelBinder_WithPrefix_Success()
+        public async Task ComplexBinder_BindsNestedPOCO_WithByteArrayModelBinder_WithPrefix_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -382,7 +382,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsNestedPOCO_WithByteArrayModelBinder_WithEmptyPrefix_Success()
+        public async Task ComplexBinder_BindsNestedPOCO_WithByteArrayModelBinder_WithEmptyPrefix_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -434,7 +434,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsNestedPOCO_WithByteArrayModelBinder_WithPrefix_NoData()
+        public async Task ComplexBinder_BindsNestedPOCO_WithByteArrayModelBinder_WithPrefix_NoData()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -496,7 +496,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsNestedPOCO_WithFormFileModelBinder_WithPrefix_Success()
+        public async Task ComplexBinder_BindsNestedPOCO_WithFormFileModelBinder_WithPrefix_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -549,7 +549,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsNestedPOCO_WithFormFileModelBinder_WithEmptyPrefix_Success()
+        public async Task ComplexBinder_BindsNestedPOCO_WithFormFileModelBinder_WithEmptyPrefix_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -602,7 +602,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsNestedPOCO_WithFormFileModelBinder_WithPrefix_NoBodyData()
+        public async Task ComplexBinder_BindsNestedPOCO_WithFormFileModelBinder_WithPrefix_NoBodyData()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -769,7 +769,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsArrayProperty_WithPrefix_Success()
+        public async Task ComplexBinder_BindsArrayProperty_WithPrefix_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -825,7 +825,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsArrayProperty_EmptyPrefix_Success()
+        public async Task ComplexBinder_BindsArrayProperty_EmptyPrefix_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -880,7 +880,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsArrayProperty_NoCollectionData()
+        public async Task ComplexBinder_BindsArrayProperty_NoCollectionData()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -927,7 +927,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsArrayProperty_NoData()
+        public async Task ComplexBinder_BindsArrayProperty_NoData()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -977,7 +977,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsListProperty_WithPrefix_Success()
+        public async Task ComplexBinder_BindsListProperty_WithPrefix_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -1033,7 +1033,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsListProperty_EmptyPrefix_Success()
+        public async Task ComplexBinder_BindsListProperty_EmptyPrefix_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -1088,7 +1088,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsListProperty_NoCollectionData()
+        public async Task ComplexBinder_BindsListProperty_NoCollectionData()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -1135,7 +1135,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsListProperty_NoData()
+        public async Task ComplexBinder_BindsListProperty_NoData()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -1185,7 +1185,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsDictionaryProperty_WithPrefix_Success()
+        public async Task ComplexBinder_BindsDictionaryProperty_WithPrefix_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -1241,7 +1241,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsDictionaryProperty_EmptyPrefix_Success()
+        public async Task ComplexBinder_BindsDictionaryProperty_EmptyPrefix_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -1296,7 +1296,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsDictionaryProperty_NoCollectionData()
+        public async Task ComplexBinder_BindsDictionaryProperty_NoCollectionData()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -1343,7 +1343,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsDictionaryProperty_NoData()
+        public async Task ComplexBinder_BindsDictionaryProperty_NoData()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -1414,7 +1414,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsDictionaryProperty_WithIEnumerableComplexTypeValue_Success()
+        public async Task ComplexBinder_BindsDictionaryProperty_WithIEnumerableComplexTypeValue_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -1521,7 +1521,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsDictionaryProperty_WithArrayOfComplexTypeValue_Success()
+        public async Task ComplexBinder_BindsDictionaryProperty_WithArrayOfComplexTypeValue_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -1628,7 +1628,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsDictionaryProperty_WithIEnumerableOfKeyValuePair_Success()
+        public async Task ComplexBinder_BindsDictionaryProperty_WithIEnumerableOfKeyValuePair_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -1742,7 +1742,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsKeyValuePairProperty_WithPrefix_Success()
+        public async Task ComplexBinder_BindsKeyValuePairProperty_WithPrefix_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -1798,7 +1798,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsKeyValuePairProperty_EmptyPrefix_Success()
+        public async Task ComplexBinder_BindsKeyValuePairProperty_EmptyPrefix_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -1853,7 +1853,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/11813")]
-        public async Task MutableObjectModelBinder_BindsKeyValuePairProperty_NoCollectionData()
+        public async Task ComplexBinder_BindsKeyValuePairProperty_NoCollectionData()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -1902,7 +1902,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/11813")]
-        public async Task MutableObjectModelBinder_BindsKeyValuePairProperty_NoData()
+        public async Task ComplexBinder_BindsKeyValuePairProperty_NoData()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -1954,7 +1954,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task Foo_MutableObjectModelBinder_BindsKeyValuePairProperty_WithPrefix_Success()
+        public async Task Foo_ComplexBinder_BindsKeyValuePairProperty_WithPrefix_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -2053,7 +2053,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         // If a nested POCO object has all properties bound from a greedy source, then it should be populated
         // if the top-level object is created.
         [Fact]
-        public async Task MutableObjectModelBinder_BindsNestedPOCO_WithAllGreedyBoundProperties()
+        public async Task ComplexBinder_BindsNestedPOCO_WithAllGreedyBoundProperties()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -2110,7 +2110,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_WithRequiredComplexProperty_NoData_GetsErrors()
+        public async Task ComplexBinder_WithRequiredComplexProperty_NoData_GetsErrors()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -2155,7 +2155,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_WithBindRequired_NoData_AndCustomizedMessage_AddsGivenMessage()
+        public async Task ComplexBinder_WithBindRequired_NoData_AndCustomizedMessage_AddsGivenMessage()
         {
             // Arrange
             var metadataProvider = new TestModelMetadataProvider();
@@ -2223,7 +2223,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_WithNestedRequiredProperty_WithPartialData_GetsErrors()
+        public async Task ComplexBinder_WithNestedRequiredProperty_WithPartialData_GetsErrors()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -2277,7 +2277,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_WithNestedRequiredProperty_WithData_EmptyPrefix_GetsErrors()
+        public async Task ComplexBinder_WithNestedRequiredProperty_WithData_EmptyPrefix_GetsErrors()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -2331,7 +2331,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_WithNestedRequiredProperty_WithData_CustomPrefix_GetsErrors()
+        public async Task ComplexBinder_WithNestedRequiredProperty_WithData_CustomPrefix_GetsErrors()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -2395,7 +2395,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_WithRequiredProperty_NoData_GetsErrors()
+        public async Task ComplexBinder_WithRequiredProperty_NoData_GetsErrors()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -2443,7 +2443,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_WithRequiredProperty_NoData_CustomPrefix_GetsErrors()
+        public async Task ComplexBinder_WithRequiredProperty_NoData_CustomPrefix_GetsErrors()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -2495,7 +2495,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_WithRequiredProperty_WithData_EmptyPrefix_GetsBound()
+        public async Task ComplexBinder_WithRequiredProperty_WithData_EmptyPrefix_GetsBound()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -2547,7 +2547,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_WithRequiredCollectionProperty_NoData_GetsErrors()
+        public async Task ComplexBinder_WithRequiredCollectionProperty_NoData_GetsErrors()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -2595,7 +2595,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_WithRequiredCollectionProperty_NoData_CustomPrefix_GetsErrors()
+        public async Task ComplexBinder_WithRequiredCollectionProperty_NoData_CustomPrefix_GetsErrors()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -2647,7 +2647,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_WithRequiredCollectionProperty_WithData_EmptyPrefix_GetsBound()
+        public async Task ComplexBinder_WithRequiredCollectionProperty_WithData_EmptyPrefix_GetsBound()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -2699,7 +2699,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         // This covers the case where a key is present, but has an empty value. The type converter
         // will report an error.
         [Fact]
-        public async Task MutableObjectModelBinder_BindsPOCO_TypeConvertedPropertyNonConvertibleValue_GetsError()
+        public async Task ComplexBinder_BindsPOCO_TypeConvertedPropertyNonConvertibleValue_GetsError()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -2753,7 +2753,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         // report and error because it's a value type (non-nullable).
         [Fact]
         [ReplaceCulture]
-        public async Task MutableObjectModelBinder_BindsPOCO_TypeConvertedPropertyWithEmptyValue_Error()
+        public async Task ComplexBinder_BindsPOCO_TypeConvertedPropertyWithEmptyValue_Error()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -3105,7 +3105,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
-        public async Task MutableObjectModelBinder_BindsKeyValuePairProperty_HavingFromHeaderProperty_Success()
+        public async Task ComplexBinder_BindsKeyValuePairProperty_HavingFromHeaderProperty_Success()
         {
             // Arrange
             var parameter = new ParameterDescriptor()

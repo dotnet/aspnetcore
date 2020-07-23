@@ -748,17 +748,27 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 p => Assert.Equal("name", p.Name));
         }
 
-        private record RecordTypeWithPrimaryAndParameterlessConstructor(string name)
+        private record RecordTypeWithDefaultConstructor
         {
-            public RecordTypeWithPrimaryAndParameterlessConstructor() : this(string.Empty) {}
+            public string Name { get; init; }
+
+            public int Age { get; init; }
         }
 
-        [Fact]
-        public void GetBoundConstructor_ReturnsNull_ForRecordTypeWithParameterlessConstructor()
+        private record RecordTypeWithParameterlessConstructor
         {
-            // Arrange
-            var type = typeof(RecordTypeWithPrimaryAndParameterlessConstructor);
+            public RecordTypeWithParameterlessConstructor() { }
 
+            public string Name { get; init; }
+
+            public int Age { get; init; }
+        }
+
+        [Theory]
+        [InlineData(typeof(RecordTypeWithDefaultConstructor))]
+        [InlineData(typeof(RecordTypeWithParameterlessConstructor))]
+        public void GetBoundConstructor_ReturnsNull_ForRecordTypeWithParameterlessConstructor(Type type)
+        {
             // Act
             var result = DefaultBindingMetadataProvider.GetBoundConstructor(type);
 

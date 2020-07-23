@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// <summary>
         /// Error message the model binding system adds when <see cref="ModelError.Exception"/> is of type
         /// <see cref="FormatException"/> or <see cref="OverflowException"/>, value is known, and error is associated
-        /// with a property or parameter.
+        /// with a property.
         /// </summary>
         /// <value>Default <see cref="string"/> is "The value '{0}' is not valid for {1}.".</value>
         public virtual Func<string, string, string> AttemptedValueIsInvalidAccessor { get; } = default!;

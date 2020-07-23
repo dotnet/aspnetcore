@@ -3493,7 +3493,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(RecordTypeWithSettableProperty1)
             };
 
-            // Need to have a key here so that the ComplexObjectModelBinder will recurse to bind elements.
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?name=TestName");
@@ -3537,7 +3536,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(RecordTypeWithSettableProperty1)
             };
 
-            // Need to have a key here so that the ComplexObjectModelBinder will recurse to bind elements.
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?age=28");
@@ -3581,7 +3579,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(RecordTypeWithSettableProperty1)
             };
 
-            // Need to have a key here so that the ComplexObjectModelBinder will recurse to bind elements.
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?Name=test&age=28");
@@ -3633,7 +3630,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(RecordTypeWithFilteredProperty1)
             };
 
-            // Need to have a key here so that the ComplexObjectModelBinder will recurse to bind elements.
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?Id=not-bound&Name=test");
@@ -3680,7 +3676,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(RecordTypeWithFilteredProperty2)
             };
 
-            // Need to have a key here so that the ComplexObjectModelBinder will recurse to bind elements.
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?Id=not-bound&Name=test");
@@ -3732,7 +3727,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(RecordTypesWithDifferentMetadataOnParameterAndProperty)
             };
 
-            // Need to have a key here so that the ComplexObjectModelBinder will recurse to bind elements.
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.Headers.Add("Id", "not-bound");
@@ -3776,7 +3770,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(RecordTypesWithDifferentMetadataOnParameterAndProperty)
             };
 
-            // Need to have a key here so that the ComplexObjectModelBinder will recurse to bind elements.
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.Headers.Add("Id", "not-bound");
@@ -3823,7 +3816,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(RecordTypeWithCollectionParameter)
             };
 
-            // Need to have a key here so that the ComplexObjectModelBinder will recurse to bind elements.
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?Id=test&Tags[0]=tag1&Tags[1]=tag2");
@@ -3867,7 +3859,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(RecordTypeWithCollectionParameter)
             };
 
-            // Need to have a key here so that the ComplexObjectModelBinder will recurse to bind elements.
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?Id=test");
@@ -3912,7 +3903,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(RecordTypesWithReadOnlyCollectionParameter)
             };
 
-            // Need to have a key here so that the ComplexObjectModelBinder will recurse to bind elements.
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?Id=test&Tags[0]=tag1&Tags[1]=tag2");
@@ -3958,7 +3948,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(RecordTypesWithDefaultParameterValue)
             };
 
-            // Need to have a key here so that the ComplexObjectModelBinder will recurse to bind elements.
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?Id=test&Tags[0]=tag1&Tags[1]=tag2");
@@ -4003,7 +3992,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(RecordTypesWithDefaultParameterValue)
             };
 
-            // Need to have a key here so that the ComplexObjectModelBinder will recurse to bind elements.
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?");
@@ -4045,7 +4033,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(RecordTypesWithDefaultParameterValue)
             };
 
-            // Need to have a key here so that the ComplexObjectModelBinder will recurse to bind elements.
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?Tags[0]=tag");
@@ -4089,7 +4076,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(RecordTypesWithDefaultParameterValue)
             };
 
-            // Need to have a key here so that the ComplexObjectModelBinder will recurse to bind elements.
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?parameter.Tags[0]=tag");
@@ -4135,7 +4121,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(RecordTypeWithBindRequiredParameters)
             };
 
-            // Need to have a key here so that the ComplexObjectModelBinder will recurse to bind elements.
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?Name=test&Age=7");
@@ -4181,7 +4166,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(RecordTypeWithBindRequiredParameters)
             };
 
-            // Need to have a key here so that the ComplexObjectModelBinder will recurse to bind elements.
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
             {
                 request.QueryString = new QueryString("?Age=7");
