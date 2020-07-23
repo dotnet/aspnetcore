@@ -7,7 +7,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using IdentitySample.DefaultUI.Data;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
+//using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -17,16 +17,17 @@ namespace IdentitySample.DefaultUI
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly IEmailSender _emailSender;
+        //private readonly IEmailSender _emailSender;
 
         public IndexModel(
             UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager,
-            IEmailSender emailSender)
+            SignInManager<ApplicationUser> signInManager//,
+            //IEmailSender emailSender
+            )
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _emailSender = emailSender;
+            //_emailSender = emailSender;
         }
 
         public string Username { get; set; }
@@ -153,10 +154,10 @@ namespace IdentitySample.DefaultUI
                 pageHandler: null,
                 values: new { user.Id, code },
                 protocol: Request.Scheme);
-            await _emailSender.SendEmailAsync(
-                user.Email,
-                "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+            //await _emailSender.SendEmailAsync(
+            //    user.Email,
+            //    "Confirm your email",
+            //    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
             StatusMessage = "Verification email sent. Please check your email.";
             return RedirectToPage();

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Identity sample MVC application on ASP.NET Core using the default UI</Description>
@@ -16,7 +16,6 @@
     <ProjectReference Include="..\..\..\Middleware\Diagnostics\src\Microsoft.AspNetCore.Diagnostics.csproj" />
     <ProjectReference Include="..\..\..\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj" />
     <ProjectReference Include="..\..\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\UI\src\Microsoft.AspNetCore.Identity.UI.csproj" />
     <ProjectReference Include="..\..\..\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj" />
 	
     <ProjectReference Include="..\..\..\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj" />

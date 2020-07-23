@@ -17,7 +17,7 @@ namespace IdentitySample.DefaultUI
             new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
+                //.UseIISIntegration()
                 .UseStartup<Startup>();
     }
 }

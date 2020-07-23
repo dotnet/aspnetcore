@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
@@ -6,7 +6,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj" />
+    <Compile Remove="Data\ApplicationDbContext.cs" />
+    <Compile Remove="Data\Migrations\20180919224505_InitialMigration.cs" />
+    <Compile Remove="Data\Migrations\20180919224505_InitialMigration.Designer.cs" />
+    <Compile Remove="Data\Migrations\ApplicationDbContextModelSnapshot.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\..\Security\CookiePolicy\src\Microsoft.AspNetCore.CookiePolicy.csproj" />
     <ProjectReference Include="..\..\..\..\DataProtection\Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj" />
     <ProjectReference Include="..\..\..\..\Middleware\Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj" />
@@ -14,7 +20,6 @@
     <ProjectReference Include="..\..\..\..\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj" />
     <ProjectReference Include="..\..\..\..\Middleware\HttpsPolicy\src\Microsoft.AspNetCore.HttpsPolicy.csproj" />
     <ProjectReference Include="..\..\..\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\..\UI\src\Microsoft.AspNetCore.Identity.UI.csproj" />
     <ProjectReference Include="..\..\..\..\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj" />
     <ProjectReference Include="..\..\..\..\Middleware\Rewrite\src\Microsoft.AspNetCore.Rewrite.csproj" />
     
@@ -30,6 +35,10 @@
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Logging.Debug" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Data\Migrations\" />
   </ItemGroup>
 
 </Project>

@@ -34,9 +34,9 @@ namespace IdentitySample.DefaultUI
 
             services.AddMvc();
 
-            services.AddDefaultIdentity<ApplicationUser>()
-                 .AddRoles<IdentityRole>()
-                 .AddEntityFrameworkStores<ApplicationDbContext>();
+            //services.AddDefaultIdentity<ApplicationUser>()
+            //     .AddRoles<IdentityRole>()
+            //     .AddEntityFrameworkStores<ApplicationDbContext>();
         }
 
  
