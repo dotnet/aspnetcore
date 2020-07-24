@@ -113,11 +113,12 @@ Integration with static web assets:
     <_ScopedCss Condition="'%(_ScopedCss.Identity)' != ''">
       <OutputFile>$(_ScopedCssIntermediatePath)%(RelativeDir)%(RecursiveDir)%(FileName)$(_ScopedCssExtension)</OutputFile>
     </_ScopedCss>
+    <_ScopedCssOutputs Include="%(_ScopedCss.OutputFile)" />
   </ItemGroup>
 </Target>
 
 <!-- Transforms the original scoped CSS files into their scoped versions on their designated output paths -->
-<Target Name="_GenerateScopedCssFiles" DependsOnTargets="_ResolveScopedCssOutputs">
+<Target Name="_GenerateScopedCssFiles" Inputs="@(_ScopedCss)" Outputs="@(_ScopedCssOutputs)" DependsOnTargets="_ResolveScopedCssOutputs">
 
   <MakeDir Directories="$(_ScopedCssIntermediatePath)" />
   <RewriteCss
@@ -162,14 +163,14 @@ Integration with static web assets:
        they are not copied to the output folder. -->
     <StaticWebAsset Remove="@(_AllScopedCss)" Condition="'$(ScopedCssDisableBundling)' != 'true'" />
     <!-- https://github.com/dotnet/aspnetcore/issues/24245 -->
-    <StaticWebAsset Include="$(_ScopedCssOutputPath)">
+    <StaticWebAsset Include="$(_ScopedCssOutputPath)" Condition="@(_AllScopedCss) != ''">
       <SourceType></SourceType>
       <SourceId>$(PackageId)</SourceId>
       <ContentRoot>$(_ScopedCssIntermediatePath)</ContentRoot>
       <BasePath>$(StaticWebAssetBasePath)</BasePath>
       <RelativePath>_framework/scoped.styles.css</RelativePath>
     </StaticWebAsset>
-    <_ExternalStaticWebAsset Include="$(_ScopedCssOutputPath)">
+    <_ExternalStaticWebAsset Include="$(_ScopedCssOutputPath)" Condition="@(_AllScopedCss) != ''">
       <SourceType>generated</SourceType>
       <SourceId>$(PackageId)</SourceId>
       <ContentRoot>$(_ScopedCssIntermediatePath)</ContentRoot>
@@ -211,10 +212,17 @@ Integration with static web assets:
   <ConcatenateCssFiles FilesToProcess="@(_AllScopedCss)" OutputFile="$(_ScopedCssOutputPath)" />
 </Target>
 
+<Target Name="_RemoveBundleFromOutput" BeforeTargets="GetCopyToOutputDirectoryItems" DependsOnTargets="BundleScopedCssFiles">
+  <ItemGroup>
+    <StaticWebAsset Remove="$(_ScopedCssOutputFullPath)" />
+    <StaticWebAsset Include="@(_AllScopedCss)" Condition="'%(SourceType)' == ''" />
+  </ItemGroup>
+</Target>
+
 <Target Name="_AddBundleToStaticWebAssetsPublishedFile" Condition="'$(ScopedCssDisableBundling)' != 'true' and '@(_AllScopedCss)' != ''" BeforeTargets="_StaticWebAssetsComputeFilesToPublish" DependsOnTargets="_CollectAllScopedCssAssets">
   <ItemGroup>
     <!-- Manually add the file to the publish flow. See https://github.com/dotnet/aspnetcore/issues/24245 -->
-    <_ExternalPublishStaticWebAsset Include="$(_ScopedCssOutputFullPath)">
+    <_ExternalPublishStaticWebAsset Include="$(_ScopedCssOutputFullPath)" ExcludeFromSingleFile="true">
       <SourceType>generated</SourceType>
       <SourceId>$(PackageId)</SourceId>
       <ContentRoot>$(_ScopedCssIntermediatePath)</ContentRoot>

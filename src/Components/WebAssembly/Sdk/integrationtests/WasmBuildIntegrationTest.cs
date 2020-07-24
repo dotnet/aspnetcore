@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // Arrange
             // Minimal has no project references, service worker etc. This is pretty close to the project template.
             using var project = ProjectDirectory.Create("blazorwasm-minimal");
+            File.WriteAllText(Path.Combine(project.DirectoryPath, "App.razor.css"), "h1 { font-size: 16px; }");
+
             var result = await MSBuildProcessManager.DotnetMSBuild(project);
 
             Assert.BuildPassed(result);
@@ -35,6 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             var staticWebAssets = Assert.FileExists(result, buildOutputDirectory, "blazorwasm-minimal.StaticWebAssets.xml");
             Assert.FileContains(result, staticWebAssets, Path.Combine(project.TargetFramework, "wwwroot"));
+            Assert.FileContains(result, staticWebAssets, Path.Combine(project.TargetFramework, "scopedcss"));
         }
 
         [Fact]
