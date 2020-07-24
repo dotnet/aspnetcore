@@ -10,7 +10,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Ensures every invocation of dotnet apps uses the same dotnet.exe
 # Add $random to path to ensure tests don't expect dotnet to be in a particular path
-export DOTNET_ROOT="$HELIX_CORRELATION_PAYLOAD/dotnet"
+export DOTNET_ROOT="$DIR/.dotnet$RANDOM"
 
 # Ensure dotnet comes first on PATH
 export PATH="$DOTNET_ROOT:$PATH:$DIR/node/bin"
