@@ -247,7 +247,7 @@
         "type": "parameter",
         "datatype": "string",
         "replaces": "[WebApiUrl]",
-        "defaultValue" : "https://graph.microsoft.com/v1.0/me",
+        "defaultValue" : "https://graph.microsoft.com/v1.0",
         "description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg or --auth IndividualB2C is specified."
     },
     "CallsMicrosoftGraph": {
@@ -264,7 +264,7 @@
     },
     "GenerateApi": {
         "type": "computed",
-        "value": "((IndividualB2CAuth || OrganizationalAuth) && (CalledApiUrl != \"https://graph.microsoft.com/v1.0/me\" || CalledApiScopes != \"user.read\"))"
+        "value": "((IndividualB2CAuth || OrganizationalAuth) && (CalledApiUrl != \"https://graph.microsoft.com/v1.0\" || CalledApiScopes != \"user.read\"))"
     },
     "GenerateGraph": {
         "type": "computed",
