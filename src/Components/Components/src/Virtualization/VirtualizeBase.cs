@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Virtualization
 {
@@ -12,122 +13,115 @@ namespace Microsoft.AspNetCore.Components.Virtualization
     /// Provides common functionality for virtualized lists.
     /// </summary>
     /// <typeparam name="TItem">The <c>context</c> type for the items being rendered.</typeparam>
-    public abstract class VirtualizeBase<TItem> : ComponentBase, IAsyncDisposable
+    public abstract class VirtualizeBase<TItem> : ComponentBase
     {
-        private int _itemsAbove;
+        private readonly ConcurrentQueue<TItem> _loadedItems = new ConcurrentQueue<TItem>();
 
-        private int _itemsVisible;
-
-        private ElementReference _topSpacer;
-
-        private ElementReference _bottomSpacer;
-
-        private IVirtualizationHelper? _virtualizationHelper;
-
-        [Inject]
-        private IVirtualizationService VirtualizationService { get; set; } = default!;
+        private int _isFetchingItems;
 
         /// <summary>
-        /// Gets the total number of items in the collection.
+        /// Gets an enumerable of all list items in memory.
         /// </summary>
-        protected abstract int ItemCount { get; }
+        protected IEnumerable<TItem> ItemSource { get; private set; } = default!;
 
         /// <summary>
-        /// Gets the size (height) of each item in pixels.
+        /// Gets the template for rendering list items.
+        /// </summary>
+        protected RenderFragment<TItem>? ItemTemplate { get; private set; }
+
+        /// <summary>
+        /// Gets whether the list is virtualized.
+        /// </summary>
+        protected bool IsVirtualized => ItemSize > 0f;
+
+        /// <summary>
+        /// Gets or sets the item template for the list.
+        /// </summary>
+        [Parameter]
+        public RenderFragment<TItem>? ChildContent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the item template for the list.
+        /// </summary>
+        [Parameter]
+        public RenderFragment<TItem>? Item { get; set; }
+
+        /// <summary>
+        /// Gets or sets the template of the footer to be rendered at the end of the list.
+        /// </summary>
+        [Parameter]
+        public RenderFragment? Footer { get; set; }
+
+        /// <summary>
+        /// Gets the size of each item in pixels.
         /// </summary>
         [Parameter]
         public float ItemSize { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="RenderFragment"/>s representing a range of items.
+        /// Gets or sets the fixed item source.
         /// </summary>
-        /// <param name="start">The start index of the range of items.</param>
-        /// <param name="count">The number of items in the range.</param>
-        /// <returns>The <see cref="RenderFragment"/>s representing the given range.</returns>
-        protected abstract IEnumerable<RenderFragment> GetItems(int start, int count);
+        [Parameter]
+        public ICollection<TItem>? Items { get; set; }
+
+        /// <summary>
+        /// Gets or sets the function retrieving items given a start index.
+        /// </summary>
+        [Parameter]
+        public Func<int, Task<IEnumerable<TItem>>>? ItemsProvider { get; set; }
 
         /// <inheritdoc />
-        protected override void OnParametersSet()
+        public override async Task SetParametersAsync(ParameterView parameters)
         {
-            if (ItemSize <= 0f)
+            await base.SetParametersAsync(parameters);
+
+            if (Items != null)
             {
-                throw new InvalidOperationException($"Parameter '{nameof(ItemSize)}' must be specified and greater than zero.");
+                if (ItemsProvider != null)
+                {
+                    throw new InvalidOperationException($"{GetType()} cannot accept multiple item sources.");
+                }
+
+                ItemSource = Items;
             }
-        }
-
-        /// <inheritdoc />
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
+            else if (ItemsProvider != null)
             {
-                _virtualizationHelper = VirtualizationService.CreateVirtualizationHelper();
-                _virtualizationHelper.TopSpacerVisible += OnTopSpacerVisible;
-                _virtualizationHelper.BottomSpacerVisible += OnBottomSpacerVisible;
-
-                await _virtualizationHelper.InitAsync(_topSpacer, _bottomSpacer);
+                ItemSource = _loadedItems;
             }
-        }
-
-        /// <inheritdoc />
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            var itemsBelow = Math.Max(0, ItemCount - _itemsVisible - _itemsAbove);
-
-            builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "key", "top-spacer");
-            builder.AddAttribute(2, "style", GetSpacerStyle(_itemsAbove));
-            builder.AddElementReferenceCapture(3, elementReference => _topSpacer = elementReference);
-            builder.CloseElement();
-
-            builder.OpenRegion(4);
-
-            foreach (var item in GetItems(_itemsAbove, _itemsVisible))
+            else
             {
-                item.Invoke(builder);
+                throw new InvalidOperationException($"{GetType()} requires either '{nameof(Items)}' or '{nameof(ItemsProvider)}' to be specified and non-null.");
             }
 
-            builder.CloseRegion();
-
-            builder.OpenElement(5, "div");
-            builder.AddAttribute(6, "key", "bottom-spacer");
-            builder.AddAttribute(7, "style", GetSpacerStyle(itemsBelow));
-            builder.AddElementReferenceCapture(8, elementReference => _bottomSpacer = elementReference);
-            builder.CloseElement();
+            ItemTemplate = Item ?? ChildContent;
         }
 
-        private void OnTopSpacerVisible(object? sender, SpacerEventArgs e)
+        /// <summary>
+        /// Fetches items using <see cref="ItemsProvider"/>.
+        /// If <see cref="ItemsProvider"/> is <c>null</c> or items are already being fetched, this method
+        /// performs nothing.
+        /// </summary>
+        /// <returns>The <see cref="Task"/> representing the completion of this operation.</returns>
+        protected async Task FetchItemsAsync()
         {
-            CalcualteItemDistribution(e, out _itemsVisible, out _itemsAbove);
-
-            StateHasChanged();
-        }
-
-        private void OnBottomSpacerVisible(object? sender, SpacerEventArgs e)
-        {
-            CalcualteItemDistribution(e, out _itemsVisible, out var itemsBelow);
-
-            _itemsAbove = Math.Max(0, ItemCount - itemsBelow - _itemsVisible);
-
-            StateHasChanged();
-        }
-
-        private void CalcualteItemDistribution(SpacerEventArgs e, out int itemsVisible, out int itemsInSpacer)
-        {
-            itemsVisible = Math.Max(0, (int)Math.Ceiling(e.ContainerSize / ItemSize) + 2);
-            itemsInSpacer = Math.Max(0, (int)Math.Floor(e.SpacerSize / ItemSize) - 1);
-        }
-
-        private string GetSpacerStyle(int itemsInSpacer)
-        {
-            return $"height: {itemsInSpacer * ItemSize}px;";
-        }
-
-        /// <inheritdoc />
-        public async ValueTask DisposeAsync()
-        {
-            if (_virtualizationHelper != null)
+            if (ItemsProvider == null)
             {
-                await _virtualizationHelper.DisposeAsync();
+                return;
+            }
+
+            if (Interlocked.Exchange(ref _isFetchingItems, 1) == 0)
+            {
+                // TODO: Handle exceptions from the items provider
+                var items = await ItemsProvider(_loadedItems.Count);
+
+                foreach (var item in items)
+                {
+                    _loadedItems.Enqueue(item);
+                }
+
+                _isFetchingItems = 0;
+
+                StateHasChanged();
             }
         }
     }

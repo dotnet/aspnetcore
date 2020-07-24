@@ -8,49 +8,116 @@
 <p>
     Scrollable div:<br />
     <div style="background-color: #eee; height: 500px; overflow-y: auto">
-        <Virtualize Items="@Items" ItemSize="itemSize">
+        <Virtualize Items="@fixedItems" ItemSize="itemSize">
             <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
         </Virtualize>
-        <Virtualize Items="@Items" ItemSize="itemSize">
+        <Virtualize Items="@fixedItems" ItemSize="itemSize">
             <div @key="@context" style="height: @(itemSize)px; background-color: rgb(0, @((context % 2) * 255), @((1-(context % 2)) * 255));">Item @context</div>
         </Virtualize>
     </div>
 </p>
 
 <p>
-    Async items:<br />
+    Infinite scrolling (asynchronously loaded):<br />
     <div style="background-color: #eee; height: 500px; overflow-y: auto">
-        <InfiniteScroll ItemsProvider="GetItems" ItemBatchSize="20" ItemSize="itemSize">
+        <Virtualize ItemsProvider="GetItemsAsync" ItemSize="itemSize">
             <Item>
                 <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
             </Item>
-            <InfiniteScrollFooter>
-                <div @key="@("infinite-scroll-footer")" style="height: @(itemSize)px; background-color: white;">
+            <ScrollFooter>
+                <div @key="@("scroll-footer")" style="height: @(itemSize)px; background-color: white;">
                     Loading...
                 </div>
-            </InfiniteScrollFooter>
-        </InfiniteScroll>
+            </ScrollFooter>
+        </Virtualize>
+    </div>
+</p>
+
+<p>
+    Infinite scrolling (synchronously loaded):<br />
+    <div style="background-color: #eee; height: 500px; overflow-y: auto">
+        <Virtualize ItemsProvider="GetSingleItem" ItemSize="itemSize">
+            <Item>
+                <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+            </Item>
+        </Virtualize>
+    </div>
+</p>
+
+<p>
+    Variable item height (asynchronously loaded):<br />
+    <div style="background-color: #eee; height: 500px; overflow-y: auto">
+        <Virtualize ItemsProvider="GetItemsAsync">
+            <Item>
+                <div @key="@context" style="height: @(20 + context * 0.5f)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+            </Item>
+            <ScrollFooter>
+                <div @key="@("scroll-footer")" style="height: @(itemSize)px; background-color: white;">
+                    Loading...
+                </div>
+            </ScrollFooter>
+        </Virtualize>
+    </div>
+</p>
+
+<p>
+    Limited items provider (asynchronously loaded):<br />
+    <div style="background-color: #eee; height: 500px; overflow-y: auto">
+        <Virtualize ItemsProvider="GetLimitedItemsAsync" ItemSize="itemSize">
+            <Item>
+                <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+            </Item>
+            <ScrollFooter>
+                <div @key="@("scroll-footer")" style="height: @(itemSize)px; background-color: white;">
+                    @if (itemCount >= itemCountLimit)
+                    {
+                        <text>No more items :(</text>
+                    }
+                    else
+                    {
+                        <text>Loading...</text>
+                    }
+                </div>
+            </ScrollFooter>
+        </Virtualize>
     </div>
 </p>
 
 <p>
     Viewport as root:<br />
-    <Virtualize Items="@Items" ItemSize="itemSize">
+    <Virtualize Items="@fixedItems" ItemSize="itemSize">
         <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
     </Virtualize>
-    <Virtualize Items="@Items" ItemSize="itemSize">
+    <Virtualize Items="@fixedItems" ItemSize="itemSize">
         <div @key="@context" style="height: @(itemSize)px; background-color: rgb(0, @((context % 2) * 255), @((1-(context % 2)) * 255));">Item @context</div>
     </Virtualize>
 </p>
 
 @code {
-    float itemSize = 100;
-    Random rng = new Random();
-    ICollection<int> Items = Enumerable.Range(0, 1000).ToList();
 
-    Task<IEnumerable<int>> GetItems(Range range)
+    float itemSize = 100;
+    ICollection<int> fixedItems = Enumerable.Range(0, 1000).ToList();
+
+    int itemCountLimit = 200;
+    int itemCount = 0;
+
+    async Task<IEnumerable<int>> GetItemsAsync(int startIndex)
     {
-        return Task.Delay(500).ContinueWith<IEnumerable<int>>(_ =>
-            Enumerable.Range(range.Start.Value, range.End.Value - range.Start.Value));
+        await Task.Delay(500);
+
+        return Enumerable.Range(startIndex, 50);
+    }
+
+    async Task<IEnumerable<int>> GetLimitedItemsAsync(int startIndex)
+    {
+        await Task.Delay(500);
+
+        itemCount = Math.Min(startIndex + 50, itemCountLimit);
+        return Enumerable.Range(startIndex, itemCount - startIndex);
+    }
+
+    Task<IEnumerable<int>> GetSingleItem(int index)
+    {
+        return Task.FromResult(Enumerable.Repeat(index, 1));
     }
 }

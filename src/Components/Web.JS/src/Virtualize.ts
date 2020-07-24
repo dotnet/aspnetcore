@@ -19,24 +19,25 @@ function findClosestScrollContainer(element: Element | null): Element | null {
   return findClosestScrollContainer(element.parentElement);
 }
 
-function init(dotNetHelper: any, topSpacer: Element, bottomSpacer: Element, rootMargin = 50): void {
+function init(dotNetHelper: any, spacerAbove: Element, spacerBelow: Element, rootMargin = 50): void {
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
-    root: findClosestScrollContainer(topSpacer),
+    root: findClosestScrollContainer(spacerAbove),
     rootMargin: `${rootMargin}px`,
   });
 
-  intersectionObserver.observe(topSpacer);
-  intersectionObserver.observe(bottomSpacer);
+  intersectionObserver.observe(spacerAbove);
+  intersectionObserver.observe(spacerBelow);
 
   const mutationObserver = new MutationObserver((): void => {
-    intersectionObserver.unobserve(topSpacer);
-    intersectionObserver.unobserve(bottomSpacer);
-    intersectionObserver.observe(topSpacer);
-    intersectionObserver.observe(bottomSpacer);
+    intersectionObserver.unobserve(spacerAbove);
+    intersectionObserver.unobserve(spacerBelow);
+    intersectionObserver.observe(spacerAbove);
+    intersectionObserver.observe(spacerBelow);
   });
 
-  // Observe the bottom spacer to account for collections that resize.
-  mutationObserver.observe(bottomSpacer, { attributes: true });
+  // Observe the spacer below to account for collections that resize.
+  mutationObserver.observe(spacerAbove, { attributes: true });
+  mutationObserver.observe(spacerBelow, { attributes: true });
 
   observersByDotNetId[dotNetHelper._id] = {
     intersection: intersectionObserver,
@@ -51,9 +52,9 @@ function init(dotNetHelper: any, topSpacer: Element, bottomSpacer: Element, root
 
       const containerSize = entry.rootBounds?.height;
 
-      if (entry.target === topSpacer) {
+      if (entry.target === spacerAbove) {
         dotNetHelper.invokeMethodAsync('OnTopSpacerVisible', entry.intersectionRect.top - entry.boundingClientRect.top, containerSize);
-      } else if (entry.target === bottomSpacer) {
+      } else if (entry.target === spacerBelow) {
         dotNetHelper.invokeMethodAsync('OnBottomSpacerVisible', entry.boundingClientRect.bottom - entry.intersectionRect.bottom, containerSize);
       } else {
         throw new Error('Unknown intersection target');
