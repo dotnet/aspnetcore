@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-dotnet_sdk_version="$2"
-dotnet_runtime_version="$3"
+dotnet_runtime_version="$2"
 
 RESET="\033[0m"
 RED="\033[0;31m"
@@ -11,7 +10,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Ensures every invocation of dotnet apps uses the same dotnet.exe
 # Add $random to path to ensure tests don't expect dotnet to be in a particular path
-export DOTNET_ROOT="$DIR/.dotnet$RANDOM"
+export DOTNET_ROOT="$HELIX_CORRELATION_PAYLOAD/dotnet"
 
 # Ensure dotnet comes first on PATH
 export PATH="$DOTNET_ROOT:$PATH:$DIR/node/bin"
@@ -47,20 +46,6 @@ fi
 # Call "sync" between "chmod" and execution to prevent "text file busy" error in Docker (aufs)
 chmod +x "dotnet-install.sh"; sync
 
-./dotnet-install.sh --version $dotnet_sdk_version --install-dir "$DOTNET_ROOT"
-if [ $? -ne 0 ]; then
-    sdk_retries=3
-    while [ $sdk_retries -gt 0 ]; do
-        ./dotnet-install.sh --version $dotnet_sdk_version --install-dir "$DOTNET_ROOT"
-        if [ $? -ne 0 ]; then
-            let sdk_retries=sdk_retries-1
-            echo -e "${YELLOW}Failed to install .NET Core SDK $version. Retries left: $sdk_retries.${RESET}"
-        else
-            sdk_retries=0
-        fi
-    done
-fi
-
 ./dotnet-install.sh --runtime dotnet --version $dotnet_runtime_version --install-dir "$DOTNET_ROOT"
 if [ $? -ne 0 ]; then
     runtime_retries=3
@@ -85,11 +70,14 @@ fi
 # dontet-install.sh seems to affect the Linux filesystem and causes test flakiness unless we sync the filesystem before running tests
 sync
 
+$DOTNET_ROOT/dotnet --list-sdks
+$DOTNET_ROOT/dotnet --list-runtimes
+
 exit_code=0
 echo "Restore: $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources..."
 $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources
-echo "Running tests: $DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --sdk $2 --runtime $3 --queue $4 --arch $5 --quarantined $6 --ef $7 --aspnetruntime $8 --aspnetref $9 --helixTimeout ${10}..."
-$DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --sdk $2 --runtime $3 --queue $4 --arch $5 --quarantined $6 --ef $7 --aspnetruntime $8 --aspnetref $9 --helixTimeout ${10}
+echo "Running tests: $DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $3 --arch $4 --quarantined $5 --ef $6 --aspnetruntime $7 --aspnetref $8 --helixTimeout $9..."
+$DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $3 --arch $4 --quarantined $5 --ef $6 --aspnetruntime $7 --aspnetref $8 --helixTimeout $9
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 
