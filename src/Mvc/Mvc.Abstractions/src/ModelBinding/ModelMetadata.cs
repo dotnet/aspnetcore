@@ -4,8 +4,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -24,7 +26,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         public static readonly int DefaultOrder = 10000;
 
+        private static readonly IReadOnlyDictionary<ModelMetadata, ModelMetadata> EmptyParameterMapping = new Dictionary<ModelMetadata, ModelMetadata>(0);
+
         private int? _hashCode;
+        private IReadOnlyList<ModelMetadata>? _boundProperties;
+        private IReadOnlyDictionary<ModelMetadata, ModelMetadata>? _parameterMapping;
 
         /// <summary>
         /// Creates a new <see cref="ModelMetadata"/>.
@@ -83,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the key for the current instance.
         /// </summary>
-        protected ModelMetadataIdentity Identity { get; }
+        protected internal ModelMetadataIdentity Identity { get; }
 
         /// <summary>
         /// Gets a collection of additional information about the model.
@@ -94,6 +100,88 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets the collection of <see cref="ModelMetadata"/> instances for the model's properties.
         /// </summary>
         public abstract ModelPropertyCollection Properties { get; }
+
+        internal IReadOnlyList<ModelMetadata> BoundProperties
+        {
+            get
+            {
+                // In record types, each constructor parameter in the primary constructor is also a settable property with the same name.
+                // Executing model binding on these parameters twice may have detrimental effects, such as duplicate ModelState entries,
+                // or failures if a model expects to be bound exactly ones.
+                // Consequently when binding to a constructor, we only bind and validate the subset of properties whose names
+                // haven't appeared as parameters.
+                if (BoundConstructor is null)
+                {
+                    return Properties;
+                }
+
+                if (_boundProperties is null)
+                {
+                    var boundParameters = BoundConstructor.BoundConstructorParameters!;
+                    var boundProperties = new List<ModelMetadata>();
+
+                    foreach (var metadata in Properties)
+                    {
+                        if (!boundParameters.Any(p =>
+                            string.Equals(p.ParameterName, metadata.PropertyName, StringComparison.Ordinal)
+                            && p.ModelType == metadata.ModelType))
+                        {
+                            boundProperties.Add(metadata);
+                        }
+                    }
+
+                    _boundProperties = boundProperties;
+                }
+
+                return _boundProperties;
+            }
+        }
+
+        internal IReadOnlyDictionary<ModelMetadata, ModelMetadata> BoundConstructorParameterMapping
+        {
+            get
+            {
+                if (_parameterMapping != null)
+                {
+                    return _parameterMapping;
+                }
+
+                if (BoundConstructor is null)
+                {
+                    _parameterMapping = EmptyParameterMapping;
+                    return _parameterMapping;
+                }
+
+                var boundParameters = BoundConstructor.BoundConstructorParameters!;
+                var parameterMapping = new Dictionary<ModelMetadata, ModelMetadata>();
+
+                foreach (var parameter in boundParameters)
+                {
+                    var property = Properties.FirstOrDefault(p =>
+                        string.Equals(p.Name, parameter.ParameterName, StringComparison.Ordinal) &&
+                        p.ModelType == parameter.ModelType);
+
+                    if (property != null)
+                    {
+                        parameterMapping[parameter] = property;
+                    }
+                }
+
+                _parameterMapping = parameterMapping;
+                return _parameterMapping;
+            }
+        }
+
+        /// <summary>
+        /// Gets <see cref="ModelMetadata"/> instance for a constructor of a record type that is used during binding and validation.
+        /// </summary>
+        public virtual ModelMetadata? BoundConstructor { get; }
+
+        /// <summary>
+        /// Gets the collection of <see cref="ModelMetadata"/> instances for parameters on a <see cref="BoundConstructor"/>.
+        /// This is only available when <see cref="MetadataKind"/> is <see cref="ModelMetadataKind.Constructor"/>.
+        /// </summary>
+        public virtual IReadOnlyList<ModelMetadata>? BoundConstructorParameters { get; }
 
         /// <summary>
         /// Gets the name of a model if specified explicitly using <see cref="IModelNameProvider"/>.
@@ -402,6 +490,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract Action<object, object> PropertySetter { get; }
 
         /// <summary>
+        /// Gets a delegate that invokes the bound constructor <see cref="BoundConstructor" /> if non-<see langword="null" />.
+        /// </summary>
+        public virtual Func<object[], object>? BoundConstructorInvoker => null;
+
+        /// <summary>
         /// Gets a display name for the model.
         /// </summary>
         /// <remarks>
@@ -500,6 +593,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     return $"ModelMetadata (Property: '{ContainerType!.Name}.{PropertyName}' Type: '{ModelType.Name}')";
                 case ModelMetadataKind.Type:
                     return $"ModelMetadata (Type: '{ModelType.Name}')";
+                case ModelMetadataKind.Constructor:
+                    return $"ModelMetadata (Constructor: '{ModelType.Name}')";
                 default:
                     return $"Unsupported MetadataKind '{MetadataKind}'.";
             }

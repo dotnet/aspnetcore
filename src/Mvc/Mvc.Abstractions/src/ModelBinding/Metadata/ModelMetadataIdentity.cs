@@ -16,12 +16,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             Type modelType,
             string? name = null,
             Type? containerType = null,
-            object? fieldInfo = null)
+            object? fieldInfo = null,
+            ConstructorInfo? constructorInfo = null)
         {
             ModelType = modelType;
             Name = name;
             ContainerType = containerType;
             FieldInfo = fieldInfo;
+            ConstructorInfo = constructorInfo;
         }
 
         /// <summary>
@@ -131,6 +133,28 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         /// <summary>
+        /// Creates a <see cref="ModelMetadataIdentity"/> for the provided parameter with the specified
+        /// model type.
+        /// </summary>
+        /// <param name="constructor">The <see cref="ConstructorInfo" />.</param>
+        /// <param name="modelType">The model type.</param>
+        /// <returns>A <see cref="ModelMetadataIdentity"/>.</returns>
+        public static ModelMetadataIdentity ForConstructor(ConstructorInfo constructor, Type modelType)
+        {
+            if (constructor == null)
+            {
+                throw new ArgumentNullException(nameof(constructor));
+            }
+
+            if (modelType == null)
+            {
+                throw new ArgumentNullException(nameof(modelType));
+            }
+
+            return new ModelMetadataIdentity(modelType, constructor.Name, constructorInfo: constructor);
+        }
+
+        /// <summary>
         /// Gets the <see cref="Type"/> defining the model property represented by the current
         /// instance, or <c>null</c> if the current instance does not represent a property.
         /// </summary>
@@ -151,6 +175,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 if (ParameterInfo != null)
                 {
                     return ModelMetadataKind.Parameter;
+                }
+                else if (ConstructorInfo != null)
+                {
+                    return ModelMetadataKind.Constructor;
                 }
                 else if (ContainerType != null && Name != null)
                 {
@@ -183,6 +211,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// </summary>
         public PropertyInfo? PropertyInfo => FieldInfo as PropertyInfo;
 
+        /// <summary>
+        /// Gets a descriptor for the constructor, or <c>null</c> if this instance
+        /// does not represent a constructor.
+        /// </summary>
+        public ConstructorInfo? ConstructorInfo { get; }
+
         /// <inheritdoc />
         public bool Equals(ModelMetadataIdentity other)
         {
@@ -191,7 +225,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 ModelType == other.ModelType &&
                 Name == other.Name &&
                 ParameterInfo == other.ParameterInfo && 
-                PropertyInfo == other.PropertyInfo;
+                PropertyInfo == other.PropertyInfo &&
+                ConstructorInfo == other.ConstructorInfo;
         }
 
         /// <inheritdoc />
@@ -210,6 +245,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             hash.Add(Name, StringComparer.Ordinal);
             hash.Add(ParameterInfo);
             hash.Add(PropertyInfo);
+            hash.Add(ConstructorInfo);
             return hash.ToHashCode();
         }
     }
