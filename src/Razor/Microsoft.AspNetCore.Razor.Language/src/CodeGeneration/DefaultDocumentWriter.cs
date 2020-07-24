@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -131,7 +131,19 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             public override void VisitUsingDirective(UsingDirectiveIntermediateNode node)
             {
+                var isDefault = !node.Source.HasValue || (node.Source.HasValue && node.Source.Value.FilePath is null);
+                var isImportFile = node.Source.HasValue && node.Source.Value.FilePath != Context.SourceDocument.FilePath;
+                var isExternalImport = isDefault || isImportFile;
+                if (isExternalImport)
+                {
+                    Context.CodeWriter.WriteLine("#pragma warning disable 8019");
+                }
                 Context.NodeWriter.WriteUsingDirective(Context, node);
+
+                if (isExternalImport)
+                {
+                    Context.CodeWriter.WriteLine("#pragma warning restore 8019");
+                }
             }
 
             public override void VisitNamespaceDeclaration(NamespaceDeclarationIntermediateNode node)
