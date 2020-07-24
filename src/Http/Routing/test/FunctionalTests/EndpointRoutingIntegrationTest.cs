@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         public async Task AuthorizationMiddleware_WhenNoAuthMetadataIsConfigured()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -52,6 +52,8 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
                 .Build();
 
             using var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var response = await server.CreateRequest("/").SendAsync("GET");
 
@@ -62,7 +64,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         public async Task AuthorizationMiddleware_WhenEndpointIsNotFound()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -83,6 +85,8 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
 
             using var server = host.GetTestServer();
 
+            await host.StartAsync();
+
             var response = await server.CreateRequest("/not-found").SendAsync("GET");
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -92,7 +96,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         public async Task AuthorizationMiddleware_WithAuthorizedEndpoint()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -112,6 +116,8 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
                 .Build();
 
             using var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var response = await server.CreateRequest("/").SendAsync("GET");
 
@@ -122,7 +128,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         public async Task AuthorizationMiddleware_NotConfigured_Throws()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -143,6 +149,8 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
 
             using var server = host.GetTestServer();
 
+            await host.StartAsync();
+
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => server.CreateRequest("/").SendAsync("GET"));
             Assert.Equal(AuthErrorMessage, ex.Message);
         }
@@ -151,7 +159,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         public async Task AuthorizationMiddleware_NotConfigured_WhenEndpointIsNotFound()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -169,6 +177,8 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
                 .Build();
 
             using var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var response = await server.CreateRequest("/not-found").SendAsync("GET");
 
@@ -179,7 +189,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         public async Task AuthorizationMiddleware_ConfiguredBeforeRouting_Throws()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -199,6 +209,8 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
                 .Build();
 
             using var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => server.CreateRequest("/").SendAsync("GET"));
             Assert.Equal(AuthErrorMessage, ex.Message);
@@ -208,7 +220,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         public async Task AuthorizationMiddleware_ConfiguredAfterRouting_Throws()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -229,6 +241,8 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
 
             using var server = host.GetTestServer();
 
+            await host.StartAsync();
+
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => server.CreateRequest("/").SendAsync("GET"));
             Assert.Equal(AuthErrorMessage, ex.Message);
         }
@@ -237,7 +251,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         public async Task CorsMiddleware_WithCorsEndpoint()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -257,6 +271,8 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
                 .Build();
 
             using var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var response = await server.CreateRequest("/").SendAsync("PUT");
 
@@ -267,7 +283,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         public async Task CorsMiddleware_ConfiguredBeforeRouting_Throws()
         {
             // Arrange
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -287,6 +303,8 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
                 .Build();
 
             using var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => server.CreateRequest("/").SendAsync("GET"));
             Assert.Equal(CORSErrorMessage, ex.Message);
