@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -320,6 +320,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("ClassLibrary")]
         public async Task Build_TouchesUpToDateMarkerFile()
         {
+            // Remove the components so that they don't interfere with these tests
+            Directory.Delete(Path.Combine(Project.DirectoryPath, "Components"), recursive: true);
+
             var classLibraryDll = Path.Combine(IntermediateOutputPath, "ClassLibrary.dll");
             var classLibraryViewsDll = Path.Combine(IntermediateOutputPath, "ClassLibrary.Views.dll");
             var markerFile = Path.Combine(IntermediateOutputPath, "ClassLibrary.csproj.CopyComplete");
