@@ -184,7 +184,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 ThrowIndexArgumentOutOfRangeException();
             }
-            
+
+            // CandidateState allows a null-valued endpoint. However a validate candidate should never have a null endpoint
+            // We'll make lives easier for matcher policies by declaring it as non-null.
             Candidates[index] = new CandidateState(endpoint!, values, Candidates[index].Score);
 
             if (endpoint == null)

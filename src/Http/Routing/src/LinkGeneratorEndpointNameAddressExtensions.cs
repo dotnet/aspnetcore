@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Routing
             this LinkGenerator generator,
             HttpContext httpContext,
             string endpointName,
-            object values,
+            object? values,
             PathString? pathBase = default,
             FragmentString fragment = default,
             LinkOptions? options = default)
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Routing
         public static string? GetPathByName(
             this LinkGenerator generator,
             string endpointName,
-            object values,
+            object? values,
             PathString pathBase = default,
             FragmentString fragment = default,
             LinkOptions? options = default)
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Routing
             this LinkGenerator generator,
             HttpContext httpContext,
             string endpointName,
-            object values,
+            object? values,
             string? scheme = default,
             HostString? host = default,
             PathString? pathBase = default,
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Routing
         public static string? GetUriByName(
             this LinkGenerator generator,
             string endpointName,
-            object values,
+            object? values,
             string scheme,
             HostString host,
             PathString pathBase = default,

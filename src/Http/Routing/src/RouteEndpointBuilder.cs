@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -25,6 +26,11 @@ namespace Microsoft.AspNetCore.Routing
 
         public override Endpoint Build()
         {
+            if (RequestDelegate is null)
+            {
+                throw new InvalidOperationException($"{nameof(RequestDelegate)} must be specified to construct a {nameof(RouteEndpoint)}.");
+            }
+
             var routeEndpoint = new RouteEndpoint(
                 RequestDelegate,
                 RoutePattern,

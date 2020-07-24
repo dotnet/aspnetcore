@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Gets or sets the delegate used to process requests for the endpoint.
         /// </summary>
-        public RequestDelegate RequestDelegate { get; set; } = default!;
+        public RequestDelegate? RequestDelegate { get; set; }
 
         /// <summary>
         /// Gets or sets the informational display name of this endpoint.

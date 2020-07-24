@@ -30,8 +30,8 @@ namespace Microsoft.AspNetCore.Routing
         public static string? GetPathByRouteValues(
             this LinkGenerator generator,
             HttpContext httpContext,
-            string routeName,
-            object values,
+            string? routeName,
+            object? values,
             PathString? pathBase = default,
             FragmentString fragment = default,
             LinkOptions? options = default)
@@ -72,8 +72,8 @@ namespace Microsoft.AspNetCore.Routing
         /// <returns>A URI with an absolute path, or <c>null</c>.</returns>
         public static string? GetPathByRouteValues(
             this LinkGenerator generator,
-            string routeName,
-            object values,
+            string? routeName,
+            object? values,
             PathString pathBase = default,
             FragmentString fragment = default,
             LinkOptions? options = default)
@@ -121,8 +121,8 @@ namespace Microsoft.AspNetCore.Routing
         public static string? GetUriByRouteValues(
             this LinkGenerator generator,
             HttpContext httpContext,
-            string routeName,
-            object values,
+            string? routeName,
+            object? values,
             string? scheme = default,
             HostString? host = default,
             PathString? pathBase = default,
@@ -180,8 +180,8 @@ namespace Microsoft.AspNetCore.Routing
         /// </remarks>
         public static string? GetUriByRouteValues(
             this LinkGenerator generator,
-            string routeName,
-            object values,
+            string? routeName,
+            object? values,
             string scheme,
             HostString host,
             PathString pathBase = default,
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Routing
             return generator.GetUriByAddress<RouteValuesAddress>(address, address.ExplicitValues, scheme, host, pathBase, fragment, options);
         }
 
-        private static RouteValuesAddress CreateAddress(HttpContext? httpContext, string routeName, object values)
+        private static RouteValuesAddress CreateAddress(HttpContext? httpContext, string? routeName, object? values)
         {
             return new RouteValuesAddress()
             {

@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
         /// <inheritdoc />
         public bool Match(
             HttpContext? httpContext,
-            IRouter route,
+            IRouter? route,
             string routeKey,
             RouteValueDictionary values,
             RouteDirection routeDirection)
@@ -89,8 +89,8 @@ namespace Microsoft.AspNetCore.Routing.Constraints
 
             if (values.TryGetValue(routeKey, out var value) && value != null)
             {
-                var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                var length = valueString!.Length;
+                var valueString = Convert.ToString(value, CultureInfo.InvariantCulture)!;
+                var length = valueString.Length;
                 return length >= MinLength && length <= MaxLength;
             }
 

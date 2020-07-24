@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// Route values that can be substituted for parameters in the route pattern. See remarks on <see cref="RoutePattern.RequiredValues"/>.
         /// </param>
         /// <returns>The <see cref="RoutePattern"/>.</returns>
-        public static RoutePattern Parse(string pattern, object? defaults, object? parameterPolicies, object requiredValues)
+        public static RoutePattern Parse(string pattern, object? defaults, object? parameterPolicies, object? requiredValues)
         {
             if (pattern == null)
             {

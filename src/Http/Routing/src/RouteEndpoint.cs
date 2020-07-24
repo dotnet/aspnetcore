@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Routing
             RequestDelegate requestDelegate,
             RoutePattern routePattern,
             int order,
-            EndpointMetadataCollection metadata,
+            EndpointMetadataCollection? metadata,
             string? displayName)
             : base(requestDelegate, metadata, displayName)
         {

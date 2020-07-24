@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Http
         /// </param>
         public Endpoint(
             RequestDelegate requestDelegate,
-            EndpointMetadataCollection metadata,
+            EndpointMetadataCollection? metadata,
             string? displayName)
         {
             // All are allowed to be null
