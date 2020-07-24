@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc
                 binder => Assert.IsType<DictionaryModelBinderProvider>(binder),
                 binder => Assert.IsType<ArrayModelBinderProvider>(binder),
                 binder => Assert.IsType<CollectionModelBinderProvider>(binder),
-                binder => Assert.IsType<ComplexTypeModelBinderProvider>(binder));
+                binder => Assert.IsType<ComplexObjectModelBinderProvider>(binder));
         }
 
         [Fact]
