@@ -355,6 +355,7 @@ Microsoft.AspNetCore.Mvc.ModelBinding.IValueProviderFactory.CreateValueProviderA
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelBindingMessageProvider
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelBindingMessageProvider.ModelBindingMessageProvider() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity
+Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.ConstructorInfo.get -> System.Reflection.ConstructorInfo?
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.ContainerType.get -> System.Type?
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.Equals(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity other) -> bool
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.MetadataKind.get -> Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataKind
@@ -363,6 +364,7 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.Name.get ->
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.ParameterInfo.get -> System.Reflection.ParameterInfo?
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.PropertyInfo.get -> System.Reflection.PropertyInfo?
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataKind
+Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataKind.Constructor = 3 -> Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataKind
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataKind.Parameter = 2 -> Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataKind
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataKind.Property = 1 -> Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataKind
 Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataKind.Type = 0 -> Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataKind
@@ -733,6 +735,7 @@ static Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.GetBindingInfo(System.C
 static Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource.operator !=(Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource? s1, Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource? s2) -> bool
 static Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource.operator ==(Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource? s1, Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource? s2) -> bool
 static Microsoft.AspNetCore.Mvc.ModelBinding.CompositeBindingSource.Create(System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource!>! bindingSources, string! displayName) -> Microsoft.AspNetCore.Mvc.ModelBinding.CompositeBindingSource!
+static Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.ForConstructor(System.Reflection.ConstructorInfo! constructor, System.Type! modelType) -> Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity
 static Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.ForParameter(System.Reflection.ParameterInfo! parameter) -> Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity
 static Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.ForParameter(System.Reflection.ParameterInfo! parameter, System.Type! modelType) -> Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity
 static Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.ForProperty(System.Reflection.PropertyInfo! propertyInfo, System.Type! modelType, System.Type! containerType) -> Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity
@@ -843,10 +846,14 @@ virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext.CreateB
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext.Services.get -> System.IServiceProvider!
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext.ModelType.get -> System.Type!
+virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BoundConstructor.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata?
+virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BoundConstructorInvoker.get -> System.Func<object![]!, object!>?
+virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.BoundConstructorParameters.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!>?
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.ContainerMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.GetMetadataForProperties(System.Type! modelType) -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!>!
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.GetMetadataForType(System.Type! modelType) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.HasValidators.get -> bool?
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata.PropertyValidationFilter.get -> Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IPropertyValidationFilter?
+virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadataProvider.GetMetadataForConstructor(System.Reflection.ConstructorInfo! constructor, System.Type! modelType) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadataProvider.GetMetadataForParameter(System.Reflection.ParameterInfo! parameter, System.Type! modelType) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
 virtual Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadataProvider.GetMetadataForProperty(System.Reflection.PropertyInfo! propertyInfo, System.Type! modelType) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!

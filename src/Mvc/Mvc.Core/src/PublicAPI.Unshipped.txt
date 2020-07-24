@@ -457,6 +457,9 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CancellationTokenModelBinderProvid
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CollectionModelBinder<TElement>
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CollectionModelBinderProvider
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CollectionModelBinderProvider.CollectionModelBinderProvider() -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexObjectModelBinder
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexObjectModelBinderProvider
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexObjectModelBinderProvider.ComplexObjectModelBinderProvider() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinder
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinderProvider
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinderProvider.ComplexTypeModelBinderProvider() -> void
@@ -1455,6 +1458,8 @@ virtual Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Visit
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CollectionModelBinder<TElement>.ElementBinder.get -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CollectionModelBinder<TElement>.Logger.get -> Microsoft.Extensions.Logging.ILogger
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Binders.CollectionModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
+~Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexObjectModelBinder.BindModelAsync(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext bindingContext) -> System.Threading.Tasks.Task
+~Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexObjectModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinder.BindModelAsync(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext bindingContext) -> System.Threading.Tasks.Task
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinder.ComplexTypeModelBinder(System.Collections.Generic.IDictionary<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata, Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder> propertyBinders, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinder.ComplexTypeModelBinder(System.Collections.Generic.IDictionary<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata, Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder> propertyBinders, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, bool allowValidatingTopLevelNodes) -> void
@@ -1527,6 +1532,8 @@ virtual Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Visit
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.BindingMetadata.BinderType.set -> void
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.BindingMetadata.BindingSource.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.BindingMetadata.BindingSource.set -> void
+~Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.BindingMetadata.BoundConstructor.get -> System.Reflection.ConstructorInfo
+~Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.BindingMetadata.BoundConstructor.set -> void
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.BindingMetadata.ModelBindingMessageProvider.get -> Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelBindingMessageProvider
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.BindingMetadata.ModelBindingMessageProvider.set -> void
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.BindingMetadata.PropertyFilterProvider.get -> Microsoft.AspNetCore.Mvc.ModelBinding.IPropertyFilterProvider
@@ -1543,6 +1550,10 @@ virtual Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Visit
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.BindingSourceMetadataProvider.Type.get -> System.Type
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultMetadataDetails.BindingMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.BindingMetadata
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultMetadataDetails.BindingMetadata.set -> void
+~Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultMetadataDetails.BoundConstructorInvoker.get -> System.Func<object[], object>
+~Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultMetadataDetails.BoundConstructorInvoker.set -> void
+~Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultMetadataDetails.BoundConstructorParameters.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata[]
+~Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultMetadataDetails.BoundConstructorParameters.set -> void
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultMetadataDetails.ContainerMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultMetadataDetails.ContainerMetadata.set -> void
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultMetadataDetails.DefaultMetadataDetails(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity key, Microsoft.AspNetCore.Mvc.ModelBinding.ModelAttributes attributes) -> void
@@ -2017,6 +2028,9 @@ virtual Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Visit
 ~override Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata.BinderModelName.get -> string
 ~override Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata.BinderType.get -> System.Type
 ~override Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata.BindingSource.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource
+~override Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata.BoundConstructor.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata
+~override Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata.BoundConstructorInvoker.get -> System.Func<object[], object>
+~override Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata.BoundConstructorParameters.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata>
 ~override Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata.ContainerMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata
 ~override Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata.DataTypeName.get -> string
 ~override Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata.Description.get -> string
@@ -2039,6 +2053,7 @@ virtual Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Visit
 ~override Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata.SimpleDisplayProperty.get -> string
 ~override Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata.TemplateHint.get -> string
 ~override Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata.ValidatorMetadata.get -> System.Collections.Generic.IReadOnlyList<object>
+~override Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataProvider.GetMetadataForConstructor(System.Reflection.ConstructorInfo constructorInfo, System.Type modelType) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata
 ~override Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataProvider.GetMetadataForParameter(System.Reflection.ParameterInfo parameter) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata
 ~override Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataProvider.GetMetadataForParameter(System.Reflection.ParameterInfo parameter, System.Type modelType) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata
 ~override Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadataProvider.GetMetadataForProperties(System.Type modelType) -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata>
