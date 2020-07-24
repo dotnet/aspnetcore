@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -56,16 +57,22 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 if (Include != null && Include.Length > 0)
                 {
-                    if (_propertyFilter == null)
-                    {
-                        _propertyFilter = (m) => Include.Contains(m.PropertyName, StringComparer.Ordinal);
-                    }
-
+                    _propertyFilter ??= PropertyFilter;
                     return _propertyFilter;
                 }
                 else
                 {
                     return _default;
+                }
+
+                bool PropertyFilter(ModelMetadata modelMetadata)
+                {
+                    if (modelMetadata.MetadataKind == ModelMetadataKind.Parameter)
+                    {
+                        return Include.Contains(modelMetadata.ParameterName, StringComparer.Ordinal);
+                    }
+
+                    return Include.Contains(modelMetadata.PropertyName, StringComparer.Ordinal);
                 }
             }
         }

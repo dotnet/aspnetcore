@@ -278,12 +278,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             var binder = new DictionaryModelBinder<int, ModelWithProperties>(
                 new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance),
-                new ComplexTypeModelBinder(new Dictionary<ModelMetadata, IModelBinder>()
+                new ComplexObjectModelBinder(new Dictionary<ModelMetadata, IModelBinder>()
                 {
                     { valueMetadata.Properties["Id"], new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance) },
                     { valueMetadata.Properties["Name"], new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance) },
                 },
-                NullLoggerFactory.Instance),
+                Array.Empty<IModelBinder>(),
+                NullLogger<ComplexObjectModelBinder>.Instance),
                 NullLoggerFactory.Instance);
 
             // Act

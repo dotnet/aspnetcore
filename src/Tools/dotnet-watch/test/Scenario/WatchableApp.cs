@@ -41,6 +41,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         public List<string> DotnetWatchArgs { get; } = new List<string>();
 
+        public Dictionary<string, string> EnvironmentVariables { get; } = new Dictionary<string, string>();
+
         public string SourceDirectory { get; }
 
         public Task HasRestarted()
@@ -108,8 +110,14 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 EnvironmentVariables =
                 {
                     ["DOTNET_USE_POLLING_FILE_WATCHER"] = UsePollingWatcher.ToString(),
+                    ["__DOTNET_WATCH_RUNNING_AS_TEST"] = "true",
                 },
             };
+
+            foreach (var env in EnvironmentVariables)
+            {
+                spec.EnvironmentVariables.Add(env.Key, env.Value);
+            }
 
             if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix")))
             {
