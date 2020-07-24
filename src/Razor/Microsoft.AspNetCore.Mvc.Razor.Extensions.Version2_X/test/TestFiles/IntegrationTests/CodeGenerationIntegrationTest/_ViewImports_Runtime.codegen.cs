@@ -6,13 +6,27 @@
 namespace AspNetCore
 {
     #line hidden
+    #pragma warning disable 8019
     using System;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using System.Collections.Generic;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using System.Linq;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using System.Threading.Tasks;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using Microsoft.AspNetCore.Mvc;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using Microsoft.AspNetCore.Mvc.Rendering;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
+    #pragma warning restore 8019
     [global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute(@"SHA1", @"74c90591b68437a0868e91dc714ea9827ab8e03a", @"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/_ViewImports.cshtml")]
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest__ViewImports : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {

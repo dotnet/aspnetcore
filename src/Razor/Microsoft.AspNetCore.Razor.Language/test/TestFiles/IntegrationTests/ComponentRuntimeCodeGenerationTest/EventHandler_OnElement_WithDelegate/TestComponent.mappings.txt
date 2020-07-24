@@ -3,7 +3,7 @@ Source Location: (81:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml)
     void OnClick(MouseEventArgs e) {
     }
 |
-Generated Location: (1224:37,7 [47] )
+Generated Location: (1564:47,7 [47] )
 |
     void OnClick(MouseEventArgs e) {
     }

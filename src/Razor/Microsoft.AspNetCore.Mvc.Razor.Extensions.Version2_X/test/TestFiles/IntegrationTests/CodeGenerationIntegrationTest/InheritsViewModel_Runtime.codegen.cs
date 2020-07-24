@@ -6,13 +6,27 @@
 namespace AspNetCore
 {
     #line hidden
+    #pragma warning disable 8019
     using System;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using System.Collections.Generic;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using System.Linq;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using System.Threading.Tasks;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using Microsoft.AspNetCore.Mvc;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using Microsoft.AspNetCore.Mvc.Rendering;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
+    #pragma warning restore 8019
     [global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute(@"SHA1", @"3ff83e2f0d946feb387a8ea03a529c64350014f8", @"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/InheritsViewModel.cshtml")]
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InheritsViewModel : MyBasePageForViews<MyModel>
     {

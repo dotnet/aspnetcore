@@ -5,13 +5,27 @@
 namespace Test.Namespace
 {
     #line hidden
+    #pragma warning disable 8019
     using System;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using System.Collections.Generic;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using System.Linq;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using System.Threading.Tasks;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using Microsoft.AspNetCore.Mvc;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using Microsoft.AspNetCore.Mvc.Rendering;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
+    #pragma warning restore 8019
     [global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute(@"SHA1", @"471b74bb73c8ae8e0ed24c654340198b9b4a1ec8", @"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ViewWithNamespace.cshtml")]
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewWithNamespace : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {

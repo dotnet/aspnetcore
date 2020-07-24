@@ -3,10 +3,18 @@
 namespace Test
 {
     #line hidden
+    #pragma warning disable 8019
     using System;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using System.Collections.Generic;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using System.Linq;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using Microsoft.AspNetCore.Components;
+    #pragma warning restore 8019
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
 using System.Threading.Tasks;

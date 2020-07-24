@@ -3,11 +3,21 @@
 namespace Test
 {
     #line hidden
+    #pragma warning disable 8019
     using System;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using System.Collections.Generic;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using System.Linq;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using System.Threading.Tasks;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using Microsoft.AspNetCore.Components;
+    #pragma warning restore 8019
     [Microsoft.AspNetCore.Components.RouteAttribute("/MyPage")]
     [Microsoft.AspNetCore.Components.RouteAttribute("/AnotherRoute/{id}")]
     public partial class TestComponent : Microsoft.AspNetCore.Components.ComponentBase

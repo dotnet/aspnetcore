@@ -6,7 +6,7 @@ Source Location: (126:2,7 [130] x:\dir\subdir\Test\TestComponent.cshtml)
     {
     }
 |
-Generated Location: (1518:46,7 [130] )
+Generated Location: (1858:56,7 [130] )
 |
     public string ParentBgColor { get; set; } = "#FFFFFF";
 

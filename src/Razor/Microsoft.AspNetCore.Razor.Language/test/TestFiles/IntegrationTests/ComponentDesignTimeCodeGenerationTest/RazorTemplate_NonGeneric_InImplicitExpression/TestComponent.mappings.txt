@@ -1,18 +1,18 @@
 Source Location: (1:0,1 [13] x:\dir\subdir\Test\TestComponent.cshtml)
 |RenderPerson(|
-Generated Location: (858:24,6 [13] )
+Generated Location: (1198:34,6 [13] )
 |RenderPerson(|
 
 Source Location: (28:0,28 [1] x:\dir\subdir\Test\TestComponent.cshtml)
 |)|
-Generated Location: (893:26,0 [1] )
+Generated Location: (1233:36,0 [1] )
 |)|
 
 Source Location: (38:1,7 [54] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     object RenderPerson(RenderFragment p) => null;
 |
-Generated Location: (1073:35,7 [54] )
+Generated Location: (1413:45,7 [54] )
 |
     object RenderPerson(RenderFragment p) => null;
 |

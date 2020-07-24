@@ -1,6 +1,6 @@
 Source Location: (24:0,24 [21] x:\dir\subdir\Test\TestComponent.cshtml)
 |e => { Increment(); }|
-Generated Location: (932:25,24 [21] )
+Generated Location: (1272:35,24 [21] )
 |e => { Increment(); }|
 
 Source Location: (60:2,7 [87] x:\dir\subdir\Test\TestComponent.cshtml)
@@ -10,7 +10,7 @@ Source Location: (60:2,7 [87] x:\dir\subdir\Test\TestComponent.cshtml)
         counter++;
     }
 |
-Generated Location: (1450:45,7 [87] )
+Generated Location: (1790:55,7 [87] )
 |
     private int counter;
     private void Increment() {

@@ -1,20 +1,20 @@
 Source Location: (128:7,7 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (767:19,0 [0] )
+Generated Location: (1311:35,0 [0] )
 ||
 
 Source Location: (149:10,8 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (958:27,0 [0] )
+Generated Location: (1502:43,0 [0] )
 ||
 
 Source Location: (159:11,8 [17] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 |MyService<TModel>|
-Generated Location: (1149:35,0 [17] )
+Generated Location: (1693:51,0 [17] )
 |MyService<TModel>|
 
 Source Location: (203:14,11 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
 ||
-Generated Location: (1380:43,0 [0] )
+Generated Location: (1924:59,0 [0] )
 ||
 

@@ -6,7 +6,7 @@ Source Location: (46:2,7 [131] x:\dir\subdir\Test\TestComponent.cshtml)
         return Task.CompletedTask;
     }
 |
-Generated Location: (1151:30,7 [131] )
+Generated Location: (1491:40,7 [131] )
 |
     private int counter;
     private Task Increment(object e) {

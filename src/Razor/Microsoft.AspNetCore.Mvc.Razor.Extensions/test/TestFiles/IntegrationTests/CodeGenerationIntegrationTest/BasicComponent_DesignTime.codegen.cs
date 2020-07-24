@@ -3,11 +3,21 @@
 namespace __GeneratedComponent
 {
     #line hidden
+    #pragma warning disable 8019
     using System;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using System.Collections.Generic;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using System.Linq;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using System.Threading.Tasks;
+    #pragma warning restore 8019
+    #pragma warning disable 8019
     using Microsoft.AspNetCore.Components;
+    #pragma warning restore 8019
     public partial class AspNetCore_d3c3d6059615673cb46fc4974164d61eabadb890 : Microsoft.AspNetCore.Components.ComponentBase, IDisposable
     {
         #pragma warning disable 219

@@ -2,7 +2,7 @@ Source Location: (95:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private object someObject = new object();
 |
-Generated Location: (778:20,7 [49] )
+Generated Location: (1118:30,7 [49] )
 |
     private object someObject = new object();
 |
