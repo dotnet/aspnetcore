@@ -106,6 +106,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Runtime" />
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
@@ -161,6 +162,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Libuv" />
     <LatestPackageReference Include="MessagePack" />
     <LatestPackageReference Include="MessagePackAnalyzer" />
+    <LatestPackageReference Include="Microsoft.Data.SqlClient" />
     <LatestPackageReference Include="Mono.Cecil" />
     <LatestPackageReference Include="Moq" />
     <LatestPackageReference Include="Newtonsoft.Json.Bson" />
@@ -178,7 +180,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="xunit.assert" />
     <LatestPackageReference Include="xunit.extensibility.core" />
     <LatestPackageReference Include="xunit.extensibility.execution" />
-    <LatestPackageReference Include="Microsoft.Data.SqlClient" />
   </ItemGroup>
 
   <ItemGroup Label="Dependencies with versions.">
