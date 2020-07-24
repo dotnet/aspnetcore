@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
@@ -271,6 +272,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             var endpoint = reader.Endpoints.First();
             Assert.Null(endpoint.SslProtocols);
+        }
+
+        [Fact]
+        public void ReadEndpointWithoutSniConfigured_ReturnsEmptyCollection()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+            }).Build();
+
+            var reader = new ConfigurationReader(config);
+            var endpoint = reader.Endpoints.First();
+            Assert.NotNull(endpoint.SNI);
+            Assert.False(endpoint.SNI.Any());
+        }
+
+        [Fact]
+        public void ReadEndpointWithSniConfigured_ReturnsCorrectValue()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+                new KeyValuePair<string, string>("Endpoints:End1:SNI:*.example.org:Protocols", "Http1"),
+                new KeyValuePair<string, string>("Endpoints:End1:SNI:*.example.org:SslProtocols:0", "Tls12"),
+                new KeyValuePair<string, string>("Endpoints:End1:SNI:*.example.org:Certificate:Path", "/path/cert.pfx"),
+                new KeyValuePair<string, string>("Endpoints:End1:SNI:*.example.org:Certificate:Password", "certpassword"),
+                new KeyValuePair<string, string>("Endpoints:End1:SNI:*.example.org:ClientCertificateMode", "AllowCertificate"),
+            }).Build();
+
+            var reader = new ConfigurationReader(config);
+            var endpoint = reader.Endpoints.First();
+            var sni = endpoint.SNI["*.EXAMPLE.org"];
+
+            Assert.NotNull(sni);
+
+            Assert.Equal("*.example.org", sni.Name);
+            Assert.Equal(HttpProtocols.Http1, sni.Protocols);
+            Assert.Equal(SslProtocols.Tls12, sni.SslProtocols);
+            Assert.Equal("/path/cert.pfx", sni.Certificate.Path);
+            Assert.Equal("certpassword", sni.Certificate.Password);
+            Assert.Equal(ClientCertificateMode.AllowCertificate, sni.ClientCertificateMode);
         }
 
         [Fact]
