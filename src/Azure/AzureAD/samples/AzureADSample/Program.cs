@@ -2,23 +2,29 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace AzureADSample
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            CreateWebHostBuilder(args).Build().Run();
-        }
-
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            new WebHostBuilder()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .ConfigureAppConfiguration((hostingContext, config) =>{
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseContentRoot(Directory.GetCurrentDirectory())
+                        .UseIISIntegration()
+                        .UseKestrel()
+                        .UseStartup<Startup>();
+                })
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
                     var env = hostingContext.HostingEnvironment;
 
                     config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -32,8 +38,9 @@ namespace AzureADSample
                         .AddConsole()
                         .AddDebug();
                 })
-                .UseIISIntegration()
-                .UseKestrel()
-                .UseStartup<Startup>();
+                .Build();
+
+            return host.RunAsync();
+        }
     }
 }
