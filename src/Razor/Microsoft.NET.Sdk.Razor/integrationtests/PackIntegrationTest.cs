@@ -246,6 +246,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 filePaths: new[]
                 {
                     Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
+                    Path.Combine("staticwebassets", "Components", "App.razor.rz.scp.css"),
                     Path.Combine("staticwebassets", "css", "site.css"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryDirectDependency.props"),
