@@ -1298,7 +1298,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.NotNull(model.Address);
             var address = model.Address;
             Assert.Equal("DefaultStreet", address.Street);
-            Assert.Null(address.City);
+            Assert.Equal("DefaultCity", address.City);
             Assert.Equal("98007", address.ZipCode);
 
             // ModelState
@@ -1308,13 +1308,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var state = entry.Value;
             Assert.Equal("98007", state.AttemptedValue);
             Assert.Equal("98007", state.RawValue);
-            Assert.Empty(state.Errors);
-            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
-
-            entry = Assert.Single(modelState, k => k.Key == "Address.Street");
-            state = entry.Value;
-            Assert.Equal("SomeStreet", state.AttemptedValue);
-            Assert.Equal("SomeStreet", state.RawValue);
             Assert.Empty(state.Errors);
             Assert.Equal(ModelValidationState.Valid, state.ValidationState);
         }
