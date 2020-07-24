@@ -1,21 +1,21 @@
-﻿@using Microsoft.AspNetCore.Authentication.AzureADB2C.UI
+﻿@using Microsoft.Identity.Web
 @using Microsoft.Extensions.Options
-@inject IOptionsMonitor<AzureADB2COptions> AzureADB2COptions
+@inject IOptionsMonitor<MicrosoftIdentityOptions> microsoftIdentityOptions
 
 <AuthorizeView>
     <Authorized>
         @if (canEditProfile)
         {
-            <a href="AzureADB2C/Account/EditProfile">Hello, @context.User.Identity.Name!</a>
+            <a href="MicrosoftIdentity/Account/EditProfile">Hello, @context.User.Identity.Name!</a>
         }
         else
         {
             <text>Hello, @context.User.Identity.Name!</text>
         }
-        <a href="AzureADB2C/Account/SignOut">Log out</a>
+        <a href="MicrosoftIdentity/Account/SignOut">Log out</a>
     </Authorized>
     <NotAuthorized>
-        <a href="AzureADB2C/Account/SignIn">Log in</a>
+        <a href="MicrosoftIdentity/Account/SignIn">Log in</a>
     </NotAuthorized>
 </AuthorizeView>
 
@@ -24,7 +24,7 @@
 
     protected override void OnInitialized()
     {
-        var options = AzureADB2COptions.Get(AzureADB2CDefaults.AuthenticationScheme);
+        var options = microsoftIdentityOptions.CurrentValue;
         canEditProfile = !string.IsNullOrEmpty(options.EditProfilePolicyId);
     }
 }
