@@ -19,7 +19,8 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
-                        .UseStartup(typeof(TStartup));
+                        .UseStartup(typeof(TStartup))
+                        .UseTestServer();
                 })
                 .Build();
 
