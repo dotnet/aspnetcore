@@ -55,17 +55,19 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             return builder.ToString();
         }
 
-        private  string ToBase36(byte[] hash)
+        private static string ToBase36(byte[] hash)
         {
-            var builder = new StringBuilder();
-            const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-            var dividend = new BigInteger(hash.AsSpan().Slice(0,8).ToArray());
-            while (dividend > 36)
+            const string chars = "0123456789abcdefghijklmnopqrstuvwxyz";
+
+            var result = new char[10];
+            var dividend = BigInteger.Abs(new BigInteger(hash.AsSpan().Slice(0, 9).ToArray()));
+            for (var i = 0; i < 10; i++)
             {
                 dividend = BigInteger.DivRem(dividend, 36, out var remainder);
-                builder.Insert(0, chars[Math.Abs(((int)remainder))]);
+                result[i] = chars[(int)remainder];
             }
-            return builder.ToString();
+
+            return new string(result);
         }
     }
 }
