@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 // Note that this sample will not run. It is only here to illustrate usage patterns.
 
@@ -31,10 +32,14 @@ namespace SampleStartups
         {
             var config = new ConfigurationBuilder().AddCommandLine(args).Build();
 
-            var host = new WebHostBuilder()
-                .UseConfiguration(config)
-                .UseKestrel()
-                .UseStartup<StartupBlockingOnStart>()
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseConfiguration(config)
+                        .UseKestrel()
+                        .UseStartup<StartupBlockingOnStart>();
+                })
                 .Build();
 
             using (host)
