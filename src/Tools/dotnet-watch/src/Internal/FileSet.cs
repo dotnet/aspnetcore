@@ -11,8 +11,9 @@ namespace Microsoft.DotNet.Watcher.Internal
     {
         private readonly HashSet<string> _files;
 
-        public FileSet(IEnumerable<string> files)
+        public FileSet(bool isNetCoreApp31OrNewer, IEnumerable<string> files)
         {
+            IsNetCoreApp31OrNewer = isNetCoreApp31OrNewer;
             _files = new HashSet<string>(files, StringComparer.OrdinalIgnoreCase);
         }
 
@@ -20,7 +21,9 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         public int Count => _files.Count;
 
-        public static IFileSet Empty = new FileSet(Array.Empty<string>());
+        public bool IsNetCoreApp31OrNewer { get; }
+
+        public static IFileSet Empty = new FileSet(false, Array.Empty<string>());
 
         public IEnumerator<string> GetEnumerator() => _files.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => _files.GetEnumerator();
