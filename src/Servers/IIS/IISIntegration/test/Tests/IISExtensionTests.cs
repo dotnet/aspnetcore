@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration
@@ -15,14 +16,21 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         public void CallingUseIISIntegrationMultipleTimesWorks()
         {
 
-            var builder = new WebHostBuilder()
-                .UseSetting("TOKEN", "TestToken")
-                .UseSetting("PORT", "12345")
-                .UseSetting("APPL_PATH", "/")
-                .UseIISIntegration()
-                .UseIISIntegration()
-                .Configure(app => { });
-            var server = new TestServer(builder);
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseSetting("TOKEN", "TestToken")
+                        .UseSetting("PORT", "12345")
+                        .UseSetting("APPL_PATH", "/")
+                        .UseIISIntegration()
+                        .UseIISIntegration()
+                        .Configure(app => { })
+                        .UseTestServer();
+                })
+                .Build();
+
+            var server = host.GetTestServer();
 
             var filters = server.Host.Services.GetServices<IStartupFilter>()
                 .OfType<IISSetupFilter>();

@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public TestConnection CreateConnection() => new TestConnection(_currentPort);
 
         private static IISServerOptions _options;
-        private IWebHost _host;
+        private IHost _host;
 
         private string _appHostConfigPath;
         private int _currentPort;
@@ -131,15 +131,20 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         private int Main(IntPtr argc, IntPtr argv)
         {
-            var builder = new WebHostBuilder()
-                .UseIIS()
+            var builder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseIIS()
+                        .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName);
+                })
                 .ConfigureServices(services =>
                 {
                     services.Configure<IISServerOptions>(options => options.MaxRequestBodySize = _options.MaxRequestBodySize);
                     services.AddSingleton<IStartup>(this);
                     services.AddSingleton(_loggerFactory);
-                })
-                .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName);
+                });
+
             _host = builder.Build();
 
             var doneEvent = new ManualResetEventSlim();
