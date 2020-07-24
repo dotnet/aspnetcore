@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Tests;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
@@ -42,28 +43,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task LargeDownload()
         {
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
-                .UseKestrel()
-                .UseUrls("http://127.0.0.1:0/")
-                .ConfigureServices(AddTestLogging)
-                .Configure(app =>
+            var hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.Run(async context =>
-                    {
-                        var bytes = new byte[1024];
-                        for (int i = 0; i < bytes.Length; i++)
+                    webHostBuilder
+                        .UseKestrel()
+                        .UseUrls("http://127.0.0.1:0/")
+                        .Configure(app =>
                         {
-                            bytes[i] = (byte)i;
-                        }
+                            app.Run(async context =>
+                            {
+                                var bytes = new byte[1024];
+                                for (int i = 0; i < bytes.Length; i++)
+                                {
+                                    bytes[i] = (byte)i;
+                                }
 
-                        context.Response.ContentLength = bytes.Length * 1024;
+                                context.Response.ContentLength = bytes.Length * 1024;
 
-                        for (int i = 0; i < 1024; i++)
-                        {
-                            await context.Response.BodyWriter.WriteAsync(new Memory<byte>(bytes, 0, bytes.Length));
-                        }
-                    });
-                });
+                                for (int i = 0; i < 1024; i++)
+                                {
+                                    await context.Response.BodyWriter.WriteAsync(new Memory<byte>(bytes, 0, bytes.Length));
+                                }
+                            });
+                        });
+                })
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {
@@ -96,19 +101,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Theory, MemberData(nameof(NullHeaderData))]
         public async Task IgnoreNullHeaderValues(string headerName, StringValues headerValue, string expectedValue)
         {
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
-                .UseKestrel()
-                .UseUrls("http://127.0.0.1:0/")
-                .ConfigureServices(AddTestLogging)
-                .Configure(app =>
+            var hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.Run(async context =>
-                    {
-                        context.Response.Headers.Add(headerName, headerValue);
+                    webHostBuilder
+                        .UseKestrel()
+                        .UseUrls("http://127.0.0.1:0/")
+                        .Configure(app =>
+                        {
+                            app.Run(async context =>
+                            {
+                                context.Response.Headers.Add(headerName, headerValue);
 
-                        await context.Response.WriteAsync("");
-                    });
-                });
+                                await context.Response.WriteAsync("");
+                            });
+                        });
+                })
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {

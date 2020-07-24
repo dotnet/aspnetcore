@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Hosting;
 using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -55,39 +56,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.True(contentLength % bufferLength == 0, $"{nameof(contentLength)} sent must be evenly divisible by {bufferLength}.");
             Assert.True(bufferLength % 256 == 0, $"{nameof(bufferLength)} must be evenly divisible by 256");
 
-            var builder = TransportSelector.GetWebHostBuilder()
-                .ConfigureServices(AddTestLogging)
-                .UseKestrel(options =>
+            var builder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.Limits.MaxRequestBodySize = contentLength;
-                    options.Limits.MinRequestBodyDataRate = null;
-                })
-                .UseUrls("http://127.0.0.1:0/")
-                .Configure(app =>
-                {
-                    app.Run(async context =>
-                    {
-                        // Read the full request body
-                        long total = 0;
-                        var receivedBytes = new byte[bufferLength];
-                        var received = 0;
-                        while ((received = await context.Request.Body.ReadAsync(receivedBytes, 0, receivedBytes.Length)) > 0)
+                    webHostBuilder
+                        .UseKestrel(options =>
                         {
-                            if (checkBytes)
+                            options.Limits.MaxRequestBodySize = contentLength;
+                            options.Limits.MinRequestBodyDataRate = null;
+                        })
+                        .UseUrls("http://127.0.0.1:0/")
+                        .Configure(app =>
+                        {
+                            app.Run(async context =>
                             {
-                                for (var i = 0; i < received; i++)
+                                // Read the full request body
+                                long total = 0;
+                                var receivedBytes = new byte[bufferLength];
+                                var received = 0;
+                                while ((received = await context.Request.Body.ReadAsync(receivedBytes, 0, receivedBytes.Length)) > 0)
                                 {
-                                    // Do not use Assert.Equal here, it is to slow for this hot path
-                                    Assert.True((byte)((total + i) % 256) == receivedBytes[i], "Data received is incorrect");
+                                    if (checkBytes)
+                                    {
+                                        for (var i = 0; i < received; i++)
+                                        {
+                                            // Do not use Assert.Equal here, it is to slow for this hot path
+                                            Assert.True((byte)((total + i) % 256) == receivedBytes[i], "Data received is incorrect");
+                                        }
+                                    }
+
+                                    total += received;
                                 }
-                            }
 
-                            total += received;
-                        }
-
-                        await context.Response.WriteAsync($"bytesRead: {total.ToString()}");
-                    });
-                });
+                                await context.Response.WriteAsync($"bytesRead: {total.ToString()}");
+                            });
+                        });
+                })
+                .ConfigureServices(AddTestLogging);
 
             using (var host = builder.Build())
             {
@@ -140,17 +145,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task DoesNotHangOnConnectionCloseRequest()
         {
-            var builder = TransportSelector.GetWebHostBuilder()
-                .UseKestrel()
-                .UseUrls("http://127.0.0.1:0")
-                .ConfigureServices(AddTestLogging)
-                .Configure(app =>
+            var builder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.Run(async context =>
-                    {
-                        await context.Response.WriteAsync("hello, world");
-                    });
-                });
+                    webHostBuilder
+                        .UseKestrel()
+                        .UseUrls("http://127.0.0.1:0")
+                        .Configure(app =>
+                        {
+                            app.Run(async context =>
+                            {
+                                await context.Response.WriteAsync("hello, world");
+                            });
+                        });
+                })
+                .ConfigureServices(AddTestLogging);
 
             using (var host = builder.Build())
             using (var client = new HttpClient())
@@ -392,26 +401,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var appDone = new SemaphoreSlim(0);
             var expectedExceptionThrown = false;
 
-            var builder = TransportSelector.GetWebHostBuilder()
-                .ConfigureServices(AddTestLogging)
-                .UseKestrel()
-                .UseUrls("http://127.0.0.1:0")
-                .Configure(app => app.Run(async context =>
+            var builder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    requestStarted.Release();
-                    Assert.True(await connectionReset.WaitAsync(_semaphoreWaitTimeout));
+                    webHostBuilder
+                        .UseKestrel()
+                        .UseUrls("http://127.0.0.1:0")
+                        .Configure(app => app.Run(async context =>
+                        {
+                            requestStarted.Release();
+                            Assert.True(await connectionReset.WaitAsync(_semaphoreWaitTimeout));
 
-                    try
-                    {
-                        await context.Request.Body.ReadAsync(new byte[1], 0, 1);
-                    }
-                    catch (ConnectionResetException)
-                    {
-                        expectedExceptionThrown = true;
-                    }
+                            try
+                            {
+                                await context.Request.Body.ReadAsync(new byte[1], 0, 1);
+                            }
+                            catch (ConnectionResetException)
+                            {
+                                expectedExceptionThrown = true;
+                            }
 
-                    appDone.Release();
-                }));
+                            appDone.Release();
+                        }));
+                })
+                .ConfigureServices(AddTestLogging);
 
             using (var host = builder.Build())
             {
@@ -439,18 +452,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var appStarted = new SemaphoreSlim(0);
             var requestAborted = new SemaphoreSlim(0);
-            var builder = TransportSelector.GetWebHostBuilder()
-                .UseKestrel()
-                .UseUrls("http://127.0.0.1:0")
-                .ConfigureServices(AddTestLogging)
-                .Configure(app => app.Run(async context =>
+            var builder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    appStarted.Release();
+                    webHostBuilder
+                        .UseKestrel()
+                        .UseUrls("http://127.0.0.1:0")
+                        .Configure(app => app.Run(async context =>
+                        {
+                            appStarted.Release();
 
-                    var token = context.RequestAborted;
-                    token.Register(() => requestAborted.Release(2));
-                    await requestAborted.WaitAsync().DefaultTimeout();
-                }));
+                            var token = context.RequestAborted;
+                            token.Register(() => requestAborted.Release(2));
+                            await requestAborted.WaitAsync().DefaultTimeout();
+                        }));
+                })
+                .ConfigureServices(AddTestLogging);
 
             using (var host = builder.Build())
             {
@@ -472,15 +489,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task AbortingTheConnectionSendsFIN()
         {
-            var builder = TransportSelector.GetWebHostBuilder()
-                .UseKestrel()
-                .UseUrls("http://127.0.0.1:0")
-                .ConfigureServices(AddTestLogging)
-                .Configure(app => app.Run(context =>
+            var builder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    context.Abort();
-                    return Task.CompletedTask;
-                }));
+                    webHostBuilder
+                        .UseKestrel()
+                        .UseUrls("http://127.0.0.1:0")
+                        .Configure(app => app.Run(context =>
+                        {
+                            context.Abort();
+                            return Task.CompletedTask;
+                        }));
+                })
+                .ConfigureServices(AddTestLogging);
 
             using (var host = builder.Build())
             {
@@ -842,24 +863,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private async Task TestRemoteIPAddress(string registerAddress, string requestAddress, string expectAddress)
         {
-            var builder = TransportSelector.GetWebHostBuilder()
-                .UseKestrel()
-                .UseUrls($"http://{registerAddress}:0")
-                .ConfigureServices(AddTestLogging)
-                .Configure(app =>
+            var builder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.Run(async context =>
-                    {
-                        var connection = context.Connection;
-                        await context.Response.WriteAsync(JsonConvert.SerializeObject(new
+                    webHostBuilder
+                        .UseKestrel()
+                        .UseUrls($"http://{registerAddress}:0")
+                        .Configure(app =>
                         {
-                            RemoteIPAddress = connection.RemoteIpAddress?.ToString(),
-                            RemotePort = connection.RemotePort,
-                            LocalIPAddress = connection.LocalIpAddress?.ToString(),
-                            LocalPort = connection.LocalPort
-                        }));
-                    });
-                });
+                            app.Run(async context =>
+                            {
+                                var connection = context.Connection;
+                                await context.Response.WriteAsync(JsonConvert.SerializeObject(new
+                                {
+                                    RemoteIPAddress = connection.RemoteIpAddress?.ToString(),
+                                    RemotePort = connection.RemotePort,
+                                    LocalIPAddress = connection.LocalIpAddress?.ToString(),
+                                    LocalPort = connection.LocalPort
+                                }));
+                            });
+                        });
+                })
+                .ConfigureServices(AddTestLogging);
 
             using (var host = builder.Build())
             using (var client = new HttpClient())

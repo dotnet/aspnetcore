@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
         private readonly MemoryPool<byte> _memoryPool;
         private readonly RequestDelegate _app;
         private readonly InMemoryTransportFactory _transportFactory;
-        private readonly IWebHost _host;
+        private readonly IHost _host;
 
         public TestServer(RequestDelegate app)
             : this(app, new TestServiceContext())
@@ -69,8 +70,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             _transportFactory = new InMemoryTransportFactory();
             HttpClientSlim = new InMemoryHttpClientSlim(this);
 
-            var hostBuilder = new WebHostBuilder()
-                .UseSetting(WebHostDefaults.ShutdownTimeoutKey, TestConstants.DefaultTimeout.TotalSeconds.ToString())
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseSetting(WebHostDefaults.ShutdownTimeoutKey, TestConstants.DefaultTimeout.TotalSeconds.ToString());
+                })
                 .ConfigureServices(services =>
                 {
                     configureServices(services);
