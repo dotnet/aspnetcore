@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -643,17 +644,24 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
 
         private Task<HttpContext> RunTestAsync(Action<CookiePolicyOptions> configureOptions, Action<HttpContext> configureRequest, RequestDelegate handleRequest)
         {
-            var builder = new WebHostBuilder()
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .Configure(app =>
+                        {
+                            app.UseCookiePolicy();
+                            app.Run(handleRequest);
+                        })
+                        .UseTestServer();
+                })
                 .ConfigureServices(services =>
                 {
                     services.Configure(configureOptions);
                 })
-                .Configure(app =>
-                {
-                    app.UseCookiePolicy();
-                    app.Run(handleRequest);
-                });
-            var server = new TestServer(builder);
+                .Build();
+
+            var server = host.GetTestServer();
             return server.SendAsync(configureRequest);
         }
     }

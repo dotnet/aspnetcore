@@ -1,26 +1,30 @@
-using Microsoft.AspNetCore;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
+using Microsoft.Extensions.Hosting;
 
 namespace Certificate.Sample
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            BuildWebHost(args).Run();
-        }
-
-        public static IWebHost BuildWebHost(string[] args)
-            => WebHost.CreateDefaultBuilder(args)
-            .UseStartup<Startup>()
-            .ConfigureKestrel(options =>
-            {
-                options.ConfigureHttpsDefaults(opt =>
+            var host = Host.CreateDefaultBuilder(args)
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
-                });
-            })
-            .Build();
+                    webHostBuilder
+                        .UseStartup<Startup>()
+                        .ConfigureKestrel(options =>
+                        {
+                            options.ConfigureHttpsDefaults(opt =>
+                            {
+                                opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                            });
+                        });
+                })
+                .Build();
+
+            return host.RunAsync();
+        }
     }
 }
