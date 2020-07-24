@@ -2,6 +2,16 @@
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+.sidebar .nav-item a.active {
+    background-color: rgba(255,255,255,0.25);
+    color: white;
+}
+
+.sidebar .nav-item a:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: white;
+}
+
 @media (min-width: 768px) {
     .navbar-toggler {
         display: none;

@@ -68,7 +68,7 @@ Integration with static web assets:
   NOTE: This target is called as part of an incremental build scenario in VS. Do not perform any work
   outside of calculating RazorComponent items in this target.
   -->
-  <DiscoverDefaultScopedCssItems Condition="'$(EnableDefaultScopedCssItems)'=='true'" Content="@(None);@(Content)">
+  <DiscoverDefaultScopedCssItems Condition="'$(EnableDefaultScopedCssItems)' == 'true'" Content="@(None);@(Content)">
     <Output TaskParameter="DiscoveredScopedCssInputs" ItemName="_DiscoveredScopedCssInputs" />
   </DiscoverDefaultScopedCssItems>
 

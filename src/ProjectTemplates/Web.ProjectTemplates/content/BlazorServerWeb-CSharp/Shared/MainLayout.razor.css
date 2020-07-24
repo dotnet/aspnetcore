@@ -65,16 +65,6 @@
             line-height: 3rem;
         }
 
-            .sidebar .nav-item a.active {
-                background-color: rgba(255,255,255,0.25);
-                color: white;
-            }
-
-            .sidebar .nav-item a:hover {
-                background-color: rgba(255,255,255,0.1);
-                color: white;
-            }
-
 @media (max-width: 767.98px) {
     .main .top-row:not(.auth) {
         display: none;

@@ -2,7 +2,8 @@
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RestoreAdditionalProjectSources>${RestoreAdditionalProjectSources}</RestoreAdditionalProjectSources>
-
+    <!-- This option wasn't being picked up by the tests even though it was present -->
+    <EnableDefaultScopedCssItems>true</EnableDefaultScopedCssItems>
     <!-- This sets an option which prevents the tests from rolling forward into a newer shared framework. -->
     <UserRuntimeConfig>$(MSBuildThisFileDirectory)runtimeconfig.norollforward.json</UserRuntimeConfig>
   </PropertyGroup>
