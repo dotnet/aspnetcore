@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,10 +14,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
     public class IISExtensionTests
     {
         [Fact]
-        public void CallingUseIISIntegrationMultipleTimesWorks()
+        public async Task CallingUseIISIntegrationMultipleTimesWorks()
         {
-
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 .Build();
 
             var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var filters = server.Host.Services.GetServices<IStartupFilter>()
                 .OfType<IISSetupFilter>();

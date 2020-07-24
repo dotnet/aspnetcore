@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -89,7 +90,7 @@ namespace IISSample
             });
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
             var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuidler =>
@@ -105,7 +106,7 @@ namespace IISSample
                 })
                 .Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }

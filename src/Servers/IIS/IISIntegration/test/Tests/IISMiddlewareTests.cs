@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             var assertsExecuted = false;
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -48,6 +48,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             var server = host.GetTestServer();
 
+            await host.StartAsync();
+
             var req = new HttpRequestMessage(HttpMethod.Get, "");
             req.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
             var response = await server.CreateClient().SendAsync(req);
@@ -60,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             var assertsExecuted = false;
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -84,6 +86,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             var server = host.GetTestServer();
 
+            await host.StartAsync();
+
             var req = new HttpRequestMessage(HttpMethod.Get, "");
             var response = await server.CreateClient().SendAsync(req);
             Assert.False(assertsExecuted);
@@ -99,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             var requestExecuted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var applicationStoppingFired = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -123,6 +127,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 .Build();
 
             var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var request = new HttpRequestMessage(HttpMethod.Post, requestPath);
             request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
@@ -156,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             var requestExecuted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var applicationStoppingFired = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -180,6 +186,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 .Build();
 
             var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var request = new HttpRequestMessage(method, "/iisintegration");
             request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
@@ -199,7 +207,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             var requestExecuted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var applicationStoppingFired = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -223,6 +231,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 .Build();
 
             var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var request = new HttpRequestMessage(HttpMethod.Post, path);
             request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
@@ -242,7 +252,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             var requestExecuted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var applicationStoppingFired = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -267,6 +277,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             var server = host.GetTestServer();
 
+            await host.StartAsync();
+
             var request = new HttpRequestMessage(HttpMethod.Post, "/iisintegration");
             request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
             request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-EVENT", shutdownEvent);
@@ -278,9 +290,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         }
 
         [Fact]
-        public void UrlDelayRegisteredAndPreferHostingUrlsSet()
+        public async Task UrlDelayRegisteredAndPreferHostingUrlsSet()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -304,6 +316,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             // Adds a server and calls Build()
             var server = host.GetTestServer();
 
+            await host.StartAsync();
+
             var config = host.Services.GetService<WebHostBuilderContext>().Configuration;
 
             Assert.Equal("http://127.0.0.1:12345", config[WebHostDefaults.ServerUrlsKey]);
@@ -311,9 +325,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         }
 
         [Fact]
-        public void PathBaseHiddenFromServer()
+        public async Task PathBaseHiddenFromServer()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -331,6 +345,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             host.GetTestServer();
 
+            await host.StartAsync();
+
             Assert.Equal("http://127.0.0.1:12345", host.Services.GetService<WebHostBuilderContext>().Configuration[WebHostDefaults.ServerUrlsKey]);
         }
 
@@ -339,7 +355,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             var requestPathBase = string.Empty;
             var requestPath = string.Empty;
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -362,6 +378,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             var server = host.GetTestServer();
 
+            await host.StartAsync();
+
             var request = new HttpRequestMessage(HttpMethod.Get, "/PathBase/Path");
             request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
             var response = await server.CreateClient().SendAsync(request);
@@ -375,7 +393,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             var assertsExecuted = false;
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -401,6 +419,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             var server = host.GetTestServer();
 
+            await host.StartAsync();
+
             var req = new HttpRequestMessage(HttpMethod.Get, "");
             req.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
             await server.CreateClient().SendAsync(req);
@@ -415,7 +435,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             var assertsExecuted = false;
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -456,6 +476,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             var server = host.GetTestServer();
 
+            await host.StartAsync();
+
             var req = new HttpRequestMessage(HttpMethod.Get, "");
             req.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
             await server.CreateClient().SendAsync(req);
@@ -470,7 +492,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             var assertsExecuted = false;
 
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -498,6 +520,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 .Build();
 
             var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var req = new HttpRequestMessage(HttpMethod.Get, "");
             req.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
