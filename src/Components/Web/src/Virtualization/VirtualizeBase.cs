@@ -1,8 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
@@ -10,18 +9,14 @@ using Microsoft.JSInterop;
 namespace Microsoft.AspNetCore.Components.Virtualization
 {
     /// <summary>
-    /// Provides functionality for rendering a virtualized, fixed-size list of items.
+    /// Provides common functionality for virtualized lists.
     /// </summary>
     /// <typeparam name="TItem">The <c>context</c> type for the items being rendered.</typeparam>
-    public sealed class Virtualize<TItem> : VirtualizeBase<TItem>, IAsyncDisposable
+    public abstract class VirtualizeBase<TItem> : ComponentBase, IAsyncDisposable
     {
         private const string JsFunctionsPrefix = "Blazor._internal.Virtualize";
 
-        private DotNetObjectReference<Virtualize<TItem>>? _selfReference;
-
-        private int _itemsBefore;
-
-        private int _itemsVisible;
+        private DotNetObjectReference<VirtualizeBase<TItem>>? _selfReference;
 
         private ElementReference _spacerBefore;
 
@@ -30,12 +25,56 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         [Inject]
         private IJSRuntime JSRuntime { get; set; } = default!;
 
+        /// <summary>
+        /// Gets the number of items rendered before the visible part of the container.
+        /// </summary>
+        protected int ItemsBefore { get; private set; }
+
+        /// <summary>
+        /// Gets the number of items the container can visibly fit.
+        /// </summary>
+        protected int VisibleItemCapacity { get; private set; }
+
+        /// <summary>
+        /// Gets the number of items currently visible within the container.
+        /// </summary>
+        protected int ItemsVisible { get; private set; }
+
+        /// <summary>
+        /// Gets the total number of items.
+        /// </summary>
+        protected abstract int ItemCount { get; }
+
+        /// <summary>
+        /// Gets the size of each item in pixels.
+        /// </summary>
+        [Parameter]
+        public float ItemSize { get; set; }
+
+        /// <summary>
+        /// Renders the visible items in the list.
+        /// </summary>
+        /// <param name="builder">A <see cref="RenderTreeBuilder"/> to receive the render output.</param>
+        protected abstract void RenderItems(RenderTreeBuilder builder);
+
+        /// <inheritdoc />
+        public override async Task SetParametersAsync(ParameterView parameters)
+        {
+            await base.SetParametersAsync(parameters);
+
+            if (ItemSize <= 0)
+            {
+                throw new InvalidOperationException(
+                    $"{GetType()} requires a positive value for parameter '{nameof(ItemSize)}' to perform virtualization.");
+            }
+        }
+
         /// <inheritdoc />
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
             {
-                _selfReference = DotNetObjectReference.Create<Virtualize<TItem>>(this);
+                _selfReference = DotNetObjectReference.Create<VirtualizeBase<TItem>>(this);
                 await JSRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.init", _selfReference, _spacerBefore, _spacerAfter);
             }
         }
@@ -43,24 +82,16 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            var itemsAfter = Math.Max(0, ItemSource.Count() - _itemsVisible - _itemsBefore);
+            var itemsAfter = Math.Max(0, ItemCount - ItemsVisible - ItemsBefore);
 
             builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "style", GetSpacerStyle(_itemsBefore));
+            builder.AddAttribute(1, "style", GetSpacerStyle(ItemsBefore));
             builder.AddElementReferenceCapture(2, elementReference => _spacerBefore = elementReference);
             builder.CloseElement();
 
             builder.OpenRegion(3);
 
-            if (ItemTemplate != null)
-            {
-                var items = IsVirtualized ? ItemSource.Skip(_itemsBefore).Take(_itemsVisible) : ItemSource;
-
-                foreach (var item in items)
-                {
-                    ItemTemplate(item)(builder);
-                }
-            }
+            RenderItems(builder);
 
             builder.CloseRegion();
 
@@ -69,15 +100,6 @@ namespace Microsoft.AspNetCore.Components.Virtualization
             builder.AddElementReferenceCapture(6, elementReference => _spacerAfter = elementReference);
 
             builder.CloseElement();
-
-            if (Footer != null)
-            {
-                builder.OpenRegion(7);
-
-                Footer.Invoke(builder);
-
-                builder.CloseRegion();
-            }
         }
 
         /// <summary>
@@ -89,7 +111,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         [JSInvokable]
         public void OnTopSpacerVisible(float spacerSize, float containerSize)
         {
-            CalcualteItemDistribution(spacerSize, containerSize, out _itemsVisible, out _itemsBefore);
+            ItemsBefore = CalcualteItemDistribution(spacerSize, containerSize);
 
             StateHasChanged();
         }
@@ -103,36 +125,23 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         [JSInvokable]
         public void OnBottomSpacerVisible(float spacerSize, float containerSize)
         {
-            CalcualteItemDistribution(spacerSize, containerSize, out _itemsVisible, out var itemsAfter);
+            var itemsAfter = CalcualteItemDistribution(spacerSize, containerSize);
 
-            _itemsBefore = Math.Max(0, ItemSource.Count() - itemsAfter - _itemsVisible);
-
-            if (itemsAfter == 0)
-            {
-                _ = FetchItemsAsync();
-            }
+            ItemsBefore = Math.Max(0, ItemCount - itemsAfter - ItemsVisible);
 
             StateHasChanged();
         }
 
-        private void CalcualteItemDistribution(float spacerSize, float containerSize, out int itemsVisible, out int itemsInSpacer)
+        private int CalcualteItemDistribution(float spacerSize, float containerSize)
         {
-            if (IsVirtualized)
-            {
-                itemsVisible = Math.Clamp(ItemSource.Count(), 0, (int)Math.Ceiling(containerSize / ItemSize) + 2);
-                itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / ItemSize) - 1);
-            }
-            else
-            {
-                itemsVisible = 0;
-                itemsInSpacer = 0;
-            }
+            VisibleItemCapacity = (int)Math.Ceiling(containerSize / ItemSize) + 2;
+            ItemsVisible = Math.Clamp(ItemCount, 0, VisibleItemCapacity);
+
+            return Math.Max(0, (int)Math.Floor(spacerSize / ItemSize) - 1);
         }
 
         private string GetSpacerStyle(int itemsInSpacer)
-        {
-            return $"height: {itemsInSpacer * ItemSize}px;";
-        }
+            => $"height: {itemsInSpacer * ItemSize}px;";
 
         /// <inheritdoc />
         public async ValueTask DisposeAsync()
