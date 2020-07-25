@@ -620,4 +620,10 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="UnrecognizedCertificateKeyOid" xml:space="preserve">
     <value>Unknown algorithm for certificate with public key type '{0}'.</value>
   </data>
+  <data name="SniNotConfiguredForServerName" xml:space="preserve">
+    <value>Connection refused because no SNI configuration was found for '{serverName}' in '{endpointName}'. To allow all connections, add a wildcard ('*') SNI section.</value>
+  </data>
+  <data name="SniNotConfiguredToAllowNoServerName" xml:space="preserve">
+    <value>Connection refulsed because the client did not specify a server name, and no wildcard ('*') SNI configuration was found in '{endpointName}'.</value>
+  </data>
 </root>
