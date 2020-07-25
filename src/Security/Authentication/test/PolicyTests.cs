@@ -458,7 +458,7 @@ namespace Microsoft.AspNetCore.Authentication
 
         private static async Task<TestServer> CreateServer(Action<IServiceCollection> configure = null, string defaultScheme = null)
         {
-            using var host = new HostBuilder()
+            var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
