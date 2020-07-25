@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
 
             _server = host.GetTestServer();
 
+            host.Start();
+
             Client = _server.CreateClient();
             Client.BaseAddress = new Uri("http://localhost");
         }
