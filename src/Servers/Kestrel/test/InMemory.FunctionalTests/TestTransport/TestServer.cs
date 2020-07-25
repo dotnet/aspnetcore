@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                 {
                     webHostBuilder
                         .UseSetting(WebHostDefaults.ShutdownTimeoutKey, TestConstants.DefaultTimeout.TotalSeconds.ToString())
-                        .Configure(app => { });
+                        .Configure(app => { app.Run(_app); });
                 })
                 .ConfigureServices(services =>
                 {

@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         })
                         .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName)
                         .UseSetting(WebHostDefaults.ShutdownTimeoutKey, TestConstants.DefaultTimeout.TotalSeconds.ToString())
-                        .Configure(app => { });
+                        .Configure(app => { app.Run(_app); });
                 })
                 .Build();
 
