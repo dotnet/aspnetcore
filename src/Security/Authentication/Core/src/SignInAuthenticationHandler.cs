@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Authentication
         public SignInAuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
         { }
 
-        public virtual Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
+        public virtual Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
         {
             var target = ResolveTarget(Options.ForwardSignIn);
             return (target != null)
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="user"></param>
         /// <param name="properties"></param>
         /// <returns>A Task.</returns>
-        protected abstract Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties properties);
+        protected abstract Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties);
 
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 
 namespace Microsoft.AspNetCore.Authentication
@@ -19,6 +20,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// If a ticket was produced, authenticate was successful.
         /// </summary>
+        [MemberNotNullWhen(true, nameof(Ticket))]
         public bool Succeeded => Ticket != null;
 
         /// <summary>

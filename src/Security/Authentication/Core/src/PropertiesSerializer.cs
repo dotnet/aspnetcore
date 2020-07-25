@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
-        public virtual AuthenticationProperties Deserialize(byte[] data)
+        public virtual AuthenticationProperties? Deserialize(byte[] data)
         {
             using (var memory = new MemoryStream(data))
             {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
-        public virtual AuthenticationProperties Read(BinaryReader reader)
+        public virtual AuthenticationProperties? Read(BinaryReader reader)
         {
             if (reader == null)
             {
@@ -72,12 +72,12 @@ namespace Microsoft.AspNetCore.Authentication
             }
 
             var count = reader.ReadInt32();
-            var extra = new Dictionary<string, string>(count);
+            var extra = new Dictionary<string, string?>(count);
 
             for (var index = 0; index != count; ++index)
             {
-                string key = reader.ReadString();
-                string value = reader.ReadString();
+                var key = reader.ReadString();
+                var value = reader.ReadString();
                 extra.Add(key, value);
             }
             return new AuthenticationProperties(extra);
