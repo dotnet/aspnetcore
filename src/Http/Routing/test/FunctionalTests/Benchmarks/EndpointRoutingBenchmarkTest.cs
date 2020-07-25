@@ -6,6 +6,8 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
@@ -23,14 +25,13 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
             var args = new[] { "--scenarios", "PlaintextEndpointRouting" };
             var hostBuilder = Benchmarks.Program.GetHostBuilder(args);
 
-            hostBuilder.ConfigureWebHost(webHostBuilder =>
-            {
-                // Make sure we are using the right startup
-                var startupName = webHostBuilder.GetSetting("Startup");
-                Assert.Equal(nameof(Benchmarks.StartupUsingEndpointRouting), startupName);
-            });
-
             _host = hostBuilder.Build();
+
+            // Make sure we are using the right startup
+            var configuration = _host.Services.GetService<IConfiguration>();
+            var startupName = configuration["Startup"];
+            Assert.Equal(nameof(Benchmarks.StartupUsingEndpointRouting), startupName);           
+
             _testServer = _host.GetTestServer();
             _host.Start();
             _client = _testServer.CreateClient();
