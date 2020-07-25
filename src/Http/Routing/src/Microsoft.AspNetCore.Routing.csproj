@@ -12,7 +12,7 @@ Microsoft.AspNetCore.Routing.RouteCollection</Description>
     <PackageTags>aspnetcore;routing</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
-    <Nullable>annotations</Nullable>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup>

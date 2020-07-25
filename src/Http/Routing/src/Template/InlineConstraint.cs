@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 throw new ArgumentNullException(nameof(other));
             }
 
-            Constraint = other.Content;
+            Constraint = other.Content!;
         }
 
         /// <summary>
