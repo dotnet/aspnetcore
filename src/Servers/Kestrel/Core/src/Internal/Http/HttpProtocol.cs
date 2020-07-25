@@ -30,6 +30,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
     internal abstract partial class HttpProtocol : IHttpResponseControl
     {
+        private const string DisableAutoChunk = "Switch.Microsoft.AspNetCore.Server.Kestrel.DisableAutoChunk";
+
         private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
@@ -1080,15 +1082,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _keepAlive = false;
             }
 
-            // https://tools.ietf.org/html/rfc7230#section-3.3.1
-            // If any transfer coding other than
-            // chunked is applied to a response payload body, the sender MUST either
-            // apply chunked as the final transfer coding or terminate the message
-            // by closing the connection.
-            if (hasTransferEncoding &&
-                HttpHeaders.GetFinalTransferCoding(responseHeaders.HeaderTransferEncoding) != TransferCoding.Chunked)
+            if (hasTransferEncoding)
             {
-                _keepAlive = false;
+                // https://tools.ietf.org/html/rfc7230#section-3.3.1
+                // If any transfer coding other than
+                // chunked is applied to a response payload body, the sender MUST either
+                // apply chunked as the final transfer coding or terminate the message
+                // by closing the connection.
+                if (HttpHeaders.GetFinalTransferCoding(responseHeaders.HeaderTransferEncoding) != TransferCoding.Chunked)
+                {
+                    _keepAlive = false;
+                }
+                else if (!AppContext.TryGetSwitch(DisableAutoChunk, out var disableAutoChunk) || !disableAutoChunk)
+                {
+                    _autoChunk = true;
+                }
             }
 
             // Set whether response can have body

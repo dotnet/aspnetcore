@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
@@ -529,6 +530,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task ChunksCanBeWrittenManually()
         {
+            AppContext.SetSwitch("Switch.Microsoft.AspNetCore.Server.Kestrel.DisableAutoChunk", true);
+
             var testContext = new TestServiceContext(LoggerFactory);
 
             await using (var server = new TestServer(async httpContext =>
@@ -1174,6 +1177,86 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "c",
                         "hello, world",
+                        "c",
+                        "hello, world",
+                        "c",
+                        "hello, world",
+                        "c",
+                        "hello, world",
+                        "0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task DisableSwitchAutoChunkForChunedTransferEncodingWorks()
+        {
+            AppContext.SetSwitch("Switch.Microsoft.AspNetCore.Server.Kestrel.DisableAutoChunk", false);
+
+            await using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+
+                response.Headers.Add(HeaderNames.TransferEncoding, "chunked");
+                await response.WriteAsync("hello, world");
+                await response.WriteAsync("hello, world");
+                await response.WriteAsync("hello, world");
+
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "c",
+                        "hello, world",
+                        "c",
+                        "hello, world",
+                        "c",
+                        "hello, world",
+                        "0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task NoSwitchAutoChunkForChunedTransferEncodingWorks()
+        {
+            await using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+
+                response.Headers.Add(HeaderNames.TransferEncoding, "chunked");
+                await response.WriteAsync("hello, world");
+                await response.WriteAsync("hello, world");
+                await response.WriteAsync("hello, world");
+
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
                         "c",
                         "hello, world",
                         "c",
