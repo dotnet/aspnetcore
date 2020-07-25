@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             await host.StartAsync();
 
-            var filters = server.Host.Services.GetServices<IStartupFilter>()
+            var filters = server.Services.GetServices<IStartupFilter>()
                 .OfType<IISSetupFilter>();
 
             Assert.Single(filters);

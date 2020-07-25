@@ -4,7 +4,6 @@
 using System;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -12,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Xunit;
@@ -318,10 +318,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             await host.StartAsync();
 
-            var config = host.Services.GetService<WebHostBuilderContext>().Configuration;
+            var configuration = host.Services.GetService<IConfiguration>();
 
-            Assert.Equal("http://127.0.0.1:12345", config[WebHostDefaults.ServerUrlsKey]);
-            Assert.Equal("true", config[WebHostDefaults.PreferHostingUrlsKey]);
+            Assert.Equal("http://127.0.0.1:12345", configuration[WebHostDefaults.ServerUrlsKey]);
+            Assert.Equal("true", configuration[WebHostDefaults.PreferHostingUrlsKey]);
         }
 
         [Fact]
@@ -347,7 +347,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             await host.StartAsync();
 
-            Assert.Equal("http://127.0.0.1:12345", host.Services.GetService<WebHostBuilderContext>().Configuration[WebHostDefaults.ServerUrlsKey]);
+            var configuration = host.Services.GetService<IConfiguration>();
+            Assert.Equal("http://127.0.0.1:12345", configuration[WebHostDefaults.ServerUrlsKey]);
         }
 
         [Fact]
