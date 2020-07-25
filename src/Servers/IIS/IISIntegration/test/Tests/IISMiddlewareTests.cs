@@ -312,8 +312,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 })
                 .Build();
 
-
-            // Adds a server and calls Build()
             var server = host.GetTestServer();
 
             await host.StartAsync();
