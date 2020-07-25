@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Authentication
         [Fact]
         public async Task CanDispatch()
         {
-            var server = CreateServer(services =>
+            using var server = await CreateServer(services =>
             {
                 services.AddLogging().AddAuthentication(o =>
                 {
@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Authentication
         [Fact]
         public async Task CanDynamicTargetBasedOnQueryString()
         {
-            var server = CreateServer(services =>
+            using var server = await CreateServer(services =>
             {
                 services.AddAuthentication(o =>
                 {
@@ -456,9 +456,9 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
-        private static TestServer CreateServer(Action<IServiceCollection> configure = null, string defaultScheme = null)
+        private static async Task<TestServer> CreateServer(Action<IServiceCollection> configure = null, string defaultScheme = null)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -489,7 +489,11 @@ namespace Microsoft.AspNetCore.Authentication
                 })
                 .Build();
 
-            return host.GetTestServer();
+            var server = host.GetTestServer();
+
+            await host.StartAsync();
+
+            return server;
         }
     }
 }

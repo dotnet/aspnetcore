@@ -642,7 +642,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             Assert.NotNull(manualCookie.Expires); // Expires may not exactly match to the second.
         }
 
-        private Task<HttpContext> RunTestAsync(Action<CookiePolicyOptions> configureOptions, Action<HttpContext> configureRequest, RequestDelegate handleRequest)
+        private async Task<HttpContext> RunTestAsync(Action<CookiePolicyOptions> configureOptions, Action<HttpContext> configureRequest, RequestDelegate handleRequest)
         {
             var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
@@ -662,7 +662,10 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 .Build();
 
             var server = host.GetTestServer();
-            return server.SendAsync(configureRequest);
+
+            await host.StartAsync();
+
+            return await server.SendAsync(configureRequest);
         }
     }
 }

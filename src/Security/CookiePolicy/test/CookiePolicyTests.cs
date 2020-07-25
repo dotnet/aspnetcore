@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyCanHijackAppend()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -270,6 +270,8 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
 
             var server = host.GetTestServer();
 
+            await host.StartAsync();
+
             var transaction = await server.SendAsync("http://example.com/login");
 
             Assert.NotNull(transaction.SetCookie);
@@ -282,7 +284,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyCanHijackDelete()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -307,6 +309,8 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
 
             var server = host.GetTestServer();
 
+            await host.StartAsync();
+
             var transaction = await server.SendAsync("http://example.com/login");
 
             Assert.NotNull(transaction.SetCookie);
@@ -317,7 +321,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyCallsCookieFeature()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -347,6 +351,8 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
 
             var server = host.GetTestServer();
 
+            await host.StartAsync();
+
             var transaction = await server.SendAsync("http://example.com/login");
             Assert.Equal("Done", transaction.ResponseText);
         }
@@ -354,7 +360,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyAppliesToCookieAuth()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -387,6 +393,8 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
 
             var server = host.GetTestServer();
 
+            await host.StartAsync();
+
             var transaction = await server.SendAsync("http://example.com/login");
 
             Assert.NotNull(transaction.SetCookie);
@@ -401,7 +409,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
         [Fact]
         public async Task CookiePolicyAppliesToCookieAuthChunks()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -433,6 +441,8 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 .Build();
 
             var server = host.GetTestServer();
+
+            await host.StartAsync();
 
             var transaction = await server.SendAsync("http://example.com/login");
 
@@ -511,7 +521,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             RequestDelegate configureSetup,
             params RequestTest[] tests)
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -528,6 +538,9 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 .Build();
 
             var server = host.GetTestServer();
+
+            await host.StartAsync();
+
             foreach (var test in tests)
             {
                 await test.Execute(server);

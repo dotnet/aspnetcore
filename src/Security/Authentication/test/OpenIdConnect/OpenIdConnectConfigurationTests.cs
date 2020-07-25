@@ -437,7 +437,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         [Fact]
         public async Task MetadataAddressIsGeneratedFromAuthorityWhenMissing()
         {
-            var host = new HostBuilder()
+            using var host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -467,6 +467,8 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 .Build();
 
             var server = host.GetTestServer();
+
+            await host.StartAsync();
             var transaction = await server.SendAsync(@"https://example.com");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
