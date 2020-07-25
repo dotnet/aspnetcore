@@ -58,23 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             _options = options;
             _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
 
-            // This configuration will always fail per-request, preemptively fail it here. See HttpConnection.SelectProtocol().
-            if (options.HttpProtocols == HttpProtocols.Http2)
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    throw new NotSupportedException(CoreStrings.Http2NoTlsOsx);
-                }
-                else if (IsWindowsVersionIncompatible())
-                {
-                    throw new NotSupportedException(CoreStrings.Http2NoTlsWin81);
-                }
-            }
-            else if (options.HttpProtocols == HttpProtocols.Http1AndHttp2 && IsWindowsVersionIncompatible())
-            {
-                _logger.Http2DefaultCiphersInsufficient();
-                options.HttpProtocols = HttpProtocols.Http1;
-            }
+            _options.HttpProtocols = ValidateAndNormalizeHttpProtocols(_options.HttpProtocols, _logger);
 
             _next = next;
             // capture the certificate now so it can't be switched after validation
@@ -367,6 +351,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
 
             return new X509Certificate2(certificate);
+        }
+
+        internal static HttpProtocols ValidateAndNormalizeHttpProtocols(HttpProtocols httpProtocols, ILogger logger)
+        {
+            // This configuration will always fail per-request, preemptively fail it here. See HttpConnection.SelectProtocol().
+            if (httpProtocols == HttpProtocols.Http2)
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    throw new NotSupportedException(CoreStrings.Http2NoTlsOsx);
+                }
+                else if (IsWindowsVersionIncompatible())
+                {
+                    throw new NotSupportedException(CoreStrings.Http2NoTlsWin81);
+                }
+            }
+            else if (httpProtocols == HttpProtocols.Http1AndHttp2 && IsWindowsVersionIncompatible())
+            {
+                logger.Http2DefaultCiphersInsufficient();
+                return HttpProtocols.Http1;
+            }
+
+            return httpProtocols;
         }
 
         private static bool IsWindowsVersionIncompatible()

@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 //         },
                 //         "ClientCertificateMode" : "NoCertificate"
                 //     },
-                //     "b.example.org": {
+                //     "*.example.org": {
                 //         "Certificate": {
                 //             "Path": "testCert2.pfx",
                 //             "Password": "testPassword"
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     //             },
     //             "ClientCertificateMode" : "NoCertificate"
     //         },
-    //         "b.example.org": {
+    //         "*.example.org": {
     //             "Certificate": {
     //                 "Path": "testCert2.pfx",
     //                 "Password": "testPassword"

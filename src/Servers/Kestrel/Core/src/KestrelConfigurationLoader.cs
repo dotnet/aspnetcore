@@ -318,7 +318,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     }
                     else
                     {
-                        sniOptionsSelector = new SniOptionsSelector(this, endpoint, httpsOptions, listenOptions.Protocols);
+                        var logger = Options.ApplicationServices.GetRequiredService<ILogger<KestrelConfigurationLoader>>();
+                        sniOptionsSelector = new SniOptionsSelector(this, endpoint, httpsOptions, listenOptions.Protocols, logger);
                     }
                 }
 

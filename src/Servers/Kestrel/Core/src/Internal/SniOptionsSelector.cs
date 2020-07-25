@@ -7,6 +7,7 @@ using System.Net.Security;
 using System.Security.Authentication;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
@@ -24,7 +25,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             KestrelConfigurationLoader configLoader,
             EndpointConfig endpointConfig,
             HttpsConnectionAdapterOptions fallbackOptions,
-            HttpProtocols fallbackHttpProtocols)
+            HttpProtocols fallbackHttpProtocols,
+            ILogger logger)
         {
             _endpointName = endpointConfig.Name;
 
@@ -41,7 +43,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 }
 
                 sslServerOptions.EnabledSslProtocols = sniConfig.SslProtocols ?? fallbackOptions.SslProtocols;
-                HttpsConnectionMiddleware.ConfigureAlpn(sslServerOptions, sniConfig.Protocols ?? fallbackHttpProtocols);
+
+                var httpProtocols = sniConfig.Protocols ?? fallbackHttpProtocols;
+                httpProtocols = HttpsConnectionMiddleware.ValidateAndNormalizeHttpProtocols(httpProtocols, logger);
+                HttpsConnectionMiddleware.ConfigureAlpn(sslServerOptions, httpProtocols);
 
                 var clientCertificateMode = sniConfig.ClientCertificateMode ?? fallbackOptions.ClientCertificateMode;
 
