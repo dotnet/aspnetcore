@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 var keyValueReader = new SequenceReader<byte>(keyValuePair);
                 ReadOnlySequence<byte> value;
 
-                if (keyValueReader.TryReadTo(out var key, equalsDelimiter))
+                if (keyValueReader.TryReadTo(out ReadOnlySequence<byte> key, equalsDelimiter))
                 {
                     if (key.Length > KeyLengthLimit)
                     {

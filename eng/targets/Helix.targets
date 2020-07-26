@@ -28,6 +28,15 @@
   <ItemGroup Condition="$(BuildHelixPayload)">
     <Content Include="@(HelixContent)" />
     <Content Include="$(RepoRoot)eng\scripts\Download.ps1" />
+    <Content Include="$(RepoRoot)NuGet.config" />
+    <Content Include="$(RepoRoot)global.json" />
+    <ContentWithTargetPath Include="
+        $(RepoRoot)eng\common\pipeline-logging-functions.*;
+        $(RepoRoot)eng\common\tools.*">
+      <TargetPath>eng\common\%(Filename)%(Extension)</TargetPath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </ContentWithTargetPath>
   </ItemGroup>
 
 <!--
@@ -117,8 +126,8 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <PreCommands>@(HelixPreCommand)</PreCommands>
         <PostCommands>@(HelixPostCommand)</PostCommands>
-        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) Microsoft.AspNetCore.App.Runtime.win-x64.$(AppRuntimeVersion).nupkg Microsoft.AspNetCore.App.Ref.$(AppRuntimeVersion).nupkg $(HelixTimeout)</Command>
-        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) Microsoft.AspNetCore.App.Runtime.win-x64.$(AppRuntimeVersion).nupkg Microsoft.AspNetCore.App.Ref.$(AppRuntimeVersion).nupkg $(HelixTimeout)</Command>
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) Microsoft.AspNetCore.App.Runtime.win-x64.$(AppRuntimeVersion).nupkg Microsoft.AspNetCore.App.Ref.$(AppRuntimeVersion).nupkg $(HelixTimeout) $(DotNetRuntimeSourceFeedKey)</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) Microsoft.AspNetCore.App.Runtime.win-x64.$(AppRuntimeVersion).nupkg Microsoft.AspNetCore.App.Ref.$(AppRuntimeVersion).nupkg $(HelixTimeout) $(DotNetRuntimeSourceFeedKey)</Command>
         <Command Condition="$(HelixCommand) != ''">$(HelixCommand)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>
