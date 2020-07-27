@@ -437,7 +437,22 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         [Fact]
         public async Task MetadataAddressIsGeneratedFromAuthorityWhenMissing()
         {
-            var builder = new WebHostBuilder()
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .Configure(app =>
+                        {
+                            app.UseAuthentication();
+                            app.Run(async context =>
+                            {
+                                var resolver = context.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
+                                var handler = await resolver.GetHandlerAsync(context, OpenIdConnectDefaults.AuthenticationScheme) as OpenIdConnectHandler;
+                                Assert.Equal($"{TestServerBuilder.DefaultAuthority}/.well-known/openid-configuration", handler.Options.MetadataAddress);
+                            });
+                        })
+                        .UseTestServer();
+                })
                 .ConfigureServices(services =>
                 {
                     services.AddAuthentication()
@@ -449,17 +464,11 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                         o.SignInScheme = Guid.NewGuid().ToString();
                     });
                 })
-                .Configure(app =>
-                {
-                    app.UseAuthentication();
-                    app.Run(async context =>
-                    {
-                        var resolver = context.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
-                        var handler = await resolver.GetHandlerAsync(context, OpenIdConnectDefaults.AuthenticationScheme) as OpenIdConnectHandler;
-                        Assert.Equal($"{TestServerBuilder.DefaultAuthority}/.well-known/openid-configuration", handler.Options.MetadataAddress);
-                    });
-                });
-            var server = new TestServer(builder);
+                .Build();
+
+            var server = host.GetTestServer();
+
+            await host.StartAsync();
             var transaction = await server.SendAsync(@"https://example.com");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
