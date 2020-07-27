@@ -70,16 +70,14 @@ fi
 # dontet-install.sh seems to affect the Linux filesystem and causes test flakiness unless we sync the filesystem before running tests
 sync
 
-sdkPath=$HELIX_CORRELATION_PAYLOAD/dotnet
-
-$sdkPath/dotnet --list-sdks
-$sdkPath/dotnet --list-runtimes
+$DOTNET_ROOT/dotnet --list-sdks
+$DOTNET_ROOT/dotnet --list-runtimes
 
 exit_code=0
-echo "Restore: $sdkPath/dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources..."
-$sdkPath/dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources
-echo "Running tests: $sdkPath/dotnet run --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $3 --arch $4 --quarantined $5 --ef $6 --aspnetruntime $7 --aspnetref $8 --helixTimeout $9..."
-$sdkPath/dotnet run --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $3 --arch $4 --quarantined $5 --ef $6 --aspnetruntime $7 --aspnetref $8 --helixTimeout $9
+echo "Restore: $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources..."
+$DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources
+echo "Running tests: $DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $3 --arch $4 --quarantined $5 --ef $6 --aspnetruntime $7 --aspnetref $8 --helixTimeout $9..."
+$DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --runtime $2 --queue $3 --arch $4 --quarantined $5 --ef $6 --aspnetruntime $7 --aspnetref $8 --helixTimeout $9
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 
