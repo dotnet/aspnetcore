@@ -30,6 +30,19 @@
     <OutputPath Condition="'$(OutputPath)' == '' and '$(PlatformName)' != 'AnyCPU'">$(BaseOutputPath)$(PlatformName)\$(Configuration)\</OutputPath>
   </PropertyGroup>
 
+  <Choose>
+    <When Condition="$(HelixTargetQueue.ToLowerInvariant().StartsWith('windows')) AND $(HelixTargetQueue.ToLowerInvariant().Contains('arm64'))">
+      <PropertyGroup>
+        <DotNetCliRuntime>win-arm64</DotNetCliRuntime>
+      </PropertyGroup>
+    </When>
+    <When Condition="$(HelixTargetQueue.ToLowerInvariant().StartsWith('windows')) AND $(HelixTargetQueue.ToLowerInvariant().Contains('arm32'))">
+      <PropertyGroup>
+        <DotNetCliRuntime>win-arm</DotNetCliRuntime>
+      </PropertyGroup>
+    </When>
+  </Choose>
+  
   <PropertyGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">
     <HelixType>ci</HelixType>
     <!-- Creator is not valid for internal queues -->
