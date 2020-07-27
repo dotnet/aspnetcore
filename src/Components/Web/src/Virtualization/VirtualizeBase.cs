@@ -12,11 +12,9 @@ namespace Microsoft.AspNetCore.Components.Virtualization
     /// Provides common functionality for virtualized lists.
     /// </summary>
     /// <typeparam name="TItem">The <c>context</c> type for the items being rendered.</typeparam>
-    public abstract class VirtualizeBase<TItem> : ComponentBase, IAsyncDisposable
+    public abstract class VirtualizeBase<TItem> : ComponentBase, IVirtualizeJsCallbacks, IAsyncDisposable
     {
-        private const string JsFunctionsPrefix = "Blazor._internal.Virtualize";
-
-        private DotNetObjectReference<VirtualizeBase<TItem>>? _selfReference;
+        private VirtualizeJsInterop _jsInterop = default!;
 
         private ElementReference _spacerBefore;
 
@@ -62,6 +60,8 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         {
             await base.SetParametersAsync(parameters);
 
+            _jsInterop ??= new VirtualizeJsInterop(this, JSRuntime);
+
             if (ItemSize <= 0)
             {
                 throw new InvalidOperationException(
@@ -74,8 +74,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         {
             if (firstRender)
             {
-                _selfReference = DotNetObjectReference.Create<VirtualizeBase<TItem>>(this);
-                await JSRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.init", _selfReference, _spacerBefore, _spacerAfter);
+                await _jsInterop.InitAsync(_spacerBefore, _spacerAfter);
             }
         }
 
@@ -102,28 +101,14 @@ namespace Microsoft.AspNetCore.Components.Virtualization
             builder.CloseElement();
         }
 
-        /// <summary>
-        /// Called when the top spacer becomes visible.
-        /// This method is intended to be invoked only from JavaScript.
-        /// </summary>
-        /// <param name="spacerSize">The new top spacer size.</param>
-        /// <param name="containerSize">The top spacer's container size.</param>
-        [JSInvokable]
-        public void OnTopSpacerVisible(float spacerSize, float containerSize)
+        void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float containerSize)
         {
             ItemsBefore = CalcualteItemDistribution(spacerSize, containerSize);
 
             StateHasChanged();
         }
 
-        /// <summary>
-        /// Called when the bottom spacer becomes visible.
-        /// This method is intended to be invoked only from JavaScript.
-        /// </summary>
-        /// <param name="spacerSize">The new bottom spacer size.</param>
-        /// <param name="containerSize">The bottom spacer's container size.</param>
-        [JSInvokable]
-        public void OnBottomSpacerVisible(float spacerSize, float containerSize)
+        void IVirtualizeJsCallbacks.OnBottomSpacerVisible(float spacerSize, float containerSize)
         {
             var itemsAfter = CalcualteItemDistribution(spacerSize, containerSize);
 
@@ -146,10 +131,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         /// <inheritdoc />
         public async ValueTask DisposeAsync()
         {
-            if (_selfReference != null)
-            {
-                await JSRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.dispose", _selfReference);
-            }
+            await _jsInterop.DisposeAsync();
         }
     }
 }

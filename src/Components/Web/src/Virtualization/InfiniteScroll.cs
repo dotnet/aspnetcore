@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -13,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
     /// Provides functionality for rendering a virtualized list from a source of unknown size.
     /// </summary>
     /// <typeparam name="TItem"></typeparam>
-    public class InfiniteScroll<TItem> : ComponentBase
+    public sealed class InfiniteScroll<TItem> : ComponentBase
     {
         /// <summary>
         /// Gets or sets the item template for the list.
@@ -31,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         /// Gets or sets the function retrieving items given a start index.
         /// </summary>
         [Parameter]
-        public Func<int, Task<IEnumerable<TItem>>> ItemsProvider { get; set; } = default!;
+        public Func<int, IAsyncEnumerable<TItem>> ItemsProvider { get; set; } = default!;
 
         /// <summary>
         /// Gets the size of each item in pixels.
@@ -70,11 +69,16 @@ namespace Microsoft.AspNetCore.Components.Virtualization
 
         private async Task<ItemsProviderResult<TItem>> FetchItems(int start, int count)
         {
-            var result = await ItemsProvider(start);
+            var items = new List<TItem>();
 
-            _itemCount += result.Count();
+            await foreach (var item in ItemsProvider(start))
+            {
+                items.Add(item);
+            }
 
-            return new ItemsProviderResult<TItem>(result, _itemCount + 1);
+            _itemCount += items.Count;
+
+            return new ItemsProviderResult<TItem>(items, _itemCount + 1);
         }
     }
 }

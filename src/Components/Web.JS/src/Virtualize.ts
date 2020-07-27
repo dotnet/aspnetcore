@@ -53,9 +53,9 @@ function init(dotNetHelper: any, spacerAbove: Element, spacerBelow: Element, roo
       const containerSize = entry.rootBounds?.height;
 
       if (entry.target === spacerAbove) {
-        dotNetHelper.invokeMethodAsync('OnTopSpacerVisible', entry.intersectionRect.top - entry.boundingClientRect.top, containerSize);
+        dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', entry.intersectionRect.top - entry.boundingClientRect.top, containerSize);
       } else if (entry.target === spacerBelow) {
-        dotNetHelper.invokeMethodAsync('OnBottomSpacerVisible', entry.boundingClientRect.bottom - entry.intersectionRect.bottom, containerSize);
+        dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', entry.boundingClientRect.bottom - entry.intersectionRect.bottom, containerSize);
       } else {
         throw new Error('Unknown intersection target');
       }

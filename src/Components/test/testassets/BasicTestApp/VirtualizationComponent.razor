@@ -18,7 +18,7 @@
 </p>
 
 <p>
-    Infinite scrolling (asynchronously loaded):<br />
+    Infinite scrolling (large batch size):<br />
     <div style="background-color: #eee; height: 500px; overflow-y: auto">
         <InfiniteScroll ItemsProvider="GetItemsAsync" ItemSize="itemSize">
             <Item>
@@ -34,7 +34,7 @@
 </p>
 
 <p>
-    Infinite scrolling (synchronously loaded):<br />
+    Infinite scrolling (small batch size):<br />
     <div style="background-color: #eee; height: 500px; overflow-y: auto">
         <InfiniteScroll ItemsProvider="GetSingleItem" ItemSize="itemSize">
             <Item>
@@ -79,11 +79,19 @@
 
     int itemCountLimit = 200;
 
-    async Task<IEnumerable<int>> GetItemsAsync(int startIndex)
+    async IAsyncEnumerable<int> GetItemsAsync(int startIndex)
     {
         await Task.Delay(500);
 
-        return Enumerable.Range(startIndex, 50);
+        for (int i = 0; i < 50; i++)
+        {
+            yield return startIndex + i;
+        }
+
+        if (startIndex >= 300)
+        {
+            throw new InvalidOperationException("Request timed out.");
+        }
     }
 
     async Task<ItemsProviderResult<int>> GetLimitedItemsAsync(int startIndex, int count)
@@ -93,8 +101,10 @@
         return new ItemsProviderResult<int>(Enumerable.Range(startIndex, count), itemCountLimit);
     }
 
-    Task<IEnumerable<int>> GetSingleItem(int index)
+    async IAsyncEnumerable<int> GetSingleItem(int index)
     {
-        return Task.FromResult(Enumerable.Repeat(index, 1));
+        await Task.Delay(5);
+
+        yield return index;
     }
 }
