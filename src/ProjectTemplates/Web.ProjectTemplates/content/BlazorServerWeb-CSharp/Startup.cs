@@ -119,7 +119,12 @@ namespace BlazorServerWeb_CSharp
 
 #endif
             services.AddRazorPages();
+#if (OrganizationalAuth || IndividualB2CAuth)
+            services.AddServerSideBlazor()
+                        .AddMicrosoftIdentityConsentHandler();
+#else
             services.AddServerSideBlazor();
+#endif
 #if (IndividualLocalAuth)
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 #endif

@@ -1,8 +1,10 @@
 ﻿@page "/callwebapi"
 
 @using BlazorServerWeb_CSharp
+@using Microsoft.Identity.Web
 
 @inject IDownstreamWebApi downstreamAPI
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 
 <h1>Call an API</h1>
 
@@ -23,6 +25,13 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        apiResult = await downstreamAPI.CallWebApiAsync();
+        try
+        {
+            apiResult = await downstreamAPI.CallWebApiAsync("me");
+        }
+        catch (Exception ex)
+        {
+            ConsentHandler.HandleException(ex);
+        }
     }
 }
