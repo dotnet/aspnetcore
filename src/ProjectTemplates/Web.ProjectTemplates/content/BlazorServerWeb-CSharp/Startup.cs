@@ -75,41 +75,36 @@ namespace BlazorServerWeb_CSharp
 #if (GenerateApiOrGraph)
             string[] scopes = Configuration.GetValue<string>("CalledApi:CalledApiScopes")?.Split(' ');
 #endif
-            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAd")
 #if (GenerateApiOrGraph)
-                    .AddMicrosoftWebAppCallsWebApi(Configuration,
-                                                   scopes,
-                                                   "AzureAd")
-                    .AddInMemoryTokenCaches();
+            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAd")
+                .AddMicrosoftWebAppCallsWebApi(Configuration, scopes, "AzureAd")
+                .AddInMemoryTokenCaches();
 #else
-                    ;
+            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAd");
 #endif
 #if (GenerateApi)
             services.AddDownstreamWebApiService(Configuration);
 #endif
 #if (GenerateGraph)
-            services.AddMicrosoftGraph(scopes,
-                                       Configuration.GetValue<string>("CalledApi:CalledApiUrl"));
+            services.AddMicrosoftGraph(scopes, Configuration.GetValue<string>("CalledApi:CalledApiUrl"));
 #endif
 #elif (IndividualB2CAuth)
 #if (GenerateApi)
             string[] scopes = Configuration.GetValue<string>("CalledApi:CalledApiScopes")?.Split(' ');
 #endif
-            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAdB2C")
 #if (GenerateApi)
-                    .AddMicrosoftWebAppCallsWebApi(Configuration,
-                                                   scopes,
-                                                   "AzureAdB2C")
-                    .AddInMemoryTokenCaches();
+            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAdB2C")
+                .AddMicrosoftWebAppCallsWebApi(Configuration, scopes, "AzureAdB2C")
+                .AddInMemoryTokenCaches();
 
             services.AddDownstreamWebApiService(Configuration);
 #else
-                    ;
+            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAdB2C");
 #endif
 #endif
 #if (OrganizationalAuth || IndividualB2CAuth)
             services.AddControllersWithViews()
-                    .AddMicrosoftIdentityUI();
+                .AddMicrosoftIdentityUI();
 
             services.AddAuthorization(options =>
             {
@@ -121,7 +116,7 @@ namespace BlazorServerWeb_CSharp
             services.AddRazorPages();
 #if (OrganizationalAuth || IndividualB2CAuth)
             services.AddServerSideBlazor()
-                        .AddMicrosoftIdentityConsentHandler();
+                .AddMicrosoftIdentityConsentHandler();
 #else
             services.AddServerSideBlazor();
 #endif
