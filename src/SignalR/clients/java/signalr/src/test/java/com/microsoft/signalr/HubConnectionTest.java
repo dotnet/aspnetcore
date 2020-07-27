@@ -3049,6 +3049,56 @@ class HubConnectionTest {
     }
 
     @Test
+    public void LongPollingTransportAccessTokenProviderThrowsDuringStop() {
+        AtomicInteger requestCount = new AtomicInteger(0);
+        CompletableSubject blockGet = CompletableSubject.create();
+        TestHttpClient client = new TestHttpClient()
+            .on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                (req) -> Single.just(new HttpResponse(200, "",
+                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")))
+            .on("GET", (req) -> {
+                if (requestCount.getAndIncrement() > 1) {
+                    blockGet.blockingAwait();
+                }
+                return Single.just(new HttpResponse(200, "", "{}" + RECORD_SEPARATOR));
+            })
+            .on("POST", "http://example.com?id=bVOiRPG8-6YiJ6d7ZcTOVQ", (req) -> {
+                return Single.just(new HttpResponse(200, "", ""));
+            });
+
+        AtomicInteger accessTokenCount = new AtomicInteger(0);
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransport(TransportEnum.LONG_POLLING)
+                .withHttpClient(client)
+                .withAccessTokenProvider(Single.defer(() -> {
+                    if (accessTokenCount.getAndIncrement() < 5) {
+                        return Single.just("");
+                    }
+                    return Single.error(new RuntimeException("Error from accessTokenProvider"));
+                }))
+                .build();
+
+        CompletableSubject closed = CompletableSubject.create();
+        hubConnection.onClosed((e) -> {
+            closed.onComplete();
+        });
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        try {
+            hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+            assertTrue(false);
+        } catch (Exception ex) {
+            assertEquals("Error from accessTokenProvider", ex.getMessage());
+        }
+        blockGet.onComplete();
+        closed.timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
+
+    @Test
     public void receivingServerSentEventsTransportFromNegotiateFails() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
