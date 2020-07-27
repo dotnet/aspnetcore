@@ -176,9 +176,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var keyMappings = new Dictionary<string, TKey>(StringComparer.Ordinal);
             foreach (var kvp in keys)
             {
-                // Use InvariantCulture to convert the key since ExpressionHelper.GetExpressionText() would use
-                // that culture when rendering a form.
-                var convertedKey = ModelBindingHelper.ConvertTo<TKey>(kvp.Key, culture: null);
+                TKey convertedKey;
+                try
+                {
+                    // Use InvariantCulture to convert the key since ExpressionHelper.GetExpressionText() would use
+                    // that culture when rendering a form.
+                    convertedKey = ModelBindingHelper.ConvertTo<TKey>(kvp.Key, culture: null);
+                }
+                catch (FormatException)
+                {
+                    continue;
+                }
 
                 using (bindingContext.EnterNestedScope(
                     modelMetadata: valueMetadata,
