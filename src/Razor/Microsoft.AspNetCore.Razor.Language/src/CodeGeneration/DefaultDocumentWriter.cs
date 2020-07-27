@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             public override void VisitUsingDirective(UsingDirectiveIntermediateNode node)
             {
-                var isDefault = !node.Source.HasValue || (node.Source.HasValue && node.Source.Value.FilePath is null);
+                var isDefault = node.Source?.FilePath is null;
                 var isImportFile = node.Source.HasValue && node.Source.Value.FilePath != Context.SourceDocument.FilePath;
                 var isExternalImport = isDefault || isImportFile;
                 if (isExternalImport)
