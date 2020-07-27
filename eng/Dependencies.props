@@ -163,6 +163,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="MessagePack" />
     <LatestPackageReference Include="MessagePackAnalyzer" />
     <LatestPackageReference Include="Microsoft.Data.SqlClient" />
+    <LatestPackageReference Include="Microsoft.Identity.Web.UI" />
+    <LatestPackageReference Include="Microsoft.Graph" />
     <LatestPackageReference Include="Mono.Cecil" />
     <LatestPackageReference Include="Moq" />
     <LatestPackageReference Include="Newtonsoft.Json.Bson" />
