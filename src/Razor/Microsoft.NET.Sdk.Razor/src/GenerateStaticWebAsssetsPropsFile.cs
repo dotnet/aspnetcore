@@ -1,4 +1,4 @@
-﻿// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -106,7 +106,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
                 if (!ValidateMetadataMatches(firstAsset, webAsset, SourceId) ||
                     !ValidateMetadataMatches(firstAsset, webAsset, SourceType) ||
-                    !ValidateMetadataMatches(firstAsset, webAsset, ContentRoot) ||
+                    // Now that we support generated assets we need to be able to support multiple content roots.
+                    // We need to change this check for one that ensures that no two files end up in the same final destination
+                    //!ValidateMetadataMatches(firstAsset, webAsset, ContentRoot) ||
+                    // See https://github.com/dotnet/aspnetcore/issues/24257
                     !ValidateMetadataMatches(firstAsset, webAsset, BasePath))
                 {
                     return false;

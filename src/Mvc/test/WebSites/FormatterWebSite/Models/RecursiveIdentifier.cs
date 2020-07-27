@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace FormatterWebSite
 {
@@ -15,6 +16,7 @@ namespace FormatterWebSite
             Value = identifier;
         }
 
+        [Required]
         public string Value { get; }
 
         public RecursiveIdentifier AccountIdentifier => new RecursiveIdentifier(Value);

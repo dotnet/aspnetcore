@@ -132,8 +132,10 @@ export function removeLogicalChild(parent: LogicalElement, childIndex: number) {
   // If it's a logical container, also remove its descendants
   if (childToRemove instanceof Comment) {
     const grandchildrenArray = getLogicalChildrenArray(childToRemove);
-    while (grandchildrenArray.length > 0) {
-      removeLogicalChild(childToRemove, 0);
+    if (grandchildrenArray) {
+      while (grandchildrenArray.length > 0) {
+        removeLogicalChild(childToRemove, 0);
+      }
     }
   }
 

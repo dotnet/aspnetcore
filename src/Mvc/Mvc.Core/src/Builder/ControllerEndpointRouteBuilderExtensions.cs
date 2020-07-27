@@ -473,6 +473,36 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(endpoints));
             }
 
+            MapDynamicControllerRoute<TTransformer>(endpoints, pattern, state: null);
+        }
+
+        /// <summary>
+        /// Adds a specialized <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that will
+        /// attempt to select a controller action using the route values produced by <typeparamref name="TTransformer"/>.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The URL pattern of the route.</param>
+        /// <param name="state">A state object to provide to the <typeparamref name="TTransformer" /> instance.</param>
+        /// <typeparam name="TTransformer">The type of a <see cref="DynamicRouteValueTransformer"/>.</typeparam>
+        /// <remarks>
+        /// <para>
+        /// This method allows the registration of a <see cref="RouteEndpoint"/> and <see cref="DynamicRouteValueTransformer"/>
+        /// that combine to dynamically select a controller action using custom logic.
+        /// </para>
+        /// <para>
+        /// The instance of <typeparamref name="TTransformer"/> will be retrieved from the dependency injection container.
+        /// Register <typeparamref name="TTransformer"/> as transient in <c>ConfigureServices</c>. Using the transient lifetime
+        /// is required when using <paramref name="state" />.
+        /// </para>
+        /// </remarks>
+        public static void MapDynamicControllerRoute<TTransformer>(this IEndpointRouteBuilder endpoints, string pattern, object state)
+            where TTransformer : DynamicRouteValueTransformer
+        {
+            if (endpoints == null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
             EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
@@ -486,7 +516,7 @@ namespace Microsoft.AspNetCore.Builder
                 })
                 .Add(b =>
                 {
-                    b.Metadata.Add(new DynamicControllerRouteValueTransformerMetadata(typeof(TTransformer)));
+                    b.Metadata.Add(new DynamicControllerRouteValueTransformerMetadata(typeof(TTransformer), state));
                 });
         }
 

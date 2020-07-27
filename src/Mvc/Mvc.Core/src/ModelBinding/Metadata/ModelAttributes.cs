@@ -13,6 +13,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// </summary>
     public class ModelAttributes
     {
+        internal static readonly ModelAttributes Empty = new ModelAttributes(Array.Empty<object>());
+
+        /// <summary>
+        /// Creates a new <see cref="ModelAttributes"/>.
+        /// </summary>
+        internal ModelAttributes(IReadOnlyList<object> attributes)
+        {
+            Attributes = attributes;
+        }
+
         /// <summary>
         /// Creates a new <see cref="ModelAttributes"/>.
         /// </summary>

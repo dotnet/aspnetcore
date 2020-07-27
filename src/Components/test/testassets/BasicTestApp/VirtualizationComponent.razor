@@ -9,10 +9,10 @@
     Stacked lists (fixed):<br />
     <div style="background-color: #eee; height: 500px; overflow-y: auto">
         <VirtualizeFixed Items="@fixedItems" ItemSize="itemSize">
-            <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+            <div @key="@context" id="stacked-top-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
         </VirtualizeFixed>
         <VirtualizeFixed Items="@fixedItems" ItemSize="itemSize">
-            <div @key="@context" style="height: @(itemSize)px; background-color: rgb(0, @((context % 2) * 255), @((1-(context % 2)) * 255));">Item @context</div>
+            <div @key="@context" id="stacked-bottom-item" style="height: @(itemSize)px; background-color: rgb(0, @((context % 2) * 255), @((1-(context % 2)) * 255));">Item @context</div>
         </VirtualizeFixed>
     </div>
 </p>
@@ -67,9 +67,6 @@
     Viewport as root (fixed):<br />
     <VirtualizeFixed Items="@fixedItems" ItemSize="itemSize">
         <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
-    </VirtualizeFixed>
-    <VirtualizeFixed Items="@fixedItems" ItemSize="itemSize">
-        <div @key="@context" style="height: @(itemSize)px; background-color: rgb(0, @((context % 2) * 255), @((1-(context % 2)) * 255));">Item @context</div>
     </VirtualizeFixed>
 </p>
 

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
 
         private int _itemCount;
 
-        private Task? _fetchTask;
+        private Task<ItemsProviderResult<TItem>>? _fetchTask;
 
         /// <summary>
         /// Gets or sets the item template for the list.
@@ -74,7 +74,14 @@ namespace Microsoft.AspNetCore.Components.Virtualization
             {
                 Debug.Assert(_fetchTask != null);
 
-                await _fetchTask;
+                var result = await _fetchTask;
+
+                _itemCount = result.TotalItemCount;
+
+                foreach (var item in result.Items)
+                {
+                    _loadedItems.Enqueue(item);
+                }
 
                 _fetchState = 0;
 
@@ -102,19 +109,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
 
             if (itemsToFetch > 0 && Interlocked.CompareExchange(ref _fetchState, 1, 0) == 0)
             {
-                _fetchTask = FetchItemsAsync(itemsToFetch);
-            }
-        }
-
-        private async Task FetchItemsAsync(int count)
-        {
-            var result = await ItemsProvider(_loadedItems.Count, count);
-
-            _itemCount = result.TotalItemCount;
-
-            foreach (var item in result.Items)
-            {
-                _loadedItems.Enqueue(item);
+                _fetchTask = ItemsProvider(_loadedItems.Count, itemsToFetch);
             }
         }
     }

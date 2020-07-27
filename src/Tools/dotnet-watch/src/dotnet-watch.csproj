@@ -19,4 +19,24 @@
     <None Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.WebSockets" />
+  </ItemGroup>
+
+  <Target Name="_FixupRuntimeConfig" BeforeTargets="_GenerateRuntimeConfigurationFilesInputCache">
+    <ItemGroup>
+      <_RuntimeFramework Include="@(RuntimeFramework)" />
+      <RuntimeFramework Remove="@(RuntimeFramework)" />
+      <RuntimeFramework Include="Microsoft.AspNetCore.App" FrameworkName="Microsoft.AspNetCore.App" Version="5.0.0-preview" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_UndoRuntimeConfigWorkarounds" AfterTargets="GenerateBuildRuntimeConfigurationFiles">
+    <ItemGroup>
+      <RuntimeFramework Remove="@(RuntimeFramework)" />
+      <RuntimeFramework Include="@(_RuntimeFramework)" />
+    </ItemGroup>
+  </Target>
+
 </Project>
