@@ -1,7 +1,7 @@
 #if (OrganizationalAuth || IndividualB2CAuth || IndividualLocalAuth)
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Builder;
 #endif
+using Microsoft.AspNetCore.Builder;
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
