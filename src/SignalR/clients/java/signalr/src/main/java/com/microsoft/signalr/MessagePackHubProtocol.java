@@ -520,6 +520,9 @@ class MessagePackHubProtocol implements HubProtocol {
             default:
                 break;
         }
+        if (itemType.isPrimitive()) {
+        	return Utils.toPrimitive(itemType, item);
+        }
         return itemType.cast(item);
     }
 
