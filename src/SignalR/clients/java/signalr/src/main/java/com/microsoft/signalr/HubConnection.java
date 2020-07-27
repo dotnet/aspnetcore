@@ -22,9 +22,7 @@ import com.google.gson.stream.JsonReader;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.reactivex.Scheduler;
 import io.reactivex.Single;
-import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.*;
 import okhttp3.OkHttpClient;
 
@@ -68,6 +66,7 @@ public class HubConnection implements AutoCloseable {
     private final int negotiateVersion = 1;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
     private ScheduledExecutorService handshakeTimeout = null;
+    private Completable start;
 
     /**
      * Sets the server timeout interval for the connection.
@@ -343,15 +342,17 @@ public class HubConnection implements AutoCloseable {
      * @return A Completable that completes when the connection has been established.
      */
     public Completable start() {
-        CompletableSubject start = CompletableSubject.create();
+        CompletableSubject localStart = CompletableSubject.create();
 
         hubConnectionStateLock.lock();
         try {
             if (hubConnectionState != HubConnectionState.DISCONNECTED) {
-                return Completable.error(new RuntimeException("The HubConnection cannot be started if it is not in the 'Disconnected' state."));
+                logger.debug("Another start is in progress. Waiting for start to complete.");
+                return start;
             }
 
             hubConnectionState = HubConnectionState.CONNECTING;
+            start = localStart;
 
             handshakeResponseSubject = CompletableSubject.create();
             handshakeReceived = false;
@@ -422,18 +423,18 @@ public class HubConnection implements AutoCloseable {
                 }));
             // subscribe makes this a "hot" completable so this runs immediately
             }).subscribe(() -> {
-                start.onComplete();
+                localStart.onComplete();
             }, error -> {
                 hubConnectionStateLock.lock();
                 hubConnectionState = HubConnectionState.DISCONNECTED;
                 hubConnectionStateLock.unlock();
-                start.onError(error);
+                localStart.onError(error);
             });
         } finally {
             hubConnectionStateLock.unlock();
         }
 
-        return start;
+        return localStart;
     }
 
     private void activatePingTimer() {
@@ -462,7 +463,7 @@ public class HubConnection implements AutoCloseable {
 
     private Single<NegotiateResponse> startNegotiate(String url, int negotiateAttempts) {
         if (hubConnectionState != HubConnectionState.CONNECTING) {
-            return Single.just(null);
+            throw new RuntimeException("HubConnection trying to negotiate when not in the CONNECTING state.");
         }
 
         return handleNegotiate(url).flatMap(response -> {
