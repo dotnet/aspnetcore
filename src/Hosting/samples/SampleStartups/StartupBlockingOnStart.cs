@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -28,7 +29,7 @@ namespace SampleStartups
         }
 
         // Entry point for the application.
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var config = new ConfigurationBuilder().AddCommandLine(args).Build();
 
@@ -44,8 +45,9 @@ namespace SampleStartups
 
             using (host)
             {
-                host.Start();
+                await host.StartAsync();
                 Console.ReadLine();
+                await host.StopAsync();
             }
         }
     }
