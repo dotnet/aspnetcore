@@ -128,6 +128,18 @@ Executing `.\restore.cmd` or `.\build.cmd` may produce these errors:
 
 In most cases, this is because the option _Use previews of the .NET Core SDK_ in VS2019 is not checked. Start Visual Studio, go to _Tools > Options_ and check _Use previews of the .NET Core SDK_ under _Environment > Preview Features_.
 
+### Common error: HTTP Error 500.33 - ANCM Request Handler Load Failure
+
+The [ASP.NET Core Module](https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/aspnet-core-module) (ANCM) for IIS is not supported when running projects in this repository.
+
+After using `startvs.cmd` to open a solution in Visual Studio, the Kestrel web host option must be used (name of the project) and not IIS Express.
+
+Example of running the `MvcSandbox` project:
+
+`.\startvs.cmd .\src\Mvc\Mvc.sln`
+
+![Web host options in Visual Studio](./vs-iis-express-aspnet-core-mvc-sandbox.jpg)
+
 ## Building with Visual Studio Code
 
 Using Visual Studio Code with this repo requires setting environment variables on command line first.
