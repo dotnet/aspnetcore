@@ -2,7 +2,7 @@
 
 @using Microsoft.Identity.Web
 @using Microsoft.Graph
-@inject Microsoft.Graph.GraphServiceClient _graphServiceClient
+@inject Microsoft.Graph.GraphServiceClient GraphServiceClient
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 
 <h1>Me</h1>
@@ -51,7 +51,7 @@ else
     {
         try
         {
-            user = await _graphServiceClient.Me.Request().GetAsync();
+            user = await GraphServiceClient.Me.Request().GetAsync();
             photo = await GetPhoto();
         }
         catch (Exception ex)
@@ -66,7 +66,7 @@ else
 
         try
         {
-            using (var photoStream = await _graphServiceClient.Me.Photo.Content.Request().GetAsync())
+            using (var photoStream = await GraphServiceClient.Me.Photo.Content.Request().GetAsync())
             {
                 byte[] photoByte = ((System.IO.MemoryStream)photoStream).ToArray();
                 photo = Convert.ToBase64String(photoByte);
