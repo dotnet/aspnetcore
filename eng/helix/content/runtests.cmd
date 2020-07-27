@@ -22,6 +22,10 @@ set DOTNET_CLI_HOME=%DOTNET_ROOT%\home
 
 set PATH=%DOTNET_ROOT%;!PATH!;%HELIX_CORRELATION_PAYLOAD%\node\bin
 echo Set path to: %PATH%
+
+echo "xcopy /s /i %HELIX_CORRELATION_PAYLOAD%\dotnet %DOTNET_ROOT%"
+xcopy /s /i %HELIX_CORRELATION_PAYLOAD%\dotnet %DOTNET_ROOT%
+
 echo "Invoking InstallDotNet.ps1 %$arch% %$runtimeVersion% %DOTNET_ROOT%"
 powershell.exe -NoProfile -ExecutionPolicy unrestricted -file InstallDotNet.ps1 %$arch% %$runtimeVersion% %DOTNET_ROOT%
 
