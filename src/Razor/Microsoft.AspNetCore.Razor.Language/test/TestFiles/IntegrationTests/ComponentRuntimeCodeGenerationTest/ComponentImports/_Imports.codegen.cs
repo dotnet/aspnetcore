@@ -18,6 +18,7 @@ namespace Test
     #pragma warning disable 8019
     using Microsoft.AspNetCore.Components;
     #pragma warning restore 8019
+    #pragma warning disable 8019
 #nullable restore
 #line 1 "x:\dir\subdir\Test\_Imports.razor"
 using System.Text;
@@ -25,6 +26,8 @@ using System.Text;
 #line default
 #line hidden
 #nullable disable
+    #pragma warning restore 8019
+    #pragma warning disable 8019
 #nullable restore
 #line 2 "x:\dir\subdir\Test\_Imports.razor"
 using System.Reflection;
@@ -32,6 +35,7 @@ using System.Reflection;
 #line default
 #line hidden
 #nullable disable
+    #pragma warning restore 8019
     [Microsoft.AspNetCore.Components.LayoutAttribute(typeof(MainLayout))]
     public partial class _Imports : System.Object
     {

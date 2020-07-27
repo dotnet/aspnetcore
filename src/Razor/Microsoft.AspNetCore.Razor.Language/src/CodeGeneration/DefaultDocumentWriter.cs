@@ -57,6 +57,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             private readonly DefaultCodeRenderingContext _context;
             private readonly CodeTarget _target;
 
+            private const string _ImportsFile = "_Imports.razor";
+
             public Visitor(CodeTarget target, DefaultCodeRenderingContext context)
             {
                 _target = target;
@@ -131,16 +133,24 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             public override void VisitUsingDirective(UsingDirectiveIntermediateNode node)
             {
-                var isDefault = node.Source?.FilePath is null;
-                var isImportFile = node.Source.HasValue && node.Source.Value.FilePath != Context.SourceDocument.FilePath;
-                var isExternalImport = isDefault || isImportFile;
-                if (isExternalImport)
+                bool isImported;
+                if (node.Source?.FilePath is null)
+                {
+                    isImported = true;
+                }
+                else
+                {
+                    isImported = node.Source.Value.FilePath.EndsWith(_ImportsFile, StringComparison.Ordinal)
+                        || node.Source?.FilePath != Context.SourceDocument.FilePath;
+                }
+
+                if (isImported)
                 {
                     Context.CodeWriter.WriteLine("#pragma warning disable 8019");
                 }
                 Context.NodeWriter.WriteUsingDirective(Context, node);
 
-                if (isExternalImport)
+                if (isImported)
                 {
                     Context.CodeWriter.WriteLine("#pragma warning restore 8019");
                 }
