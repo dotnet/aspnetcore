@@ -14,11 +14,11 @@ set $aspnetref=%8
 set $helixTimeout=%9
 REM Batch only supports up to 9 arguments using the %# syntax, need to shift to get more
 
-set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\dotnet
+set DOTNET_ROOT=%HELIX_WORKITEM_ROOT%\dotnet
 set DOTNET_HOME=%DOTNET_ROOT%
 set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 set DOTNET_MULTILEVEL_LOOKUP=0
-set DOTNET_CLI_HOME=%HELIX_CORRELATION_PAYLOAD%\home
+set DOTNET_CLI_HOME=%DOTNET_ROOT%\home
 
 set PATH=%DOTNET_ROOT%;!PATH!;%HELIX_CORRELATION_PAYLOAD%\node\bin
 echo Set path to: %PATH%
