@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.BlazorPack;
 using Microsoft.AspNetCore.Components.Server.Circuits;
-using Microsoft.AspNetCore.Components.Virtualization;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;

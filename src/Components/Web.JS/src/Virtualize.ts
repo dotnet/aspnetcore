@@ -19,30 +19,37 @@ function findClosestScrollContainer(element: Element | null): Element | null {
   return findClosestScrollContainer(element.parentElement);
 }
 
-function init(dotNetHelper: any, spacerAbove: Element, spacerBelow: Element, rootMargin = 50): void {
+function init(dotNetHelper: any, spacerBefore: Element, spacerAfter: Element, rootMargin = 50): void {
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
-    root: findClosestScrollContainer(spacerAbove),
+    root: findClosestScrollContainer(spacerBefore),
     rootMargin: `${rootMargin}px`,
   });
 
-  intersectionObserver.observe(spacerAbove);
-  intersectionObserver.observe(spacerBelow);
+  intersectionObserver.observe(spacerBefore);
+  intersectionObserver.observe(spacerAfter);
 
-  const mutationObserver = new MutationObserver((): void => {
-    intersectionObserver.unobserve(spacerAbove);
-    intersectionObserver.unobserve(spacerBelow);
-    intersectionObserver.observe(spacerAbove);
-    intersectionObserver.observe(spacerBelow);
-  });
-
-  // Observe the spacer below to account for collections that resize.
-  mutationObserver.observe(spacerAbove, { attributes: true });
-  mutationObserver.observe(spacerBelow, { attributes: true });
+  const mutationObserverBefore = createSpacerMutationObserver(spacerBefore);
+  const mutationObserverAfter = createSpacerMutationObserver(spacerAfter);
 
   observersByDotNetId[dotNetHelper._id] = {
-    intersection: intersectionObserver,
-    mutation: mutationObserver,
+    intersectionObserver,
+    mutationObserverBefore,
+    mutationObserverAfter,
   };
+
+  function createSpacerMutationObserver(spacer: Element): MutationObserver {
+    // Without the use of thresholds, IntersectionObserver only detects binary changes in visibility,
+    // so if a spacer gets resized but remains visible, no additional callbacks will occur. By unobserving
+    // and reobserving spacers when they get resized, the intersection callback will re-run if they remain visible.
+    const mutationObserver = new MutationObserver((): void => {
+      intersectionObserver.unobserve(spacer);
+      intersectionObserver.observe(spacer);
+    });
+
+    mutationObserver.observe(spacer, { attributes: true });
+
+    return mutationObserver;
+  }
 
   function intersectionCallback(entries: IntersectionObserverEntry[]): void {
     entries.forEach((entry): void => {
@@ -52,9 +59,9 @@ function init(dotNetHelper: any, spacerAbove: Element, spacerBelow: Element, roo
 
       const containerSize = entry.rootBounds?.height;
 
-      if (entry.target === spacerAbove) {
+      if (entry.target === spacerBefore) {
         dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', entry.intersectionRect.top - entry.boundingClientRect.top, containerSize);
-      } else if (entry.target === spacerBelow) {
+      } else if (entry.target === spacerAfter) {
         dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', entry.boundingClientRect.bottom - entry.intersectionRect.bottom, containerSize);
       } else {
         throw new Error('Unknown intersection target');
@@ -67,8 +74,9 @@ function dispose(dotNetHelper: any): void {
   const observers = observersByDotNetId[dotNetHelper._id];
 
   if (observers) {
-    observers.intersection.disconnect();
-    observers.mutation.disconnect();
+    observers.intersectionObserver.disconnect();
+    observers.mutationObserverBefore.disconnect();
+    observers.mutationObserverAfter.disconnect();
 
     dotNetHelper.dispose();
 

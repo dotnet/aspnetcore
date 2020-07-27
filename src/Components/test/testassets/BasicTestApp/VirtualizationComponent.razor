@@ -57,7 +57,7 @@
                 <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
             </Item>
             <Placeholder>
-                <div @key="@($"placeholder-{context}")" style="height: @(itemSize)px;">Loading...</div>
+                <div @key="@($"placeholder-{context}")" style="height: @(itemSize)px;">Loading item @context...</div>
             </Placeholder>
         </VirtualizeDeferred>
     </div>

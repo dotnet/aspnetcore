@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
 
             for (; itemsRendered < ItemsVisible; itemsRendered++)
             {
-                Placeholder(ItemsBefore + ItemsVisible + itemsRendered)(builder);
+                Placeholder(ItemsBefore + itemsRendered)(builder);
             }
 
             var itemsToFetch = ItemsBefore + VisibleItemCapacity - _loadedItems.Count;
