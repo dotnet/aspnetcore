@@ -36,6 +36,19 @@
           "exclude": [
             "Properties/launchSettings.json"
           ]
+        },
+        {
+          "condition": "(!GenerateApi)",
+            "exclude": [
+              "Services/DownstreamWebApi.cs"
+            ]
+        },
+        {
+          "condition": "(!GenerateGraph)",
+          "exclude": [
+             "Services/MicrosoftGraphServiceExtensions.cs",
+            "Services/TokenAcquisitionCredentialProvider.cs"
+          ]
         }
       ]
     }
@@ -229,6 +242,37 @@
       "datatype": "bool",
       "description": "If specified, skips the automatic restore of the project on create.",
       "defaultValue": "false"
+    },
+    "CalledApiUrl": {
+        "type": "parameter",
+        "datatype": "string",
+        "replaces": "[WebApiUrl]",
+        "defaultValue" : "https://graph.microsoft.com/v1.0",
+        "description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg or --auth IndividualB2C is specified."
+    },
+    "CallsMicrosoftGraph": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "false",
+        "description": "Specifies if the web app calls Microsoft Graph. This option only applies if --auth SingleOrg is specified."
+    },
+    "CalledApiScopes": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces" :  "user.read",
+      "description": "Scopes to request to call the API from the web app. This option only applies if --auth SingleOrg or --auth IndividualB2C is specified."
+    },
+    "GenerateApi": {
+        "type": "computed",
+        "value": "((IndividualB2CAuth || OrganizationalAuth) && (CalledApiUrl != \"https://graph.microsoft.com/v1.0\" || CalledApiScopes != \"user.read\"))"
+    },
+    "GenerateGraph": {
+        "type": "computed",
+        "value": "(OrganizationalAuth && CallsMicrosoftGraph)"
+    },
+    "GenerateApiOrGraph": {
+        "type": "computed",
+        "value": "(GenerateApi || GenerateGraph)"
     }
   },
   "primaryOutputs": [
