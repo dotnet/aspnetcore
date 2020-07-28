@@ -58,6 +58,7 @@ Integration with static web assets:
   <_ScopedCssExtension>.rz.scp.css</_ScopedCssExtension>
   <ResolveStaticWebAssetsInputsDependsOn>$(ResolveStaticWebAssetsInputsDependsOn);_CollectAllScopedCssAssets;AddScopedCssBundle</ResolveStaticWebAssetsInputsDependsOn>
   <ResolveCurrentProjectStaticWebAssetsInputsDependsOn>$(ResolveCurrentProjectStaticWebAssetsInputsDependsOn);_AddGeneratedScopedCssFiles</ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
+  <GetCurrentProjectStaticWebAssetsDependsOn Condition="'$(UseBlazorWebAssembly)' == 'true'">$(GetCurrentProjectStaticWebAssetsDependsOn);IncludeScopedCssBundle;</GetCurrentProjectStaticWebAssetsDependsOn>
 </PropertyGroup>
 
 <Target Name="ResolveScopedCssInputs">
@@ -68,7 +69,7 @@ Integration with static web assets:
   NOTE: This target is called as part of an incremental build scenario in VS. Do not perform any work
   outside of calculating RazorComponent items in this target.
   -->
-  <DiscoverDefaultScopedCssItems Condition="'$(EnableDefaultScopedCssItems)'=='true'" Content="@(None);@(Content)">
+  <DiscoverDefaultScopedCssItems Condition="'$(EnableDefaultScopedCssItems)' == 'true'" Content="@(None);@(Content)">
     <Output TaskParameter="DiscoveredScopedCssInputs" ItemName="_DiscoveredScopedCssInputs" />
   </DiscoverDefaultScopedCssItems>
 
@@ -204,6 +205,33 @@ Integration with static web assets:
       <BasePath>$(StaticWebAssetBasePath)</BasePath>
       <RelativePath>$([MSBuild]::MakeRelative('$(_ScopedCssIntermediatePath)','%(_ScopedCss.OutputFile)'))</RelativePath>
     </StaticWebAsset>
+  </ItemGroup>
+</Target>
+
+<Target Name="IncludeScopedCssBundle" Condition="'$(ScopedCssDisableBundling)' != 'true'" DependsOnTargets="_CollectAllScopedCssAssets;_AddGeneratedScopedCssFiles">
+  <PropertyGroup>
+    <_ScopedCssOutputPath>$(_ScopedCssIntermediatePath)_framework\scoped.styles.css</_ScopedCssOutputPath>
+    <_ScopedCssOutputFullPath>$([System.IO.Path]::Combine('$(MSBuildProjectFileDirectory)', '$(_ScopedCssIntermediatePath)_framework\scoped.styles.css'))</_ScopedCssOutputFullPath>
+  </PropertyGroup>
+  <ItemGroup>
+  <!-- When bundling is enabled we want to remove all identified generated scoped css files from the list of static web assets so that
+       they are not copied to the output folder. -->
+    <StaticWebAsset Remove="@(_AllScopedCss)" Condition="'$(ScopedCssDisableBundling)' != 'true'" />
+    <!-- https://github.com/dotnet/aspnetcore/issues/24245 -->
+    <StaticWebAsset Include="$(_ScopedCssOutputPath)" Condition="@(_AllScopedCss) != ''">
+      <SourceType></SourceType>
+      <SourceId>$(PackageId)</SourceId>
+      <ContentRoot>$(_ScopedCssIntermediatePath)</ContentRoot>
+      <BasePath>$(StaticWebAssetBasePath)</BasePath>
+      <RelativePath>_framework/scoped.styles.css</RelativePath>
+    </StaticWebAsset>
+    <_ExternalStaticWebAsset Include="$(_ScopedCssOutputPath)" Condition="@(_AllScopedCss) != ''">
+      <SourceType>generated</SourceType>
+      <SourceId>$(PackageId)</SourceId>
+      <ContentRoot>$(_ScopedCssIntermediatePath)</ContentRoot>
+      <BasePath>$(StaticWebAssetBasePath)</BasePath>
+      <RelativePath>_framework/scoped.styles.css</RelativePath>
+    </_ExternalStaticWebAsset>
   </ItemGroup>
 </Target>
 
