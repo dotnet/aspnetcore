@@ -49,6 +49,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.WaitForConnectionClose();
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -78,6 +80,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
                     }
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -119,6 +123,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                             "");
                     await ReceiveResponse(connection, testContext);
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -160,6 +166,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await ReceiveResponse(connection, testContext);
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -181,6 +189,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.WaitForConnectionClose();
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -220,6 +230,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.Receive("hello, world");
                 }
+
+                await server.StopAsync();
             }
         }
 

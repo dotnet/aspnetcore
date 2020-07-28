@@ -47,6 +47,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         .DefaultTimeout();
                     await connection.Receive("HTTP/1.1 200");
                 }
+
+                await server.StopAsync();
             }
 
             // capture list here as other tests executing in parallel may log events

@@ -44,6 +44,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await ReceiveTimeoutResponse(connection, testContext);
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -75,6 +77,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await ReceiveResponse(connection, testContext);
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -100,6 +104,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await ReceiveTimeoutResponse(connection, testContext);
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -130,6 +136,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.WaitForConnectionClose();
                 }
+
+                await server.StopAsync();
             }
         }
 

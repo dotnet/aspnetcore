@@ -88,6 +88,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -133,6 +135,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
 
             Assert.Contains(TestSink.Writes, w => w.EventId.Id == 32 && w.LogLevel == LogLevel.Information);
@@ -206,6 +210,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "hello, world");
                 }
+
+                await server.StopAsync();
             }
         }
     }

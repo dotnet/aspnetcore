@@ -42,6 +42,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -87,6 +89,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -127,6 +131,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World");
                 }
+
+                await server.StopAsync();
             }
         }
     }

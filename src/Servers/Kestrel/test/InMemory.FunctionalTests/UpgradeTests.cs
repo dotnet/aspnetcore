@@ -51,6 +51,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Receive("New protocol data");
                     await upgrade.Task.DefaultTimeout();
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -106,6 +108,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await upgrade.Task.DefaultTimeout();
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -144,6 +148,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.WaitForConnectionClose();
                 }
+
+                await server.StopAsync();
             }
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await upgradeTcs.Task.DefaultTimeout());
@@ -172,6 +178,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -196,6 +204,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.SendEmptyGetWithUpgrade();
                     await connection.Receive("HTTP/1.1 200 OK");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -220,6 +230,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -250,6 +262,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.SendEmptyGet();
                     await connection.Receive("HTTP/1.1 200 OK");
                 }
+
+                await server.StopAsync();
             }
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await upgradeTcs.Task).DefaultTimeout();
@@ -301,6 +315,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         await connection.Receive("HTTP/1.1 200");
                     }
                 }
+
+                await server.StopAsync();
             }
 
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await upgradeTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(60)));
@@ -341,6 +357,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
 
                 await appCompletedTcs.Task.DefaultTimeout();
+
+                await server.StopAsync();
             }
         }
     }
