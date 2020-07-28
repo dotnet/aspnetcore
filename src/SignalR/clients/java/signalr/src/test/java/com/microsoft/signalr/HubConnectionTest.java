@@ -2654,7 +2654,7 @@ class HubConnectionTest {
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
-        hubConnection.start().timeout(0, TimeUnit.SECONDS).blockingAwait();
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
         hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
