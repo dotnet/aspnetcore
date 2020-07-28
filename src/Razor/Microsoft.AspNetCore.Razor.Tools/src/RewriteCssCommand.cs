@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Css.Parser.Parser;
 using Microsoft.Css.Parser.Tokens;
@@ -18,6 +19,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
 {
     internal class RewriteCssCommand : CommandBase
     {
+        private const string DeepCombinatorText = "::deep";
+        private static Regex DeepCombinatorRegex = new Regex($@"^{DeepCombinatorText}\s*");
+        private static Regex TrailingCombinatorRegex = new Regex(@"\s+[\>\+\~]$");
+
         public RewriteCssCommand(Application parent)
             : base(parent, "rewritecss")
         {
@@ -145,12 +150,12 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 // If there's a deep combinator among the sequence of simple selectors, we consider that to signal
                 // the end of the set of simple selectors for us to look at, plus we strip it out
                 var allSimpleSelectors = selector.Children.OfType<SimpleSelector>();
-                var firstDeepCombinator = allSimpleSelectors.FirstOrDefault(s => IsDeepCombinator(s.Text));
+                var firstDeepCombinator = allSimpleSelectors.FirstOrDefault(s => DeepCombinatorRegex.IsMatch(s.Text));
 
                 var lastSimpleSelector = allSimpleSelectors.TakeWhile(s => s != firstDeepCombinator).LastOrDefault();
                 if (lastSimpleSelector != null)
                 {
-                    Edits.Add(new InsertSelectorScopeEdit { Position = lastSimpleSelector.AfterEnd });
+                    Edits.Add(new InsertSelectorScopeEdit { Position = FindPositionBeforeTrailingCombinator(lastSimpleSelector) });
                 }
                 else if (firstDeepCombinator != null)
                 {
@@ -162,13 +167,28 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 // Also remove the deep combinator if we matched one
                 if (firstDeepCombinator != null)
                 {
-                    Edits.Add(new DeleteContentEdit { Position = firstDeepCombinator.Start, DeleteLength = firstDeepCombinator.Length });
+                    Edits.Add(new DeleteContentEdit { Position = firstDeepCombinator.Start, DeleteLength = DeepCombinatorText.Length });
                 }
             }
 
-            private static bool IsDeepCombinator(string simpleSelectorText)
+            private int FindPositionBeforeTrailingCombinator(SimpleSelector lastSimpleSelector)
             {
-                return string.Equals(simpleSelectorText, "::deep", StringComparison.Ordinal);
+                // For a selector like "a > ::deep b", the parser splits it as "a >", "::deep", "b".
+                // The place we want to insert the scope is right after "a", hence we need to detect
+                // if the simple selector ends with " >" or similar, and if so, insert before that.
+                var text = lastSimpleSelector.Text;
+                var lastChar = text.Length > 0 ? text[^1] : default;
+                switch (lastChar)
+                {
+                    case '>':
+                    case '+':
+                    case '~':
+                        var trailingCombinatorMatch = TrailingCombinatorRegex.Match(text);
+                        var trailingCombinatorLength = trailingCombinatorMatch.Length;
+                        return lastSimpleSelector.AfterEnd - trailingCombinatorLength;
+                    default:
+                        return lastSimpleSelector.AfterEnd;
+                }
             }
 
             protected override void VisitAtDirective(AtDirective item)
