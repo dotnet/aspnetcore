@@ -66,6 +66,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await onCompletedTcs.Task.DefaultTimeout();
                     Assert.False(onStartingCalled);
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -101,6 +103,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     Assert.NotNull(ex);
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -133,6 +137,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     Assert.NotNull(ex);
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -200,6 +206,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await Assert.ThrowsAsync<OperationCanceledException>(() => appTcs.Task).DefaultTimeout();
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -325,6 +333,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -362,6 +372,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
 
                 delayTcs.SetResult();
+                await server.StopAsync();
             }
         }
 
@@ -470,6 +481,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -497,6 +510,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -523,6 +538,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -674,6 +691,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     // might be 1 by the time ProduceEnd() gets called and the message is logged.
                     await logTcs.Task.DefaultTimeout();
                 }
+
+                await server.StopAsync();
             }
 
             mockKestrelTrace.Verify(kestrelTrace =>
@@ -976,6 +995,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "hello,");
                 }
 
+                await server.StopAsync();
+
                 // Verify the request was really aborted. A timeout in
                 // the app would cause a server error and skip the content length
                 // check altogether, making the test pass for the wrong reason.
@@ -1021,6 +1042,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
 
             var error = TestApplicationErrorLogger.Messages.Where(message => message.LogLevel == LogLevel.Error);
@@ -1059,6 +1082,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
 
             Assert.Empty(TestApplicationErrorLogger.Messages.Where(message => message.LogLevel == LogLevel.Error));
@@ -1131,6 +1156,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "hello, world");
                 }
+
+                await server.StopAsync();
             }
 
             Assert.Empty(TestApplicationErrorLogger.Messages.Where(message => message.LogLevel == LogLevel.Error));
@@ -1159,6 +1186,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1190,6 +1219,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     flushed.SetResult();
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1223,6 +1254,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     flushed.SetResult();
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1257,6 +1290,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.Receive("hello, world");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1432,6 +1467,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "hello, world");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1516,6 +1553,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1561,6 +1600,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1606,6 +1647,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1646,6 +1689,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1689,6 +1734,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1726,6 +1773,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1923,6 +1972,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1979,6 +2030,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -2046,6 +2099,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -2244,6 +2299,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
 
             // The first registered OnStarting callback should have been called,
@@ -2294,6 +2351,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await tcs.Task.DefaultTimeout();
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -2339,6 +2398,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await tcs.Task.DefaultTimeout();
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -2383,6 +2444,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World");
                 }
+
+                await server.StopAsync();
             }
 
             // All OnCompleted callbacks should be called even if they throw.
@@ -2632,6 +2695,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -2661,6 +2726,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -2689,6 +2756,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Content-Length: 0",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -2719,6 +2788,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -2751,6 +2822,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -2781,6 +2854,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -2876,6 +2951,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     // If we reach this point before the app exits, this means the flush finished early.
                     tcs.SetResult();
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -2906,6 +2983,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -2936,6 +3015,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         expectedString);
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -2985,6 +3066,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         expectedString);
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3016,6 +3099,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3064,6 +3149,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     // Wait for all callbacks to be called.
                     await onStartingTcs.Task.DefaultTimeout();
                 }
+
+                await server.StopAsync();
             }
 
             Assert.Equal(1, callOrder.Pop());
@@ -3115,6 +3202,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     // Wait for all callbacks to be called.
                     await onCompletedTcs.Task.DefaultTimeout();
                 }
+
+                await server.StopAsync();
             }
 
             Assert.Equal(1, callOrder.Pop());
@@ -3209,6 +3298,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello!");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3248,6 +3339,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello!");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3277,6 +3370,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3310,6 +3405,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3340,6 +3437,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3372,6 +3471,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3451,6 +3552,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World!");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3477,6 +3580,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "hello, world");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3519,6 +3624,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "hello, world",
                         "hello, world");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3545,6 +3652,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3574,6 +3683,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
 
             Assert.NotNull(writeEx);
@@ -3628,6 +3739,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3677,6 +3790,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3738,6 +3853,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                             "a");
                     }
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3812,6 +3929,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     Assert.Contains(TestSink.Writes, w => w.EventId.Id == 13 && w.LogLevel == LogLevel.Error
                         && w.Exception is ConnectionAbortedException && w.Exception.InnerException == expectedException);
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3844,6 +3963,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3873,6 +3994,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3908,6 +4031,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3941,6 +4066,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -3972,6 +4099,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
 
             Assert.NotNull(writeEx);
@@ -4006,6 +4135,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -4040,6 +4171,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                                         "",
                                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 

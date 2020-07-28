@@ -146,6 +146,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                            "",
                            "Read cancelled");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -250,6 +251,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         Assert.Equal(queryValue, queryTcs.Task.Result["q"]);
                     }
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -282,6 +285,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -510,6 +514,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             await using var server = new TestServer(ExecuteApplication, testContext);
             await TestAsyncLocalValues(testContext, server);
+            await server.StopAsync();
         }
 
         private static async Task TestAsyncLocalValues(TestServiceContext testContext, TestServer server)
@@ -611,6 +616,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         usedIds.Add(id);
                     }
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1234,6 +1241,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1365,6 +1374,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.Receive("HTTP/1.1 200 OK");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -1454,6 +1464,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1623,6 +1635,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello1");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1666,6 +1680,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1710,6 +1726,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1752,6 +1770,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1836,6 +1856,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -1880,6 +1902,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -1919,6 +1942,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+                await server.StopAsync();
             }
 
             Assert.All(TestSink.Writes, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Information));
@@ -1963,6 +1987,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -2018,6 +2044,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     Assert.NotSame(initialCustomHeaderValue, customHeaderValue);
                     Assert.Same(initialContentTypeValue, contentTypeHeaderValue);
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -2052,6 +2080,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+
+                await server.StopAsync();
             }
         }
 
@@ -2117,6 +2147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+                await server.StopAsync();
             }
         }
 

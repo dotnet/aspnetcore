@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
         public async ValueTask DisposeAsync()
         {
-            // The concrete WebHost implements IAsyncDisposable
+            // The concrete Host implements IAsyncDisposable
             await ((IAsyncDisposable)_host).ConfigureAwait(false).DisposeAsync();
             _memoryPool.Dispose();
         }

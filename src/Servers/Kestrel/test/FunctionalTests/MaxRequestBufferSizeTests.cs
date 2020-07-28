@@ -17,6 +17,8 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Hosting;
 using Xunit;
+using Microsoft.Extensions.DependencyInjection;
+using System.Threading;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
@@ -125,7 +127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
 
-            using (var host = await StartWebHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
+            using (var host = await StartHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
             {
                 var port = host.GetPort();
                 using (var socket = CreateSocket(port))
@@ -218,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
 
-            using (var host = await StartWebHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
+            using (var host = await StartHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
             {
                 var port = host.GetPort();
                 using (var socket = CreateSocket(port))
@@ -282,7 +284,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
         }
 
-        private async Task<IHost> StartWebHost(long? maxRequestBufferSize,
+        private async Task<IHost> StartHost(long? maxRequestBufferSize,
             byte[] expectedBody,
             bool useConnectionAdapter,
             TaskCompletionSource startReadingRequestBody,
@@ -290,7 +292,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Func<MemoryPool<byte>> memoryPoolFactory = null)
         {
             var host = TransportSelector.GetHostBuilder(memoryPoolFactory, maxRequestBufferSize)
-                .ConfigureWebHost(webHostBuilder=>
+                .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
                         .UseKestrel(options =>
