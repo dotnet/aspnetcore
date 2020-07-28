@@ -23,7 +23,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
-    public class TestServer: IDisposable, IStartup
+    public class TestServer : IDisposable
     {
         private const string InProcessHandlerDll = "aspnetcorev2_inprocess.dll";
         private const string AspNetCoreModuleDll = "aspnetcorev2.dll";
@@ -131,21 +131,24 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         private int Main(IntPtr argc, IntPtr argv)
         {
-            var builder = new HostBuilder()
+            _host = new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
                         .UseIIS()
-                        .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName);
+                        .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName)
+                        .Configure(app =>
+                        {
+                            app.Map("/start", builder => builder.Run(context => context.Response.WriteAsync("Done")));
+                            _appBuilder(app);
+                        })
+                        .ConfigureServices(services =>
+                        {
+                            services.Configure<IISServerOptions>(options => options.MaxRequestBodySize = _options.MaxRequestBodySize);
+                            services.AddSingleton(_loggerFactory);
+                        });
                 })
-                .ConfigureServices(services =>
-                {
-                    services.Configure<IISServerOptions>(options => options.MaxRequestBodySize = _options.MaxRequestBodySize);
-                    services.AddSingleton<IStartup>(this);
-                    services.AddSingleton(_loggerFactory);
-                });
-
-            _host = builder.Build();
+                .Build();
 
             var doneEvent = new ManualResetEventSlim();
             var lifetime = _host.Services.GetService<IHostApplicationLifetime>();
@@ -172,17 +175,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             WebCoreLock.Release();
         }
 
-        public IServiceProvider ConfigureServices(IServiceCollection services)
-        {
-            return services.BuildServiceProvider();
-        }
-
-        public void Configure(IApplicationBuilder app)
-        {
-            app.Map("/start", builder => builder.Run(context => context.Response.WriteAsync("Done")));
-            _appBuilder(app);
-        }
-
         private delegate int hostfxr_main_fn(IntPtr argc, IntPtr argv);
 
         [DllImport(HWebCoreDll)]
@@ -200,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [DllImport(InProcessHandlerDll)]
         private static extern int set_main_handler(hostfxr_main_fn main);
 
-        [DllImport("kernel32", SetLastError=true, CharSet = CharSet.Ansi)]
+        [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
         private static extern IntPtr LoadLibrary([MarshalAs(UnmanagedType.LPStr)] string lpFileName);
 
         private void Retry(Action func, int attempts)
