@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using ControllersFromServicesClassLibrary;
 using ControllersFromServicesWebSite.Components;
 using ControllersFromServicesWebSite.TagHelpers;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace ControllersFromServicesWebSite
 {
@@ -71,20 +73,20 @@ namespace ControllersFromServicesWebSite
             });
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = CreateWebHostBuilder(args)
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseStartup<Startup>()
+                        .UseKestrel()
+                        .UseIISIntegration();
+                })
+                .UseContentRoot(Directory.GetCurrentDirectory())
                 .Build();
 
-            host.Run();
+            return host.RunAsync();
         }
-
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            new WebHostBuilder()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
-                .UseKestrel()
-                .UseIISIntegration();
     }
 }
-

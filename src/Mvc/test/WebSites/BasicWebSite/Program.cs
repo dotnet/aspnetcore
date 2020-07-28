@@ -1,24 +1,31 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace BasicWebSite
 {
     public class Program
     {
-        public static void Main(string[] args) => CreateWebHostBuilder(args).Build().Run();
-
-        // Do not change. This is the pattern our test infrastructure uses to initialize a IWebHostBuilder from
-        // a users app.
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            new WebHostBuilder()
+        public static Task Main(string[] args)
+        {
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseStartup<StartupWithoutEndpointRouting>()
+                        .UseKestrel()
+                        .UseIISIntegration();
+                })
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<StartupWithoutEndpointRouting>()
-                .UseKestrel()
-                .UseIISIntegration();
+                .Build();
+
+            return host.RunAsync();
+        }
     }
 
     public class TestService

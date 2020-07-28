@@ -6,6 +6,7 @@ using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace HtmlGenerationWebSite
 {
@@ -35,11 +36,15 @@ namespace HtmlGenerationWebSite
             Startup.Configure(app);
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            new WebHostBuilder()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<StartupWithCultureReplace>()
-                .UseKestrel()
-                .UseIISIntegration();
+        public static IHostBuilder CreateWebHostBuilder(string[] args) =>
+            new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseStartup<StartupWithCultureReplace>()
+                    .UseKestrel()
+                    .UseIISIntegration();
+                })
+                .UseContentRoot(Directory.GetCurrentDirectory());
     }
 }

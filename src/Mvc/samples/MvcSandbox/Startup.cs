@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace MvcSandbox
@@ -91,16 +92,16 @@ namespace MvcSandbox
             return response.WriteAsync(sb.ToString());
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = CreateWebHostBuilder(args)
-                .Build();
-
-            host.Run();
-        }
-
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            new WebHostBuilder()
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseIISIntegration()
+                        .UseKestrel()
+                        .UseStartup<Startup>();
+                })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .ConfigureLogging(factory =>
                 {
@@ -108,9 +109,9 @@ namespace MvcSandbox
                         .AddConsole()
                         .AddDebug();
                 })
-                .UseIISIntegration()
-                .UseKestrel()
-                .UseStartup<Startup>();
+                .Build();
+
+            return host.RunAsync();
+        }
     }
 }
-
