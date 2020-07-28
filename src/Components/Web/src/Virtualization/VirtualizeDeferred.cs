@@ -17,13 +17,22 @@ namespace Microsoft.AspNetCore.Components.Virtualization
     /// <typeparam name="TItem">The <c>context</c> type for the items being rendered.</typeparam>
     public sealed class VirtualizeDeferred<TItem> : VirtualizeBase<TItem>
     {
+        private enum FetchState
+        {
+            Idle,
+            Waiting,
+            Busy
+        }
+
         private readonly ConcurrentQueue<TItem> _loadedItems = new ConcurrentQueue<TItem>();
 
-        private int _fetchState;
+        private FetchState _fetchState;
 
         private int _itemCount;
 
         private Task<ItemsProviderResult<TItem>>? _fetchTask;
+
+        private CancellationTokenSource? _fetchTcs;
 
         /// <summary>
         /// Gets or sets the item template for the list.
@@ -70,9 +79,11 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         {
             await base.OnAfterRenderAsync(firstRender);
 
-            if (Interlocked.CompareExchange(ref _fetchState, 2, 1) == 1)
+            if (_fetchState == FetchState.Waiting)
             {
                 Debug.Assert(_fetchTask != null);
+
+                _fetchState = FetchState.Busy;
 
                 var result = await _fetchTask;
 
@@ -83,7 +94,8 @@ namespace Microsoft.AspNetCore.Components.Virtualization
                     _loadedItems.Enqueue(item);
                 }
 
-                _fetchState = 0;
+                _fetchTcs = null;
+                _fetchState = FetchState.Idle;
 
                 StateHasChanged();
             }
@@ -107,10 +119,20 @@ namespace Microsoft.AspNetCore.Components.Virtualization
 
             var itemsToFetch = ItemsBefore + VisibleItemCapacity - _loadedItems.Count;
 
-            if (itemsToFetch > 0 && Interlocked.CompareExchange(ref _fetchState, 1, 0) == 0)
+            if (itemsToFetch > 0 && _fetchState == FetchState.Idle)
             {
-                _fetchTask = ItemsProvider(_loadedItems.Count, itemsToFetch);
+                _fetchState = FetchState.Waiting;
+                _fetchTcs = new CancellationTokenSource();
+                _fetchTask = ItemsProvider(_loadedItems.Count, itemsToFetch, _fetchTcs.Token);
             }
+        }
+
+        /// <inheritdoc />
+        public override ValueTask DisposeAsync()
+        {
+            _fetchTcs?.Cancel();
+
+            return base.DisposeAsync();
         }
     }
 }

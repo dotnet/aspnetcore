@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Components.Virtualization
+@using System.Threading 
 
 <p>
     Item size:<br />
@@ -7,7 +8,7 @@
 
 <p>
     Stacked lists (fixed):<br />
-    <div style="background-color: #eee; height: 500px; overflow-y: auto">
+    <div id="stacked-container" style="background-color: #eee; height: 500px; overflow-y: auto">
         <VirtualizeFixed Items="@fixedItems" ItemSize="itemSize">
             <div @key="@context" id="stacked-top-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
         </VirtualizeFixed>
@@ -20,7 +21,7 @@
 <p>
     Infinite scrolling (large batch size):<br />
     <div style="background-color: #eee; height: 500px; overflow-y: auto">
-        <InfiniteScroll ItemsProvider="GetItemsAsync" ItemSize="itemSize">
+        <InfiniteScroll ItemsProvider="GetItemsAsync" ItemSize="itemSize" RequestedItemCount="50">
             <Item>
                 <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
             </Item>
@@ -36,7 +37,7 @@
 <p>
     Infinite scrolling (small batch size):<br />
     <div style="background-color: #eee; height: 500px; overflow-y: auto">
-        <InfiniteScroll ItemsProvider="GetSingleItem" ItemSize="itemSize">
+        <InfiniteScroll ItemsProvider="GetItemsAsync" ItemSize="itemSize" RequestedItemCount="1">
             <Item>
                 <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
             </Item>
@@ -76,32 +77,22 @@
 
     int itemCountLimit = 200;
 
-    async IAsyncEnumerable<int> GetItemsAsync(int startIndex)
+    async Task<ItemsProviderResult<int>> GetItemsAsync(int startIndex, int count, CancellationToken cancellationToken)
     {
-        await Task.Delay(500);
-
-        for (int i = 0; i < 50; i++)
-        {
-            yield return startIndex + i;
-        }
+        await Task.Delay(count * 10, cancellationToken);
 
         if (startIndex >= 300)
         {
             throw new InvalidOperationException("Request timed out.");
         }
+
+        return new ItemsProviderResult<int>(Enumerable.Range(startIndex, count), startIndex + count);
     }
 
-    async Task<ItemsProviderResult<int>> GetLimitedItemsAsync(int startIndex, int count)
+    async Task<ItemsProviderResult<int>> GetLimitedItemsAsync(int startIndex, int count, CancellationToken cancellationToken)
     {
-        await Task.Delay(500);
+        await Task.Delay(500, cancellationToken);
 
         return new ItemsProviderResult<int>(Enumerable.Range(startIndex, count), itemCountLimit);
-    }
-
-    async IAsyncEnumerable<int> GetSingleItem(int index)
-    {
-        await Task.Delay(5);
-
-        yield return index;
     }
 }

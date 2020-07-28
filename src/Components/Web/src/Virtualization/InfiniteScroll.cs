@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -30,7 +31,13 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         /// Gets or sets the function retrieving items given a start index.
         /// </summary>
         [Parameter]
-        public Func<int, IAsyncEnumerable<TItem>> ItemsProvider { get; set; } = default!;
+        public ItemsProviderDelegate<TItem> ItemsProvider { get; set; } = default!;
+
+        /// <summary>
+        /// Gets or sets the item count requested to the <see cref="ItemsProvider"/>.
+        /// </summary>
+        [Parameter]
+        public int RequestedItemCount { get; set; } = 50;
 
         /// <summary>
         /// Gets the size of each item in pixels.
@@ -67,14 +74,11 @@ namespace Microsoft.AspNetCore.Components.Virtualization
             builder.CloseComponent();
         }
 
-        private async Task<ItemsProviderResult<TItem>> FetchItems(int start, int count)
+        private async Task<ItemsProviderResult<TItem>> FetchItems(int start, int count, CancellationToken cancellationToken)
         {
-            var items = new List<TItem>();
+            var result = await ItemsProvider(start, RequestedItemCount, cancellationToken);
 
-            await foreach (var item in ItemsProvider(start))
-            {
-                items.Add(item);
-            }
+            var items = new List<TItem>(result.Items);
 
             _itemCount += items.Count;
 

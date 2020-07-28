@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
             => $"height: {itemsInSpacer * ItemSize}px;";
 
         /// <inheritdoc />
-        public async ValueTask DisposeAsync()
+        public virtual async ValueTask DisposeAsync()
         {
             await _jsInterop.DisposeAsync();
         }
