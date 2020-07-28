@@ -12,7 +12,7 @@
     <PackageReference Include="MicroBuild.Core" Version="0.3.0" PrivateAssets="All" AllowExplicitReference="true" ExcludeAssets="All" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
     <!--
       Use the Razor SDK as a project reference. The version of the .NET Core SDK we build with often contains a version of the Razor SDK
       several versions older than latest. We reference the project to ensure it's built before the other projects that use it. Since this
@@ -25,9 +25,23 @@
       UndefineProperties="TargetFramework;TargetFrameworks" />
   </ItemGroup>
 
-  <ImportGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
+  <ImportGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
     <Import Project="$(RepoRoot)eng\targets\GetRazorSDKDirectory.props" />
     <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props" />
+  </ImportGroup>
+
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
+    <!-- See comments further up in the file when we import the Razor SDK-->
+    <ProjectReference Include="$(RepoRoot)src\Components\WebAssembly\Sdk\src\Microsoft.NET.Sdk.BlazorWebAssembly.csproj"
+      PrivateAssets="All"
+      IsImplicitlyDefined="true"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework;TargetFrameworks" />
+  </ItemGroup>
+
+  <ImportGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
+    <Import Project="$(RepoRoot)src\Components\WebAssembly\Sdk\src\build\net5.0\Microsoft.NET.Sdk.BlazorWebAssembly.props" />
   </ImportGroup>
 
   <ItemGroup Condition=" '$(IsTestProject)' != 'true' AND '$(DotNetBuildFromSource)' != 'true' ">

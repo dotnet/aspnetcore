@@ -15,7 +15,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnableDefaultContentItems Condition=" '$(EnableDefaultContentItems)' == '' ">true</EnableDefaultContentItems>
   </PropertyGroup>
 
-  <Import Sdk="Microsoft.NET.Sdk.Razor" Project="Sdk.targets" Condition="'$(_RazorSdkImportsMicrosoftNetSdkRazor)' == 'true'" />
+  <Import Sdk="Microsoft.NET.Sdk.Razor" Project="Sdk.targets" />
   <Import Sdk="Microsoft.NET.Sdk.Web.ProjectSystem" Project="Sdk.targets" />
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" />
 
