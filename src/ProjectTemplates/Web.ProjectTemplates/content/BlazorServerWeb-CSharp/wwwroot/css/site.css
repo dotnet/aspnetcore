@@ -14,12 +14,6 @@ a, .btn-link {
     border-color: #1861ac;
 }
 
-app {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-}
-
 .content {
     padding-top: 1.1rem;
 }
@@ -54,9 +48,3 @@ app {
         right: 0.75rem;
         top: 0.5rem;
     }
-
-@media (min-width: 768px) {
-    app {
-        flex-direction: row;
-    }
-}
