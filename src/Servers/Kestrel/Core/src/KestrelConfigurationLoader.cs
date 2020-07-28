@@ -281,7 +281,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
                 // Compare to UseHttps(httpsOptions => { })
                 var httpsOptions = new HttpsConnectionAdapterOptions();
-                SniOptionsSelector sniOptionsSelector = null;
 
                 if (https)
                 {
@@ -311,15 +310,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                         endpoint.ClientCertificateMode = ConfigurationReader.EndpointDefaults.ClientCertificateMode;
                     }
 
-                    // Specified
-                    if (endpoint.SNI.Count == 0)
+                    // A cert specified directly on the endpoint overrides any defaults.
+                    httpsOptions.ServerCertificate = LoadCertificate(endpoint.Certificate, endpoint.Name)
+                        ?? httpsOptions.ServerCertificate;
+
+                    if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
                     {
-                        LoadEndpointOrDefaultCertificate(httpsOptions, endpoint);
-                    }
-                    else
-                    {
-                        var logger = Options.ApplicationServices.GetRequiredService<ILogger<KestrelConfigurationLoader>>();
-                        sniOptionsSelector = new SniOptionsSelector(this, endpoint, httpsOptions, listenOptions.Protocols, logger);
+                        // Fallback
+                        Options.ApplyDefaultCert(httpsOptions);
+
+                        // Ensure endpoint is reloaded if it used the default certificate and the certificate changed.
+                        endpoint.Certificate = DefaultCertificateConfig;
                     }
                 }
 
@@ -343,7 +344,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 // EndpointDefaults or configureEndpoint may have added an https adapter.
                 if (https && !listenOptions.IsTls)
                 {
-                    if (sniOptionsSelector is null)
+                    if (endpoint.SNI.Count == 0)
                     {
                         if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
                         {
@@ -354,6 +355,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     }
                     else
                     {
+                        var logger = Options.ApplicationServices.GetRequiredService<ILogger<KestrelConfigurationLoader>>();
+                        var sniOptionsSelector = new SniOptionsSelector(this, endpoint, httpsOptions, listenOptions.Protocols, logger);
+
                         listenOptions.UseHttps(ServerOptionsSelectionCallback, sniOptionsSelector);
                     }
                 }
@@ -551,24 +555,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
                 return null;
             }
-        }
-
-        internal X509Certificate2 LoadEndpointOrDefaultCertificate(HttpsConnectionAdapterOptions httpsOptions, EndpointConfig endpoint)
-        {
-            // Specified
-            httpsOptions.ServerCertificate = LoadCertificate(endpoint.Certificate, endpoint.Name)
-                ?? httpsOptions.ServerCertificate;
-
-            if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
-            {
-                // Fallback
-                Options.ApplyDefaultCert(httpsOptions);
-
-                // Ensure endpoint is reloaded if it used the default certificate and the certificate changed.
-                endpoint.Certificate = DefaultCertificateConfig;
-            }
-
-            return httpsOptions.ServerCertificate;
         }
 
         private static X509Certificate2 AttachPemRSAKey(X509Certificate2 certificate, string keyText, string password)

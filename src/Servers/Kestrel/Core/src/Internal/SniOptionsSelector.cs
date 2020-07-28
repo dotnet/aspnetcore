@@ -34,10 +34,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 var sslServerOptions = new SslServerAuthenticationOptions();
 
-                sslServerOptions.ServerCertificate = configLoader.LoadCertificate(sniConfig.Certificate, endpointConfig.Name)
-                    ?? configLoader.LoadEndpointOrDefaultCertificate(fallbackOptions, endpointConfig);
+                sslServerOptions.ServerCertificate = configLoader.LoadCertificate(sniConfig.Certificate, endpointConfig.Name);
 
-                if (sslServerOptions.ServerCertificate is null)
+                if (sslServerOptions.ServerCertificate is null &&
+                    fallbackOptions.ServerCertificate is null &&
+                    fallbackOptions.ServerCertificateSelector is null)
                 {
                     throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
                 }
@@ -92,8 +93,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     ReadOnlySpan<char> nameCandidateSpan = nameCandidate;
 
                     // Note that we only slice off the `*`. We want to match the leading `.` also.
-                    if (serverNameSpan.EndsWith(nameCandidateSpan.Slice(wildcardHost.Length), StringComparison.OrdinalIgnoreCase)
-                        && nameCandidateSpan.Length > matchedNameLength)
+                    if (serverNameSpan.EndsWith(nameCandidateSpan.Slice(wildcardHost.Length), StringComparison.OrdinalIgnoreCase) &&
+                        nameCandidateSpan.Length > matchedNameLength)
                     {
                         matchedNameLength = nameCandidateSpan.Length;
                         options = optionsCandidate;
