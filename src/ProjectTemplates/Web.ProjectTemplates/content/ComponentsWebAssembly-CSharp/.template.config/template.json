@@ -471,7 +471,7 @@
         "datatype": "string",
         "replaces": "[WebApiUrl]",
         "defaultValue" : "https://graph.microsoft.com/v1.0/me",
-        "description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C is specified."
+        "description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C without and ASP.NET Core host is specified."
     },
     "CallsMicrosoftGraph": {
         "type": "parameter",
@@ -483,15 +483,15 @@
       "type": "parameter",
       "datatype": "string",
       "replaces" :  "user.read",
-      "description": "Scopes to request to call the API from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C is specified."
+      "description": "Scopes to request to call the API from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C without and ASP.NET Core host is specified."
     },
     "GenerateApi": {
         "type": "computed",
-        "value": "((IndividualB2CAuth || OrganizationalAuth) && (CalledApiUrl != \"https://graph.microsoft.com/v1.0/me\" || CalledApiScopes != \"user.read\"))"
+        "value": "(( (IndividualB2CAuth && !Hosted) || OrganizationalAuth) && (CalledApiUrl != \"https://graph.microsoft.com/v1.0/me\" || CalledApiScopes != \"user.read\"))"
     },
     "GenerateGraph": {
         "type": "computed",
-        "value": "((IndividualB2CAuth || OrganizationalAuth) && CallsMicrosoftGraph)"
+        "value": "(OrganizationalAuth && CallsMicrosoftGraph)"
     },
     "GenerateApiOrGraph": {
         "type": "computed",

@@ -430,7 +430,7 @@
     },
     "GenerateGraph": {
         "type": "computed",
-        "value": "((IndividualB2CAuth || OrganizationalAuth) && CallsMicrosoftGraph)"
+        "value": "(OrganizationalAuth && CallsMicrosoftGraph)"
     },
     "GenerateApiOrGraph": {
         "type": "computed",
