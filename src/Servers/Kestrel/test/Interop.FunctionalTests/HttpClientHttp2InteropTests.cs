@@ -1495,7 +1495,6 @@ namespace Interop.FunctionalTests
 
         [Theory]
         [MemberData(nameof(SupportedSchemes))]
-        [QuarantinedTest]
         public async Task ConnectionWindowSize_Server(string scheme)
         {
             var requestFinished = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
