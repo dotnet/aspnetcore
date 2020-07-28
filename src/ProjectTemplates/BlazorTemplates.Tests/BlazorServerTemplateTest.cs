@@ -30,6 +30,9 @@ namespace Templates.Test
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/20172")]
         public async Task BlazorServerTemplateWorks_NoAuth()
         {
+            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
             Project = await ProjectFactory.GetOrCreateProject("blazorservernoauth", Output);
 
             var createResult = await Project.RunDotNetNewAsync("blazorserver");
@@ -88,6 +91,9 @@ namespace Templates.Test
         [QuarantinedTest]
         public async Task BlazorServerTemplateWorks_IndividualAuth(bool useLocalDB)
         {
+            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
             Project = await ProjectFactory.GetOrCreateProject("blazorserverindividual" + (useLocalDB ? "uld" : ""), Output);
 
             var createResult = await Project.RunDotNetNewAsync("blazorserver", auth: "Individual", useLocalDB: useLocalDB);
