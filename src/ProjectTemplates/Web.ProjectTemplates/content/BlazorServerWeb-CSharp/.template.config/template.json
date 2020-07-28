@@ -426,7 +426,7 @@
     },
     "GenerateApi": {
         "type": "computed",
-        "value": "((IndividualB2CAuth || OrganizationalAuth) && (CalledApiUrl != \"https://graph.microsoft.com/v1.0/me\" || CalledApiScopes != \"user.read\"))"
+        "value": "((IndividualB2CAuth || OrganizationalAuth) && (CalledApiUrl != \"https://graph.microsoft.com/beta\" || CalledApiScopes != \"user.read\"))"
     },
     "GenerateGraph": {
         "type": "computed",
