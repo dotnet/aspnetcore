@@ -2649,17 +2649,12 @@ class HubConnectionTest {
     }
 
     @Test
-    public void callingStartOnStartedHubConnectionThrows()  {
+    public void callingStartOnStartedHubConnectionNoops()  {
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
-        try {
-            hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-            assertTrue(false);
-        } catch (Exception ex) {
-            assertEquals("The HubConnection cannot be started if it is not in the 'Disconnected' state.", ex.getMessage());
-        }
+        hubConnection.start().timeout(0, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
         hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
@@ -2667,7 +2662,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void callingStartOnStartingHubConnectionThrows()  {
+    public void callingStartOnStartingHubConnectionWaitsForOriginalStart()  {
         CompletableSubject startedAccessToken = CompletableSubject.create();
         CompletableSubject continueAccessToken = CompletableSubject.create();
         HubConnection hubConnection = HubConnectionBuilder.create("http://example.com")
@@ -2684,14 +2679,10 @@ class HubConnectionTest {
         startedAccessToken.timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTING, hubConnection.getConnectionState());
 
-        try {
-            hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-            assertTrue(false);
-        } catch (Exception ex) {
-            assertEquals("The HubConnection cannot be started if it is not in the 'Disconnected' state.", ex.getMessage());
-        }
+        Completable start2 = hubConnection.start();
         continueAccessToken.onComplete();
         start.timeout(1, TimeUnit.SECONDS).blockingAwait();
+        start2.timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
         hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
