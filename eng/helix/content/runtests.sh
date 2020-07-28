@@ -6,21 +6,20 @@ RESET="\033[0m"
 RED="\033[0;31m"
 YELLOW="\033[0;33m"
 MAGENTA="\033[0;95m"
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # Ensures every invocation of dotnet apps uses the same dotnet.exe
 # Add $random to path to ensure tests don't expect dotnet to be in a particular path
-export DOTNET_ROOT="$DIR/.dotnet$RANDOM"
+export DOTNET_ROOT="$HELIX_WORKITEM_ROOT/.dotnet$RANDOM"
 
 # Ensure dotnet comes first on PATH
-export PATH="$DOTNET_ROOT:$PATH:$DIR/node/bin"
+export PATH="$DOTNET_ROOT:$PATH:$HELIX_WORKITEM_ROOT/node/bin"
 
 # Prevent fallback to global .NET locations. This ensures our tests use the shared frameworks we specify and don't rollforward to something else that might be installed on the machine
 export DOTNET_MULTILEVEL_LOOKUP=0
 
 # Avoid contaminating userprofiles
 # Add $random to path to ensure tests don't expect home to be in a particular path
-export DOTNET_CLI_HOME="$DIR/.home$RANDOM"
+export DOTNET_CLI_HOME="$HELIX_WORKITEM_ROOT/.home$RANDOM"
 
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
