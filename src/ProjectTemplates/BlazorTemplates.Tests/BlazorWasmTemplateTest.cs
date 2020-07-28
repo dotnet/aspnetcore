@@ -43,6 +43,9 @@ namespace Templates.Test
         [Fact]
         public async Task BlazorWasmStandaloneTemplate_Works()
         {
+            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
             var project = await ProjectFactory.GetOrCreateProject("blazorstandalone", Output);
             project.RuntimeIdentifier = "browser-wasm";
 
@@ -81,6 +84,9 @@ namespace Templates.Test
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/20172")]
         public async Task BlazorWasmHostedTemplate_Works()
         {
+            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
             var project = await ProjectFactory.GetOrCreateProject("blazorhosted", Output);
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted" });
@@ -134,6 +140,9 @@ namespace Templates.Test
         [Fact]
         public async Task BlazorWasmStandalonePwaTemplate_Works()
         {
+            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
             var project = await ProjectFactory.GetOrCreateProject("blazorstandalonepwa", Output);
             project.RuntimeIdentifier = "browser-wasm";
 
@@ -173,6 +182,9 @@ namespace Templates.Test
         [Fact]
         public async Task BlazorWasmHostedPwaTemplate_Works()
         {
+            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
             var project = await ProjectFactory.GetOrCreateProject("blazorhostedpwa", Output);
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted", "--pwa" });
@@ -266,6 +278,9 @@ namespace Templates.Test
 
         private async Task BlazorWasmHostedTemplate_IndividualAuth_Works(bool useLocalDb)
         {
+            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
             var project = await ProjectFactory.GetOrCreateProject("blazorhostedindividual" + (useLocalDb ? "uld" : ""), Output);
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted", "-au", "Individual", useLocalDb ? "-uld" : "" });
@@ -333,6 +348,9 @@ namespace Templates.Test
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23639")]
         public async Task BlazorWasmStandaloneTemplate_IndividualAuth_Works()
         {
+            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
             var project = await ProjectFactory.GetOrCreateProject("blazorstandaloneindividual", Output);
             project.RuntimeIdentifier = "browser-wasm";
 
