@@ -14,6 +14,7 @@ set $aspnetref=%8
 set $helixTimeout=%9
 REM Batch only supports up to 9 arguments using the %# syntax, need to shift to get more
 
+REM Note: writing to the correlation payloads will not work on readonly docker queues (mostly an issue for the .sh version)
 set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\dotnet
 set DOTNET_HOME=%DOTNET_ROOT%
 set DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
