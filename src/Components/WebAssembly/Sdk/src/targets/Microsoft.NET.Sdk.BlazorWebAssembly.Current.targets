@@ -123,6 +123,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Clear out temporary build artifacts that the runtime packages -->
       <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.a'" />
 
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'$(BlazorEnableTimeZoneSupport)' == 'false' AND '%(ReferenceCopyLocalPaths.FileName)' == 'dotnet.timezones'" />
+
       <!--
         ReferenceCopyLocalPaths includes satellite assemblies from referenced projects but are inexpicably missing
         any metadata that might allow them to be differentiated. We'll explicitly add those

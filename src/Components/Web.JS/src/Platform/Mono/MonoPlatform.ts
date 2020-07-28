@@ -3,11 +3,11 @@ import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
 import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResourceLoader';
 import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock } from '../Platform';
-import { loadTimezoneData } from './TimezoneDataFile';
 import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
 
 let mono_wasm_add_assembly: (name: string, heapAddress: number, length: number) => void;
 const appBinDirName = 'appBinDir';
+const icuDataResourceName = 'icudt.dat';
 const uint64HighOrderShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
 
@@ -239,14 +239,26 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName],
     /* type */ 'dotnetwasm');
 
-  const dotnetTimeZoneResourceName = 'dotnet.timezones.dat';
+  const dotnetTimeZoneResourceName = 'dotnet.timezones.blat';
   let timeZoneResource: LoadingResource | undefined;
   if (resourceLoader.bootConfig.resources.runtime.hasOwnProperty(dotnetTimeZoneResourceName)) {
     timeZoneResource = resourceLoader.loadResource(
       dotnetTimeZoneResourceName,
       `_framework/${dotnetTimeZoneResourceName}`,
       resourceLoader.bootConfig.resources.runtime[dotnetTimeZoneResourceName],
-      'timezonedata');
+      'globalization');
+  }
+
+  let icuDataResource: LoadingResource | undefined;
+  if (resourceLoader.bootConfig.resources.runtime.hasOwnProperty(icuDataResourceName)) {
+    icuDataResource = resourceLoader.loadResource(
+      icuDataResourceName,
+      `_framework/${icuDataResourceName}`,
+      resourceLoader.bootConfig.resources.runtime[icuDataResourceName],
+      'globalization');
+  } else {
+    // Use invariant culture if the app does not carry icu data.
+    MONO.mono_wasm_setenv("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT", "1");
   }
 
   // Override the mechanism for fetching the main wasm file so we can connect it to our cache
@@ -272,6 +284,10 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
     if (timeZoneResource) {
       loadTimezone(timeZoneResource);
+    }
+
+    if (icuDataResource) {
+      loadICUData(icuDataResource);
     }
 
     // Fetch the assemblies and PDBs in the background, telling Mono to wait until they are loaded
@@ -358,7 +374,11 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     resourceLoader.purgeUnusedCacheEntriesAsync(); // Don't await - it's fine to run in background
 
     MONO.mono_wasm_setenv("MONO_URI_DOTNETRELATIVEORABSOLUTE", "true");
-    MONO.mono_wasm_setenv("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT", "1");
+    let timeZone = "UTC";
+    try {
+      timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch { }
+    MONO.mono_wasm_setenv("TZ", timeZone);
     // Turn off full-gc to prevent browser freezing.
     const mono_wasm_enable_on_demand_gc = cwrap('mono_wasm_enable_on_demand_gc', null, ['number']);
     mono_wasm_enable_on_demand_gc(0);
@@ -459,8 +479,27 @@ async function loadTimezone(timeZoneResource: LoadingResource) : Promise<void> {
 
   const request = await timeZoneResource.response;
   const arrayBuffer = await request.arrayBuffer();
-  loadTimezoneData(arrayBuffer)
 
+  Module['FS_createPath']('/', 'usr', true, true);
+  Module['FS_createPath']('/usr/', 'share', true, true);
+  Module['FS_createPath']('/usr/share/', 'zoneinfo', true, true);
+  MONO.mono_wasm_load_data_archive(new Uint8Array(arrayBuffer), '/usr/share/zoneinfo/');
+
+  removeRunDependency(runDependencyId);
+}
+
+async function loadICUData(icuDataResource: LoadingResource) : Promise<void> {
+  const runDependencyId = `blazor:icudata`;
+  addRunDependency(runDependencyId);
+
+  const request = await icuDataResource.response;
+  const array = new Uint8Array(await request.arrayBuffer());
+
+  const offset = MONO.mono_wasm_load_bytes_into_heap(array);
+  if (!MONO.mono_wasm_load_icu_data(offset))
+  {
+    throw new Error("Error loading ICU asset.");
+  }
   removeRunDependency(runDependencyId);
 }
 
