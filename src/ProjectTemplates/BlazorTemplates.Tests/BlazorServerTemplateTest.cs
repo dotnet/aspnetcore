@@ -106,7 +106,7 @@ namespace Templates.Test
             // The output from publish will go into bin/Release/netcoreappX.Y/publish and won't be affected by calling build
             // later, while the opposite is not true.
 
-            var buildResult = await Project.RunDotNetBuildAsync(additionalArgs: "/p:EnableDefaultScopedCssItems=true");
+            var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
 
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
