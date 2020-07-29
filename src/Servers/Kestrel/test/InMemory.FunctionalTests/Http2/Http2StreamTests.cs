@@ -4647,5 +4647,55 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR,
                 expectedErrorMessage: CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
         }
+
+        [Fact]
+        public async Task ChunckedTransferEncoding()
+        {
+            await InitializeConnectionAsync(async context =>
+            {
+                var response = context.Response;
+
+                response.Headers.Add(HeaderNames.TransferEncoding, "chunked");
+                await response.WriteAsync("hello, world");
+                await response.WriteAsync("hello, world");
+                await response.WriteAsync("hello, world");
+            });
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await SendDataAsync(1, _helloWorldBytes, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 41,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            var dataFrame1 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: 12,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            var dataFrame2 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: 12,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            var dataFrame3 = await ExpectAsync(Http2FrameType.DATA,
+                withLength: 12,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+
+            Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame1.PayloadSequence.ToArray()));
+            Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame2.PayloadSequence.ToArray()));
+            Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame3.PayloadSequence.ToArray()));
+        }
     }
 }
