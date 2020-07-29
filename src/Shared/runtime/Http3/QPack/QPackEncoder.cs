@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http.HPack;
+using System.Text;
 
 namespace System.Net.Http.QPack
 {
@@ -60,6 +61,11 @@ namespace System.Net.Http.QPack
         // - H is constant 0 here, as we do not yet perform Huffman coding.
         public static bool EncodeLiteralHeaderFieldWithStaticNameReference(int index, string value, Span<byte> destination, out int bytesWritten)
         {
+            return EncodeLiteralHeaderFieldWithStaticNameReference(index, value, valueEncoding: null, destination, out bytesWritten);
+        }
+
+        public static bool EncodeLiteralHeaderFieldWithStaticNameReference(int index, string value, Encoding? valueEncoding, Span<byte> destination, out int bytesWritten)
+        {
             // Requires at least two bytes (one for name reference header, one for value length)
             if (destination.Length >= 2)
             {
@@ -68,7 +74,7 @@ namespace System.Net.Http.QPack
                 {
                     destination = destination.Slice(headerBytesWritten);
 
-                    if (EncodeValueString(value, destination, out int valueBytesWritten))
+                    if (EncodeValueString(value, valueEncoding, destination, out int valueBytesWritten))
                     {
                         bytesWritten = headerBytesWritten + valueBytesWritten;
                         return true;
@@ -81,7 +87,7 @@ namespace System.Net.Http.QPack
         }
 
         /// <summary>
-        /// Encodes just the name part of a Literal Header Field With Static Name Reference. Must call <see cref="EncodeValueString(string, Span{byte}, out int)"/> after to encode the header's value.
+        /// Encodes just the name part of a Literal Header Field With Static Name Reference. Must call <see cref="EncodeValueString(string, Encoding?, Span{byte}, out int)"/> after to encode the header's value.
         /// </summary>
         public static byte[] EncodeLiteralHeaderFieldWithStaticNameReferenceToArray(int index)
         {
@@ -119,7 +125,12 @@ namespace System.Net.Http.QPack
         // - H is constant 0 here, as we do not yet perform Huffman coding.
         public static bool EncodeLiteralHeaderFieldWithoutNameReference(string name, string value, Span<byte> destination, out int bytesWritten)
         {
-            if (EncodeNameString(name, destination, out int nameLength) && EncodeValueString(value, destination.Slice(nameLength), out int valueLength))
+            return EncodeLiteralHeaderFieldWithoutNameReference(name, value, valueEncoding: null, destination, out bytesWritten);
+        }
+
+        public static bool EncodeLiteralHeaderFieldWithoutNameReference(string name, string value, Encoding? valueEncoding, Span<byte> destination, out int bytesWritten)
+        {
+            if (EncodeNameString(name, destination, out int nameLength) && EncodeValueString(value, valueEncoding, destination.Slice(nameLength), out int valueLength))
             {
                 bytesWritten = nameLength + valueLength;
                 return true;
@@ -136,7 +147,12 @@ namespace System.Net.Http.QPack
         /// </summary>
         public static bool EncodeLiteralHeaderFieldWithoutNameReference(string name, ReadOnlySpan<string> values, string valueSeparator, Span<byte> destination, out int bytesWritten)
         {
-            if (EncodeNameString(name, destination, out int nameLength) && EncodeValueString(values, valueSeparator, destination.Slice(nameLength), out int valueLength))
+            return EncodeLiteralHeaderFieldWithoutNameReference(name, values, valueSeparator, valueEncoding: null, destination, out bytesWritten);
+        }
+
+        public static bool EncodeLiteralHeaderFieldWithoutNameReference(string name, ReadOnlySpan<string> values, string valueSeparator, Encoding? valueEncoding, Span<byte> destination, out int bytesWritten)
+        {
+            if (EncodeNameString(name, destination, out int nameLength) && EncodeValueString(values, valueSeparator, valueEncoding, destination.Slice(nameLength), out int valueLength))
             {
                 bytesWritten = nameLength + valueLength;
                 return true;
@@ -147,7 +163,7 @@ namespace System.Net.Http.QPack
         }
 
         /// <summary>
-        /// Encodes just the value part of a Literawl Header Field Without Static Name Reference. Must call <see cref="EncodeValueString(string, Span{byte}, out int)"/> after to encode the header's value.
+        /// Encodes just the value part of a Literawl Header Field Without Static Name Reference. Must call <see cref="EncodeValueString(string, Encoding?, Span{byte}, out int)"/> after to encode the header's value.
         /// </summary>
         public static byte[] EncodeLiteralHeaderFieldWithoutNameReferenceToArray(string name)
         {
@@ -169,19 +185,32 @@ namespace System.Net.Http.QPack
             return temp.Slice(0, bytesWritten).ToArray();
         }
 
-        private static bool EncodeValueString(string s, Span<byte> buffer, out int length)
+        private static bool EncodeValueString(string s, Encoding? valueEncoding, Span<byte> buffer, out int length)
         {
             if (buffer.Length != 0)
             {
                 buffer[0] = 0;
-                if (IntegerEncoder.Encode(s.Length, 7, buffer, out int nameLength))
+
+                int encodedStringLength = valueEncoding is null || ReferenceEquals(valueEncoding, Encoding.Latin1)
+                    ? s.Length
+                    : valueEncoding.GetByteCount(s);
+
+                if (IntegerEncoder.Encode(encodedStringLength, 7, buffer, out int nameLength))
                 {
                     buffer = buffer.Slice(nameLength);
-                    if (buffer.Length >= s.Length)
+                    if (buffer.Length >= encodedStringLength)
                     {
-                        EncodeValueStringPart(s, buffer);
+                        if (valueEncoding is null)
+                        {
+                            EncodeValueStringPart(s, buffer);
+                        }
+                        else
+                        {
+                            int written = valueEncoding.GetBytes(s, buffer);
+                            Debug.Assert(written == encodedStringLength);
+                        }
 
-                        length = nameLength + s.Length;
+                        length = nameLength + encodedStringLength;
                         return true;
                     }
                 }
@@ -196,24 +225,41 @@ namespace System.Net.Http.QPack
         /// </summary>
         public static bool EncodeValueString(ReadOnlySpan<string> values, string? separator, Span<byte> buffer, out int length)
         {
+            return EncodeValueString(values, separator, valueEncoding: null, buffer, out length);
+        }
+
+        public static bool EncodeValueString(ReadOnlySpan<string> values, string? separator, Encoding? valueEncoding, Span<byte> buffer, out int length)
+        {
             if (values.Length == 1)
             {
-                return EncodeValueString(values[0], buffer, out length);
+                return EncodeValueString(values[0], valueEncoding, buffer, out length);
             }
 
             if (values.Length == 0)
             {
                 // TODO: this will be called with a string array from HttpHeaderCollection. Can we ever get a 0-length array from that? Assert if not.
-                return EncodeValueString(string.Empty, buffer, out length);
+                return EncodeValueString(string.Empty, valueEncoding: null, buffer, out length);
             }
 
             if (buffer.Length > 0)
             {
                 Debug.Assert(separator != null);
-                int valueLength = separator.Length * (values.Length - 1);
-                for (int i = 0; i < values.Length; ++i)
+                int valueLength;
+                if (valueEncoding is null || ReferenceEquals(valueEncoding, Encoding.Latin1))
                 {
-                    valueLength += values[i].Length;
+                    valueLength = separator.Length * (values.Length - 1);
+                    foreach (string part in values)
+                    {
+                        valueLength += part.Length;
+                    }
+                }
+                else
+                {
+                    valueLength = valueEncoding.GetByteCount(separator) * (values.Length - 1);
+                    foreach (string part in values)
+                    {
+                        valueLength += valueEncoding.GetByteCount(part);
+                    }
                 }
 
                 buffer[0] = 0;
@@ -222,18 +268,35 @@ namespace System.Net.Http.QPack
                     buffer = buffer.Slice(nameLength);
                     if (buffer.Length >= valueLength)
                     {
-                        string value = values[0];
-                        EncodeValueStringPart(value, buffer);
-                        buffer = buffer.Slice(value.Length);
-
-                        for (int i = 1; i < values.Length; ++i)
+                        if (valueEncoding is null)
                         {
-                            EncodeValueStringPart(separator, buffer);
-                            buffer = buffer.Slice(separator.Length);
-
-                            value = values[i];
+                            string value = values[0];
                             EncodeValueStringPart(value, buffer);
                             buffer = buffer.Slice(value.Length);
+
+                            for (int i = 1; i < values.Length; i++)
+                            {
+                                EncodeValueStringPart(separator, buffer);
+                                buffer = buffer.Slice(separator.Length);
+
+                                value = values[i];
+                                EncodeValueStringPart(value, buffer);
+                                buffer = buffer.Slice(value.Length);
+                            }
+                        }
+                        else
+                        {
+                            int written = valueEncoding.GetBytes(values[0], buffer);
+                            buffer = buffer.Slice(written);
+
+                            for (int i = 1; i < values.Length; i++)
+                            {
+                                written = valueEncoding.GetBytes(separator, buffer);
+                                buffer = buffer.Slice(written);
+
+                                written = valueEncoding.GetBytes(values[i], buffer);
+                                buffer = buffer.Slice(written);
+                            }
                         }
 
                         length = nameLength + valueLength;
