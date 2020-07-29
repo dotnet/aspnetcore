@@ -92,6 +92,54 @@ namespace Microsoft.AspNetCore.Razor.Tools
         }
 
         [Fact]
+        public void RespectsDeepCombinatorWithDirectDescendant()
+        {
+            // Arrange/act
+            var result = RewriteCssCommand.AddScopeToSelectors(@"
+    a  >  ::deep b { color: red; }
+    c ::deep  >  d { color: blue; }
+", "TestScope");
+
+            // Assert
+            Assert.Equal(@"
+    a[TestScope]  >   b { color: red; }
+    c[TestScope]   >  d { color: blue; }
+", result);
+        }
+
+        [Fact]
+        public void RespectsDeepCombinatorWithAdjacentSibling()
+        {
+            // Arrange/act
+            var result = RewriteCssCommand.AddScopeToSelectors(@"
+    a + ::deep b { color: red; }
+    c ::deep + d { color: blue; }
+", "TestScope");
+
+            // Assert
+            Assert.Equal(@"
+    a[TestScope] +  b { color: red; }
+    c[TestScope]  + d { color: blue; }
+", result);
+        }
+
+        [Fact]
+        public void RespectsDeepCombinatorWithGeneralSibling()
+        {
+            // Arrange/act
+            var result = RewriteCssCommand.AddScopeToSelectors(@"
+    a ~ ::deep b { color: red; }
+    c ::deep ~ d { color: blue; }
+", "TestScope");
+
+            // Assert
+            Assert.Equal(@"
+    a[TestScope] ~  b { color: red; }
+    c[TestScope]  ~ d { color: blue; }
+", result);
+        }
+
+        [Fact]
         public void IgnoresMultipleDeepCombinators()
         {
             // Arrange/act
