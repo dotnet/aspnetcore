@@ -152,6 +152,19 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         internal virtual void Refresh(bool isNavigationIntercepted)
         {
+            // If an `OnNavigateAsync` task is currently in progress, then wait
+            // for it to complete before rendering. Note: because _previousOnNavigateTask
+            // is initialized to a CompletedTask on initialization, this will still
+            // allow first-render to complete successfully.
+            if (_previousOnNavigateTask.Status != TaskStatus.RanToCompletion)
+            {
+                if (Navigating != null)
+                {
+                    _renderHandle.Render(Navigating);
+                }
+                return;
+            }
+
             RefreshRouteTable();
 
             var locationPath = NavigationManager.ToBaseRelativePath(_locationAbsolute);
@@ -248,19 +261,15 @@ namespace Microsoft.AspNetCore.Components.Routing
             var previousTask = _previousOnNavigateTask;
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _previousOnNavigateTask = tcs.Task;
-            try
+
+            // And pass an indicator for the previous task to the currently running one.
+            var shouldRefresh = await RunOnNavigateAsync(path, previousTask);
+            tcs.SetResult();
+            if (shouldRefresh)
             {
-                // And pass an indicator for the previous task to the currently running one.
-                var shouldRefresh = await RunOnNavigateAsync(path, previousTask);
-                if (shouldRefresh)
-                {
-                    Refresh(isNavigationIntercepted);
-                }
+                Refresh(isNavigationIntercepted);
             }
-            finally
-            {
-                tcs.SetResult();
-            }
+
         }
 
         private void OnLocationChanged(object sender, LocationChangedEventArgs args)
