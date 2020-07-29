@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -37,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         /// Gets or sets the item count requested to the <see cref="ItemsProvider"/>.
         /// </summary>
         [Parameter]
-        public int RequestedItemCount { get; set; } = 50;
+        public int RequestedItemCount { get; set; } = 10;
 
         /// <summary>
         /// Gets the size of each item in pixels.
@@ -55,18 +53,12 @@ namespace Microsoft.AspNetCore.Components.Virtualization
                 throw new InvalidOperationException(
                     $"{GetType()} requires template parameter '{nameof(Item)}' to be specified and non-null.");
             }
-
-            if (Footer == null)
-            {
-                throw new InvalidOperationException(
-                    $"{GetType()} requires template parameter '{nameof(Footer)}' to be specified and non-null.");
-            }
         }
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            builder.OpenComponent<VirtualizeDeferred<TItem>>(0);
+            builder.OpenComponent<Virtualize<TItem>>(0);
             builder.AddAttribute(1, "Item", Item);
             builder.AddAttribute(2, "Placeholder", Footer);
             builder.AddAttribute(3, "ItemsProvider", (ItemsProviderDelegate<TItem>)FetchItems);
@@ -74,15 +66,16 @@ namespace Microsoft.AspNetCore.Components.Virtualization
             builder.CloseComponent();
         }
 
-        private async Task<ItemsProviderResult<TItem>> FetchItems(int start, int count, CancellationToken cancellationToken)
+        private async Task<ItemsProviderResult<TItem>> FetchItems(ItemsProviderRequest request)
         {
-            var result = await ItemsProvider(start, RequestedItemCount, cancellationToken);
+            var result = await ItemsProvider(new ItemsProviderRequest(
+                request.StartIndex,
+                RequestedItemCount,
+                request.CancellationToken));
 
-            var items = new List<TItem>(result.Items);
+            _itemCount += result.Items.Count;
 
-            _itemCount += items.Count;
-
-            return new ItemsProviderResult<TItem>(items, _itemCount + 1);
+            return new ItemsProviderResult<TItem>(result.Items, _itemCount + 1);
         }
     }
 }

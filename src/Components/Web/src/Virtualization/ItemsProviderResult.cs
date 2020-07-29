@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Components.Virtualization
     public readonly struct ItemsProviderResult<TItem>
     {
         /// <summary>
-        /// The list of requested item contexts.
+        /// The items to provide.
         /// </summary>
-        public IEnumerable<TItem> Items { get; }
+        public IReadOnlyCollection<TItem> Items { get; }
 
         /// <summary>
         /// The total item count in the source generating the items provided.
@@ -24,9 +24,9 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         /// <summary>
         /// Instantiates a new <see cref="ItemsProviderResult{TItem}"/> instance.
         /// </summary>
-        /// <param name="items">The list of requested item contexts.</param>
+        /// <param name="items">The items to provide.</param>
         /// <param name="totalItemCount">The total item count in the source generating the items provided.</param>
-        public ItemsProviderResult(IEnumerable<TItem> items, int totalItemCount)
+        public ItemsProviderResult(IReadOnlyCollection<TItem> items, int totalItemCount)
         {
             Items = items;
             TotalItemCount = totalItemCount;

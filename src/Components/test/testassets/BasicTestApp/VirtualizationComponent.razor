@@ -1,5 +1,4 @@
 ﻿@using Microsoft.AspNetCore.Components.Virtualization
-@using System.Threading 
 
 <p>
     Item size:<br />
@@ -9,12 +8,12 @@
 <p>
     Stacked lists (fixed):<br />
     <div id="stacked-container" style="background-color: #eee; height: 500px; overflow-y: auto">
-        <VirtualizeFixed Items="@fixedItems" ItemSize="itemSize">
+        <Virtualize Items="@fixedItems" ItemSize="itemSize">
             <div @key="@context" id="stacked-top-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
-        </VirtualizeFixed>
-        <VirtualizeFixed Items="@fixedItems" ItemSize="itemSize">
+        </Virtualize>
+        <Virtualize Items="@fixedItems" ItemSize="itemSize">
             <div @key="@context" id="stacked-bottom-item" style="height: @(itemSize)px; background-color: rgb(0, @((context % 2) * 255), @((1-(context % 2)) * 255));">Item @context</div>
-        </VirtualizeFixed>
+        </Virtualize>
     </div>
 </p>
 
@@ -26,7 +25,7 @@
                 <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
             </Item>
             <Footer>
-                <div style="height: @(itemSize)px; background-color: white;">
+                <div style="height: @(itemSize)px; background-color: orange;">
                     Loading...
                 </div>
             </Footer>
@@ -42,7 +41,7 @@
                 <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
             </Item>
             <Footer>
-                <div style="height: @(itemSize)px; background-color: white;">
+                <div style="height: @(itemSize)px; background-color: orange;">
                     Loading...
                 </div>
             </Footer>
@@ -53,22 +52,22 @@
 <p>
     Deferred:<br />
     <div style="background-color: #eee; height: 500px; overflow-y: auto">
-        <VirtualizeDeferred ItemsProvider="GetLimitedItemsAsync" ItemSize="itemSize">
+        <Virtualize ItemsProvider="GetLimitedItemsAsync" ItemSize="itemSize">
             <Item>
                 <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
             </Item>
             <Placeholder>
-                <div @key="@($"placeholder-{context}")" style="height: @(itemSize)px;">Loading item @context...</div>
+                <div @key="@($"placeholder-{context}")" style="height: @(itemSize)px; background-color: orange;">Loading item @context...</div>
             </Placeholder>
-        </VirtualizeDeferred>
+        </Virtualize>
     </div>
 </p>
 
 <p>
     Viewport as root (fixed):<br />
-    <VirtualizeFixed Items="@fixedItems" ItemSize="itemSize">
+    <Virtualize Items="@fixedItems" ItemSize="itemSize">
         <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
-    </VirtualizeFixed>
+    </Virtualize>
 </p>
 
 @code {
@@ -77,22 +76,24 @@
 
     int itemCountLimit = 200;
 
-    async Task<ItemsProviderResult<int>> GetItemsAsync(int startIndex, int count, CancellationToken cancellationToken)
+    async Task<ItemsProviderResult<int>> GetItemsAsync(ItemsProviderRequest request)
     {
-        await Task.Delay(count * 10, cancellationToken);
+        await Task.Delay(request.Count * 10, request.CancellationToken);
 
-        if (startIndex >= 300)
+        if (request.StartIndex >= 300)
         {
             throw new InvalidOperationException("Request timed out.");
         }
 
-        return new ItemsProviderResult<int>(Enumerable.Range(startIndex, count), startIndex + count);
+        return new ItemsProviderResult<int>(
+            Enumerable.Range(request.StartIndex, request.Count).ToList(),
+            request.StartIndex + request.Count);
     }
 
-    async Task<ItemsProviderResult<int>> GetLimitedItemsAsync(int startIndex, int count, CancellationToken cancellationToken)
+    async Task<ItemsProviderResult<int>> GetLimitedItemsAsync(ItemsProviderRequest request)
     {
-        await Task.Delay(500, cancellationToken);
+        await Task.Delay(500, request.CancellationToken);
 
-        return new ItemsProviderResult<int>(Enumerable.Range(startIndex, count), itemCountLimit);
+        return new ItemsProviderResult<int>(Enumerable.Range(request.StartIndex, request.Count).ToList(), itemCountLimit);
     }
 }

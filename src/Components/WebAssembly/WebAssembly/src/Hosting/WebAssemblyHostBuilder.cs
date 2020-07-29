@@ -12,7 +12,6 @@ using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
-using Microsoft.AspNetCore.Components.Virtualization;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
