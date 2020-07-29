@@ -56,15 +56,22 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   const getLocationHref = window['Blazor']._internal.navigationManager.getLocationHref;
   window['Blazor']._internal.navigationManager.getUnmarshalledBaseURI = () => BINDING.js_string_to_mono_string(getBaseUri());
   window['Blazor']._internal.navigationManager.getUnmarshalledLocationHref = () => BINDING.js_string_to_mono_string(getLocationHref());
-
+  
   window['Blazor']._internal.navigationManager.listenForNavigationEvents(async (uri: string, intercepted: boolean): Promise<void> => {
     await DotNet.invokeMethodAsync(
       'Microsoft.AspNetCore.Components.WebAssembly',
       'NotifyLocationChanged',
       uri,
       intercepted
-    );
-  });
+    )
+  }, async (uri: string, intercepted: boolean): Promise<boolean> => {
+    return await DotNet.invokeMethodAsync<boolean>(
+      'Microsoft.AspNetCore.Components.WebAssembly',
+      'NotifyLocationChanging',
+      uri,
+      intercepted
+  )}
+);
 
   // Get the custom environment setting if defined
   const environment = options?.environment;

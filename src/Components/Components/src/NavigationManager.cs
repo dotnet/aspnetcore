@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public abstract class NavigationManager
     {
+        private bool _hasLocationChangingListeners;
+
         /// <summary>
         /// An event that fires when the navigation location has changed.
         /// </summary>
@@ -29,6 +31,27 @@ namespace Microsoft.AspNetCore.Components
         }
 
         private EventHandler<LocationChangedEventArgs>? _locationChanged;
+
+        /// <summary>
+        /// An event that fires when the navigation location is about to change
+        /// </summary>
+        public event EventHandler<LocationChangingEventArgs> LocationChanging
+        {
+            add
+            {
+                AssertInitialized();
+                _locationChanging += value;
+                UpdateHasLocationChangingListeners(true);
+            }
+            remove
+            {
+                AssertInitialized();
+                _locationChanging -= value;
+                UpdateHasLocationChangingListeners(_locationChanging != null);
+            }
+        }
+
+        private EventHandler<LocationChangingEventArgs>? _locationChanging;
 
         // For the baseUri it's worth storing as a System.Uri so we can do operations
         // on that type. System.Uri gives us access to the original string anyway.
@@ -208,6 +231,41 @@ namespace Microsoft.AspNetCore.Components
             catch (Exception ex)
             {
                 throw new LocationChangeException("An exception occurred while dispatching a location changed event.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Triggers the <see cref="LocationChanging"/> event with the current URI value.
+        /// </summary>
+        protected bool NotifyLocationChanging(string uri, bool isInterceptedLink)
+        {
+            try
+            {
+                var evt = new LocationChangingEventArgs(uri, isInterceptedLink);
+                _locationChanging?.Invoke(this, evt);
+                return evt.Cancel;
+            }
+            catch (Exception ex)
+            {
+                throw new LocationChangeException("An exception occurred while dispatching a location changing event.", ex);
+            }
+        }
+
+        /// <summary>
+        /// called when <see cref="LocationChanging"/> the fact that any event handlers are present or not changes.
+        /// this can be used by descendants to inform the JSRuntime that there are locationchanging event handlers
+        /// </summary>
+        /// <param name="value">true if there are eventhandlers</param>
+        protected virtual void SetHasLocationChangingListeners(bool value)
+        {
+        }
+
+        private void UpdateHasLocationChangingListeners(bool value)
+        {
+            if (_hasLocationChangingListeners != value)
+            {
+                _hasLocationChangingListeners = value;
+                SetHasLocationChangingListeners(value);
             }
         }
 

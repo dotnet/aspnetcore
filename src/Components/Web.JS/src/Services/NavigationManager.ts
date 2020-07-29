@@ -4,32 +4,43 @@ import { EventDelegator } from '../Rendering/EventDelegator';
 
 let hasEnabledNavigationInterception = false;
 let hasRegisteredNavigationEventListeners = false;
+let hasLocationChangingListeners = false;
+
+// Current uri
+let currentUri ='';
 
 // Will be initialized once someone registers
 let notifyLocationChangedCallback: ((uri: string, intercepted: boolean) => Promise<void>) | null = null;
+let notifyLocationChangingCallback: ((uri: string, intercepted: boolean) => Promise<boolean>) | null = null;
 
 // These are the functions we're making available for invocation from .NET
 export const internalFunctions = {
   listenForNavigationEvents,
   enableNavigationInterception,
+  setHasLocationChangingListeners,
   navigateTo,
   getBaseURI: () => document.baseURI,
   getLocationHref: () => location.href,
 };
 
-function listenForNavigationEvents(callback: (uri: string, intercepted: boolean) => Promise<void>) {
-  notifyLocationChangedCallback = callback;
+function listenForNavigationEvents(locationChangedCallback: (uri: string, intercepted: boolean) => Promise<void>, locationChangingCallback: (uri: string, intercepted: boolean) => Promise<boolean>) {
+  notifyLocationChangedCallback = locationChangedCallback;
+  notifyLocationChangingCallback = locationChangingCallback;
 
   if (hasRegisteredNavigationEventListeners) {
     return;
   }
-
+  currentUri = location.href;
   hasRegisteredNavigationEventListeners = true;
-  window.addEventListener('popstate', () => notifyLocationChanged(false));
+  window.addEventListener('popstate', ev => handleHistory(ev));
 }
 
 function enableNavigationInterception() {
   hasEnabledNavigationInterception = true;
+}
+
+function setHasLocationChangingListeners(hasListeners : boolean) {
+  hasLocationChangingListeners = hasListeners;
 }
 
 export function attachToEventDelegator(eventDelegator: EventDelegator) {
@@ -63,10 +74,30 @@ export function attachToEventDelegator(eventDelegator: EventDelegator) {
 
       const href = anchorTarget.getAttribute(hrefAttributeName)!;
       const absoluteHref = toAbsoluteUri(href);
+      event.preventDefault();
 
-      if (isWithinBaseUriSpace(absoluteHref)) {
-        event.preventDefault();
-        performInternalNavigation(absoluteHref, true);
+      //Setup local function as it can be called from 2 different code paths
+      const navigate = (uri : string) => {
+        if (isWithinBaseUriSpace(uri)) {
+          performInternalNavigation(uri, true);
+        } else {
+          location.href = uri;
+        }
+      }
+
+      //Path differs depending on if there are LocationChanging event handlers setup in the NavigationManager.cs class
+      //Presumably most of the time the LocationChanging event will not be set, so we try and avoid an extra client / server call every time a user navigates. 
+     
+      if (!hasLocationChangingListeners)
+      {
+        navigate(absoluteHref);
+      } else {
+        const changingPromise = handleLocationChanging(absoluteHref, true);
+        changingPromise.then( cancel => {
+          if (!cancel) {
+            navigate(absoluteHref);
+          }
+        });
       }
     }
   });
@@ -97,10 +128,10 @@ function performInternalNavigation(absoluteInternalHref: string, interceptedLink
   // Since this was *not* triggered by a back/forward gesture (that goes through a different
   // code path starting with a popstate event), we don't want to preserve the current scroll
   // position, so reset it.
-  // To avoid ugly flickering effects, we don't want to change the scroll position until the
+  // To avoid ugly flickering effects, we don't want to change the scroll position until
   // we render the new page. As a best approximation, wait until the next batch.
   resetScrollAfterNextBatch();
-
+ 
   if(!replace){
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
   }else{
@@ -109,10 +140,40 @@ function performInternalNavigation(absoluteInternalHref: string, interceptedLink
   notifyLocationChanged(interceptedLink);
 }
 
+async function handleHistory(event: PopStateEvent)
+{
+  if (!hasLocationChangingListeners)
+  {
+    //No LocationChanged listeners setup in server, so avoid call to server
+    await notifyLocationChanged(false);
+    return;
+  }
+  
+  const absoluteHref = location.href;
+  const changingPromise = handleLocationChanging(absoluteHref, true);
+  changingPromise.then( cancel => {
+    if (!cancel) {
+      notifyLocationChanged(false);
+    } else {
+      //currentUri will point to the location before the popstate event
+      //Unfortunatly pushing the state will remove all forward history, but pushing is neccesary to revert to the situation before the popstate
+      history.pushState(null, '', currentUri);
+    }
+  });
+}
+
 async function notifyLocationChanged(interceptedLink: boolean) {
+  currentUri = location.href;
   if (notifyLocationChangedCallback) {
     await notifyLocationChangedCallback(location.href, interceptedLink);
   }
+}
+
+async function handleLocationChanging(absoluteUri : string, interceptedLink: boolean) {
+  if (notifyLocationChangingCallback) {
+    return notifyLocationChangingCallback(absoluteUri, interceptedLink);
+  }
+  return Promise.resolve(false);
 }
 
 let testAnchor: HTMLAnchorElement;

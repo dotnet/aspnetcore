@@ -15,5 +15,7 @@ namespace Microsoft.AspNetCore.Components.Web
         public static readonly string GetBaseUri = Prefix + "getUnmarshalledBaseURI";
 
         public static readonly string NavigateTo = Prefix + "navigateTo";
+
+        public static readonly string SetHasLocationChangingListeners = Prefix + "setHasLocationChangingListeners";
     }
 }

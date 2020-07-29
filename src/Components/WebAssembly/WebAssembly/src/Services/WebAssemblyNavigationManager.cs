@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Components;
 using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Services
@@ -28,6 +27,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
             NotifyLocationChanged(isInterceptedLink);
         }
 
+        public bool HandleLocationChanging(string uri, bool isInterceptedLink)
+        {
+            return NotifyLocationChanging(uri , isInterceptedLink);
+        }
+
         /// <inheritdoc />
         protected override void NavigateToCore(string uri, bool forceLoad)
         {
@@ -36,7 +40,16 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            DefaultWebAssemblyJSRuntime.Instance.Invoke<object>(Interop.NavigateTo, uri, forceLoad);
+            if (forceLoad || !NotifyLocationChanging(uri, false))
+            {
+                DefaultWebAssemblyJSRuntime.Instance.Invoke<object>(Interop.NavigateTo, uri, forceLoad);
+            }
+        }
+
+        /// <inheritdoc />
+        protected override void SetHasLocationChangingListeners(bool value)
+        {
+            DefaultWebAssemblyJSRuntime.Instance.Invoke<object>(Interop.SetHasLocationChangingListeners, value);
         }
     }
 }

@@ -234,6 +234,16 @@ namespace Microsoft.AspNetCore.Components.Server
             _ = circuitHost.OnLocationChangedAsync(uri, intercepted);
         }
 
+        public async ValueTask<bool> OnLocationChanging(string uri, bool intercepted)
+        {
+            var circuitHost = await GetActiveCircuitAsync();
+            if (circuitHost == null)
+            {
+                return false;
+            }
+            return await circuitHost.OnLocationChangingAsync(uri, intercepted);
+        }
+
         // We store the CircuitHost through a *handle* here because Context.Items is tied to the lifetime
         // of the connection. It's possible that a misbehaving client could cause disposal of a CircuitHost
         // but keep a connection open indefinitely, preventing GC of the Circuit and related application state.

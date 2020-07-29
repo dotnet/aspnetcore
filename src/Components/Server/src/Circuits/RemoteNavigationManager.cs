@@ -64,9 +64,19 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             NotifyLocationChanged(intercepted);
         }
 
+        public bool HandleLocationChanging(string uri, bool intercepted)
+        {
+            return NotifyLocationChanging(uri, intercepted);
+        }
+
         /// <inheritdoc />
         protected override void NavigateToCore(string uri, bool forceLoad)
         {
+            if (uri == null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
             Log.RequestingNavigation(_logger, uri, forceLoad);
 
             if (_jsRuntime == null)
@@ -75,7 +85,22 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 throw new NavigationException(absoluteUriString);
             }
 
-            _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, forceLoad);
+            //In serverside blazor we call the locationChanging event here to avoid an extra browser / server roundtrip
+            //When forceload is set we bypass the LocationChanging event and force the browser to load the new page from the server
+            if (forceLoad || !NotifyLocationChanging(uri, false))
+            {
+                _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, forceLoad);
+            }
+            else
+            {
+                Log.NavigationCanceled(_logger, uri);
+            }
+        }
+
+        /// <inheritdoc />
+        protected override void SetHasLocationChangingListeners(bool value)
+        {
+            _jsRuntime.InvokeAsync<object>(Interop.SetHasLocationChangingListeners, value);
         }
 
         private static class Log
@@ -86,6 +111,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             private static readonly Action<ILogger, string, bool, Exception> _receivedLocationChangedNotification =
                 LoggerMessage.Define<string, bool>(LogLevel.Debug, new EventId(2, "ReceivedLocationChangedNotification"), "Received notification that the URI has changed to {Uri} with isIntercepted={IsIntercepted}");
 
+            private static readonly Action<ILogger, string, Exception> _navigationCanceled =
+                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(3, "NavigationCanceled"), "Navigation to URI {Uri} canceled");
+
             public static void RequestingNavigation(ILogger logger, string uri, bool forceLoad)
             {
                 _requestingNavigation(logger, uri, forceLoad, null);
@@ -94,6 +122,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             public static void ReceivedLocationChangedNotification(ILogger logger, string uri, bool isIntercepted)
             {
                 _receivedLocationChangedNotification(logger, uri, isIntercepted, null);
+            }
+
+            public static void NavigationCanceled(ILogger logger, string uri)
+            {
+                _navigationCanceled(logger, uri, null);
             }
         }
     }

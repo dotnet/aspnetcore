@@ -95,6 +95,9 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   // Configure navigation via SignalR
   window['Blazor']._internal.navigationManager.listenForNavigationEvents((uri: string, intercepted: boolean): Promise<void> => {
     return connection.send('OnLocationChanged', uri, intercepted);
+  },
+  (uri: string, intercepted: boolean): Promise<boolean> => {
+    return connection.invoke('OnLocationChanging', uri, intercepted);
   });
 
   connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(0, circuit.resolveElement(selector), componentId));
