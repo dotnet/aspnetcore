@@ -20,8 +20,9 @@ namespace Microsoft.AspNetCore.Razor.Tools
     internal class RewriteCssCommand : CommandBase
     {
         private const string DeepCombinatorText = "::deep";
-        private static Regex DeepCombinatorRegex = new Regex($@"^{DeepCombinatorText}\s*");
-        private static Regex TrailingCombinatorRegex = new Regex(@"\s+[\>\+\~]$");
+        private readonly static TimeSpan _regexTimeout = TimeSpan.FromSeconds(1);
+        private readonly static Regex _deepCombinatorRegex = new Regex($@"^{DeepCombinatorText}\s*", RegexOptions.None, _regexTimeout);
+        private readonly static Regex _trailingCombinatorRegex = new Regex(@"\s+[\>\+\~]$", RegexOptions.None, _regexTimeout);
 
         public RewriteCssCommand(Application parent)
             : base(parent, "rewritecss")
@@ -150,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 // If there's a deep combinator among the sequence of simple selectors, we consider that to signal
                 // the end of the set of simple selectors for us to look at, plus we strip it out
                 var allSimpleSelectors = selector.Children.OfType<SimpleSelector>();
-                var firstDeepCombinator = allSimpleSelectors.FirstOrDefault(s => DeepCombinatorRegex.IsMatch(s.Text));
+                var firstDeepCombinator = allSimpleSelectors.FirstOrDefault(s => _deepCombinatorRegex.IsMatch(s.Text));
 
                 var lastSimpleSelector = allSimpleSelectors.TakeWhile(s => s != firstDeepCombinator).LastOrDefault();
                 if (lastSimpleSelector != null)
@@ -183,7 +184,14 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     case '>':
                     case '+':
                     case '~':
-                        var trailingCombinatorMatch = TrailingCombinatorRegex.Match(text);
+                        var trailingCombinatorMatch = _trailingCombinatorRegex.Match(text);
+                        if (!trailingCombinatorMatch.Success)
+                        {
+                            // This should never be possible given the shape of the regex. The exception is only
+                            // in case we introduce a new bug in the future.
+                            throw new InvalidOperationException($"Trailing combinator regex should have matched but didn't for value '{text}'");
+                        }
+
                         var trailingCombinatorLength = trailingCombinatorMatch.Length;
                         return lastSimpleSelector.AfterEnd - trailingCombinatorLength;
                     default:
