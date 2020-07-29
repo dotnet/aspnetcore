@@ -1,0 +1,46 @@
+﻿@page "/LocationChangingCancel"
+
+@using Microsoft.JSInterop
+@using Microsoft.AspNetCore.Components.Routing
+
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@implements IDisposable
+
+<button id="test-button" @onclick=@( () => NavigationManager.NavigateTo("LocationChangingStart"))>Navigate</button>
+
+<a id="test-link" href="LocationChangingStart">Can We</a>>
+
+<span id="test-info">@UrlLocation</span>
+<button id="test-enable" @onclick=@( () => cancel = false)>Enable navigation</button>
+
+Can@(cancel ? " Not"  : "") Navigate
+
+@code{
+    string UrlLocation;
+    bool cancel = true;
+
+    protected override void OnInitialized()
+    {
+        UrlLocation = NavigationManager.Uri;
+        NavigationManager.LocationChanged += OnLocationChanged;
+        NavigationManager.LocationChanging += OnLocationChanging;
+    }
+
+    void IDisposable.Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        NavigationManager.LocationChanging -= OnLocationChanging;
+    }
+
+    void OnLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        UrlLocation = NavigationManager.Uri;
+        StateHasChanged();
+    }
+
+    void OnLocationChanging(object sender, LocationChangingEventArgs e)
+    {
+        e.Cancel = cancel;
+    }
+}

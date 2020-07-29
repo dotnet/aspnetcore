@@ -435,6 +435,41 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanCancelLocationChanging()
+        {
+            SetUrlViaPushState("/LocationChangingStart");
+            var app = Browser.MountTestComponent<TestRouter>();
+            var initialUrl = Browser.Url;
+            Browser.Equal(initialUrl, () => app.FindElement(By.Id("test-info")).Text);
+
+            //after we navigated to LocationChangingCancel
+            //sucessive navigation attempts will be canceled unless we allow them again
+            app.FindElement(By.Id("test-navigate")).Click();
+            var uri = $"{_serverFixture.RootUri}subdir/LocationChangingCancel";
+            Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
+
+            //Attempt to navigate with navigateto should fail
+            app.FindElement(By.Id("test-button")).Click();
+            Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
+
+            //Attempt to navigate by using the back/forward button (or calling history/back / forward) should fail
+            var jsExecutor = (IJavaScriptExecutor)Browser;
+            jsExecutor.ExecuteScript("history.back()");
+            Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
+
+            //Attempt to navigate with clicking a link should fail
+            app.FindElement(By.Id("test-link")).Click();
+            Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
+
+            //Enable navigation again
+            app.FindElement(By.Id("test-enable")).Click();
+
+            //We should be able to navigate again
+            jsExecutor.ExecuteScript("history.back()");
+            Browser.Equal(initialUrl, () => app.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Fact]
         public void CanArriveAtRouteWithExtension()
         {
             // This is an odd test, but it's primarily here to verify routing for routeablecomponentfrompackage isn't available due to

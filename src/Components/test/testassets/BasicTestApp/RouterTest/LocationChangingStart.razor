@@ -1,0 +1,30 @@
+﻿@page "/LocationChangingStart"
+@using Microsoft.AspNetCore.Components.Routing
+
+@inject NavigationManager NavigationManager
+@implements IDisposable
+
+<button id="test-navigate" @onclick=@( () => NavigationManager.NavigateTo("LocationChangingCancel") )>Navigate to test page</button>
+
+<span id="test-info">@UrlLocation</span>
+
+@code{
+    string UrlLocation;
+
+    protected override void OnInitialized()
+    {
+        UrlLocation = NavigationManager.Uri;
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    void IDisposable.Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+    void OnLocationChanged(object sender, LocationChangedEventArgs e)
+    {
+        UrlLocation = NavigationManager.Uri;
+        StateHasChanged();
+    }
+}
