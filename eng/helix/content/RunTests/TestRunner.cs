@@ -336,11 +336,11 @@ namespace RunTests
             {
                 foreach (var file in Directory.EnumerateFiles("TestResults", "*.dmp", SearchOption.AllDirectories))
                 {
-                    // Combine the directory name + log name for the copied log file name to avoid overwriting duplicate test names in different test projects
-                    Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, file)}");
+                    var fileName = Path.GetFileName(file);
+                    Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName)}");
                     // Need to copy to HELIX_WORKITEM_UPLOAD_ROOT and HELIX_WORKITEM_UPLOAD_ROOT/../ in order for Azure Devops attachments to link properly and for Helix to store the logs
-                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, file));
-                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "..", file));
+                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName));
+                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "..", fileName));
                 }
             }
             else
