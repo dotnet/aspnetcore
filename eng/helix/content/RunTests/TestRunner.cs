@@ -331,6 +331,22 @@ namespace RunTests
             {
                 Console.WriteLine("No logs found in artifacts/log");
             }
+            Console.WriteLine($"Copying TestResults/**/*.dmp to {HELIX_WORKITEM_UPLOAD_ROOT}/");
+            if (Directory.Exists("TestResults"))
+            {
+                foreach (var file in Directory.EnumerateFiles("TestResults", "*.dmp", SearchOption.AllDirectories))
+                {
+                    // Combine the directory name + log name for the copied log file name to avoid overwriting duplicate test names in different test projects
+                    Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, file)}");
+                    // Need to copy to HELIX_WORKITEM_UPLOAD_ROOT and HELIX_WORKITEM_UPLOAD_ROOT/../ in order for Azure Devops attachments to link properly and for Helix to store the logs
+                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, file));
+                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "..", file));
+                }
+            }
+            else
+            {
+                Console.WriteLine("No dmps found in TestResults");
+            }
         }
     }
 }
