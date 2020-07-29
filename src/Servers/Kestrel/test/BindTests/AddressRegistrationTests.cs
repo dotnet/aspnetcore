@@ -221,6 +221,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     }
                     Assert.Equal(uri.ToString(), response);
                 }
+
+                await host.StopAsync();
             }
         }
 
@@ -265,6 +267,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 var response = await HttpClientSlim.GetStringAsync(expectedUrl, validateCertificate: false);
 
                 Assert.Equal(expectedUrl, response);
+
+                await host.StopAsync();
             }
         }
 
@@ -541,7 +545,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        public void ThrowsWhenBindingToIPv4AddressInUse()
+        public async Task ThrowsWhenBindingToIPv4AddressInUse()
         {
             using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
             {
@@ -562,13 +566,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     var exception = Assert.Throws<IOException>(() => host.Start());
                     Assert.Equal(CoreStrings.FormatEndpointAlreadyInUse($"http://127.0.0.1:{port}"), exception.Message);
+
+                    await host.StopAsync();
                 }
             }
         }
 
         [ConditionalFact]
         [IPv6SupportedCondition]
-        public void ThrowsWhenBindingToIPv6AddressInUse()
+        public async Task ThrowsWhenBindingToIPv6AddressInUse()
         {
             TestApplicationErrorLogger.IgnoredExceptions.Add(typeof(IOException));
 
@@ -592,6 +598,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     var exception = Assert.Throws<IOException>(() => host.Start());
                     Assert.Equal(CoreStrings.FormatEndpointAlreadyInUse($"http://[::1]:{port}"), exception.Message);
+
+                    await host.StopAsync();
                 }
             }
         }
@@ -735,7 +743,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
-        public void ThrowsWhenBindingLocalhostToDynamicPort()
+        public async Task ThrowsWhenBindingLocalhostToDynamicPort()
         {
             TestApplicationErrorLogger.IgnoredExceptions.Add(typeof(InvalidOperationException));
 
@@ -752,13 +760,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             using (var host = hostBuilder.Build())
             {
                 Assert.Throws<InvalidOperationException>(() => host.Start());
+
+                await host.StopAsync();
             }
         }
 
         [Theory]
         [InlineData("ftp://localhost")]
         [InlineData("ssh://localhost")]
-        public void ThrowsForUnsupportedAddressFromHosting(string address)
+        public async Task ThrowsForUnsupportedAddressFromHosting(string address)
         {
             TestApplicationErrorLogger.IgnoredExceptions.Add(typeof(InvalidOperationException));
 
@@ -775,6 +785,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             using (var host = hostBuilder.Build())
             {
                 Assert.Throws<InvalidOperationException>(() => host.Start());
+
+                await host.StopAsync();
             }
         }
 
