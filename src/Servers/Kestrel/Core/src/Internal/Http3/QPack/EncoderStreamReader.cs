@@ -76,15 +76,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
         private const byte HuffmanMask = 0x80;
 
         private bool _s;
-        private byte[] _stringOctets;
-        private byte[] _headerNameOctets;
-        private byte[] _headerValueOctets;
+        private readonly byte[] _stringOctets;
+        private readonly byte[] _headerNameOctets;
+        private readonly byte[] _headerValueOctets;
         private byte[] _headerName;
         private int _headerNameLength;
         private int _headerValueLength;
         private int _stringLength;
         private int _stringIndex;
-        private DynamicTable _dynamicTable = new DynamicTable(1000); // TODO figure out architecture.
+        private readonly DynamicTable _dynamicTable = new DynamicTable(1000); // TODO figure out architecture.
 
         private readonly IntegerDecoder _integerDecoder = new IntegerDecoder();
         private State _state = State.Ready;
