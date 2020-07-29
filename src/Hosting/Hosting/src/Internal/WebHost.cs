@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.Hosting
             switch (serviceProvider)
             {
                 case IAsyncDisposable asyncDisposable:
-                    await asyncDisposable.DisposeAsync();
+                    await asyncDisposable.DisposeAsync().ConfigureAwait(false);
                     break;
                 case IDisposable disposable:
                     disposable.Dispose();
