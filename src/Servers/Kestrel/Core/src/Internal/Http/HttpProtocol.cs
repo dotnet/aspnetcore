@@ -80,6 +80,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Stream _requestStreamInternal;
         private Stream _responseStreamInternal;
 
+        public HttpProtocol()
+        {
+            _disableAutoChunk = AppContext.TryGetSwitch(DisableAutoChunk, out var disableAutoChunk) && disableAutoChunk;
+        }
+
         public void Initialize(HttpConnectionContext context)
         {
             _context = context;
@@ -245,6 +250,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         private string _reasonPhrase;
+
+        // for tests
+        internal bool _disableAutoChunk;
 
         public string ReasonPhrase
         {
@@ -1093,7 +1101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _keepAlive = false;
                 }
-                else if (!AppContext.TryGetSwitch(DisableAutoChunk, out var disableAutoChunk) || !disableAutoChunk)
+                else if (!_disableAutoChunk)
                 {
                     _autoChunk = true;
                 }
