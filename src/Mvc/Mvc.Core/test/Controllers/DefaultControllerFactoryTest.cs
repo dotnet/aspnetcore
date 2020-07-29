@@ -186,6 +186,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24414")]
         public void DefaultControllerFactory_DelegatesDisposalToControllerActivator()
         {
             // Arrange
