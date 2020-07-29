@@ -96,7 +96,14 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildFailed(result);
 
             // Verifying that the error correctly gets mapped to the original source
-            Assert.BuildError(result, "CS1503", location: Path.Combine("Views", "Home", "Index.cshtml") + "(1,27)");
+            var filePath = Path.Combine(Project.DirectoryPath, "Views", "Home", "Index.cshtml");
+            var location = filePath + "(1,27)";
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                // Absolute paths on OSX don't work well.
+                location = null;
+            }
+            Assert.BuildError(result, "CS1503", location);
 
             // Compilation failed without creating the views assembly
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");

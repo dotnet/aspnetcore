@@ -216,8 +216,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild("_IntrospectContentItems");
 
             Assert.BuildPassed(result);
-            var launchSettingsPath = Path.Combine("Properties", "launchSettings.json");
-            Assert.BuildOutputContainsLine(result, $"Content: {launchSettingsPath} CopyToOutputDirectory=PreserveNewest CopyToPublishDirectory=Never ExcludeFromSingleFile=true");
             Assert.BuildOutputContainsLine(result, "Content: appsettings.json CopyToOutputDirectory=PreserveNewest CopyToPublishDirectory=PreserveNewest ExcludeFromSingleFile=true");
             Assert.BuildOutputContainsLine(result, "Content: appsettings.Development.json CopyToOutputDirectory=PreserveNewest CopyToPublishDirectory=PreserveNewest ExcludeFromSingleFile=true");
         }
@@ -230,8 +228,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild("_IntrospectContentItems", "/p:ExcludeConfigFilesFromBuildOutput=true");
 
             Assert.BuildPassed(result);
-            var launchSettingsPath = Path.Combine("Properties", "launchSettings.json");
-            Assert.BuildOutputContainsLine(result, $"Content: {launchSettingsPath} CopyToOutputDirectory= CopyToPublishDirectory=Never ExcludeFromSingleFile=true");
             Assert.BuildOutputContainsLine(result, "Content: appsettings.json CopyToOutputDirectory= CopyToPublishDirectory=PreserveNewest ExcludeFromSingleFile=true");
             Assert.BuildOutputContainsLine(result, "Content: appsettings.Development.json CopyToOutputDirectory= CopyToPublishDirectory=PreserveNewest ExcludeFromSingleFile=true");
         }

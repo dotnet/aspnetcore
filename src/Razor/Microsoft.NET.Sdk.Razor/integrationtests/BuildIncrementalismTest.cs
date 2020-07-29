@@ -113,7 +113,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 Assert.BuildFailed(result);
 
-                // This needs to be relative path. Tracked by https://github.com/aspnet/Razor/issues/2187.
                 var filePath = Path.Combine(Project.DirectoryPath, "Views", "Home", "Index.cshtml");
                 var location = filePath + "(1,2)";
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
