@@ -305,13 +305,13 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>d8cf13e0ba9b369a15a83472b6b97463c6d07fe2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20364.3">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20374.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>ff5d4b6c8dbdaeacb6e6159d3f8185118dffd915</Sha>
+      <Sha>f6192d1e284a08ac05041d05fa6e60dec74b24f5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.20364.3">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.20374.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>ff5d4b6c8dbdaeacb6e6159d3f8185118dffd915</Sha>
+      <Sha>f6192d1e284a08ac05041d05fa6e60dec74b24f5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.8.0-1.20367.11">
       <Uri>https://github.com/dotnet/roslyn</Uri>
