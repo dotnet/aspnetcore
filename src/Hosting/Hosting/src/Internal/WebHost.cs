@@ -325,7 +325,8 @@ namespace Microsoft.AspNetCore.Hosting
 
             _logger.Shutdown();
 
-            var timeoutToken = new CancellationTokenSource(Options.ShutdownTimeout).Token;
+            using var timeoutCTS = new CancellationTokenSource(Options.ShutdownTimeout);
+            var timeoutToken = timeoutCTS.Token;
             if (!cancellationToken.CanBeCanceled)
             {
                 cancellationToken = timeoutToken;
