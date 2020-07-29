@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,12 +17,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
     {
         protected RoutingTestsBase(MvcTestFixture<TStartup> fixture)
         {
-            var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
+            var factory = fixture.Factories.FirstOrDefault() ?? fixture;
             Client = factory.CreateDefaultClient();
         }
-
-        private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
-            builder.UseStartup<TStartup>();
 
         public HttpClient Client { get; }
 

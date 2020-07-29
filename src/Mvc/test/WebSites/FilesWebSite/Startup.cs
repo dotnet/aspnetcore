@@ -32,7 +32,14 @@ namespace FilesWebSite
 
         public static Task Main(string[] args)
         {
-            var host = new HostBuilder()
+            var host = CreateHostBuilder(args)
+                .Build();
+
+            return host.RunAsync();
+        }
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder
@@ -40,10 +47,6 @@ namespace FilesWebSite
                         .UseKestrel()
                         .UseIISIntegration();
                 })
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .Build();
-
-            return host.RunAsync();
-        }
+                .UseContentRoot(Directory.GetCurrentDirectory());
     }
 }

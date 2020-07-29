@@ -36,7 +36,7 @@ namespace HtmlGenerationWebSite
             Startup.Configure(app);
         }
 
-        public static IHostBuilder CreateWebHostBuilder(string[] args) =>
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
             new HostBuilder()
                 .ConfigureWebHost(webHostBuilder =>
                 {

@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text.Encodings.Web;
+using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.WebEncoders.Testing;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -16,6 +18,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             base.ConfigureWebHost(builder);
             builder.ConfigureServices(services =>
             {
+                services.RemoveAll<HtmlEncoder>();
+                services.RemoveAll<JavaScriptEncoder>();
+                services.RemoveAll<UrlEncoder>();
+
                 services.TryAddTransient<HtmlEncoder, HtmlTestEncoder>();
                 services.TryAddTransient<JavaScriptEncoder, JavaScriptTestEncoder>();
                 services.TryAddTransient<UrlEncoder, UrlTestEncoder>();
