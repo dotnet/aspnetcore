@@ -185,18 +185,15 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     case '+':
                     case '~':
                         var trailingCombinatorMatch = _trailingCombinatorRegex.Match(text);
-                        if (!trailingCombinatorMatch.Success)
+                        if (trailingCombinatorMatch.Success)
                         {
-                            // This should never be possible given the shape of the regex. The exception is only
-                            // in case we introduce a new bug in the future.
-                            throw new InvalidOperationException($"Trailing combinator regex should have matched but didn't for value '{text}'");
+                            var trailingCombinatorLength = trailingCombinatorMatch.Length;
+                            return lastSimpleSelector.AfterEnd - trailingCombinatorLength;
                         }
-
-                        var trailingCombinatorLength = trailingCombinatorMatch.Length;
-                        return lastSimpleSelector.AfterEnd - trailingCombinatorLength;
-                    default:
-                        return lastSimpleSelector.AfterEnd;
+                        break;
                 }
+
+                return lastSimpleSelector.AfterEnd;
             }
 
             protected override void VisitAtDirective(AtDirective item)
