@@ -23,10 +23,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class KestrelServerOptions
     {
+        private const string DisableAutoChunkingKey = "Switch.Microsoft.AspNetCore.Server.Kestrel.DisableAutoChunking";
+
         // internal to fast-path header decoding when RequestHeaderEncodingSelector is unchanged.
         internal static readonly Func<string, Encoding> DefaultRequestHeaderEncodingSelector = _ => null;
 
         private Func<string, Encoding> _requestHeaderEncodingSelector = DefaultRequestHeaderEncodingSelector;
+
+        internal bool DisableAutoChunking { get; set; } = AppContext.TryGetSwitch(DisableAutoChunkingKey, out var disableAutoChunk) && disableAutoChunk;
 
         // The following two lists configure the endpoints that Kestrel should listen to. If both lists are empty, the "urls" config setting (e.g. UseUrls) is used.
         internal List<ListenOptions> CodeBackedListenOptions { get; } = new List<ListenOptions>();

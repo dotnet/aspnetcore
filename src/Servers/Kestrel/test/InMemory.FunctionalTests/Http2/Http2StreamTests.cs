@@ -4649,7 +4649,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task ChunckedTransferEncoding()
+        public async Task ChunkedTransferEncoding()
         {
             await InitializeConnectionAsync(async context =>
             {

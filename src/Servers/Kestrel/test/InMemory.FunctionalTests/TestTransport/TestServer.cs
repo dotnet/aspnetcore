@@ -4,7 +4,6 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +15,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 {
@@ -39,6 +37,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             : this(app, context, new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)))
         {
             // The endpoint is ignored, but this ensures no cert loading happens for HTTPS endpoints.
+        }
+
+        public TestServer(RequestDelegate app, TestServiceContext context, Action<KestrelServerOptions> configureKestrel)
+            : this(app, context, kestrelOptions =>
+            {
+                // The endpoint is ignored, but this ensures no cert loading happens for HTTPS endpoints.
+                kestrelOptions.CodeBackedListenOptions.Add(new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)));
+                configureKestrel(kestrelOptions);
+            },
+            services => { })
+        {
+
         }
 
         public TestServer(RequestDelegate app, TestServiceContext context, ListenOptions listenOptions)

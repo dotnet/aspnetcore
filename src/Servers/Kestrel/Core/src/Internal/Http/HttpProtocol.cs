@@ -30,8 +30,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
     internal abstract partial class HttpProtocol : IHttpResponseControl
     {
-        private const string DisableAutoChunk = "Switch.Microsoft.AspNetCore.Server.Kestrel.DisableAutoChunk";
-
         private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
@@ -79,11 +77,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private string _scheme = null;
         private Stream _requestStreamInternal;
         private Stream _responseStreamInternal;
-
-        public HttpProtocol()
-        {
-            _disableAutoChunk = AppContext.TryGetSwitch(DisableAutoChunk, out var disableAutoChunk) && disableAutoChunk;
-        }
 
         public void Initialize(HttpConnectionContext context)
         {
@@ -250,9 +243,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         private string _reasonPhrase;
-
-        // for tests
-        internal bool _disableAutoChunk;
 
         public string ReasonPhrase
         {
@@ -1101,7 +1091,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _keepAlive = false;
                 }
-                else if (!_disableAutoChunk)
+                else if (!ServerOptions.DisableAutoChunking)
                 {
                     _autoChunk = true;
                 }

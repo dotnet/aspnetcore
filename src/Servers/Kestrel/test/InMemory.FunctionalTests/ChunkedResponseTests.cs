@@ -530,9 +530,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task ChunksCanBeWrittenManually()
         {
-            // Help: What's the way to set HttpProtocol._disableAutoChunk?
-            //AppContext.SetSwitch("Switch.Microsoft.AspNetCore.Server.Kestrel.DisableAutoChunk", true);
-
             var testContext = new TestServiceContext(LoggerFactory);
 
             await using (var server = new TestServer(async httpContext =>
@@ -543,7 +540,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 await response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("6\r\nHello \r\n"), 0, 11));
                 await response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("6\r\nWorld!\r\n"), 0, 11));
                 await response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("0\r\n\r\n"), 0, 5));
-            }, testContext))
+            }, testContext, options => options.DisableAutoChunking = true))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -1192,49 +1189,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task DisableSwitchAutoChunkForChunkedTransferEncodingWorks()
-        {
-            // Help: What's the way to set HttpProtocol._disableAutoChunk?
-            //AppContext.SetSwitch("Switch.Microsoft.AspNetCore.Server.Kestrel.DisableAutoChunk", false);
-
-            await using (var server = new TestServer(async httpContext =>
-            {
-                var response = httpContext.Response;
-
-                response.Headers.Add(HeaderNames.TransferEncoding, "chunked");
-                await response.WriteAsync("hello, world");
-                await response.WriteAsync("hello, world");
-                await response.WriteAsync("hello, world");
-
-            }, new TestServiceContext(LoggerFactory)))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.Send(
-                        "GET / HTTP/1.1",
-                        "Host:",
-                        "",
-                        "");
-                    await connection.Receive(
-                        "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
-                        "Transfer-Encoding: chunked",
-                        "",
-                        "c",
-                        "hello, world",
-                        "c",
-                        "hello, world",
-                        "c",
-                        "hello, world",
-                        "0",
-                        "",
-                        "");
-                }
-            }
-        }
-
-        [Fact]
-        public async Task NoSwitchAutoChunkForChunkedTransferEncodingWorks()
+        public async Task AutoChunkForChunkedTransferEncodingWorks()
         {
             await using (var server = new TestServer(async httpContext =>
             {
