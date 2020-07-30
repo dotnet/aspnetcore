@@ -3,6 +3,7 @@
 
 package com.microsoft.signalr;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -89,7 +90,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
         
         @Override
         public void onMessage(WebSocket webSocket, ByteString bytes) {
-            onReceive.invoke(bytes.utf8());
+        	onReceive.invoke(new String(bytes.toByteArray(), StandardCharsets.ISO_8859_1));
         }
 
         @Override
