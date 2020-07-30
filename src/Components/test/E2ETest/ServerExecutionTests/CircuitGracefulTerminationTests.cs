@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             var task = await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
 
             // Assert
-            Assert.Equals(GracefulDisconnectCompletionSource.Task, task);
+            Assert.Equal(GracefulDisconnectCompletionSource.Task, task);
             Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully"), Messages);
             Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages);
         }
