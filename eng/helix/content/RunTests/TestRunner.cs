@@ -65,6 +65,20 @@ namespace RunTests
                 return false;
             }
         }
+        
+        public void DisplayEnvironment()
+        {
+            Console.WriteLine("KeyValue pairs from Environment.GetEnvironmentVariables():");
+            foreach (DictionaryEntry pair in Environment.GetEnvironmentVariables())
+            {
+                Console.WriteLine(pair.Key + "=" + pair.Value);
+            }
+            Console.WriteLine("KeyValue pairs from TestRunner.EnvironmentVariables");
+            foreach (DictionaryEntry pair in EnvironmentVariables)
+            {
+                Console.WriteLine(pair.Key + "=" + pair.Value);
+            }
+        }
 
         public void DisplayContents(string path = "./")
         {
