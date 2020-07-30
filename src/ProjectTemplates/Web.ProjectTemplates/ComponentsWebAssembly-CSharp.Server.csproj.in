@@ -38,8 +38,9 @@
   <!--#endif -->
   <!--#if (OrganizationalAuth || IndividualB2CAuth) -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="${MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion}" Condition="'$(OrganizationalAuth)' == 'True'" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Version="${MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion}" Condition="'$(IndividualB2CAuth)' == 'True'" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebPackageVersion}" />
+    <PackageReference Include="Microsoft.Identity.Web.UI" Version="${MicrosoftIdentityWebUIPackageVersion}" />
+    <PackageReference Include="Microsoft.Graph" Version="${MicrosoftGraphPackageVersion}" Condition=" '$(GenerateGraph)' == 'True' "/>
   </ItemGroup>
   <!--#endif -->
 
