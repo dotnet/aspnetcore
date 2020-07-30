@@ -154,7 +154,12 @@ class MessagePackHubProtocol implements HubProtocol {
         
     private HubMessage createInvocationMessage(MessageUnpacker unpacker, InvocationBinder binder, int itemCount) throws IOException {
         Map<String, String> headers = readHeaders(unpacker);
-        String invocationId = unpacker.unpackString();
+        
+        // invocationId may be nil
+        String invocationId = null;
+        if (!unpacker.tryUnpackNil()) {
+        	invocationId = unpacker.unpackString();
+        }
         
         // For MsgPack, we represent an empty invocation ID as an empty string,
         // so we need to normalize that to "null", which is what indicates a non-blocking invocation.
