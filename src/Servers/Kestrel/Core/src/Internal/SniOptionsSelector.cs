@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
@@ -42,13 +43,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             foreach (var (name, sniConfig) in endpointConfig.SNI)
             {
-                var sslServerOptions = new SslServerAuthenticationOptions
+                var sslOptions = new SslServerAuthenticationOptions
                 {
                     ServerCertificate = configLoader.LoadCertificate(sniConfig.Certificate, endpointConfig.Name),
                     EnabledSslProtocols = sniConfig.SslProtocols ?? fallbackOptions.SslProtocols,
                 };
 
-                if (sslServerOptions.ServerCertificate is null)
+                if (sslOptions.ServerCertificate is null)
                 {
                     if (fallbackOptions.ServerCertificate is null && fallbackOptions.ServerCertificateSelector is null)
                     {
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     if (fallbackOptions.ServerCertificateSelector is null)
                     {
                         // Cache the fallback ServerCertificate since there's no fallback ServerCertificateSelector taking precedence. 
-                        sslServerOptions.ServerCertificate = fallbackOptions.ServerCertificate;
+                        sslOptions.ServerCertificate = fallbackOptions.ServerCertificate;
                     }
                 }
 
@@ -66,19 +67,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                 if (clientCertificateMode != ClientCertificateMode.NoCertificate)
                 {
-                    sslServerOptions.ClientCertificateRequired = true;
-                    sslServerOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
+                    sslOptions.ClientCertificateRequired = true;
+                    sslOptions.RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) =>
                         HttpsConnectionMiddleware.RemoteCertificateValidationCallback(
                             clientCertificateMode, fallbackOptions.ClientCertificateValidation, certificate, chain, sslPolicyErrors);
                 }
 
                 var httpProtocols = sniConfig.Protocols ?? fallbackHttpProtocols;
                 httpProtocols = HttpsConnectionMiddleware.ValidateAndNormalizeHttpProtocols(httpProtocols, logger);
-                HttpsConnectionMiddleware.ConfigureAlpn(sslServerOptions, httpProtocols);
+                HttpsConnectionMiddleware.ConfigureAlpn(sslOptions, httpProtocols);
 
                 var sniOptions = new SniOptions
                 {
-                    SslOptions = sslServerOptions,
+                    SslOptions = sslOptions,
                     HttpProtocols = httpProtocols,
                 };
 
@@ -97,37 +98,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
-        public SniOptions GetOptions(ConnectionContext connection, string serverName)
+        public SslServerAuthenticationOptions GetOptions(ConnectionContext connection, string serverName)
         {
-            SniOptions options = null;
+            SniOptions sniOptions = null;
 
-            if (!string.IsNullOrEmpty(serverName))
+            if (!string.IsNullOrEmpty(serverName) && !_fullNameOptions.TryGetValue(serverName, out sniOptions))
             {
-                if (_fullNameOptions.TryGetValue(serverName, out options))
-                {
-                    return options;
-                }
-
-                var matchedNameLength = 0;
-                ReadOnlySpan<char> serverNameSpan = serverName;
-
-                foreach (var (nameCandidate, optionsCandidate) in _wildcardPrefixOptions)
-                {
-                    ReadOnlySpan<char> nameCandidateSpan = nameCandidate;
-
-                    // Note that we only slice off the `*`. We want to match the leading `.` also.
-                    if (serverNameSpan.EndsWith(nameCandidateSpan.Slice(wildcardHost.Length), StringComparison.OrdinalIgnoreCase) &&
-                        nameCandidateSpan.Length > matchedNameLength)
-                    {
-                        matchedNameLength = nameCandidateSpan.Length;
-                        options = optionsCandidate;
-                    }
-                }
+                TryGetWildcardPrefixedOptions(serverName, out sniOptions);
             }
 
-            options ??= _wildcardHostOptions;
+            // Fully wildcarded ("*") options can be used even when given an empty server name.
+            sniOptions ??= _wildcardHostOptions;
 
-            if (options is null)
+            if (sniOptions is null)
             {
                 if (serverName is null)
                 {
@@ -139,25 +122,75 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 }
             }
 
-            if (options.SslOptions.ServerCertificate is null)
+            connection.Features.Set(new HttpProtocolsFeature(sniOptions.HttpProtocols));
+
+            var sslOptions = sniOptions.SslOptions;
+
+            if (sslOptions.ServerCertificate is null)
             {
                 Debug.Assert(_fallbackServerCertificateSelector != null,
                     "The cached SniOptions ServerCertificate can only be null if there's a fallback certificate selector.");
 
                 // If a ServerCertificateSelector doesn't return a cert, HttpsConnectionMiddleware doesn't fallback to the ServerCertificate.
-                options = options.Clone();
-                options.SslOptions.ServerCertificate = _fallbackServerCertificateSelector(connection, serverName);
+                sslOptions = CloneSslOptions(sslOptions);
+                sslOptions.ServerCertificate = _fallbackServerCertificateSelector(connection, serverName);
             }
 
             if (_onAuthenticateCallback != null)
             {
-                options = options.Clone();
+                sslOptions = CloneSslOptions(sslOptions);
 
                 // From doc comments: "This is called after all of the other settings have already been applied."
-                _onAuthenticateCallback(connection, options.SslOptions);
-            }    
+                _onAuthenticateCallback(connection, sslOptions);
+            }
 
-            return options;
+            return sslOptions;
+        }
+
+        private bool TryGetWildcardPrefixedOptions(string serverName, out SniOptions sniOptions)
+        {
+            sniOptions = null;
+
+            var matchedNameLength = 0;
+            ReadOnlySpan<char> serverNameSpan = serverName;
+
+            foreach (var (nameCandidate, optionsCandidate) in _wildcardPrefixOptions)
+            {
+                ReadOnlySpan<char> nameCandidateSpan = nameCandidate;
+
+                // Note that we only slice off the `*`. We want to match the leading `.` also.
+                if (serverNameSpan.EndsWith(nameCandidateSpan.Slice(wildcardHost.Length), StringComparison.OrdinalIgnoreCase) &&
+                    nameCandidateSpan.Length > matchedNameLength)
+                {
+                    matchedNameLength = nameCandidateSpan.Length;
+                    sniOptions = optionsCandidate;
+                }
+            }
+
+            return sniOptions != null;
+        }
+
+        // TODO: Reflection based test to ensure we clone everything!
+        internal static SslServerAuthenticationOptions CloneSslOptions(SslServerAuthenticationOptions sslOptions) =>
+            new SslServerAuthenticationOptions
+            {
+                AllowRenegotiation = sslOptions.AllowRenegotiation,
+                ApplicationProtocols = sslOptions.ApplicationProtocols?.ToList(),
+                CertificateRevocationCheckMode = sslOptions.CertificateRevocationCheckMode,
+                CipherSuitesPolicy = sslOptions.CipherSuitesPolicy,
+                ClientCertificateRequired = sslOptions.ClientCertificateRequired,
+                EnabledSslProtocols = sslOptions.EnabledSslProtocols,
+                EncryptionPolicy = sslOptions.EncryptionPolicy,
+                RemoteCertificateValidationCallback = sslOptions.RemoteCertificateValidationCallback,
+                ServerCertificate = sslOptions.ServerCertificate,
+                ServerCertificateContext = sslOptions.ServerCertificateContext,
+                ServerCertificateSelectionCallback = sslOptions.ServerCertificateSelectionCallback,
+            };
+
+        private class SniOptions
+        {
+            public SslServerAuthenticationOptions SslOptions { get; set; }
+            public HttpProtocols HttpProtocols { get; set; }
         }
     }
 }

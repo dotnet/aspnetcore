@@ -24,7 +24,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 {
-
     internal delegate ValueTask<SslServerAuthenticationOptions> HttpsOptionsCallback(ConnectionContext connection, SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken);
 
     internal class HttpsConnectionMiddleware

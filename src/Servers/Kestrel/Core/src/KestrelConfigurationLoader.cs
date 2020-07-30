@@ -359,7 +359,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                         var logger = Options.ApplicationServices.GetRequiredService<ILogger<KestrelConfigurationLoader>>();
                         var sniOptionsSelector = new SniOptionsSelector(this, endpoint, httpsOptions, listenOptions.Protocols, logger);
 
-                        listenOptions.UseHttps(ServerOptionsSelectionCallback, sniOptionsSelector, httpsOptions.HandshakeTimeout);
+                        listenOptions.UseHttps(SniCallback, sniOptionsSelector, httpsOptions.HandshakeTimeout);
                     }
                 }
 
@@ -372,11 +372,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             return (endpointsToStop, endpointsToStart);
         }
 
-        private static ValueTask<SslServerAuthenticationOptions> ServerOptionsSelectionCallback(ConnectionContext connection, SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken)
+        private static ValueTask<SslServerAuthenticationOptions> SniCallback(ConnectionContext connection, SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken)
         {
             var sniOptionsSelector = (SniOptionsSelector)state;
             var options = sniOptionsSelector.GetOptions(connection, clientHelloInfo.ServerName);
-            return new ValueTask<SslServerAuthenticationOptions>(options.SslOptions);
+            return new ValueTask<SslServerAuthenticationOptions>(options);
         }
 
         private void LoadDefaultCert(ConfigurationReader configReader)
