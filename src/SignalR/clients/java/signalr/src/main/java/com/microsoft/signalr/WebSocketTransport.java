@@ -3,12 +3,14 @@
 
 package com.microsoft.signalr;
 
+import java.nio.ByteBuffer;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.reactivex.Completable;
+import okio.ByteString;
 
 class WebSocketTransport implements Transport {
     private WebSocketWrapper webSocketClient;
@@ -59,7 +61,7 @@ class WebSocketTransport implements Transport {
     }
 
     @Override
-    public Completable send(String message) {
+    public Completable send(ByteBuffer message) {
         return webSocketClient.send(message);
     }
 

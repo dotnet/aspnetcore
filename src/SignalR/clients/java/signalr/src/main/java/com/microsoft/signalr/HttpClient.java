@@ -3,6 +3,7 @@
 
 package com.microsoft.signalr;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -95,7 +96,7 @@ abstract class HttpClient implements AutoCloseable {
         return this.send(request);
     }
 
-    public Single<HttpResponse> post(String url, String body, HttpRequest options) {
+    public Single<HttpResponse> post(String url, ByteBuffer body, HttpRequest options) {
         options.setUrl(url);
         options.setMethod("POST");
         return this.send(options, body);
@@ -122,7 +123,7 @@ abstract class HttpClient implements AutoCloseable {
 
     public abstract Single<HttpResponse> send(HttpRequest request);
 
-    public abstract Single<HttpResponse> send(HttpRequest request, String body);
+    public abstract Single<HttpResponse> send(HttpRequest request, ByteBuffer body);
 
     public abstract WebSocketWrapper createWebSocket(String url, Map<String, String> headers);
 

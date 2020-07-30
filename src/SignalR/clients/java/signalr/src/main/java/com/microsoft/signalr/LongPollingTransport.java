@@ -3,6 +3,7 @@
 
 package com.microsoft.signalr;
 
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -121,7 +122,7 @@ class LongPollingTransport implements Transport {
     }
 
     @Override
-    public Completable send(String message) {
+    public Completable send(ByteBuffer message) {
         if (!this.active) {
             return Completable.error(new Exception("Cannot send unless the transport is active."));
         }
