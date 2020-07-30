@@ -46,6 +46,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void CanRenderTextOnlyComponent()
         {
             var appElement = Browser.MountTestComponent<TextOnlyComponent>();
+
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(10)).Until(
+                driver => driver.FindElement(By.XPath("//*[contains(., 'Hello from TextOnlyComponent')]") != null));
+
             Assert.Equal("Hello from TextOnlyComponent", appElement.Text);
         }
 
