@@ -4,6 +4,8 @@
 package com.microsoft.signalr;
 
 import java.io.StringReader;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -192,7 +194,7 @@ public class HubConnection implements AutoCloseable {
                 }
             }
 
-            List<HubMessage> messages = protocol.parseMessages(payload, connectionState);
+            List<HubMessage> messages = protocol.parseMessages(ByteBuffer.wrap(payload.getBytes(StandardCharsets.UTF_8)), connectionState);
 
             for (HubMessage message : messages) {
                 logger.debug("Received message of type {}.", message.getMessageType());
@@ -377,7 +379,7 @@ public class HubConnection implements AutoCloseable {
 
                 connectionState = new ConnectionState(this);
 
-                return transport.send(handshake).andThen(Completable.defer(() -> {
+                return transport.send(ByteBuffer.wrap(handshake.getBytes(StandardCharsets.UTF_8))).andThen(Completable.defer(() -> {
                     timeoutHandshakeResponse(handshakeResponseTimeout, TimeUnit.MILLISECONDS);
                     return handshakeResponseSubject.andThen(Completable.defer(() -> {
                         hubConnectionStateLock.lock();
@@ -767,7 +769,7 @@ public class HubConnection implements AutoCloseable {
     }
 
     private void sendHubMessage(HubMessage message) {
-        String serializedMessage = protocol.writeMessage(message);
+        ByteBuffer serializedMessage = protocol.writeMessage(message);
         if (message.getMessageType() == HubMessageType.INVOCATION ) {
             logger.debug("Sending {} message '{}'.", message.getMessageType().name(), ((InvocationMessage)message).getInvocationId());
         } else  if (message.getMessageType() == HubMessageType.STREAM_INVOCATION) {

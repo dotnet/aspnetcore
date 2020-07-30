@@ -3,11 +3,13 @@
 
 package com.microsoft.signalr;
 
+import java.nio.ByteBuffer;
+
 import io.reactivex.Completable;
 
 interface Transport {
     Completable start(String url);
-    Completable send(String message);
+    Completable send(ByteBuffer message);
     void setOnReceive(OnReceiveCallBack callback);
     void onReceive(String message);
     void setOnClose(TransportOnClosedCallback onCloseCallback);

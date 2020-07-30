@@ -3,6 +3,7 @@
 
 package com.microsoft.signalr;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
@@ -62,8 +63,9 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
     }
 
     @Override
-    public Completable send(String message) {
-        websocketClient.send(message);
+    public Completable send(ByteBuffer message) {
+    	ByteString bs = ByteString.of(message);
+        websocketClient.send(bs);
         return Completable.complete();
     }
 
