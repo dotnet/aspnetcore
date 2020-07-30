@@ -5,6 +5,7 @@ package com.microsoft.signalr;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,11 +52,17 @@ class MessagePackHubProtocol implements HubProtocol {
         List<HubMessage> hubMessages = new ArrayList<>();
         
         try {
-            MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(payload.getBytes(StandardCharsets.ISO_8859_1));
-            while (unpacker.hasNext()) {
-            // Currently this length isn't used - would it be better to spin up a new unpacker on the next n bytes each time?
-            // Where n is length
-            int length = Utils.readLengthHeader(unpacker);
+            byte[] payloadBytes = payload.getBytes(StandardCharsets.ISO_8859_1);
+            ByteBuffer bb = ByteBuffer.wrap(payloadBytes);
+            while (bb.hasRemaining()) {
+                int length = Utils.readLengthHeader(bb);
+                // Throw if remaining buffer is shorter than length header
+                if (bb.remaining() < length) {
+                    throw new RuntimeException(String.format("MessagePack message was length %d but claimed to be length %d.", payloadBytes.length, length));
+                }
+                // Instantiate MessageUnpacker w/ the next length bytes of payload, starting at bb's position
+                MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(payloadBytes, bb.position(), length);
+                
                 int itemCount = unpacker.unpackArrayHeader();
                 HubMessageType messageType = HubMessageType.values()[unpacker.unpackInt() - 1];
                 
@@ -84,6 +91,8 @@ class MessagePackHubProtocol implements HubProtocol {
                     default:
                         break;
                 }
+                // Incrememnt buffer's position by the number of bytes we just read
+                bb = bb.position(bb.position() + length);
             }
         } catch (MessagePackException | IOException ex) {
             throw new RuntimeException("Error reading MessagePack data.", ex);

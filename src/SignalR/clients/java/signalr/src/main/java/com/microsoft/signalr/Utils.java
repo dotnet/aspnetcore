@@ -5,6 +5,7 @@ package com.microsoft.signalr;
 
 import java.awt.List;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -30,7 +31,7 @@ class Utils {
         return value;
     }
     
-    public static int readLengthHeader(MessageUnpacker unpacker) throws IOException {
+    public static int readLengthHeader(ByteBuffer bb) throws IOException {
         // The payload starts with a length prefix encoded as a VarInt. VarInts use the most significant bit
         // as a marker whether the byte is the last byte of the VarInt or if it spans to the next byte. Bytes
         // appear in the reverse order - i.e. the first byte contains the least significant bits of the value
@@ -43,7 +44,6 @@ class Utils {
         // We support payloads up to 2GB so the biggest number we support is 7fffffff which when encoded as
         // VarInt is 0xFF 0xFF 0xFF 0xFF 0x07 - hence the maximum length prefix is 5 bytes.
         
-        // We know the unpacker isn't empty
         int length = 0;
         int numBytes = 0;
         int maxLength = 5;
@@ -51,8 +51,8 @@ class Utils {
         
         do {
             // If we run out of bytes before we finish reading the length header, the message is malformed
-            if (unpacker.hasNext()) {
-                curr = unpacker.unpackByte();
+            if (bb.hasRemaining()) {
+                curr = bb.get();
             } else {
                 throw new RuntimeException("The length header was incomplete");
             }
