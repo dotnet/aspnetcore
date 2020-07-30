@@ -22,7 +22,6 @@
       Include="..\tools\Microsoft.NET.Sdk.BlazorWebAssembly.Tools.csproj"
       Targets="Publish"
       ReferenceOutputAssembly="false"
-      IsImplicityDefined="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
   </ItemGroup>

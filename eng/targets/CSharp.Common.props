@@ -18,9 +18,8 @@
       several versions older than latest. We reference the project to ensure it's built before the other projects that use it. Since this
       is a project reference, we must explicitly import the props file and also specify the output location of the SDK directory.
     -->
-    <ProjectReference Include="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\Microsoft.NET.Sdk.Razor.csproj"
+    <Reference Include="Microsoft.NET.Sdk.Razor"
       PrivateAssets="All"
-      IsImplicitlyDefined="true"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework;TargetFrameworks" />
