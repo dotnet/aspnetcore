@@ -17,6 +17,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
+import okio.ByteString;
 
 class OkHttpWebSocketWrapper extends WebSocketWrapper {
     private WebSocket websocketClient;
@@ -84,6 +85,11 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
         @Override
         public void onMessage(WebSocket webSocket, String message) {
             onReceive.invoke(message);
+        }
+        
+        @Override
+        public void onMessage(WebSocket webSocket, ByteString bytes) {
+            onReceive.invoke(bytes.utf8());
         }
 
         @Override
