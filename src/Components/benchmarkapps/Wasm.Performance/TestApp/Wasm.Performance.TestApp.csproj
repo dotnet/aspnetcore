@@ -5,6 +5,7 @@
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
     <UseBlazorWebAssembly>true</UseBlazorWebAssembly>
     <IsTestAssetProject>true</IsTestAssetProject>
+    <BlazorCacheBootResources>false</BlazorCacheBootResources>
   </PropertyGroup>
 
   <ItemGroup>
