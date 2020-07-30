@@ -83,11 +83,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Arrange & Act
             Browser.Navigate().GoToUrl("about:blank");
-            await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
+            var task = await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
 
             // Assert
+            Assert.Equals(GracefulDisconnectCompletionSource.Task, task);
             Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully"), Messages);
             Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages);
+
         }
 
         private void Log(WriteContext wc)
