@@ -21,13 +21,14 @@ class Utils {
     }
     
     public static Object toPrimitive(Class<?> c, Object value) {
-        if( Boolean.class == c) return ((Boolean) value).booleanValue();
-        if( Byte.class == c) return ((Byte) value).byteValue();
-        if( Short.class == c) return ((Short) value).shortValue();
-        if( Integer.class == c) return ((Integer) value).intValue();
-        if( Long.class == c) return ((Long) value).longValue();
-        if( Float.class == c) return ((Float) value).floatValue();
-        if( Double.class == c) return ((Double) value).doubleValue();
+        if (Boolean.class == c) return ((Boolean) value).booleanValue();
+        if (Byte.class == c) return ((Byte) value).byteValue();
+        if (Short.class == c) return ((Short) value).shortValue();
+        if (Integer.class == c) return ((Integer) value).intValue();
+        if (Long.class == c) return ((Long) value).longValue();
+        if (Float.class == c) return ((Float) value).floatValue();
+        if (Double.class == c) return ((Double) value).doubleValue();
+        if (Character.class == c) return ((Character) value).charValue();
         return value;
     }
     
