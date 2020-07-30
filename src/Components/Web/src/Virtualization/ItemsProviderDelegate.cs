@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Components.Virtualization
+namespace Microsoft.AspNetCore.Components.Web
 {
     /// <summary>
     /// A function that provides items to a virtualized source.
@@ -11,5 +11,5 @@ namespace Microsoft.AspNetCore.Components.Virtualization
     /// <typeparam name="TItem">The type of the context for each item in the list.</typeparam>
     /// <param name="request">The <see cref="ItemsProviderRequest"/> defining the request details.</param>
     /// <returns>A <see cref="Task"/> whose result is a <see cref="ItemsProviderResult{TItem}"/> upon successful completion.</returns>
-    public delegate Task<ItemsProviderResult<TItem>> ItemsProviderDelegate<TItem>(ItemsProviderRequest request);
+    public delegate ValueTask<ItemsProviderResult<TItem>> ItemsProviderDelegate<TItem>(ItemsProviderRequest request);
 }

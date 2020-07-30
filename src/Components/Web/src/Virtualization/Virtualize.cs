@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Virtualization
+namespace Microsoft.AspNetCore.Components.Web
 {
     /// <summary>
     /// Provides functionality for rendering a virtualized list of items.
@@ -17,8 +17,6 @@ namespace Microsoft.AspNetCore.Components.Virtualization
     /// <typeparam name="TItem">The <c>context</c> type for the items being rendered.</typeparam>
     public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, IAsyncDisposable
     {
-        private readonly List<TItem> _loadedItems = new List<TItem>();
-
         private VirtualizeJsInterop? _jsInterop;
 
         private ElementReference _spacerBefore;
@@ -29,13 +27,17 @@ namespace Microsoft.AspNetCore.Components.Virtualization
 
         private int _visibleItemCapacity;
 
-        private int _itemsVisible;
-
         private int _itemCount;
 
-        private Task _fetchTask = Task.CompletedTask;
+        private int _loadedItemsStartIndex;
 
-        private CancellationTokenSource? _fetchCts;
+        private IEnumerable<TItem>? _loadedItems;
+
+        private Task _refreshTask = Task.CompletedTask;
+
+        private CancellationTokenSource? _refreshCts;
+
+        private Exception? _refreshException;
 
         private ItemsProviderDelegate<TItem> _itemsProvider = default!;
 
@@ -123,26 +125,15 @@ namespace Microsoft.AspNetCore.Components.Virtualization
                 _jsInterop = new VirtualizeJsInterop(this, JSRuntime);
                 await _jsInterop.InitAsync(_spacerBefore, _spacerAfter);
             }
-
-            if (_fetchTask != null && !_fetchTask.IsCompletedSuccessfully)
-            {
-                try
-                {
-                    await _fetchTask;
-
-                    StateHasChanged();
-                }
-                catch (OperationCanceledException)
-                {
-                    // No-op.
-                }
-            }
         }
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            var itemsAfter = Math.Max(0, _itemCount - _itemsVisible - _itemsBefore);
+            if (_refreshException != null)
+            {
+                throw _refreshException;
+            }
 
             builder.OpenElement(0, "div");
             builder.AddAttribute(1, "style", GetSpacerStyle(_itemsBefore));
@@ -151,22 +142,39 @@ namespace Microsoft.AspNetCore.Components.Virtualization
 
             builder.OpenRegion(3);
 
-            var itemsRendered = 0;
+            var lastItemIndex = _itemsBefore + _visibleItemCapacity;
+            var renderIndex = _itemsBefore;
+            var placeholdersBeforeCount = Math.Min(_loadedItemsStartIndex, lastItemIndex);
 
-            // Render as many items as will visibly fit.
-            foreach (var item in _loadedItems.Skip(_itemsBefore).Take(_itemsVisible))
+            // Render before spacers.
+            for (; renderIndex < placeholdersBeforeCount; renderIndex++)
             {
-                builder.AddContent(0, _itemTemplate, item);
-                itemsRendered++;
+                builder.AddContent(0, _placeholder, renderIndex);
             }
 
-            // Render placholder items to fill the remaining space.
-            for (; itemsRendered < _itemsVisible; itemsRendered++)
+            // Render loaded items.
+            if (_loadedItems != null)
             {
-                builder.AddContent(0, _placeholder, _itemsBefore + itemsRendered);
+                var itemsToShow = _loadedItems
+                    .Skip(_itemsBefore - _loadedItemsStartIndex)
+                    .Take(lastItemIndex - _loadedItemsStartIndex);
+
+                foreach (var item in itemsToShow)
+                {
+                    builder.AddContent(0, _itemTemplate, item);
+                    renderIndex++;
+                }
+            }
+
+            // Render after spacers.
+            for (; renderIndex < lastItemIndex; renderIndex++)
+            {
+                builder.AddContent(0, _placeholder, renderIndex);
             }
 
             builder.CloseRegion();
+
+            var itemsAfter = Math.Max(0, _itemCount - _visibleItemCapacity - _itemsBefore);
 
             builder.OpenElement(4, "div");
             builder.AddAttribute(5, "style", GetSpacerStyle(itemsAfter));
@@ -180,72 +188,97 @@ namespace Microsoft.AspNetCore.Components.Virtualization
 
         void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float containerSize)
         {
-            _itemsBefore = CalcualteItemDistribution(spacerSize, containerSize);
+            CalcualteItemDistribution(spacerSize, containerSize, out var itemsBefore, out var visibleItemCapacity);
 
-            StateHasChanged();
+            UpdateItemDistribution(itemsBefore, visibleItemCapacity);
         }
 
-        void IVirtualizeJsCallbacks.OnBottomSpacerVisible(float spacerSize, float containerSize)
+        void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float containerSize)
         {
-            var itemsAfter = CalcualteItemDistribution(spacerSize, containerSize);
+            CalcualteItemDistribution(spacerSize, containerSize, out var itemsAfter, out var visibleItemCapacity);
 
-            _itemsBefore = Math.Max(0, _itemCount - itemsAfter - _itemsVisible);
+            var itemsBefore = Math.Max(0, _itemCount - itemsAfter - visibleItemCapacity);
 
-            if (_itemsBefore + _visibleItemCapacity > _loadedItems.Count)
+            UpdateItemDistribution(itemsBefore, visibleItemCapacity);
+        }
+
+        private void CalcualteItemDistribution(float spacerSize, float containerSize, out int itemsInSpacer, out int visibleItemCapacity)
+        {
+            itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / ItemSize) - 1);
+            visibleItemCapacity = (int)Math.Ceiling(containerSize / ItemSize) + 2;
+        }
+
+        private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity)
+        {
+            if (itemsBefore != _itemsBefore || visibleItemCapacity != _visibleItemCapacity)
             {
-                _fetchTask = FetchItems();
+                _itemsBefore = itemsBefore;
+                _visibleItemCapacity = visibleItemCapacity;
+                _refreshTask = RefreshDataAsync();
+
+                if (!_refreshTask.IsCompleted)
+                {
+                    StateHasChanged();
+                }
+            }
+        }
+
+        private async Task RefreshDataAsync()
+        {
+            _refreshCts?.Cancel();
+
+            try
+            {
+                // Wait for the previous refresh to complete so it doesn't overwrite the current refresh.
+                await _refreshTask;
+            }
+            catch (OperationCanceledException)
+            {
+                // No-op. If a different type of exception is thrown, we want to terminate this task.
             }
 
-            StateHasChanged();
-        }
-
-        private int CalcualteItemDistribution(float spacerSize, float containerSize)
-        {
-            _visibleItemCapacity = (int)Math.Ceiling(containerSize / ItemSize) + 2;
-            _itemsVisible = Math.Clamp(_itemCount, 0, _visibleItemCapacity);
-
-            return Math.Max(0, (int)Math.Floor(spacerSize / ItemSize) - 1);
-        }
-
-        private async Task FetchItems()
-        {
-            // Cancel the previous fetch, if it exists.
-            _fetchCts?.Cancel();
-
-            // Wait for the task to complete. If it fails due to an exception, the exception will bubble-up
-            // through `OnAfterRenderAsync`.
-            if (!_fetchTask.IsCanceled)
+            try
             {
-                await _fetchTask;
+                _refreshCts = new CancellationTokenSource();
+
+                var request = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, _refreshCts.Token);
+                var result = await _itemsProvider(request);
+
+                _itemCount = result.TotalItemCount;
+                _loadedItems = result.Items;
+                _loadedItemsStartIndex = request.StartIndex;
+
+                StateHasChanged();
             }
-
-            var placeholderItems = _itemsBefore + _visibleItemCapacity - _loadedItems.Count;
-
-            // There's a chance that no more items need to be fetched after the previous task completes.
-            if (placeholderItems <= 0)
+            catch (OperationCanceledException)
             {
-                return;
+                // Bubble-up the cancellation.
+                throw;
             }
+            catch (Exception e)
+            {
+                // Cache this exception so the renderer can throw it.
+                _refreshException = e;
 
-            _fetchCts = new CancellationTokenSource();
+                // Re-render the component to throw the exception.
+                StateHasChanged();
 
-            var result = await _itemsProvider(new ItemsProviderRequest(_loadedItems.Count, placeholderItems, _fetchCts.Token));
-
-            _itemCount = result.TotalItemCount;
-            _loadedItems.AddRange(result.Items);
+                // Bubble-up the exception so tasks waiting on this one get terminated.
+                throw e;
+            }
         }
 
-        private Task<ItemsProviderResult<TItem>> DefaultItemsProvider(ItemsProviderRequest request)
+        private ValueTask<ItemsProviderResult<TItem>> DefaultItemsProvider(ItemsProviderRequest request)
         {
-            return Task.FromResult(new ItemsProviderResult<TItem>(
-                Items.Skip(request.StartIndex).Take(request.Count).ToList(),
+            return ValueTask.FromResult(new ItemsProviderResult<TItem>(
+                Items.Skip(request.StartIndex).Take(request.Count),
                 Items.Count));
         }
 
         private RenderFragment DefaultPlaceholder(int index) => (builder) =>
         {
             builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "style", $"height: {ItemSize}px !important;");
+            builder.AddAttribute(1, "style", $"height: {ItemSize}px;");
             builder.SetKey(GetHashCode() ^ index);
             builder.CloseElement();
         };
@@ -253,7 +286,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         /// <inheritdoc />
         public async ValueTask DisposeAsync()
         {
-            _fetchCts?.Cancel();
+            _refreshCts?.Cancel();
 
             if (_jsInterop != null)
             {

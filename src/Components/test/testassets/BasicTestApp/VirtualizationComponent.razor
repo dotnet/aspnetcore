@@ -1,6 +1,4 @@
-﻿@using Microsoft.AspNetCore.Components.Virtualization
-
-<p>
+﻿<p>
     Item size:<br />
     <input type="number" @bind-value="itemSize" />
 </p>
@@ -18,41 +16,23 @@
 </p>
 
 <p>
-    Infinite scrolling (large batch size):<br />
-    <div style="background-color: #eee; height: 500px; overflow-y: auto">
-        <InfiniteScroll ItemsProvider="GetItemsAsync" ItemSize="itemSize" RequestedItemCount="50">
-            <Item>
-                <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
-            </Item>
-            <Footer>
-                <div style="height: @(itemSize)px; background-color: orange;">
-                    Loading...
-                </div>
-            </Footer>
-        </InfiniteScroll>
-    </div>
-</p>
-
-<p>
-    Infinite scrolling (small batch size):<br />
-    <div style="background-color: #eee; height: 500px; overflow-y: auto">
-        <InfiniteScroll ItemsProvider="GetItemsAsync" ItemSize="itemSize" RequestedItemCount="1">
-            <Item>
-                <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
-            </Item>
-            <Footer>
-                <div style="height: @(itemSize)px; background-color: orange;">
-                    Loading...
-                </div>
-            </Footer>
-        </InfiniteScroll>
-    </div>
-</p>
-
-<p>
     Deferred:<br />
     <div style="background-color: #eee; height: 500px; overflow-y: auto">
-        <Virtualize ItemsProvider="GetLimitedItemsAsync" ItemSize="itemSize">
+        <Virtualize ItemsProvider="GetItemsAsync" ItemSize="itemSize">
+            <Item>
+                <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+            </Item>
+            <Placeholder>
+                <div @key="@($"placeholder-{context}")" style="height: @(itemSize)px; background-color: orange;">Loading item @context...</div>
+            </Placeholder>
+        </Virtualize>
+    </div>
+</p>
+
+<p>
+    Deferred (cached):<br />
+    <div style="background-color: #eee; height: 500px; overflow-y: auto">
+        <Virtualize ItemsProvider="GetItemsAsyncCached" ItemSize="itemSize">
             <Item>
                 <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
             </Item>
@@ -74,26 +54,31 @@
     float itemSize = 100;
     ICollection<int> fixedItems = Enumerable.Range(0, 1000).ToList();
 
+    HashSet<int> cachedItems = new HashSet<int>();
+
     int itemCountLimit = 200;
 
-    async Task<ItemsProviderResult<int>> GetItemsAsync(ItemsProviderRequest request)
-    {
-        await Task.Delay(request.Count * 10, request.CancellationToken);
-
-        if (request.StartIndex >= 300)
-        {
-            throw new InvalidOperationException("Request timed out.");
-        }
-
-        return new ItemsProviderResult<int>(
-            Enumerable.Range(request.StartIndex, request.Count).ToList(),
-            request.StartIndex + request.Count);
-    }
-
-    async Task<ItemsProviderResult<int>> GetLimitedItemsAsync(ItemsProviderRequest request)
+    async ValueTask<ItemsProviderResult<int>> GetItemsAsync(ItemsProviderRequest request)
     {
         await Task.Delay(500, request.CancellationToken);
 
-        return new ItemsProviderResult<int>(Enumerable.Range(request.StartIndex, request.Count).ToList(), itemCountLimit);
+        return new ItemsProviderResult<int>(Enumerable.Range(request.StartIndex, request.Count), itemCountLimit);
+    }
+
+    async ValueTask<ItemsProviderResult<int>> GetItemsAsyncCached(ItemsProviderRequest request)
+    {
+        var items = Enumerable.Range(request.StartIndex, request.Count);
+
+        foreach (var item in items)
+        {
+            if (!cachedItems.Contains(item))
+            {
+                await Task.Delay(50, request.CancellationToken);
+
+                cachedItems.Add(item);
+            }
+        }
+
+        return new ItemsProviderResult<int>(items, itemCountLimit);
     }
 }

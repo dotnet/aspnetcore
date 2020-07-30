@@ -3,7 +3,7 @@
 
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Components.Virtualization
+namespace Microsoft.AspNetCore.Components.Web
 {
     /// <summary>
     /// Represents a request to an <see cref="ItemsProviderDelegate{TItem}"/>.

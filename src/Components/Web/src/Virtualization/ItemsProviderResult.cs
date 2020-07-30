@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Components.Virtualization
+namespace Microsoft.AspNetCore.Components.Web
 {
     /// <summary>
     /// Represents the result of a <see cref="ItemsProviderDelegate{TItem}"/>.
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         /// <summary>
         /// The items to provide.
         /// </summary>
-        public IReadOnlyCollection<TItem> Items { get; }
+        public IEnumerable<TItem> Items { get; }
 
         /// <summary>
         /// The total item count in the source generating the items provided.
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         /// </summary>
         /// <param name="items">The items to provide.</param>
         /// <param name="totalItemCount">The total item count in the source generating the items provided.</param>
-        public ItemsProviderResult(IReadOnlyCollection<TItem> items, int totalItemCount)
+        public ItemsProviderResult(IEnumerable<TItem> items, int totalItemCount)
         {
             Items = items;
             TotalItemCount = totalItemCount;

@@ -5,7 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Virtualization
+namespace Microsoft.AspNetCore.Components.Web
 {
     internal class VirtualizeJsInterop : IAsyncDisposable
     {
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         [JSInvokable]
         public void OnSpacerAfterVisible(float spacerSize, float containerSize)
         {
-            _owner.OnBottomSpacerVisible(spacerSize, containerSize);
+            _owner.OnAfterSpacerVisible(spacerSize, containerSize);
         }
 
         public async ValueTask DisposeAsync()
