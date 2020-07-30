@@ -3,8 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Security;
 using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.Logging;
@@ -17,9 +20,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private const string wildcardPrefix = "*.";
 
         private readonly string _endpointName;
-        private readonly Dictionary<string, SslServerAuthenticationOptions> _fullNameOptions = new Dictionary<string, SslServerAuthenticationOptions>(StringComparer.OrdinalIgnoreCase);
-        private readonly List<(string, SslServerAuthenticationOptions)> _wildcardPrefixOptions = new List<(string, SslServerAuthenticationOptions)>();
-        private readonly SslServerAuthenticationOptions _wildcardHostOptions = null;
+
+        private readonly Func<ConnectionContext, string, X509Certificate2> _fallbackServerCertificateSelector;
+        private readonly Action<ConnectionContext, SslServerAuthenticationOptions> _onAuthenticateCallback;
+
+        private readonly Dictionary<string, SniOptions> _fullNameOptions = new Dictionary<string, SniOptions>(StringComparer.OrdinalIgnoreCase);
+        private readonly List<(string, SniOptions)> _wildcardPrefixOptions = new List<(string, SniOptions)>();
+        private readonly SniOptions _wildcardHostOptions = null;
 
         public SniOptionsSelector(
             KestrelConfigurationLoader configLoader,
@@ -30,24 +37,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             _endpointName = endpointConfig.Name;
 
+            _fallbackServerCertificateSelector = fallbackOptions.ServerCertificateSelector;
+            _onAuthenticateCallback = fallbackOptions.OnAuthenticate;
+
             foreach (var (name, sniConfig) in endpointConfig.SNI)
             {
-                var sslServerOptions = new SslServerAuthenticationOptions();
-
-                sslServerOptions.ServerCertificate = configLoader.LoadCertificate(sniConfig.Certificate, endpointConfig.Name);
-
-                if (sslServerOptions.ServerCertificate is null &&
-                    fallbackOptions.ServerCertificate is null &&
-                    fallbackOptions.ServerCertificateSelector is null)
+                var sslServerOptions = new SslServerAuthenticationOptions
                 {
-                    throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
+                    ServerCertificate = configLoader.LoadCertificate(sniConfig.Certificate, endpointConfig.Name),
+                    EnabledSslProtocols = sniConfig.SslProtocols ?? fallbackOptions.SslProtocols,
+                };
+
+                if (sslServerOptions.ServerCertificate is null)
+                {
+                    if (fallbackOptions.ServerCertificate is null && fallbackOptions.ServerCertificateSelector is null)
+                    {
+                        throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
+                    }
+
+                    if (fallbackOptions.ServerCertificateSelector is null)
+                    {
+                        // Cache the fallback ServerCertificate since there's no fallback ServerCertificateSelector taking precedence. 
+                        sslServerOptions.ServerCertificate = fallbackOptions.ServerCertificate;
+                    }
                 }
-
-                sslServerOptions.EnabledSslProtocols = sniConfig.SslProtocols ?? fallbackOptions.SslProtocols;
-
-                var httpProtocols = sniConfig.Protocols ?? fallbackHttpProtocols;
-                httpProtocols = HttpsConnectionMiddleware.ValidateAndNormalizeHttpProtocols(httpProtocols, logger);
-                HttpsConnectionMiddleware.ConfigureAlpn(sslServerOptions, httpProtocols);
 
                 var clientCertificateMode = sniConfig.ClientCertificateMode ?? fallbackOptions.ClientCertificateMode;
 
@@ -59,24 +72,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                             clientCertificateMode, fallbackOptions.ClientCertificateValidation, certificate, chain, sslPolicyErrors);
                 }
 
+                var httpProtocols = sniConfig.Protocols ?? fallbackHttpProtocols;
+                httpProtocols = HttpsConnectionMiddleware.ValidateAndNormalizeHttpProtocols(httpProtocols, logger);
+                HttpsConnectionMiddleware.ConfigureAlpn(sslServerOptions, httpProtocols);
+
+                var sniOptions = new SniOptions
+                {
+                    SslOptions = sslServerOptions,
+                    HttpProtocols = httpProtocols,
+                };
+
                 if (name.Equals(wildcardHost, StringComparison.Ordinal))
                 {
-                    _wildcardHostOptions = sslServerOptions;
+                    _wildcardHostOptions = sniOptions;
                 }
                 else if (name.StartsWith(wildcardPrefix, StringComparison.Ordinal))
                 {
-                    _wildcardPrefixOptions.Add((name, sslServerOptions));
+                    _wildcardPrefixOptions.Add((name, sniOptions));
                 }
                 else
                 {
-                    _fullNameOptions[name] = sslServerOptions;
+                    _fullNameOptions[name] = sniOptions;
                 }
             }
         }
 
-        public SslServerAuthenticationOptions GetOptions(string serverName)
+        public SniOptions GetOptions(ConnectionContext connection, string serverName)
         {
-            SslServerAuthenticationOptions options = null;
+            SniOptions options = null;
 
             if (!string.IsNullOrEmpty(serverName))
             {
@@ -115,6 +138,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     throw new AuthenticationException(CoreStrings.FormatSniNotConfiguredForServerName(serverName, _endpointName));
                 }
             }
+
+            if (options.SslOptions.ServerCertificate is null)
+            {
+                Debug.Assert(_fallbackServerCertificateSelector != null,
+                    "The cached SniOptions ServerCertificate can only be null if there's a fallback certificate selector.");
+
+                // If a ServerCertificateSelector passed into HttpsConnectionMiddleware via HttpsConnectionAdapterOptions doesn't return a cert,
+                // HttpsConnectionMiddleware doesn't fallback to the ServerCertificate, so we don't do that here either.
+                options = options.Clone();
+                options.SslOptions.ServerCertificate = _fallbackServerCertificateSelector(connection, serverName);
+            }
+
+            if (_onAuthenticateCallback != null)
+            {
+                options = options.Clone();
+
+                // From doc comments: "This is called after all of the other settings have already been applied."
+                _onAuthenticateCallback(connection, options.SslOptions);
+            }    
 
             return options;
         }

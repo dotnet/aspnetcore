@@ -14,6 +14,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Certificates.Generation;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -371,11 +372,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             return (endpointsToStop, endpointsToStart);
         }
 
-        private static ValueTask<SslServerAuthenticationOptions> ServerOptionsSelectionCallback(SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken)
+        private static ValueTask<SslServerAuthenticationOptions> ServerOptionsSelectionCallback(ConnectionContext connection, SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken)
         {
             var sniOptionsSelector = (SniOptionsSelector)state;
-            var options = sniOptionsSelector.GetOptions(clientHelloInfo.ServerName);
-            return new ValueTask<SslServerAuthenticationOptions>(options);
+            var options = sniOptionsSelector.GetOptions(connection, clientHelloInfo.ServerName);
+            return new ValueTask<SslServerAuthenticationOptions>(options.SslOptions);
         }
 
         private void LoadDefaultCert(ConfigurationReader configReader)

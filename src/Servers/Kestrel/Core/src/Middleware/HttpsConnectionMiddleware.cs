@@ -24,11 +24,14 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 {
+
+    internal delegate ValueTask<SslServerAuthenticationOptions> HttpsOptionsCallback(ConnectionContext connection, SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken);
+
     internal class HttpsConnectionMiddleware
     {
         private const string EnableWindows81Http2 = "Microsoft.AspNetCore.Server.Kestrel.EnableWindows81Http2";
 
-        internal static TimeSpan DefaultHandshakeTimeout = TimeSpan.FromSeconds(10);
+        internal static readonly TimeSpan DefaultHandshakeTimeout = TimeSpan.FromSeconds(10);
 
         private readonly ConnectionDelegate _next;
         private readonly ILogger _logger;
@@ -40,8 +43,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         private readonly Func<ConnectionContext, string, X509Certificate2> _serverCertificateSelector;
 
         // The following fields are only set by ServerOptionsSelectionCallback ctor.
-        private readonly ServerOptionsSelectionCallback _serverOptionsSelectionCallback;
-        private readonly object _serverOptionsSelectionCallbackState;
+        // If we ever expose this via a public API, we should really create a delegate type.
+        private readonly HttpsOptionsCallback _httpsOptionsCallback;
+        private readonly object _httpsOptionsCallbackState;
 
         public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options)
           : this(next, options, loggerFactory: NullLoggerFactory.Instance)
@@ -88,14 +92,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
         internal HttpsConnectionMiddleware(
             ConnectionDelegate next,
-            ServerOptionsSelectionCallback serverOptionsSelectionCallback,
-            object serverOptionsSelectionCallbackState,
+            HttpsOptionsCallback httpsOptionsCallback,
+            object httpsOptionsCallbackState,
             ILoggerFactory loggerFactory)
         {
             _next = next;
             _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
-            _serverOptionsSelectionCallback = serverOptionsSelectionCallback;
-            _serverOptionsSelectionCallbackState = serverOptionsSelectionCallbackState;
+            _httpsOptionsCallback = httpsOptionsCallback;
+            _httpsOptionsCallbackState = httpsOptionsCallbackState;
             _sslStreamFactory = s => new SslStream(s);
         }
 
@@ -119,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             try
             {
                 using var cancellationTokenSource = new CancellationTokenSource(_options?.HandshakeTimeout ?? DefaultHandshakeTimeout);
-                if (_serverOptionsSelectionCallback is null)
+                if (_httpsOptionsCallback is null)
                 {
                     await DoOptionsBasedHandshakeAsync(context, sslStream, feature, cancellationTokenSource.Token);
                 }
@@ -316,7 +320,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             feature.HostName = clientHelloInfo.ServerName;
 
-            var sslOptions = await middleware._serverOptionsSelectionCallback(stream, clientHelloInfo, middleware._serverOptionsSelectionCallbackState, cancellationToken);
+            var sslOptions = await middleware._httpsOptionsCallback(context, stream, clientHelloInfo, middleware._httpsOptionsCallbackState, cancellationToken);
 
             // REVIEW: Cache results? We don't do this for ServerCertificateSelectionCallback.
             if (sslOptions.ServerCertificate is X509Certificate2 cert)
