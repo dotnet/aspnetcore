@@ -97,7 +97,9 @@ namespace Microsoft.AspNetCore.Components.Web
             {
                 if (Items != null)
                 {
-                    throw new InvalidOperationException($"{GetType()} can only accept one item source from its parameters.");
+                    throw new InvalidOperationException(
+                        $"{GetType()} can only accept one item source from its parameters. " +
+                        $"Do not supply both '{nameof(Items)}' and '{nameof(ItemsProvider)}'");
                 }
 
                 _itemsProvider = ItemsProvider;
