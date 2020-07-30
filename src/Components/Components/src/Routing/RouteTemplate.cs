@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             TemplateText = templateText;
             Segments = segments;
             OptionalSegmentsCount = segments.Count(template => template.IsOptional);
+            ContainsCatchAllSegment = segments.Any(template => template.IsCatchAll);
         }
 
         public string TemplateText { get; }
@@ -22,5 +23,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         public TemplateSegment[] Segments { get; }
 
         public int OptionalSegmentsCount { get; }
+
+        public bool ContainsCatchAllSegment { get; }
     }
 }

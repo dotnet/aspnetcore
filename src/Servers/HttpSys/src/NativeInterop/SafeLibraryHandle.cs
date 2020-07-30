@@ -76,7 +76,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             // http://msdn.microsoft.com/en-us/library/ms683152(v=vs.85).aspx
             [return: MarshalAs(UnmanagedType.Bool)]
-            [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
             [DllImport("kernel32.dll", CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Unicode)]
             internal static extern bool FreeLibrary(IntPtr hModule);
 

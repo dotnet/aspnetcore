@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
         [Theory]
         [MemberData(nameof(LargeUploadData))]
-        [QuarantinedTest]
+        [QuarantinedTest] // This is inherently flaky and should never be unquarantined.
         public async Task LargeUpload(long? maxRequestBufferSize, bool connectionAdapter, bool expectPause)
         {
             // Parameters

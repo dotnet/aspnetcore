@@ -7,9 +7,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "eng", "eng", "{C28A32F6-831
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{0F84F170-57D0-496B-8E2C-7984178EF69F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BaselineGenerator", "eng\tools\BaselineGenerator\BaselineGenerator.csproj", "{03C2290A-1C48-489A-81DB-F3447B0DA595}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BaselineGenerator", "eng\tools\BaselineGenerator\BaselineGenerator.csproj", "{03C2290A-1C48-489A-81DB-F3447B0DA595}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RepoTasks", "eng\tools\RepoTasks\RepoTasks.csproj", "{2B94628A-CFFB-447E-8026-A126C33B0917}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RepoTasks", "eng\tools\RepoTasks\RepoTasks.csproj", "{2B94628A-CFFB-447E-8026-A126C33B0917}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{017429CC-C5FB-48B4-9C46-034E29EE2F06}"
 EndProject
@@ -165,7 +165,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Da
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.Formatters.Json", "Mvc.Formatters.Json", "{644AAC18-8E13-4392-8891-3814E355C819}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Formatters.Json", "src\Mvc\Mvc.Formatters.Json\src\Microsoft.AspNetCore.Mvc.Formatters.Json.csproj", "{928C9877-6BF3-447D-9E33-ACF833151D77}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Formatters.Json", "src\Mvc\Mvc.Formatters.Json\src\Microsoft.AspNetCore.Mvc.Formatters.Json.csproj", "{928C9877-6BF3-447D-9E33-ACF833151D77}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.Localization", "Mvc.Localization", "{70AD2DB0-47D7-492F-817A-34BCAFD861C4}"
 EndProject
@@ -241,11 +241,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Analyzers", "Analyzers", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Analyzers", "Analyzers", "{021E9BF3-2D3D-4169-834E-718ABE0E5B68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Analyzers", "src\Analyzers\Analyzers\src\Microsoft.AspNetCore.Analyzers.csproj", "{E5CA56AF-64B6-47B4-BCB7-EF95B53D14E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Analyzers", "src\Analyzers\Analyzers\src\Microsoft.AspNetCore.Analyzers.csproj", "{E5CA56AF-64B6-47B4-BCB7-EF95B53D14E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Analyzers.Test", "src\Analyzers\Analyzers\test\Microsoft.AspNetCore.Analyzers.Test.csproj", "{C73F3203-4E8C-46BC-A299-1A5BB81DA2C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Analyzers.Test", "src\Analyzers\Analyzers\test\Microsoft.AspNetCore.Analyzers.Test.csproj", "{C73F3203-4E8C-46BC-A299-1A5BB81DA2C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Antiforgery.Test", "src\Antiforgery\test\Microsoft.AspNetCore.Antiforgery.Test.csproj", "{78C5ACC3-6718-4682-B350-737EDA1E4F35}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Antiforgery.Test", "src\Antiforgery\test\Microsoft.AspNetCore.Antiforgery.Test.csproj", "{78C5ACC3-6718-4682-B350-737EDA1E4F35}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Azure", "Azure", "{DFDEED51-6B9B-41B9-A684-9F3FFC07C9B4}"
 EndProject
@@ -253,19 +253,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AzureAD", "AzureAD", "{2757
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Authentication.AzureAD.UI", "Authentication.AzureAD.UI", "{CE6853C2-73AE-42EB-AD8C-2A094B2A4A36}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.AzureAD.UI", "src\Azure\AzureAD\Authentication.AzureAD.UI\src\Microsoft.AspNetCore.Authentication.AzureAD.UI.csproj", "{42E30C98-1358-497F-960B-E1AA17F46704}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.AzureAD.UI", "src\Azure\AzureAD\Authentication.AzureAD.UI\src\Microsoft.AspNetCore.Authentication.AzureAD.UI.csproj", "{42E30C98-1358-497F-960B-E1AA17F46704}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.AzureAD.UI.Test", "src\Azure\AzureAD\Authentication.AzureAD.UI\test\Microsoft.AspNetCore.Authentication.AzureAD.UI.Test.csproj", "{4870B11E-7F67-4757-BC9A-45E5895AC712}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.AzureAD.UI.Test", "src\Azure\AzureAD\Authentication.AzureAD.UI\test\Microsoft.AspNetCore.Authentication.AzureAD.UI.Test.csproj", "{4870B11E-7F67-4757-BC9A-45E5895AC712}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Authentication.AzureADB2C.UI", "Authentication.AzureADB2C.UI", "{B95A22C8-71B7-49DE-94B2-16402A36B914}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.AzureADB2C.UI", "src\Azure\AzureAD\Authentication.AzureADB2C.UI\src\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.csproj", "{600BF48B-F5DF-4C9D-A5A7-635A8DD6C32A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.AzureADB2C.UI", "src\Azure\AzureAD\Authentication.AzureADB2C.UI\src\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.csproj", "{600BF48B-F5DF-4C9D-A5A7-635A8DD6C32A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Test", "src\Azure\AzureAD\Authentication.AzureADB2C.UI\test\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Test.csproj", "{27DF3ACF-F3ED-4D76-BFCB-57251892ABC0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Test", "src\Azure\AzureAD\Authentication.AzureADB2C.UI\test\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Test.csproj", "{27DF3ACF-F3ED-4D76-BFCB-57251892ABC0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{16653D2A-AC79-44ED-B908-2EEB58684C50}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.AzureAD.FunctionalTests", "src\Azure\AzureAD\test\FunctionalTests\Microsoft.AspNetCore.Authentication.AzureAD.FunctionalTests.csproj", "{B70B1843-4360-4731-9D5C-599189CC1198}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.AzureAD.FunctionalTests", "src\Azure\AzureAD\test\FunctionalTests\Microsoft.AspNetCore.Authentication.AzureAD.FunctionalTests.csproj", "{B70B1843-4360-4731-9D5C-599189CC1198}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Kestrel", "Kestrel", "{4FDDC525-4E60-4CAF-83A3-261C5B43721F}"
 EndProject
@@ -289,27 +289,27 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", "{7004082D-53E9-45C2-B2DE-EB3CE448B64F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.Extensions", "src\DataProtection\Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj", "{478D4BE2-F4AC-45EF-BEE4-35399DECCABF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.Extensions", "src\DataProtection\Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj", "{478D4BE2-F4AC-45EF-BEE4-35399DECCABF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.Testing", "Mvc.Testing", "{ADAC3089-7247-4137-A8CB-8114D58C9B93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Testing", "src\Mvc\Mvc.Testing\src\Microsoft.AspNetCore.Mvc.Testing.csproj", "{183F99F9-0C0B-4790-8152-637B4AE68622}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Testing", "src\Mvc\Mvc.Testing\src\Microsoft.AspNetCore.Mvc.Testing.csproj", "{183F99F9-0C0B-4790-8152-637B4AE68622}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AzureAppServices.HostingStartup", "AzureAppServices.HostingStartup", "{EA2941E6-5868-47CD-97AB-2DB1D5F18D97}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.AzureAppServices.HostingStartup", "src\Azure\AzureAppServices.HostingStartup\src\Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj", "{F8C6AE5D-ED8B-4CCD-9E4C-28AD16EF075B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureAppServices.HostingStartup", "src\Azure\AzureAppServices.HostingStartup\src\Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj", "{F8C6AE5D-ED8B-4CCD-9E4C-28AD16EF075B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AzureAppServicesIntegration", "AzureAppServicesIntegration", "{AE3F1191-648A-4813-81C5-E8527E716BB7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.AzureAppServicesIntegration", "src\Azure\AzureAppServicesIntegration\src\Microsoft.AspNetCore.AzureAppServicesIntegration.csproj", "{32FE10AE-CC85-407A-8720-624CDD3EB890}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureAppServicesIntegration", "src\Azure\AzureAppServicesIntegration\src\Microsoft.AspNetCore.AzureAppServicesIntegration.csproj", "{32FE10AE-CC85-407A-8720-624CDD3EB890}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.AzureAppServicesIntegration.Tests", "src\Azure\AzureAppServicesIntegration\test\Microsoft.AspNetCore.AzureAppServicesIntegration.Tests.csproj", "{425D32AE-C933-4E4B-AC96-B2DCD9FA2B24}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureAppServicesIntegration.Tests", "src\Azure\AzureAppServicesIntegration\test\Microsoft.AspNetCore.AzureAppServicesIntegration.Tests.csproj", "{425D32AE-C933-4E4B-AC96-B2DCD9FA2B24}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{2E944A89-5614-425E-A87A-5F455EDB78D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAppServicesHostingStartupSample", "src\Azure\samples\AzureAppServicesHostingStartupSample\AzureAppServicesHostingStartupSample.csproj", "{FE930950-64DC-45A3-8128-2D68F97EBB19}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureAppServicesHostingStartupSample", "src\Azure\samples\AzureAppServicesHostingStartupSample\AzureAppServicesHostingStartupSample.csproj", "{FE930950-64DC-45A3-8128-2D68F97EBB19}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AzureAppServicesSample", "src\Azure\samples\AzureAppServicesSample\AzureAppServicesSample.csproj", "{81410464-9C9E-4DDE-824C-BCD0DA8E6523}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureAppServicesSample", "src\Azure\samples\AzureAppServicesSample\AzureAppServicesSample.csproj", "{81410464-9C9E-4DDE-824C-BCD0DA8E6523}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosting", "Hosting", "{68C2D913-06D4-4EAC-9283-78465BF214E1}"
 EndProject
@@ -317,33 +317,33 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hostin
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server.IntegrationTesting", "Server.IntegrationTesting", "{F4B3C10B-F713-45D1-84EF-DD503BA09D20}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.IntegrationTesting", "src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj", "{7AA8771B-F1F3-409E-960A-EEF00B94135A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IntegrationTesting", "src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj", "{7AA8771B-F1F3-409E-960A-EEF00B94135A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestHost", "TestHost", "{E6639EAB-40B0-4BB6-A56B-25ECC4B6D3D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.TestHost", "src\Hosting\TestHost\src\Microsoft.AspNetCore.TestHost.csproj", "{0B490CDE-C350-41A0-9DEA-CDA5FB72205D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.TestHost", "src\Hosting\TestHost\src\Microsoft.AspNetCore.TestHost.csproj", "{0B490CDE-C350-41A0-9DEA-CDA5FB72205D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Authentication", "Authentication", "{822D1519-77F0-484A-B9AB-F694C2CC25F1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OpenIdConnect", "OpenIdConnect", "{99F9BBC5-46AE-40DC-A675-5E56ACA3C5C8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.OpenIdConnect", "src\Security\Authentication\OpenIdConnect\src\Microsoft.AspNetCore.Authentication.OpenIdConnect.csproj", "{AB39F04A-A96E-4BE1-99F2-54B804104BA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.OpenIdConnect", "src\Security\Authentication\OpenIdConnect\src\Microsoft.AspNetCore.Authentication.OpenIdConnect.csproj", "{AB39F04A-A96E-4BE1-99F2-54B804104BA1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OAuth", "OAuth", "{9121A7EA-5751-4811-9FE3-E183BB8709FB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.OAuth", "src\Security\Authentication\OAuth\src\Microsoft.AspNetCore.Authentication.OAuth.csproj", "{EE23169F-C3A7-4A03-8FB7-C1F1B76301A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.OAuth", "src\Security\Authentication\OAuth\src\Microsoft.AspNetCore.Authentication.OAuth.csproj", "{EE23169F-C3A7-4A03-8FB7-C1F1B76301A9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{03CD847C-2230-4092-BF1C-DE54634805AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication", "src\Security\Authentication\Core\src\Microsoft.AspNetCore.Authentication.csproj", "{D47B73A3-740E-4B9A-B123-A42299F1F266}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication", "src\Security\Authentication\Core\src\Microsoft.AspNetCore.Authentication.csproj", "{D47B73A3-740E-4B9A-B123-A42299F1F266}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cookies", "Cookies", "{14A4E3F5-04BB-4062-84AE-1A887C307B17}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.Cookies", "src\Security\Authentication\Cookies\src\Microsoft.AspNetCore.Authentication.Cookies.csproj", "{6906D7DE-CE06-4A6A-81BB-D783C605A184}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Cookies", "src\Security\Authentication\Cookies\src\Microsoft.AspNetCore.Authentication.Cookies.csproj", "{6906D7DE-CE06-4A6A-81BB-D783C605A184}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JwtBearer", "JwtBearer", "{2AB4FE8F-94FF-4C6E-B12F-9E40A9FAF9AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.JwtBearer", "src\Security\Authentication\JwtBearer\src\Microsoft.AspNetCore.Authentication.JwtBearer.csproj", "{F90D4383-89FC-4215-B2AB-BBB242CC5E45}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.JwtBearer", "src\Security\Authentication\JwtBearer\src\Microsoft.AspNetCore.Authentication.JwtBearer.csproj", "{F90D4383-89FC-4215-B2AB-BBB242CC5E45}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Analyzers", "Analyzers", "{A274799D-3D1F-4AE5-A154-4BF6C80A8D94}"
 EndProject
@@ -513,127 +513,127 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.JSInterop", "Micr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.JSInterop", "src\JSInterop\Microsoft.JSInterop\src\Microsoft.JSInterop.csproj", "{70B719CD-C70E-4417-B1EE-FD24B5AFB0B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.Abstractions.Tests", "src\DataProtection\Abstractions\test\Microsoft.AspNetCore.DataProtection.Abstractions.Tests.csproj", "{552EB148-0518-41A6-905D-4696A6438E80}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.Abstractions.Tests", "src\DataProtection\Abstractions\test\Microsoft.AspNetCore.DataProtection.Abstractions.Tests.csproj", "{552EB148-0518-41A6-905D-4696A6438E80}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Cryptography.Internal.Tests", "src\DataProtection\Cryptography.Internal\test\Microsoft.AspNetCore.Cryptography.Internal.Tests.csproj", "{789E23FE-E8F4-4935-AF43-4A84D25AD130}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Cryptography.Internal.Tests", "src\DataProtection\Cryptography.Internal\test\Microsoft.AspNetCore.Cryptography.Internal.Tests.csproj", "{789E23FE-E8F4-4935-AF43-4A84D25AD130}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cryptography.KeyDerivation", "Cryptography.KeyDerivation", "{9546F4D5-9625-480F-B5BB-5D6FF9369885}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Cryptography.KeyDerivation", "src\DataProtection\Cryptography.KeyDerivation\src\Microsoft.AspNetCore.Cryptography.KeyDerivation.csproj", "{DA626A01-8198-4E1A-A1EE-0EA4AB0B02C1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Cryptography.KeyDerivation", "src\DataProtection\Cryptography.KeyDerivation\src\Microsoft.AspNetCore.Cryptography.KeyDerivation.csproj", "{DA626A01-8198-4E1A-A1EE-0EA4AB0B02C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Cryptography.KeyDerivation.Tests", "src\DataProtection\Cryptography.KeyDerivation\test\Microsoft.AspNetCore.Cryptography.KeyDerivation.Tests.csproj", "{F421D0C4-6EF7-48B7-9213-AFD21322E08B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Cryptography.KeyDerivation.Tests", "src\DataProtection\Cryptography.KeyDerivation\test\Microsoft.AspNetCore.Cryptography.KeyDerivation.Tests.csproj", "{F421D0C4-6EF7-48B7-9213-AFD21322E08B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.Tests", "src\DataProtection\DataProtection\test\Microsoft.AspNetCore.DataProtection.Tests.csproj", "{696BE515-B3AB-4925-969C-350F1BDA5C30}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.Tests", "src\DataProtection\DataProtection\test\Microsoft.AspNetCore.DataProtection.Tests.csproj", "{696BE515-B3AB-4925-969C-350F1BDA5C30}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.Extensions.Tests", "src\DataProtection\Extensions\test\Microsoft.AspNetCore.DataProtection.Extensions.Tests.csproj", "{3CB3CA43-6D65-4DDE-B5E3-A9E0DF957E38}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.Extensions.Tests", "src\DataProtection\Extensions\test\Microsoft.AspNetCore.DataProtection.Extensions.Tests.csproj", "{3CB3CA43-6D65-4DDE-B5E3-A9E0DF957E38}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StackExchangeRedis", "StackExchangeRedis", "{FE22EB98-C12E-4FAE-A7C2-DF65890F3084}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.StackExchangeRedis", "src\DataProtection\StackExchangeRedis\src\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.csproj", "{87181A18-6A53-43E6-A6B1-1F867C9D3E45}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.StackExchangeRedis", "src\DataProtection\StackExchangeRedis\src\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.csproj", "{87181A18-6A53-43E6-A6B1-1F867C9D3E45}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.StackExchangeRedis.Tests", "src\DataProtection\StackExchangeRedis\test\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.Tests.csproj", "{3B85171E-9A55-4605-B9B1-56F77E47137B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.StackExchangeRedis.Tests", "src\DataProtection\StackExchangeRedis\test\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.Tests.csproj", "{3B85171E-9A55-4605-B9B1-56F77E47137B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8275510E-0E6C-45A8-99DF-4F106BC7F075}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomEncryptorSample", "src\DataProtection\samples\CustomEncryptorSample\CustomEncryptorSample.csproj", "{DF5EDCB1-139C-4804-9D00-C5E7DCEC104F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomEncryptorSample", "src\DataProtection\samples\CustomEncryptorSample\CustomEncryptorSample.csproj", "{DF5EDCB1-139C-4804-9D00-C5E7DCEC104F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KeyManagementSample", "src\DataProtection\samples\KeyManagementSample\KeyManagementSample.csproj", "{58C5FE49-3060-4D9E-B76C-352790FCD1D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KeyManagementSample", "src\DataProtection\samples\KeyManagementSample\KeyManagementSample.csproj", "{58C5FE49-3060-4D9E-B76C-352790FCD1D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NonDISample", "src\DataProtection\samples\NonDISample\NonDISample.csproj", "{4F39F27E-0E21-4093-8818-D974D4716C14}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NonDISample", "src\DataProtection\samples\NonDISample\NonDISample.csproj", "{4F39F27E-0E21-4093-8818-D974D4716C14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis", "src\DataProtection\samples\Redis\Redis.csproj", "{BC0CC534-0285-4471-B99E-584BEFEC94DB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Redis", "src\DataProtection\samples\Redis\Redis.csproj", "{BC0CC534-0285-4471-B99E-584BEFEC94DB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EntityFrameworkCore", "EntityFrameworkCore", "{97F5B320-B18E-4275-B0E9-BB5FABDA952F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore", "src\DataProtection\EntityFrameworkCore\src\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.csproj", "{E9216C2B-A12B-48C3-8F5D-C67C5D75EF02}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore", "src\DataProtection\EntityFrameworkCore\src\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.csproj", "{E9216C2B-A12B-48C3-8F5D-C67C5D75EF02}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.Test", "src\DataProtection\EntityFrameworkCore\test\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.Test.csproj", "{28B6FDEF-3DC0-42E0-8913-C7D33CE93368}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.Test", "src\DataProtection\EntityFrameworkCore\test\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.Test.csproj", "{28B6FDEF-3DC0-42E0-8913-C7D33CE93368}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFrameworkCoreSample", "src\DataProtection\samples\EntityFrameworkCoreSample\EntityFrameworkCoreSample.csproj", "{22F70908-5E62-4185-B76B-F0C5B952F8AE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EntityFrameworkCoreSample", "src\DataProtection\samples\EntityFrameworkCoreSample\EntityFrameworkCoreSample.csproj", "{22F70908-5E62-4185-B76B-F0C5B952F8AE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{2F08930D-5646-4D74-AAA2-9E51C93D1192}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DefaultBuilder.SampleApp", "src\DefaultBuilder\samples\SampleApp\DefaultBuilder.SampleApp.csproj", "{0CD27C71-4A3C-4AA0-8258-F7430F875984}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DefaultBuilder.SampleApp", "src\DefaultBuilder\samples\SampleApp\DefaultBuilder.SampleApp.csproj", "{0CD27C71-4A3C-4AA0-8258-F7430F875984}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{BCD032DD-D088-4F72-B80F-48D0EA845F87}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Tests", "src\DefaultBuilder\test\Microsoft.AspNetCore.Tests\Microsoft.AspNetCore.Tests.csproj", "{58955E85-0D55-45FF-97EE-BDD096522954}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Tests", "src\DefaultBuilder\test\Microsoft.AspNetCore.Tests\Microsoft.AspNetCore.Tests.csproj", "{58955E85-0D55-45FF-97EE-BDD096522954}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.FunctionalTests", "src\DefaultBuilder\test\Microsoft.AspNetCore.FunctionalTests\Microsoft.AspNetCore.FunctionalTests.csproj", "{D708256C-4A68-4B15-AAE5-6EFA41223A70}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.FunctionalTests", "src\DefaultBuilder\test\Microsoft.AspNetCore.FunctionalTests\Microsoft.AspNetCore.FunctionalTests.csproj", "{D708256C-4A68-4B15-AAE5-6EFA41223A70}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Grpc", "Grpc", "{8DAC59BE-CB96-4F04-909C-56C22E7665EB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{E763DA15-8F4E-446C-99B8-309053C75598}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InteropTests", "src\Grpc\test\InteropTests\InteropTests.csproj", "{3ADC50B9-2EBB-422A-8424-F9FC67841CA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InteropTests", "src\Grpc\test\InteropTests\InteropTests.csproj", "{3ADC50B9-2EBB-422A-8424-F9FC67841CA1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testing", "Testing", "{05A169C7-4F20-4516-B10A-B13C5649D346}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Testing", "src\Testing\src\Microsoft.AspNetCore.Testing.csproj", "{3D06E2C9-44F7-408D-802C-42D7E55F08E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Testing", "src\Testing\src\Microsoft.AspNetCore.Testing.csproj", "{3D06E2C9-44F7-408D-802C-42D7E55F08E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Hosting.Tests", "src\Hosting\Hosting\test\Microsoft.AspNetCore.Hosting.Tests.csproj", "{ECAA6AB0-CFF3-4D1B-AA25-2A0F72730987}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting.Tests", "src\Hosting\Hosting\test\Microsoft.AspNetCore.Hosting.Tests.csproj", "{ECAA6AB0-CFF3-4D1B-AA25-2A0F72730987}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{C8415333-2A64-4FF0-8FC9-652694A11A77}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenericWebHost", "src\Hosting\samples\GenericWebHost\GenericWebHost.csproj", "{9EF96554-7BDB-4679-B08E-7D98FAE6A2AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenericWebHost", "src\Hosting\samples\GenericWebHost\GenericWebHost.csproj", "{9EF96554-7BDB-4679-B08E-7D98FAE6A2AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleStartups", "src\Hosting\samples\SampleStartups\SampleStartups.csproj", "{7391E144-5087-4E64-94D8-E0700D57739C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleStartups", "src\Hosting\samples\SampleStartups\SampleStartups.csproj", "{7391E144-5087-4E64-94D8-E0700D57739C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.TestHost.Tests", "src\Hosting\TestHost\test\Microsoft.AspNetCore.TestHost.Tests.csproj", "{ED6E6F06-D620-41BC-8F12-01480BF49381}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.TestHost.Tests", "src\Hosting\TestHost\test\Microsoft.AspNetCore.TestHost.Tests.csproj", "{ED6E6F06-D620-41BC-8F12-01480BF49381}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WindowsServices", "WindowsServices", "{3DC5D8DB-5DA3-4793-B090-9CB89A158B51}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Hosting.WindowsServices", "src\Hosting\WindowsServices\src\Microsoft.AspNetCore.Hosting.WindowsServices.csproj", "{F80F007A-AEE5-478A-8A5E-2A4EEDA9FD42}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting.WindowsServices", "src\Hosting\WindowsServices\src\Microsoft.AspNetCore.Hosting.WindowsServices.csproj", "{F80F007A-AEE5-478A-8A5E-2A4EEDA9FD42}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Hosting.WindowsServices.Tests", "src\Hosting\WindowsServices\test\Microsoft.AspNetCore.Hosting.WindowsServices.Tests.csproj", "{31B7F6ED-C7B6-4FDB-ADA9-4E5B6B8FCAB6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting.WindowsServices.Tests", "src\Hosting\WindowsServices\test\Microsoft.AspNetCore.Hosting.WindowsServices.Tests.csproj", "{31B7F6ED-C7B6-4FDB-ADA9-4E5B6B8FCAB6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{C1409A8F-555A-4A88-B803-C6D3E8B6C3B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Hosting.FunctionalTests", "src\Hosting\test\FunctionalTests\Microsoft.AspNetCore.Hosting.FunctionalTests.csproj", "{72AA2B1F-1FE7-48B5-968D-89E492F2139D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting.FunctionalTests", "src\Hosting\test\FunctionalTests\Microsoft.AspNetCore.Hosting.FunctionalTests.csproj", "{72AA2B1F-1FE7-48B5-968D-89E492F2139D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Owin", "Owin", "{AA465A56-D9D0-4684-95B0-192F4436C582}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Owin", "src\Http\Owin\src\Microsoft.AspNetCore.Owin.csproj", "{670B30E8-4E6F-453F-A5B7-B6DB3D83FE42}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Owin", "src\Http\Owin\src\Microsoft.AspNetCore.Owin.csproj", "{670B30E8-4E6F-453F-A5B7-B6DB3D83FE42}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.Core.Test", "src\Http\Authentication.Core\test\Microsoft.AspNetCore.Authentication.Core.Test.csproj", "{F0540D2E-1A56-4AFE-9DC4-EA7E5CB8E10B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Core.Test", "src\Http\Authentication.Core\test\Microsoft.AspNetCore.Authentication.Core.Test.csproj", "{F0540D2E-1A56-4AFE-9DC4-EA7E5CB8E10B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Net.Http.Headers.Tests", "src\Http\Headers\test\Microsoft.Net.Http.Headers.Tests.csproj", "{8CB43443-E02C-4D04-9E96-A4916E5C83C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Net.Http.Headers.Tests", "src\Http\Headers\test\Microsoft.Net.Http.Headers.Tests.csproj", "{8CB43443-E02C-4D04-9E96-A4916E5C83C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Tests", "src\Http\Http\test\Microsoft.AspNetCore.Http.Tests.csproj", "{3957A90B-1DB9-4AA0-A8B8-E7B0B42B0101}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Tests", "src\Http\Http\test\Microsoft.AspNetCore.Http.Tests.csproj", "{3957A90B-1DB9-4AA0-A8B8-E7B0B42B0101}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Abstractions.Tests", "src\Http\Http.Abstractions\test\Microsoft.AspNetCore.Http.Abstractions.Tests.csproj", "{529AB96D-853D-41B4-ABE6-D0DED4A50DFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Abstractions.Tests", "src\Http\Http.Abstractions\test\Microsoft.AspNetCore.Http.Abstractions.Tests.csproj", "{529AB96D-853D-41B4-ABE6-D0DED4A50DFD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Extensions.Tests", "src\Http\Http.Extensions\test\Microsoft.AspNetCore.Http.Extensions.Tests.csproj", "{402C3AC9-1B1D-4523-AB80-A992CEA85F57}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Extensions.Tests", "src\Http\Http.Extensions\test\Microsoft.AspNetCore.Http.Extensions.Tests.csproj", "{402C3AC9-1B1D-4523-AB80-A992CEA85F57}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Features.Tests", "src\Http\Http.Features\test\Microsoft.AspNetCore.Http.Features.Tests.csproj", "{C86D97EF-301F-464B-A6B8-DA75BB0DBECE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Features.Tests", "src\Http\Http.Features\test\Microsoft.AspNetCore.Http.Features.Tests.csproj", "{C86D97EF-301F-464B-A6B8-DA75BB0DBECE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Owin.Tests", "src\Http\Owin\test\Microsoft.AspNetCore.Owin.Tests.csproj", "{66ADF274-B5C4-4D0A-91D9-F7FB76ADBF85}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Owin.Tests", "src\Http\Owin\test\Microsoft.AspNetCore.Owin.Tests.csproj", "{66ADF274-B5C4-4D0A-91D9-F7FB76ADBF85}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{EB5E294B-9ED5-43BF-AFA9-1CD2327F3DC1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpAbstractions.SampleApp", "src\Http\samples\SampleApp\HttpAbstractions.SampleApp.csproj", "{4DDE5F1F-B014-4096-9F8B-E5F2C96DF997}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpAbstractions.SampleApp", "src\Http\samples\SampleApp\HttpAbstractions.SampleApp.csproj", "{4DDE5F1F-B014-4096-9F8B-E5F2C96DF997}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.WebUtilities.Tests", "src\Http\WebUtilities\test\Microsoft.AspNetCore.WebUtilities.Tests.csproj", "{F6BE35A7-1D5C-416B-8B32-61CAA2A95FF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebUtilities.Tests", "src\Http\WebUtilities\test\Microsoft.AspNetCore.WebUtilities.Tests.csproj", "{F6BE35A7-1D5C-416B-8B32-61CAA2A95FF0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Performance", "src\Http\Http\perf\Microsoft.AspNetCore.Http.Performance.csproj", "{C713DCA1-B36D-44BD-ACFA-F562782AD40E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Performance", "src\Http\Http\perf\Microsoft.AspNetCore.Http.Performance.csproj", "{C713DCA1-B36D-44BD-ACFA-F562782AD40E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Routing.Performance", "src\Http\Routing\perf\Microsoft.AspNetCore.Routing.Performance.csproj", "{A2701184-BD48-4B72-AA6E-8DD1DE2F217F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routing.Performance", "src\Http\Routing\perf\Microsoft.AspNetCore.Routing.Performance.csproj", "{A2701184-BD48-4B72-AA6E-8DD1DE2F217F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{17DD5861-0635-46D0-84BA-6B163150AA4F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Routing.FunctionalTests", "src\Http\Routing\test\FunctionalTests\Microsoft.AspNetCore.Routing.FunctionalTests.csproj", "{2DF639CC-DFF2-44D2-9585-D1E925B5A117}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routing.FunctionalTests", "src\Http\Routing\test\FunctionalTests\Microsoft.AspNetCore.Routing.FunctionalTests.csproj", "{2DF639CC-DFF2-44D2-9585-D1E925B5A117}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Routing.Tests", "src\Http\Routing\test\UnitTests\Microsoft.AspNetCore.Routing.Tests.csproj", "{C71CF302-0FFA-4610-9197-033B277F3065}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routing.Tests", "src\Http\Routing\test\UnitTests\Microsoft.AspNetCore.Routing.Tests.csproj", "{C71CF302-0FFA-4610-9197-033B277F3065}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Routing.Abstractions.Tests", "src\Http\Routing.Abstractions\test\Microsoft.AspNetCore.Mvc.Routing.Abstractions.Tests.csproj", "{09D2D765-A792-415E-B19A-18948A1C8969}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Routing.Abstractions.Tests", "src\Http\Routing.Abstractions\test\Microsoft.AspNetCore.Mvc.Routing.Abstractions.Tests.csproj", "{09D2D765-A792-415E-B19A-18948A1C8969}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{E7CADFE4-CDD0-4DE3-90ED-7184A969F47B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.WebUtilities.Performance", "src\Http\WebUtilities\perf\Microsoft.AspNetCore.WebUtilities.Performance\Microsoft.AspNetCore.WebUtilities.Performance.csproj", "{822FF16C-A4E0-40A0-AE65-530752575261}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebUtilities.Performance", "src\Http\WebUtilities\perf\Microsoft.AspNetCore.WebUtilities.Performance\Microsoft.AspNetCore.WebUtilities.Performance.csproj", "{822FF16C-A4E0-40A0-AE65-530752575261}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Metadata", "Metadata", "{71DE18B5-87F9-4D03-89BB-C3E243576F92}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Metadata", "src\Http\Metadata\src\Microsoft.AspNetCore.Metadata.csproj", "{3A554C0B-2956-4152-BF31-2C8CAE5D2717}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Metadata", "src\Http\Metadata\src\Microsoft.AspNetCore.Metadata.csproj", "{3A554C0B-2956-4152-BF31-2C8CAE5D2717}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Identity", "Identity", "{9F21A235-436E-4020-A076-1DF4F89D0CA0}"
 EndProject
@@ -641,799 +641,785 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ApiAuthorization.IdentitySe
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{10F429CC-6470-40AF-81FA-6F17895E4058}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiAuthSample", "src\Identity\ApiAuthorization.IdentityServer\samples\ApiAuthSample\ApiAuthSample.csproj", "{1A99E178-8480-47C0-B7F0-A1240297F2FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiAuthSample", "src\Identity\ApiAuthorization.IdentityServer\samples\ApiAuthSample\ApiAuthSample.csproj", "{1A99E178-8480-47C0-B7F0-A1240297F2FB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.ApiAuthorization.IdentityServer", "src\Identity\ApiAuthorization.IdentityServer\src\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj", "{7AC2504B-A351-40D1-92BC-CABEFFBB14DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ApiAuthorization.IdentityServer", "src\Identity\ApiAuthorization.IdentityServer\src\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj", "{7AC2504B-A351-40D1-92BC-CABEFFBB14DC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Tests", "src\Identity\ApiAuthorization.IdentityServer\test\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Tests.csproj", "{BDB91F2F-2CD5-4675-BC7F-C94F117784DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Tests", "src\Identity\ApiAuthorization.IdentityServer\test\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Tests.csproj", "{BDB91F2F-2CD5-4675-BC7F-C94F117784DF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{9E0B9A09-167E-4DF7-8AA4-F9323A306F90}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Identity", "src\Identity\Core\src\Microsoft.AspNetCore.Identity.csproj", "{F1B75625-567A-4AF3-BB68-75A4CF93F2B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity", "src\Identity\Core\src\Microsoft.AspNetCore.Identity.csproj", "{F1B75625-567A-4AF3-BB68-75A4CF93F2B8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EntityFrameworkCore", "EntityFrameworkCore", "{0F5F1299-7303-49B8-BEBF-9FF3B522CE0F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore", "src\Identity\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj", "{473C0171-0AD1-473B-B1A0-93636FD77BA6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore", "src\Identity\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj", "{473C0171-0AD1-473B-B1A0-93636FD77BA6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F910B1B0-3641-4F3B-8336-5230FAB8FAD5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test", "src\Identity\EntityFrameworkCore\test\EF.InMemory.Test\Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test.csproj", "{D15A9C48-00F1-423B-B14D-6EACE976E2F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test", "src\Identity\EntityFrameworkCore\test\EF.InMemory.Test\Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test.csproj", "{D15A9C48-00F1-423B-B14D-6EACE976E2F0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test", "src\Identity\EntityFrameworkCore\test\EF.Test\Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.csproj", "{39B8B1ED-790E-4FF5-8D68-B1153655F87B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test", "src\Identity\EntityFrameworkCore\test\EF.Test\Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.csproj", "{39B8B1ED-790E-4FF5-8D68-B1153655F87B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions.Core", "Extensions.Core", "{7A3BDEED-70A7-4F2A-82D8-6A8752CE2859}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Identity.Core", "src\Identity\Extensions.Core\src\Microsoft.Extensions.Identity.Core.csproj", "{886DDAF8-052A-4AC5-87FD-96EBCBAC2B7C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Identity.Core", "src\Identity\Extensions.Core\src\Microsoft.Extensions.Identity.Core.csproj", "{886DDAF8-052A-4AC5-87FD-96EBCBAC2B7C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions.Stores", "Extensions.Stores", "{83E043A0-50FF-48AB-AA1D-EE88B64A1E4F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Identity.Stores", "src\Identity\Extensions.Stores\src\Microsoft.Extensions.Identity.Stores.csproj", "{30BB8038-D162-4171-9404-4041FC7A5BA7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Identity.Stores", "src\Identity\Extensions.Stores\src\Microsoft.Extensions.Identity.Stores.csproj", "{30BB8038-D162-4171-9404-4041FC7A5BA7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{64B2A28F-6D82-4F2B-B0BB-88DE5216DD2C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentitySample.DefaultUI", "src\Identity\samples\IdentitySample.DefaultUI\IdentitySample.DefaultUI.csproj", "{5750A285-B528-4A6C-953F-7838824E5F81}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentitySample.DefaultUI", "src\Identity\samples\IdentitySample.DefaultUI\IdentitySample.DefaultUI.csproj", "{5750A285-B528-4A6C-953F-7838824E5F81}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentitySample.Mvc", "src\Identity\samples\IdentitySample.Mvc\IdentitySample.Mvc.csproj", "{C4C7C4FC-F83C-4DFA-803A-6E88001DF0F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentitySample.Mvc", "src\Identity\samples\IdentitySample.Mvc\IdentitySample.Mvc.csproj", "{C4C7C4FC-F83C-4DFA-803A-6E88001DF0F2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Specification.Tests", "Specification.Tests", "{85179BD4-F1B1-4FDB-ABA9-3FDB0F5FF1B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Identity.Specification.Tests", "src\Identity\Specification.Tests\src\Microsoft.AspNetCore.Identity.Specification.Tests.csproj", "{5D91E19A-E6EB-4ED7-BAC8-B41DEB9F4704}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Specification.Tests", "src\Identity\Specification.Tests\src\Microsoft.AspNetCore.Identity.Specification.Tests.csproj", "{5D91E19A-E6EB-4ED7-BAC8-B41DEB9F4704}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{BCF3D807-5368-4201-8313-34493E60020B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Identity.FunctionalTests", "src\Identity\test\Identity.FunctionalTests\Microsoft.AspNetCore.Identity.FunctionalTests.csproj", "{5EBE548A-E450-466B-B448-D6662E659E58}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.FunctionalTests", "src\Identity\test\Identity.FunctionalTests\Microsoft.AspNetCore.Identity.FunctionalTests.csproj", "{5EBE548A-E450-466B-B448-D6662E659E58}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Identity.Test", "src\Identity\test\Identity.Test\Microsoft.AspNetCore.Identity.Test.csproj", "{58C3FE63-C364-4AF8-B575-2F65A7565B1F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Test", "src\Identity\test\Identity.Test\Microsoft.AspNetCore.Identity.Test.csproj", "{58C3FE63-C364-4AF8-B575-2F65A7565B1F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Identity.InMemory.Test", "src\Identity\test\InMemory.Test\Microsoft.AspNetCore.Identity.InMemory.Test.csproj", "{8B6F219F-CE89-4704-8586-F9953F5FF4AB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.InMemory.Test", "src\Identity\test\InMemory.Test\Microsoft.AspNetCore.Identity.InMemory.Test.csproj", "{8B6F219F-CE89-4704-8586-F9953F5FF4AB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI", "UI", "{2AFCDBA1-0697-4134-BF22-17C145EB2710}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Identity.UI", "src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj", "{8A2FFCF4-548A-4527-AB0A-CE2F3402FB0D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.UI", "src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj", "{8A2FFCF4-548A-4527-AB0A-CE2F3402FB0D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CookiePolicy", "CookiePolicy", "{62F3EF13-4A89-4912-A22C-31981278B074}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.CookiePolicy", "src\Security\CookiePolicy\src\Microsoft.AspNetCore.CookiePolicy.csproj", "{CE8BC4CA-0068-439A-A012-6B1E764CD5D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.CookiePolicy", "src\Security\CookiePolicy\src\Microsoft.AspNetCore.CookiePolicy.csproj", "{CE8BC4CA-0068-439A-A012-6B1E764CD5D7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Diagnostics.EntityFrameworkCore", "Diagnostics.EntityFrameworkCore", "{3D551023-1D98-479D-A41E-EBD0C05A06FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore", "src\Middleware\Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj", "{861CA437-6402-4E45-9E1F-35A509E61568}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore", "src\Middleware\Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj", "{861CA437-6402-4E45-9E1F-35A509E61568}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rewrite", "Rewrite", "{049030CA-4D78-4B24-A112-28C61AB2509C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Rewrite", "src\Middleware\Rewrite\src\Microsoft.AspNetCore.Rewrite.csproj", "{5EE9EEE3-C472-4A6D-8DB8-C82998584E2C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Rewrite", "src\Middleware\Rewrite\src\Microsoft.AspNetCore.Rewrite.csproj", "{5EE9EEE3-C472-4A6D-8DB8-C82998584E2C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Facebook", "Facebook", "{B714B9AB-0A8F-4FB0-902E-6B73CA60DAB8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.Facebook", "src\Security\Authentication\Facebook\src\Microsoft.AspNetCore.Authentication.Facebook.csproj", "{805264B9-36C9-49D6-BA34-63D0050C9D6E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Facebook", "src\Security\Authentication\Facebook\src\Microsoft.AspNetCore.Authentication.Facebook.csproj", "{805264B9-36C9-49D6-BA34-63D0050C9D6E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Google", "Google", "{2654DB24-E7E6-45B0-B350-3226D2D0FDC7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.Google", "src\Security\Authentication\Google\src\Microsoft.AspNetCore.Authentication.Google.csproj", "{C2645178-0B55-47D4-B9CA-A6FFA14E616E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Google", "src\Security\Authentication\Google\src\Microsoft.AspNetCore.Authentication.Google.csproj", "{C2645178-0B55-47D4-B9CA-A6FFA14E616E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Twitter", "Twitter", "{D38C4227-7692-4C66-B8C2-8A411B46DCE3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.Twitter", "src\Security\Authentication\Twitter\src\Microsoft.AspNetCore.Authentication.Twitter.csproj", "{8192DC13-6878-43C1-B657-96420C3BA9F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Twitter", "src\Security\Authentication\Twitter\src\Microsoft.AspNetCore.Authentication.Twitter.csproj", "{8192DC13-6878-43C1-B657-96420C3BA9F8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{A127217D-26AF-43C4-96A0-7080EB6F1D65}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EchoApp", "src\Middleware\WebSockets\samples\EchoApp\EchoApp.csproj", "{19BE6DF6-24F5-4F58-86C8-A9D8368427A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EchoApp", "src\Middleware\WebSockets\samples\EchoApp\EchoApp.csproj", "{19BE6DF6-24F5-4F58-86C8-A9D8368427A7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSockets.TestServer", "src\Middleware\WebSockets\samples\TestServer\WebSockets.TestServer.csproj", "{68E93233-6FF3-41FE-8161-3B7F457473C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebSockets.TestServer", "src\Middleware\WebSockets\samples\TestServer\WebSockets.TestServer.csproj", "{68E93233-6FF3-41FE-8161-3B7F457473C8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{8AAFAD2A-B273-4DB5-8DC9-3CA832248A82}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.WebSockets.ConformanceTests", "src\Middleware\WebSockets\test\ConformanceTests\Microsoft.AspNetCore.WebSockets.ConformanceTests.csproj", "{897EECDD-628F-4233-B1BF-A13F687057BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebSockets.ConformanceTests", "src\Middleware\WebSockets\test\ConformanceTests\Microsoft.AspNetCore.WebSockets.ConformanceTests.csproj", "{897EECDD-628F-4233-B1BF-A13F687057BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.WebSockets.Tests", "src\Middleware\WebSockets\test\UnitTests\Microsoft.AspNetCore.WebSockets.Tests.csproj", "{E7F7B6E9-3374-4C37-8FDA-CB3682442D51}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebSockets.Tests", "src\Middleware\WebSockets\test\UnitTests\Microsoft.AspNetCore.WebSockets.Tests.csproj", "{E7F7B6E9-3374-4C37-8FDA-CB3682442D51}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{41B519F7-CF19-4FB4-B96C-E38A7EF45F70}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diagnostics.FunctionalTests", "src\Middleware\Diagnostics\test\FunctionalTests\Diagnostics.FunctionalTests.csproj", "{122907A1-AD5F-40B3-9D61-05A3F8CF859D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diagnostics.FunctionalTests", "src\Middleware\Diagnostics\test\FunctionalTests\Diagnostics.FunctionalTests.csproj", "{122907A1-AD5F-40B3-9D61-05A3F8CF859D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.Tests", "src\Middleware\Diagnostics\test\UnitTests\Microsoft.AspNetCore.Diagnostics.Tests.csproj", "{5A3DF44F-53B3-4EC0-A0EF-EFE78190C48D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.Tests", "src\Middleware\Diagnostics\test\UnitTests\Microsoft.AspNetCore.Diagnostics.Tests.csproj", "{5A3DF44F-53B3-4EC0-A0EF-EFE78190C48D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{364376C6-E886-482E-B79C-366E5DAB8A5B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Diagnostics.EFCore.FunctionalTests", "src\Middleware\Diagnostics.EntityFrameworkCore\test\FunctionalTests\Diagnostics.EFCore.FunctionalTests.csproj", "{BDC1141A-DA5D-48D4-B0A7-61612D4F8024}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Diagnostics.EFCore.FunctionalTests", "src\Middleware\Diagnostics.EntityFrameworkCore\test\FunctionalTests\Diagnostics.EFCore.FunctionalTests.csproj", "{BDC1141A-DA5D-48D4-B0A7-61612D4F8024}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests", "src\Middleware\Diagnostics.EntityFrameworkCore\test\UnitTests\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests.csproj", "{4D08EC2C-A488-414E-8739-341E197773DB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests", "src\Middleware\Diagnostics.EntityFrameworkCore\test\UnitTests\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests.csproj", "{4D08EC2C-A488-414E-8739-341E197773DB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MiddlewareAnalysis", "MiddlewareAnalysis", "{07AAFECB-4C42-4533-80D5-0452989FA0F7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{81143573-811E-4F61-9331-6B7173DBA67C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiddlewareAnalysisSample", "src\Middleware\MiddlewareAnalysis\samples\MiddlewareAnalysisSample\MiddlewareAnalysisSample.csproj", "{F4160B93-03F2-4C0F-BEBA-C89F02CACD17}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiddlewareAnalysisSample", "src\Middleware\MiddlewareAnalysis\samples\MiddlewareAnalysisSample\MiddlewareAnalysisSample.csproj", "{F4160B93-03F2-4C0F-BEBA-C89F02CACD17}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.MiddlewareAnalysis", "src\Middleware\MiddlewareAnalysis\src\Microsoft.AspNetCore.MiddlewareAnalysis.csproj", "{35AA4E31-D157-4AD2-B04F-EE3956795420}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.MiddlewareAnalysis", "src\Middleware\MiddlewareAnalysis\src\Microsoft.AspNetCore.MiddlewareAnalysis.csproj", "{35AA4E31-D157-4AD2-B04F-EE3956795420}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.MiddlewareAnalysis.Tests", "src\Middleware\MiddlewareAnalysis\test\Microsoft.AspNetCore.MiddlewareAnalysis.Tests.csproj", "{21F89E50-DF06-435E-872B-7639BCE695DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.MiddlewareAnalysis.Tests", "src\Middleware\MiddlewareAnalysis\test\Microsoft.AspNetCore.MiddlewareAnalysis.Tests.csproj", "{21F89E50-DF06-435E-872B-7639BCE695DF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HealthChecks", "HealthChecks", "{DF86A07D-A370-4CBD-97DD-DCB09466545F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.HealthChecks", "src\Middleware\HealthChecks\src\Microsoft.AspNetCore.Diagnostics.HealthChecks.csproj", "{8C828211-F2EC-4BFD-B922-98F73D9DAB5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.HealthChecks", "src\Middleware\HealthChecks\src\Microsoft.AspNetCore.Diagnostics.HealthChecks.csproj", "{8C828211-F2EC-4BFD-B922-98F73D9DAB5E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{8EFA9CC7-D03D-4535-898C-F3B80BB19F21}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Diagnostics.HealthChecks.Tests", "src\Middleware\HealthChecks\test\UnitTests\Microsoft.AspNetCore.Diagnostics.HealthChecks.Tests.csproj", "{2E690E42-B20F-4702-9478-1707EEC7C02F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.HealthChecks.Tests", "src\Middleware\HealthChecks\test\UnitTests\Microsoft.AspNetCore.Diagnostics.HealthChecks.Tests.csproj", "{2E690E42-B20F-4702-9478-1707EEC7C02F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HealthChecks.EntityFrameworkCore", "HealthChecks.EntityFrameworkCore", "{9C7F31F8-B782-4016-9B0E-72C8CB42334C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore", "src\Middleware\HealthChecks.EntityFrameworkCore\src\Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.csproj", "{6DEB6C24-3A35-4E72-BCA8-33344EEE0119}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore", "src\Middleware\HealthChecks.EntityFrameworkCore\src\Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.csproj", "{6DEB6C24-3A35-4E72-BCA8-33344EEE0119}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.Tests", "src\Middleware\HealthChecks.EntityFrameworkCore\test\Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.Tests.csproj", "{922869D9-B9FF-4828-8C6F-FCA7963DB011}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.Tests", "src\Middleware\HealthChecks.EntityFrameworkCore\test\Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.Tests.csproj", "{922869D9-B9FF-4828-8C6F-FCA7963DB011}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HostFilteringSample", "src\Middleware\HostFiltering\sample\HostFilteringSample.csproj", "{ECF7A440-D5FC-473F-958C-FE27643844D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostFilteringSample", "src\Middleware\HostFiltering\sample\HostFilteringSample.csproj", "{ECF7A440-D5FC-473F-958C-FE27643844D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.HostFiltering.Tests", "src\Middleware\HostFiltering\test\Microsoft.AspNetCore.HostFiltering.Tests.csproj", "{92820F5C-4018-4F10-A14B-0AEE619202EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HostFiltering.Tests", "src\Middleware\HostFiltering\test\Microsoft.AspNetCore.HostFiltering.Tests.csproj", "{92820F5C-4018-4F10-A14B-0AEE619202EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpOverridesSample", "src\Middleware\HttpOverrides\sample\HttpOverridesSample.csproj", "{2C76F024-8C85-4672-AC23-ACEA0FA5E9B5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpOverridesSample", "src\Middleware\HttpOverrides\sample\HttpOverridesSample.csproj", "{2C76F024-8C85-4672-AC23-ACEA0FA5E9B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.HttpOverrides.Tests", "src\Middleware\HttpOverrides\test\Microsoft.AspNetCore.HttpOverrides.Tests.csproj", "{C520CDA2-BA0C-4427-8B26-F6B3C2FEB5A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpOverrides.Tests", "src\Middleware\HttpOverrides\test\Microsoft.AspNetCore.HttpOverrides.Tests.csproj", "{C520CDA2-BA0C-4427-8B26-F6B3C2FEB5A5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpsPolicySample", "src\Middleware\HttpsPolicy\sample\HttpsPolicySample.csproj", "{91DD8440-7A66-4880-A0CE-BC6009D2DCFF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpsPolicySample", "src\Middleware\HttpsPolicy\sample\HttpsPolicySample.csproj", "{91DD8440-7A66-4880-A0CE-BC6009D2DCFF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.HttpsPolicy.Tests", "src\Middleware\HttpsPolicy\test\Microsoft.AspNetCore.HttpsPolicy.Tests.csproj", "{A837D64D-435A-473F-8828-8E1DD95D8E4B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpsPolicy.Tests", "src\Middleware\HttpsPolicy\test\Microsoft.AspNetCore.HttpsPolicy.Tests.csproj", "{A837D64D-435A-473F-8828-8E1DD95D8E4B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResponseCompressionSample", "src\Middleware\ResponseCompression\sample\ResponseCompressionSample.csproj", "{4BA8A846-5B24-4F46-90B9-FFEFB889C028}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ResponseCompressionSample", "src\Middleware\ResponseCompression\sample\ResponseCompressionSample.csproj", "{4BA8A846-5B24-4F46-90B9-FFEFB889C028}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.ResponseCompression.Tests", "src\Middleware\ResponseCompression\test\Microsoft.AspNetCore.ResponseCompression.Tests.csproj", "{3CCE49CA-4145-401F-8963-AC28F0908678}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ResponseCompression.Tests", "src\Middleware\ResponseCompression\test\Microsoft.AspNetCore.ResponseCompression.Tests.csproj", "{3CCE49CA-4145-401F-8963-AC28F0908678}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RewriteSample", "src\Middleware\Rewrite\sample\RewriteSample.csproj", "{A1628BC4-134A-4854-9F98-B841520F1497}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RewriteSample", "src\Middleware\Rewrite\sample\RewriteSample.csproj", "{A1628BC4-134A-4854-9F98-B841520F1497}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Rewrite.Tests", "src\Middleware\Rewrite\test\Microsoft.AspNetCore.Rewrite.Tests.csproj", "{C69E36EC-3972-4CDF-A467-94CBD7C691A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Rewrite.Tests", "src\Middleware\Rewrite\test\Microsoft.AspNetCore.Rewrite.Tests.csproj", "{C69E36EC-3972-4CDF-A467-94CBD7C691A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LocalizationSample", "src\Middleware\Localization\sample\LocalizationSample.csproj", "{B4FCACA3-FD16-4B89-9D3D-E19C141CE926}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LocalizationSample", "src\Middleware\Localization\sample\LocalizationSample.csproj", "{B4FCACA3-FD16-4B89-9D3D-E19C141CE926}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{C9E481E5-F77D-4462-8E85-1F7FF2DCAA97}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Localization.FunctionalTests", "src\Middleware\Localization\test\FunctionalTests\Microsoft.AspNetCore.Localization.FunctionalTests.csproj", "{5930AA76-C824-45F0-9D30-7EE4CB231E7A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Localization.FunctionalTests", "src\Middleware\Localization\test\FunctionalTests\Microsoft.AspNetCore.Localization.FunctionalTests.csproj", "{5930AA76-C824-45F0-9D30-7EE4CB231E7A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Localization.Tests", "src\Middleware\Localization\test\UnitTests\Microsoft.AspNetCore.Localization.Tests.csproj", "{5BE39E84-020F-405D-99AF-5D46928785AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Localization.Tests", "src\Middleware\Localization\test\UnitTests\Microsoft.AspNetCore.Localization.Tests.csproj", "{5BE39E84-020F-405D-99AF-5D46928785AF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Localization.Routing", "Localization.Routing", "{8C289D6B-712F-442F-A010-218784BFA4D4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Localization.Routing", "src\Middleware\Localization.Routing\src\Microsoft.AspNetCore.Localization.Routing.csproj", "{D8DE9D37-4733-45F0-9F9D-B5A184CA1ED8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Localization.Routing", "src\Middleware\Localization.Routing\src\Microsoft.AspNetCore.Localization.Routing.csproj", "{D8DE9D37-4733-45F0-9F9D-B5A184CA1ED8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Localization.Routing.Tests", "src\Middleware\Localization.Routing\test\Microsoft.AspNetCore.Localization.Routing.Tests.csproj", "{99CB7560-3B6F-447B-880A-C5A53F1E56F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Localization.Routing.Tests", "src\Middleware\Localization.Routing\test\Microsoft.AspNetCore.Localization.Routing.Tests.csproj", "{99CB7560-3B6F-447B-880A-C5A53F1E56F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.ResponseCompression.Performance", "src\Middleware\ResponseCompression\perf\Microsoft.AspNetCore.ResponseCompression.Performance.csproj", "{605D0C19-6E99-4A73-B336-1AD700AE93C0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ResponseCompression.Performance", "src\Middleware\ResponseCompression\perf\Microsoft.AspNetCore.ResponseCompression.Performance.csproj", "{605D0C19-6E99-4A73-B336-1AD700AE93C0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConformanceTests", "ConformanceTests", "{73BC406B-4D98-4BE0-A756-19F0F3D2B587}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutobahnTestApp", "src\Middleware\WebSockets\test\ConformanceTests\AutobahnTestApp\AutobahnTestApp.csproj", "{2292C14D-151C-4AB7-AA91-7F0165E2073E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutobahnTestApp", "src\Middleware\WebSockets\test\ConformanceTests\AutobahnTestApp\AutobahnTestApp.csproj", "{2292C14D-151C-4AB7-AA91-7F0165E2073E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{45211BB8-4F51-427D-ADA2-7478E3398A60}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Cors.Test", "src\Middleware\CORS\test\UnitTests\Microsoft.AspNetCore.Cors.Test.csproj", "{F8410622-2764-4B05-BEC4-8D25CABBC45A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Cors.Test", "src\Middleware\CORS\test\UnitTests\Microsoft.AspNetCore.Cors.Test.csproj", "{F8410622-2764-4B05-BEC4-8D25CABBC45A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{2E4D61F1-F504-450E-B4C2-11C5214E7200}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StaticFileSample", "src\Middleware\StaticFiles\samples\StaticFileSample\StaticFileSample.csproj", "{5EC5F788-458B-4957-8E33-ADD82DB6E420}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StaticFileSample", "src\Middleware\StaticFiles\samples\StaticFileSample\StaticFileSample.csproj", "{5EC5F788-458B-4957-8E33-ADD82DB6E420}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{491D5D41-4424-4642-AF7C-A7DD186CD282}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.StaticFiles.FunctionalTests", "src\Middleware\StaticFiles\test\FunctionalTests\Microsoft.AspNetCore.StaticFiles.FunctionalTests.csproj", "{7135BA54-DE2E-42CD-8261-1A88907843FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.StaticFiles.FunctionalTests", "src\Middleware\StaticFiles\test\FunctionalTests\Microsoft.AspNetCore.StaticFiles.FunctionalTests.csproj", "{7135BA54-DE2E-42CD-8261-1A88907843FC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.StaticFiles.Tests", "src\Middleware\StaticFiles\test\UnitTests\Microsoft.AspNetCore.StaticFiles.Tests.csproj", "{A72BB350-8903-4914-9583-A156B66419EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.StaticFiles.Tests", "src\Middleware\StaticFiles\test\UnitTests\Microsoft.AspNetCore.StaticFiles.Tests.csproj", "{A72BB350-8903-4914-9583-A156B66419EB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ResponseCaching", "ResponseCaching", "{7CBB1320-BF86-4B32-9D2B-273A45057727}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.ResponseCaching", "src\Middleware\ResponseCaching\src\Microsoft.AspNetCore.ResponseCaching.csproj", "{186AF4F9-9AFF-4395-9340-006F78D85DFB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ResponseCaching", "src\Middleware\ResponseCaching\src\Microsoft.AspNetCore.ResponseCaching.csproj", "{186AF4F9-9AFF-4395-9340-006F78D85DFB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{F6BC5402-310D-4B1F-A018-99FD1D6C183A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResponseCachingSample", "src\Middleware\ResponseCaching\samples\ResponseCachingSample\ResponseCachingSample.csproj", "{6BB8474D-B8E1-4B77-AA44-253ACA5E686D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ResponseCachingSample", "src\Middleware\ResponseCaching\samples\ResponseCachingSample\ResponseCachingSample.csproj", "{6BB8474D-B8E1-4B77-AA44-253ACA5E686D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.ResponseCaching.Tests", "src\Middleware\ResponseCaching\test\Microsoft.AspNetCore.ResponseCaching.Tests.csproj", "{8E5588B6-0557-41CF-9A0B-1A0B412754E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ResponseCaching.Tests", "src\Middleware\ResponseCaching\test\Microsoft.AspNetCore.ResponseCaching.Tests.csproj", "{8E5588B6-0557-41CF-9A0B-1A0B412754E1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Session", "Session", "{48BEABD3-2446-466C-8694-D34EF0949369}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SessionSample", "src\Middleware\Session\samples\SessionSample.csproj", "{F0F3E6B1-5BB5-444E-B965-F2A9FFAB26CF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SessionSample", "src\Middleware\Session\samples\SessionSample.csproj", "{F0F3E6B1-5BB5-444E-B965-F2A9FFAB26CF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Session", "src\Middleware\Session\src\Microsoft.AspNetCore.Session.csproj", "{609FEA30-36D6-4FEB-AF07-7BE2BCD4D00B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Session", "src\Middleware\Session\src\Microsoft.AspNetCore.Session.csproj", "{609FEA30-36D6-4FEB-AF07-7BE2BCD4D00B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Session.Tests", "src\Middleware\Session\test\Microsoft.AspNetCore.Session.Tests.csproj", "{A01B523B-35CA-4C14-B792-3887F8741E99}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Session.Tests", "src\Middleware\Session\test\Microsoft.AspNetCore.Session.Tests.csproj", "{A01B523B-35CA-4C14-B792-3887F8741E99}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HttpSys", "HttpSys", "{166E48ED-9738-4E13-8618-0D805F6F0F65}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.HttpSys", "src\Servers\HttpSys\src\Microsoft.AspNetCore.Server.HttpSys.csproj", "{AC0CBDEB-B750-4B81-AEC3-F218A384FB16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.HttpSys", "src\Servers\HttpSys\src\Microsoft.AspNetCore.Server.HttpSys.csproj", "{AC0CBDEB-B750-4B81-AEC3-F218A384FB16}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{81AF139E-F3BB-46FD-B8DB-93A645E5222C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NodeServicesExamples", "src\Middleware\NodeServices\samples\NodeServicesExamples\NodeServicesExamples.csproj", "{49EAD781-92BF-4863-9159-08674548D1BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NodeServicesExamples", "src\Middleware\NodeServices\samples\NodeServicesExamples\NodeServicesExamples.csproj", "{49EAD781-92BF-4863-9159-08674548D1BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.NodeServices.Tests", "src\Middleware\NodeServices\test\Microsoft.AspNetCore.NodeServices.Tests.csproj", "{F7E4CC45-B553-4D58-8B3E-B9F426FAF67F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.NodeServices.Tests", "src\Middleware\NodeServices\test\Microsoft.AspNetCore.NodeServices.Tests.csproj", "{F7E4CC45-B553-4D58-8B3E-B9F426FAF67F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HeaderPropagation", "HeaderPropagation", "{5527E368-FD50-4E8C-B8D8-C3D1374BE4F1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.HeaderPropagation", "src\Middleware\HeaderPropagation\src\Microsoft.AspNetCore.HeaderPropagation.csproj", "{EC7CA990-BB0E-44AF-81B6-44E0E27FDE9B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HeaderPropagation", "src\Middleware\HeaderPropagation\src\Microsoft.AspNetCore.HeaderPropagation.csproj", "{EC7CA990-BB0E-44AF-81B6-44E0E27FDE9B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.HeaderPropagation.Tests", "src\Middleware\HeaderPropagation\test\Microsoft.AspNetCore.HeaderPropagation.Tests.csproj", "{399AC9FB-7DCA-4868-B299-2EE4C88D41AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HeaderPropagation.Tests", "src\Middleware\HeaderPropagation\test\Microsoft.AspNetCore.HeaderPropagation.Tests.csproj", "{399AC9FB-7DCA-4868-B299-2EE4C88D41AD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{C2FDF6AA-A8BD-40A6-81AD-14687927E9FC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeaderPropagationSample", "src\Middleware\HeaderPropagation\samples\HeaderPropagationSample\HeaderPropagationSample.csproj", "{91BD5675-6674-4053-AD04-19F28DD3BAE5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HeaderPropagationSample", "src\Middleware\HeaderPropagation\samples\HeaderPropagationSample\HeaderPropagationSample.csproj", "{91BD5675-6674-4053-AD04-19F28DD3BAE5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConcurrencyLimiter", "ConcurrencyLimiter", "{4F8ED87D-E4D9-4941-94D7-D529D83DDBA0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConcurrencyLimiterSample", "src\Middleware\ConcurrencyLimiter\sample\ConcurrencyLimiterSample.csproj", "{56BA4AB2-B915-46DC-AE67-234D60BFEDBC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConcurrencyLimiterSample", "src\Middleware\ConcurrencyLimiter\sample\ConcurrencyLimiterSample.csproj", "{56BA4AB2-B915-46DC-AE67-234D60BFEDBC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.ConcurrencyLimiter", "src\Middleware\ConcurrencyLimiter\src\Microsoft.AspNetCore.ConcurrencyLimiter.csproj", "{532D447F-0CDE-4BA6-B181-DD1FB4B07BF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ConcurrencyLimiter", "src\Middleware\ConcurrencyLimiter\src\Microsoft.AspNetCore.ConcurrencyLimiter.csproj", "{532D447F-0CDE-4BA6-B181-DD1FB4B07BF0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.ConcurrencyLimiter.Tests", "src\Middleware\ConcurrencyLimiter\test\Microsoft.AspNetCore.ConcurrencyLimiter.Tests.csproj", "{2D6567CC-2BAE-4208-BBD0-F8D2F6E57154}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ConcurrencyLimiter.Tests", "src\Middleware\ConcurrencyLimiter\test\Microsoft.AspNetCore.ConcurrencyLimiter.Tests.csproj", "{2D6567CC-2BAE-4208-BBD0-F8D2F6E57154}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{9ECF118E-D7A5-4805-B698-DE9013BB91C6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks", "src\Middleware\ConcurrencyLimiter\perf\Microbenchmarks\Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks.csproj", "{5BF572A5-24AF-4815-BF0C-F57DA650207D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks", "src\Middleware\ConcurrencyLimiter\perf\Microbenchmarks\Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks.csproj", "{5BF572A5-24AF-4815-BF0C-F57DA650207D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTesting.IIS", "IntegrationTesting.IIS", "{036FB9FC-7F26-4982-B94E-2C32B4C836E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.IntegrationTesting.IIS", "src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj", "{559F1CCF-7E01-4E27-AB45-2E3B6B4984E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IntegrationTesting.IIS", "src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj", "{559F1CCF-7E01-4E27-AB45-2E3B6B4984E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SpaServices.Extensions.Tests", "src\Middleware\SpaServices.Extensions\test\Microsoft.AspNetCore.SpaServices.Extensions.Tests.csproj", "{AF964703-404B-4632-9D1F-8EEE646BBA37}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaServices.Extensions.Tests", "src\Middleware\SpaServices.Extensions\test\Microsoft.AspNetCore.SpaServices.Extensions.Tests.csproj", "{AF964703-404B-4632-9D1F-8EEE646BBA37}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{EE65018D-FA12-461D-B2C5-44CA6E385530}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.WebSockets.Microbenchmarks", "src\Middleware\perf\Microbenchmarks\Microsoft.AspNetCore.WebSockets.Microbenchmarks.csproj", "{A8E1962B-688E-44B3-81F3-BBB9891534CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebSockets.Microbenchmarks", "src\Middleware\perf\Microbenchmarks\Microsoft.AspNetCore.WebSockets.Microbenchmarks.csproj", "{A8E1962B-688E-44B3-81F3-BBB9891534CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SpaServices.Tests", "src\Middleware\SpaServices\test\Microsoft.AspNetCore.SpaServices.Tests.csproj", "{81E8CF5B-F285-40C6-B935-6E5F7AA7A072}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaServices.Tests", "src\Middleware\SpaServices\test\Microsoft.AspNetCore.SpaServices.Tests.csproj", "{81E8CF5B-F285-40C6-B935-6E5F7AA7A072}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.ResponseCaching.Microbenchmarks", "src\Middleware\perf\ResponseCaching.Microbenchmarks\Microsoft.AspNetCore.ResponseCaching.Microbenchmarks.csproj", "{8A745E35-8098-4EB4-AC55-587B9F0DC4BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ResponseCaching.Microbenchmarks", "src\Middleware\perf\ResponseCaching.Microbenchmarks\Microsoft.AspNetCore.ResponseCaching.Microbenchmarks.csproj", "{8A745E35-8098-4EB4-AC55-587B9F0DC4BE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MusicStore", "MusicStore", "{884AED21-7931-42A3-B08A-E58F7B0D6E7F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8DA88110-5A13-41A9-9F9D-674D921EB442}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicStore", "src\MusicStore\samples\MusicStore\MusicStore.csproj", "{4BCF2228-159D-4547-8D54-CDD2252D076A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicStore", "src\MusicStore\samples\MusicStore\MusicStore.csproj", "{4BCF2228-159D-4547-8D54-CDD2252D076A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2D347127-3B13-47B1-84EC-770A9C1E11B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicStore.Test", "src\MusicStore\test\MusicStore.Test\MusicStore.Test.csproj", "{A7802482-55BA-4D95-BE79-8A601131F527}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicStore.Test", "src\MusicStore\test\MusicStore.Test\MusicStore.Test.csproj", "{A7802482-55BA-4D95-BE79-8A601131F527}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicStore.E2ETests", "src\MusicStore\test\MusicStore.E2ETests\MusicStore.E2ETests.csproj", "{81947277-035F-41F6-A1D4-8EA362CB46D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicStore.E2ETests", "src\MusicStore\test\MusicStore.E2ETests\MusicStore.E2ETests.csproj", "{81947277-035F-41F6-A1D4-8EA362CB46D2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MicrosoftAccount", "MicrosoftAccount", "{8C4006DF-FF48-46B6-A124-10B1EEAA266E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.MicrosoftAccount", "src\Security\Authentication\MicrosoftAccount\src\Microsoft.AspNetCore.Authentication.MicrosoftAccount.csproj", "{F5C54062-B19C-4291-A816-F1B5A167369A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.MicrosoftAccount", "src\Security\Authentication\MicrosoftAccount\src\Microsoft.AspNetCore.Authentication.MicrosoftAccount.csproj", "{F5C54062-B19C-4291-A816-F1B5A167369A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{056535BC-3E30-49E2-BE3B-630C62E641A5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSites", "WebSites", "{088C37A5-30D2-40FB-B031-D163CFBED006}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicWebSite", "src\Mvc\test\WebSites\BasicWebSite\BasicWebSite.csproj", "{B5F938FB-37DF-4201-9537-E043513701D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BasicWebSite", "src\Mvc\test\WebSites\BasicWebSite\BasicWebSite.csproj", "{B5F938FB-37DF-4201-9537-E043513701D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mvc.RoutingWebSite", "src\Mvc\test\WebSites\RoutingWebSite\Mvc.RoutingWebSite.csproj", "{2C155AA6-B549-4FCA-A9A0-34F28A9A4160}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mvc.RoutingWebSite", "src\Mvc\test\WebSites\RoutingWebSite\Mvc.RoutingWebSite.csproj", "{2C155AA6-B549-4FCA-A9A0-34F28A9A4160}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorWebSite", "src\Mvc\test\WebSites\RazorWebSite\RazorWebSite.csproj", "{1CF04156-B477-4B88-A25B-15D4E6F587D7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorWebSite", "src\Mvc\test\WebSites\RazorWebSite\RazorWebSite.csproj", "{1CF04156-B477-4B88-A25B-15D4E6F587D7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FormatterWebSite", "src\Mvc\test\WebSites\FormatterWebSite\FormatterWebSite.csproj", "{AC688973-3FAD-4A04-99C9-414782E5AE42}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FormatterWebSite", "src\Mvc\test\WebSites\FormatterWebSite\FormatterWebSite.csproj", "{AC688973-3FAD-4A04-99C9-414782E5AE42}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiExplorerWebSite", "src\Mvc\test\WebSites\ApiExplorerWebSite\ApiExplorerWebSite.csproj", "{58BAA9A7-4A2A-459A-BD41-086E8F83022D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiExplorerWebSite", "src\Mvc\test\WebSites\ApiExplorerWebSite\ApiExplorerWebSite.csproj", "{58BAA9A7-4A2A-459A-BD41-086E8F83022D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VersioningWebSite", "src\Mvc\test\WebSites\VersioningWebSite\VersioningWebSite.csproj", "{F4F604C5-C4BB-4217-94DB-2A51EC4AAEA4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VersioningWebSite", "src\Mvc\test\WebSites\VersioningWebSite\VersioningWebSite.csproj", "{F4F604C5-C4BB-4217-94DB-2A51EC4AAEA4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagHelpersWebSite", "src\Mvc\test\WebSites\TagHelpersWebSite\TagHelpersWebSite.csproj", "{185D4D67-FFE4-4673-8F3A-AD77EA2D3931}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TagHelpersWebSite", "src\Mvc\test\WebSites\TagHelpersWebSite\TagHelpersWebSite.csproj", "{185D4D67-FFE4-4673-8F3A-AD77EA2D3931}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FilesWebSite", "src\Mvc\test\WebSites\FilesWebSite\FilesWebSite.csproj", "{D8BA7FEB-2720-4CCD-8C7F-FAAC5D8D0633}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FilesWebSite", "src\Mvc\test\WebSites\FilesWebSite\FilesWebSite.csproj", "{D8BA7FEB-2720-4CCD-8C7F-FAAC5D8D0633}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApplicationModelWebSite", "src\Mvc\test\WebSites\ApplicationModelWebSite\ApplicationModelWebSite.csproj", "{975E7F46-8044-463E-89E1-56EB0F7913B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationModelWebSite", "src\Mvc\test\WebSites\ApplicationModelWebSite\ApplicationModelWebSite.csproj", "{975E7F46-8044-463E-89E1-56EB0F7913B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HtmlGenerationWebSite", "src\Mvc\test\WebSites\HtmlGenerationWebSite\HtmlGenerationWebSite.csproj", "{BAD5E853-2C9D-41D5-844D-470BC33B43E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HtmlGenerationWebSite", "src\Mvc\test\WebSites\HtmlGenerationWebSite\HtmlGenerationWebSite.csproj", "{BAD5E853-2C9D-41D5-844D-470BC33B43E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ErrorPageMiddlewareWebSite", "src\Mvc\test\WebSites\ErrorPageMiddlewareWebSite\ErrorPageMiddlewareWebSite.csproj", "{9C2BD6C2-803D-4D19-BD40-860F1B340DC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ErrorPageMiddlewareWebSite", "src\Mvc\test\WebSites\ErrorPageMiddlewareWebSite\ErrorPageMiddlewareWebSite.csproj", "{9C2BD6C2-803D-4D19-BD40-860F1B340DC7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XmlFormattersWebSite", "src\Mvc\test\WebSites\XmlFormattersWebSite\XmlFormattersWebSite.csproj", "{A8096362-6304-4DAF-A091-978BE764FF30}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XmlFormattersWebSite", "src\Mvc\test\WebSites\XmlFormattersWebSite\XmlFormattersWebSite.csproj", "{A8096362-6304-4DAF-A091-978BE764FF30}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControllersFromServicesWebSite", "src\Mvc\test\WebSites\ControllersFromServicesWebSite\ControllersFromServicesWebSite.csproj", "{0FD49F5F-2950-43B8-8467-78596A4421AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControllersFromServicesWebSite", "src\Mvc\test\WebSites\ControllersFromServicesWebSite\ControllersFromServicesWebSite.csproj", "{0FD49F5F-2950-43B8-8467-78596A4421AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ControllersFromServicesClassLibrary", "src\Mvc\test\WebSites\ControllersFromServicesClassLibrary\ControllersFromServicesClassLibrary.csproj", "{773877FC-7C04-48F9-BC1D-9B4231D9B6D1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ControllersFromServicesClassLibrary", "src\Mvc\test\WebSites\ControllersFromServicesClassLibrary\ControllersFromServicesClassLibrary.csproj", "{773877FC-7C04-48F9-BC1D-9B4231D9B6D1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CorsWebSite", "src\Mvc\test\WebSites\CorsWebSite\CorsWebSite.csproj", "{7DFECECC-E30C-4217-9746-86A8D652E110}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CorsWebSite", "src\Mvc\test\WebSites\CorsWebSite\CorsWebSite.csproj", "{7DFECECC-E30C-4217-9746-86A8D652E110}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{B8825E86-B8EA-4666-B681-C443D027C95D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MvcSandbox", "src\Mvc\samples\MvcSandbox\MvcSandbox.csproj", "{3936CFC3-AA2D-40CF-A5CB-3C676D99BB90}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MvcSandbox", "src\Mvc\samples\MvcSandbox\MvcSandbox.csproj", "{3936CFC3-AA2D-40CF-A5CB-3C676D99BB90}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleWebSite", "src\Mvc\test\WebSites\SimpleWebSite\SimpleWebSite.csproj", "{70F83D54-91BF-4BED-8A82-F310D640C9F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleWebSite", "src\Mvc\test\WebSites\SimpleWebSite\SimpleWebSite.csproj", "{70F83D54-91BF-4BED-8A82-F310D640C9F8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SecurityWebSite", "src\Mvc\test\WebSites\SecurityWebSite\SecurityWebSite.csproj", "{4BCC89AB-3429-4C38-AFF9-DBBD605075F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SecurityWebSite", "src\Mvc\test\WebSites\SecurityWebSite\SecurityWebSite.csproj", "{4BCC89AB-3429-4C38-AFF9-DBBD605075F6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorPagesWebSite", "src\Mvc\test\WebSites\RazorPagesWebSite\RazorPagesWebSite.csproj", "{12EFA8EE-25FC-4CAD-98AC-B2B97368579A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorPagesWebSite", "src\Mvc\test\WebSites\RazorPagesWebSite\RazorPagesWebSite.csproj", "{12EFA8EE-25FC-4CAD-98AC-B2B97368579A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{CA6DD42B-2DBC-4061-91E8-C91FA8F4C410}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Performance", "src\Mvc\benchmarks\Microsoft.AspNetCore.Mvc.Performance\Microsoft.AspNetCore.Mvc.Performance.csproj", "{199639E9-0FAA-49C4-A75F-95EE71F32CC0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Performance", "src\Mvc\benchmarks\Microsoft.AspNetCore.Mvc.Performance\Microsoft.AspNetCore.Mvc.Performance.csproj", "{199639E9-0FAA-49C4-A75F-95EE71F32CC0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorBuildWebSite", "src\Mvc\test\WebSites\RazorBuildWebSite\RazorBuildWebSite.csproj", "{F634FAC8-1CE5-4AD2-8A8B-92CFBB127D3A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorBuildWebSite", "src\Mvc\test\WebSites\RazorBuildWebSite\RazorBuildWebSite.csproj", "{F634FAC8-1CE5-4AD2-8A8B-92CFBB127D3A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorBuildWebSite.Views", "src\Mvc\test\WebSites\RazorBuildWebSite.Views\RazorBuildWebSite.Views.csproj", "{039266E2-5F43-4B94-86DA-8BDD7BE8885F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorBuildWebSite.Views", "src\Mvc\test\WebSites\RazorBuildWebSite.Views\RazorBuildWebSite.Views.csproj", "{039266E2-5F43-4B94-86DA-8BDD7BE8885F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mvc.Analyzers.Test", "src\Mvc\Mvc.Analyzers\test\Mvc.Analyzers.Test.csproj", "{EA846E30-4F38-4315-844F-D5BC20F74B07}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mvc.Analyzers.Test", "src\Mvc\Mvc.Analyzers\test\Mvc.Analyzers.Test.csproj", "{EA846E30-4F38-4315-844F-D5BC20F74B07}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorPagesClassLibrary", "src\Mvc\test\WebSites\RazorPagesClassLibrary\RazorPagesClassLibrary.csproj", "{3BEA35BC-784F-4892-AF1F-90177B8362A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorPagesClassLibrary", "src\Mvc\test\WebSites\RazorPagesClassLibrary\RazorPagesClassLibrary.csproj", "{3BEA35BC-784F-4892-AF1F-90177B8362A1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{3B0F71CD-980F-48DF-AEDA-A5CDF001F7A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Views.TestCommon", "src\Mvc\shared\Mvc.Views.TestCommon\Microsoft.AspNetCore.Mvc.Views.TestCommon.csproj", "{9D70EEB0-1E6D-4C07-8B5F-5D7E4CD5EE55}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Views.TestCommon", "src\Mvc\shared\Mvc.Views.TestCommon\Microsoft.AspNetCore.Mvc.Views.TestCommon.csproj", "{9D70EEB0-1E6D-4C07-8B5F-5D7E4CD5EE55}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.Api.Analyzers", "Mvc.Api.Analyzers", "{2A92D94B-9825-42D3-AB33-52E3010D74E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mvc.Api.Analyzers.Test", "src\Mvc\Mvc.Api.Analyzers\test\Mvc.Api.Analyzers.Test.csproj", "{E27910E1-6CCE-41B2-97DD-AE874007B592}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mvc.Api.Analyzers.Test", "src\Mvc\Mvc.Api.Analyzers\test\Mvc.Api.Analyzers.Test.csproj", "{E27910E1-6CCE-41B2-97DD-AE874007B592}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Api.Analyzers", "src\Mvc\Mvc.Api.Analyzers\src\Microsoft.AspNetCore.Mvc.Api.Analyzers.csproj", "{72879779-4CAC-4CB0-A052-FF60EB386B7A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Api.Analyzers", "src\Mvc\Mvc.Api.Analyzers\src\Microsoft.AspNetCore.Mvc.Api.Analyzers.csproj", "{72879779-4CAC-4CB0-A052-FF60EB386B7A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Performance.Views", "src\Mvc\benchmarks\Microsoft.AspNetCore.Mvc.Performance.Views\Microsoft.AspNetCore.Mvc.Performance.Views.csproj", "{5BD69C96-623F-427B-9AAF-67C0817A9A9A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Performance.Views", "src\Mvc\benchmarks\Microsoft.AspNetCore.Mvc.Performance.Views\Microsoft.AspNetCore.Mvc.Performance.Views.csproj", "{5BD69C96-623F-427B-9AAF-67C0817A9A9A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenericHostWebSite", "src\Mvc\test\WebSites\GenericHostWebSite\GenericHostWebSite.csproj", "{D10BA44E-219B-4528-98F5-0CB0FCF17017}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GenericHostWebSite", "src\Mvc\test\WebSites\GenericHostWebSite\GenericHostWebSite.csproj", "{D10BA44E-219B-4528-98F5-0CB0FCF17017}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Test", "src\Mvc\Mvc\test\Microsoft.AspNetCore.Mvc.Test.csproj", "{EAF56BE6-683A-4C34-AC2D-22770EC13915}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Test", "src\Mvc\Mvc\test\Microsoft.AspNetCore.Mvc.Test.csproj", "{EAF56BE6-683A-4C34-AC2D-22770EC13915}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Abstractions.Test", "src\Mvc\Mvc.Abstractions\test\Microsoft.AspNetCore.Mvc.Abstractions.Test.csproj", "{6DA1B006-0D5B-4C92-8ED6-9F1FB99C187A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Abstractions.Test", "src\Mvc\Mvc.Abstractions\test\Microsoft.AspNetCore.Mvc.Abstractions.Test.csproj", "{6DA1B006-0D5B-4C92-8ED6-9F1FB99C187A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.ApiExplorer.Test", "src\Mvc\Mvc.ApiExplorer\test\Microsoft.AspNetCore.Mvc.ApiExplorer.Test.csproj", "{332A8F84-FC5B-44A5-95A2-379B69C6E755}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.ApiExplorer.Test", "src\Mvc\Mvc.ApiExplorer\test\Microsoft.AspNetCore.Mvc.ApiExplorer.Test.csproj", "{332A8F84-FC5B-44A5-95A2-379B69C6E755}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Core.Test", "src\Mvc\Mvc.Core\test\Microsoft.AspNetCore.Mvc.Core.Test.csproj", "{A28B3D43-619F-44A9-9463-78F0E2474351}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Core.Test", "src\Mvc\Mvc.Core\test\Microsoft.AspNetCore.Mvc.Core.Test.csproj", "{A28B3D43-619F-44A9-9463-78F0E2474351}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Cors.Test", "src\Mvc\Mvc.Cors\test\Microsoft.AspNetCore.Mvc.Cors.Test.csproj", "{926D431D-D95F-42BA-817B-DFEAF697E007}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Cors.Test", "src\Mvc\Mvc.Cors\test\Microsoft.AspNetCore.Mvc.Cors.Test.csproj", "{926D431D-D95F-42BA-817B-DFEAF697E007}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.DataAnnotations.Test", "src\Mvc\Mvc.DataAnnotations\test\Microsoft.AspNetCore.Mvc.DataAnnotations.Test.csproj", "{00D4573D-B61D-48C2-BCB4-027A19EB3247}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.DataAnnotations.Test", "src\Mvc\Mvc.DataAnnotations\test\Microsoft.AspNetCore.Mvc.DataAnnotations.Test.csproj", "{00D4573D-B61D-48C2-BCB4-027A19EB3247}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.Formatters.Xml", "Mvc.Formatters.Xml", "{46AB5306-4FF5-4A4B-8009-DFCFAB178442}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Formatters.Xml", "src\Mvc\Mvc.Formatters.Xml\src\Microsoft.AspNetCore.Mvc.Formatters.Xml.csproj", "{EFDFAA40-91FA-4896-BC6B-06A30CE44DEC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Formatters.Xml", "src\Mvc\Mvc.Formatters.Xml\src\Microsoft.AspNetCore.Mvc.Formatters.Xml.csproj", "{EFDFAA40-91FA-4896-BC6B-06A30CE44DEC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Formatters.Xml.Test", "src\Mvc\Mvc.Formatters.Xml\test\Microsoft.AspNetCore.Mvc.Formatters.Xml.Test.csproj", "{5500EB93-4F36-4929-9730-E593DBC2B7F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Formatters.Xml.Test", "src\Mvc\Mvc.Formatters.Xml\test\Microsoft.AspNetCore.Mvc.Formatters.Xml.Test.csproj", "{5500EB93-4F36-4929-9730-E593DBC2B7F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Localization.Test", "src\Mvc\Mvc.Localization\test\Microsoft.AspNetCore.Mvc.Localization.Test.csproj", "{0F346D2C-FF9F-4F1A-AB0D-BA6F1F731596}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Localization.Test", "src\Mvc\Mvc.Localization\test\Microsoft.AspNetCore.Mvc.Localization.Test.csproj", "{0F346D2C-FF9F-4F1A-AB0D-BA6F1F731596}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Razor.Test", "src\Mvc\Mvc.Razor\test\Microsoft.AspNetCore.Mvc.Razor.Test.csproj", "{19F3DD0C-2FA6-47A5-83A3-F66D7CAA5F70}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.Test", "src\Mvc\Mvc.Razor\test\Microsoft.AspNetCore.Mvc.Razor.Test.csproj", "{19F3DD0C-2FA6-47A5-83A3-F66D7CAA5F70}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.RazorPages.Test", "src\Mvc\Mvc.RazorPages\test\Microsoft.AspNetCore.Mvc.RazorPages.Test.csproj", "{FFA69E3E-1168-49F1-AF95-D16C08E34BC5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.RazorPages.Test", "src\Mvc\Mvc.RazorPages\test\Microsoft.AspNetCore.Mvc.RazorPages.Test.csproj", "{FFA69E3E-1168-49F1-AF95-D16C08E34BC5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.TagHelpers.Test", "src\Mvc\Mvc.TagHelpers\test\Microsoft.AspNetCore.Mvc.TagHelpers.Test.csproj", "{DE9982E8-CBC6-4CD7-B322-AC0D792F7136}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.TagHelpers.Test", "src\Mvc\Mvc.TagHelpers\test\Microsoft.AspNetCore.Mvc.TagHelpers.Test.csproj", "{DE9982E8-CBC6-4CD7-B322-AC0D792F7136}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.ViewFeatures.Test", "src\Mvc\Mvc.ViewFeatures\test\Microsoft.AspNetCore.Mvc.ViewFeatures.Test.csproj", "{687BD42C-54CD-4E80-A877-6E278AE21105}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.ViewFeatures.Test", "src\Mvc\Mvc.ViewFeatures\test\Microsoft.AspNetCore.Mvc.ViewFeatures.Test.csproj", "{687BD42C-54CD-4E80-A877-6E278AE21105}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.FunctionalTests", "src\Mvc\test\Mvc.FunctionalTests\Microsoft.AspNetCore.Mvc.FunctionalTests.csproj", "{F0A4EEF4-EBD5-4F01-96D0-183478ECC797}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.FunctionalTests", "src\Mvc\test\Mvc.FunctionalTests\Microsoft.AspNetCore.Mvc.FunctionalTests.csproj", "{F0A4EEF4-EBD5-4F01-96D0-183478ECC797}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.IntegrationTests", "src\Mvc\test\Mvc.IntegrationTests\Microsoft.AspNetCore.Mvc.IntegrationTests.csproj", "{BD57D455-9B11-4BA6-9F1D-6B289284642D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.IntegrationTests", "src\Mvc\test\Mvc.IntegrationTests\Microsoft.AspNetCore.Mvc.IntegrationTests.csproj", "{BD57D455-9B11-4BA6-9F1D-6B289284642D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.TestDiagnosticListener", "src\Mvc\shared\Mvc.TestDiagnosticListener\Microsoft.AspNetCore.Mvc.TestDiagnosticListener.csproj", "{0C6E7B48-5D25-4E83-8958-B26DDC8E2BB3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.TestDiagnosticListener", "src\Mvc\shared\Mvc.TestDiagnosticListener\Microsoft.AspNetCore.Mvc.TestDiagnosticListener.csproj", "{0C6E7B48-5D25-4E83-8958-B26DDC8E2BB3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Core.TestCommon", "src\Mvc\shared\Mvc.Core.TestCommon\Microsoft.AspNetCore.Mvc.Core.TestCommon.csproj", "{16F6B07A-3ECA-4BFB-ABDF-DE1D224D2AF3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Core.TestCommon", "src\Mvc\shared\Mvc.Core.TestCommon\Microsoft.AspNetCore.Mvc.Core.TestCommon.csproj", "{16F6B07A-3ECA-4BFB-ABDF-DE1D224D2AF3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.NewtonsoftJson.Test", "src\Mvc\Mvc.NewtonsoftJson\test\Microsoft.AspNetCore.Mvc.NewtonsoftJson.Test.csproj", "{6D9C0B4C-A902-4F37-921F-1A5B14405463}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.NewtonsoftJson.Test", "src\Mvc\Mvc.NewtonsoftJson\test\Microsoft.AspNetCore.Mvc.NewtonsoftJson.Test.csproj", "{6D9C0B4C-A902-4F37-921F-1A5B14405463}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.Razor.RuntimeCompilation", "Mvc.Razor.RuntimeCompilation", "{59BDE9D7-C177-4A40-B1EF-267FB260A59C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation", "src\Mvc\Mvc.Razor.RuntimeCompilation\src\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.csproj", "{9FF8728F-B953-4481-9B9F-11351CA0BFE6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation", "src\Mvc\Mvc.Razor.RuntimeCompilation\src\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.csproj", "{9FF8728F-B953-4481-9B9F-11351CA0BFE6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.Test", "src\Mvc\Mvc.Razor.RuntimeCompilation\test\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.Test.csproj", "{586ECE45-FD14-4520-9823-0A9B043FCC6E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.Test", "src\Mvc\Mvc.Razor.RuntimeCompilation\test\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.Test.csproj", "{586ECE45-FD14-4520-9823-0A9B043FCC6E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorBuildWebSite.PrecompiledViews", "src\Mvc\test\WebSites\RazorBuildWebSite.PrecompiledViews\RazorBuildWebSite.PrecompiledViews.csproj", "{6BDD94A4-91DF-40F5-A1CE-88D46F26084F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorBuildWebSite.PrecompiledViews", "src\Mvc\test\WebSites\RazorBuildWebSite.PrecompiledViews\RazorBuildWebSite.PrecompiledViews.csproj", "{6BDD94A4-91DF-40F5-A1CE-88D46F26084F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProjectTemplates", "ProjectTemplates", "{08D53E58-4AAE-40C4-8497-63EC8664F304}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.Web.ProjectTemplates", "src\ProjectTemplates\Web.ProjectTemplates\Microsoft.DotNet.Web.ProjectTemplates.csproj", "{5D3C520F-0CA7-4759-A563-40496545FA48}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.ProjectTemplates", "src\ProjectTemplates\Web.ProjectTemplates\Microsoft.DotNet.Web.ProjectTemplates.csproj", "{5D3C520F-0CA7-4759-A563-40496545FA48}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.Web.Spa.ProjectTemplates", "src\ProjectTemplates\Web.Spa.ProjectTemplates\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj", "{C732CA83-EEBE-4DAB-B567-5A35640FE8CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.Spa.ProjectTemplates", "src\ProjectTemplates\Web.Spa.ProjectTemplates\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj", "{C732CA83-EEBE-4DAB-B567-5A35640FE8CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.Web.Client.ItemTemplates", "src\ProjectTemplates\Web.Client.ItemTemplates\Microsoft.DotNet.Web.Client.ItemTemplates.csproj", "{4F2C221D-7D0B-46B3-9362-2D68F92ECF29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.Client.ItemTemplates", "src\ProjectTemplates\Web.Client.ItemTemplates\Microsoft.DotNet.Web.Client.ItemTemplates.csproj", "{4F2C221D-7D0B-46B3-9362-2D68F92ECF29}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.Web.ItemTemplates", "src\ProjectTemplates\Web.ItemTemplates\Microsoft.DotNet.Web.ItemTemplates.csproj", "{D0E73F40-0DA9-42A9-8A88-EED8D5EFBEFB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.ItemTemplates", "src\ProjectTemplates\Web.ItemTemplates\Microsoft.DotNet.Web.ItemTemplates.csproj", "{D0E73F40-0DA9-42A9-8A88-EED8D5EFBEFB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectTemplates.Tests", "src\ProjectTemplates\test\ProjectTemplates.Tests.csproj", "{6DE03095-7EAC-41DF-8AE4-3018ED29BC61}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectTemplates.Tests", "src\ProjectTemplates\test\ProjectTemplates.Tests.csproj", "{6DE03095-7EAC-41DF-8AE4-3018ED29BC61}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorTemplates.Tests", "src\ProjectTemplates\BlazorTemplates.Tests\BlazorTemplates.Tests.csproj", "{18CE63FC-3BFE-47DF-A8D7-9D716FEB04C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorTemplates.Tests", "src\ProjectTemplates\BlazorTemplates.Tests\BlazorTemplates.Tests.csproj", "{18CE63FC-3BFE-47DF-A8D7-9D716FEB04C9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Framework", "Framework", "{A4C26078-B6D8-4FD8-87A6-7C15A3482038}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "App.Runtime", "App.Runtime", "{F1A6BA04-853E-43B5-B27E-54558603837B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.App.Runtime", "src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj", "{3163C56E-99BC-4BD1-8880-4F94A2407741}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.App.Runtime", "src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj", "{3163C56E-99BC-4BD1-8880-4F94A2407741}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Test", "src\Razor\Razor\test\Microsoft.AspNetCore.Razor.Test.csproj", "{776BFCDC-8591-4E3D-BD0D-858A188A033D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test", "src\Razor\Razor\test\Microsoft.AspNetCore.Razor.Test.csproj", "{776BFCDC-8591-4E3D-BD0D-858A188A033D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Runtime.Test", "src\Razor\Razor.Runtime\test\Microsoft.AspNetCore.Razor.Runtime.Test.csproj", "{ED34C082-619E-4CCB-9D26-4E2375633FA2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Runtime.Test", "src\Razor\Razor.Runtime\test\Microsoft.AspNetCore.Razor.Runtime.Test.csproj", "{ED34C082-619E-4CCB-9D26-4E2375633FA2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions", "Microsoft.AspNetCore.Mvc.Razor.Extensions", "{8BA59986-C9AA-4A78-BE18-0A344FB56D09}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions", "src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj", "{2FD6D363-367E-4AAF-BCFE-FC9C3B091B3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions", "src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj", "{2FD6D363-367E-4AAF-BCFE-FC9C3B091B3E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Test", "src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions\test\Microsoft.AspNetCore.Mvc.Razor.Extensions.Test.csproj", "{6FCEE9BC-11C2-4790-8C13-DF81EBCD4E78}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Test", "src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions\test\Microsoft.AspNetCore.Mvc.Razor.Extensions.Test.csproj", "{6FCEE9BC-11C2-4790-8C13-DF81EBCD4E78}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X", "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X", "{1125B180-D389-45A0-BCE5-15ED62EDCC20}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X", "src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.csproj", "{1D628BD5-DC80-4E19-9DBB-58A9F58CF70D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X", "src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.csproj", "{1D628BD5-DC80-4E19-9DBB-58A9F58CF70D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.Test", "src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\test\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.Test.csproj", "{FAA22AA9-CF42-4FAB-8C11-1A3B52546FE0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.Test", "src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\test\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.Test.csproj", "{FAA22AA9-CF42-4FAB-8C11-1A3B52546FE0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X", "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X", "{7114DBBC-4650-4C9C-8827-133F1FA8766F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X", "src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.csproj", "{85797058-0416-4CCC-BBF2-DE8158EC3FED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X", "src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.csproj", "{85797058-0416-4CCC-BBF2-DE8158EC3FED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.Test", "src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\test\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.Test.csproj", "{F48D6A08-FE52-4DDC-9232-E9693019763A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.Test", "src\Razor\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\test\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.Test.csproj", "{F48D6A08-FE52-4DDC-9232-E9693019763A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.AspNetCore.Razor.Language", "Microsoft.AspNetCore.Razor.Language", "{1CBCF1F9-D90D-484E-A2E9-FD4E4174C05E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Language", "src\Razor\Microsoft.AspNetCore.Razor.Language\src\Microsoft.AspNetCore.Razor.Language.csproj", "{A6323D64-C883-46B6-BDA9-916009D44262}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Language", "src\Razor\Microsoft.AspNetCore.Razor.Language\src\Microsoft.AspNetCore.Razor.Language.csproj", "{A6323D64-C883-46B6-BDA9-916009D44262}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Language.Test", "src\Razor\Microsoft.AspNetCore.Razor.Language\test\Microsoft.AspNetCore.Razor.Language.Test.csproj", "{313ADEF5-5A2D-4C11-8655-E227445144E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Language.Test", "src\Razor\Microsoft.AspNetCore.Razor.Language\test\Microsoft.AspNetCore.Razor.Language.Test.csproj", "{313ADEF5-5A2D-4C11-8655-E227445144E2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.AspNetCore.Razor.Tools", "Microsoft.AspNetCore.Razor.Tools", "{B9704650-5360-416C-9393-FAF707766AA8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Tools", "src\Razor\Microsoft.AspNetCore.Razor.Tools\src\Microsoft.AspNetCore.Razor.Tools.csproj", "{4C84173F-5C1F-49A1-895A-C0CA11DE84B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Tools", "src\Razor\Microsoft.AspNetCore.Razor.Tools\src\Microsoft.AspNetCore.Razor.Tools.csproj", "{4C84173F-5C1F-49A1-895A-C0CA11DE84B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Tools.Test", "src\Razor\Microsoft.AspNetCore.Razor.Tools\test\Microsoft.AspNetCore.Razor.Tools.Test.csproj", "{FE095F11-4CD2-406D-A2BB-1BE569603BF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Tools.Test", "src\Razor\Microsoft.AspNetCore.Razor.Tools\test\Microsoft.AspNetCore.Razor.Tools.Test.csproj", "{FE095F11-4CD2-406D-A2BB-1BE569603BF0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.CodeAnalysis.Razor", "Microsoft.CodeAnalysis.Razor", "{3854EA4A-5530-4FEC-971E-B0CB45C5B19D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CodeAnalysis.Razor", "src\Razor\Microsoft.CodeAnalysis.Razor\src\Microsoft.CodeAnalysis.Razor.csproj", "{AE06A841-F90D-486A-9DEF-70495DF4D28A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis.Razor", "src\Razor\Microsoft.CodeAnalysis.Razor\src\Microsoft.CodeAnalysis.Razor.csproj", "{AE06A841-F90D-486A-9DEF-70495DF4D28A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.CodeAnalysis.Razor.Test", "src\Razor\Microsoft.CodeAnalysis.Razor\test\Microsoft.CodeAnalysis.Razor.Test.csproj", "{91A6A69B-21B4-4B05-B188-D0551573DD9B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis.Razor.Test", "src\Razor\Microsoft.CodeAnalysis.Razor\test\Microsoft.CodeAnalysis.Razor.Test.csproj", "{91A6A69B-21B4-4B05-B188-D0551573DD9B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{F6E6A63A-45BE-46BF-B9B4-DA3DDC8FE4B5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Internal.Transport", "src\Razor\tools\Microsoft.AspNetCore.Razor.Internal.Transport\Microsoft.AspNetCore.Razor.Internal.Transport.csproj", "{C3E588B7-AF20-448E-BAF0-D47C29B2E4B0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Internal.Transport", "src\Razor\tools\Microsoft.AspNetCore.Razor.Internal.Transport\Microsoft.AspNetCore.Razor.Internal.Transport.csproj", "{C3E588B7-AF20-448E-BAF0-D47C29B2E4B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RazorSyntaxGenerator", "src\Razor\tools\RazorSyntaxGenerator\RazorSyntaxGenerator.csproj", "{8B37B987-B7A2-4A26-8CF1-7AC1E9FA7ADC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorSyntaxGenerator", "src\Razor\tools\RazorSyntaxGenerator\RazorSyntaxGenerator.csproj", "{8B37B987-B7A2-4A26-8CF1-7AC1E9FA7ADC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{D510860C-B2DA-41D3-9137-81B029312E71}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Performance", "src\Razor\perf\Microsoft.AspNetCore.Razor.Performance\Microsoft.AspNetCore.Razor.Performance.csproj", "{8ED505A5-A33A-401E-89BA-3AED7B73DD6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Performance", "src\Razor\perf\Microsoft.AspNetCore.Razor.Performance\Microsoft.AspNetCore.Razor.Performance.csproj", "{8ED505A5-A33A-401E-89BA-3AED7B73DD6A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.NET.Sdk.Razor", "Microsoft.NET.Sdk.Razor", "{DA9E1AB0-0094-4777-BF3F-BC5596C3CDA9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.Razor", "src\Razor\Microsoft.NET.Sdk.Razor\src\Microsoft.NET.Sdk.Razor.csproj", "{44B3F6C4-0F65-4649-B4CF-6CDC2094E061}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.Razor", "src\Razor\Microsoft.NET.Sdk.Razor\src\Microsoft.NET.Sdk.Razor.csproj", "{44B3F6C4-0F65-4649-B4CF-6CDC2094E061}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.Razor.Test", "src\Razor\Microsoft.NET.Sdk.Razor\test\Microsoft.NET.Sdk.Razor.Test.csproj", "{7CB23DCD-B416-4293-9848-224077F9E71D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.Razor.Test", "src\Razor\Microsoft.NET.Sdk.Razor\test\Microsoft.NET.Sdk.Razor.Test.csproj", "{7CB23DCD-B416-4293-9848-224077F9E71D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{06C916C7-67BF-45DC-9D0B-CEEF0C731451}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Test.Common", "src\Razor\test\Microsoft.AspNetCore.Razor.Test.Common\Microsoft.AspNetCore.Razor.Test.Common.csproj", "{69637901-CAD7-4335-81F4-92E03C4DA354}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test.Common", "src\Razor\test\Microsoft.AspNetCore.Razor.Test.Common\Microsoft.AspNetCore.Razor.Test.Common.csproj", "{69637901-CAD7-4335-81F4-92E03C4DA354}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Test.ComponentShim", "src\Razor\test\Microsoft.AspNetCore.Razor.Test.ComponentShim\Microsoft.AspNetCore.Razor.Test.ComponentShim.csproj", "{ED060C25-B7B2-414B-BDC7-A77FA0269C9F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test.ComponentShim", "src\Razor\test\Microsoft.AspNetCore.Razor.Test.ComponentShim\Microsoft.AspNetCore.Razor.Test.ComponentShim.csproj", "{ED060C25-B7B2-414B-BDC7-A77FA0269C9F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Test.MvcShim", "src\Razor\test\Microsoft.AspNetCore.Razor.Test.MvcShim\Microsoft.AspNetCore.Razor.Test.MvcShim.csproj", "{4C152E79-DF16-4CAA-A98D-1A46604C6D22}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test.MvcShim", "src\Razor\test\Microsoft.AspNetCore.Razor.Test.MvcShim\Microsoft.AspNetCore.Razor.Test.MvcShim.csproj", "{4C152E79-DF16-4CAA-A98D-1A46604C6D22}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib", "src\Razor\test\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj", "{F8111E2B-650F-4A9A-9834-234B5F5DD79D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib", "src\Razor\test\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj", "{F8111E2B-650F-4A9A-9834-234B5F5DD79D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X", "src\Razor\test\Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X\Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X.csproj", "{302EC23A-FD11-4F56-B3E9-0DEC7C177584}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X", "src\Razor\test\Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X\Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X.csproj", "{302EC23A-FD11-4F56-B3E9-0DEC7C177584}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X", "src\Razor\test\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X.csproj", "{2A3B2388-F9F3-4F28-B008-2CD7862A86C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X", "src\Razor\test\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X\Microsoft.AspNetCore.Razor.Test.MvcShim.Version2_X.csproj", "{2A3B2388-F9F3-4F28-B008-2CD7862A86C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.Razor.IntegrationTests", "src\Razor\Microsoft.NET.Sdk.Razor\integrationtests\Microsoft.NET.Sdk.Razor.IntegrationTests.csproj", "{930CB054-3E69-4721-9F7E-01FB911AAF6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.Razor.IntegrationTests", "src\Razor\Microsoft.NET.Sdk.Razor\integrationtests\Microsoft.NET.Sdk.Razor.IntegrationTests.csproj", "{930CB054-3E69-4721-9F7E-01FB911AAF6A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{CF9D35EC-CA9B-481D-BAAC-5D4654732AB9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthSamples.FunctionalTests", "src\Security\test\AuthSamples.FunctionalTests\AuthSamples.FunctionalTests.csproj", "{31B7D2B1-47AF-432B-BF07-73916EF238EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthSamples.FunctionalTests", "src\Security\test\AuthSamples.FunctionalTests\AuthSamples.FunctionalTests.csproj", "{31B7D2B1-47AF-432B-BF07-73916EF238EE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{C75B1FB3-6BB7-411A-B76C-06E5E0C3D957}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cookies", "src\Security\samples\Cookies\Cookies.csproj", "{A2A2BBB7-990D-4EDE-BDF7-C8AD5C67E5F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cookies", "src\Security\samples\Cookies\Cookies.csproj", "{A2A2BBB7-990D-4EDE-BDF7-C8AD5C67E5F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClaimsTransformation", "src\Security\samples\ClaimsTransformation\ClaimsTransformation.csproj", "{1EA4C71B-CF8C-45A4-90A9-2F7F78A94173}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClaimsTransformation", "src\Security\samples\ClaimsTransformation\ClaimsTransformation.csproj", "{1EA4C71B-CF8C-45A4-90A9-2F7F78A94173}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicSchemes", "src\Security\samples\DynamicSchemes\DynamicSchemes.csproj", "{256DCEBC-1E1D-46B2-9031-E358E850F3C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DynamicSchemes", "src\Security\samples\DynamicSchemes\DynamicSchemes.csproj", "{256DCEBC-1E1D-46B2-9031-E358E850F3C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.ExternalClaims", "src\Security\samples\Identity.ExternalClaims\Identity.ExternalClaims.csproj", "{1D1E165C-435A-4716-8769-31A51632D7C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity.ExternalClaims", "src\Security\samples\Identity.ExternalClaims\Identity.ExternalClaims.csproj", "{1D1E165C-435A-4716-8769-31A51632D7C2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PathSchemeSelection", "src\Security\samples\PathSchemeSelection\PathSchemeSelection.csproj", "{AD25BD40-D6D6-4D82-A700-FE2376EE27A8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PathSchemeSelection", "src\Security\samples\PathSchemeSelection\PathSchemeSelection.csproj", "{AD25BD40-D6D6-4D82-A700-FE2376EE27A8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomPolicyProvider", "src\Security\samples\CustomPolicyProvider\CustomPolicyProvider.csproj", "{817D138C-19D8-4264-8FAF-660B05AC030D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomPolicyProvider", "src\Security\samples\CustomPolicyProvider\CustomPolicyProvider.csproj", "{817D138C-19D8-4264-8FAF-660B05AC030D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StaticFilesAuth", "src\Security\samples\StaticFilesAuth\StaticFilesAuth.csproj", "{1FE68FDC-F122-4605-B49D-FDC8C17324A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StaticFilesAuth", "src\Security\samples\StaticFilesAuth\StaticFilesAuth.csproj", "{1FE68FDC-F122-4605-B49D-FDC8C17324A5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomAuthorizationFailureResponse", "src\Security\samples\CustomAuthorizationFailureResponse\CustomAuthorizationFailureResponse.csproj", "{C4CE88C8-1E48-49FC-A344-D6EE92FC9894}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomAuthorizationFailureResponse", "src\Security\samples\CustomAuthorizationFailureResponse\CustomAuthorizationFailureResponse.csproj", "{C4CE88C8-1E48-49FC-A344-D6EE92FC9894}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.CookiePolicy.Test", "src\Security\CookiePolicy\test\Microsoft.AspNetCore.CookiePolicy.Test.csproj", "{45A7FB48-3811-4DAF-989C-141EE4AEFB03}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.CookiePolicy.Test", "src\Security\CookiePolicy\test\Microsoft.AspNetCore.CookiePolicy.Test.csproj", "{45A7FB48-3811-4DAF-989C-141EE4AEFB03}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{A75C9764-FC22-4AE1-9704-5519CB556FC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CookiePolicySample", "src\Security\CookiePolicy\samples\CookiePolicySample\CookiePolicySample.csproj", "{86741306-CF87-4AEA-9015-188A3CECBFBC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CookiePolicySample", "src\Security\CookiePolicy\samples\CookiePolicySample\CookiePolicySample.csproj", "{86741306-CF87-4AEA-9015-188A3CECBFBC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authorization.Test", "src\Security\Authorization\test\Microsoft.AspNetCore.Authorization.Test.csproj", "{2FBBC39E-DA8E-4B92-9A0D-3DF6D5BA9EAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authorization.Test", "src\Security\Authorization\test\Microsoft.AspNetCore.Authorization.Test.csproj", "{2FBBC39E-DA8E-4B92-9A0D-3DF6D5BA9EAC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.Test", "src\Security\Authentication\test\Microsoft.AspNetCore.Authentication.Test.csproj", "{6592343C-B7B7-4687-8942-1C2241414A02}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Test", "src\Security\Authentication\test\Microsoft.AspNetCore.Authentication.Test.csproj", "{6592343C-B7B7-4687-8942-1C2241414A02}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{618D85A4-F111-41AB-A9B6-BBBB8A395209}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialSample", "src\Security\Authentication\samples\SocialSample\SocialSample.csproj", "{DA64A7BF-F869-414C-A096-076723E55C61}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SocialSample", "src\Security\Authentication\samples\SocialSample\SocialSample.csproj", "{DA64A7BF-F869-414C-A096-076723E55C61}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{974EA46A-4658-4767-A9AA-A0FF143CF725}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CookieSample", "src\Security\Authentication\Cookies\samples\CookieSample\CookieSample.csproj", "{06C034BE-0079-4AC3-815B-D71AC44DF3A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CookieSample", "src\Security\Authentication\Cookies\samples\CookieSample\CookieSample.csproj", "{06C034BE-0079-4AC3-815B-D71AC44DF3A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CookieSessionSample", "src\Security\Authentication\Cookies\samples\CookieSessionSample\CookieSessionSample.csproj", "{9DD484F7-062B-43D4-AC70-0E226BA168FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CookieSessionSample", "src\Security\Authentication\Cookies\samples\CookieSessionSample\CookieSessionSample.csproj", "{9DD484F7-062B-43D4-AC70-0E226BA168FF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{7FD32066-C831-4E29-978C-9A2215E85C67}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JwtBearerSample", "src\Security\Authentication\JwtBearer\samples\JwtBearerSample\JwtBearerSample.csproj", "{88C2C45B-ED16-4B85-8498-E3F13679629D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwtBearerSample", "src\Security\Authentication\JwtBearer\samples\JwtBearerSample\JwtBearerSample.csproj", "{88C2C45B-ED16-4B85-8498-E3F13679629D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{E19E55A2-1562-47A7-8EA6-B51F2CA0CC4C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIdConnect.AzureAdSample", "src\Security\Authentication\OpenIdConnect\samples\OpenIdConnect.AzureAdSample\OpenIdConnect.AzureAdSample.csproj", "{E3867FCF-70D3-40B0-BCF6-208D4D971666}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIdConnect.AzureAdSample", "src\Security\Authentication\OpenIdConnect\samples\OpenIdConnect.AzureAdSample\OpenIdConnect.AzureAdSample.csproj", "{E3867FCF-70D3-40B0-BCF6-208D4D971666}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenIdConnectSample", "src\Security\Authentication\OpenIdConnect\samples\OpenIdConnectSample\OpenIdConnectSample.csproj", "{F6B80862-7D74-4362-B5E2-AEBF116F2B19}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenIdConnectSample", "src\Security\Authentication\OpenIdConnect\samples\OpenIdConnectSample\OpenIdConnectSample.csproj", "{F6B80862-7D74-4362-B5E2-AEBF116F2B19}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WsFederation", "WsFederation", "{602CE06C-E973-401D-8877-90957E613646}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{BECDA951-C285-485D-BFE6-F770BC8C9EB2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WsFedSample", "src\Security\Authentication\WsFederation\samples\WsFedSample\WsFedSample.csproj", "{E1CE011A-47BD-496D-B9EB-2766C198A619}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WsFedSample", "src\Security\Authentication\WsFederation\samples\WsFedSample\WsFedSample.csproj", "{E1CE011A-47BD-496D-B9EB-2766C198A619}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.WsFederation", "src\Security\Authentication\WsFederation\src\Microsoft.AspNetCore.Authentication.WsFederation.csproj", "{3BB0B48C-4ED8-48C2-B8DF-8B92354CAFB5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.WsFederation", "src\Security\Authentication\WsFederation\src\Microsoft.AspNetCore.Authentication.WsFederation.csproj", "{3BB0B48C-4ED8-48C2-B8DF-8B92354CAFB5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{966E6A8A-4D9C-4B9E-92DB-06F5144F5DC8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Security.Performance", "src\Security\benchmarks\Microsoft.AspNetCore.Security.Performance\Microsoft.AspNetCore.Security.Performance.csproj", "{9819CE5A-0E8F-42C4-B628-F6B3A1B2550F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Security.Performance", "src\Security\benchmarks\Microsoft.AspNetCore.Security.Performance\Microsoft.AspNetCore.Security.Performance.csproj", "{9819CE5A-0E8F-42C4-B628-F6B3A1B2550F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Negotiate", "Negotiate", "{3FE077EF-DD37-4652-B71C-3174D4C485E2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{A641BE9F-113E-4F2F-8DC0-995E97C5BD27}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NegotiateAuthSample", "src\Security\Authentication\Negotiate\Samples\NegotiateAuthSample\NegotiateAuthSample.csproj", "{7F67C1C2-7352-414F-9149-1F16D53C7435}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NegotiateAuthSample", "src\Security\Authentication\Negotiate\Samples\NegotiateAuthSample\NegotiateAuthSample.csproj", "{7F67C1C2-7352-414F-9149-1F16D53C7435}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.Negotiate", "src\Security\Authentication\Negotiate\src\Microsoft.AspNetCore.Authentication.Negotiate.csproj", "{046AFDDE-B31B-4205-B059-0E8E194E954D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Negotiate", "src\Security\Authentication\Negotiate\src\Microsoft.AspNetCore.Authentication.Negotiate.csproj", "{046AFDDE-B31B-4205-B059-0E8E194E954D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0AEE12FF-FDFF-4A75-A77E-93B1E24E5587}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.Negotiate.Test", "src\Security\Authentication\Negotiate\test\Negotiate.Test\Microsoft.AspNetCore.Authentication.Negotiate.Test.csproj", "{3FBD8F55-38A8-4263-A98D-AD723C6D9C44}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Negotiate.Test", "src\Security\Authentication\Negotiate\test\Negotiate.Test\Microsoft.AspNetCore.Authentication.Negotiate.Test.csproj", "{3FBD8F55-38A8-4263-A98D-AD723C6D9C44}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.Negotiate.FunctionalTest", "src\Security\Authentication\Negotiate\test\Negotiate.FunctionalTest\Microsoft.AspNetCore.Authentication.Negotiate.FunctionalTest.csproj", "{7E4C524F-94E1-4F7F-9498-FD503BC97CEF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Negotiate.FunctionalTest", "src\Security\Authentication\Negotiate\test\Negotiate.FunctionalTest\Microsoft.AspNetCore.Authentication.Negotiate.FunctionalTest.csproj", "{7E4C524F-94E1-4F7F-9498-FD503BC97CEF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Certificate", "Certificate", "{8A241C1B-18FA-4237-A354-29D7010C1067}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Authentication.Certificate", "src\Security\Authentication\Certificate\src\Microsoft.AspNetCore.Authentication.Certificate.csproj", "{119D3F97-535C-45BF-AC4C-FEDFE0FA5D7E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Certificate", "src\Security\Authentication\Certificate\src\Microsoft.AspNetCore.Authentication.Certificate.csproj", "{119D3F97-535C-45BF-AC4C-FEDFE0FA5D7E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{148D77C2-C6DA-45FA-90A6-761EE01066D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Certificate.Sample", "src\Security\Authentication\Certificate\samples\Certificate.Sample\Certificate.Sample.csproj", "{A43BC0BA-9C01-4AEC-B763-5E5AA8C8DBAB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Certificate.Sample", "src\Security\Authentication\Certificate\samples\Certificate.Sample\Certificate.Sample.csproj", "{A43BC0BA-9C01-4AEC-B763-5E5AA8C8DBAB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Certificate.Optional.Sample", "src\Security\Authentication\Certificate\samples\Certificate.Optional.Sample\Certificate.Optional.Sample.csproj", "{451FF6F1-E6B4-42FF-A8AA-2731F3C4CCF4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Certificate.Optional.Sample", "src\Security\Authentication\Certificate\samples\Certificate.Optional.Sample\Certificate.Optional.Sample.csproj", "{451FF6F1-E6B4-42FF-A8AA-2731F3C4CCF4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{5F0044F2-4C66-46A8-BD79-075F001AA034}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7BAE6185-D148-4388-B65F-34FD22CCD824}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Shared.Tests", "src\Shared\test\Shared.Tests\Microsoft.AspNetCore.Shared.Tests.csproj", "{197EB396-53AA-4C29-8A59-3FEACD3703B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Shared.Tests", "src\Shared\test\Shared.Tests\Microsoft.AspNetCore.Shared.Tests.csproj", "{197EB396-53AA-4C29-8A59-3FEACD3703B6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{3E3F7422-36C0-47E4-8B4E-052C2E8EB439}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalRSamples", "src\SignalR\samples\SignalRSamples\SignalRSamples.csproj", "{7A88CF78-413B-4EC7-A2E5-853C7E8075A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalRSamples", "src\SignalR\samples\SignalRSamples\SignalRSamples.csproj", "{7A88CF78-413B-4EC7-A2E5-853C7E8075A5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialWeather", "src\SignalR\samples\SocialWeather\SocialWeather.csproj", "{0D162D66-86E8-40AA-84EA-AA1EDA2482BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SocialWeather", "src\SignalR\samples\SocialWeather\SocialWeather.csproj", "{0D162D66-86E8-40AA-84EA-AA1EDA2482BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientSample", "src\SignalR\samples\ClientSample\ClientSample.csproj", "{294EC05D-B818-4CD5-AF6E-95B3F23607FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientSample", "src\SignalR\samples\ClientSample\ClientSample.csproj", "{294EC05D-B818-4CD5-AF6E-95B3F23607FC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSocketSample", "src\SignalR\samples\WebSocketSample\WebSocketSample.csproj", "{892333B9-689B-4E51-82FF-CC5376961A36}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebSocketSample", "src\SignalR\samples\WebSocketSample\WebSocketSample.csproj", "{892333B9-689B-4E51-82FF-CC5376961A36}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JwtClientSample", "src\SignalR\samples\JwtClientSample\JwtClientSample.csproj", "{4D4CB590-9F66-4D75-B439-D3B445975A55}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwtClientSample", "src\SignalR\samples\JwtClientSample\JwtClientSample.csproj", "{4D4CB590-9F66-4D75-B439-D3B445975A55}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ts", "ts", "{3D423A77-84D4-4214-8F6F-CD532A56A126}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalR.Client.FunctionalTestApp", "src\SignalR\clients\ts\FunctionalTests\SignalR.Client.FunctionalTestApp.csproj", "{4C8F04E9-24EC-496B-88FA-62DE096F1C3D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalR.Client.FunctionalTestApp", "src\SignalR\clients\ts\FunctionalTests\SignalR.Client.FunctionalTestApp.csproj", "{4C8F04E9-24EC-496B-88FA-62DE096F1C3D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JwtSample", "src\SignalR\samples\JwtSample\JwtSample.csproj", "{257A6551-7987-4C5C-BE6F-376094477371}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwtSample", "src\SignalR\samples\JwtSample\JwtSample.csproj", "{257A6551-7987-4C5C-BE6F-376094477371}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{350A2B0C-246F-4CC1-A194-32DF8C4427A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Client.FunctionalTests", "src\SignalR\clients\csharp\Client\test\FunctionalTests\Microsoft.AspNetCore.SignalR.Client.FunctionalTests.csproj", "{5236B5B7-E2CD-4D20-A65C-D5803E78885F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Client.FunctionalTests", "src\SignalR\clients\csharp\Client\test\FunctionalTests\Microsoft.AspNetCore.SignalR.Client.FunctionalTests.csproj", "{5236B5B7-E2CD-4D20-A65C-D5803E78885F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Client.Tests", "src\SignalR\clients\csharp\Client\test\UnitTests\Microsoft.AspNetCore.SignalR.Client.Tests.csproj", "{CACBB755-08B6-4176-9390-CAD3F9962E80}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Client.Tests", "src\SignalR\clients\csharp\Client\test\UnitTests\Microsoft.AspNetCore.SignalR.Client.Tests.csproj", "{CACBB755-08B6-4176-9390-CAD3F9962E80}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Http.Connections.Tests", "src\SignalR\common\Http.Connections\test\Microsoft.AspNetCore.Http.Connections.Tests.csproj", "{B84D149A-3DD6-47EA-B78E-D36EF2379D6B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Connections.Tests", "src\SignalR\common\Http.Connections\test\Microsoft.AspNetCore.Http.Connections.Tests.csproj", "{B84D149A-3DD6-47EA-B78E-D36EF2379D6B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Common.Tests", "src\SignalR\common\SignalR.Common\test\Microsoft.AspNetCore.SignalR.Common.Tests.csproj", "{75F3739D-9404-44B0-8F1F-1BDE4542047A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Common.Tests", "src\SignalR\common\SignalR.Common\test\Microsoft.AspNetCore.SignalR.Common.Tests.csproj", "{75F3739D-9404-44B0-8F1F-1BDE4542047A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{5095E70C-6DEE-486E-A9D0-E8849214EE4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Microbenchmarks", "src\SignalR\perf\Microbenchmarks\Microsoft.AspNetCore.SignalR.Microbenchmarks.csproj", "{A6A95BEF-7E21-4D3D-921B-F77267219D27}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Microbenchmarks", "src\SignalR\perf\Microbenchmarks\Microsoft.AspNetCore.SignalR.Microbenchmarks.csproj", "{A6A95BEF-7E21-4D3D-921B-F77267219D27}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Tests", "src\SignalR\server\SignalR\test\Microsoft.AspNetCore.SignalR.Tests.csproj", "{4DC9C494-9867-4319-937E-5FBC0E5F5A51}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Tests", "src\SignalR\server\SignalR\test\Microsoft.AspNetCore.SignalR.Tests.csproj", "{4DC9C494-9867-4319-937E-5FBC0E5F5A51}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Specification.Tests", "Specification.Tests", "{245939DA-D68D-4B5C-A95E-D3B6923614FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Specification.Tests", "src\SignalR\server\Specification.Tests\src\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj", "{39CB00C0-D775-4DEC-BEAA-94234BA8A1FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Specification.Tests", "src\SignalR\server\Specification.Tests\src\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj", "{39CB00C0-D775-4DEC-BEAA-94234BA8A1FE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "StackExchangeRedis", "StackExchangeRedis", "{CD9041EE-8C47-4C6F-8A21-6EDCBC0D409E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.StackExchangeRedis", "src\SignalR\server\StackExchangeRedis\src\Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj", "{DEA32B7F-E9B4-4E87-8B47-30555D286D93}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.StackExchangeRedis", "src\SignalR\server\StackExchangeRedis\src\Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj", "{DEA32B7F-E9B4-4E87-8B47-30555D286D93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests", "src\SignalR\server\StackExchangeRedis\test\Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests.csproj", "{6248B017-2912-4989-9994-2685C4D88E9A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests", "src\SignalR\server\StackExchangeRedis\test\Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests.csproj", "{6248B017-2912-4989-9994-2685C4D88E9A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebEncoders", "WebEncoders", "{4C93CC04-1EE4-48EA-8FAE-DC2283528BEB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.WebEncoders", "src\WebEncoders\src\Microsoft.Extensions.WebEncoders.csproj", "{AA2F0EF8-FB46-4F05-89D4-025F348ABDD2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.WebEncoders", "src\WebEncoders\src\Microsoft.Extensions.WebEncoders.csproj", "{AA2F0EF8-FB46-4F05-89D4-025F348ABDD2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FileProviders", "FileProviders", "{FED63417-432B-49CD-AB4B-44ADA837C2E7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Embedded", "Embedded", "{898F7E0B-1671-42CB-9DFB-689AFF212ED3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.FileProviders.Embedded", "src\FileProviders\Embedded\src\Microsoft.Extensions.FileProviders.Embedded.csproj", "{65EE0531-4533-407F-A9CA-2EBCDC444397}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.FileProviders.Embedded", "src\FileProviders\Embedded\src\Microsoft.Extensions.FileProviders.Embedded.csproj", "{65EE0531-4533-407F-A9CA-2EBCDC444397}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{0B200A66-B809-4ED3-A790-CB1C2E80975E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet-watch", "dotnet-watch", "{B6118E15-C37A-4B05-B4DF-97FE99790417}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-watch", "src\Tools\dotnet-watch\src\dotnet-watch.csproj", "{D0ADA8EC-F431-43C8-A86E-FE6A1E906512}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-watch", "src\Tools\dotnet-watch\src\dotnet-watch.csproj", "{D0ADA8EC-F431-43C8-A86E-FE6A1E906512}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-watch.Tests", "src\Tools\dotnet-watch\test\dotnet-watch.Tests.csproj", "{95920BAA-46E6-44E6-A1AF-A23804F079D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-watch.Tests", "src\Tools\dotnet-watch\test\dotnet-watch.Tests.csproj", "{95920BAA-46E6-44E6-A1AF-A23804F079D2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet-dev-certs", "dotnet-dev-certs", "{A4EECF29-6E66-4E7F-B781-A169B0C2AB29}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-dev-certs", "src\Tools\dotnet-dev-certs\src\dotnet-dev-certs.csproj", "{52433D20-35EA-48CC-BB4A-4DFE3023670B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-dev-certs", "src\Tools\dotnet-dev-certs\src\dotnet-dev-certs.csproj", "{52433D20-35EA-48CC-BB4A-4DFE3023670B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet-sql-cache", "dotnet-sql-cache", "{8562A154-B802-411B-897C-89621C4B05CB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-sql-cache", "src\Tools\dotnet-sql-cache\src\dotnet-sql-cache.csproj", "{C911DC19-9556-4DCC-9794-AD907137348F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-sql-cache", "src\Tools\dotnet-sql-cache\src\dotnet-sql-cache.csproj", "{C911DC19-9556-4DCC-9794-AD907137348F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet-user-secrets", "dotnet-user-secrets", "{F31AC68C-2D71-492C-BA4B-41FE503FFD56}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-user-secrets", "src\Tools\dotnet-user-secrets\src\dotnet-user-secrets.csproj", "{4E6AFAD6-C0B7-47AD-8C16-D903CCA4AE73}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-user-secrets", "src\Tools\dotnet-user-secrets\src\dotnet-user-secrets.csproj", "{4E6AFAD6-C0B7-47AD-8C16-D903CCA4AE73}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-user-secrets.Tests", "src\Tools\dotnet-user-secrets\test\dotnet-user-secrets.Tests.csproj", "{4FB3DFA0-3124-474B-A908-694DF4FC1ABB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-user-secrets.Tests", "src\Tools\dotnet-user-secrets\test\dotnet-user-secrets.Tests.csproj", "{4FB3DFA0-3124-474B-A908-694DF4FC1ABB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.dotnet-openapi", "Microsoft.dotnet-openapi", "{192363C9-2D7B-47BD-A1A3-C6FEC6DF5D9D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.dotnet-openapi", "src\Tools\Microsoft.dotnet-openapi\src\Microsoft.dotnet-openapi.csproj", "{4655E193-E5F4-449B-B1A3-6358AC8D3A27}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.dotnet-openapi", "src\Tools\Microsoft.dotnet-openapi\src\Microsoft.dotnet-openapi.csproj", "{4655E193-E5F4-449B-B1A3-6358AC8D3A27}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-microsoft.openapi.Tests", "src\Tools\Microsoft.dotnet-openapi\test\dotnet-microsoft.openapi.Tests.csproj", "{7A29AAAB-2B4B-4D47-A315-23A0E830E214}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-microsoft.openapi.Tests", "src\Tools\Microsoft.dotnet-openapi\test\dotnet-microsoft.openapi.Tests.csproj", "{7A29AAAB-2B4B-4D47-A315-23A0E830E214}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions.ApiDescription.Client", "Extensions.ApiDescription.Client", "{755D9C6A-F036-4122-8334-96F0CC70F370}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.ApiDescription.Client", "src\Tools\Extensions.ApiDescription.Client\src\Microsoft.Extensions.ApiDescription.Client.csproj", "{AB8C9BF4-3134-449B-BA3F-BAFDE9394491}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.ApiDescription.Client", "src\Tools\Extensions.ApiDescription.Client\src\Microsoft.Extensions.ApiDescription.Client.csproj", "{AB8C9BF4-3134-449B-BA3F-BAFDE9394491}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dotnet-getdocument", "dotnet-getdocument", "{3CE23673-047A-47AA-A028-7F2942805870}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-getdocument", "src\Tools\dotnet-getdocument\src\dotnet-getdocument.csproj", "{7B1E6D8C-2658-4FD2-8BB2-672E9E56872F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-getdocument", "src\Tools\dotnet-getdocument\src\dotnet-getdocument.csproj", "{7B1E6D8C-2658-4FD2-8BB2-672E9E56872F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions.ApiDescription.Server", "Extensions.ApiDescription.Server", "{BE2C2FE4-7BC7-4A4B-A8B8-19FF0648DEFD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.ApiDescription.Server", "src\Tools\Extensions.ApiDescription.Server\src\Microsoft.Extensions.ApiDescription.Server.csproj", "{EBE144DD-577E-4E98-BFEB-94E479753927}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.ApiDescription.Server", "src\Tools\Extensions.ApiDescription.Server\src\Microsoft.Extensions.ApiDescription.Server.csproj", "{EBE144DD-577E-4E98-BFEB-94E479753927}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GetDocumentInsider", "GetDocumentInsider", "{A1B75FC7-A777-4412-A635-D0C9ED8FE7A0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GetDocumentInsider", "src\Tools\GetDocumentInsider\src\GetDocumentInsider.csproj", "{DD63EA3C-929C-48FF-8E8A-8F3CC553E93B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GetDocumentInsider", "src\Tools\GetDocumentInsider\src\GetDocumentInsider.csproj", "{DD63EA3C-929C-48FF-8E8A-8F3CC553E93B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.ApiDescription.Client.Tests", "src\Tools\Extensions.ApiDescription.Client\test\Microsoft.Extensions.ApiDescription.Client.Tests.csproj", "{34E40892-48C1-4D3D-AB49-FAC3C4C00B42}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.ApiDescription.Client.Tests", "src\Tools\Extensions.ApiDescription.Client\test\Microsoft.Extensions.ApiDescription.Client.Tests.csproj", "{34E40892-48C1-4D3D-AB49-FAC3C4C00B42}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FirstRunCertGenerator", "FirstRunCertGenerator", "{E5BE8CB1-57A8-48FD-9904-76A8C6B540BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DeveloperCertificates.XPlat.Tests", "src\Tools\FirstRunCertGenerator\test\Microsoft.AspNetCore.DeveloperCertificates.XPlat.Tests.csproj", "{A8A42FB4-1B51-4290-9291-445D3A489758}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DeveloperCertificates.XPlat.Tests", "src\Tools\FirstRunCertGenerator\test\Microsoft.AspNetCore.DeveloperCertificates.XPlat.Tests.csproj", "{A8A42FB4-1B51-4290-9291-445D3A489758}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DeveloperCertificates.XPlat", "src\Tools\FirstRunCertGenerator\src\Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj", "{3C8D5C14-F27B-4657-93C2-AC0E94EE683F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DeveloperCertificates.XPlat", "src\Tools\FirstRunCertGenerator\src\Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj", "{3C8D5C14-F27B-4657-93C2-AC0E94EE683F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.JsonPatch.Tests", "src\Features\JsonPatch\test\Microsoft.AspNetCore.JsonPatch.Tests.csproj", "{9883418F-C427-426E-9021-E3F1BAF33E6B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.JsonPatch.Tests", "src\Features\JsonPatch\test\Microsoft.AspNetCore.JsonPatch.Tests.csproj", "{9883418F-C427-426E-9021-E3F1BAF33E6B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{49016328-4D32-46E4-A4D2-94686ED38EA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "src\Servers\HttpSys\samples\TestClient\TestClient.csproj", "{A34041A8-20B9-4DE8-B336-8A900BDAD4EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestClient", "src\Servers\HttpSys\samples\TestClient\TestClient.csproj", "{A34041A8-20B9-4DE8-B336-8A900BDAD4EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SelfHostServer", "src\Servers\HttpSys\samples\SelfHostServer\SelfHostServer.csproj", "{31405D54-645D-490B-9041-88119D8B1B47}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SelfHostServer", "src\Servers\HttpSys\samples\SelfHostServer\SelfHostServer.csproj", "{31405D54-645D-490B-9041-88119D8B1B47}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HotAddSample", "src\Servers\HttpSys\samples\HotAddSample\HotAddSample.csproj", "{689FE2B6-EDEE-477D-9F4F-91B0B2E73F4D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HotAddSample", "src\Servers\HttpSys\samples\HotAddSample\HotAddSample.csproj", "{689FE2B6-EDEE-477D-9F4F-91B0B2E73F4D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{C3722C5D-E159-4AB3-AF60-769185B31B47}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.HttpSys.FunctionalTests", "src\Servers\HttpSys\test\FunctionalTests\Microsoft.AspNetCore.Server.HttpSys.FunctionalTests.csproj", "{10959BB7-197C-4DE1-A2F2-CA9445E3591F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.HttpSys.FunctionalTests", "src\Servers\HttpSys\test\FunctionalTests\Microsoft.AspNetCore.Server.HttpSys.FunctionalTests.csproj", "{10959BB7-197C-4DE1-A2F2-CA9445E3591F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.HttpSys.Tests", "src\Servers\HttpSys\test\Tests\Microsoft.AspNetCore.Server.HttpSys.Tests.csproj", "{3297D10B-B32A-4F70-8200-2B727C759C8D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.HttpSys.Tests", "src\Servers\HttpSys\test\Tests\Microsoft.AspNetCore.Server.HttpSys.Tests.csproj", "{3297D10B-B32A-4F70-8200-2B727C759C8D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QueueSharing", "src\Servers\HttpSys\samples\QueueSharing\QueueSharing.csproj", "{8EAE1C36-4A33-4A96-BACD-3FDC35844249}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QueueSharing", "src\Servers\HttpSys\samples\QueueSharing\QueueSharing.csproj", "{8EAE1C36-4A33-4A96-BACD-3FDC35844249}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{41BB7BA4-AC08-4E9A-83EA-6D587A5B951C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IISExpress.FunctionalTests", "src\Servers\IIS\IIS\test\IISExpress.FunctionalTests\IISExpress.FunctionalTests.csproj", "{C0B46E28-F6BB-45C7-A7B1-9E294FCB0895}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IISExpress.FunctionalTests", "src\Servers\IIS\IIS\test\IISExpress.FunctionalTests\IISExpress.FunctionalTests.csproj", "{C0B46E28-F6BB-45C7-A7B1-9E294FCB0895}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{B49E037F-1F0A-46CA-9977-1987465C306C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NativeIISSample", "src\Servers\IIS\IIS\samples\NativeIISSample\NativeIISSample.csproj", "{D07B2752-8919-4CFE-8438-DFAFE91A4AB0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NativeIISSample", "src\Servers\IIS\IIS\samples\NativeIISSample\NativeIISSample.csproj", "{D07B2752-8919-4CFE-8438-DFAFE91A4AB0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{ABC4EF1D-3525-41A9-929D-0FF7CEED4DDB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IIS.Performance", "src\Servers\IIS\IIS\benchmarks\IIS.Performance\IIS.Performance.csproj", "{65EC29AD-91CA-49BA-B1FC-D3DF127BE887}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.Performance", "src\Servers\IIS\IIS\benchmarks\IIS.Performance\IIS.Performance.csproj", "{65EC29AD-91CA-49BA-B1FC-D3DF127BE887}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IIS.FunctionalTests", "src\Servers\IIS\IIS\test\IIS.FunctionalTests\IIS.FunctionalTests.csproj", "{45A023F9-C7E7-42CA-968B-5FCE9EC626BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.FunctionalTests", "src\Servers\IIS\IIS\test\IIS.FunctionalTests\IIS.FunctionalTests.csproj", "{45A023F9-C7E7-42CA-968B-5FCE9EC626BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IIS.Tests", "src\Servers\IIS\IIS\test\IIS.Tests\IIS.Tests.csproj", "{8A6992D5-478C-49E4-936F-EA97E5850A7D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.Tests", "src\Servers\IIS\IIS\test\IIS.Tests\IIS.Tests.csproj", "{8A6992D5-478C-49E4-936F-EA97E5850A7D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IIS.NewHandler.FunctionalTests", "src\Servers\IIS\IIS\test\IIS.NewHandler.FunctionalTests\IIS.NewHandler.FunctionalTests.csproj", "{7107FC61-E540-4946-A090-A0E0D8357505}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.NewHandler.FunctionalTests", "src\Servers\IIS\IIS\test\IIS.NewHandler.FunctionalTests\IIS.NewHandler.FunctionalTests.csproj", "{7107FC61-E540-4946-A090-A0E0D8357505}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IIS.NewShim.FunctionalTests", "src\Servers\IIS\IIS\test\IIS.NewShim.FunctionalTests\IIS.NewShim.FunctionalTests.csproj", "{514D41F9-8D97-49A6-8C7A-74545358E2CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IIS.NewShim.FunctionalTests", "src\Servers\IIS\IIS\test\IIS.NewShim.FunctionalTests\IIS.NewShim.FunctionalTests.csproj", "{514D41F9-8D97-49A6-8C7A-74545358E2CD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{1B635E97-715B-4F8D-AE58-4553C7B07016}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.IISIntegration.Tests", "src\Servers\IIS\IISIntegration\test\Tests\Microsoft.AspNetCore.Server.IISIntegration.Tests.csproj", "{F8AB0D33-1082-4F41-90E7-77C06EDD983D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IISIntegration.Tests", "src\Servers\IIS\IISIntegration\test\Tests\Microsoft.AspNetCore.Server.IISIntegration.Tests.csproj", "{F8AB0D33-1082-4F41-90E7-77C06EDD983D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{4BBD404C-5588-49C4-A320-C5B1D3532B18}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IISSample", "src\Servers\IIS\IISIntegration\samples\IISSample\IISSample.csproj", "{647F0202-165F-4E98-A798-B2B3113050EC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IISSample", "src\Servers\IIS\IISIntegration\samples\IISSample\IISSample.csproj", "{647F0202-165F-4E98-A798-B2B3113050EC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.Kestrel.Core.Tests", "src\Servers\Kestrel\Core\test\Microsoft.AspNetCore.Server.Kestrel.Core.Tests.csproj", "{0C3C1602-BE06-4DDE-835F-A0DE1563808B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Core.Tests", "src\Servers\Kestrel\Core\test\Microsoft.AspNetCore.Server.Kestrel.Core.Tests.csproj", "{0C3C1602-BE06-4DDE-835F-A0DE1563808B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.Kestrel.Tests", "src\Servers\Kestrel\Kestrel\test\Microsoft.AspNetCore.Server.Kestrel.Tests.csproj", "{1F6EC9ED-55DB-42E9-BA01-F7C3A27581FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Tests", "src\Servers\Kestrel\Kestrel\test\Microsoft.AspNetCore.Server.Kestrel.Tests.csproj", "{1F6EC9ED-55DB-42E9-BA01-F7C3A27581FF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{C69630AA-7BCC-401E-B0EE-AACFCF55F6A8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.Kestrel.Performance", "src\Servers\Kestrel\perf\Kestrel.Performance\Microsoft.AspNetCore.Server.Kestrel.Performance.csproj", "{51A02E3E-6932-479C-A287-CC6C3611B715}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Performance", "src\Servers\Kestrel\perf\Kestrel.Performance\Microsoft.AspNetCore.Server.Kestrel.Performance.csproj", "{51A02E3E-6932-479C-A287-CC6C3611B715}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{7B976D8F-EA31-4C0B-97BD-DFD9B3CC86FB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Http2SampleApp", "src\Servers\Kestrel\samples\Http2SampleApp\Http2SampleApp.csproj", "{7542D11F-2401-457C-992B-0473ADBD7842}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Http2SampleApp", "src\Servers\Kestrel\samples\Http2SampleApp\Http2SampleApp.csproj", "{7542D11F-2401-457C-992B-0473ADBD7842}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LargeResponseApp", "src\Servers\Kestrel\samples\LargeResponseApp\LargeResponseApp.csproj", "{ADFCDE19-5A3D-482D-8133-B7F419D96668}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LargeResponseApp", "src\Servers\Kestrel\samples\LargeResponseApp\LargeResponseApp.csproj", "{ADFCDE19-5A3D-482D-8133-B7F419D96668}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlaintextApp", "src\Servers\Kestrel\samples\PlaintextApp\PlaintextApp.csproj", "{B43F63FE-0957-42A1-8431-B2D6E4F2958E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlaintextApp", "src\Servers\Kestrel\samples\PlaintextApp\PlaintextApp.csproj", "{B43F63FE-0957-42A1-8431-B2D6E4F2958E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kestrel.SampleApp", "src\Servers\Kestrel\samples\SampleApp\Kestrel.SampleApp.csproj", "{F9ED6D85-7A8D-45A6-808F-5BC0AAFC22D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.SampleApp", "src\Servers\Kestrel\samples\SampleApp\Kestrel.SampleApp.csproj", "{F9ED6D85-7A8D-45A6-808F-5BC0AAFC22D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SystemdTestApp", "src\Servers\Kestrel\samples\SystemdTestApp\SystemdTestApp.csproj", "{73788491-F1D6-41C7-838B-F9E8060E7FB9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SystemdTestApp", "src\Servers\Kestrel\samples\SystemdTestApp\SystemdTestApp.csproj", "{73788491-F1D6-41C7-838B-F9E8060E7FB9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{47EF1A9F-89DB-4EBA-9BC1-1D4E0E12DE44}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Libuv.FunctionalTests", "src\Servers\Kestrel\test\Libuv.FunctionalTests\Libuv.FunctionalTests.csproj", "{89742A94-B0F0-49E3-8C78-2D25BF2D1633}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Libuv.FunctionalTests", "src\Servers\Kestrel\test\Libuv.FunctionalTests\Libuv.FunctionalTests.csproj", "{89742A94-B0F0-49E3-8C78-2D25BF2D1633}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sockets.FunctionalTests", "src\Servers\Kestrel\test\Sockets.FunctionalTests\Sockets.FunctionalTests.csproj", "{6E3A74C9-EF79-45A0-AA3A-76411AA06A05}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sockets.FunctionalTests", "src\Servers\Kestrel\test\Sockets.FunctionalTests\Sockets.FunctionalTests.csproj", "{6E3A74C9-EF79-45A0-AA3A-76411AA06A05}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{2C7F02B9-2994-4B5B-BB97-0896BCB64101}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeGenerator", "src\Servers\Kestrel\tools\CodeGenerator\CodeGenerator.csproj", "{AB6F5423-8D5E-4A9A-BA18-3AD004CD6753}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGenerator", "src\Servers\Kestrel\tools\CodeGenerator\CodeGenerator.csproj", "{AB6F5423-8D5E-4A9A-BA18-3AD004CD6753}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Transport.Libuv", "Transport.Libuv", "{80764B5F-82F8-41FD-BCD6-AD21F4DCAF64}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv", "src\Servers\Kestrel\Transport.Libuv\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.csproj", "{3A83266F-4EC0-4E35-A2B6-86DC04168FC9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv", "src\Servers\Kestrel\Transport.Libuv\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.csproj", "{3A83266F-4EC0-4E35-A2B6-86DC04168FC9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests", "src\Servers\Kestrel\Transport.Libuv\test\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.csproj", "{C9689B61-EBC0-4A6A-834F-09172017CD34}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests", "src\Servers\Kestrel\Transport.Libuv\test\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.csproj", "{C9689B61-EBC0-4A6A-834F-09172017CD34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InMemory.FunctionalTests", "src\Servers\Kestrel\test\InMemory.FunctionalTests\InMemory.FunctionalTests.csproj", "{3EE7F5FE-4376-442D-BA77-82AD531DBFBF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InMemory.FunctionalTests", "src\Servers\Kestrel\test\InMemory.FunctionalTests\InMemory.FunctionalTests.csproj", "{3EE7F5FE-4376-442D-BA77-82AD531DBFBF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interop.FunctionalTests", "src\Servers\Kestrel\test\Interop.FunctionalTests\Interop.FunctionalTests.csproj", "{71568623-71F9-4110-ACE2-093CD0DA911C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Interop.FunctionalTests", "src\Servers\Kestrel\test\Interop.FunctionalTests\Interop.FunctionalTests.csproj", "{71568623-71F9-4110-ACE2-093CD0DA911C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Libuv.BindTests", "src\Servers\Kestrel\test\Libuv.BindTests\Libuv.BindTests.csproj", "{8550A02D-BA13-411A-AAD3-6124D33D669F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Libuv.BindTests", "src\Servers\Kestrel\test\Libuv.BindTests\Libuv.BindTests.csproj", "{8550A02D-BA13-411A-AAD3-6124D33D669F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sockets.BindTests", "src\Servers\Kestrel\test\Sockets.BindTests\Sockets.BindTests.csproj", "{EDE77D0C-321A-49FD-95D7-56ED41242A93}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sockets.BindTests", "src\Servers\Kestrel\test\Sockets.BindTests\Sockets.BindTests.csproj", "{EDE77D0C-321A-49FD-95D7-56ED41242A93}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "http2cat", "src\Servers\Kestrel\samples\http2cat\http2cat.csproj", "{8BDEC645-73BD-453B-8A5C-D616BC4EA08D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "http2cat", "src\Servers\Kestrel\samples\http2cat\http2cat.csproj", "{8BDEC645-73BD-453B-8A5C-D616BC4EA08D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuicSampleApp", "src\Servers\Kestrel\samples\QuicSampleApp\QuicSampleApp.csproj", "{CBCD6AC2-72D3-4E82-9E78-12E3A9C68E1D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuicSampleApp", "src\Servers\Kestrel\samples\QuicSampleApp\QuicSampleApp.csproj", "{CBCD6AC2-72D3-4E82-9E78-12E3A9C68E1D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Transport.Quic", "Transport.Quic", "{EE9D0952-6060-4723-B329-94A2950A6762}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic", "src\Servers\Kestrel\Transport.Quic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.csproj", "{132D43A2-067A-4E24-A520-45B9F14DCB8E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic", "src\Servers\Kestrel\Transport.Quic\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic.csproj", "{132D43A2-067A-4E24-A520-45B9F14DCB8E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuicSampleClient", "src\Servers\Kestrel\samples\QuicSampleClient\QuicSampleClient.csproj", "{FA8D7CA4-C33B-4409-865F-54192BAC59A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuicSampleClient", "src\Servers\Kestrel\samples\QuicSampleClient\QuicSampleClient.csproj", "{FA8D7CA4-C33B-4409-865F-54192BAC59A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Http3SampleApp", "src\Servers\Kestrel\samples\Http3SampleApp\Http3SampleApp.csproj", "{2EC4E939-513F-44CD-A956-498966EAC929}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Http3SampleApp", "src\Servers\Kestrel\samples\Http3SampleApp\Http3SampleApp.csproj", "{2EC4E939-513F-44CD-A956-498966EAC929}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpStress", "src\Servers\Kestrel\stress\HttpStress.csproj", "{987E1C29-F124-40C8-8E6F-1B2B6A4CB62A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpStress", "src\Servers\Kestrel\stress\HttpStress.csproj", "{987E1C29-F124-40C8-8E6F-1B2B6A4CB62A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{3CBC4802-E9B8-48B7-BC8C-B0AFB9EEC643}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerComparison.FunctionalTests", "src\Servers\test\FunctionalTests\ServerComparison.FunctionalTests.csproj", "{48E64014-B249-4644-8AEB-CDEE8ABA0DC2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerComparison.FunctionalTests", "src\Servers\test\FunctionalTests\ServerComparison.FunctionalTests.csproj", "{48E64014-B249-4644-8AEB-CDEE8ABA0DC2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Testing.Tests", "src\Testing\test\Microsoft.AspNetCore.Testing.Tests.csproj", "{1542DC58-1836-4191-A9C5-51D1716D2543}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Testing.Tests", "src\Testing\test\Microsoft.AspNetCore.Testing.Tests.csproj", "{1542DC58-1836-4191-A9C5-51D1716D2543}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web.Extensions", "Web.Extensions", "{F71FE795-9923-461B-9809-BB1821A276D0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Web.Extensions", "src\Components\Web.Extensions\src\Microsoft.AspNetCore.Components.Web.Extensions.csproj", "{8294A74F-7DAA-4B69-BC56-7634D93C9693}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Web.Extensions.Tests", "src\Components\Web.Extensions\test\Microsoft.AspNetCore.Components.Web.Extensions.Tests.csproj", "{157605CB-5170-4C1A-980F-4BAE42DB60DE}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{2531F00A-54EB-4074-9C0B-9AF9FB3679DC}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BasicTestApp", "src\Components\test\testassets\BasicTestApp\BasicTestApp.csproj", "{85D67E40-4B11-48ED-8C43-34590A1FB9ED}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyTestContentPackage", "src\Components\test\testassets\LazyTestContentPackage\LazyTestContentPackage.csproj", "{C0EF53A5-5A94-4849-86B0-2297EA08D649}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComponentsApp.App", "src\Components\test\testassets\ComponentsApp.App\ComponentsApp.App.csproj", "{4FDD820F-8397-41B7-956E-F257DD044BD8}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComponentsApp.Server", "src\Components\test\testassets\ComponentsApp.Server\ComponentsApp.Server.csproj", "{CA7C7A53-446F-453A-A57B-78BB1443B8A8}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestContentPackage", "src\Components\test\testassets\TestContentPackage\TestContentPackage.csproj", "{B32C5882-2313-40D0-A003-2FF33724CFE6}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Components.TestServer", "src\Components\test\testassets\TestServer\Components.TestServer.csproj", "{26F88A06-319C-43F3-9FD9-8BC2D29F8C00}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sdk", "Sdk", "{FED4267E-E5E4-49C5-98DB-8B3F203596EE}"
 EndProject
@@ -1444,6 +1430,30 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.BlazorWebAssembly.IntegrationTests", "src\Components\WebAssembly\Sdk\integrationtests\Microsoft.NET.Sdk.BlazorWebAssembly.IntegrationTests.csproj", "{525EBCB4-A870-470B-BC90-845306C337D1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.BlazorWebAssembly.Tools", "src\Components\WebAssembly\Sdk\tools\Microsoft.NET.Sdk.BlazorWebAssembly.Tools.csproj", "{175E5CD8-92D4-46BB-882E-3A930D3302D4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{6126DCE4-9692-4EE2-B240-C65743572995}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BasicTestApp", "src\Components\test\testassets\BasicTestApp\BasicTestApp.csproj", "{46FB7E93-1294-4068-B80A-D4864F78277A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComponentsApp.App", "src\Components\test\testassets\ComponentsApp.App\ComponentsApp.App.csproj", "{25FA84DB-EEA7-4068-8E2D-F3D48B281C16}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComponentsApp.Server", "src\Components\test\testassets\ComponentsApp.Server\ComponentsApp.Server.csproj", "{19974360-4A63-425A-94DB-C2C940A3A97A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyTestContentPackage", "src\Components\test\testassets\LazyTestContentPackage\LazyTestContentPackage.csproj", "{ADF9C126-F322-4E34-AFD3-E626A4487206}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestContentPackage", "src\Components\test\testassets\TestContentPackage\TestContentPackage.csproj", "{3D3C7D9B-E356-4DC6-80B1-3F6D7F15EE31}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Components.TestServer", "src\Components\test\testassets\TestServer\Components.TestServer.csproj", "{8A59AF88-4A82-46ED-977D-D909001F8107}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ObjectPool", "ObjectPool", "{E235DAAD-FE73-469E-B16F-F2B8E872E217}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.ObjectPool", "src\ObjectPool\src\Microsoft.Extensions.ObjectPool.csproj", "{CE5D01C2-6BBD-4F33-A1C4-A1479DA99CAD}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{00B2DD87-7E2A-4460-BE1B-5E18B1062B7F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InteropClient", "src\Grpc\test\testassets\InteropClient\InteropClient.csproj", "{C3A0F425-669F-46A8-893F-CF449A6DAE56}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InteropWebsite", "src\Grpc\test\testassets\InteropWebsite\InteropWebsite.csproj", "{19189670-E206-471D-94F8-7D3D545E5020}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -6723,78 +6733,6 @@ Global
 		{157605CB-5170-4C1A-980F-4BAE42DB60DE}.Release|x64.Build.0 = Release|Any CPU
 		{157605CB-5170-4C1A-980F-4BAE42DB60DE}.Release|x86.ActiveCfg = Release|Any CPU
 		{157605CB-5170-4C1A-980F-4BAE42DB60DE}.Release|x86.Build.0 = Release|Any CPU
-		{85D67E40-4B11-48ED-8C43-34590A1FB9ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{85D67E40-4B11-48ED-8C43-34590A1FB9ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{85D67E40-4B11-48ED-8C43-34590A1FB9ED}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{85D67E40-4B11-48ED-8C43-34590A1FB9ED}.Debug|x64.Build.0 = Debug|Any CPU
-		{85D67E40-4B11-48ED-8C43-34590A1FB9ED}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{85D67E40-4B11-48ED-8C43-34590A1FB9ED}.Debug|x86.Build.0 = Debug|Any CPU
-		{85D67E40-4B11-48ED-8C43-34590A1FB9ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{85D67E40-4B11-48ED-8C43-34590A1FB9ED}.Release|Any CPU.Build.0 = Release|Any CPU
-		{85D67E40-4B11-48ED-8C43-34590A1FB9ED}.Release|x64.ActiveCfg = Release|Any CPU
-		{85D67E40-4B11-48ED-8C43-34590A1FB9ED}.Release|x64.Build.0 = Release|Any CPU
-		{85D67E40-4B11-48ED-8C43-34590A1FB9ED}.Release|x86.ActiveCfg = Release|Any CPU
-		{85D67E40-4B11-48ED-8C43-34590A1FB9ED}.Release|x86.Build.0 = Release|Any CPU
-		{C0EF53A5-5A94-4849-86B0-2297EA08D649}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C0EF53A5-5A94-4849-86B0-2297EA08D649}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C0EF53A5-5A94-4849-86B0-2297EA08D649}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{C0EF53A5-5A94-4849-86B0-2297EA08D649}.Debug|x64.Build.0 = Debug|Any CPU
-		{C0EF53A5-5A94-4849-86B0-2297EA08D649}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{C0EF53A5-5A94-4849-86B0-2297EA08D649}.Debug|x86.Build.0 = Debug|Any CPU
-		{C0EF53A5-5A94-4849-86B0-2297EA08D649}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C0EF53A5-5A94-4849-86B0-2297EA08D649}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C0EF53A5-5A94-4849-86B0-2297EA08D649}.Release|x64.ActiveCfg = Release|Any CPU
-		{C0EF53A5-5A94-4849-86B0-2297EA08D649}.Release|x64.Build.0 = Release|Any CPU
-		{C0EF53A5-5A94-4849-86B0-2297EA08D649}.Release|x86.ActiveCfg = Release|Any CPU
-		{C0EF53A5-5A94-4849-86B0-2297EA08D649}.Release|x86.Build.0 = Release|Any CPU
-		{4FDD820F-8397-41B7-956E-F257DD044BD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4FDD820F-8397-41B7-956E-F257DD044BD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4FDD820F-8397-41B7-956E-F257DD044BD8}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{4FDD820F-8397-41B7-956E-F257DD044BD8}.Debug|x64.Build.0 = Debug|Any CPU
-		{4FDD820F-8397-41B7-956E-F257DD044BD8}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{4FDD820F-8397-41B7-956E-F257DD044BD8}.Debug|x86.Build.0 = Debug|Any CPU
-		{4FDD820F-8397-41B7-956E-F257DD044BD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4FDD820F-8397-41B7-956E-F257DD044BD8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4FDD820F-8397-41B7-956E-F257DD044BD8}.Release|x64.ActiveCfg = Release|Any CPU
-		{4FDD820F-8397-41B7-956E-F257DD044BD8}.Release|x64.Build.0 = Release|Any CPU
-		{4FDD820F-8397-41B7-956E-F257DD044BD8}.Release|x86.ActiveCfg = Release|Any CPU
-		{4FDD820F-8397-41B7-956E-F257DD044BD8}.Release|x86.Build.0 = Release|Any CPU
-		{CA7C7A53-446F-453A-A57B-78BB1443B8A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CA7C7A53-446F-453A-A57B-78BB1443B8A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CA7C7A53-446F-453A-A57B-78BB1443B8A8}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{CA7C7A53-446F-453A-A57B-78BB1443B8A8}.Debug|x64.Build.0 = Debug|Any CPU
-		{CA7C7A53-446F-453A-A57B-78BB1443B8A8}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{CA7C7A53-446F-453A-A57B-78BB1443B8A8}.Debug|x86.Build.0 = Debug|Any CPU
-		{CA7C7A53-446F-453A-A57B-78BB1443B8A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CA7C7A53-446F-453A-A57B-78BB1443B8A8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CA7C7A53-446F-453A-A57B-78BB1443B8A8}.Release|x64.ActiveCfg = Release|Any CPU
-		{CA7C7A53-446F-453A-A57B-78BB1443B8A8}.Release|x64.Build.0 = Release|Any CPU
-		{CA7C7A53-446F-453A-A57B-78BB1443B8A8}.Release|x86.ActiveCfg = Release|Any CPU
-		{CA7C7A53-446F-453A-A57B-78BB1443B8A8}.Release|x86.Build.0 = Release|Any CPU
-		{B32C5882-2313-40D0-A003-2FF33724CFE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B32C5882-2313-40D0-A003-2FF33724CFE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B32C5882-2313-40D0-A003-2FF33724CFE6}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{B32C5882-2313-40D0-A003-2FF33724CFE6}.Debug|x64.Build.0 = Debug|Any CPU
-		{B32C5882-2313-40D0-A003-2FF33724CFE6}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{B32C5882-2313-40D0-A003-2FF33724CFE6}.Debug|x86.Build.0 = Debug|Any CPU
-		{B32C5882-2313-40D0-A003-2FF33724CFE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B32C5882-2313-40D0-A003-2FF33724CFE6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B32C5882-2313-40D0-A003-2FF33724CFE6}.Release|x64.ActiveCfg = Release|Any CPU
-		{B32C5882-2313-40D0-A003-2FF33724CFE6}.Release|x64.Build.0 = Release|Any CPU
-		{B32C5882-2313-40D0-A003-2FF33724CFE6}.Release|x86.ActiveCfg = Release|Any CPU
-		{B32C5882-2313-40D0-A003-2FF33724CFE6}.Release|x86.Build.0 = Release|Any CPU
-		{26F88A06-319C-43F3-9FD9-8BC2D29F8C00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{26F88A06-319C-43F3-9FD9-8BC2D29F8C00}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{26F88A06-319C-43F3-9FD9-8BC2D29F8C00}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{26F88A06-319C-43F3-9FD9-8BC2D29F8C00}.Debug|x64.Build.0 = Debug|Any CPU
-		{26F88A06-319C-43F3-9FD9-8BC2D29F8C00}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{26F88A06-319C-43F3-9FD9-8BC2D29F8C00}.Debug|x86.Build.0 = Debug|Any CPU
-		{26F88A06-319C-43F3-9FD9-8BC2D29F8C00}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{26F88A06-319C-43F3-9FD9-8BC2D29F8C00}.Release|Any CPU.Build.0 = Release|Any CPU
-		{26F88A06-319C-43F3-9FD9-8BC2D29F8C00}.Release|x64.ActiveCfg = Release|Any CPU
-		{26F88A06-319C-43F3-9FD9-8BC2D29F8C00}.Release|x64.Build.0 = Release|Any CPU
-		{26F88A06-319C-43F3-9FD9-8BC2D29F8C00}.Release|x86.ActiveCfg = Release|Any CPU
-		{26F88A06-319C-43F3-9FD9-8BC2D29F8C00}.Release|x86.Build.0 = Release|Any CPU
 		{6B2734BF-C61D-4889-ABBF-456A4075D59B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6B2734BF-C61D-4889-ABBF-456A4075D59B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B2734BF-C61D-4889-ABBF-456A4075D59B}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -6843,6 +6781,114 @@ Global
 		{175E5CD8-92D4-46BB-882E-3A930D3302D4}.Release|x64.Build.0 = Release|Any CPU
 		{175E5CD8-92D4-46BB-882E-3A930D3302D4}.Release|x86.ActiveCfg = Release|Any CPU
 		{175E5CD8-92D4-46BB-882E-3A930D3302D4}.Release|x86.Build.0 = Release|Any CPU
+		{46FB7E93-1294-4068-B80A-D4864F78277A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46FB7E93-1294-4068-B80A-D4864F78277A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46FB7E93-1294-4068-B80A-D4864F78277A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{46FB7E93-1294-4068-B80A-D4864F78277A}.Debug|x64.Build.0 = Debug|Any CPU
+		{46FB7E93-1294-4068-B80A-D4864F78277A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{46FB7E93-1294-4068-B80A-D4864F78277A}.Debug|x86.Build.0 = Debug|Any CPU
+		{46FB7E93-1294-4068-B80A-D4864F78277A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46FB7E93-1294-4068-B80A-D4864F78277A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46FB7E93-1294-4068-B80A-D4864F78277A}.Release|x64.ActiveCfg = Release|Any CPU
+		{46FB7E93-1294-4068-B80A-D4864F78277A}.Release|x64.Build.0 = Release|Any CPU
+		{46FB7E93-1294-4068-B80A-D4864F78277A}.Release|x86.ActiveCfg = Release|Any CPU
+		{46FB7E93-1294-4068-B80A-D4864F78277A}.Release|x86.Build.0 = Release|Any CPU
+		{25FA84DB-EEA7-4068-8E2D-F3D48B281C16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25FA84DB-EEA7-4068-8E2D-F3D48B281C16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25FA84DB-EEA7-4068-8E2D-F3D48B281C16}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{25FA84DB-EEA7-4068-8E2D-F3D48B281C16}.Debug|x64.Build.0 = Debug|Any CPU
+		{25FA84DB-EEA7-4068-8E2D-F3D48B281C16}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{25FA84DB-EEA7-4068-8E2D-F3D48B281C16}.Debug|x86.Build.0 = Debug|Any CPU
+		{25FA84DB-EEA7-4068-8E2D-F3D48B281C16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25FA84DB-EEA7-4068-8E2D-F3D48B281C16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25FA84DB-EEA7-4068-8E2D-F3D48B281C16}.Release|x64.ActiveCfg = Release|Any CPU
+		{25FA84DB-EEA7-4068-8E2D-F3D48B281C16}.Release|x64.Build.0 = Release|Any CPU
+		{25FA84DB-EEA7-4068-8E2D-F3D48B281C16}.Release|x86.ActiveCfg = Release|Any CPU
+		{25FA84DB-EEA7-4068-8E2D-F3D48B281C16}.Release|x86.Build.0 = Release|Any CPU
+		{19974360-4A63-425A-94DB-C2C940A3A97A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19974360-4A63-425A-94DB-C2C940A3A97A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19974360-4A63-425A-94DB-C2C940A3A97A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{19974360-4A63-425A-94DB-C2C940A3A97A}.Debug|x64.Build.0 = Debug|Any CPU
+		{19974360-4A63-425A-94DB-C2C940A3A97A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{19974360-4A63-425A-94DB-C2C940A3A97A}.Debug|x86.Build.0 = Debug|Any CPU
+		{19974360-4A63-425A-94DB-C2C940A3A97A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19974360-4A63-425A-94DB-C2C940A3A97A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19974360-4A63-425A-94DB-C2C940A3A97A}.Release|x64.ActiveCfg = Release|Any CPU
+		{19974360-4A63-425A-94DB-C2C940A3A97A}.Release|x64.Build.0 = Release|Any CPU
+		{19974360-4A63-425A-94DB-C2C940A3A97A}.Release|x86.ActiveCfg = Release|Any CPU
+		{19974360-4A63-425A-94DB-C2C940A3A97A}.Release|x86.Build.0 = Release|Any CPU
+		{ADF9C126-F322-4E34-AFD3-E626A4487206}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADF9C126-F322-4E34-AFD3-E626A4487206}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADF9C126-F322-4E34-AFD3-E626A4487206}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{ADF9C126-F322-4E34-AFD3-E626A4487206}.Debug|x64.Build.0 = Debug|Any CPU
+		{ADF9C126-F322-4E34-AFD3-E626A4487206}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{ADF9C126-F322-4E34-AFD3-E626A4487206}.Debug|x86.Build.0 = Debug|Any CPU
+		{ADF9C126-F322-4E34-AFD3-E626A4487206}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADF9C126-F322-4E34-AFD3-E626A4487206}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADF9C126-F322-4E34-AFD3-E626A4487206}.Release|x64.ActiveCfg = Release|Any CPU
+		{ADF9C126-F322-4E34-AFD3-E626A4487206}.Release|x64.Build.0 = Release|Any CPU
+		{ADF9C126-F322-4E34-AFD3-E626A4487206}.Release|x86.ActiveCfg = Release|Any CPU
+		{ADF9C126-F322-4E34-AFD3-E626A4487206}.Release|x86.Build.0 = Release|Any CPU
+		{3D3C7D9B-E356-4DC6-80B1-3F6D7F15EE31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D3C7D9B-E356-4DC6-80B1-3F6D7F15EE31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D3C7D9B-E356-4DC6-80B1-3F6D7F15EE31}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3D3C7D9B-E356-4DC6-80B1-3F6D7F15EE31}.Debug|x64.Build.0 = Debug|Any CPU
+		{3D3C7D9B-E356-4DC6-80B1-3F6D7F15EE31}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3D3C7D9B-E356-4DC6-80B1-3F6D7F15EE31}.Debug|x86.Build.0 = Debug|Any CPU
+		{3D3C7D9B-E356-4DC6-80B1-3F6D7F15EE31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D3C7D9B-E356-4DC6-80B1-3F6D7F15EE31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D3C7D9B-E356-4DC6-80B1-3F6D7F15EE31}.Release|x64.ActiveCfg = Release|Any CPU
+		{3D3C7D9B-E356-4DC6-80B1-3F6D7F15EE31}.Release|x64.Build.0 = Release|Any CPU
+		{3D3C7D9B-E356-4DC6-80B1-3F6D7F15EE31}.Release|x86.ActiveCfg = Release|Any CPU
+		{3D3C7D9B-E356-4DC6-80B1-3F6D7F15EE31}.Release|x86.Build.0 = Release|Any CPU
+		{8A59AF88-4A82-46ED-977D-D909001F8107}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A59AF88-4A82-46ED-977D-D909001F8107}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A59AF88-4A82-46ED-977D-D909001F8107}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8A59AF88-4A82-46ED-977D-D909001F8107}.Debug|x64.Build.0 = Debug|Any CPU
+		{8A59AF88-4A82-46ED-977D-D909001F8107}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8A59AF88-4A82-46ED-977D-D909001F8107}.Debug|x86.Build.0 = Debug|Any CPU
+		{8A59AF88-4A82-46ED-977D-D909001F8107}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A59AF88-4A82-46ED-977D-D909001F8107}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A59AF88-4A82-46ED-977D-D909001F8107}.Release|x64.ActiveCfg = Release|Any CPU
+		{8A59AF88-4A82-46ED-977D-D909001F8107}.Release|x64.Build.0 = Release|Any CPU
+		{8A59AF88-4A82-46ED-977D-D909001F8107}.Release|x86.ActiveCfg = Release|Any CPU
+		{8A59AF88-4A82-46ED-977D-D909001F8107}.Release|x86.Build.0 = Release|Any CPU
+		{CE5D01C2-6BBD-4F33-A1C4-A1479DA99CAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE5D01C2-6BBD-4F33-A1C4-A1479DA99CAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE5D01C2-6BBD-4F33-A1C4-A1479DA99CAD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CE5D01C2-6BBD-4F33-A1C4-A1479DA99CAD}.Debug|x64.Build.0 = Debug|Any CPU
+		{CE5D01C2-6BBD-4F33-A1C4-A1479DA99CAD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CE5D01C2-6BBD-4F33-A1C4-A1479DA99CAD}.Debug|x86.Build.0 = Debug|Any CPU
+		{CE5D01C2-6BBD-4F33-A1C4-A1479DA99CAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE5D01C2-6BBD-4F33-A1C4-A1479DA99CAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE5D01C2-6BBD-4F33-A1C4-A1479DA99CAD}.Release|x64.ActiveCfg = Release|Any CPU
+		{CE5D01C2-6BBD-4F33-A1C4-A1479DA99CAD}.Release|x64.Build.0 = Release|Any CPU
+		{CE5D01C2-6BBD-4F33-A1C4-A1479DA99CAD}.Release|x86.ActiveCfg = Release|Any CPU
+		{CE5D01C2-6BBD-4F33-A1C4-A1479DA99CAD}.Release|x86.Build.0 = Release|Any CPU
+		{C3A0F425-669F-46A8-893F-CF449A6DAE56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3A0F425-669F-46A8-893F-CF449A6DAE56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3A0F425-669F-46A8-893F-CF449A6DAE56}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C3A0F425-669F-46A8-893F-CF449A6DAE56}.Debug|x64.Build.0 = Debug|Any CPU
+		{C3A0F425-669F-46A8-893F-CF449A6DAE56}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C3A0F425-669F-46A8-893F-CF449A6DAE56}.Debug|x86.Build.0 = Debug|Any CPU
+		{C3A0F425-669F-46A8-893F-CF449A6DAE56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3A0F425-669F-46A8-893F-CF449A6DAE56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3A0F425-669F-46A8-893F-CF449A6DAE56}.Release|x64.ActiveCfg = Release|Any CPU
+		{C3A0F425-669F-46A8-893F-CF449A6DAE56}.Release|x64.Build.0 = Release|Any CPU
+		{C3A0F425-669F-46A8-893F-CF449A6DAE56}.Release|x86.ActiveCfg = Release|Any CPU
+		{C3A0F425-669F-46A8-893F-CF449A6DAE56}.Release|x86.Build.0 = Release|Any CPU
+		{19189670-E206-471D-94F8-7D3D545E5020}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19189670-E206-471D-94F8-7D3D545E5020}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19189670-E206-471D-94F8-7D3D545E5020}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{19189670-E206-471D-94F8-7D3D545E5020}.Debug|x64.Build.0 = Debug|Any CPU
+		{19189670-E206-471D-94F8-7D3D545E5020}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{19189670-E206-471D-94F8-7D3D545E5020}.Debug|x86.Build.0 = Debug|Any CPU
+		{19189670-E206-471D-94F8-7D3D545E5020}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19189670-E206-471D-94F8-7D3D545E5020}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19189670-E206-471D-94F8-7D3D545E5020}.Release|x64.ActiveCfg = Release|Any CPU
+		{19189670-E206-471D-94F8-7D3D545E5020}.Release|x64.Build.0 = Release|Any CPU
+		{19189670-E206-471D-94F8-7D3D545E5020}.Release|x86.ActiveCfg = Release|Any CPU
+		{19189670-E206-471D-94F8-7D3D545E5020}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -7555,18 +7601,23 @@ Global
 		{F71FE795-9923-461B-9809-BB1821A276D0} = {60D51C98-2CC0-40DF-B338-44154EFEE2FF}
 		{8294A74F-7DAA-4B69-BC56-7634D93C9693} = {F71FE795-9923-461B-9809-BB1821A276D0}
 		{157605CB-5170-4C1A-980F-4BAE42DB60DE} = {F71FE795-9923-461B-9809-BB1821A276D0}
-		{2531F00A-54EB-4074-9C0B-9AF9FB3679DC} = {0508E463-0269-40C9-B5C2-3B600FB2A28B}
-		{85D67E40-4B11-48ED-8C43-34590A1FB9ED} = {2531F00A-54EB-4074-9C0B-9AF9FB3679DC}
-		{C0EF53A5-5A94-4849-86B0-2297EA08D649} = {2531F00A-54EB-4074-9C0B-9AF9FB3679DC}
-		{4FDD820F-8397-41B7-956E-F257DD044BD8} = {2531F00A-54EB-4074-9C0B-9AF9FB3679DC}
-		{CA7C7A53-446F-453A-A57B-78BB1443B8A8} = {2531F00A-54EB-4074-9C0B-9AF9FB3679DC}
-		{B32C5882-2313-40D0-A003-2FF33724CFE6} = {2531F00A-54EB-4074-9C0B-9AF9FB3679DC}
-		{26F88A06-319C-43F3-9FD9-8BC2D29F8C00} = {2531F00A-54EB-4074-9C0B-9AF9FB3679DC}
 		{FED4267E-E5E4-49C5-98DB-8B3F203596EE} = {562D5067-8CD8-4F19-BCBB-873204932C61}
 		{6B2734BF-C61D-4889-ABBF-456A4075D59B} = {FED4267E-E5E4-49C5-98DB-8B3F203596EE}
 		{83371889-9A3E-4D16-AE77-EB4F83BC6374} = {FED4267E-E5E4-49C5-98DB-8B3F203596EE}
 		{525EBCB4-A870-470B-BC90-845306C337D1} = {FED4267E-E5E4-49C5-98DB-8B3F203596EE}
 		{175E5CD8-92D4-46BB-882E-3A930D3302D4} = {FED4267E-E5E4-49C5-98DB-8B3F203596EE}
+		{6126DCE4-9692-4EE2-B240-C65743572995} = {0508E463-0269-40C9-B5C2-3B600FB2A28B}
+		{46FB7E93-1294-4068-B80A-D4864F78277A} = {6126DCE4-9692-4EE2-B240-C65743572995}
+		{25FA84DB-EEA7-4068-8E2D-F3D48B281C16} = {6126DCE4-9692-4EE2-B240-C65743572995}
+		{19974360-4A63-425A-94DB-C2C940A3A97A} = {6126DCE4-9692-4EE2-B240-C65743572995}
+		{ADF9C126-F322-4E34-AFD3-E626A4487206} = {6126DCE4-9692-4EE2-B240-C65743572995}
+		{3D3C7D9B-E356-4DC6-80B1-3F6D7F15EE31} = {6126DCE4-9692-4EE2-B240-C65743572995}
+		{8A59AF88-4A82-46ED-977D-D909001F8107} = {6126DCE4-9692-4EE2-B240-C65743572995}
+		{E235DAAD-FE73-469E-B16F-F2B8E872E217} = {017429CC-C5FB-48B4-9C46-034E29EE2F06}
+		{CE5D01C2-6BBD-4F33-A1C4-A1479DA99CAD} = {E235DAAD-FE73-469E-B16F-F2B8E872E217}
+		{00B2DD87-7E2A-4460-BE1B-5E18B1062B7F} = {E763DA15-8F4E-446C-99B8-309053C75598}
+		{C3A0F425-669F-46A8-893F-CF449A6DAE56} = {00B2DD87-7E2A-4460-BE1B-5E18B1062B7F}
+		{19189670-E206-471D-94F8-7D3D545E5020} = {00B2DD87-7E2A-4460-BE1B-5E18B1062B7F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3E8720B3-DBDD-498C-B383-2CC32A054E8F}

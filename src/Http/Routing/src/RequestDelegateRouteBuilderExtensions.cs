@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Routing
                 new RouteHandler(handler),
                 template,
                 defaults: null,
-                constraints: new RouteValueDictionary(new { httpMethod = new HttpMethodRouteConstraint(verb) }),
+                constraints: new RouteValueDictionary(new { httpMethod = new HttpMethodRouteConstraint(verb) })!,
                 dataTokens: null,
                 inlineConstraintResolver: GetConstraintResolver(builder));
 

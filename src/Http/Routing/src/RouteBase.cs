@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -110,7 +108,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 return Task.CompletedTask;
             }
-            _logger.RequestMatchedRoute(Name!, ParsedTemplate.TemplateText);
+            _logger.RequestMatchedRoute(Name!, ParsedTemplate.TemplateText!);
 
             return OnRouteMatched(context);
         }
@@ -175,7 +173,7 @@ namespace Microsoft.AspNetCore.Routing
             RouteTemplate parsedTemplate,
             IDictionary<string, object>? constraints)
         {
-            var constraintBuilder = new RouteConstraintBuilder(inlineConstraintResolver, parsedTemplate.TemplateText);
+            var constraintBuilder = new RouteConstraintBuilder(inlineConstraintResolver, parsedTemplate.TemplateText!);
 
             if (constraints != null)
             {
@@ -189,12 +187,12 @@ namespace Microsoft.AspNetCore.Routing
             {
                 if (parameter.IsOptional)
                 {
-                    constraintBuilder.SetOptional(parameter.Name);
+                    constraintBuilder.SetOptional(parameter.Name!);
                 }
 
                 foreach (var inlineConstraint in parameter.InlineConstraints)
                 {
-                    constraintBuilder.AddResolvedConstraint(parameter.Name, inlineConstraint.Constraint);
+                    constraintBuilder.AddResolvedConstraint(parameter.Name!, inlineConstraint.Constraint);
                 }
             }
 
@@ -219,7 +217,7 @@ namespace Microsoft.AspNetCore.Routing
                               parameter.Name));
                     }
 #else
-                    if (result.ContainsKey(parameter.Name))
+                    if (result.ContainsKey(parameter.Name!))
                     {
                         throw new InvalidOperationException(
                           Resources.FormatTemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly(
@@ -227,7 +225,7 @@ namespace Microsoft.AspNetCore.Routing
                     }
                     else
                     {
-                        result.Add(parameter.Name, parameter.DefaultValue);
+                        result.Add(parameter.Name!, parameter.DefaultValue);
                     }
 #endif
                 }
@@ -300,7 +298,7 @@ namespace Microsoft.AspNetCore.Routing
 
         public override string ToString()
         {
-            return ParsedTemplate.TemplateText;
+            return ParsedTemplate.TemplateText!;
         }
     }
 }

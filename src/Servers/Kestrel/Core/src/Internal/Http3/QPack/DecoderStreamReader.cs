@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
         private const byte InsertCountIncrementPrefixMask = 0x3F;
         private const int InsertCountIncrementPrefix = 6;
 
-        private IntegerDecoder _integerDecoder = new IntegerDecoder();
+        private readonly IntegerDecoder _integerDecoder = new IntegerDecoder();
         private State _state;
 
         public DecoderStreamReader()

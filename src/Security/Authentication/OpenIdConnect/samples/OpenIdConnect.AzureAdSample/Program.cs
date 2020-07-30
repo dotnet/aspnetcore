@@ -1,17 +1,22 @@
-using Microsoft.AspNetCore;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace OpenIdConnect.AzureAdSample
 {
     public static class Program
     {
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
+            var host = Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseStartup<Startup>();
+                })
                 .Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }

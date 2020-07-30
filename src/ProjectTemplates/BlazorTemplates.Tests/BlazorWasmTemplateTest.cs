@@ -138,6 +138,7 @@ namespace Templates.Test
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23992")]
         public async Task BlazorWasmStandalonePwaTemplate_Works()
         {
             // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
@@ -263,6 +264,7 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23992")]
         // LocalDB doesn't work on non Windows platforms
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB()
@@ -271,6 +273,7 @@ namespace Templates.Test
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23992")]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB()
         {
             return BlazorWasmHostedTemplate_IndividualAuth_Works(false);

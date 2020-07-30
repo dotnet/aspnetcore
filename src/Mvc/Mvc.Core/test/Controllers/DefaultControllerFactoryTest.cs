@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
@@ -186,6 +187,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24414")]
         public void DefaultControllerFactory_DelegatesDisposalToControllerActivator()
         {
             // Arrange

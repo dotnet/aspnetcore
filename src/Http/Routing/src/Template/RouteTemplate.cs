@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
         }
 
-        public string TemplateText { get; }
+        public string? TemplateText { get; }
 
         public IList<TemplatePart> Parameters { get; }
 

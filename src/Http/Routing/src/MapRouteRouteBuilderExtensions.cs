@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Builder
                     return routeConstraint;
                 }
 
-                var parameterPolicy = _parameterPolicyFactory.Create(null, inlineConstraint);
+                var parameterPolicy = _parameterPolicyFactory.Create(null!, inlineConstraint);
                 if (parameterPolicy != null)
                 {
                     // Logic inside Route will skip adding NullRouteConstraint

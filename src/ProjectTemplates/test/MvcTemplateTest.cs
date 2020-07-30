@@ -224,6 +224,7 @@ namespace Templates.Test
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23993")]
         public async Task MvcTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
         {
             await MvcTemplateBuildsAndPublishes(auth: null, args: new[] { "--razor-runtime-compilation" });

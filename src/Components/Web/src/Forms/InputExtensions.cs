@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 else
                 {
                     result = default;
-                    validationErrorMessage = $"The {input.FieldIdentifier.FieldName} field is not valid.";
+                    validationErrorMessage = $"The {input.DisplayName ?? input.FieldIdentifier.FieldName} field is not valid.";
                     return false;
                 }
             }

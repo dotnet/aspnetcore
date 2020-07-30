@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
     /// </summary>
     [AllowAnonymous]
     [IdentityDefaultUI(typeof(ResendEmailConfirmationModel<>))]
-    public abstract class ResendEmailConfirmationModel : PageModel
+    public class ResendEmailConfirmationModel : PageModel
     {
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used

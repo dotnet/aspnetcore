@@ -57,10 +57,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public sealed class Lifetime : IDisposable
         {
             private readonly object _lock = new object();
-            private DataSourceDependentCache<Matcher> _cache;
+            private DataSourceDependentCache<Matcher>? _cache;
             private bool _disposed;
 
-            public DataSourceDependentCache<Matcher> Cache
+            public DataSourceDependentCache<Matcher>? Cache
             {
                 get => _cache;
                 set
