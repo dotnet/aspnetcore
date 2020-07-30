@@ -7983,11 +7983,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _headers._Connection = value;
             _headers._rawConnection = raw;
         }
+        public void ClearConnection()
+        {
+            _bits &= ~0x2L;
+            _headers._Connection = default;
+            _headers._rawConnection = null;
+        }
         public void SetRawDate(StringValues value, byte[] raw)
         {
             _bits |= 0x4L;
             _headers._Date = value;
             _headers._rawDate = raw;
+        }
+        public void ClearDate()
+        {
+            _bits &= ~0x4L;
+            _headers._Date = default;
+            _headers._rawDate = null;
         }
         public void SetRawTransferEncoding(StringValues value, byte[] raw)
         {
@@ -7995,11 +8007,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _headers._TransferEncoding = value;
             _headers._rawTransferEncoding = raw;
         }
+        public void ClearTransferEncoding()
+        {
+            _bits &= ~0x40L;
+            _headers._TransferEncoding = default;
+            _headers._rawTransferEncoding = null;
+        }
         public void SetRawServer(StringValues value, byte[] raw)
         {
             _bits |= 0x4000000L;
             _headers._Server = value;
             _headers._rawServer = raw;
+        }
+        public void ClearServer()
+        {
+            _bits &= ~0x4000000L;
+            _headers._Server = default;
+            _headers._rawServer = null;
         }
         protected override int GetCountFast()
         {

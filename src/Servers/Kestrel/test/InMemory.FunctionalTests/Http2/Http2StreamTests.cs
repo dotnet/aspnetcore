@@ -4664,7 +4664,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 41,
+                withLength: 32,
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 1);
             var dataFrame1 = await ExpectAsync(Http2FrameType.DATA,

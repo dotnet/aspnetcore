@@ -1082,12 +1082,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (hasTransferEncoding)
             {
+                // https://tools.ietf.org/html/rfc7540#section-8.1.2.2
+                // Such intermediaries SHOULD also remove other connection-specific header fields, such as Keep-Alive,
+                // Proxy-Connection, Transfer-Encoding, and Upgrade, even if they are not nominated by the Connection header field.
+                if (_httpVersion > Http.HttpVersion.Http11)
+                {
+                    responseHeaders.ClearTransferEncoding();
+                    hasTransferEncoding = false;
+                }
                 // https://tools.ietf.org/html/rfc7230#section-3.3.1
                 // If any transfer coding other than
                 // chunked is applied to a response payload body, the sender MUST either
                 // apply chunked as the final transfer coding or terminate the message
                 // by closing the connection.
-                if (HttpHeaders.GetFinalTransferCoding(responseHeaders.HeaderTransferEncoding) != TransferCoding.Chunked)
+                else if (HttpHeaders.GetFinalTransferCoding(responseHeaders.HeaderTransferEncoding) != TransferCoding.Chunked)
                 {
                     _keepAlive = false;
                 }

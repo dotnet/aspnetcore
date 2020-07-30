@@ -689,6 +689,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {header.SetBit()};
             _headers._{header.Identifier} = value;
             _headers._raw{header.Identifier} = raw;
+        }}
+        public void Clear{header.Identifier}()
+        {{
+            {header.ClearBit()};
+            _headers._{header.Identifier} = default;
+            _headers._raw{header.Identifier} = null;
         }}")}
         protected override int GetCountFast()
         {{
