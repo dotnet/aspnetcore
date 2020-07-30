@@ -4661,8 +4661,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await response.WriteAsync("hello, world");
             });
 
-            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
-            await SendDataAsync(1, _helloWorldBytes, endStream: true);
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
 
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 41,

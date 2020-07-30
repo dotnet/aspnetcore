@@ -1192,7 +1192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task DisableSwitchAutoChunkForChunedTransferEncodingWorks()
+        public async Task DisableSwitchAutoChunkForChunkedTransferEncodingWorks()
         {
             // Help: What's the way to set HttpProtocol._disableAutoChunk?
             //AppContext.SetSwitch("Switch.Microsoft.AspNetCore.Server.Kestrel.DisableAutoChunk", false);
@@ -1234,7 +1234,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task NoSwitchAutoChunkForChunedTransferEncodingWorks()
+        public async Task NoSwitchAutoChunkForChunkedTransferEncodingWorks()
         {
             await using (var server = new TestServer(async httpContext =>
             {
@@ -1256,45 +1256,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
-                        "Transfer-Encoding: chunked",
-                        "",
-                        "c",
-                        "hello, world",
-                        "c",
-                        "hello, world",
-                        "c",
-                        "hello, world",
-                        "0",
-                        "",
-                        "");
-                }
-            }
-        }
-
-        [Fact]
-        public async Task Http2Chun()
-        {
-            await using (var server = new TestServer(async httpContext =>
-            {
-                var response = httpContext.Response;
-
-                response.Headers.Add(HeaderNames.TransferEncoding, "chunked");
-                await response.WriteAsync("hello, world");
-                await response.WriteAsync("hello, world");
-                await response.WriteAsync("hello, world");
-
-            }, new TestServiceContext(LoggerFactory)))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.Send(
-                        "GET / HTTP/2",
-                        "Host:",
-                        "",
-                        "");
-                    await connection.Receive(
-                        "HTTP/2 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
