@@ -19,10 +19,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("MvcWithComponents")]
         public Task Build_Components_WithDotNetCoreMSBuild_Works() => Build_ComponentsWorks(MSBuildProcessKind.Dotnet);
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/24427")]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InitializeTestProject("MvcWithComponents")]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24427")]
         public Task Build_Components_WithDesktopMSBuild_Works() => Build_ComponentsWorks(MSBuildProcessKind.Desktop);
 
         [Fact]
