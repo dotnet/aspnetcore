@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InitializeTestProject("SimpleMvc")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24427")]
         public Task Build_SimpleMvc_WithServer_UsingDesktopMSBuild_CanBuildSuccessfully()
             => Build_SimpleMvc_CanBuildSuccessfully(MSBuildProcessKind.Desktop);
 
