@@ -148,13 +148,13 @@ namespace Microsoft.AspNetCore.Components.Web
             var renderIndex = _itemsBefore;
             var placeholdersBeforeCount = Math.Min(_loadedItemsStartIndex, lastItemIndex);
 
-            // Render before spacers.
+            // Render placeholders before the loaded items.
             for (; renderIndex < placeholdersBeforeCount; renderIndex++)
             {
                 builder.AddContent(0, _placeholder, renderIndex);
             }
 
-            // Render loaded items.
+            // Render the loaded items.
             if (_loadedItems != null)
             {
                 var itemsToShow = _loadedItems
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Components.Web
                 }
             }
 
-            // Render after spacers.
+            // Render the placeholders after the loaded items.
             for (; renderIndex < lastItemIndex; renderIndex++)
             {
                 builder.AddContent(0, _placeholder, renderIndex);
