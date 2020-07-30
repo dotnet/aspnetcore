@@ -5,6 +5,8 @@ package com.microsoft.signalr;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,15 +38,16 @@ class JsonHubProtocol implements HubProtocol {
     }
 
     @Override
-    public List<HubMessage> parseMessages(String payload, InvocationBinder binder) {
-        if (payload.length() == 0) {
+    public List<HubMessage> parseMessages(ByteBuffer payload, InvocationBinder binder) {
+    	String payloadStr = new String(payload.array(), StandardCharsets.UTF_8);
+        if (payloadStr.length() == 0) {
             return null;
         }
-        if (!(payload.substring(payload.length() - 1).equals(RECORD_SEPARATOR))) {
+        if (!(payloadStr.substring(payloadStr.length() - 1).equals(RECORD_SEPARATOR))) {
             throw new RuntimeException("Message is incomplete.");
         }
 
-        String[] messages = payload.split(RECORD_SEPARATOR);
+        String[] messages = payloadStr.split(RECORD_SEPARATOR);
         List<HubMessage> hubMessages = new ArrayList<>();
         try {
             for (String str : messages) {
@@ -180,8 +183,8 @@ class JsonHubProtocol implements HubProtocol {
     }
 
     @Override
-    public String writeMessage(HubMessage hubMessage) {
-        return gson.toJson(hubMessage) + RECORD_SEPARATOR;
+    public ByteBuffer writeMessage(HubMessage hubMessage) {
+        return ByteBuffer.wrap((gson.toJson(hubMessage) + RECORD_SEPARATOR).getBytes(StandardCharsets.UTF_8));
     }
 
     private ArrayList<Object> bindArguments(JsonArray argumentsToken, List<Class<?>> paramTypes) {
