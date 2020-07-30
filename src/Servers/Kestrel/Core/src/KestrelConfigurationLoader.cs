@@ -359,7 +359,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                         var logger = Options.ApplicationServices.GetRequiredService<ILogger<KestrelConfigurationLoader>>();
                         var sniOptionsSelector = new SniOptionsSelector(this, endpoint, httpsOptions, listenOptions.Protocols, logger);
 
-                        listenOptions.UseHttps(ServerOptionsSelectionCallback, sniOptionsSelector);
+                        listenOptions.UseHttps(ServerOptionsSelectionCallback, sniOptionsSelector, httpsOptions.HandshakeTimeout);
                     }
                 }
 

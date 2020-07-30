@@ -235,15 +235,16 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="listenOptions">The <see cref="ListenOptions"/> to configure.</param>
         /// <param name="httpsOptionsCallback">Callback to configure HTTPS options.</param>
         /// <param name="state">State for the <see cref="ServerOptionsSelectionCallback" />.</param>
+        /// <param name="handshakeTimeout">Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive and finite.</param>
         /// <returns>The <see cref="ListenOptions"/>.</returns>
-        internal static ListenOptions UseHttps(this ListenOptions listenOptions, HttpsOptionsCallback httpsOptionsCallback, object state = null)
+        internal static ListenOptions UseHttps(this ListenOptions listenOptions, HttpsOptionsCallback httpsOptionsCallback, object state, TimeSpan handshakeTimeout)
         {
             var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
 
             listenOptions.IsTls = true;
             listenOptions.Use(next =>
             {
-                var middleware = new HttpsConnectionMiddleware(next, httpsOptionsCallback, state, loggerFactory);
+                var middleware = new HttpsConnectionMiddleware(next, httpsOptionsCallback, state, handshakeTimeout, loggerFactory);
                 return middleware.OnConnectionAsync;
             });
 

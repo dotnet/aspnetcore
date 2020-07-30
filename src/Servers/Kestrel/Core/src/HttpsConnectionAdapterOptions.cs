@@ -25,8 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public HttpsConnectionAdapterOptions()
         {
             ClientCertificateMode = ClientCertificateMode.NoCertificate;
-            // Defaults to 10 seconds
-            HandshakeTimeout = HttpsConnectionMiddleware.DefaultHandshakeTimeout;
+            HandshakeTimeout = TimeSpan.FromSeconds(10);
         }
 
         /// <summary>

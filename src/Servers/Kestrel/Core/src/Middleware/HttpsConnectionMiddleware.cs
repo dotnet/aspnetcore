@@ -31,9 +31,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
     {
         private const string EnableWindows81Http2 = "Microsoft.AspNetCore.Server.Kestrel.EnableWindows81Http2";
 
-        internal static readonly TimeSpan DefaultHandshakeTimeout = TimeSpan.FromSeconds(10);
+        private static readonly bool _isWindowsVersionIncompatible = IsWindowsVersionIncompatible();
 
         private readonly ConnectionDelegate _next;
+        private readonly TimeSpan _handshakeTimeout;
         private readonly ILogger _logger;
         private readonly Func<Stream, SslStream> _sslStreamFactory;
 
@@ -43,7 +44,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         private readonly Func<ConnectionContext, string, X509Certificate2> _serverCertificateSelector;
 
         // The following fields are only set by ServerOptionsSelectionCallback ctor.
-        // If we ever expose this via a public API, we should really create a delegate type.
         private readonly HttpsOptionsCallback _httpsOptionsCallback;
         private readonly object _httpsOptionsCallbackState;
 
@@ -59,12 +59,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 throw new ArgumentNullException(nameof(options));
             }
 
-            _options = options;
+            _next = next;
+            _handshakeTimeout = options.HandshakeTimeout;
             _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
 
+            _options = options;
             _options.HttpProtocols = ValidateAndNormalizeHttpProtocols(_options.HttpProtocols, _logger);
 
-            _next = next;
             // capture the certificate now so it can't be switched after validation
             _serverCertificate = options.ServerCertificate;
             _serverCertificateSelector = options.ServerCertificateSelector;
@@ -94,10 +95,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             ConnectionDelegate next,
             HttpsOptionsCallback httpsOptionsCallback,
             object httpsOptionsCallbackState,
+            TimeSpan handshakeTimeout,
             ILoggerFactory loggerFactory)
         {
             _next = next;
+            _handshakeTimeout = handshakeTimeout;
             _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
+
             _httpsOptionsCallback = httpsOptionsCallback;
             _httpsOptionsCallbackState = httpsOptionsCallbackState;
             _sslStreamFactory = s => new SslStream(s);
@@ -122,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             try
             {
-                using var cancellationTokenSource = new CancellationTokenSource(_options?.HandshakeTimeout ?? DefaultHandshakeTimeout);
+                using var cancellationTokenSource = new CancellationTokenSource(_handshakeTimeout);
                 if (_httpsOptionsCallback is null)
                 {
                     await DoOptionsBasedHandshakeAsync(context, sslStream, feature, cancellationTokenSource.Token);
@@ -255,9 +259,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
         }
 
-        private bool RemoteCertificateValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) =>
-            RemoteCertificateValidationCallback(_options.ClientCertificateMode, _options.ClientCertificateValidation, certificate, chain, sslPolicyErrors);
-
         internal static bool RemoteCertificateValidationCallback(
             ClientCertificateMode clientCertificateMode,
             Func<X509Certificate2, X509Chain, SslPolicyErrors, bool> clientCertificateValidation,
@@ -294,6 +295,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             return true;
         }
+
+        private bool RemoteCertificateValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) =>
+            RemoteCertificateValidationCallback(_options.ClientCertificateMode, _options.ClientCertificateValidation, certificate, chain, sslPolicyErrors);
 
         private SslDuplexPipe CreateSslDuplexPipe(IDuplexPipe transport, MemoryPool<byte> memoryPool)
         {
@@ -366,12 +370,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 {
                     throw new NotSupportedException(CoreStrings.Http2NoTlsOsx);
                 }
-                else if (IsWindowsVersionIncompatible())
+                else if (_isWindowsVersionIncompatible)
                 {
                     throw new NotSupportedException(CoreStrings.Http2NoTlsWin81);
                 }
             }
-            else if (httpProtocols == HttpProtocols.Http1AndHttp2 && IsWindowsVersionIncompatible())
+            else if (httpProtocols == HttpProtocols.Http1AndHttp2 && _isWindowsVersionIncompatible)
             {
                 logger.Http2DefaultCiphersInsufficient();
                 return HttpProtocols.Http1;

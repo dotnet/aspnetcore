@@ -144,8 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 Debug.Assert(_fallbackServerCertificateSelector != null,
                     "The cached SniOptions ServerCertificate can only be null if there's a fallback certificate selector.");
 
-                // If a ServerCertificateSelector passed into HttpsConnectionMiddleware via HttpsConnectionAdapterOptions doesn't return a cert,
-                // HttpsConnectionMiddleware doesn't fallback to the ServerCertificate, so we don't do that here either.
+                // If a ServerCertificateSelector doesn't return a cert, HttpsConnectionMiddleware doesn't fallback to the ServerCertificate.
                 options = options.Clone();
                 options.SslOptions.ServerCertificate = _fallbackServerCertificateSelector(connection, serverName);
             }
