@@ -91,7 +91,7 @@ class MessagePackHubProtocol implements HubProtocol {
                     default:
                         break;
                 }
-                // Incrememnt buffer's position by the number of bytes we just read
+                // Increment buffer's position by the number of bytes we just read
                 bb = bb.position(bb.position() + length);
                 unpacker.close();
             }
