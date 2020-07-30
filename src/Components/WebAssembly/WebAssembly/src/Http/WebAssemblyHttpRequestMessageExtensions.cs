@@ -126,17 +126,17 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Http
                 throw new ArgumentNullException(nameof(requestMessage));
             }
 
-            const string FetchRequestOptionsKey = "WebAssemblyFetchOptions";
+            var fetchRequestOptionsKey = new HttpRequestOptionsKey<IDictionary<string, object>>("WebAssemblyFetchOptions");
             IDictionary<string, object> fetchOptions;
 
-            if (requestMessage.Properties.TryGetValue(FetchRequestOptionsKey, out var entry))
+            if (requestMessage.Options.TryGetValue(fetchRequestOptionsKey, out var entry))
             {
-                fetchOptions = (IDictionary<string, object>)entry;
+                fetchOptions = entry;
             }
             else
             {
                 fetchOptions = new Dictionary<string, object>(StringComparer.Ordinal);
-                requestMessage.Properties[FetchRequestOptionsKey] = fetchOptions;
+                requestMessage.Options.Set(fetchRequestOptionsKey, fetchOptions);
             }
 
             fetchOptions[name] = value;
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Http
                 throw new ArgumentNullException(nameof(requestMessage));
             }
 
-            requestMessage.Properties["WebAssemblyEnableStreamingResponse"] = streamingEnabled;
+            requestMessage.Options.Set(new HttpRequestOptionsKey<bool>("WebAssemblyEnableStreamingResponse"), streamingEnabled);
 
             return requestMessage;
         }

@@ -55,13 +55,13 @@ namespace Microsoft.AspNetCore.Components.Forms
             {
                 if (!validationResult.MemberNames.Any())
                 {
-                    messages.Add(new FieldIdentifier(editContext.Model, fieldName: string.Empty), validationResult.ErrorMessage);
+                    messages.Add(new FieldIdentifier(editContext.Model, fieldName: string.Empty), validationResult.ErrorMessage!);
                     continue;
                 }
 
                 foreach (var memberName in validationResult.MemberNames)
                 {
-                    messages.Add(editContext.Field(memberName), validationResult.ErrorMessage);
+                    messages.Add(editContext.Field(memberName), validationResult.ErrorMessage!);
                 }
             }
 
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
                 Validator.TryValidateProperty(propertyValue, validationContext, results);
                 messages.Clear(fieldIdentifier);
-                messages.Add(fieldIdentifier, results.Select(result => result.ErrorMessage));
+                messages.Add(fieldIdentifier, results.Select(result => result.ErrorMessage!));
 
                 // We have to notify even if there were no messages before and are still no messages now,
                 // because the "state" that changed might be the completion of some async validation task
