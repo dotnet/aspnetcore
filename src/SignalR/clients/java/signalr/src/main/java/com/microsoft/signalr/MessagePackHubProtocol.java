@@ -93,6 +93,7 @@ class MessagePackHubProtocol implements HubProtocol {
                 }
                 // Incrememnt buffer's position by the number of bytes we just read
                 bb = bb.position(bb.position() + length);
+                unpacker.close();
             }
         } catch (MessagePackException | IOException ex) {
             throw new RuntimeException("Error reading MessagePack data.", ex);
