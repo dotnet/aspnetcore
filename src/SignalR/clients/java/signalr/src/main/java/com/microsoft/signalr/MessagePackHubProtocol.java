@@ -44,24 +44,24 @@ class MessagePackHubProtocol implements HubProtocol {
     }
 
     @Override
-    public List<HubMessage> parseMessages(String payload, InvocationBinder binder) {
-        if (payload.length() == 0) {
+    public List<HubMessage> parseMessages(ByteBuffer payload, InvocationBinder binder) {
+        if (payload.remaining() == 0) {
             return null;
         }
 
         List<HubMessage> hubMessages = new ArrayList<>();
         
         try {
-            byte[] payloadBytes = payload.getBytes(StandardCharsets.ISO_8859_1);
-            ByteBuffer bb = ByteBuffer.wrap(payloadBytes);
-            while (bb.hasRemaining()) {
-                int length = Utils.readLengthHeader(bb);
+            while (payload.hasRemaining()) {
+                int length = Utils.readLengthHeader(payload);
                 // Throw if remaining buffer is shorter than length header
-                if (bb.remaining() < length) {
-                    throw new RuntimeException(String.format("MessagePack message was length %d but claimed to be length %d.", payloadBytes.length, length));
+                if (payload.remaining() < length) {
+                    throw new RuntimeException(String.format("MessagePack message was length %d but claimed to be length %d.", payload.remaining(), length));
                 }
-                // Instantiate MessageUnpacker w/ the next length bytes of payload, starting at bb's position
-                MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(payloadBytes, bb.position(), length);
+                // Instantiate MessageUnpacker w/ the next length bytes of payload
+                byte[] messageBytes = new byte[length];
+                payload = payload.get(messageBytes, 0, length);
+                MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(messageBytes);
                 
                 int itemCount = unpacker.unpackArrayHeader();
                 HubMessageType messageType = HubMessageType.values()[unpacker.unpackInt() - 1];
@@ -91,8 +91,6 @@ class MessagePackHubProtocol implements HubProtocol {
                     default:
                         break;
                 }
-                // Increment buffer's position by the number of bytes we just read
-                bb = bb.position(bb.position() + length);
                 unpacker.close();
             }
         } catch (MessagePackException | IOException ex) {
@@ -103,7 +101,7 @@ class MessagePackHubProtocol implements HubProtocol {
     }
     
     @Override
-    public String writeMessage(HubMessage hubMessage) {
+    public ByteBuffer writeMessage(HubMessage hubMessage) {
         HubMessageType messageType = hubMessage.getMessageType();
         
         try {
@@ -146,7 +144,7 @@ class MessagePackHubProtocol implements HubProtocol {
                 messageWithHeader[i + headerSize] = message[i];
             }
         
-            return new String(messageWithHeader, StandardCharsets.ISO_8859_1);
+            return ByteBuffer.wrap(messageWithHeader);
         } catch (MessagePackException | IOException ex) {
             throw new RuntimeException("Error writing MessagePack data.", ex);
         }
