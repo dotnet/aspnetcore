@@ -58,10 +58,8 @@ class MessagePackHubProtocol implements HubProtocol {
                 if (payload.remaining() < length) {
                     throw new RuntimeException(String.format("MessagePack message was length %d but claimed to be length %d.", payload.remaining(), length));
                 }
-                // Instantiate MessageUnpacker w/ the next length bytes of payload
-                byte[] messageBytes = new byte[length];
-                payload = payload.get(messageBytes, 0, length);
-                MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(messageBytes);
+                // Instantiate MessageUnpacker
+                MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(payload);
                 
                 int itemCount = unpacker.unpackArrayHeader();
                 HubMessageType messageType = HubMessageType.values()[unpacker.unpackInt() - 1];
@@ -91,7 +89,13 @@ class MessagePackHubProtocol implements HubProtocol {
                     default:
                         break;
                 }
+                // Make sure that we actually read the right number of bytes
+                long readBytes = unpacker.getTotalReadBytes();
+                if (readBytes != length) {
+                	throw new RuntimeException(String.format("MessagePack message was length %d but claimed to be length %d.", readBytes, length));
+                }
                 unpacker.close();
+                payload = payload.position(payload.position() + (int) readBytes);
             }
         } catch (MessagePackException | IOException ex) {
             throw new RuntimeException("Error reading MessagePack data.", ex);
