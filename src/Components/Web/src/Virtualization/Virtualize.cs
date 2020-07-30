@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.Web
 
         private RenderFragment<TItem>? _itemTemplate;
 
-        private RenderFragment<int>? _placeholder;
+        private RenderFragment<PlaceholderContext>? _placeholder;
 
         [Inject]
         private IJSRuntime JSRuntime { get; set; } = default!;
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.Web
         /// Gets or sets the template for items that have not yet been loaded in memory.
         /// </summary>
         [Parameter]
-        public RenderFragment<int>? Placeholder { get; set; }
+        public RenderFragment<PlaceholderContext>? Placeholder { get; set; }
 
         /// <summary>
         /// Gets the size of each item in pixels.
@@ -142,17 +142,22 @@ namespace Microsoft.AspNetCore.Components.Web
             builder.AddElementReferenceCapture(2, elementReference => _spacerBefore = elementReference);
             builder.CloseElement();
 
-            builder.OpenRegion(3);
+            // This is a rare case where it's valid for the sequence number to be programmatically incremented.
+            // This is only true because we know for certain that no other content will be alongside it.
 
-            var lastItemIndex = _itemsBefore + _visibleItemCapacity;
+            var lastItemIndex = Math.Min(_itemsBefore + _visibleItemCapacity, _itemCount);
             var renderIndex = _itemsBefore;
             var placeholdersBeforeCount = Math.Min(_loadedItemsStartIndex, lastItemIndex);
+
+            builder.OpenRegion(3);
 
             // Render placeholders before the loaded items.
             for (; renderIndex < placeholdersBeforeCount; renderIndex++)
             {
-                builder.AddContent(0, _placeholder, renderIndex);
+                builder.AddContent(renderIndex, _placeholder, new PlaceholderContext(renderIndex));
             }
+
+            builder.CloseRegion();
 
             // Render the loaded items.
             if (_loadedItems != null)
@@ -161,26 +166,32 @@ namespace Microsoft.AspNetCore.Components.Web
                     .Skip(_itemsBefore - _loadedItemsStartIndex)
                     .Take(lastItemIndex - _loadedItemsStartIndex);
 
+                builder.OpenRegion(4);
+
                 foreach (var item in itemsToShow)
                 {
-                    builder.AddContent(0, _itemTemplate, item);
+                    builder.AddContent(renderIndex, _itemTemplate, item);
                     renderIndex++;
                 }
+
+                builder.CloseRegion();
             }
+
+            builder.OpenRegion(5);
 
             // Render the placeholders after the loaded items.
             for (; renderIndex < lastItemIndex; renderIndex++)
             {
-                builder.AddContent(0, _placeholder, renderIndex);
+                builder.AddContent(renderIndex, _placeholder, new PlaceholderContext(renderIndex));
             }
 
             builder.CloseRegion();
 
             var itemsAfter = Math.Max(0, _itemCount - _visibleItemCapacity - _itemsBefore);
 
-            builder.OpenElement(4, "div");
-            builder.AddAttribute(5, "style", GetSpacerStyle(itemsAfter));
-            builder.AddElementReferenceCapture(6, elementReference => _spacerAfter = elementReference);
+            builder.OpenElement(6, "div");
+            builder.AddAttribute(7, "style", GetSpacerStyle(itemsAfter));
+            builder.AddElementReferenceCapture(8, elementReference => _spacerAfter = elementReference);
 
             builder.CloseElement();
         }
@@ -228,29 +239,24 @@ namespace Microsoft.AspNetCore.Components.Web
         private async Task RefreshDataAsync()
         {
             _refreshCts?.Cancel();
+            _refreshCts = new CancellationTokenSource();
+
+            var cancellationToken = _refreshCts.Token;
+            var request = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, cancellationToken);
 
             try
             {
-                // Wait for the previous refresh to complete so it doesn't overwrite the current refresh.
-                await _refreshTask;
-            }
-            catch (OperationCanceledException)
-            {
-                // No-op. If a different type of exception is thrown, we want to terminate this task.
-            }
-
-            try
-            {
-                _refreshCts = new CancellationTokenSource();
-
-                var request = new ItemsProviderRequest(_itemsBefore, _visibleItemCapacity, _refreshCts.Token);
                 var result = await _itemsProvider(request);
 
-                _itemCount = result.TotalItemCount;
-                _loadedItems = result.Items;
-                _loadedItemsStartIndex = request.StartIndex;
+                // Only apply result if the task was not canceled.
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    _itemCount = result.TotalItemCount;
+                    _loadedItems = result.Items;
+                    _loadedItemsStartIndex = request.StartIndex;
 
-                StateHasChanged();
+                    StateHasChanged();
+                }
             }
             catch (OperationCanceledException)
             {
@@ -277,11 +283,10 @@ namespace Microsoft.AspNetCore.Components.Web
                 Items.Count));
         }
 
-        private RenderFragment DefaultPlaceholder(int index) => (builder) =>
+        private RenderFragment DefaultPlaceholder(PlaceholderContext context) => (builder) =>
         {
             builder.OpenElement(0, "div");
             builder.AddAttribute(1, "style", $"height: {ItemSize}px;");
-            builder.SetKey(GetHashCode() ^ index);
             builder.CloseElement();
         };
 

@@ -7,10 +7,10 @@
     Stacked lists (fixed):<br />
     <div id="stacked-container" style="background-color: #eee; height: 500px; overflow-y: auto">
         <Virtualize Items="@fixedItems" ItemSize="itemSize">
-            <div @key="@context" id="stacked-top-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+            <div id="stacked-top-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
         </Virtualize>
         <Virtualize Items="@fixedItems" ItemSize="itemSize">
-            <div @key="@context" id="stacked-bottom-item" style="height: @(itemSize)px; background-color: rgb(0, @((context % 2) * 255), @((1-(context % 2)) * 255));">Item @context</div>
+            <div id="stacked-bottom-item" style="height: @(itemSize)px; background-color: rgb(0, @((context % 2) * 255), @((1-(context % 2)) * 255));">Item @context</div>
         </Virtualize>
     </div>
 </p>
@@ -20,10 +20,10 @@
     <div style="background-color: #eee; height: 500px; overflow-y: auto">
         <Virtualize ItemsProvider="GetItemsAsync" ItemSize="itemSize">
             <Item>
-                <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+                <div style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
             </Item>
             <Placeholder>
-                <div @key="@($"placeholder-{context}")" style="height: @(itemSize)px; background-color: orange;">Loading item @context...</div>
+                <div style="height: @(itemSize)px; background-color: orange;">Loading item @context.Index...</div>
             </Placeholder>
         </Virtualize>
     </div>
@@ -34,10 +34,10 @@
     <div style="background-color: #eee; height: 500px; overflow-y: auto">
         <Virtualize ItemsProvider="GetItemsAsyncCached" ItemSize="itemSize">
             <Item>
-                <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+                <div style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
             </Item>
             <Placeholder>
-                <div @key="@($"placeholder-{context}")" style="height: @(itemSize)px; background-color: orange;">Loading item @context...</div>
+                <div style="height: @(itemSize)px; background-color: orange;">Loading item @context.Index...</div>
             </Placeholder>
         </Virtualize>
     </div>
@@ -46,7 +46,7 @@
 <p>
     Viewport as root (fixed):<br />
     <Virtualize Items="@fixedItems" ItemSize="itemSize">
-        <div @key="@context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+        <div style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
     </Virtualize>
 </p>
 
