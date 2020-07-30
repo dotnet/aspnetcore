@@ -45,7 +45,7 @@ namespace ServerComparison.TestSites
                 subApp.Run(context =>
                 {
                     context.Response.Headers[HeaderNames.TransferEncoding] = "chunked";
-                    return context.Response.WriteAsync("10\r\nManually Chunked\r\n0\r\n\r\n");
+                    return context.Response.WriteAsync("Manually Chunked");
                 });
             });
 
@@ -55,7 +55,7 @@ namespace ServerComparison.TestSites
                 {
                     context.Response.Headers[HeaderNames.Connection] = "close";
                     context.Response.Headers[HeaderNames.TransferEncoding] = "chunked";
-                    return context.Response.WriteAsync("1A\r\nManually Chunked and Close\r\n0\r\n\r\n");
+                    return context.Response.WriteAsync("Manually Chunked and Close");
                 });
             });
 
