@@ -45,18 +45,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 var sslOptions = new SslServerAuthenticationOptions
                 {
-                    ServerCertificate = configLoader.LoadCertificate(sniConfig.Certificate, endpointConfig.Name),
+                    ServerCertificate = configLoader.LoadCertificate(sniConfig.Certificate, $"{endpointConfig.Name}:SNI:{name}"),
                     EnabledSslProtocols = sniConfig.SslProtocols ?? fallbackOptions.SslProtocols,
+                    CertificateRevocationCheckMode = fallbackOptions.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
                 };
 
                 if (sslOptions.ServerCertificate is null)
                 {
-                    if (fallbackOptions.ServerCertificate is null && fallbackOptions.ServerCertificateSelector is null)
+                    if (fallbackOptions.ServerCertificate is null && _fallbackServerCertificateSelector is null)
                     {
                         throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
                     }
 
-                    if (fallbackOptions.ServerCertificateSelector is null)
+                    if (_fallbackServerCertificateSelector is null)
                     {
                         // Cache the fallback ServerCertificate since there's no fallback ServerCertificateSelector taking precedence. 
                         sslOptions.ServerCertificate = fallbackOptions.ServerCertificate;
@@ -138,9 +139,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             if (_onAuthenticateCallback != null)
             {
-                sslOptions = CloneSslOptions(sslOptions);
-
                 // From doc comments: "This is called after all of the other settings have already been applied."
+                sslOptions = CloneSslOptions(sslOptions);
                 _onAuthenticateCallback(connection, sslOptions);
             }
 
@@ -158,8 +158,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 ReadOnlySpan<char> nameCandidateSpan = nameCandidate;
 
-                // Note that we only slice off the `*`. We want to match the leading `.` also.
-                if (serverNameSpan.EndsWith(nameCandidateSpan.Slice(wildcardHost.Length), StringComparison.OrdinalIgnoreCase) &&
+                // Only slice off 1 character, the `*`. We want to match the leading `.` also.
+                if (serverNameSpan.EndsWith(nameCandidateSpan.Slice(1), StringComparison.OrdinalIgnoreCase) &&
                     nameCandidateSpan.Length > matchedNameLength)
                 {
                     matchedNameLength = nameCandidateSpan.Length;
@@ -171,6 +171,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         }
 
         // TODO: Reflection based test to ensure we clone everything!
+        // This won't catch issues related to mutable subproperties, but the existing subproperties look like they're mosly immutable.
+        // The exception are the ApplicationProtocols list which we clone and the ServerCertificate because of methods like Import() and Reset() :(
         internal static SslServerAuthenticationOptions CloneSslOptions(SslServerAuthenticationOptions sslOptions) =>
             new SslServerAuthenticationOptions
             {
