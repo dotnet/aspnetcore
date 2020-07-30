@@ -124,16 +124,16 @@ class MessagePackHubProtocol implements HubProtocol {
                     throw new RuntimeException(String.format("Unexpected message type: %d", messageType.value));
             }
             int length = message.length;
-            List<Byte> header = Utils.writeLengthHeader(length);
+            List<Byte> header = Utils.getLengthHeader(length);
             byte[] messageWithHeader = new byte[header.size() + length];
             int headerSize = header.size();
             
             // Write the length header, then all of the bytes of the original message
             for (int i = 0; i < headerSize; i++) {
-            messageWithHeader[i] = header.get(i);
+                messageWithHeader[i] = header.get(i);
             }
             for (int i = 0; i < length; i++) {
-            messageWithHeader[i + headerSize] = message[i];
+                messageWithHeader[i + headerSize] = message[i];
             }
         
             return new String(messageWithHeader, StandardCharsets.ISO_8859_1);

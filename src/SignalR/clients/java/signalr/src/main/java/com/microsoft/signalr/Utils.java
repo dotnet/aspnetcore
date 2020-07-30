@@ -68,7 +68,7 @@ class Utils {
         return length;
     }
     
-    public static ArrayList<Byte> writeLengthHeader(int length) {
+    public static ArrayList<Byte> getLengthHeader(int length) {
         // This code writes length prefix of the message as a VarInt. Read the comment in
         // the readLengthHeader for details.
         
