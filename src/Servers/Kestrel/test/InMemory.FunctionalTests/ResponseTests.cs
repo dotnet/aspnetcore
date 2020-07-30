@@ -1077,7 +1077,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 httpContext.Response.Headers["Transfer-Encoding"] = "chunked";
                 httpContext.Response.ContentLength = 13;
-                await httpContext.Response.WriteAsync("hello, world");
+                await httpContext.Response.WriteAsync("hello, world"); // 12
             }, serviceContext))
             {
                 using (var connection = server.CreateConnection())
@@ -1093,7 +1093,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Content-Length: 13",
                         "Transfer-Encoding: chunked",
                         "",
-                        "hello, world");
+                        "c",
+                        "hello, world",
+                        "0",
+                        "",
+                        "");
                 }
             }
 
@@ -1113,7 +1117,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 httpContext.Response.Headers["Transfer-Encoding"] = "chunked";
                 httpContext.Response.ContentLength = 11;
-                await httpContext.Response.WriteAsync("hello, world");
+                await httpContext.Response.WriteAsync("hello, world"); // 12
             }, serviceContext))
             {
                 using (var connection = server.CreateConnection())
@@ -1129,7 +1133,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Content-Length: 11",
                         "Transfer-Encoding: chunked",
                         "",
-                        "hello, world");
+                        "c",
+                        "hello, world",
+                        "0",
+                        "",
+                        "");
                 }
             }
 
@@ -1400,8 +1408,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             await using (var server = new TestServer(async httpContext =>
             {
                 httpContext.Response.Headers["Transfer-Encoding"] = responseTransferEncoding;
-
-                // App would have to chunk manually, but here we don't care
                 await httpContext.Response.WriteAsync("hello, world");
             }, new TestServiceContext(LoggerFactory)))
             {
@@ -1417,7 +1423,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         $"Date: {server.Context.DateHeaderValue}",
                         $"Transfer-Encoding: {responseTransferEncoding}",
                         "",
-                        "hello, world");
+                        "c",
+                        "hello, world",
+                        "0",
+                        "",
+                        "");
 
                     // Make sure connection was kept open
                     await connection.Send(
@@ -1430,7 +1440,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         $"Date: {server.Context.DateHeaderValue}",
                         $"Transfer-Encoding: {responseTransferEncoding}",
                         "",
-                        "hello, world");
+                        "c",
+                        "hello, world",
+                        "0",
+                        "",
+                        "");
                 }
             }
         }
