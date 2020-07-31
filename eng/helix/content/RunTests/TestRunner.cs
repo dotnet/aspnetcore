@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -74,7 +75,7 @@ namespace RunTests
                 Console.WriteLine(pair.Key + "=" + pair.Value);
             }
             Console.WriteLine("KeyValue pairs from TestRunner.EnvironmentVariables");
-            foreach (DictionaryEntry pair in EnvironmentVariables)
+            foreach (KeyValuePair<string, string> pair in EnvironmentVariables)
             {
                 Console.WriteLine(pair.Key + "=" + pair.Value);
             }
