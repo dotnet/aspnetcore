@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.SignalR
                 return;
             }
 
-            await HubOnDisconnectedAsync(connection, null);
+            await HubOnDisconnectedAsync(connection, connection.CloseException);
         }
 
         private async Task HubOnDisconnectedAsync(HubConnectionContext connection, Exception exception)

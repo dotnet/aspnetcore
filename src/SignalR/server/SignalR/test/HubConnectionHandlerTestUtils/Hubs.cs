@@ -189,16 +189,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
         }
 
-        private class SelfRef
-        {
-            public SelfRef()
-            {
-                Self = this;
-            }
-
-            public SelfRef Self { get; set; }
-        }
-
         public async Task<string> StreamingConcat(ChannelReader<string> source)
         {
             var sb = new StringBuilder();
@@ -329,6 +319,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             await tcs.Task;
         }
+    }
+
+    internal class SelfRef
+    {
+        public SelfRef()
+        {
+            Self = this;
+        }
+
+        public SelfRef Self { get; set; }
     }
 
     public abstract class TestHub : Hub
@@ -1123,9 +1123,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return base.OnConnectedAsync();
         }
 
+        public Task ProtocolErrorSelf()
+        {
+            return Clients.Caller.SendAsync("Send", new SelfRef());
+        }
+
+        public Task ProtocolErrorAll()
+        {
+            return Clients.All.SendAsync("Send", new SelfRef());
+        }
+
         public override Task OnDisconnectedAsync(Exception exception)
         {
             _state.TokenStateInDisconnected = Context.ConnectionAborted.IsCancellationRequested;
+            _state.DisconnectedException = exception;
 
             return base.OnDisconnectedAsync(exception);
         }
@@ -1138,6 +1149,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public bool TokenStateInConnected { get; set; }
 
         public bool TokenStateInDisconnected { get; set; }
+
+        public Exception DisconnectedException { get; set; }
     }
 
     public class CallerServiceHub : Hub

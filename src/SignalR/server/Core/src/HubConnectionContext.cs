@@ -91,6 +91,8 @@ namespace Microsoft.AspNetCore.SignalR
 
         internal HubCallerContext HubCallerContext { get; }
 
+        internal Exception CloseException { get; private set; }
+
         /// <summary>
         /// Gets a <see cref="CancellationToken"/> that notifies when the connection is aborted.
         /// </summary>
@@ -212,6 +214,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
             catch (Exception ex)
             {
+                CloseException = ex;
                 Log.FailedWritingMessage(_logger, ex);
 
                 AbortAllowReconnect();
@@ -231,6 +234,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
             catch (Exception ex)
             {
+                CloseException = ex;
                 Log.FailedWritingMessage(_logger, ex);
 
                 AbortAllowReconnect();
@@ -247,6 +251,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
             catch (Exception ex)
             {
+                CloseException = ex;
                 Log.FailedWritingMessage(_logger, ex);
 
                 AbortAllowReconnect();
@@ -274,6 +279,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
             catch (Exception ex)
             {
+                CloseException = ex;
                 Log.FailedWritingMessage(_logger, ex);
                 AbortAllowReconnect();
             }
@@ -299,6 +305,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
             catch (Exception ex)
             {
+                CloseException = ex;
                 Log.FailedWritingMessage(_logger, ex);
                 AbortAllowReconnect();
             }
@@ -336,6 +343,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
             catch (Exception ex)
             {
+                CloseException = ex;
                 Log.FailedWritingMessage(_logger, ex);
                 AbortAllowReconnect();
             }
