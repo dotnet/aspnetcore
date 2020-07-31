@@ -10,6 +10,6 @@ namespace Microsoft.AspNetCore.Hosting
     {
         IWebHostBuilder Configure(Action<WebHostBuilderContext, IApplicationBuilder> configure);
         IWebHostBuilder UseStartup(Type startupType);
-        IWebHostBuilder UseStartup(Func<WebHostBuilderContext, object> startupFactory);
+        IWebHostBuilder UseStartup<TStartup>(Func<WebHostBuilderContext, TStartup> startupFactory);
     }
 }

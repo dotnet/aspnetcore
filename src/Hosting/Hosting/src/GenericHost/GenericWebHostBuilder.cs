@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
@@ -213,7 +214,7 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
-        public IWebHostBuilder UseStartup(Func<WebHostBuilderContext, object> startupFactory)
+        public IWebHostBuilder UseStartup<TStartup>(Func<WebHostBuilderContext, TStartup> startupFactory)
         {
             // Clear the startup type
             _startupObject = startupFactory;

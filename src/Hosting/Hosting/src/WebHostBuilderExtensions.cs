@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
@@ -15,6 +16,9 @@ namespace Microsoft.AspNetCore.Hosting
 {
     public static class WebHostBuilderExtensions
     {
+        // We're going to keep all public constructors and public methods on Startup classes
+        private const DynamicallyAccessedMemberTypes StartupAccessibility = DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicMethods;
+
         /// <summary>
         /// Specify the startup method to be used to configure the web application.
         /// </summary>
@@ -67,7 +71,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
         /// <param name="startupFactory">A delegate that specifies a factory for the startup class.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public static IWebHostBuilder UseStartup(this IWebHostBuilder hostBuilder, Func<WebHostBuilderContext, object> startupFactory)
+        public static IWebHostBuilder UseStartup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]TStartup>(this IWebHostBuilder hostBuilder, Func<WebHostBuilderContext, TStartup> startupFactory)
         {
             if (startupFactory == null)
             {
@@ -110,7 +114,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
         /// <param name="startupType">The <see cref="Type"/> to be used.</param>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public static IWebHostBuilder UseStartup(this IWebHostBuilder hostBuilder, Type startupType)
+        public static IWebHostBuilder UseStartup(this IWebHostBuilder hostBuilder, [DynamicallyAccessedMembers(StartupAccessibility)] Type startupType)
         {
             if (startupType == null)
             {
@@ -151,7 +155,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
         /// <typeparam name ="TStartup">The type containing the startup methods for the application.</typeparam>
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-        public static IWebHostBuilder UseStartup<TStartup>(this IWebHostBuilder hostBuilder) where TStartup : class
+        public static IWebHostBuilder UseStartup<[DynamicallyAccessedMembers(StartupAccessibility)]TStartup>(this IWebHostBuilder hostBuilder) where TStartup : class
         {
             return hostBuilder.UseStartup(typeof(TStartup));
         }
