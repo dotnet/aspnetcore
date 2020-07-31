@@ -29,7 +29,6 @@ namespace RunTests
                 }
 
                 runner.DisplayContents();
-                runner.DisplayEnvironment();
 
                 if (keepGoing)
                 {
