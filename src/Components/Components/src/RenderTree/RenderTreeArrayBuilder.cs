@@ -20,6 +20,16 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             item.ElementName = elementName;
         }
 
+        public void AppendText(int sequence, string textContent)
+        {
+            GrowBufferIfFull();
+            ref var item = ref _items[_itemsInUse++];
+
+            item.Sequence = sequence;
+            item.FrameType = RenderTreeFrameType.Text;
+            item.TextContent = textContent;
+        }
+
         public void AppendMarkup(int sequence, string markupContent)
         {
             GrowBufferIfFull();
@@ -28,6 +38,17 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             item.Sequence = sequence;
             item.FrameType = RenderTreeFrameType.Markup;
             item.MarkupContent = markupContent;
+        }
+
+        public void AppendAttribute(int sequence, string attributeName, object? attributeValue)
+        {
+            GrowBufferIfFull();
+            ref var item = ref _items[_itemsInUse++];
+
+            item.Sequence = sequence;
+            item.FrameType = RenderTreeFrameType.Attribute;
+            item.AttributeName = attributeName;
+            item.AttributeValue = attributeValue;
         }
     }
 }

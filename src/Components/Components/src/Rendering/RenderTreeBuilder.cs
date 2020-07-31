@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="textContent">Content for the new text frame.</param>
         public void AddContent(int sequence, string? textContent)
         {
-            _entries.Append(RenderTreeFrame.Text(sequence, textContent ?? string.Empty));
+            _entries.AppendText(sequence, textContent ?? string.Empty);
             _lastNonAttributeFrameType = RenderTreeFrameType.Text;
         }
 
@@ -163,7 +163,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 throw new InvalidOperationException($"Valueless attributes may only be added immediately after frames of type {RenderTreeFrameType.Element}");
             }
 
-            _entries.Append(RenderTreeFrame.Attribute(sequence, name, BoxedTrue));
+
+            _entries.AppendAttribute(sequence, name, BoxedTrue);
         }
 
         /// <summary>
@@ -183,13 +184,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
             AssertCanAddAttribute();
             if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
             {
-                _entries.Append(RenderTreeFrame.Attribute(sequence, name, value ? BoxedTrue : BoxedFalse));
+                _entries.AppendAttribute(sequence, name, value ? BoxedTrue : BoxedFalse);
             }
             else if (value)
             {
                 // Don't add 'false' attributes for elements. We want booleans to map to the presence
                 // or absence of an attribute, and false => "False" which isn't falsy in js.
-                _entries.Append(RenderTreeFrame.Attribute(sequence, name, BoxedTrue));
+                _entries.AppendAttribute(sequence, name, BoxedTrue);
             }
             else
             {
@@ -214,7 +215,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             AssertCanAddAttribute();
             if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
             {
-                _entries.Append(RenderTreeFrame.Attribute(sequence, name, value));
+                _entries.AppendAttribute(sequence, name, value);
             }
             else
             {
@@ -239,7 +240,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             AssertCanAddAttribute();
             if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
             {
-                _entries.Append(RenderTreeFrame.Attribute(sequence, name, value));
+                _entries.AppendAttribute(sequence, name, value);
             }
             else
             {
@@ -270,19 +271,19 @@ namespace Microsoft.AspNetCore.Components.Rendering
             {
                 // Since this is a component, we need to preserve the type of the EventCallback, so we have
                 // to box.
-                _entries.Append(RenderTreeFrame.Attribute(sequence, name, (object)value));
+                _entries.AppendAttribute(sequence, name, value);
             }
             else if (value.RequiresExplicitReceiver)
             {
                 // If we need to preserve the receiver, we just box the EventCallback
                 // so we can get it out on the other side.
-                _entries.Append(RenderTreeFrame.Attribute(sequence, name, (object)value));
+                _entries.AppendAttribute(sequence, name, value);
             }
             else if (value.HasDelegate)
             {
                 // In the common case the receiver is also the delegate's target, so we
                 // just need to retain the delegate. This allows us to avoid an allocation.
-                _entries.Append(RenderTreeFrame.Attribute(sequence, name, value.Delegate));
+                _entries.AppendAttribute(sequence, name, value.Delegate);
             }
             else
             {
@@ -314,19 +315,19 @@ namespace Microsoft.AspNetCore.Components.Rendering
             {
                 // Since this is a component, we need to preserve the type of the EventCallback, so we have
                 // to box.
-                _entries.Append(RenderTreeFrame.Attribute(sequence, name, (object)value));
+                _entries.AppendAttribute(sequence, name, value);
             }
             else if (value.RequiresExplicitReceiver)
             {
                 // If we need to preserve the receiver - we convert this to an untyped EventCallback. We don't
                 // need to preserve the type of an EventCallback<T> when it's invoked from the DOM.
-                _entries.Append(RenderTreeFrame.Attribute(sequence, name, (object)value.AsUntyped()));
+                _entries.AppendAttribute(sequence, name, value.AsUntyped());
             }
             else if (value.HasDelegate)
             {
                 // In the common case the receiver is also the delegate's target, so we
                 // just need to retain the delegate. This allows us to avoid an allocation.
-                _entries.Append(RenderTreeFrame.Attribute(sequence, name, value.Delegate));
+                _entries.AppendAttribute(sequence, name, value.Delegate);
             }
             else
             {
@@ -359,7 +360,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 {
                     if (boolValue)
                     {
-                        _entries.Append(RenderTreeFrame.Attribute(sequence, name, BoxedTrue));
+                        _entries.AppendAttribute(sequence, name, BoxedTrue);
                     }
                     else
                     {
@@ -371,7 +372,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 {
                     if (callbackValue.HasDelegate)
                     {
-                        _entries.Append(RenderTreeFrame.Attribute(sequence, name, callbackValue.UnpackForRenderTree()));
+                        _entries.AppendAttribute(sequence, name, callbackValue.UnpackForRenderTree());
                     }
                     else
                     {
@@ -380,18 +381,18 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 }
                 else if (value is MulticastDelegate)
                 {
-                    _entries.Append(RenderTreeFrame.Attribute(sequence, name, value));
+                    _entries.AppendAttribute(sequence, name, value);
                 }
                 else
                 {
                     // The value is either a string, or should be treated as a string.
-                    _entries.Append(RenderTreeFrame.Attribute(sequence, name, value.ToString()));
+                    _entries.AppendAttribute(sequence, name, value.ToString());
                 }
             }
             else if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
             {
                 // If this is a component, we always want to preserve the original type.
-                _entries.Append(RenderTreeFrame.Attribute(sequence, name, value));
+                _entries.AppendAttribute(sequence, name, value);
             }
             else
             {

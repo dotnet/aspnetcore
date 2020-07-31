@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Text"/>,
         /// gets the content of the text frame. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(16)] public readonly string TextContent;
+        [FieldOffset(16)] public string TextContent;
 
         // --------------------------------------------------------------------------------
         // RenderTreeFrameType.Attribute
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Attribute"/>,
         /// gets the attribute name. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(16)] public readonly string AttributeName;
+        [FieldOffset(16)] public string AttributeName;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Attribute"/>,
