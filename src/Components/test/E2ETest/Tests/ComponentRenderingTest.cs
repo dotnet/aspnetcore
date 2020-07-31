@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var appElement = Browser.MountTestComponent<TextOnlyComponent>();
 
-            Browser.Exists(By.XPath("//*[contains(., 'Hello from TextOnlyComponent')]"))
+            Browser.Exists(By.XPath("//*[contains(., 'Hello from TextOnlyComponent')]"));
         }
 
         // This verifies that we've correctly configured the Razor language version via MSBuild.
