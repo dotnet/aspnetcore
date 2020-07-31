@@ -201,6 +201,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 if (GenerateDeclaration.HasValue())
                 {
                     b.Features.Add(new SetSuppressPrimaryMethodBodyOptionFeature());
+                    b.Features.Add(new SuppressChecksumOptionsFeature());
                 }
 
                 if (RootNamespace.HasValue())
@@ -227,6 +228,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             });
 
             var results = GenerateCode(engine, sourceItems);
+            var isGeneratingDeclaration = GenerateDeclaration.HasValue();
 
             foreach (var result in results)
             {
@@ -255,6 +257,18 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 {
                     // Only output the file if we generated it without errors.
                     var outputFilePath = result.InputItem.OutputPath;
+                    var generatedCode = result.CSharpDocument.GeneratedCode;
+                    if (isGeneratingDeclaration)
+                    {
+                        // When emiting declarations, only write if it the contents are different.
+                        // This allows build incrementalism to kick in when the declaration remains unchanged between builds.
+                        if (File.Exists(outputFilePath) &&
+                            string.Equals(File.ReadAllText(outputFilePath), generatedCode, StringComparison.Ordinal))
+                        {
+                            continue;
+                        }
+                    }
+
                     File.WriteAllText(outputFilePath, result.CSharpDocument.GeneratedCode);
                 }
             }

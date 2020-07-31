@@ -29,6 +29,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Used for tracking inputs to component generation -->
     <_RazorComponentInputHash></_RazorComponentInputHash>
     <_RazorComponentInputCacheFile>$(IntermediateOutputPath)$(MSBuildProjectName).RazorComponent.input.cache</_RazorComponentInputCacheFile>
+    <_RazorComponentDeclarationOutputCacheFile>$(IntermediateOutputPath)$(MSBuildProjectName).RazorComponent.output.cache</_RazorComponentDeclarationOutputCacheFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -85,7 +86,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Name="RazorGenerateComponentDeclaration"
     DependsOnTargets="$(RazorGenerateComponentDeclarationDependsOn)"
     Inputs="$(MSBuildAllProjects);@(RazorComponentWithTargetPath);$(_RazorComponentInputCacheFile)"
-    Outputs="@(_RazorComponentDeclaration)"
+    Outputs="$(_RazorComponentDeclarationOutputCacheFile)"
     Condition="'@(RazorComponentWithTargetPath->Count())'!='0'">
 
     <ItemGroup>
@@ -120,8 +121,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       TagHelperManifest="$(_RazorComponentDeclarationManifest)"
       GenerateDeclaration="true" />
 
+    <Touch
+      Files="$(_RazorComponentDeclarationOutputCacheFile)"
+      AlwaysCreate="true" />
+
     <ItemGroup>
       <FileWrites Include="@(_RazorComponentDeclaration)" />
+      <FileWrites Include="$(_RazorComponentDeclarationOutputCacheFile)" />
     </ItemGroup>
   </Target>
 
