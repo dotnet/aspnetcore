@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <summary>
         /// Describes the type of this frame.
         /// </summary>
-        [FieldOffset(4)] public readonly RenderTreeFrameType FrameType;
+        [FieldOffset(4)] public RenderTreeFrameType FrameType;
 
         // --------------------------------------------------------------------------------
         // RenderTreeFrameType.Element
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Element"/>,
         /// gets a name representing the type of the element. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(16)] public readonly string ElementName;
+        [FieldOffset(16)] public string ElementName;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Element"/>,
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Markup"/>,
         /// gets the content of the markup frame. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(16)] public readonly string MarkupContent;
+        [FieldOffset(16)] public string MarkupContent;
 
         // Element constructor
         private RenderTreeFrame(int sequence, int elementSubtreeLength, string elementName, object elementKey)

@@ -28,8 +28,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     internal class ArrayBuilder<T> : IDisposable
     {
         // The following fields are memory mapped to the WASM client. Do not re-order or use auto-properties.
-        private T[] _items;
-        private int _itemsInUse;
+        protected T[] _items;
+        protected int _itemsInUse;
 
         private static readonly T[] Empty = Array.Empty<T>();
         private readonly ArrayPool<T> _arrayPool;
@@ -64,14 +64,20 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         [MethodImpl(MethodImplOptions.AggressiveInlining)] // Just like System.Collections.Generic.List<T>
         public int Append(in T item)
         {
-            if (_itemsInUse == _items.Length)
-            {
-                GrowBuffer(_items.Length * 2);
-            }
+            GrowBufferIfFull();
 
             var indexOfAppendedItem = _itemsInUse++;
             _items[indexOfAppendedItem] = item;
             return indexOfAppendedItem;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void GrowBufferIfFull()
+        {
+            if (_itemsInUse == _items.Length)
+            {
+                GrowBuffer(_items.Length * 2);
+            }
         }
 
         internal int Append(T[] source, int startIndex, int length)
@@ -139,11 +145,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 ThrowIndexOutOfBoundsException();
             }
 
-            // Same expansion logic as elsewhere
-            if (_itemsInUse == _items.Length)
-            {
-                GrowBuffer(_items.Length * 2);
-            }
+            GrowBufferIfFull();
 
             Array.Copy(_items, index, _items, index + 1, _itemsInUse - index);
             _itemsInUse++;
@@ -162,7 +164,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             _itemsInUse = 0;
         }
 
-        private void GrowBuffer(int desiredCapacity)
+        protected void GrowBuffer(int desiredCapacity)
         {
             // When we dispose, we set the count back to zero and return the array.
             //

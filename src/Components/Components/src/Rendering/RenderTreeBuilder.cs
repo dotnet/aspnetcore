@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             _openElementIndices.Push(_entries.Count);
-            _entries.Append(RenderTreeFrame.Element(sequence, elementName));
+            _entries.AppendElement(sequence, elementName);
             _lastNonAttributeFrameType = RenderTreeFrameType.Element;
         }
 
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="markupContent">Content for the new markup frame.</param>
         public void AddMarkupContent(int sequence, string? markupContent)
         {
-            _entries.Append(RenderTreeFrame.Markup(sequence, markupContent ?? string.Empty));
+            _entries.AppendMarkup(sequence, markupContent ?? string.Empty);
             _lastNonAttributeFrameType = RenderTreeFrameType.Markup;
         }
 
