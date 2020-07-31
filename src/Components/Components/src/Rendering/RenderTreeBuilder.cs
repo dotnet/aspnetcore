@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private readonly static object BoxedFalse = false;
         private readonly static string ComponentReferenceCaptureInvalidParentMessage = $"Component reference captures may only be added as children of frames of type {RenderTreeFrameType.Component}";
 
-        private readonly RenderTreeArrayBuilder _entries = new RenderTreeArrayBuilder();
+        private readonly RenderTreeFrameArrayBuilder _entries = new RenderTreeFrameArrayBuilder();
         private readonly Stack<int> _openElementIndices = new Stack<int>();
         private RenderTreeFrameType? _lastNonAttributeFrameType;
         private bool _hasSeenAddMultipleAttributes;

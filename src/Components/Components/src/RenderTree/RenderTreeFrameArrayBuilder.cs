@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     /// <summary>
     /// A special subclass of <see cref="ArrayBuilder{T}"/> that contains methods optimized for appending <see cref="RenderTreeFrame"/> entries.
     /// </summary>
-    internal class RenderTreeArrayBuilder : ArrayBuilder<RenderTreeFrame>
+    internal class RenderTreeFrameArrayBuilder : ArrayBuilder<RenderTreeFrame>
     {
         public void AppendElement(int sequence, string elementName)
         {
