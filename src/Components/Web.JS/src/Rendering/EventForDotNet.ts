@@ -89,6 +89,9 @@ export class EventForDotNet<TData extends UIEventArgs> {
       case 'mousewheel':
         return new EventForDotNet<UIWheelEventArgs>('wheel', parseWheelEvent(event as WheelEvent));
 
+      case 'toggle':
+        return new EventForDotNet<UIEventArgs>('toggle', { type: event.type });
+
       default:
         return new EventForDotNet<UIEventArgs>('unknown', { type: event.type });
     }
@@ -248,7 +251,7 @@ function normalizeTimeBasedValue(element: HTMLInputElement): string {
 
 // The following interfaces must be kept in sync with the UIEventArgs C# classes
 
-export type EventArgsType = 'change' | 'clipboard' | 'drag' | 'error' | 'focus' | 'keyboard' | 'mouse' | 'pointer' | 'progress' | 'touch' | 'unknown' | 'wheel';
+export type EventArgsType = 'change' | 'clipboard' | 'drag' | 'error' | 'focus' | 'keyboard' | 'mouse' | 'pointer' | 'progress' | 'touch' | 'unknown' | 'wheel' | 'toggle';
 
 export interface UIEventArgs {
   type: string;

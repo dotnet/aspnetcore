@@ -4,6 +4,22 @@ Building ASP.NET Core from source allows you to tweak and customize ASP.NET Core
 
 See <https://github.com/dotnet/aspnetcore/labels/area-infrastructure> for known issues and to track ongoing work.
 
+## Clone the source code
+
+ASP.NET Core uses git submodules to include the source from a few other projects.
+
+For a new copy of the project, run:
+
+```ps1
+git clone --recursive https://github.com/dotnet/aspnetcore
+```
+
+To update an existing copy, run:
+
+```ps1
+git submodule update --init --recursive
+```
+
 ## Install pre-requisites
 
 ### Windows
@@ -22,7 +38,8 @@ Building ASP.NET Core on Windows requires:
     However, any Visual Studio 2019 instance that meets the requirements should be fine. See [global.json](/global.json)
     and [eng/scripts/vs.json](/eng/scripts/vs.json) for those requirements. By default, the script will install Visual Studio Enterprise Edition, however you can use a different edition by passing the `-Edition` flag.
 * Git. <https://git-scm.org>
-* NodeJS. LTS version of 10.14.2 or newer <https://nodejs.org>
+* NodeJS. LTS version of 10.14.2 or newer <https://nodejs.org>.
+* Install yarn globally (`npm install -g yarn`)
 * Java Development Kit 11 or newer. Either:
   * OpenJDK <https://jdk.java.net/>
   * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
@@ -52,22 +69,6 @@ Building ASP.NET Core on macOS or Linux requires:
   * OpenJDK <https://jdk.java.net/>
   * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
 
-## Clone the source code
-
-ASP.NET Core uses git submodules to include the source from a few other projects.
-
-For a new copy of the project, run:
-
-```ps1
-git clone --recursive https://github.com/dotnet/aspnetcore
-```
-
-To update an existing copy, run:
-
-```ps1
-git submodule update --init --recursive
-```
-
 **NOTE** some ISPs have been know to use web filtering software that has caused issues with git repository cloning, if you experience issues cloning this repo please review <https://help.github.com/en/github/authenticating-to-github/using-ssh-over-the-https-port>
 
 ## Building in Visual Studio
@@ -86,6 +87,9 @@ Before opening our .sln/.slnf files in Visual Studio or VS Code, you need to per
    > :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the master
    > branch, we regularly update the versions of .NET Core SDK required to build the repo.
    > You will need to restart Visual Studio every time we update the .NET Core SDK.
+   > To allow executing the setup script, you may need to update the execution policy on your machine.
+   You can do so by running the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` command
+   in PowerShell. For more information on execution policies, you can read the [execution policy docs](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy).
 
 2. Use the `startvs.cmd` script to open Visual Studio .sln/.slnf files. This script first sets the required
 environment variables.
@@ -127,6 +131,18 @@ Executing `.\restore.cmd` or `.\build.cmd` may produce these errors:
 > error MSB4236: The SDK 'Microsoft.NET.Sdk' specified could not be found.
 
 In most cases, this is because the option _Use previews of the .NET Core SDK_ in VS2019 is not checked. Start Visual Studio, go to _Tools > Options_ and check _Use previews of the .NET Core SDK_ under _Environment > Preview Features_.
+
+### Common error: HTTP Error 500.33 - ANCM Request Handler Load Failure
+
+The [ASP.NET Core Module](https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/aspnet-core-module) (ANCM) for IIS is not supported when running projects in this repository.
+
+After using `startvs.cmd` to open a solution in Visual Studio, the Kestrel web host option must be used (name of the project) and not IIS Express.
+
+Example of running the `MvcSandbox` project:
+
+`.\startvs.cmd .\src\Mvc\Mvc.sln`
+
+![Web host options in Visual Studio](./vs-iis-express-aspnet-core-mvc-sandbox.jpg)
 
 ## Building with Visual Studio Code
 

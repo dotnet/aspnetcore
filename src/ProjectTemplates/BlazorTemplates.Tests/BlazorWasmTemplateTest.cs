@@ -43,6 +43,9 @@ namespace Templates.Test
         [Fact]
         public async Task BlazorWasmStandaloneTemplate_Works()
         {
+            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
             var project = await ProjectFactory.GetOrCreateProject("blazorstandalone", Output);
             project.RuntimeIdentifier = "browser-wasm";
 
@@ -81,6 +84,9 @@ namespace Templates.Test
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/20172")]
         public async Task BlazorWasmHostedTemplate_Works()
         {
+            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
             var project = await ProjectFactory.GetOrCreateProject("blazorhosted", Output);
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted" });
@@ -132,8 +138,12 @@ namespace Templates.Test
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23992")]
         public async Task BlazorWasmStandalonePwaTemplate_Works()
         {
+            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
             var project = await ProjectFactory.GetOrCreateProject("blazorstandalonepwa", Output);
             project.RuntimeIdentifier = "browser-wasm";
 
@@ -173,6 +183,9 @@ namespace Templates.Test
         [Fact]
         public async Task BlazorWasmHostedPwaTemplate_Works()
         {
+            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
             var project = await ProjectFactory.GetOrCreateProject("blazorhostedpwa", Output);
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted", "--pwa" });
@@ -251,6 +264,7 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23992")]
         // LocalDB doesn't work on non Windows platforms
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithLocalDB()
@@ -259,6 +273,7 @@ namespace Templates.Test
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23992")]
         public Task BlazorWasmHostedTemplate_IndividualAuth_Works_WithOutLocalDB()
         {
             return BlazorWasmHostedTemplate_IndividualAuth_Works(false);
@@ -266,6 +281,9 @@ namespace Templates.Test
 
         private async Task BlazorWasmHostedTemplate_IndividualAuth_Works(bool useLocalDb)
         {
+            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
             var project = await ProjectFactory.GetOrCreateProject("blazorhostedindividual" + (useLocalDb ? "uld" : ""), Output);
 
             var createResult = await project.RunDotNetNewAsync("blazorwasm", args: new[] { "--hosted", "-au", "Individual", useLocalDb ? "-uld" : "" });
@@ -333,6 +351,9 @@ namespace Templates.Test
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23639")]
         public async Task BlazorWasmStandaloneTemplate_IndividualAuth_Works()
         {
+            // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
+            Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+
             var project = await ProjectFactory.GetOrCreateProject("blazorstandaloneindividual", Output);
             project.RuntimeIdentifier = "browser-wasm";
 
@@ -394,6 +415,27 @@ namespace Templates.Test
             new TemplateInstance(
                 "blazorwasmhostedaad", "-ho",
                 "-au", "SingleOrg",
+                "--domain", "my-domain",
+                "--tenant-id", "tenantId",
+                "--client-id", "clientId",
+                "--default-scope", "full",
+                "--app-id-uri", "ApiUri",
+                "--api-client-id", "1234123413241324"),
+            new TemplateInstance(
+                "blazorwasmhostedaadgraph", "-ho",
+                "-au", "SingleOrg",
+                "--calls-graph",
+                "--domain", "my-domain",
+                "--tenant-id", "tenantId",
+                "--client-id", "clientId",
+                "--default-scope", "full",
+                "--app-id-uri", "ApiUri",
+                "--api-client-id", "1234123413241324"),
+            new TemplateInstance(
+                "blazorwasmhostedaadapi", "-ho",
+                "-au", "SingleOrg",
+                "--called-api-url", "\"https://graph.microsoft.com\"",
+                "--called-api-scopes", "user.readwrite",
                 "--domain", "my-domain",
                 "--tenant-id", "tenantId",
                 "--client-id", "clientId",

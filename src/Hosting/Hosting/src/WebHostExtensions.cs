@@ -19,9 +19,10 @@ namespace Microsoft.AspNetCore.Hosting
         /// <param name="timeout">The timeout for stopping gracefully. Once expired the
         /// server may terminate any remaining active connections.</param>
         /// <returns>A <see cref="Task"/> that completes when the <see cref="IWebHost"/> stops.</returns>
-        public static Task StopAsync(this IWebHost host, TimeSpan timeout)
+        public static async Task StopAsync(this IWebHost host, TimeSpan timeout)
         {
-            return host.StopAsync(new CancellationTokenSource(timeout).Token);
+            using var cts = new CancellationTokenSource(timeout);
+            await host.StopAsync(cts.Token);
         }
 
         /// <summary>

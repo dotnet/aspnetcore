@@ -7,8 +7,8 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, string, Exception> _authenticationSchemeSignedIn;
-        private static Action<ILogger, string, Exception> _authenticationSchemeSignedOut;
+        private static Action<ILogger, string, Exception?> _authenticationSchemeSignedIn;
+        private static Action<ILogger, string, Exception?> _authenticationSchemeSignedOut;
 
         static LoggingExtensions()
         {

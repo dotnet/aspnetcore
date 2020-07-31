@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Routing
     public class RouteOptions
     {
         private IDictionary<string, Type> _constraintTypeMap = GetDefaultConstraintMap();
-        private ICollection<EndpointDataSource> _endpointDataSources;
+        private ICollection<EndpointDataSource> _endpointDataSources = default!;
 
         /// <summary>
         /// Gets a collection of <see cref="EndpointDataSource"/> instances configured with routing.

@@ -71,13 +71,12 @@ namespace Company.WebApplication1
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 #elif (OrganizationalAuth)
-            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAd")
 #if (GenerateApiOrGraph)
-                    .AddMicrosoftWebAppCallsWebApi(Configuration,
-                                                   "AzureAd")
-                    .AddInMemoryTokenCaches();
+            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAd")
+                .AddMicrosoftWebAppCallsWebApi(Configuration, "AzureAd")
+                .AddInMemoryTokenCaches();
 #else
-                    ;
+            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAd");
 #endif
 #if (GenerateApi)
             services.AddDownstreamWebApiService(Configuration);
@@ -87,15 +86,14 @@ namespace Company.WebApplication1
                                        Configuration.GetValue<string>("CalledApi:CalledApiUrl"));
 #endif
 #elif (IndividualB2CAuth)
-            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAdB2C")
 #if (GenerateApi)
-                    .AddMicrosoftWebAppCallsWebApi(Configuration,
-                                                   "AzureAdB2C")
-                    .AddInMemoryTokenCaches();
+            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAdB2C")
+                .AddMicrosoftWebAppCallsWebApi(Configuration, "AzureAdB2C")
+                .AddInMemoryTokenCaches();
 
             services.AddDownstreamWebApiService(Configuration);
 #else
-                    ;
+            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAdB2C");
 #endif
 #endif
 #if (OrganizationalAuth)
@@ -106,11 +104,11 @@ namespace Company.WebApplication1
                 options.FallbackPolicy = options.DefaultPolicy;
             });
             services.AddRazorPages()
-                    .AddMvcOptions(options => {})
-                    .AddMicrosoftIdentityUI();
+                .AddMvcOptions(options => {})
+                .AddMicrosoftIdentityUI();
 #elif (IndividualB2CAuth)
             services.AddRazorPages()
-                    .AddMicrosoftIdentityUI();
+                .AddMicrosoftIdentityUI();
 #else
             services.AddRazorPages();
 #endif

@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
     public class Http2KeepAliveTests : Http2TestBase
     {
         [Fact]
-        public async Task KeepAlivePingInterval_InfiniteTimeSpan_KeepAliveNotEnabled()
+        public async Task KeepAlivePingDelay_InfiniteTimeSpan_KeepAliveNotEnabled()
         {
-            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = Timeout.InfiniteTimeSpan;
+            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = Timeout.InfiniteTimeSpan;
 
             await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task KeepAlivePingTimeout_InfiniteTimeSpan_NoGoAway()
         {
-            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = TimeSpan.FromSeconds(1);
+            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);
             _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingTimeout = Timeout.InfiniteTimeSpan;
 
             await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task IntervalExceeded_WithoutActivity_PingSent()
         {
-            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = TimeSpan.FromSeconds(1);
+            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);
 
             await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task IntervalExceeded_WithActivity_NoPingSent()
         {
-            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = TimeSpan.FromSeconds(1);
+            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);
 
             await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task IntervalNotExceeded_NoPingSent()
         {
-            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = TimeSpan.FromSeconds(5);
+            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(5);
 
             await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task IntervalExceeded_MultipleTimes_PingsNotSentWhileAwaitingOnAck()
         {
-            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = TimeSpan.FromSeconds(1);
+            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);
 
             await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task IntervalExceeded_MultipleTimes_PingSentAfterAck()
         {
-            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = TimeSpan.FromSeconds(1);
+            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);
 
             await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task TimeoutExceeded_NoAck_GoAway()
         {
-            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = TimeSpan.FromSeconds(1);
+            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);
             _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingTimeout = TimeSpan.FromSeconds(3);
 
             await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task TimeoutExceeded_NonPingActivity_NoGoAway()
         {
-            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = TimeSpan.FromSeconds(1);
+            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);
             _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingTimeout = TimeSpan.FromSeconds(3);
 
             await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task IntervalExceeded_StreamStarted_NoPingSent()
         {
-            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = TimeSpan.FromSeconds(1);
+            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);
 
             await InitializeConnectionAsync(_noopApplication).DefaultTimeout();
 
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task IntervalExceeded_ConnectionFlowControlUsedUpThenPings_NoPingSent()
         {
-            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = TimeSpan.FromSeconds(1);
+            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);
 
             // Reduce connection window size so that one stream can fill it
             _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize = 65535;
@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task TimeoutExceeded_ConnectionFlowControlUsedUpThenPings_NoGoAway()
         {
-            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingInterval = TimeSpan.FromSeconds(1);
+            _serviceContext.ServerOptions.Limits.Http2.KeepAlivePingDelay = TimeSpan.FromSeconds(1);
 
             // Reduce connection window size so that one stream can fill it
             _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize = 65535;

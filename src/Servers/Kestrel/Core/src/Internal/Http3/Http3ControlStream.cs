@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private const int EncoderStream = 2;
         private const int DecoderStream = 3;
 
-        private Http3FrameWriter _frameWriter;
+        private readonly Http3FrameWriter _frameWriter;
         private readonly Http3Connection _http3Connection;
-        private HttpConnectionContext _context;
+        private readonly HttpConnectionContext _context;
         private readonly Http3RawFrame _incomingFrame = new Http3RawFrame();
         private volatile int _isClosed;
         private int _gracefulCloseInitiator;

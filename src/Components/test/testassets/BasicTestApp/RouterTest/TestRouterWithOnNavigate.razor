@@ -1,5 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Components.Routing
 
+@using System.Threading
+
+<button @onclick="TriggerRerender" id="trigger-rerender">Trigger Rerender</button>
+
 <Router AppAssembly="@typeof(BasicTestApp.Program).Assembly" OnNavigateAsync="@OnNavigateAsync">
     <Navigating>
         <div style="padding: 20px;background-color:blue;color:white;" id="loading-banner">
@@ -21,7 +25,8 @@
     {
         { "LongPage1", new Func<NavigationContext, Task>(TestLoadingPageShows) },
         { "LongPage2", new Func<NavigationContext, Task>(TestOnNavCancel) },
-        { "Other", new Func<NavigationContext, Task>(TestOnNavException) }
+        { "Other", new Func<NavigationContext, Task>(TestOnNavException) },
+        {"WithParameters/name/Abc", new Func<NavigationContext, Task>(TestRefreshHandling)}
     };
 
     private async Task OnNavigateAsync(NavigationContext args)
@@ -49,5 +54,15 @@
     {
         await Task.CompletedTask;
         throw new Exception("This is an uncaught exception.");
+    }
+
+    public static async Task TestRefreshHandling(NavigationContext args)
+    {
+        await Task.Delay(Timeout.Infinite, args.CancellationToken);
+    }
+
+    private void TriggerRerender()
+    {
+        Console.WriteLine("Nothing to see here, just an even to trigger a re-render...");
     }
 }

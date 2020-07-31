@@ -216,6 +216,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("Fourth", () => boundValue.Text);
             Assert.Equal("Fourth choice", target.SelectedOption.Text);
 
+            // verify that changing an option value and selected value at the same time works.
+            Browser.FindElement(By.Id("change-variable-value")).Click();
+            Browser.Equal("Sixth", () => boundValue.Text);
+
             // Verify we can select options whose value is empty
             // https://github.com/dotnet/aspnetcore/issues/17735
             target.SelectByText("Empty value");

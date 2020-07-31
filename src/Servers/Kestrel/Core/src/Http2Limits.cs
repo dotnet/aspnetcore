@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         private int _maxRequestHeaderFieldSize = (int)Http2PeerSettings.DefaultMaxFrameSize;
         private int _initialConnectionWindowSize = 1024 * 128; // Larger than the default 64kb, and larger than any one single stream.
         private int _initialStreamWindowSize = 1024 * 96; // Larger than the default 64kb
-        private TimeSpan _keepAlivePingInterval = TimeSpan.MaxValue;
+        private TimeSpan _keepAlivePingDelay = TimeSpan.MaxValue;
         private TimeSpan _keepAlivePingTimeout = TimeSpan.FromSeconds(20);
 
         /// <summary>
@@ -147,18 +147,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         /// <summary>
-        /// Gets or sets the keep alive ping interval. The server will send a keep alive ping to the client if it
-        /// doesn't receive any frames for this period of time. This property is used together with
+        /// Gets or sets the keep alive ping delay. The server will send a keep alive ping to the client if it
+        /// doesn't receive any frames on a connection for this period of time. This property is used together with
         /// <see cref="KeepAlivePingTimeout"/> to close broken connections.
         /// <para>
-        /// Interval must be greater than or equal to 1 second. Set to <see cref="TimeSpan.MaxValue"/> to
-        /// disable the keep alive ping interval.
+        /// Delay value must be greater than or equal to 1 second. Set to <see cref="TimeSpan.MaxValue"/> to
+        /// disable the keep alive ping.
         /// Defaults to <see cref="TimeSpan.MaxValue"/>.
         /// </para>
         /// </summary>
-        public TimeSpan KeepAlivePingInterval
+        public TimeSpan KeepAlivePingDelay
         {
-            get => _keepAlivePingInterval;
+            get => _keepAlivePingDelay;
             set
             {
                 // Keep alive uses Kestrel's system clock which has a 1 second resolution. Time is greater or equal to clock resolution.
@@ -167,13 +167,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.FormatArgumentTimeSpanGreaterOrEqual(Heartbeat.Interval));
                 }
 
-                _keepAlivePingInterval = value != Timeout.InfiniteTimeSpan ? value : TimeSpan.MaxValue;
+                _keepAlivePingDelay = value != Timeout.InfiniteTimeSpan ? value : TimeSpan.MaxValue;
             }
         }
 
         /// <summary>
         /// Gets or sets the keep alive ping timeout. Keep alive pings are sent when a period of inactivity exceeds
-        /// the configured <see cref="KeepAlivePingInterval"/> value. The server will close the connection if it
+        /// the configured <see cref="KeepAlivePingDelay"/> value. The server will close the connection if it
         /// doesn't receive any frames within the timeout.
         /// <para>
         /// Timeout must be greater than or equal to 1 second. Set to <see cref="TimeSpan.MaxValue"/> to

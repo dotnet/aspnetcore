@@ -32,8 +32,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3
         private static ReadOnlySpan<byte> TrailersBytes => new byte[8] { (byte)'t', (byte)'r', (byte)'a', (byte)'i', (byte)'l', (byte)'e', (byte)'r', (byte)'s' };
         private static ReadOnlySpan<byte> ConnectBytes => new byte[7] { (byte)'C', (byte)'O', (byte)'N', (byte)'N', (byte)'E', (byte)'C', (byte)'T' };
 
-        private Http3FrameWriter _frameWriter;
-        private Http3OutputProducer _http3Output;
+        private readonly Http3FrameWriter _frameWriter;
+        private readonly Http3OutputProducer _http3Output;
         private int _isClosed;
         private int _gracefulCloseInitiator;
         private readonly Http3StreamContext _context;

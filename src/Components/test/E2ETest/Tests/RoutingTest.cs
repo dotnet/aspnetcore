@@ -110,6 +110,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanArriveAtPageWithCatchAllParameter()
+        {
+            SetUrlViaPushState("/WithCatchAllParameter/life/the/universe/and/everything%20%3D%2042");
+
+            var app = Browser.MountTestComponent<TestRouter>();
+            var expected = $"The answer: life/the/universe/and/everything = 42.";
+
+            Assert.Equal(expected, app.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Fact]
         public void CanArriveAtNonDefaultPage()
         {
             SetUrlViaPushState("/Other");
@@ -565,6 +576,29 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             var errorUiElem = Browser.Exists(By.Id("blazor-error-ui"), TimeSpan.FromSeconds(10));
             Assert.NotNull(errorUiElem);
+        }
+
+        [Fact]
+        public void OnNavigate_DoesNotRenderWhileOnNavigateExecuting()
+        {
+            var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
+
+            // Navigate to a route
+            SetUrlViaPushState("/WithParameters/name/Abc");
+
+            // Click the button to trigger a re-render
+            var button = app.FindElement(By.Id("trigger-rerender"));
+            button.Click();
+
+            // Assert that the parameter route didn't render
+            Browser.DoesNotExist(By.Id("test-info"));
+
+            // Navigate to another page to cancel the previous `OnNavigateAsync`
+            // task and trigger a re-render on its completion
+            SetUrlViaPushState("/LongPage1");
+
+            // Confirm that the route was rendered
+            Browser.Equal("This is a long page you can scroll.", () => app.FindElement(By.Id("test-info")).Text);
         }
 
         private long BrowserScrollY

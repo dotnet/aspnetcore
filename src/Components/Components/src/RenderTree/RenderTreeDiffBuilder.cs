@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 {
                     if (result.ContainsKey(key))
                     {
-                        ThrowExceptionForDuplicateKey(key);
+                        ThrowExceptionForDuplicateKey(key, frame);
                     }
 
                     result[key] = new KeyedItemInfo(oldStartIndex, -1);
@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     {
                         if (existingEntry.NewIndex >= 0)
                         {
-                            ThrowExceptionForDuplicateKey(key);
+                            ThrowExceptionForDuplicateKey(key, frame);
                         }
 
                         result[key] = new KeyedItemInfo(existingEntry.OldIndex, newStartIndex);
@@ -355,9 +355,19 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             return result;
         }
 
-        private static void ThrowExceptionForDuplicateKey(object key)
+        private static void ThrowExceptionForDuplicateKey(object key, in RenderTreeFrame frame)
         {
-            throw new InvalidOperationException($"More than one sibling has the same key value, '{key}'. Key values must be unique.");
+            switch (frame.FrameType)
+            {
+                case RenderTreeFrameType.Component:
+                    throw new InvalidOperationException($"More than one sibling of component '{frame.ComponentType}' has the same key value, '{key}'. Key values must be unique.");
+
+                case RenderTreeFrameType.Element:
+                    throw new InvalidOperationException($"More than one sibling of element '{frame.ElementName}' has the same key value, '{key}'. Key values must be unique.");
+
+                default:
+                    throw new InvalidOperationException($"More than one sibling has the same key value, '{key}'. Key values must be unique.");
+            }
         }
 
         private static object KeyValue(ref RenderTreeFrame frame)
@@ -944,7 +954,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // based on the common usage of attributes for DOM events.
             if ((newFrame.AttributeValue is MulticastDelegate || newFrame.AttributeValue is EventCallback) &&
                 newFrame.AttributeName.Length >= 3 &&
-                newFrame.AttributeName.StartsWith("on"))
+                newFrame.AttributeName.StartsWith("on", StringComparison.Ordinal))
             {
                 diffContext.Renderer.AssignEventHandlerId(ref newFrame);
             }

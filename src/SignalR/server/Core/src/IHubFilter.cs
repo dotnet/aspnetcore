@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="invocationContext">The context for the method invocation that holds all the important information about the invoke.</param>
         /// <param name="next">The next filter to run, and for the final one, the Hub invocation.</param>
         /// <returns>Returns the result of the Hub method invoke.</returns>
-        ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next);
+        ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next) => next(invocationContext);
 
         /// <summary>
         /// Allows handling of the <see cref="Hub.OnConnectedAsync"/> method.

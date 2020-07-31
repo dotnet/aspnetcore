@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Gets an optional value that is appended to the request path base.
         /// </summary>
-        protected virtual string AdditionalPath { get; }
+        protected virtual string? AdditionalPath { get; }
 
         public override CookieOptions Build(HttpContext context, DateTimeOffset expiresFrom)
         {
