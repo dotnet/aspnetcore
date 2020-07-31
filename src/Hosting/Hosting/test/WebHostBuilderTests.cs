@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Hosting
         public void UseStartupThrowsWhenFactoryReturnsNull(IWebHostBuilder builder)
         {
             var server = new TestServer();
-            var ex = Assert.Throws<InvalidOperationException>(() => builder.UseServer(server).UseStartup(context => null).Build());
+            var ex = Assert.Throws<InvalidOperationException>(() => builder.UseServer(server).UseStartup<object>(context => null).Build());
             Assert.Equal("The specified factory returned null startup instance.", ex.Message);
         }
 
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Hosting
             var server = new TestServer();
             var host = builder.UseServer(server)
                               .UseStartup<StartupCtorThrows>()
-                              .UseStartup(context => throw new InvalidOperationException("This doesn't run"))
+                              .UseStartup<object>(context => throw new InvalidOperationException("This doesn't run"))
                               .Configure(app =>
                               {
                                   throw new InvalidOperationException("This doesn't run");
