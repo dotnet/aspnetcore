@@ -64,20 +64,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         [MethodImpl(MethodImplOptions.AggressiveInlining)] // Just like System.Collections.Generic.List<T>
         public int Append(in T item)
         {
-            GrowBufferIfFull();
-
-            var indexOfAppendedItem = _itemsInUse++;
-            _items[indexOfAppendedItem] = item;
-            return indexOfAppendedItem;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void GrowBufferIfFull()
-        {
             if (_itemsInUse == _items.Length)
             {
                 GrowBuffer(_items.Length * 2);
             }
+
+            var indexOfAppendedItem = _itemsInUse++;
+            _items[indexOfAppendedItem] = item;
+            return indexOfAppendedItem;
         }
 
         internal int Append(T[] source, int startIndex, int length)
@@ -145,7 +139,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 ThrowIndexOutOfBoundsException();
             }
 
-            GrowBufferIfFull();
+            if (_itemsInUse == _items.Length)
+            {
+                GrowBuffer(_items.Length * 2);
+            }
 
             Array.Copy(_items, index, _items, index + 1, _itemsInUse - index);
             _itemsInUse++;

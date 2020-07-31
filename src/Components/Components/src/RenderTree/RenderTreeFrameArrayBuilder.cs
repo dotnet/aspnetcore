@@ -15,7 +15,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     {
         public void AppendElement(int sequence, string elementName)
         {
-            GrowBufferIfFull();
+            if (_itemsInUse == _items.Length)
+            {
+                GrowBuffer(_items.Length * 2);
+            }
+
             ref var item = ref _items[_itemsInUse++];
             Debug.Assert(item.FrameType == default);
 
@@ -26,7 +30,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         public void AppendText(int sequence, string textContent)
         {
-            GrowBufferIfFull();
+            if (_itemsInUse == _items.Length)
+            {
+                GrowBuffer(_items.Length * 2);
+            }
+
             ref var item = ref _items[_itemsInUse++];
             Debug.Assert(item.FrameType == default);
 
@@ -37,7 +45,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         public void AppendMarkup(int sequence, string markupContent)
         {
-            GrowBufferIfFull();
+            if (_itemsInUse == _items.Length)
+            {
+                GrowBuffer(_items.Length * 2);
+            }
+
             ref var item = ref _items[_itemsInUse++];
             Debug.Assert(item.FrameType == default);
 
@@ -48,7 +60,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         public void AppendAttribute(int sequence, string attributeName, object? attributeValue)
         {
-            GrowBufferIfFull();
+            if (_itemsInUse == _items.Length)
+            {
+                GrowBuffer(_items.Length * 2);
+            }
+
             ref var item = ref _items[_itemsInUse++];
             Debug.Assert(item.FrameType == default);
 
@@ -60,7 +76,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         public void AppendComponent(int sequence, Type componentType)
         {
-            GrowBufferIfFull();
+            if (_itemsInUse == _items.Length)
+            {
+                GrowBuffer(_items.Length * 2);
+            }
+
             ref var item = ref _items[_itemsInUse++];
             Debug.Assert(item.FrameType == default);
 
@@ -71,7 +91,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         public void AppendElementReferenceCapture(int sequence, Action<ElementReference> elementReferenceCaptureAction)
         {
-            GrowBufferIfFull();
+            if (_itemsInUse == _items.Length)
+            {
+                GrowBuffer(_items.Length * 2);
+            }
+
             ref var item = ref _items[_itemsInUse++];
             Debug.Assert(item.FrameType == default);
 
@@ -82,7 +106,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         public void AppendComponentReferenceCapture(int sequence, Action<object?> componentReferenceCaptureAction, int parentFrameIndexValue)
         {
-            GrowBufferIfFull();
+            if (_itemsInUse == _items.Length)
+            {
+                GrowBuffer(_items.Length * 2);
+            }
+
             ref var item = ref _items[_itemsInUse++];
             Debug.Assert(item.FrameType == default);
 
@@ -94,7 +122,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         public void AppendRegion(int sequence)
         {
-            GrowBufferIfFull();
+            if (_itemsInUse == _items.Length)
+            {
+                GrowBuffer(_items.Length * 2);
+            }
+
             ref var item = ref _items[_itemsInUse++];
             Debug.Assert(item.FrameType == default);
 
