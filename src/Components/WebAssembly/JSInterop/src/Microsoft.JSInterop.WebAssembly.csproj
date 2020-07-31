@@ -9,7 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(ComponentsSharedSourceRoot)src\WebAssemblyJSInteropInternalCalls.cs" />
     <Reference Include="Microsoft.JSInterop" />
   </ItemGroup>
 
