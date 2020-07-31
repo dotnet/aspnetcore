@@ -544,7 +544,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             _openElementIndices.Push(_entries.Count);
-            _entries.Append(RenderTreeFrame.ChildComponent(sequence, componentType));
+            _entries.AppendComponent(sequence, componentType);
             _lastNonAttributeFrameType = RenderTreeFrameType.Component;
         }
 
@@ -578,7 +578,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 throw new InvalidOperationException($"Element reference captures may only be added as children of frames of type {RenderTreeFrameType.Element}");
             }
 
-            _entries.Append(RenderTreeFrame.ElementReferenceCapture(sequence, elementReferenceCaptureAction));
+            _entries.AppendElementReferenceCapture(sequence, elementReferenceCaptureAction);
             _lastNonAttributeFrameType = RenderTreeFrameType.ElementReferenceCapture;
         }
 
@@ -601,7 +601,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 throw new InvalidOperationException(ComponentReferenceCaptureInvalidParentMessage);
             }
 
-            _entries.Append(RenderTreeFrame.ComponentReferenceCapture(sequence, componentReferenceCaptureAction, parentFrameIndexValue));
+            _entries.AppendComponentReferenceCapture(sequence, componentReferenceCaptureAction, parentFrameIndexValue);
             _lastNonAttributeFrameType = RenderTreeFrameType.ComponentReferenceCapture;
         }
 
@@ -620,7 +620,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             _openElementIndices.Push(_entries.Count);
-            _entries.Append(RenderTreeFrame.Region(sequence));
+            _entries.AppendRegion(sequence);
             _lastNonAttributeFrameType = RenderTreeFrameType.Region;
         }
 

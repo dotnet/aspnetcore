@@ -50,5 +50,45 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             item.AttributeName = attributeName;
             item.AttributeValue = attributeValue;
         }
+
+        public void AppendComponent(int sequence, Type componentType)
+        {
+            GrowBufferIfFull();
+            ref var item = ref _items[_itemsInUse++];
+
+            item.Sequence = sequence;
+            item.FrameType = RenderTreeFrameType.Component;
+            item.ComponentType = componentType;
+        }
+
+        public void AppendElementReferenceCapture(int sequence, Action<ElementReference> elementReferenceCaptureAction)
+        {
+            GrowBufferIfFull();
+            ref var item = ref _items[_itemsInUse++];
+
+            item.Sequence = sequence;
+            item.FrameType = RenderTreeFrameType.ElementReferenceCapture;
+            item.ElementReferenceCaptureAction = elementReferenceCaptureAction;
+        }
+
+        public void AppendComponentReferenceCapture(int sequence, Action<object?> componentReferenceCaptureAction, int parentFrameIndexValue)
+        {
+            GrowBufferIfFull();
+            ref var item = ref _items[_itemsInUse++];
+
+            item.Sequence = sequence;
+            item.FrameType = RenderTreeFrameType.ComponentReferenceCapture;
+            item.ComponentReferenceCaptureAction = componentReferenceCaptureAction;
+            item.ComponentReferenceCaptureParentFrameIndex = parentFrameIndexValue;
+        }
+
+        public void AppendRegion(int sequence)
+        {
+            GrowBufferIfFull();
+            ref var item = ref _items[_itemsInUse++];
+
+            item.Sequence = sequence;
+            item.FrameType = RenderTreeFrameType.Region;
+        }
     }
 }

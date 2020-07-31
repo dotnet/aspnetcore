@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
         /// gets the type of the child component.
         /// </summary>
-        [FieldOffset(16)] public readonly Type ComponentType;
+        [FieldOffset(16)] public Type ComponentType;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.ElementReferenceCapture"/>,
         /// gets the action that writes the reference to its target. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(24)] public readonly Action<ElementReference> ElementReferenceCaptureAction;
+        [FieldOffset(24)] public Action<ElementReference> ElementReferenceCaptureAction;
 
         // --------------------------------------------------------------------------------
         // RenderTreeFrameType.ComponentReferenceCapture
@@ -205,13 +205,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         ///          initialization logic in RenderTreeDiffBuilder to walk the frames hierarchically, then it would know
         ///          the parent index at the point where it wants to initialize the ComponentReferenceCapture frame.
         /// </summary>
-        [FieldOffset(8)] public readonly int ComponentReferenceCaptureParentFrameIndex;
+        [FieldOffset(8)] public int ComponentReferenceCaptureParentFrameIndex;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.ComponentReferenceCapture"/>,
         /// gets the action that writes the reference to its target. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(16)] public readonly Action<object> ComponentReferenceCaptureAction;
+        [FieldOffset(16)] public Action<object> ComponentReferenceCaptureAction;
 
         // --------------------------------------------------------------------------------
         // RenderTreeFrameType.Markup
