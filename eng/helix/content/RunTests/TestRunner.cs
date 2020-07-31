@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -67,20 +66,6 @@ namespace RunTests
             }
         }
         
-        public void DisplayEnvironment()
-        {
-            Console.WriteLine("KeyValue pairs from Environment.GetEnvironmentVariables():");
-            foreach (DictionaryEntry pair in Environment.GetEnvironmentVariables())
-            {
-                Console.WriteLine(pair.Key + "=" + pair.Value);
-            }
-            Console.WriteLine("KeyValue pairs from TestRunner.EnvironmentVariables");
-            foreach (KeyValuePair<string, string> pair in EnvironmentVariables)
-            {
-                Console.WriteLine(pair.Key + "=" + pair.Value);
-            }
-        }
-
         public void DisplayContents(string path = "./")
         {
             try
