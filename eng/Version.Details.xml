@@ -300,10 +300,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>f37dd6fc8595e130909dcb3085a56342d04aa20c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.GenAPI" Version="5.0.0-beta.20330.3">
-      <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>243cc92161ad44c2a07464425892daee19121c99</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="5.0.0-beta.20330.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>243cc92161ad44c2a07464425892daee19121c99</Sha>

@@ -110,6 +110,9 @@
       "src\\Components\\WebAssembly\\WebAssembly.Authentication\\test\\Microsoft.AspNetCore.Components.WebAssembly.Authentication.Tests.csproj",
       "src\\Components\\WebAssembly\\testassets\\Wasm.Authentication.Client\\Wasm.Authentication.Client.csproj",
       "src\\Components\\WebAssembly\\testassets\\Wasm.Authentication.Shared\\Wasm.Authentication.Shared.csproj",
+      "src\\Components\\WebAssembly\\Sdk\\src\\Microsoft.NET.Sdk.BlazorWebAssembly.csproj",
+      "src\\Components\\WebAssembly\\Sdk\\test\\Microsoft.NET.Sdk.BlazorWebAssembly.Tests.csproj",
+      "src\\Components\\WebAssembly\\Sdk\\integrationtests\\Microsoft.NET.Sdk.BlazorWebAssembly.IntegrationTests.csproj",
       "src\\JSInterop\\Microsoft.JSInterop\\src\\Microsoft.JSInterop.csproj"
     ]
   }

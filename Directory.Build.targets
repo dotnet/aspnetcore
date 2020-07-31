@@ -1,10 +1,10 @@
-<Project>
+﻿<Project>
 
   <PropertyGroup>
     <!-- Only build Microsoft.AspNetCore.App and ref/ assemblies in source build. -->
     <!-- Analyzer package are needed in source build for WebSDK -->
     <ExcludeFromSourceBuild
-        Condition="'$(ExcludeFromSourceBuild)' == '' and '$(DotNetBuildFromSource)' == 'true' and '$(IsAspNetCoreApp)' != 'true' and '$(IsReferenceAssemblyProject)' != 'true' and '$(IsAnalyzersProject)' != 'true'">true</ExcludeFromSourceBuild>
+        Condition="'$(ExcludeFromSourceBuild)' == '' and '$(DotNetBuildFromSource)' == 'true' and '$(IsAspNetCoreApp)' != 'true' and '$(IsAnalyzersProject)' != 'true'">true</ExcludeFromSourceBuild>
 
     <!-- If the user has specified that they want to skip building any test related projects with SkipTestBuild,
      suppress all targets for TestProjects using ExcludeFromBuild. -->
@@ -57,7 +57,8 @@
 
   <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
-    <IsPackable Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' OR '$(IsReferenceAssemblyProject)' == 'true' ) ">false</IsPackable>
+    <IsPackable
+        Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' ) ">false</IsPackable>
   </PropertyGroup>
 
   <Import Project="eng\Baseline.Designer.props" />
@@ -100,14 +101,19 @@
 
   <PropertyGroup>
     <!-- Implementation projects are the projects which produce nuget packages or shipping assemblies. -->
-    <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsAnalyzersProject)' != 'true' AND '$(IsTestAssetProject)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' AND '$(IsReferenceAssemblyProject)' != 'true' ">true</IsImplementationProject>
+    <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsAnalyzersProject)' != 'true' AND '$(IsTestAssetProject)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' ">true</IsImplementationProject>
 
     <!-- This determines whether a project is available as a <Reference> to other projects in this repo. -->
     <IsProjectReferenceProvider Condition=" '$(IsProjectReferenceProvider)' == '' AND '$(IsImplementationProject)' == 'true' AND '$(PackAsTool)' != 'true' ">true</IsProjectReferenceProvider>
 
     <HasReferenceAssembly
-        Condition=" '$(HasReferenceAssembly)' == '' AND '$(IsProjectReferenceProvider)' == 'true' AND '$(IsAspNetCoreApp)' == 'true' ">true</HasReferenceAssembly>
+        Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' AND '$(IsAspNetCoreApp)' == 'true' ">true</HasReferenceAssembly>
     <HasReferenceAssembly Condition="'$(HasReferenceAssembly)' == ''">false</HasReferenceAssembly>
+    <ProduceReferenceAssembly>$(HasReferenceAssembly)</ProduceReferenceAssembly>
+
+    <!-- Duplicate setting from Microsoft.Common.CurrentVersion.targets because this is imported after that file. -->
+    <TargetRefPath
+        Condition=" '$(TargetRefPath)' == '' and $(ProduceReferenceAssembly) ">$([MSBuild]::NormalizePath($(TargetDir), 'ref', $(TargetFileName)))</TargetRefPath>
 
     <IsPackable Condition="'$(IsPackable)' == '' AND ('$(IsImplementationProject)' == 'true' OR '$(IsAnalyzersProject)' == 'true') ">true</IsPackable>
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>
@@ -124,13 +130,7 @@
     <None Include="$(PackageThirdPartyNoticesFile)" Pack="true" PackagePath="." />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Language)' == 'C#' AND '$(IsReferenceAssemblyProject)' == 'true'">
-    <Compile Include="$(SharedSourceRoot)ReferenceAssemblyInfo.cs" LinkBase="Properties" />
-  </ItemGroup>
-
   <PropertyGroup Condition="'$(Language)' == 'C#'">
-    <!-- Reference assemblies should always use Major.Minor.0.0 for assembly versions even during servicing. Only the package version should be updated. -->
-    <!-- Pinning the implementation assemblies at Major.Minor.0.0 as we figure out compiling against ref assemblies. -->
     <AssemblyVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0.0</AssemblyVersion>
   </PropertyGroup>
 
@@ -180,7 +180,6 @@
   <Import Project="eng\targets\FSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
   <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
-  <Import Project="eng\targets\ReferenceAssembly.targets" Condition=" $(HasReferenceAssembly) " />
   <Import Project="eng\targets\Helix.targets" Condition="'$(IsTestProject)' == 'true'" />
   <Import Project="eng\targets\FunctionalTestAsset.targets" Condition="'$(IsTestAssetProject)' == 'true'" />
   <Import Project="eng\targets\FunctionalTestWithAssets.targets" Condition="'$(ContainsFunctionalTestAssets)' == 'true'" />
