@@ -954,7 +954,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // based on the common usage of attributes for DOM events.
             if ((newFrame.AttributeValue is MulticastDelegate || newFrame.AttributeValue is EventCallback) &&
                 newFrame.AttributeName.Length >= 3 &&
-                newFrame.AttributeName.StartsWith("on"))
+                newFrame.AttributeName.StartsWith("on", StringComparison.Ordinal))
             {
                 diffContext.Renderer.AssignEventHandlerId(ref newFrame);
             }
