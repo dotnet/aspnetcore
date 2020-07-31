@@ -65,7 +65,7 @@ namespace RunTests
                 return false;
             }
         }
-        
+
         public void DisplayContents(string path = "./")
         {
             try
