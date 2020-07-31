@@ -10,13 +10,18 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
 
-    <TestAppsRoot>$(MSBuildProjectDirectory)\..\testassets\</TestAppsRoot>
+    <TestAppsRoot Condition="'$(IsHelixJob)' != 'true'">$(MSBuildProjectDirectory)\..\testassets\</TestAppsRoot>
+    <TestAppsRoot Condition="'$(IsHelixJob)' == 'true'">$(MSBuildThisFileDirectory)\testassets\</TestAppsRoot>
   </PropertyGroup>
 
   <Import Project="$(SharedSourceRoot)MSBuild.Testing\MSBuild.Testing.targets" />
 
   <ItemGroup>
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <HelixContent Include="..\testassets\**\*" />
   </ItemGroup>
 
   <ItemGroup>
