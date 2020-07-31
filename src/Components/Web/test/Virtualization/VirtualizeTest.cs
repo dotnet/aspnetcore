@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
     public class VirtualizeTest
     {
         [Fact]
-        public async void Virtualize_ThrowsWhenGivenNonPositiveItemSize()
+        public async Task Virtualize_ThrowsWhenGivenNonPositiveItemSize()
         {
             var rootComponent = new VirtualizeTestHostcomponent
             {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         }
 
         [Fact]
-        public async void Virtualize_ThrowsWhenGivenMultipleItemSources()
+        public async Task Virtualize_ThrowsWhenGivenMultipleItemSources()
         {
             var rootComponent = new VirtualizeTestHostcomponent
             {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         }
 
         [Fact]
-        public async void Virtualize_ThrowsWhenGivenNoItemSources()
+        public async Task Virtualize_ThrowsWhenGivenNoItemSources()
         {
             var rootComponent = new VirtualizeTestHostcomponent
             {
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         }
 
         [Fact]
-        public async void Virtualize_DispatchesExceptionsFromItemsProviderThroughRenderer()
+        public async Task Virtualize_DispatchesExceptionsFromItemsProviderThroughRenderer()
         {
             Virtualize<int> renderedVirtualize = null;
 
