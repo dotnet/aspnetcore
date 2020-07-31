@@ -131,18 +131,18 @@ $ darc trigger-subscriptions --id {subscriptionIdHere}
 
 **Manually update dependencies**
 
-If the `dotnet-maestro` bot has not correctly updated the dependencies, `darc update-dependencies` may be used to update the dependencies manually. Note, you'll need to run the commands below in a separate branch and submit a PR with the changes. These are the things that the bot would typically do for you if you use `trigger-subscriptions`.
+If the `dotnet-maestro` bot has not correctly updated the dependencies, `darc update-dependencies` may be used to update the dependencies manually. Note, you'll need to run the commands below in a separate branch and submit a PR with the changes. These are the things that the bot should do for you if you use `trigger-subscriptions` or automatically (when the subscription fires e.g. about 15 minutes after a dependency's build completes if `Update Frequency: EveryBuild`).
 
 ```
 $ darc update-dependencies --channel '.NET Core 3.1 Release'
-$ darc update-depdendencies --channel '.NET 5 Dev' --source-repo efcore
+$ darc update-dependencies --channel '.NET 5 Dev' --source-repo efcore
 ```
 
 Generally, using `trigger-subscriptions` is preferred for creating dependency updates instead of manually updating dependencies in your own PR.
 
 **Toggling batchability of subscription**
 
-Subscriptions can be batched. When a dependency update is detected, darc will bundle the commits for that update with existing dependency PRs. To toggle whether a subscription is batched or not, you will need to use the `update-subscription` command.
+Subscriptions can be batched. When a dependency update is detected, `darc` will bundle the commits for that update with existing dependency PRs. To toggle whether a subscription is batched or not, you will need to use the `update-subscription` command.
 
 ```
 $ darc update-subscription --id {subscriptionIdHere}
@@ -160,5 +160,4 @@ To disable batching, set `Batchable` to `False` and update the `Merge Policies` 
 To enable batching, set `Batchable` to `True` and remove any `Merge Policies` set on the subscription.
 
 Note: Merge policies can only be set on unbatched subscriptions. Be sure to set/unset the `Merge Policies` field properly as you toggle batchability.
-
 
