@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <summary>
         /// Constructs a new instance of <see cref="ArrayBuilder{T}"/>.
         /// </summary>
-        public ArrayBuilder(int minCapacity = 32, ArrayPool<T> arrayPool = null)
+        public ArrayBuilder(int minCapacity = 32, ArrayPool<T>? arrayPool = null)
         {
             _arrayPool = arrayPool ?? ArrayPool<T>.Shared;
             _minCapacity = minCapacity;
