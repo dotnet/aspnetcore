@@ -1,50 +1,35 @@
 ﻿<p>
     Item size:<br />
-    <input type="number" @bind-value="itemSize" />
+    <input id="item-size-input" type="number" @bind-value="itemSize" />
 </p>
 
 <p>
-    Stacked lists (fixed):<br />
-    <div id="stacked-container" style="background-color: #eee; height: 500px; overflow-y: auto">
+    Synchronous:<br />
+    <div id="sync-container" style="background-color: #eee; height: 500px; overflow-y: auto">
         <Virtualize Items="@fixedItems" ItemSize="itemSize">
-            <div id="stacked-top-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
-        </Virtualize>
-        <Virtualize Items="@fixedItems" ItemSize="itemSize">
-            <div id="stacked-bottom-item" style="height: @(itemSize)px; background-color: rgb(0, @((context % 2) * 255), @((1-(context % 2)) * 255));">Item @context</div>
+            <div id="sync-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
         </Virtualize>
     </div>
 </p>
 
 <p>
-    Deferred:<br />
-    <div style="background-color: #eee; height: 500px; overflow-y: auto">
+    Asynchronous:<br />
+    <button id="finish-loading-button" @onclick="FinishLoadingAsync">Finish loading</button><br />
+    Cancellation count: <span id="cancellation-count">@asyncCancellationCount</span><br />
+    <div id="async-container" style="background-color: #eee; height: 500px; overflow-y: auto">
         <Virtualize ItemsProvider="GetItemsAsync" ItemSize="itemSize">
             <Item>
-                <div style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+                <div id="async-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
             </Item>
             <Placeholder>
-                <div style="height: @(itemSize)px; background-color: orange;">Loading item @context.Index...</div>
+                <div id="async-placeholder" style="height: @(itemSize)px; background-color: orange;">Loading item @context.Index...</div>
             </Placeholder>
         </Virtualize>
     </div>
 </p>
 
-<p>
-    Deferred (cached):<br />
-    <div style="background-color: #eee; height: 500px; overflow-y: auto">
-        <Virtualize ItemsProvider="GetItemsAsyncCached" ItemSize="itemSize">
-            <Item>
-                <div style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
-            </Item>
-            <Placeholder>
-                <div style="height: @(itemSize)px; background-color: orange;">Loading item @context.Index...</div>
-            </Placeholder>
-        </Virtualize>
-    </div>
-</p>
-
-<p>
-    Viewport as root (fixed):<br />
+<p id="viewport-as-root">
+    Viewport as root:<br />
     <Virtualize Items="@fixedItems" ItemSize="itemSize">
         <div style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
     </Virtualize>
@@ -54,31 +39,36 @@
     float itemSize = 100;
     ICollection<int> fixedItems = Enumerable.Range(0, 1000).ToList();
 
-    HashSet<int> cachedItems = new HashSet<int>();
+    int asyncTotalItemCount = 200;
+    int asyncCancellationCount = 0;
+    TaskCompletionSource asyncTcs = new TaskCompletionSource();
 
-    int itemCountLimit = 200;
+    HashSet<int> cachedItems = new HashSet<int>();
 
     async ValueTask<ItemsProviderResult<int>> GetItemsAsync(ItemsProviderRequest request)
     {
-        await Task.Delay(500, request.CancellationToken);
+        var registration = request.CancellationToken.Register(() => CancelLoadingAsync(request.CancellationToken));
 
-        return new ItemsProviderResult<int>(Enumerable.Range(request.StartIndex, request.Count), itemCountLimit);
+        await asyncTcs.Task;
+
+        registration.Dispose();
+
+        return new ItemsProviderResult<int>(Enumerable.Range(request.StartIndex, request.Count), asyncTotalItemCount);
     }
 
-    async ValueTask<ItemsProviderResult<int>> GetItemsAsyncCached(ItemsProviderRequest request)
+    void FinishLoadingAsync()
     {
-        var items = Enumerable.Range(request.StartIndex, request.Count);
+        asyncTcs.SetResult();
+        asyncTcs = new TaskCompletionSource();
+    }
 
-        foreach (var item in items)
-        {
-            if (!cachedItems.Contains(item))
-            {
-                await Task.Delay(50, request.CancellationToken);
+    void CancelLoadingAsync(System.Threading.CancellationToken cancellationToken)
+    {
+        asyncTcs.TrySetCanceled(cancellationToken);
+        asyncTcs = new TaskCompletionSource();
 
-                cachedItems.Add(item);
-            }
-        }
+        asyncCancellationCount++;
 
-        return new ItemsProviderResult<int>(items, itemCountLimit);
+        StateHasChanged();
     }
 }

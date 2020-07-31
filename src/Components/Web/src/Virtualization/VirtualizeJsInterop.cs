@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.Web
             _jsRuntime = jsRuntime;
         }
 
-        public async ValueTask InitAsync(ElementReference spacerBefore, ElementReference spacerAfter)
+        public async ValueTask InitializeAsync(ElementReference spacerBefore, ElementReference spacerAfter)
         {
             _selfReference = DotNetObjectReference.Create(this);
             await _jsRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.init", _selfReference, spacerBefore, spacerAfter);

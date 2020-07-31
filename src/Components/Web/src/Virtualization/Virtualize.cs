@@ -33,8 +33,6 @@ namespace Microsoft.AspNetCore.Components.Web
 
         private IEnumerable<TItem>? _loadedItems;
 
-        private Task _refreshTask = Task.CompletedTask;
-
         private CancellationTokenSource? _refreshCts;
 
         private Exception? _refreshException;
@@ -76,13 +74,13 @@ namespace Microsoft.AspNetCore.Components.Web
         /// Gets or sets the function providing items to the list.
         /// </summary>
         [Parameter]
-        public ItemsProviderDelegate<TItem> ItemsProvider { get; set; } = default!;
+        public ItemsProviderDelegate<TItem>? ItemsProvider { get; set; }
 
         /// <summary>
         /// Gets or sets the fixed item source.
         /// </summary>
         [Parameter]
-        public ICollection<TItem> Items { get; set; } = default!;
+        public ICollection<TItem>? Items { get; set; }
 
         /// <inheritdoc />
         protected override void OnParametersSet()
@@ -99,7 +97,7 @@ namespace Microsoft.AspNetCore.Components.Web
                 {
                     throw new InvalidOperationException(
                         $"{GetType()} can only accept one item source from its parameters. " +
-                        $"Do not supply both '{nameof(Items)}' and '{nameof(ItemsProvider)}'");
+                        $"Do not supply both '{nameof(Items)}' and '{nameof(ItemsProvider)}'.");
                 }
 
                 _itemsProvider = ItemsProvider;
@@ -125,7 +123,7 @@ namespace Microsoft.AspNetCore.Components.Web
             if (firstRender)
             {
                 _jsInterop = new VirtualizeJsInterop(this, JSRuntime);
-                await _jsInterop.InitAsync(_spacerBefore, _spacerAfter);
+                await _jsInterop.InitializeAsync(_spacerBefore, _spacerAfter);
             }
         }
 
@@ -134,7 +132,10 @@ namespace Microsoft.AspNetCore.Components.Web
         {
             if (_refreshException != null)
             {
-                throw _refreshException;
+                var oldRefreshException = _refreshException;
+                _refreshException = null;
+
+                throw oldRefreshException;
             }
 
             builder.OpenElement(0, "div");
@@ -142,12 +143,12 @@ namespace Microsoft.AspNetCore.Components.Web
             builder.AddElementReferenceCapture(2, elementReference => _spacerBefore = elementReference);
             builder.CloseElement();
 
-            // This is a rare case where it's valid for the sequence number to be programmatically incremented.
-            // This is only true because we know for certain that no other content will be alongside it.
-
             var lastItemIndex = Math.Min(_itemsBefore + _visibleItemCapacity, _itemCount);
             var renderIndex = _itemsBefore;
             var placeholdersBeforeCount = Math.Min(_loadedItemsStartIndex, lastItemIndex);
+
+            // This is a rare case where it's valid for the sequence number to be programmatically incremented.
+            // This is only true because we know for certain that no other content will be alongside it.
 
             builder.OpenRegion(3);
 
@@ -227,9 +228,9 @@ namespace Microsoft.AspNetCore.Components.Web
             {
                 _itemsBefore = itemsBefore;
                 _visibleItemCapacity = visibleItemCapacity;
-                _refreshTask = RefreshDataAsync();
+                var refreshTask = RefreshDataAsync();
 
-                if (!_refreshTask.IsCompleted)
+                if (!refreshTask.IsCompleted)
                 {
                     StateHasChanged();
                 }
@@ -258,29 +259,28 @@ namespace Microsoft.AspNetCore.Components.Web
                     StateHasChanged();
                 }
             }
-            catch (OperationCanceledException)
-            {
-                // Bubble-up the cancellation.
-                throw;
-            }
             catch (Exception e)
             {
-                // Cache this exception so the renderer can throw it.
-                _refreshException = e;
+                if (e is OperationCanceledException oce && oce.CancellationToken == cancellationToken)
+                {
+                    // No-op; we canceled the operation, so it's fine to suppress this exception.
+                }
+                else
+                {
+                    // Cache this exception so the renderer can throw it.
+                    _refreshException = e;
 
-                // Re-render the component to throw the exception.
-                StateHasChanged();
-
-                // Bubble-up the exception so tasks waiting on this one get terminated.
-                throw e;
+                    // Re-render the component to throw the exception.
+                    StateHasChanged();
+                }
             }
         }
 
         private ValueTask<ItemsProviderResult<TItem>> DefaultItemsProvider(ItemsProviderRequest request)
         {
             return ValueTask.FromResult(new ItemsProviderResult<TItem>(
-                Items.Skip(request.StartIndex).Take(request.Count),
-                Items.Count));
+                Items!.Skip(request.StartIndex).Take(request.Count),
+                Items!.Count));
         }
 
         private RenderFragment DefaultPlaceholder(PlaceholderContext context) => (builder) =>
