@@ -99,7 +99,8 @@ namespace Microsoft.AspNetCore.SignalR
         internal HubCallerContext HubCallerContext { get; }
 
         internal Exception? CloseException { get; private set; }
-        internal SemaphoreSlim ActiveInvocationLimit { get; }
+
+        internal SemaphoreSlim? ActiveInvocationLimit { get; }
 
         /// <summary>
         /// Gets a <see cref="CancellationToken"/> that notifies when the connection is aborted.

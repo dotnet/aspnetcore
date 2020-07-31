@@ -2942,10 +2942,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var hubMethodTask = client.InvokeAsync(nameof(LongRunningHub.LongRunningMethod));
                     await tcsService.StartedMethod.Task.OrTimeout();
 
-                    // Invoke another hub method (which will be blocked by the first method) in order to stop the timeout
-                    // This is how a real-world example would behave
-                    await client.SendInvocationAsync(nameof(LongRunningHub.LongRunningMethod)).OrTimeout();
-
                     // Tick heartbeat while hub method is running to show that close isn't triggered
                     client.TickHeartbeat();
 
