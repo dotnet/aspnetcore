@@ -15,7 +15,6 @@
     Windows.7.Amd64.Open
     OSX.1014.Amd64.Open
     Centos.7.Amd64.Open
-    Debian.8.Amd64.Open
     Debian.9.Amd64.Open
     Redhat.7.Amd64.Open
 .PARAMETER RunQuarantinedTests

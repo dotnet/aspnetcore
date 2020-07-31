@@ -32,7 +32,6 @@
     <HelixAvailableTargetQueue Include="Ubuntu.1804.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Ubuntu.2004.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Centos.7.Amd64.Open" Platform="Linux" />
-    <HelixAvailableTargetQueue Include="Debian.8.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Debian.9.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Redhat.7.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="(Fedora.28.Amd64.Open)Ubuntu.1604.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-28-helix-09ca40b-20190508143249" Platform="Linux" />
