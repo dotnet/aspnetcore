@@ -110,32 +110,32 @@ Once `darc` is installed and set-up, it can be used to modify the subscriptions 
 
 Subscriptions are objects that define the ecosystem repos we are listening for updates to, the frequency we are looking for updates, and more.
 
-```
-$ darc get-subscriptions --target-branch master --target-repo aspnetcore$ --regex
+```bash
+darc get-subscriptions --target-branch master --target-repo aspnetcore$ --regex
 ```
 
 **Disable/enable a subscription**
 
-```
-$ darc subscription-status --id {subscriptionIdHere} --enable
-$ darc subscription-status --id {subscriptionIdHere} --disable
+```bash
+darc subscription-status --id {subscriptionIdHere} --enable
+darc subscription-status --id {subscriptionIdHere} --disable
 ```
 
 **Trigger a subscription**
 
 Triggering a subscription will search for updates in its dependencies and open a PR in the target repo via the dotnet-maestro bot with these changes.
 
-```
-$ darc trigger-subscriptions --id {subscriptionIdHere}
+```bash
+darc trigger-subscriptions --id {subscriptionIdHere}
 ```
 
 **Manually update dependencies**
 
 If the `dotnet-maestro` bot has not correctly updated the dependencies, `darc update-dependencies` may be used to update the dependencies manually. Note, you'll need to run the commands below in a separate branch and submit a PR with the changes. These are the things that the bot should do for you if you use `trigger-subscriptions` or automatically (when the subscription fires e.g. about 15 minutes after a dependency's build completes if `Update Frequency: EveryBuild`).
 
-```
-$ darc update-dependencies --channel '.NET Core 3.1 Release'
-$ darc update-dependencies --channel '.NET 5 Dev' --source-repo efcore
+```bash
+darc update-dependencies --channel '.NET Core 3.1 Release'
+darc update-dependencies --channel '.NET 5 Dev' --source-repo efcore
 ```
 
 Generally, using `trigger-subscriptions` is preferred for creating dependency updates instead of manually updating dependencies in your own PR.
@@ -144,8 +144,8 @@ Generally, using `trigger-subscriptions` is preferred for creating dependency up
 
 Subscriptions can be batched. When a dependency update is detected, `darc` will bundle the commits for that update with existing dependency PRs. To toggle whether a subscription is batched or not, you will need to use the `update-subscription` command.
 
-```
-$ darc update-subscription --id {subscriptionIdHere}
+```bash
+darc update-subscription --id {subscriptionIdHere}
 ```
 
 Your shell's default editor will open and allow you to edit the metadata of the subscription.
