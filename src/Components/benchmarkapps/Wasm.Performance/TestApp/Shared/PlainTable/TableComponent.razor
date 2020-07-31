@@ -1,4 +1,4 @@
-@using WeatherForecast = Pages.GridRendering.WeatherForecast
+﻿@using WeatherForecast = Pages.GridRendering.WeatherForecast
 
 <table class="table">
     <thead>
@@ -12,7 +12,7 @@
     <tbody>
         <RowCollection Data="@Data"
                        Columns="@Columns"
-                       OnClick="@RefreshComponent"></RowCollection>
+                       OnClick="@HandleClickEvent"></RowCollection>
     </tbody>
 </table>
 
@@ -24,21 +24,8 @@
     [Parameter]
     public List<string> Columns { get; set; }
 
-    DateTime t1;
-    DateTime t2;
-    Task RefreshComponent(int index)
+    Task HandleClickEvent(int index)
     {
-        t1 = DateTime.Now;
-        StateHasChanged();
         return Task.CompletedTask;
-    }
-    protected override Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender)
-        {
-            t2 = DateTime.Now;
-            Console.WriteLine("Refresh Time " + (t2 - t1).TotalMilliseconds);
-        }
-        return base.OnAfterRenderAsync(firstRender);
     }
 }
