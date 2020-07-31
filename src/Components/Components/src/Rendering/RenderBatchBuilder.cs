@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public ArrayBuilder<ulong> DisposedEventHandlerIds { get; } = new ArrayBuilder<ulong>();
 
         // Buffers referenced by UpdatedComponentDiffs
-        public RenderTreeEditArrayBuilder EditsBuffer { get; } = new RenderTreeEditArrayBuilder(64, arrayPool: null);
+        public ArrayBuilder<RenderTreeEdit> EditsBuffer { get; } = new ArrayBuilder<RenderTreeEdit>(64);
         public ArrayBuilder<RenderTreeFrame> ReferenceFramesBuffer { get; } = new ArrayBuilder<RenderTreeFrame>(64);
 
         // State of render pipeline
