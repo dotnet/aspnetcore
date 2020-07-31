@@ -6,13 +6,21 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
-    // TODO: Make sure there aren't any cases where the underlying buffer contains nonzero data
-
     /// <summary>
     /// A special subclass of <see cref="ArrayBuilder{T}"/> that contains methods optimized for appending <see cref="RenderTreeFrame"/> entries.
     /// </summary>
     internal class RenderTreeFrameArrayBuilder : ArrayBuilder<RenderTreeFrame>
     {
+        // You may notice a repeated block at the top of each of these methods. This is intentionally inlined into each
+        // method because doing so improves intensive rendering scenarios by around 1% (based on the FastGrid benchmark).
+        //
+        // The reason it's considered safe to mutate the existing buffer entries in place without replacing them with
+        // new struct instances is that the buffer entries should always be blank at the time we are appending, because
+        // RenderTreeBuilder always calls Array.Clear on the used portion of the buffer before returning it to the pool.
+        // Likewise, if it ever removes entries, it always sets them back to default, rather than just updating indices
+        // elsewhere and leaving behind orphaned records. This is necessary both for GC to function correctly (e.g.,
+        // because RenderTreeFrame fields may point to other objects) and for safety since the memory can later be reused.
+
         public void AppendElement(int sequence, string elementName)
         {
             if (_itemsInUse == _items.Length)
