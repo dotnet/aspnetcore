@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
@@ -27,9 +28,9 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
         private DateTimeOffset? _refreshIssuedUtc;
         private DateTimeOffset? _refreshExpiresUtc;
-        private string _sessionKey;
-        private Task<AuthenticateResult> _readCookieTask;
-        private AuthenticationTicket _refreshTicket;
+        private string? _sessionKey;
+        private Task<AuthenticateResult>? _readCookieTask;
+        private AuthenticationTicket? _refreshTicket;
 
         public CookieAuthenticationHandler(IOptionsMonitor<CookieAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// </summary>
         protected new CookieAuthenticationEvents Events
         {
-            get { return (CookieAuthenticationEvents)base.Events; }
+            get { return (CookieAuthenticationEvents)base.Events!; }
             set { base.Events = value; }
         }
 
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             }
         }
 
-        private void RequestRefresh(AuthenticationTicket ticket, ClaimsPrincipal replacedPrincipal = null)
+        private void RequestRefresh(AuthenticationTicket ticket, ClaimsPrincipal? replacedPrincipal = null)
         {
             var issuedUtc = ticket.Properties.IssuedUtc;
             var expiresUtc = ticket.Properties.ExpiresUtc;
@@ -102,7 +103,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             }
         }
 
-        private AuthenticationTicket CloneTicket(AuthenticationTicket ticket, ClaimsPrincipal replacedPrincipal)
+        private AuthenticationTicket CloneTicket(AuthenticationTicket ticket, ClaimsPrincipal? replacedPrincipal)
         {
             var principal = replacedPrincipal ?? ticket.Principal;
             var newPrincipal = new ClaimsPrincipal();
@@ -122,7 +123,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
         private async Task<AuthenticateResult> ReadCookieTicket()
         {
-            var cookie = Options.CookieManager.GetRequestCookie(Context, Options.Cookie.Name);
+            var cookie = Options.CookieManager.GetRequestCookie(Context, Options.Cookie.Name!);
             if (string.IsNullOrEmpty(cookie))
             {
                 return AuthenticateResult.NoResult();
@@ -157,7 +158,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 if (Options.SessionStore != null)
                 {
-                    await Options.SessionStore.RemoveAsync(_sessionKey);
+                    await Options.SessionStore.RemoveAsync(_sessionKey!);
                 }
                 return AuthenticateResult.Fail("Ticket expired");
             }
@@ -176,6 +177,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 return result;
             }
 
+            Debug.Assert(result.Ticket != null);
             var context = new CookieValidatePrincipalContext(Context, Scheme, Options, result.Ticket);
             await Events.ValidatePrincipal(context);
 
@@ -244,7 +246,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
                 Options.CookieManager.AppendResponseCookie(
                     Context,
-                    Options.Cookie.Name,
+                    Options.Cookie.Name!,
                     cookieValue,
                     cookieOptions);
 
@@ -252,7 +254,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             }
         }
 
-        protected async override Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
+        protected async override Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
         {
             if (user == null)
             {
@@ -299,7 +301,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 signInContext.CookieOptions.Expires = expiresUtc.ToUniversalTime();
             }
 
-            var ticket = new AuthenticationTicket(signInContext.Principal, signInContext.Properties, signInContext.Scheme.Name);
+            var ticket = new AuthenticationTicket(signInContext.Principal!, signInContext.Properties, signInContext.Scheme.Name);
 
             if (Options.SessionStore != null)
             {
@@ -324,14 +326,14 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
             Options.CookieManager.AppendResponseCookie(
                 Context,
-                Options.Cookie.Name,
+                Options.Cookie.Name!,
                 cookieValue,
                 signInContext.CookieOptions);
 
             var signedInContext = new CookieSignedInContext(
                 Context,
                 Scheme,
-                signInContext.Principal,
+                signInContext.Principal!,
                 signInContext.Properties,
                 Options);
 
@@ -344,7 +346,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             Logger.AuthenticationSchemeSignedIn(Scheme.Name);
         }
 
-        protected async override Task HandleSignOutAsync(AuthenticationProperties properties)
+        protected async override Task HandleSignOutAsync(AuthenticationProperties? properties)
         {
             properties = properties ?? new AuthenticationProperties();
 
@@ -369,7 +371,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
             Options.CookieManager.DeleteCookie(
                 Context,
-                Options.Cookie.Name,
+                Options.Cookie.Name!,
                 context.CookieOptions);
 
             // Only redirect on the logout path
@@ -449,7 +451,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             await Events.RedirectToLogin(redirectContext);
         }
 
-        private string GetTlsTokenBinding()
+        private string? GetTlsTokenBinding()
         {
             var binding = Context.Features.Get<ITlsTokenBindingFeature>()?.GetProvidedTokenBindingId();
             return binding == null ? null : Convert.ToBase64String(binding);
