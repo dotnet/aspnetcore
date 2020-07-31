@@ -2913,7 +2913,8 @@ class HubConnectionTest {
                     }
                     assertTrue(close.blockingAwait(5, TimeUnit.SECONDS));
                     return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
-                });
+                })
+                .on("DELETE", (req) -> Single.just(new HttpResponse(200, "", "")));
 
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")

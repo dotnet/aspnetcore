@@ -86,7 +86,8 @@ public class LongPollingTransportTest {
                         return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                     }
                     return Single.just(new HttpResponse(999, "", TestUtils.emptyByteBuffer));
-                });
+                })
+                .on("DELETE", (req) -> Single.just(new HttpResponse(200, "", "")));
 
         Map<String, String> headers = new HashMap<>();
         LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
