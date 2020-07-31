@@ -377,6 +377,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
         /// <summary>
         /// Gives a fixture an opportunity to configure the application before it gets built.
+        /// The default implementation does nothing.
         /// </summary>
         /// <param name="builder">The <see cref="IWebHostBuilder"/> for the application.</param>
         protected virtual void ConfigureWebHost(IWebHostBuilder builder)
