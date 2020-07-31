@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     //
     // Represents an entry in a tree of user interface (UI) items.
     [StructLayout(LayoutKind.Explicit, Pack = 4)]
-    public readonly struct RenderTreeFrame
+    public struct RenderTreeFrame
     {
         // Note that the struct layout has to be valid in both 32-bit and 64-bit runtime platforms,
         // which means that all reference-type fields need to take up 8 bytes (except for the last
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// positions of the instructions that inserted the frames. Sequence numbers are only
         /// comparable within the same sequence (typically, the same source method).
         /// </summary>
-        [FieldOffset(0)] public readonly int Sequence;
+        [FieldOffset(0)] public int Sequence;
 
         /// <summary>
         /// Describes the type of this frame.
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// gets the number of frames in the subtree for which this frame is the root.
         /// The value is zero if the frame has not yet been closed.
         /// </summary>
-        [FieldOffset(8)] public readonly int ElementSubtreeLength;
+        [FieldOffset(8)] public int ElementSubtreeLength;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Element"/>,
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Element"/>,
         /// gets the element's diffing key, or null if none was specified.
         /// </summary>
-        [FieldOffset(24)] public readonly object ElementKey;
+        [FieldOffset(24)] public object ElementKey;
 
         // --------------------------------------------------------------------------------
         // RenderTreeFrameType.Text
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Attribute"/>
         /// gets the ID of the corresponding event handler, if any.
         /// </summary>
-        [FieldOffset(8)] public readonly ulong AttributeEventHandlerId;
+        [FieldOffset(8)] public ulong AttributeEventHandlerId;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Attribute"/>,
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Attribute"/>,
         /// gets the attribute value. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(24)] public readonly object AttributeValue;
+        [FieldOffset(24)] public object AttributeValue;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Attribute"/>,
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// can be updated to represent the UI state prior to executing the event handler. This is
         /// primarily used in two-way bindings.
         /// </summary>
-        [FieldOffset(32)] public readonly string AttributeEventUpdatesAttributeName;
+        [FieldOffset(32)] public string AttributeEventUpdatesAttributeName;
 
         // --------------------------------------------------------------------------------
         // RenderTreeFrameType.Component
@@ -132,13 +132,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// gets the number of frames in the subtree for which this frame is the root.
         /// The value is zero if the frame has not yet been closed.
         /// </summary>
-        [FieldOffset(8)] public readonly int ComponentSubtreeLength;
+        [FieldOffset(8)] public int ComponentSubtreeLength;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
         /// gets the child component instance identifier.
         /// </summary>
-        [FieldOffset(12)] public readonly int ComponentId;
+        [FieldOffset(12)] public int ComponentId;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
@@ -150,13 +150,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
         /// gets the child component state object. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(24)] internal readonly ComponentState ComponentState;
+        [FieldOffset(24)] internal ComponentState ComponentState;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
         /// gets the component's diffing key, or null if none was specified.
         /// </summary>
-        [FieldOffset(32)] public readonly object ComponentKey;
+        [FieldOffset(32)] public object ComponentKey;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// gets the number of frames in the subtree for which this frame is the root.
         /// The value is zero if the frame has not yet been closed.
         /// </summary>
-        [FieldOffset(8)] public readonly int RegionSubtreeLength;
+        [FieldOffset(8)] public int RegionSubtreeLength;
 
         // --------------------------------------------------------------------------------
         // RenderTreeFrameType.ElementReferenceCapture
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.ElementReferenceCapture"/>,
         /// gets the ID of the reference capture. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(16)] public readonly string ElementReferenceCaptureId;
+        [FieldOffset(16)] public string ElementReferenceCaptureId;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.ElementReferenceCapture"/>,
@@ -312,6 +312,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         internal static RenderTreeFrame Element(int sequence, string elementName)
             => new RenderTreeFrame(sequence, elementSubtreeLength: 0, elementName, null);
 
+        internal static RenderTreeFrame Element(int sequence, string elementName, int elementSubtreeLength)
+            => new RenderTreeFrame(sequence, elementSubtreeLength, elementName, null);
+
         internal static RenderTreeFrame Text(int sequence, string textContent)
             => new RenderTreeFrame(sequence, isMarkup: false, textOrMarkup: textContent);
 
@@ -324,6 +327,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         internal static RenderTreeFrame ChildComponent(int sequence, Type componentType)
             => new RenderTreeFrame(sequence, componentSubtreeLength: 0, componentType, null, null);
 
+        internal static RenderTreeFrame ChildComponent(int sequence, Type componentType, int componentSubtreeLength)
+            => new RenderTreeFrame(sequence, componentSubtreeLength, componentType, null, null);
+
         internal static RenderTreeFrame PlaceholderChildComponentWithSubtreeLength(int subtreeLength)
             => new RenderTreeFrame(0, componentSubtreeLength: subtreeLength, typeof(IComponent), null, null);
 
@@ -335,39 +341,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         internal static RenderTreeFrame ComponentReferenceCapture(int sequence, Action<object> componentReferenceCaptureAction, int parentFrameIndex)
             => new RenderTreeFrame(sequence, componentReferenceCaptureAction: componentReferenceCaptureAction, parentFrameIndex: parentFrameIndex);
-
-        internal RenderTreeFrame WithElementSubtreeLength(int elementSubtreeLength)
-            => new RenderTreeFrame(Sequence, elementSubtreeLength: elementSubtreeLength, ElementName, ElementKey);
-
-        internal RenderTreeFrame WithComponentSubtreeLength(int componentSubtreeLength)
-            => new RenderTreeFrame(Sequence, componentSubtreeLength: componentSubtreeLength, ComponentType, ComponentState, ComponentKey);
-
-        internal RenderTreeFrame WithAttributeSequence(int sequence)
-            => new RenderTreeFrame(sequence, attributeName: AttributeName, AttributeValue, AttributeEventHandlerId, AttributeEventUpdatesAttributeName);
-
-        internal RenderTreeFrame WithComponent(ComponentState componentState)
-            => new RenderTreeFrame(Sequence, componentSubtreeLength: ComponentSubtreeLength, ComponentType, componentState, ComponentKey);
-
-        internal RenderTreeFrame WithAttributeEventHandlerId(ulong eventHandlerId)
-            => new RenderTreeFrame(Sequence, attributeName: AttributeName, AttributeValue, eventHandlerId, AttributeEventUpdatesAttributeName);
-
-        internal RenderTreeFrame WithAttributeValue(object attributeValue)
-            => new RenderTreeFrame(Sequence, attributeName: AttributeName, attributeValue, AttributeEventHandlerId, AttributeEventUpdatesAttributeName);
-
-        internal RenderTreeFrame WithAttributeEventUpdatesAttributeName(string attributeUpdatesAttributeName)
-            => new RenderTreeFrame(Sequence, attributeName: AttributeName, AttributeValue, AttributeEventHandlerId, attributeUpdatesAttributeName);
-
-        internal RenderTreeFrame WithRegionSubtreeLength(int regionSubtreeLength)
-            => new RenderTreeFrame(Sequence, regionSubtreeLength: regionSubtreeLength);
-
-        internal RenderTreeFrame WithElementReferenceCaptureId(string elementReferenceCaptureId)
-            => new RenderTreeFrame(Sequence, elementReferenceCaptureAction: ElementReferenceCaptureAction, elementReferenceCaptureId);
-
-        internal RenderTreeFrame WithElementKey(object elementKey)
-            => new RenderTreeFrame(Sequence, elementSubtreeLength: ElementSubtreeLength, ElementName, elementKey);
-
-        internal RenderTreeFrame WithComponentKey(object componentKey)
-            => new RenderTreeFrame(Sequence, componentSubtreeLength: ComponentSubtreeLength, ComponentType, ComponentState, componentKey);
 
         /// <inheritdoc />
         // Just to be nice for debugging and unit tests.

@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 if (attributeFrame.AttributeName == attributeName)
                 {
                     // Found an existing attribute we can update
-                    attributeFrame = attributeFrame.WithAttributeValue(attributeValue);
+                    attributeFrame.AttributeValue = attributeValue;
                     return;
                 }
             }
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                             var otherFrameEndIndexExcl = otherFrameIndex + otherFrameSubtreeLength;
                             if (otherFrameEndIndexExcl > elementFrameIndex) // i.e., contains the element we're inserting into
                             {
-                                otherFrame = otherFrame.WithElementSubtreeLength(otherFrameSubtreeLength + 1);
+                                otherFrame.ElementSubtreeLength = otherFrameSubtreeLength + 1;
                             }
                             break;
                         }
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                             var otherFrameEndIndexExcl = otherFrameIndex + otherFrameSubtreeLength;
                             if (otherFrameEndIndexExcl > elementFrameIndex) // i.e., contains the element we're inserting into
                             {
-                                otherFrame = otherFrame.WithRegionSubtreeLength(otherFrameSubtreeLength + 1);
+                                otherFrame.RegionSubtreeLength = otherFrameSubtreeLength + 1;
                             }
                             break;
                         }

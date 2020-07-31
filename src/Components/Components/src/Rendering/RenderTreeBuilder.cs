@@ -71,8 +71,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 ProcessDuplicateAttributes(first: indexOfEntryBeingClosed + 1);
             }
 
-            ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];
-            entry = entry.WithElementSubtreeLength(_entries.Count - indexOfEntryBeingClosed);
+            _entries.Buffer[indexOfEntryBeingClosed].ElementSubtreeLength = _entries.Count - indexOfEntryBeingClosed;
         }
 
         /// <summary>
@@ -408,7 +407,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="frame">A <see cref="RenderTreeFrame"/> holding the name and value of the attribute.</param>
-        public void AddAttribute(int sequence, in RenderTreeFrame frame)
+        public void AddAttribute(int sequence, RenderTreeFrame frame)
         {
             if (frame.FrameType != RenderTreeFrameType.Attribute)
             {
@@ -416,7 +415,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             AssertCanAddAttribute();
-            Append(frame.WithAttributeSequence(sequence));
+            frame.Sequence = sequence;
+            Append(frame);
         }
 
         /// <summary>
@@ -469,7 +469,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 throw new InvalidOperationException($"Incorrect frame type: '{prevFrame.FrameType}'");
             }
 
-            prevFrame = prevFrame.WithAttributeEventUpdatesAttributeName(updatesAttributeName);
+            prevFrame.AttributeEventUpdatesAttributeName = updatesAttributeName;
         }
 
         /// <summary>
@@ -519,10 +519,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
             switch (parentFrame.FrameType)
             {
                 case RenderTreeFrameType.Element:
-                    parentFrame = parentFrame.WithElementKey(value); // It's a ref var, so this writes to the array
+                    parentFrame.ElementKey = value; // It's a ref var, so this writes to the array
                     break;
                 case RenderTreeFrameType.Component:
-                    parentFrame = parentFrame.WithComponentKey(value); // It's a ref var, so this writes to the array
+                    parentFrame.ComponentKey = value; // It's a ref var, so this writes to the array
                     break;
                 default:
                     throw new InvalidOperationException($"Cannot set a key on a frame of type {parentFrame.FrameType}.");
@@ -558,8 +558,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 ProcessDuplicateAttributes(first: indexOfEntryBeingClosed + 1);
             }
 
-            ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];
-            entry = entry.WithComponentSubtreeLength(_entries.Count - indexOfEntryBeingClosed);
+            _entries.Buffer[indexOfEntryBeingClosed].ComponentSubtreeLength = _entries.Count - indexOfEntryBeingClosed;
         }
 
         /// <summary>
@@ -624,8 +623,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public void CloseRegion()
         {
             var indexOfEntryBeingClosed = _openElementIndices.Pop();
-            ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];
-            entry = entry.WithRegionSubtreeLength(_entries.Count - indexOfEntryBeingClosed);
+            _entries.Buffer[indexOfEntryBeingClosed].RegionSubtreeLength = _entries.Count - indexOfEntryBeingClosed;
         }
 
         private void AssertCanAddAttribute()

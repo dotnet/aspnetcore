@@ -19,8 +19,15 @@ namespace Microsoft.AspNetCore.Components
         private const string GeneratedParameterViewElementName = "__ARTIFICIAL_PARAMETER_VIEW";
         private static readonly RenderTreeFrame[] _emptyFrames = new RenderTreeFrame[]
         {
-            RenderTreeFrame.Element(0, string.Empty).WithComponentSubtreeLength(1)
+            CreateEmptyElementFrame()
         };
+
+        private static RenderTreeFrame CreateEmptyElementFrame()
+        {
+            var result = RenderTreeFrame.Element(0, string.Empty);
+            result.ElementSubtreeLength = 1;
+            return result;
+        }
 
         private static readonly ParameterView _empty = new ParameterView(ParameterViewLifetime.Unbound, _emptyFrames, 0, Array.Empty<CascadingParameterState>());
 
@@ -216,8 +223,8 @@ namespace Microsoft.AspNetCore.Components
         public static ParameterView FromDictionary(IDictionary<string, object> parameters)
         {
             var frames = new RenderTreeFrame[parameters.Count + 1];
-            frames[0] = RenderTreeFrame.Element(0, GeneratedParameterViewElementName)
-                .WithElementSubtreeLength(frames.Length);
+            frames[0] = RenderTreeFrame.Element(0, GeneratedParameterViewElementName);
+            frames[0].ElementSubtreeLength = frames.Length;
 
             var i = 0;
             foreach (var kvp in parameters)
