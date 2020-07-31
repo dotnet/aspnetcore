@@ -13,13 +13,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     {
         // You may notice a repeated block at the top of each of these methods. This is intentionally inlined into each
         // method because doing so improves intensive rendering scenarios by around 1% (based on the FastGrid benchmark).
-        //
-        // The reason it's considered safe to mutate the existing buffer entries in place without replacing them with
-        // new struct instances is that the buffer entries should always be blank at the time we are appending, because
-        // RenderTreeBuilder always calls Array.Clear on the used portion of the buffer before returning it to the pool.
-        // Likewise, if it ever removes entries, it always sets them back to default, rather than just updating indices
-        // elsewhere and leaving behind orphaned records. This is necessary both for GC to function correctly (e.g.,
-        // because RenderTreeFrame fields may point to other objects) and for safety since the memory can later be reused.
 
         public void AppendElement(int sequence, string elementName)
         {
@@ -28,12 +21,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 GrowBuffer(_items.Length * 2);
             }
 
-            ref var item = ref _items[_itemsInUse++];
-            Debug.Assert(item.FrameType == default);
-
-            item.Sequence = sequence;
-            item.FrameType = RenderTreeFrameType.Element;
-            item.ElementName = elementName;
+            _items[_itemsInUse++] = new RenderTreeFrame
+            {
+                Sequence = sequence,
+                FrameType = RenderTreeFrameType.Element,
+                ElementName = elementName,
+            };
         }
 
         public void AppendText(int sequence, string textContent)
@@ -43,12 +36,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 GrowBuffer(_items.Length * 2);
             }
 
-            ref var item = ref _items[_itemsInUse++];
-            Debug.Assert(item.FrameType == default);
-
-            item.Sequence = sequence;
-            item.FrameType = RenderTreeFrameType.Text;
-            item.TextContent = textContent;
+            _items[_itemsInUse++] = new RenderTreeFrame
+            {
+                Sequence = sequence,
+                FrameType = RenderTreeFrameType.Text,
+                TextContent = textContent,
+            };
         }
 
         public void AppendMarkup(int sequence, string markupContent)
@@ -58,12 +51,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 GrowBuffer(_items.Length * 2);
             }
 
-            ref var item = ref _items[_itemsInUse++];
-            Debug.Assert(item.FrameType == default);
-
-            item.Sequence = sequence;
-            item.FrameType = RenderTreeFrameType.Markup;
-            item.MarkupContent = markupContent;
+            _items[_itemsInUse++] = new RenderTreeFrame
+            {
+                Sequence = sequence,
+                FrameType = RenderTreeFrameType.Markup,
+                MarkupContent = markupContent,
+            };
         }
 
         public void AppendAttribute(int sequence, string attributeName, object? attributeValue)
@@ -73,13 +66,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 GrowBuffer(_items.Length * 2);
             }
 
-            ref var item = ref _items[_itemsInUse++];
-            Debug.Assert(item.FrameType == default);
-
-            item.Sequence = sequence;
-            item.FrameType = RenderTreeFrameType.Attribute;
-            item.AttributeName = attributeName;
-            item.AttributeValue = attributeValue;
+            _items[_itemsInUse++] = new RenderTreeFrame
+            {
+                Sequence = sequence,
+                FrameType = RenderTreeFrameType.Attribute,
+                AttributeName = attributeName,
+                AttributeValue = attributeValue,
+            };
         }
 
         public void AppendComponent(int sequence, Type componentType)
@@ -88,13 +81,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 GrowBuffer(_items.Length * 2);
             }
-
-            ref var item = ref _items[_itemsInUse++];
-            Debug.Assert(item.FrameType == default);
-
-            item.Sequence = sequence;
-            item.FrameType = RenderTreeFrameType.Component;
-            item.ComponentType = componentType;
+            
+            _items[_itemsInUse++] = new RenderTreeFrame
+            {
+                Sequence = sequence,
+                FrameType = RenderTreeFrameType.Component,
+                ComponentType = componentType,
+            };
         }
 
         public void AppendElementReferenceCapture(int sequence, Action<ElementReference> elementReferenceCaptureAction)
@@ -103,13 +96,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 GrowBuffer(_items.Length * 2);
             }
-
-            ref var item = ref _items[_itemsInUse++];
-            Debug.Assert(item.FrameType == default);
-
-            item.Sequence = sequence;
-            item.FrameType = RenderTreeFrameType.ElementReferenceCapture;
-            item.ElementReferenceCaptureAction = elementReferenceCaptureAction;
+            
+            _items[_itemsInUse++] = new RenderTreeFrame
+            {
+                Sequence = sequence,
+                FrameType = RenderTreeFrameType.ElementReferenceCapture,
+                ElementReferenceCaptureAction = elementReferenceCaptureAction,
+            };
         }
 
         public void AppendComponentReferenceCapture(int sequence, Action<object?> componentReferenceCaptureAction, int parentFrameIndexValue)
@@ -118,14 +111,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 GrowBuffer(_items.Length * 2);
             }
-
-            ref var item = ref _items[_itemsInUse++];
-            Debug.Assert(item.FrameType == default);
-
-            item.Sequence = sequence;
-            item.FrameType = RenderTreeFrameType.ComponentReferenceCapture;
-            item.ComponentReferenceCaptureAction = componentReferenceCaptureAction;
-            item.ComponentReferenceCaptureParentFrameIndex = parentFrameIndexValue;
+            
+            _items[_itemsInUse++] = new RenderTreeFrame
+            {
+                Sequence = sequence,
+                FrameType = RenderTreeFrameType.ComponentReferenceCapture,
+                ComponentReferenceCaptureAction = componentReferenceCaptureAction,
+                ComponentReferenceCaptureParentFrameIndex = parentFrameIndexValue,
+            };
         }
 
         public void AppendRegion(int sequence)
@@ -134,12 +127,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 GrowBuffer(_items.Length * 2);
             }
-
-            ref var item = ref _items[_itemsInUse++];
-            Debug.Assert(item.FrameType == default);
-
-            item.Sequence = sequence;
-            item.FrameType = RenderTreeFrameType.Region;
+            
+            _items[_itemsInUse++] = new RenderTreeFrame
+            {
+                Sequence = sequence,
+                FrameType = RenderTreeFrameType.Region,
+            };
         }
     }
 }
