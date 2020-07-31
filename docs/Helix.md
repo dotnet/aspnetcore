@@ -19,7 +19,7 @@ This will restore, and then publish all the test project including some bootstra
 ## Overview of the helix usage in our pipelines
 
 - Required queues: Windows10, OSX, Ubuntu1604 
-- Full queue matrix: Windows[7, 81, 10], Ubuntu[1604, 1804, 2004], Centos7, Debian[8,9], Redhat7, Fedora28, Arm64 (Win10, Debian9)
+- Full queue matrix: Windows[7, 81, 10], Ubuntu[1604, 1804, 2004], Centos7, Debian9, Redhat7, Fedora28, Arm64 (Win10, Debian9)
 - The queues are defined in [Helix.Common.props](https://github.com/dotnet/aspnetcore/blob/master/eng/targets/Helix.Common.props)
 
 [aspnetcore-ci](https://dev.azure.com/dnceng/public/_build?definitionId=278) runs non quarantined tests against the required helix queues as a required PR check and all builds on all branches.
