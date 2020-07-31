@@ -309,9 +309,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             ComponentReferenceCaptureParentFrameIndex = parentFrameIndex;
         }
 
-        // TODO: Now it should be possible to remove all the factory methods below, and all probably all the specialized
-        // constructors too.
-
         internal static RenderTreeFrame Element(int sequence, string elementName)
             => new RenderTreeFrame(sequence, elementSubtreeLength: 0, elementName, null);
 
@@ -344,6 +341,39 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         internal static RenderTreeFrame ComponentReferenceCapture(int sequence, Action<object> componentReferenceCaptureAction, int parentFrameIndex)
             => new RenderTreeFrame(sequence, componentReferenceCaptureAction: componentReferenceCaptureAction, parentFrameIndex: parentFrameIndex);
+
+        internal RenderTreeFrame WithElementSubtreeLength(int elementSubtreeLength)
+            => new RenderTreeFrame(Sequence, elementSubtreeLength: elementSubtreeLength, ElementName, ElementKey);
+
+        internal RenderTreeFrame WithComponentSubtreeLength(int componentSubtreeLength)
+            => new RenderTreeFrame(Sequence, componentSubtreeLength: componentSubtreeLength, ComponentType, ComponentState, ComponentKey);
+
+        internal RenderTreeFrame WithAttributeSequence(int sequence)
+            => new RenderTreeFrame(sequence, attributeName: AttributeName, AttributeValue, AttributeEventHandlerId, AttributeEventUpdatesAttributeName);
+
+        internal RenderTreeFrame WithComponent(ComponentState componentState)
+            => new RenderTreeFrame(Sequence, componentSubtreeLength: ComponentSubtreeLength, ComponentType, componentState, ComponentKey);
+
+        internal RenderTreeFrame WithAttributeEventHandlerId(ulong eventHandlerId)
+            => new RenderTreeFrame(Sequence, attributeName: AttributeName, AttributeValue, eventHandlerId, AttributeEventUpdatesAttributeName);
+
+        internal RenderTreeFrame WithAttributeValue(object attributeValue)
+            => new RenderTreeFrame(Sequence, attributeName: AttributeName, attributeValue, AttributeEventHandlerId, AttributeEventUpdatesAttributeName);
+
+        internal RenderTreeFrame WithAttributeEventUpdatesAttributeName(string attributeUpdatesAttributeName)
+            => new RenderTreeFrame(Sequence, attributeName: AttributeName, AttributeValue, AttributeEventHandlerId, attributeUpdatesAttributeName);
+
+        internal RenderTreeFrame WithRegionSubtreeLength(int regionSubtreeLength)
+            => new RenderTreeFrame(Sequence, regionSubtreeLength: regionSubtreeLength);
+
+        internal RenderTreeFrame WithElementReferenceCaptureId(string elementReferenceCaptureId)
+            => new RenderTreeFrame(Sequence, elementReferenceCaptureAction: ElementReferenceCaptureAction, elementReferenceCaptureId);
+
+        internal RenderTreeFrame WithElementKey(object elementKey)
+            => new RenderTreeFrame(Sequence, elementSubtreeLength: ElementSubtreeLength, ElementName, elementKey);
+
+        internal RenderTreeFrame WithComponentKey(object componentKey)
+            => new RenderTreeFrame(Sequence, componentSubtreeLength: ComponentSubtreeLength, ComponentType, ComponentState, componentKey);
 
         /// <inheritdoc />
         // Just to be nice for debugging and unit tests.
