@@ -10,8 +10,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
 
-    <!-- Tests do not work on Helix yet -->
-    <BuildHelixPayload>false</BuildHelixPayload>
     <TestAppsRoot>$(MSBuildProjectDirectory)\..\testassets\</TestAppsRoot>
   </PropertyGroup>
 
