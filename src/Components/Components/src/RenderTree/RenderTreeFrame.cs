@@ -309,6 +309,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             ComponentReferenceCaptureParentFrameIndex = parentFrameIndex;
         }
 
+        // TODO: Now it should be possible to remove all the factory methods below, and all probably all the specialized
+        // constructors too.
+
         internal static RenderTreeFrame Element(int sequence, string elementName)
             => new RenderTreeFrame(sequence, elementSubtreeLength: 0, elementName, null);
 
