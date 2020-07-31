@@ -5,7 +5,6 @@ import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResour
 import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock } from '../Platform';
 import { loadTimezoneData } from './TimezoneDataFile';
 import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
-import { initializeProfiling } from '../Profiling';
 
 let mono_wasm_add_assembly: (name: string, heapAddress: number, length: number) => void;
 const appBinDirName = 'appBinDir';
@@ -36,10 +35,6 @@ export const monoPlatform: Platform = {
   start: function start(resourceLoader: WebAssemblyResourceLoader) {
     return new Promise<void>((resolve, reject) => {
       attachDebuggerHotkey(resourceLoader);
-      initializeProfiling(isCapturing => {
-        const setCapturingMethod = bindStaticMethod('Microsoft.AspNetCore.Components', 'Microsoft.AspNetCore.Components.Profiling.WebAssemblyComponentsProfiling', 'SetCapturing');
-        setCapturingMethod(isCapturing);
-      });
 
       // dotnet.js assumes the existence of this
       window['Browser'] = {
