@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
+    // TODO: Make sure there aren't any cases where the underlying buffer contains nonzero data
+
     /// <summary>
     /// A special subclass of <see cref="ArrayBuilder{T}"/> that contains methods optimized for appending <see cref="RenderTreeFrame"/> entries.
     /// </summary>
@@ -14,6 +17,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         {
             GrowBufferIfFull();
             ref var item = ref _items[_itemsInUse++];
+            Debug.Assert(item.FrameType == default);
 
             item.Sequence = sequence;
             item.FrameType = RenderTreeFrameType.Element;
@@ -24,6 +28,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         {
             GrowBufferIfFull();
             ref var item = ref _items[_itemsInUse++];
+            Debug.Assert(item.FrameType == default);
 
             item.Sequence = sequence;
             item.FrameType = RenderTreeFrameType.Text;
@@ -34,6 +39,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         {
             GrowBufferIfFull();
             ref var item = ref _items[_itemsInUse++];
+            Debug.Assert(item.FrameType == default);
 
             item.Sequence = sequence;
             item.FrameType = RenderTreeFrameType.Markup;
@@ -44,6 +50,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         {
             GrowBufferIfFull();
             ref var item = ref _items[_itemsInUse++];
+            Debug.Assert(item.FrameType == default);
 
             item.Sequence = sequence;
             item.FrameType = RenderTreeFrameType.Attribute;
@@ -55,6 +62,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         {
             GrowBufferIfFull();
             ref var item = ref _items[_itemsInUse++];
+            Debug.Assert(item.FrameType == default);
 
             item.Sequence = sequence;
             item.FrameType = RenderTreeFrameType.Component;
@@ -65,6 +73,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         {
             GrowBufferIfFull();
             ref var item = ref _items[_itemsInUse++];
+            Debug.Assert(item.FrameType == default);
 
             item.Sequence = sequence;
             item.FrameType = RenderTreeFrameType.ElementReferenceCapture;
@@ -75,6 +84,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         {
             GrowBufferIfFull();
             ref var item = ref _items[_itemsInUse++];
+            Debug.Assert(item.FrameType == default);
 
             item.Sequence = sequence;
             item.FrameType = RenderTreeFrameType.ComponentReferenceCapture;
@@ -86,6 +96,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         {
             GrowBufferIfFull();
             ref var item = ref _items[_itemsInUse++];
+            Debug.Assert(item.FrameType == default);
 
             item.Sequence = sequence;
             item.FrameType = RenderTreeFrameType.Region;
