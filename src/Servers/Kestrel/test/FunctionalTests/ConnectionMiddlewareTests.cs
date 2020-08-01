@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var serviceContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
+            await using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         }
                     });
                 }
-                await server.StopAsync();
             }
         }
     }

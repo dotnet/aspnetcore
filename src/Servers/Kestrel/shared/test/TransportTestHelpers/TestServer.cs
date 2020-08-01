@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     /// <summary>
     /// Summary description for TestServer
     /// </summary>
-    internal class TestServer : IDisposable, IStartup
+    internal class TestServer : IAsyncDisposable, IStartup
     {
         private IHost _host;
         private ListenOptions _listenOptions;
@@ -135,9 +135,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             return _host.StopAsync(token);
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            _host.Dispose();
+            await _host.StopAsync();
+            // The concrete Host implements IAsyncDisposable
+            await ((IAsyncDisposable)_host).ConfigureAwait(false).DisposeAsync();
         }
     }
 }
