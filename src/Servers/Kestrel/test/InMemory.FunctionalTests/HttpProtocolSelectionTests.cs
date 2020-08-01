@@ -70,8 +70,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Send(request);
                     await connection.Receive(expectedResponse);
                 }
-
-                await server.StopAsync();
             }
         }
 

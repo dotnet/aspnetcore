@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
     /// <summary>
     /// In-memory TestServer
     /// </summary
-    internal class TestServer : IAsyncDisposable, IDisposable, IStartup
+    internal class TestServer : IAsyncDisposable, IStartup
     {
         private readonly MemoryPool<byte> _memoryPool;
         private readonly RequestDelegate _app;
@@ -114,11 +114,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             return _host.StopAsync(cancellationToken);
         }
 
-        public void Dispose()
-        {
-            _host.Dispose();
-            _memoryPool.Dispose();
-        }
 
         void IStartup.Configure(IApplicationBuilder app)
         {
@@ -133,6 +128,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
         public async ValueTask DisposeAsync()
         {
             // The concrete Host implements IAsyncDisposable
+            await _host.StopAsync();
             await ((IAsyncDisposable)_host).ConfigureAwait(false).DisposeAsync();
             _memoryPool.Dispose();
         }

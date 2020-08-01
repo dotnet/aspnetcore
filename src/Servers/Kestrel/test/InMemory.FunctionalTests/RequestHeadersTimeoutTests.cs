@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
@@ -44,8 +43,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await ReceiveTimeoutResponse(connection, testContext);
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -77,8 +74,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await ReceiveResponse(connection, testContext);
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -104,8 +99,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await ReceiveTimeoutResponse(connection, testContext);
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -136,8 +129,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.WaitForConnectionClose();
                 }
-
-                await server.StopAsync();
             }
         }
 

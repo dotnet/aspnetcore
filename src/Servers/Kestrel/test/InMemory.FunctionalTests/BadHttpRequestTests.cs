@@ -167,8 +167,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await ReceiveBadRequestResponse(connection, "400 Bad Request", server.Context.DateHeaderValue);
                 }
-
-                await server.StopAsync();
             }
 
             Assert.All(TestSink.Writes.Where(w => w.LoggerName != "Microsoft.Hosting.Lifetime"), w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Debug));
@@ -188,8 +186,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await client.Receive("HTTP/1.1 400");
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -212,8 +208,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.SendAll(request);
                     await ReceiveBadRequestResponse(connection, expectedResponseStatusCode, server.Context.DateHeaderValue, expectedAllowHeader);
                 }
-
-                await server.StopAsync();
             }
 
             mockKestrelTrace.Verify(trace => trace.ConnectionBadRequest(It.IsAny<string>(), It.IsAny<BadHttpRequestException>()));

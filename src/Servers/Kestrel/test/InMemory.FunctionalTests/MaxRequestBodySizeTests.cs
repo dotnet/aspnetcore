@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using BadHttpRequestException = Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException;
 
@@ -54,8 +53,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-
-                await server.StopAsync();
             }
 
             Assert.NotNull(requestRejectedEx);
@@ -106,8 +103,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-
-                await server.StopAsync();
             }
 
             Assert.NotNull(requestRejectedEx);
@@ -151,8 +146,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "A");
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -185,8 +178,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -227,8 +218,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-
-                await server.StopAsync();
             }
 
             Assert.NotNull(invalidOpEx);
@@ -268,8 +257,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.ReceiveEnd();
                 }
-
-                await server.StopAsync();
             }
 
             Assert.NotNull(invalidOpEx);
@@ -313,8 +300,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-
-                await server.StopAsync();
             }
 
             Assert.NotNull(requestRejectedEx1);
@@ -366,8 +351,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-
-                await server.StopAsync();
             }
 
             Assert.NotNull(requestRejectedEx);
@@ -413,8 +396,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -487,8 +468,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-
-                await server.StopAsync();
             }
 
             Assert.NotNull(requestRejectedEx);
@@ -532,8 +511,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-
-                await server.StopAsync();
             }
 
             Assert.NotNull(requestRejectedEx1);

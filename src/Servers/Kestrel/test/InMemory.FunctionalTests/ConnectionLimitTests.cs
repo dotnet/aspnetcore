@@ -43,8 +43,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     Assert.True(await lockedTcs.Task.DefaultTimeout());
                     requestTcs.TrySetResult();
                 }
-
-                await server.StopAsync();
             }
 
             await releasedTcs.Task.DefaultTimeout();
@@ -95,8 +93,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         await rejected.WaitForConnectionClose();
                     }
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -142,8 +138,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     requestTcs.TrySetResult();
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -199,8 +193,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 await closedTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(120));
                 Assert.Equal(count, opened);
                 Assert.Equal(count, closed);
-
-                await server.StopAsync();
             }
         }
 

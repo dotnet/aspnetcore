@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
@@ -49,8 +48,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.WaitForConnectionClose();
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -80,8 +77,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
                     }
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -123,8 +118,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                             "");
                     await ReceiveResponse(connection, testContext);
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -166,8 +159,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await ReceiveResponse(connection, testContext);
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -189,8 +180,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.WaitForConnectionClose();
                 }
-
-                await server.StopAsync();
             }
         }
 
@@ -230,8 +219,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.Receive("hello, world");
                 }
-
-                await server.StopAsync();
             }
         }
 
