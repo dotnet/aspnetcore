@@ -424,6 +424,25 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
+        public async Task ReadThenSeekThenCopyToAsyncWorks()
+        {
+            var data = Enumerable.Range(0, 1024).Select(b => (byte)b).ToArray();
+            var inner = new MemoryStream(data);
+
+            using var stream = new FileBufferingReadStream(inner, 1024 * 1024, bufferLimit: null, GetCurrentDirectory());
+
+            var withoutBufferMs = new MemoryStream();
+            var buffer = new byte[100];
+            var read = stream.Read(buffer);
+            stream.Position = 0;
+            await stream.CopyToAsync(withoutBufferMs);
+
+            Assert.Equal(100, read);
+            Assert.Equal(data.AsMemory(0, read).ToArray(), buffer);
+            Assert.Equal(data.ToArray(), withoutBufferMs.ToArray());
+        }
+
+        [Fact]
         public void PartialReadThenSeekReplaysBuffer()
         {
             var data = Enumerable.Range(0, 1024).Select(b => (byte)b).ToArray();
