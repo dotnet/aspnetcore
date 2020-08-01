@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             ThrowIfDisposed();
 
-            if (_completelyBuffered)
+            if (_buffer.Position < _buffer.Length || _completelyBuffered)
             {
                 // Just read from the buffer
                 return _buffer.Read(buffer);
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             ThrowIfDisposed();
 
-            if (_completelyBuffered)
+            if (_buffer.Position < _buffer.Length || _completelyBuffered)
             {
                 // Just read from the buffer
                 return await _buffer.ReadAsync(buffer, cancellationToken);
