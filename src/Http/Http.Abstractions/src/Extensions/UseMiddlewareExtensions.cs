@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Builder
             });
         }
 
-        private static IApplicationBuilder UseMiddlewareInterface(IApplicationBuilder app, Type middlewareType)
+        private static IApplicationBuilder UseMiddlewareInterface(IApplicationBuilder app, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type middlewareType)
         {
             return app.Use(next =>
             {

@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Builder;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -197,7 +198,7 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
-        public IWebHostBuilder UseStartup(Type startupType)
+        public IWebHostBuilder UseStartup([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType)
         {
             // UseStartup can be called multiple times. Only run the last one.
             _startupObject = startupType;
@@ -214,7 +215,7 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
-        public IWebHostBuilder UseStartup<TStartup>(Func<WebHostBuilderContext, TStartup> startupFactory)
+        public IWebHostBuilder UseStartup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)]TStartup>(Func<WebHostBuilderContext, TStartup> startupFactory)
         {
             // Clear the startup type
             _startupObject = startupFactory;
@@ -233,7 +234,7 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
-        private void UseStartup(Type startupType, HostBuilderContext context, IServiceCollection services, object instance = null)
+        private void UseStartup([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, HostBuilderContext context, IServiceCollection services, object instance = null)
         {
             var webHostBuilderContext = GetWebHostBuilderContext(context);
             var webHostOptions = (WebHostOptions)context.Properties[typeof(WebHostOptions)];
