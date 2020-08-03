@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Hosting.FunctionalTests
@@ -17,6 +18,8 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
         {
             using (StartLog(out var loggerFactory))
             {
+                var logger = loggerFactory.CreateLogger("LinkedApplicationWorks");
+
                 // https://github.com/dotnet/aspnetcore/issues/8247
 #pragma warning disable 0618
                 var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "testassets",
@@ -44,9 +47,8 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                 // The app should have started up
                 Assert.False(deployer.HostProcess.HasExited);
 
-                var uri = result.ApplicationBaseUri;
-
-                var body = await result.HttpClient.GetStringAsync("/");
+                var response = await RetryHelper.RetryRequest(() => result.HttpClient.GetAsync("/"), logger, retryCount: 10);
+                var body = await response.Content.ReadAsStringAsync();
 
                 Assert.Equal("Hello World", body);
             }
