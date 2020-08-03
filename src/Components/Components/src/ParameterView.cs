@@ -19,15 +19,8 @@ namespace Microsoft.AspNetCore.Components
         private const string GeneratedParameterViewElementName = "__ARTIFICIAL_PARAMETER_VIEW";
         private static readonly RenderTreeFrame[] _emptyFrames = new RenderTreeFrame[]
         {
-            CreateEmptyElementFrame()
+            RenderTreeFrame.Element(0, string.Empty).WithComponentSubtreeLength(1)
         };
-
-        private static RenderTreeFrame CreateEmptyElementFrame()
-        {
-            var result = RenderTreeFrame.Element(0, string.Empty);
-            result.ElementSubtreeLength = 1;
-            return result;
-        }
 
         private static readonly ParameterView _empty = new ParameterView(ParameterViewLifetime.Unbound, _emptyFrames, 0, Array.Empty<CascadingParameterState>());
 

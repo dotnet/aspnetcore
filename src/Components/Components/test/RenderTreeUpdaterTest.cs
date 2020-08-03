@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.Test
             builder.AddAttribute(2, valuePropName, "initial value");
             builder.CloseElement();
             var frames = builder.GetFrames();
-            frames.Array[1].AttributeEventHandlerId = 123; // An unrelated event
+            frames.Array[1] = frames.Array[1].WithAttributeEventHandlerId(123); // An unrelated event
 
             // Act
             RenderTreeUpdater.UpdateToMatchClientState(builder, 456, "new value");
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Components.Test
             builder.AddAttribute(2, valuePropName, "initial value");
             builder.CloseElement();
             var frames = builder.GetFrames();
-            frames.Array[1].AttributeEventHandlerId = 123; // An unrelated event
+            frames.Array[1] = frames.Array[1].WithAttributeEventHandlerId(123); // An unrelated event
 
             // Act
             RenderTreeUpdater.UpdateToMatchClientState(builder, 123, new object());
@@ -84,8 +84,8 @@ namespace Microsoft.AspNetCore.Components.Test
             builder.AddAttribute(7, "unrelated prop after", "unchanged 3");
             builder.CloseElement();
             var frames = builder.GetFrames();
-            frames.Array[1].AttributeEventHandlerId = 123; // An unrelated event
-            frames.Array[4].AttributeEventHandlerId = 456;
+            frames.Array[1] = frames.Array[1].WithAttributeEventHandlerId(123); // An unrelated event
+            frames.Array[4] = frames.Array[4].WithAttributeEventHandlerId(456);
 
             // Act
             RenderTreeUpdater.UpdateToMatchClientState(builder, 456, "new value");
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Components.Test
             builder.SetUpdatesAttributeName(valuePropName);
             builder.CloseElement();
             var frames = builder.GetFrames();
-            frames.Array[1].AttributeEventHandlerId = 123;
+            frames.Array[1] = frames.Array[1].WithAttributeEventHandlerId(123);
 
             // Act
             RenderTreeUpdater.UpdateToMatchClientState(builder, 123, "new value");
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Components.Test
             builder.CloseRegion();
             builder.CloseElement(); // grandparent
             var frames = builder.GetFrames();
-            frames.Array[4].AttributeEventHandlerId = 123;
+            frames.Array[4] = frames.Array[4].WithAttributeEventHandlerId(123);
 
             // Act
             RenderTreeUpdater.UpdateToMatchClientState(builder, 123, "new value");

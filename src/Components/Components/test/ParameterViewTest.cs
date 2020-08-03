@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components
             // Arrange
             var frames = new[]
             {
-                RenderTreeFrame.ChildComponent(0, typeof(FakeComponent), 1)
+                RenderTreeFrame.ChildComponent(0, typeof(FakeComponent)).WithComponentSubtreeLength(1)
             };
             var parameters = new ParameterView(ParameterViewLifetime.Unbound, frames, 0);
 
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components
             // Arrange
             var frames = new[]
             {
-                RenderTreeFrame.Element(0, "some element", 1)
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(1)
             };
             var parameters = new ParameterView(ParameterViewLifetime.Unbound, frames, 0);
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components
             var attribute2Value = new object();
             var frames = new[]
             {
-                RenderTreeFrame.Element(0, "some element", 3),
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
                 RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value),
                 RenderTreeFrame.Attribute(2, "attribute 2", attribute2Value),
                 // Although RenderTreeBuilder doesn't let you add orphaned attributes like this,
@@ -72,10 +72,10 @@ namespace Microsoft.AspNetCore.Components
             var attribute2Value = new object();
             var frames = new[]
             {
-                RenderTreeFrame.Element(0, "some element", 3),
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
                 RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value),
                 RenderTreeFrame.Attribute(2, "attribute 2", attribute2Value),
-                RenderTreeFrame.Element(3, "child element", 2),
+                RenderTreeFrame.Element(3, "child element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(4, "child attribute", "some value")
             };
             var parameters = new ParameterView(ParameterViewLifetime.Unbound, frames, 0);
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Components
             var attribute3Value = new object();
             var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
             {
-                RenderTreeFrame.Element(0, "some element", 2),
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "attribute 1", attribute1Value)
             }, 0).WithCascadingParameters(new List<CascadingParameterState>
             {
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Components
             // Arrange
             var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
             {
-                RenderTreeFrame.Element(0, "some element", 2),
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "some other entry", new object())
             }, 0);
 
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Components
             // Arrange
             var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
             {
-                RenderTreeFrame.Element(0, "some element", 2),
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "my entry", "hello")
             }, 0);
 
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Components
             var myEntryValue = new object();
             var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
             {
-                RenderTreeFrame.Element(0, "some element", 2),
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "my entry", myEntryValue),
                 RenderTreeFrame.Attribute(1, "my other entry", new object())
             }, 0);
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Components
             var myEntryValue = new object();
             var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
             {
-                RenderTreeFrame.Element(0, "some element", 3),
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
                 RenderTreeFrame.Attribute(1, "my entry", myEntryValue),
                 RenderTreeFrame.Attribute(1, "my entry", new object()),
             }, 0);
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Components
             // Arrange
             var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
             {
-                RenderTreeFrame.Element(0, "some element", 2),
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "some other entry", new object())
             }, 0).WithCascadingParameters(new List<CascadingParameterState>
             {
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Components
             var explicitDefaultValue = new DateTime(2018, 3, 20);
             var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
             {
-                RenderTreeFrame.Element(0, "some element", 2),
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "some other entry", new object())
             }, 0);
 
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Components
             // Arrange
             var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
             {
-                RenderTreeFrame.Element(0, "some element", 2),
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "my entry", "hello")
             }, 0);
 
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Components
             var entry2Value = new object();
             var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
             {
-                RenderTreeFrame.Element(0, "some element", 3),
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
                 RenderTreeFrame.Attribute(0, "entry 1", "value 1"),
                 RenderTreeFrame.Attribute(0, "entry 2", entry2Value),
             }, 0);
@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Components
             var myEntryValue = new object();
             var parameters = new ParameterView(ParameterViewLifetime.Unbound, new[]
             {
-                RenderTreeFrame.Element(0, "some element", 2),
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
                 RenderTreeFrame.Attribute(1, "unrelated value", new object())
             }, 0).WithCascadingParameters(new List<CascadingParameterState>
             {
@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Components
             var lifetime = new ParameterViewLifetime(builder);
             var frames = new[]
             {
-                RenderTreeFrame.ChildComponent(0, typeof(FakeComponent), 1)
+                RenderTreeFrame.ChildComponent(0, typeof(FakeComponent)).WithComponentSubtreeLength(1)
             };
             var parameterView = new ParameterView(lifetime, frames, 0);
 

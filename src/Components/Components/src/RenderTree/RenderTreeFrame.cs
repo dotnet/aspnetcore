@@ -312,9 +312,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         internal static RenderTreeFrame Element(int sequence, string elementName)
             => new RenderTreeFrame(sequence, elementSubtreeLength: 0, elementName, null);
 
-        internal static RenderTreeFrame Element(int sequence, string elementName, int elementSubtreeLength)
-            => new RenderTreeFrame(sequence, elementSubtreeLength, elementName, null);
-
         internal static RenderTreeFrame Text(int sequence, string textContent)
             => new RenderTreeFrame(sequence, isMarkup: false, textOrMarkup: textContent);
 
@@ -326,9 +323,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         internal static RenderTreeFrame ChildComponent(int sequence, Type componentType)
             => new RenderTreeFrame(sequence, componentSubtreeLength: 0, componentType, null, null);
-
-        internal static RenderTreeFrame ChildComponent(int sequence, Type componentType, int componentSubtreeLength)
-            => new RenderTreeFrame(sequence, componentSubtreeLength, componentType, null, null);
 
         internal static RenderTreeFrame PlaceholderChildComponentWithSubtreeLength(int subtreeLength)
             => new RenderTreeFrame(0, componentSubtreeLength: subtreeLength, typeof(IComponent), null, null);
