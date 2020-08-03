@@ -1,11 +1,11 @@
-@page "/gridrendering"
+﻿@page "/gridrendering"
 @inject IJSRuntime JSRuntime
 @using Wasm.Performance.TestApp.Shared.FastGrid
 
 <h1>20 x 200 Grid</h1>
 
 <fieldset>
-    <select id="render-mode" @bind="selectedRenderMode">
+    <select id="render-mode" @bind="SelectedRenderMode">
         <option>@RenderMode.FastGrid</option>
         <option>@RenderMode.PlainTable</option>
         <option>@RenderMode.ComplexTable</option>
@@ -23,7 +23,7 @@
 {
     <p><em>(No data assigned)</em></p>
 }
-else if (selectedRenderMode == RenderMode.FastGrid)
+else if (SelectedRenderMode == RenderMode.FastGrid)
 {
     <p>FastGrid represents a minimal, optimized implementation of a grid.</p>
 
@@ -50,13 +50,13 @@ else if (selectedRenderMode == RenderMode.FastGrid)
         <GridColumn TRowData="WeatherForecast" Title="Summary">@context.Summary</GridColumn>
     </Grid>
 }
-else if (selectedRenderMode == RenderMode.PlainTable)
+else if (SelectedRenderMode == RenderMode.PlainTable)
 {
     <p>PlainTable represents a minimal but not optimized implementation of a grid.</p>
 
     <Wasm.Performance.TestApp.Shared.PlainTable.TableComponent Data="@forecasts" Columns="@Columns" />
 }
-else if (selectedRenderMode == RenderMode.ComplexTable)
+else if (SelectedRenderMode == RenderMode.ComplexTable)
 {
     <p>ComplexTable represents a maximal, not optimized implementation of a grid, using a wide range of Blazor features at once.</p>
 
@@ -64,9 +64,9 @@ else if (selectedRenderMode == RenderMode.ComplexTable)
 }
 
 @code {
-    enum RenderMode { PlainTable, ComplexTable, FastGrid }
+    public enum RenderMode { PlainTable, ComplexTable, FastGrid }
 
-    private RenderMode selectedRenderMode = RenderMode.FastGrid;
+    public RenderMode SelectedRenderMode { get; set; } = RenderMode.FastGrid;
 
     private WeatherForecast[] forecasts;
     public List<string> Columns { get; set; } = new List<string>
@@ -89,17 +89,17 @@ else if (selectedRenderMode == RenderMode.ComplexTable)
         TemperatureC = index,
     };
 
-    void Show()
+    public void Show()
     {
         forecasts = staticSampleDataPage1;
     }
 
-    void Hide()
+    public void Hide()
     {
         forecasts = null;
     }
 
-    void ChangePage()
+    public void ChangePage()
     {
         forecasts = (forecasts == staticSampleDataPage1) ? staticSampleDataPage2 : staticSampleDataPage1;
     }

@@ -37,6 +37,7 @@
       "src\\Components\\WebAssembly\\Sdk\\integrationtests\\Microsoft.NET.Sdk.BlazorWebAssembly.IntegrationTests.csproj",
       "src\\Components\\Web\\src\\Microsoft.AspNetCore.Components.Web.csproj",
       "src\\Components\\Web\\test\\Microsoft.AspNetCore.Components.Web.Tests.csproj",
+      "src\\Components\\benchmarkapps\\Wasm.Performance\\ConsoleHost\\Wasm.Performance.ConsoleHost.csproj",
       "src\\Components\\benchmarkapps\\Wasm.Performance\\Driver\\Wasm.Performance.Driver.csproj",
       "src\\Components\\benchmarkapps\\Wasm.Performance\\TestApp\\Wasm.Performance.TestApp.csproj",
       "src\\Components\\test\\E2ETest\\Microsoft.AspNetCore.Components.E2ETests.csproj",
