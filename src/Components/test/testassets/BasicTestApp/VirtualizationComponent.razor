@@ -47,9 +47,11 @@
 
     async ValueTask<ItemsProviderResult<int>> GetItemsAsync(ItemsProviderRequest request)
     {
+        var loadingTask = asyncTcs.Task;
+
         var registration = request.CancellationToken.Register(() => CancelLoadingAsync(request.CancellationToken));
 
-        await asyncTcs.Task;
+        await loadingTask;
 
         registration.Dispose();
 
