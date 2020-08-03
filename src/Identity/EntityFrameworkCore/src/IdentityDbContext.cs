@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             builder.Entity<TRole>(b =>
             {
                 b.HasKey(r => r.Id);
-                b.HasIndex(r => r.NormalizedName).HasName("RoleNameIndex").IsUnique();
+                b.HasIndex(r => r.NormalizedName).HasDatabaseName("RoleNameIndex").IsUnique();
                 b.ToTable("AspNetRoles");
                 b.Property(r => r.ConcurrencyStamp).IsConcurrencyToken();
 

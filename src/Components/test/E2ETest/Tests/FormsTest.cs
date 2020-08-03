@@ -10,6 +10,7 @@ using BasicTestApp.FormsTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Xunit;
@@ -93,16 +94,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("valid", () => nameInput.GetAttribute("class"));
             nameInput.SendKeys("Bert\t");
             Browser.Equal("modified valid", () => nameInput.GetAttribute("class"));
+            EnsureAttributeRendering(nameInput, "aria-invalid", false);
 
             // Can become invalid
             nameInput.SendKeys("01234567890123456789\t");
             Browser.Equal("modified invalid", () => nameInput.GetAttribute("class"));
+            EnsureAttributeRendering(nameInput, "aria-invalid");
             Browser.Equal(new[] { "That name is too long" }, messagesAccessor);
 
             // Can become valid
             nameInput.Clear();
             nameInput.SendKeys("Bert\t");
             Browser.Equal("modified valid", () => nameInput.GetAttribute("class"));
+            EnsureAttributeRendering(nameInput, "aria-invalid", false);
             Browser.Empty(messagesAccessor);
         }
 
@@ -190,6 +194,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore-internal/issues/3615")]
         public void InputDateInteractsWithEditContext_NonNullableDateTime()
         {
             var appElement = MountTypicalValidationComponent();
@@ -297,6 +302,68 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void InputRadioGroupWithoutNameInteractsWithEditContext()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var airlineInputs = appElement.FindElement(By.ClassName("airline")).FindElements(By.TagName("input"));
+            var unknownAirlineInput = airlineInputs.First(i => i.GetAttribute("value").Equals("Unknown"));
+            var bestAirlineInput = airlineInputs.First(i => i.GetAttribute("value").Equals("BestAirline"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Validate unselected inputs
+            Assert.All(airlineInputs.Where(i => i != unknownAirlineInput), i => Browser.False(() => i.Selected));
+
+            // Validate selected inputs
+            Browser.True(() => unknownAirlineInput.Selected);
+
+            // InputRadio emits additional attributes
+            Browser.True(() => unknownAirlineInput.GetAttribute("extra").Equals("additional"));
+
+            // Validates on edit
+            Assert.All(airlineInputs, i => Browser.Equal("valid", () => i.GetAttribute("class")));
+            bestAirlineInput.Click();
+            Assert.All(airlineInputs, i => Browser.Equal("modified valid", () => i.GetAttribute("class")));
+
+            // Can become invalid
+            unknownAirlineInput.Click();
+            Assert.All(airlineInputs, i => Browser.Equal("modified invalid", () => i.GetAttribute("class")));
+            Browser.Equal(new[] { "Pick a valid airline." }, messagesAccessor);
+        }
+
+        [Fact]
+        public void InputRadioGroupsWithNamesNestedInteractWithEditContext()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
+            var group = appElement.FindElement(By.ClassName("nested-radio-group"));
+            var countryInputs = group.FindElements(By.Name("country"));
+            var colorInputs = group.FindElements(By.Name("color"));
+
+            // Validate group counts
+            Assert.Equal(3, countryInputs.Count);
+            Assert.Equal(4, colorInputs.Count);
+
+            // Validate unselected inputs
+            Assert.All(countryInputs, i => Browser.False(() => i.Selected));
+            Assert.All(colorInputs, i => Browser.False(() => i.Selected));
+
+            // Invalidates on submit
+            Assert.All(countryInputs, i => Browser.Equal("valid", () => i.GetAttribute("class")));
+            Assert.All(colorInputs, i => Browser.Equal("valid", () => i.GetAttribute("class")));
+            submitButton.Click();
+            Assert.All(countryInputs, i => Browser.Equal("invalid", () => i.GetAttribute("class")));
+            Assert.All(colorInputs, i => Browser.Equal("invalid", () => i.GetAttribute("class")));
+
+            // Validates on edit
+            countryInputs.First().Click();
+            Assert.All(countryInputs, i => Browser.Equal("modified valid", () => i.GetAttribute("class")));
+            Assert.All(colorInputs, i => Browser.Equal("invalid", () => i.GetAttribute("class")));
+
+            colorInputs.First().Click();
+            Assert.All(colorInputs, i => Browser.Equal("modified valid", () => i.GetAttribute("class")));
+        }
+
+        [Fact]
         public void CanWireUpINotifyPropertyChangedToEditContext()
         {
             var appElement = Browser.MountTestComponent<NotifyPropertyChangedValidationComponent>();
@@ -369,7 +436,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var confirmEmailContainer = appElement.FindElement(By.ClassName("confirm-email"));
             var confirmInput = confirmEmailContainer.FindElement(By.TagName("input"));
             var confirmEmailValidationMessage = CreateValidationMessagesAccessor(confirmEmailContainer);
-            var modelErrors = CreateValidationMessagesAccessor(appElement.FindElement(By.ClassName("model-errors")));
             CreateValidationMessagesAccessor(emailContainer);
             var submitButton = appElement.FindElement(By.CssSelector("button[type=submit]"));
 
@@ -377,8 +443,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             emailInput.SendKeys("a@b.com\t");
 
             submitButton.Click();
-            Browser.Empty(confirmEmailValidationMessage);
-            Browser.Equal(new[] { "Email and confirm email do not match." }, modelErrors);
+            Browser.Equal(new[] { "Email and confirm email do not match." }, confirmEmailValidationMessage);
 
             confirmInput.SendKeys("not-test@example.com\t");
             Browser.Equal(new[] { "Email and confirm email do not match." }, confirmEmailValidationMessage);
@@ -388,9 +453,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             confirmInput.SendKeys("a@b.com\t");
 
             Browser.Empty(confirmEmailValidationMessage);
-
-            submitButton.Click();
-            Browser.Empty(modelErrors);
         }
 
         [Fact]
@@ -432,6 +494,42 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("invalid", () => input.GetAttribute("class"));
         }
 
+        [Fact]
+        public void SelectComponentSupportsOptionsComponent()
+        {
+            var appElement = Browser.MountTestComponent<SelectVariantsComponent>();
+            var input = appElement.FindElement(By.Id("input-value"));
+            var showAdditionalOptionButton = appElement.FindElement(By.Id("show-additional-option"));
+            var selectWithComponent = appElement.FindElement(By.Id("select-with-component"));
+            var selectWithoutComponent = appElement.FindElement(By.Id("select-without-component"));
+
+            // Select with custom options component and HTML component behave the
+            // same when the selectElement.value is provided
+            Browser.Equal("B", () => selectWithoutComponent.GetAttribute("value"));
+            Browser.Equal("B", () => selectWithComponent.GetAttribute("value"));
+
+            // Reset to a value that doesn't exist
+            input.Clear();
+            input.SendKeys("D\t");
+
+            // Confirm that both values are cleared
+            Browser.Equal("", () => selectWithComponent.GetAttribute("value"));
+            Browser.Equal("", () => selectWithoutComponent.GetAttribute("value"));
+
+            // Dynamically showing the fourth option updates the selected value
+            showAdditionalOptionButton.Click();
+
+            Browser.Equal("D", () => selectWithComponent.GetAttribute("value"));
+            Browser.Equal("D", () => selectWithoutComponent.GetAttribute("value"));
+
+            // Change the value to one that does really doesn't exist
+            input.Clear();
+            input.SendKeys("F\t");
+
+            Browser.Equal("", () => selectWithComponent.GetAttribute("value"));
+            Browser.Equal("", () => selectWithoutComponent.GetAttribute("value"));
+        }
+
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
         {
             return () => appElement.FindElements(By.ClassName("validation-message"))
@@ -453,6 +551,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 $"var elem = document.querySelector('{cssSelector}');"
                 + $"elem.value = {JsonSerializer.Serialize(invalidValue, TestJsonSerializerOptionsProvider.Options)};"
                 + "elem.dispatchEvent(new KeyboardEvent('change'));");
+        }
+
+        private void EnsureAttributeRendering(IWebElement element, string attributeName, bool shouldBeRendered = true)
+        {
+            Browser.Equal(shouldBeRendered, () => element.GetAttribute(attributeName) != null);
         }
     }
 }

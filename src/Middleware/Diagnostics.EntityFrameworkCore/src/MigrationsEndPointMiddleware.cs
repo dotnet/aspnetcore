@@ -28,8 +28,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         /// <param name="logger">The <see cref="Logger{T}"/> to write messages to.</param>
         /// <param name="options">The options to control the behavior of the middleware.</param>
         public MigrationsEndPointMiddleware(
-            RequestDelegate next, 
-            ILogger<MigrationsEndPointMiddleware> logger, 
+            RequestDelegate next,
+            ILogger<MigrationsEndPointMiddleware> logger,
             IOptions<MigrationsEndPointOptions> options)
         {
             if (next == null)
@@ -76,11 +76,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                     {
                         _logger.ApplyingMigrations(db.GetType().FullName);
 
-                        db.Database.Migrate();
+                        await db.Database.MigrateAsync();
 
                         context.Response.StatusCode = (int)HttpStatusCode.NoContent;
                         context.Response.Headers.Add("Pragma", new[] { "no-cache" });
-                        context.Response.Headers.Add("Cache-Control", new[] { "no-cache" });
+                        context.Response.Headers.Add("Cache-Control", new[] { "no-cache,no-store" });
 
                         _logger.MigrationsApplied(db.GetType().FullName);
                     }
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         {
             response.StatusCode = (int)HttpStatusCode.BadRequest;
             response.Headers.Add("Pragma", new[] { "no-cache" });
-            response.Headers.Add("Cache-Control", new[] { "no-cache" });
+            response.Headers.Add("Cache-Control", new[] { "no-cache,no-store" });
             response.ContentType = "text/plain";
 
             // Padding to >512 to ensure IE doesn't hide the message

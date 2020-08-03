@@ -13,6 +13,7 @@ export class TestWebSocket {
     public readyState: number = 1;
     public url: string;
     public options?: any;
+    public closed: boolean = false;
 
     public static webSocketSet: PromiseSource;
     public static webSocket: TestWebSocket;
@@ -27,7 +28,10 @@ export class TestWebSocket {
     }
 
     public get onopen(): (this: WebSocket, evt: Event) => any {
-        return this._onopen!;
+        return (e) => {
+            this._onopen!(e);
+            this.readyState = this.OPEN;
+        };
     }
 
     // tslint:disable-next-line:variable-name
@@ -39,18 +43,26 @@ export class TestWebSocket {
     }
 
     public get onclose(): (this: WebSocket, evt: Event) => any {
-        return this._onclose!;
+        return (e) => {
+            this._onclose!(e);
+            this.readyState = this.CLOSED;
+        };
     }
 
     public close(code?: number | undefined, reason?: string | undefined): void {
+        this.closed = true;
         const closeEvent = new TestCloseEvent();
         closeEvent.code = code || 1000;
         closeEvent.reason = reason!;
         closeEvent.wasClean = closeEvent.code === 1000;
+        this.readyState = this.CLOSED;
         this.onclose(closeEvent);
     }
 
     public send(data: string | ArrayBuffer | Blob | ArrayBufferView): void {
+        if (this.closed) {
+            throw new Error(`cannot send from a closed transport: '${data}'`);
+        }
         this.receivedData.push(data);
     }
 

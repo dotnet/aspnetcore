@@ -80,8 +80,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public static string GetReasonPhrase(int statusCode)
         {
-            string phrase;
-            return Phrases.TryGetValue(statusCode, out phrase) ? phrase : string.Empty;
+            return Phrases.TryGetValue(statusCode, out var phrase) ? phrase : string.Empty;
         }
     }
 }

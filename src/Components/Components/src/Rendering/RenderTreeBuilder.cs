@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Rendering
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private readonly Stack<int> _openElementIndices = new Stack<int>();
         private RenderTreeFrameType? _lastNonAttributeFrameType;
         private bool _hasSeenAddMultipleAttributes;
-        private Dictionary<string, int> _seenAttributeNames;
+        private Dictionary<string, int>? _seenAttributeNames;
 
         /// <summary>
         /// The reserved parameter name used for supplying child content.
@@ -80,23 +80,27 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="markupContent">Content for the new markup frame.</param>
-        public void AddMarkupContent(int sequence, string markupContent)
-            => Append(RenderTreeFrame.Markup(sequence, markupContent ?? string.Empty));
+        public void AddMarkupContent(int sequence, string? markupContent)
+        {
+            Append(RenderTreeFrame.Markup(sequence, markupContent ?? string.Empty));
+        }
 
         /// <summary>
         /// Appends a frame representing text content.
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="textContent">Content for the new text frame.</param>
-        public void AddContent(int sequence, string textContent)
-            => Append(RenderTreeFrame.Text(sequence, textContent ?? string.Empty));
+        public void AddContent(int sequence, string? textContent)
+        {
+            Append(RenderTreeFrame.Text(sequence, textContent ?? string.Empty));
+        }
 
         /// <summary>
         /// Appends frames representing an arbitrary fragment of content.
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="fragment">Content to append.</param>
-        public void AddContent(int sequence, RenderFragment fragment)
+        public void AddContent(int sequence, RenderFragment? fragment)
         {
             if (fragment != null)
             {
@@ -116,7 +120,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="fragment">Content to append.</param>
         /// <param name="value">The value used by <paramref name="fragment"/>.</param>
-        public void AddContent<TValue>(int sequence, RenderFragment<TValue> fragment, TValue value)
+        public void AddContent<TValue>(int sequence, RenderFragment<TValue>? fragment, TValue value)
         {
             if (fragment != null)
             {
@@ -137,8 +141,28 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="textContent">Content for the new text frame.</param>
-        public void AddContent(int sequence, object textContent)
+        public void AddContent(int sequence, object? textContent)
             => AddContent(sequence, textContent?.ToString());
+
+        /// <summary>
+        /// <para>
+        /// Appends a frame representing a bool-valued attribute with value 'true'.
+        /// </para>
+        /// <para>
+        /// The attribute is associated with the most recently added element.
+        /// </para>
+        /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        /// <param name="name">The name of the attribute.</param>
+        public void AddAttribute(int sequence, string name)
+        {
+            if (_lastNonAttributeFrameType != RenderTreeFrameType.Element)
+            {
+                throw new InvalidOperationException($"Valueless attributes may only be added immediately after frames of type {RenderTreeFrameType.Element}");
+            }
+
+            Append(RenderTreeFrame.Attribute(sequence, name, BoxedTrue));
+        }
 
         /// <summary>
         /// <para>
@@ -183,7 +207,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="name">The name of the attribute.</param>
         /// <param name="value">The value of the attribute.</param>
-        public void AddAttribute(int sequence, string name, string value)
+        public void AddAttribute(int sequence, string name, string? value)
         {
             AssertCanAddAttribute();
             if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
@@ -208,7 +232,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="name">The name of the attribute.</param>
         /// <param name="value">The value of the attribute.</param>
-        public void AddAttribute(int sequence, string name, MulticastDelegate value)
+        public void AddAttribute(int sequence, string name, MulticastDelegate? value)
         {
             AssertCanAddAttribute();
             if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
@@ -318,7 +342,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="name">The name of the attribute.</param>
         /// <param name="value">The value of the attribute.</param>
-        public void AddAttribute(int sequence, string name, object value)
+        public void AddAttribute(int sequence, string name, object? value)
         {
             // This looks a bit daunting because we need to handle the boxed/object version of all of the
             // types that AddAttribute special cases.
@@ -400,7 +424,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="attributes">A collection of key-value pairs representing attributes.</param>
-        public void AddMultipleAttributes(int sequence, IEnumerable<KeyValuePair<string, object>> attributes)
+        public void AddMultipleAttributes(int sequence, IEnumerable<KeyValuePair<string, object>>? attributes)
         {
             // Calling this up-front just to make sure we validate before mutating anything.
             AssertCanAddAttribute();
@@ -453,7 +477,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <typeparam name="TComponent">The type of the child component.</typeparam>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
-        public void OpenComponent<TComponent>(int sequence) where TComponent : IComponent
+        public void OpenComponent<TComponent>(int sequence) where TComponent : notnull, IComponent
             => OpenComponentUnchecked(sequence, typeof(TComponent));
 
         /// <summary>
@@ -475,7 +499,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// Assigns the specified key value to the current element or component.
         /// </summary>
         /// <param name="value">The value for the key.</param>
-        public void SetKey(object value)
+        public void SetKey(object? value)
         {
             if (value == null)
             {
@@ -558,7 +582,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="componentReferenceCaptureAction">An action to be invoked whenever the reference value changes.</param>
-        public void AddComponentReferenceCapture(int sequence, Action<object> componentReferenceCaptureAction)
+        public void AddComponentReferenceCapture(int sequence, Action<object?> componentReferenceCaptureAction)
         {
             var parentFrameIndex = GetCurrentParentFrameIndex();
             if (!parentFrameIndex.HasValue)
@@ -638,7 +662,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         // internal because this should only be used during the post-event tree patching logic
         // It's expensive because it involves copying all the subsequent memory in the array
-        internal void InsertAttributeExpensive(int insertAtIndex, int sequence, string attributeName, object attributeValue)
+        internal void InsertAttributeExpensive(int insertAtIndex, int sequence, string attributeName, object? attributeValue)
         {
             // Replicate the same attribute omission logic as used elsewhere
             if ((attributeValue == null) || (attributeValue is bool boolValue && !boolValue))

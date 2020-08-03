@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _requestQueue?.Dispose();
                 _urlGroup?.Dispose();
                 _serverSession?.Dispose();
-                Logger.LogError(0, exception, ".Ctor");
+                Logger.LogError(LoggerEventIds.HttpSysListenerCtorError, exception, ".Ctor");
                 throw;
             }
         }
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             CheckDisposed();
 
-            Logger.LogTrace("Starting the listener.");
+            Logger.LogTrace(LoggerEventIds.ListenerStarting, "Starting the listener.");
 
             // Make sure there are no race conditions between Start/Stop/Abort/Close/Dispose.
             // Start needs to setup all resources. Abort/Stop must not interfere while Start is
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     // Make sure the HttpListener instance can't be used if Start() failed.
                     _state = State.Disposed;
                     DisposeInternal();
-                    Logger.LogError(0, exception, "Start");
+                    Logger.LogError(LoggerEventIds.ListenerStartError, exception, "Start");
                     throw;
                 }
             }
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         return;
                     }
 
-                    Logger.LogTrace("Stopping the listener.");
+                    Logger.LogTrace(LoggerEventIds.ListenerStopping,"Stopping the listener.");
 
                     // If this instance created the queue then remove the URL prefixes before shutting down.
                     if (_requestQueue.Created)
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception exception)
             {
-                Logger.LogError(0, exception, "Stop");
+                Logger.LogError(LoggerEventIds.ListenerStopError, exception, "Stop");
                 throw;
             }
         }
@@ -238,14 +238,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     {
                         return;
                     }
-                    Logger.LogTrace("Disposing the listener.");
+                    Logger.LogTrace(LoggerEventIds.ListenerDisposing, "Disposing the listener.");
 
                     Stop();
                     DisposeInternal();
                 }
                 catch (Exception exception)
                 {
-                    Logger.LogError(0, exception, "Dispose");
+                    Logger.LogError(LoggerEventIds.ListenerDisposeError, exception, "Dispose");
                     throw;
                 }
                 finally
@@ -279,7 +279,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// </summary>
         public Task<RequestContext> AcceptAsync()
         {
-            AsyncAcceptContext asyncResult = null;
+            AsyncAcceptContext acceptContext = null;
             try
             {
                 CheckDisposed();
@@ -287,24 +287,24 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // prepare the ListenerAsyncResult object (this will have it's own
                 // event that the user can wait on for IO completion - which means we
                 // need to signal it when IO completes)
-                asyncResult = new AsyncAcceptContext(this);
-                uint statusCode = asyncResult.QueueBeginGetContext();
+                acceptContext = new AsyncAcceptContext(this);
+                uint statusCode = acceptContext.QueueBeginGetContext();
                 if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS &&
                     statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_IO_PENDING)
                 {
                     // some other bad error, possible(?) return values are:
                     // ERROR_INVALID_HANDLE, ERROR_INSUFFICIENT_BUFFER, ERROR_OPERATION_ABORTED
-                    asyncResult.Dispose();
+                    acceptContext.Dispose();
                     throw new HttpSysException((int)statusCode);
                 }
             }
             catch (Exception exception)
             {
-                Logger.LogError(0, exception, "GetContextAsync");
+                Logger.LogError(LoggerEventIds.AcceptError, exception, "AcceptAsync");
                 throw;
             }
 
-            return asyncResult.Task;
+            return acceptContext.Task;
         }
 
         internal unsafe bool ValidateRequest(NativeRequestContext requestMemory)

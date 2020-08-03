@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private bool _disposing = false;
 
         /// <summary>
-        /// Notifies when a rendering exception occured.
+        /// Notifies when a rendering exception occurred.
         /// </summary>
         public event EventHandler<Exception> UnhandledException;
 
@@ -37,12 +37,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             ILoggerFactory loggerFactory,
             CircuitOptions options,
             CircuitClientProxy client,
-            ILogger logger)
+            ILogger logger,
+            ElementReferenceContext? elementReferenceContext)
             : base(serviceProvider, loggerFactory)
         {
             _client = client;
             _options = options;
             _logger = logger;
+
+            ElementReferenceContext = elementReferenceContext;
         }
 
         public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();

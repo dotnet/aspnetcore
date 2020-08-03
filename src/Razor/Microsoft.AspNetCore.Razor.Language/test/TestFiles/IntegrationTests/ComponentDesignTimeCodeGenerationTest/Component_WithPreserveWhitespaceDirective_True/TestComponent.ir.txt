@@ -1,0 +1,37 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [12] ) - System
+        UsingDirective - (18:2,1 [32] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [17] ) - System.Linq
+        UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            DesignTimeDirective - 
+                DirectiveToken - (20:0,20 [4] x:\dir\subdir\Test\TestComponent.cshtml) - true
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                HtmlContent - (26:1,0 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (26:1,0 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                MarkupElement - (28:2,0 [126] x:\dir\subdir\Test\TestComponent.cshtml) - ul
+                    HtmlContent - (32:2,4 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (32:2,4 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    
+                    CSharpCode - (39:3,5 [63] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (39:3,5 [63] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - foreach (var item in Enumerable.Range(1, 100))\n    {\n        
+                    MarkupElement - (102:5,8 [38] x:\dir\subdir\Test\TestComponent.cshtml) - li
+                        HtmlContent - (106:5,12 [14] x:\dir\subdir\Test\TestComponent.cshtml)
+                            LazyIntermediateToken - (106:5,12 [14] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n            
+                        CSharpExpression - (121:6,13 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                            LazyIntermediateToken - (121:6,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - item
+                        HtmlContent - (125:6,17 [10] x:\dir\subdir\Test\TestComponent.cshtml)
+                            LazyIntermediateToken - (125:6,17 [10] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n        
+                    CSharpCode - (140:7,13 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (140:7,13 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    }
+                    HtmlContent - (147:8,5 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                        LazyIntermediateToken - (147:8,5 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                HtmlContent - (154:9,5 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    LazyIntermediateToken - (154:9,5 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n

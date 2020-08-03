@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
@@ -26,14 +26,14 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// <summary>
         /// Gets the constraint text.
         /// </summary>
-        public string Content { get; }
+        public string? Content { get; }
 
         /// <summary>
         /// Gets a pre-existing <see cref="IParameterPolicy"/> that was used to construct this reference.
         /// </summary>
-        public IParameterPolicy ParameterPolicy { get; }
+        public IParameterPolicy? ParameterPolicy { get; }
 
-        private string DebuggerToString()
+        private string? DebuggerToString()
         {
             return Content;
         }

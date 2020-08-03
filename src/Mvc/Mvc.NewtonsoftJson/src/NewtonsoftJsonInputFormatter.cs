@@ -22,7 +22,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class NewtonsoftJsonInputFormatter : TextInputFormatter, IInputFormatterExceptionPolicy
     {
-        private const int DefaultMemoryThreshold = 1024 * 30;
         private readonly IArrayPool<char> _charPool;
         private readonly ILogger _logger;
         private readonly ObjectPoolProvider _objectPoolProvider;
@@ -144,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             {
                 // JSON.Net does synchronous reads. In order to avoid blocking on the stream, we asynchronously
                 // read everything into a buffer, and then seek back to the beginning.
-                var memoryThreshold = DefaultMemoryThreshold;
+                var memoryThreshold = _jsonOptions.InputFormatterMemoryBufferThreshold;
                 var contentLength = request.ContentLength.GetValueOrDefault();
                 if (contentLength > 0 && contentLength < memoryThreshold)
                 {
@@ -153,6 +152,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 }
 
                 readStream = new FileBufferingReadStream(request.Body, memoryThreshold);
+                // Ensure the file buffer stream is always disposed at the end of a request.
+                request.HttpContext.Response.RegisterForDispose(readStream);
 
                 await readStream.DrainAsync(CancellationToken.None);
                 readStream.Seek(0L, SeekOrigin.Begin);
@@ -278,7 +279,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         /// <summary>
         /// Called during deserialization to get the <see cref="JsonSerializer"/>. The formatter context
-        /// that is passed gives an ability to create serializer specific to the context. 
+        /// that is passed gives an ability to create serializer specific to the context.
         /// </summary>
         /// <returns>The <see cref="JsonSerializer"/> used during deserialization.</returns>
         /// <remarks>
@@ -297,7 +298,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         /// <summary>
         /// Called during deserialization to get the <see cref="JsonSerializer"/>. The formatter context
-        /// that is passed gives an ability to create serializer specific to the context. 
+        /// that is passed gives an ability to create serializer specific to the context.
         /// </summary>
         /// <param name="context">A context object used by an input formatter for deserializing the request body into an object.</param>
         /// <returns>The <see cref="JsonSerializer"/> used during deserialization.</returns>

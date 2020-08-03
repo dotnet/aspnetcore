@@ -12,6 +12,10 @@ $disableConfigureToolsetImport = $true
 $LASTEXITCODE = 0
 
 try {
+  # `tools.ps1` checks $ci to perform some actions. Since the SDL
+  # scripts don't necessarily execute in the same agent that run the
+  # build.ps1/sh script this variable isn't automatically set.
+  $ci = $true
   . $PSScriptRoot\..\tools.ps1
 
   # We create the temp directory where we'll store the sdl-config repository

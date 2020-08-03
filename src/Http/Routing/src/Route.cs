@@ -28,9 +28,9 @@ namespace Microsoft.AspNetCore.Routing
         public Route(
             IRouter target,
             string routeTemplate,
-            RouteValueDictionary defaults,
-            IDictionary<string, object> constraints,
-            RouteValueDictionary dataTokens,
+            RouteValueDictionary? defaults,
+            IDictionary<string, object>? constraints,
+            RouteValueDictionary? dataTokens,
             IInlineConstraintResolver inlineConstraintResolver)
             : this(target, null, routeTemplate, defaults, constraints, dataTokens, inlineConstraintResolver)
         {
@@ -38,11 +38,11 @@ namespace Microsoft.AspNetCore.Routing
 
         public Route(
             IRouter target,
-            string routeName,
-            string routeTemplate,
-            RouteValueDictionary defaults,
-            IDictionary<string, object> constraints,
-            RouteValueDictionary dataTokens,
+            string? routeName,
+            string? routeTemplate,
+            RouteValueDictionary? defaults,
+            IDictionary<string, object>? constraints,
+            RouteValueDictionary? dataTokens,
             IInlineConstraintResolver inlineConstraintResolver)
             : base(
                   routeTemplate, 
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Routing
             _target = target;
         }
 
-        public string RouteTemplate => ParsedTemplate.TemplateText;
+        public string? RouteTemplate => ParsedTemplate.TemplateText;
 
         protected override Task OnRouteMatched(RouteContext context)
         {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Routing
             return _target.RouteAsync(context);
         }
 
-        protected override VirtualPathData OnVirtualPathGenerated(VirtualPathContext context)
+        protected override VirtualPathData? OnVirtualPathGenerated(VirtualPathContext context)
         {
             return _target.GetVirtualPath(context);
         }

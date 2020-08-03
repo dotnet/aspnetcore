@@ -9,6 +9,7 @@ using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Options;
@@ -509,7 +510,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             else if (message.HasResult)
             {
                 writer.WritePropertyName(ResultPropertyNameBytes);
-                JsonSerializer.Serialize(writer, message.Result, message.Result?.GetType(), _payloadSerializerOptions);
+                if (message.Result == null)
+                {
+                    writer.WriteNullValue();
+                }
+                else
+                {
+                    JsonSerializer.Serialize(writer, message.Result, message.Result?.GetType(), _payloadSerializerOptions);
+                }
             }
         }
 
@@ -523,7 +531,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             WriteInvocationId(message, writer);
 
             writer.WritePropertyName(ItemPropertyNameBytes);
-            JsonSerializer.Serialize(writer, message.Item, message.Item?.GetType(), _payloadSerializerOptions);
+            if (message.Item == null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                JsonSerializer.Serialize(writer, message.Item, message.Item?.GetType(), _payloadSerializerOptions);
+            }
         }
 
         private void WriteInvocationMessage(InvocationMessage message, Utf8JsonWriter writer)
@@ -564,7 +579,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             writer.WriteStartArray(ArgumentsPropertyNameBytes);
             foreach (var argument in arguments)
             {
-                JsonSerializer.Serialize(writer, argument, argument?.GetType(), _payloadSerializerOptions);
+                if (argument == null)
+                {
+                    writer.WriteNullValue();
+                }
+                else
+                {
+                    JsonSerializer.Serialize(writer, argument, argument?.GetType(), _payloadSerializerOptions);
+                }
             }
             writer.WriteEndArray();
         }
@@ -751,7 +773,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 WriteIndented = false,
                 ReadCommentHandling = JsonCommentHandling.Disallow,
                 AllowTrailingCommas = false,
-                IgnoreNullValues = false,
+                DefaultIgnoreCondition = JsonIgnoreCondition.Never,
                 IgnoreReadOnlyProperties = false,
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 PropertyNameCaseInsensitive = true,

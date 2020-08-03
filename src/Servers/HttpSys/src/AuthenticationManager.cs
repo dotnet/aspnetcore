@@ -61,6 +61,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// </summary>
         public bool AutomaticAuthentication { get; set; } = true;
 
+        /// <summary> 
+        /// Sets the display name shown to users on login pages. The default is null.
+        /// </summary> 
+        public string AuthenticationDisplayName { get; set; }
+
         internal void SetUrlGroupSecurity(UrlGroup urlGroup)
         {
             Debug.Assert(_urlGroup == null, "SetUrlGroupSecurity called more than once.");

@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Web;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.Hosting
                 // Scope may be relevant for a different level of logging, so we always create it
                 // see: https://github.com/aspnet/Hosting/pull/944
                 // Scope can be null if logging is not on.
-                context.Scope = _logger.RequestScope(httpContext, context.Activity);
+                context.Scope = _logger.RequestScope(httpContext);
 
                 if (_logger.IsEnabled(LogLevel.Information))
                 {
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.Hosting
             var startTimestamp = context.StartTimestamp;
             long currentTimestamp = 0;
 
-            // If startTimestamp was 0, then Information logging wasn't enabled at for this request (and calcuated time will be wildly wrong)
+            // If startTimestamp was 0, then Information logging wasn't enabled at for this request (and calculated time will be wildly wrong)
             // Is used as proxy to reduce calls to virtual: _logger.IsEnabled(LogLevel.Information)
             if (startTimestamp != 0)
             {
@@ -109,7 +110,7 @@ namespace Microsoft.AspNetCore.Hosting
 
                 if (exception == null)
                 {
-                    // No exception was thrown, request was sucessful
+                    // No exception was thrown, request was successful
                     if (_diagnosticListener.IsEnabled(DeprecatedDiagnosticsEndRequestKey))
                     {
                         // Diagnostics is enabled for EndRequest, but it may not be for BeginRequest
@@ -272,7 +273,7 @@ namespace Microsoft.AspNetCore.Hosting
                     {
                         if (NameValueHeaderValue.TryParse(item, out var baggageItem))
                         {
-                            activity.AddBaggage(baggageItem.Name.ToString(), baggageItem.Value.ToString());
+                            activity.AddBaggage(baggageItem.Name.ToString(), HttpUtility.UrlDecode(baggageItem.Value.ToString()));
                         }
                     }
                 }
@@ -317,7 +318,7 @@ namespace Microsoft.AspNetCore.Hosting
         private void StopActivity(Activity activity, HttpContext httpContext)
         {
             // Stop sets the end time if it was unset, but we want it set before we issue the write
-            // so we do it now.   
+            // so we do it now.
             if (activity.Duration == TimeSpan.Zero)
             {
                 activity.SetEndTime(DateTime.UtcNow);

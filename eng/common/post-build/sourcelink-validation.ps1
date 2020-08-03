@@ -196,6 +196,8 @@ function ValidateSourceLinkLinks {
     Remove-Item $ExtractPath -Force -Recurse -ErrorAction SilentlyContinue
   }
 
+  $ValidationFailures = 0
+
   # Process each NuGet package in parallel
   Get-ChildItem "$InputPath\*.symbols.nupkg" |
     ForEach-Object {
@@ -209,17 +211,20 @@ function ValidateSourceLinkLinks {
       }
 
       foreach ($Job in @(Get-Job -State 'Completed')) {
-        Receive-Job -Id $Job.Id
+        $jobResult = Receive-Job -Id $Job.Id
+        if ($jobResult -ne '0') {
+          $ValidationFailures++
+        }
         Remove-Job -Id $Job.Id
       }
     }
 
-  $ValidationFailures = 0
   foreach ($Job in @(Get-Job)) {
     $jobResult = Wait-Job -Id $Job.Id | Receive-Job
     if ($jobResult -ne '0') {
       $ValidationFailures++
     }
+    Remove-Job -Id $Job.Id
   }
   if ($ValidationFailures -gt 0) {
     Write-PipelineTelemetryError -Category 'SourceLink' -Message "$ValidationFailures package(s) failed validation."

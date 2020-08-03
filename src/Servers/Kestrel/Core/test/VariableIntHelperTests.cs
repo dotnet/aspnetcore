@@ -1,6 +1,6 @@
 using System;
 using System.Buffers;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3;
+using System.Net.Http;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests

@@ -268,7 +268,7 @@
     <value>Overriding endpoints defined in UseKestrel() because {settingName} is set to true. Binding to address(es) '{addresses}' instead.</value>
   </data>
   <data name="UnsupportedAddressScheme" xml:space="preserve">
-    <value>Unrecognized scheme in server address '{address}'. Only 'http://' is supported.</value>
+    <value>Unrecognized scheme in server address '{address}'. Only 'http://' and 'https://' are supported.</value>
   </data>
   <data name="HeadersAreReadOnly" xml:space="preserve">
     <value>Headers are read-only, response has already started.</value>
@@ -527,6 +527,24 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2ErrorMaxStreams" xml:space="preserve">
     <value>A new stream was refused because this connection has reached its stream limit.</value>
   </data>
+  <data name="Http3ErrorConnectMustNotSendSchemeOrPath" xml:space="preserve">
+    <value>CONNECT requests must not send :scheme or :path headers.</value>
+  </data>
+  <data name="Http3StreamErrorSchemeMismatch" xml:space="preserve">
+    <value>The request :scheme header '{requestScheme}' does not match the transport scheme '{transportScheme}'.</value>
+  </data>
+  <data name="Http3ErrorMethodInvalid" xml:space="preserve">
+    <value>The Method '{method}' is invalid.</value>
+  </data>
+  <data name="Http3StreamErrorPathInvalid" xml:space="preserve">
+    <value>The request :path is invalid: '{path}'</value>
+  </data>
+  <data name="Http3StreamErrorLessDataThanLength" xml:space="preserve">
+    <value>Less data received than specified in the Content-Length header.</value>
+  </data>
+  <data name="Http3StreamErrorMoreDataThanLength" xml:space="preserve">
+    <value>More data received than specified in the Content-Length header.</value>
+  </data>
   <data name="GreaterThanZeroRequired" xml:space="preserve">
     <value>A value greater than zero is required.</value>
   </data>
@@ -545,11 +563,8 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="RequestTrailersNotAvailable" xml:space="preserve">
     <value>The request trailers are not available yet. They may not be available until the full request body is read.</value>
   </data>
-  <data name="HTTP2NoTlsOsx" xml:space="preserve">
+  <data name="Http2NoTlsOsx" xml:space="preserve">
     <value>HTTP/2 over TLS is not supported on macOS due to missing ALPN support.</value>
-  </data>
-  <data name="HTTP2NoTlsWin7" xml:space="preserve">
-    <value>HTTP/2 over TLS is not supported on Windows 7 due to missing ALPN support.</value>
   </data>
   <data name="Http2StreamResetByApplication" xml:space="preserve">
     <value>The HTTP/2 stream was reset by the application with error code {errorCode}.</value>
@@ -580,5 +595,29 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   </data>
   <data name="TransportNotFound" xml:space="preserve">
     <value>Unable to resolve service for type 'Microsoft.AspNetCore.Connections.IConnectionListenerFactory' while attempting to activate 'Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServer'.</value>
+  </data>
+  <data name="GreaterThanOrEqualToZeroRequired" xml:space="preserve">
+    <value>A value greater than or equal to zero is required.</value>
+  </data>
+  <data name="HttpsConnectionEstablished" xml:space="preserve">
+    <value>Connection "{connectionId}" established using the following protocol: {protocol}</value>
+  </data>
+  <data name="Http2DefaultCiphersInsufficient" xml:space="preserve">
+    <value>HTTP/2 over TLS is not supported on Windows versions older than Windows 10 and Windows Server 2016 due to incompatible ciphers or missing ALPN support. Falling back to HTTP/1.1 instead.</value>
+  </data>
+  <data name="Http2NoTlsWin81" xml:space="preserve">
+    <value>HTTP/2 over TLS is not supported on Windows versions earlier than Windows 10 and Windows Server 2016 due to incompatible ciphers or missing ALPN support.</value>
+  </data>
+  <data name="Http2ErrorKeepAliveTimeout" xml:space="preserve">
+    <value>Timeout while waiting for incoming HTTP/2 frames after a keep alive ping.</value>
+  </data>
+  <data name="ArgumentTimeSpanGreaterOrEqual" xml:space="preserve">
+    <value>A TimeSpan value greater than or equal to {value} is required.</value>
+  </data>
+  <data name="InvalidPemKey" xml:space="preserve">
+    <value>The provided key file is missing or invalid.</value>
+  </data>
+  <data name="UnrecognizedCertificateKeyOid" xml:space="preserve">
+    <value>Unknown algorithm for certificate with public key type '{0}'.</value>
   </data>
 </root>

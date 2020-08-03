@@ -1,0 +1,82 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <Sdk Name="Yarn.MSBuild" />
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>Build client-side authentication for single-page applications (SPAs).</Description>
+    <IsShippingPackage>true</IsShippingPackage>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication.Tests" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <YarnWorkingDir>$(MSBuildThisFileDirectory)Interop\</YarnWorkingDir>
+    <ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
+      CompileInterop;
+      $(ResolveCurrentProjectStaticWebAssetsInputsDependsOn)
+    </ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <YarnInputs Include="$(YarnWorkingDir)**" Exclude="$(YarnWorkingDir)node_modules\**;$(YarnWorkingDir)*.d.ts;$(YarnWorkingDir)dist\**" />
+    <YarnOutputs Include="$(YarnWorkingDir)dist\$(Configuration)\AuthenticationService.js" />
+    <YarnOutputs Include="$(YarnWorkingDir)dist\$(Configuration)\AuthenticationService.js.map" Condition="'$(Configuration)' == 'Debug'" />
+
+    <Content Remove="$(YarnWorkingDir)**" />
+    <None Include="$(YarnWorkingDir)*" Exclude="$(YarnWorkingDir)node_modules\**" />
+
+    <UpToDateCheckInput Include="@(YarnInputs)" Set="StaticWebassets" />
+    <UpToDateCheckOutput Include="@(YarnOutputs)" Set="StaticWebassets" />
+  </ItemGroup>
+
+  <Target Name="_CreateInteropHash" BeforeTargets="CompileInterop" Condition="'$(BuildNodeJS)' != 'false' AND '$(DesignTimeBuild)' != 'true'">
+
+    <PropertyGroup>
+      <InteropCompilationCacheFile>$(IntermediateOutputPath)interop.cache</InteropCompilationCacheFile>
+    </PropertyGroup>
+
+    <Hash ItemsToHash="@(YarnInputs)">
+      <Output TaskParameter="HashResult" PropertyName="_YarnInputsHash" />
+    </Hash>
+
+     <WriteLinesToFile Lines="$(_YarnInputsHash)" File="$(InteropCompilationCacheFile)" Overwrite="True" WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(InteropCompilationCacheFile)" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="CompileInterop" Condition="'$(BuildNodeJS)' != 'false' AND '$(DesignTimeBuild)' != 'true'" Inputs="$(InteropCompilationCacheFile)" Outputs="@(YarnOutputs)">
+    <Yarn Command="install --mutex network" WorkingDirectory="$(YarnWorkingDir)" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
+    <Yarn Command="run build:release" WorkingDirectory="$(YarnWorkingDir)" Condition="'$(Configuration)' == 'Release'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
+    <Yarn Command="run build:debug" WorkingDirectory="$(YarnWorkingDir)" Condition="'$(Configuration)' == 'Debug'" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
+
+    <ItemGroup>
+      <_InteropBuildOutput Include="$(YarnWorkingDir)dist\$(Configuration)\**" Exclude="$(YarnWorkingDir)dist\.gitignore" />
+
+      <StaticWebAsset Include="@(_InteropBuildOutput->'%(FullPath)')">
+        <SourceType></SourceType>
+        <SourceId>$(PackageId)</SourceId>
+        <ContentRoot>$([MSBuild]::NormalizeDirectory('$(YarnWorkingDir)\dist\$(Configuration)'))</ContentRoot>
+        <BasePath>_content/$(PackageId)</BasePath>
+        <RelativePath>$([System.String]::Copy('%(RecursiveDir)%(FileName)%(Extension)').Replace('\','/'))</RelativePath>
+      </StaticWebAsset>
+
+      <FileWrites Include="$(_InteropBuildOutput)" />
+    </ItemGroup>
+
+    <Message Importance="high" Text="@(_InteropBuildOutput->'Emitted %(FullPath)')" />
+
+  </Target>
+
+</Project>

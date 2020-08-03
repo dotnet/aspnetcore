@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
             {
                 // Logic with components with a CaptureUnmatchedValues parameter
                 var isCaptureUnmatchedValuesParameterSetExplicitly = false;
-                Dictionary<string, object> unmatched = null;
+                Dictionary<string, object>? unmatched = null;
                 foreach (var parameter in parameters)
                 {
                     var parameterName = parameter.Name;
@@ -82,33 +82,47 @@ namespace Microsoft.AspNetCore.Components.Reflection
                         isCaptureUnmatchedValuesParameterSetExplicitly = true;
                     }
 
-                    var isUnmatchedValue = !writers.WritersByName.TryGetValue(parameterName, out var writer);
-
-                    if ((isUnmatchedValue && parameter.Cascading) || (writer != null && !writer.Cascading && parameter.Cascading))
+                    if (writers.WritersByName.TryGetValue(parameterName, out var writer))
                     {
-                        // Don't allow an "extra" cascading value to be collected - or don't allow a non-cascading
-                        // parameter to be set with a cascading value.
-                        //
-                        // This is likely a bug in our infrastructure or an attempt to deliberately do something unsupported.
-                        ThrowForSettingParameterWithCascadingValue(targetType, parameterName);
-                        throw null; // Unreachable
-
-                    }
-                    else if (isUnmatchedValue ||
-
-                        // Allow unmatched parameters to collide with the names of cascading parameters. This is
-                        // valid because cascading parameter names are not part of the public API. There's no
-                        // way for the user of a component to know what the names of cascading parameters
-                        // are.
-                        (writer.Cascading && !parameter.Cascading))
-                    {
-                        unmatched ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-                        unmatched[parameterName] = parameter.Value;
+                        if (!writer.Cascading && parameter.Cascading)
+                        {
+                            // Don't allow an "extra" cascading value to be collected - or don't allow a non-cascading
+                            // parameter to be set with a cascading value.
+                            //
+                            // This is likely a bug in our infrastructure or an attempt to deliberately do something unsupported.
+                            ThrowForSettingParameterWithCascadingValue(targetType, parameterName);
+                            throw null; // Unreachable
+                        }
+                        else if (writer.Cascading && !parameter.Cascading)
+                        {
+                            // Allow unmatched parameters to collide with the names of cascading parameters. This is
+                            // valid because cascading parameter names are not part of the public API. There's no
+                            // way for the user of a component to know what the names of cascading parameters
+                            // are.
+                            unmatched ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                            unmatched[parameterName] = parameter.Value;
+                        }
+                        else
+                        {
+                            SetProperty(target, writer, parameterName, parameter.Value);
+                        }
                     }
                     else
                     {
-                        Debug.Assert(writer != null);
-                        SetProperty(target, writer, parameterName, parameter.Value);
+                        if (parameter.Cascading)
+                        {
+                            // Don't allow an "extra" cascading value to be collected - or don't allow a non-cascading
+                            // parameter to be set with a cascading value.
+                            //
+                            // This is likely a bug in our infrastructure or an attempt to deliberately do something unsupported.
+                            ThrowForSettingParameterWithCascadingValue(targetType, parameterName);
+                            throw null; // Unreachable
+                        }
+                        else
+                        {
+                            unmatched ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                            unmatched[parameterName] = parameter.Value;
+                        }
                     }
                 }
 
@@ -120,13 +134,13 @@ namespace Microsoft.AspNetCore.Components.Reflection
                     // 2. We also don't want to implicitly copy a value the user gives us.
                     //
                     // Either one of those implementation choices would do something unexpected.
-                    ThrowForCaptureUnmatchedValuesConflict(targetType, writers.CaptureUnmatchedValuesPropertyName, unmatched);
+                    ThrowForCaptureUnmatchedValuesConflict(targetType, writers.CaptureUnmatchedValuesPropertyName!, unmatched);
                     throw null; // Unreachable
                 }
                 else if (unmatched != null)
                 {
                     // We had some unmatched values, set the CaptureUnmatchedValues property
-                    SetProperty(target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName, unmatched);
+                    SetProperty(target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName!, unmatched);
                 }
             }
 
@@ -148,6 +162,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
         internal static IEnumerable<PropertyInfo> GetCandidateBindableProperties(Type targetType)
             => MemberAssignment.GetPropertiesIncludingInherited(targetType, _bindablePropertyFlags);
 
+        [DoesNotReturn]
         private static void ThrowForUnknownIncomingParameterName(Type targetType, string parameterName)
         {
             // We know we're going to throw by this stage, so it doesn't matter that the following
@@ -176,6 +191,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
             }
         }
 
+        [DoesNotReturn]
         private static void ThrowForSettingCascadingParameterWithNonCascadingValue(Type targetType, string parameterName)
         {
             throw new InvalidOperationException(
@@ -183,6 +199,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 $"but it does not have [{nameof(ParameterAttribute)}] applied.");
         }
 
+        [DoesNotReturn]
         private static void ThrowForSettingParameterWithCascadingValue(Type targetType, string parameterName)
         {
             throw new InvalidOperationException(
@@ -190,6 +207,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 $"using a cascading value.");
         }
 
+        [DoesNotReturn]
         private static void ThrowForCaptureUnmatchedValuesConflict(Type targetType, string parameterName, Dictionary<string, object> unmatched)
         {
             throw new InvalidOperationException(
@@ -198,6 +216,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 string.Join(Environment.NewLine, unmatched.Keys.OrderBy(k => k)));
         }
 
+        [DoesNotReturn]
         private static void ThrowForMultipleCaptureUnmatchedValuesParameters(Type targetType)
         {
             // We don't care about perf here, we want to report an accurate and useful error.
@@ -215,6 +234,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 string.Join(Environment.NewLine, propertyNames));
         }
 
+        [DoesNotReturn]
         private static void ThrowForInvalidCaptureUnmatchedValuesParameterType(Type targetType, PropertyInfo propertyInfo)
         {
             throw new InvalidOperationException(
@@ -280,9 +300,9 @@ namespace Microsoft.AspNetCore.Components.Reflection
 
             public Dictionary<string, IPropertySetter> WritersByName { get; }
 
-            public IPropertySetter CaptureUnmatchedValuesWriter { get; }
+            public IPropertySetter? CaptureUnmatchedValuesWriter { get; }
 
-            public string CaptureUnmatchedValuesPropertyName { get; }
+            public string? CaptureUnmatchedValuesPropertyName { get; }
         }
     }
 }

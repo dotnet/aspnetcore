@@ -1,0 +1,35 @@
+﻿{
+  "solution": {
+    "path": "..\\..\\AspNetCore.sln",
+    "projects" : [
+      "src\\Security\\test\\AuthSamples.FunctionalTests\\AuthSamples.FunctionalTests.csproj",
+      "src\\Security\\samples\\Cookies\\Cookies.csproj",
+      "src\\Security\\samples\\ClaimsTransformation\\ClaimsTransformation.csproj",
+      "src\\Security\\samples\\DynamicSchemes\\DynamicSchemes.csproj",
+      "src\\Security\\samples\\Identity.ExternalClaims\\Identity.ExternalClaims.csproj",
+      "src\\Security\\samples\\PathSchemeSelection\\PathSchemeSelection.csproj",
+      "src\\DefaultBuilder\\src\\Microsoft.AspNetCore.csproj",
+      "src\\Hosting\\Hosting\\src\\Microsoft.AspNetCore.Hosting.csproj",
+      "src\\Hosting\\Server.IntegrationTesting\\src\\Microsoft.AspNetCore.Server.IntegrationTesting.csproj",
+      "src\\Hosting\\TestHost\\src\\Microsoft.AspNetCore.TestHost.csproj",
+      "src\\Mvc\\Mvc.Testing\\src\\Microsoft.AspNetCore.Mvc.Testing.csproj",
+      "src\\Security\\Authentication\\Cookies\\src\\Microsoft.AspNetCore.Authentication.Cookies.csproj",
+      "src\\Mvc\\Mvc\\src\\Microsoft.AspNetCore.Mvc.csproj",
+      "src\\Middleware\\StaticFiles\\src\\Microsoft.AspNetCore.StaticFiles.csproj",
+      "src\\Security\\Authentication\\Google\\src\\Microsoft.AspNetCore.Authentication.Google.csproj",
+      "src\\Security\\Authorization\\Core\\src\\Microsoft.AspNetCore.Authorization.csproj",
+      "src\\DataProtection\\Extensions\\src\\Microsoft.AspNetCore.DataProtection.Extensions.csproj",
+      "src\\Middleware\\Diagnostics\\src\\Microsoft.AspNetCore.Diagnostics.csproj",
+      "src\\Middleware\\Diagnostics.EntityFrameworkCore\\src\\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj",
+      "src\\Servers\\IIS\\IISIntegration\\src\\Microsoft.AspNetCore.Server.IISIntegration.csproj",
+      "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
+      "src\\Identity\\Core\\src\\Microsoft.AspNetCore.Identity.csproj",
+      "src\\Identity\\EntityFrameworkCore\\src\\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj",
+      "src\\Security\\Authentication\\Facebook\\src\\Microsoft.AspNetCore.Authentication.Facebook.csproj",
+      "src\\Security\\Authentication\\Twitter\\src\\Microsoft.AspNetCore.Authentication.Twitter.csproj",
+      "src\\Security\\samples\\CustomPolicyProvider\\CustomPolicyProvider.csproj",
+      "src\\Security\\samples\\StaticFilesAuth\\StaticFilesAuth.csproj",
+      "src\\Security\\samples\\CustomAuthorizationFailureResponse\\CustomAuthorizationFailureResponse.csproj"
+    ]
+  }
+}

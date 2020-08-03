@@ -113,6 +113,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private static readonly Action<ILogger, string, Exception> _connectionAccepted =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(39, nameof(ConnectionAccepted)), @"Connection id ""{ConnectionId}"" accepted.");
 
+        private static readonly Action<ILogger, string, Exception> _http2MaxConcurrentStreamsReached =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(40, nameof(Http2MaxConcurrentStreamsReached)),
+                @"Connection id ""{ConnectionId}"" reached the maximum number of concurrent HTTP/2 streams allowed.");
+
         protected readonly ILogger _logger;
 
         public KestrelTrace(ILogger logger)
@@ -175,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _notAllConnectionsClosedGracefully(_logger, null);
         }
 
-        public virtual void ConnectionBadRequest(string connectionId, BadHttpRequestException ex)
+        public virtual void ConnectionBadRequest(string connectionId, Microsoft.AspNetCore.Http.BadHttpRequestException ex)
         {
             _connectionBadRequest(_logger, connectionId, ex.Message, ex);
         }
@@ -272,12 +276,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public void Http2FrameReceived(string connectionId, Http2Frame frame)
         {
-            _http2FrameReceived(_logger, connectionId, frame.Type, frame.StreamId, frame.PayloadLength, frame.ShowFlags(), null);
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                _http2FrameReceived(_logger, connectionId, frame.Type, frame.StreamId, frame.PayloadLength, frame.ShowFlags(), null);
+            }
         }
 
         public void Http2FrameSending(string connectionId, Http2Frame frame)
         {
-            _http2FrameSending(_logger, connectionId, frame.Type, frame.StreamId, frame.PayloadLength, frame.ShowFlags(), null);
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                _http2FrameSending(_logger, connectionId, frame.Type, frame.StreamId, frame.PayloadLength, frame.ShowFlags(), null);
+            }
+        }
+
+        public void Http2MaxConcurrentStreamsReached(string connectionId)
+        {
+            _http2MaxConcurrentStreamsReached(_logger, connectionId, null);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)

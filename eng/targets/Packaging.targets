@@ -13,7 +13,7 @@
     <ItemGroup>
       <_ProjectPathWithVersion Include="$(MSBuildProjectFullPath)">
         <PackageId>$(PackageId)</PackageId>
-        <PackageVersion>$(PackageVersion)</PackageVersion>
+        <PackageVersion>$(PackageVersionForPackageVersionInfo)</PackageVersion>
         <VersionSuffix>$(VersionSuffix)</VersionSuffix>
         <VersionVariableName>$(PackageId.Replace('.',''))PackageVersion</VersionVariableName>
       </_ProjectPathWithVersion>

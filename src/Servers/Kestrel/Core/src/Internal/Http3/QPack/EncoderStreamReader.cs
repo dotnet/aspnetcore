@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Net.Http.HPack;
+using System.Net.Http.QPack;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
 {
@@ -75,15 +76,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
         private const byte HuffmanMask = 0x80;
 
         private bool _s;
-        private byte[] _stringOctets;
-        private byte[] _headerNameOctets;
-        private byte[] _headerValueOctets;
+        private readonly byte[] _stringOctets;
+        private readonly byte[] _headerNameOctets;
+        private readonly byte[] _headerValueOctets;
         private byte[] _headerName;
         private int _headerNameLength;
         private int _headerValueLength;
         private int _stringLength;
         private int _stringIndex;
-        private DynamicTable _dynamicTable = new DynamicTable(1000); // TODO figure out architecture.
+        private readonly DynamicTable _dynamicTable = new DynamicTable(1000); // TODO figure out architecture.
 
         private readonly IntegerDecoder _integerDecoder = new IntegerDecoder();
         private State _state = State.Ready;
@@ -317,11 +318,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.QPack
             _state = State.Ready;
         }
 
-        private HeaderField GetHeader(int index)
+        private System.Net.Http.QPack.HeaderField GetHeader(int index)
         {
             try
             {
-                return _s ? StaticTable.Instance[index] : _dynamicTable[index];
+                return _s ? H3StaticTable.GetHeaderFieldAt(index) : _dynamicTable[index];
             }
             catch (IndexOutOfRangeException ex)
             {

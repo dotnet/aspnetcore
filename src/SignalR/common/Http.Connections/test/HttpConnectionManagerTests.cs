@@ -7,6 +7,7 @@ using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections.Internal;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -92,11 +93,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     connection.ApplicationTask = Task.CompletedTask;
                     connection.TransportTask = Task.CompletedTask;
                 }
-
-                var applicationInputTcs = new TaskCompletionSource<object>();
-                var applicationOutputTcs = new TaskCompletionSource<object>();
-                var transportInputTcs = new TaskCompletionSource<object>();
-                var transportOutputTcs = new TaskCompletionSource<object>();
 
                 try
                 {
@@ -235,9 +231,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     try
                     {
                         Assert.True(result.IsCompleted);
-
-                        // We should be able to write
-                        await connection.Transport.Output.WriteAsync(new byte[] { 1 });
                     }
                     finally
                     {
@@ -248,13 +241,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 connection.TransportTask = Task.Run(async () =>
                 {
                     var result = await connection.Application.Input.ReadAsync();
-                    Assert.Equal(new byte[] { 1 }, result.Buffer.ToArray());
-                    connection.Application.Input.AdvanceTo(result.Buffer.End);
-
-                    result = await connection.Application.Input.ReadAsync();
                     try
                     {
-                        Assert.True(result.IsCompleted);
+                        Assert.True(result.IsCanceled);
                     }
                     finally
                     {
@@ -275,7 +264,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             {
                 var connectionManager = CreateConnectionManager(LoggerFactory);
                 var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 connection.ApplicationTask = tcs.Task;
                 connection.TransportTask = tcs.Task;
@@ -285,7 +274,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 Assert.False(firstTask.IsCompleted);
                 Assert.False(secondTask.IsCompleted);
 
-                tcs.TrySetResult(null);
+                tcs.TrySetResult();
 
                 await Task.WhenAll(firstTask, secondTask).OrTimeout();
             }
@@ -298,7 +287,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             {
                 var connectionManager = CreateConnectionManager(LoggerFactory);
                 var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 connection.ApplicationTask = tcs.Task;
                 connection.TransportTask = tcs.Task;
@@ -325,7 +314,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             {
                 var connectionManager = CreateConnectionManager(LoggerFactory);
                 var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 connection.ApplicationTask = tcs.Task;
                 connection.TransportTask = tcs.Task;
@@ -382,7 +371,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             {
                 var appLifetime = new TestApplicationLifetime();
                 var connectionManager = CreateConnectionManager(LoggerFactory, appLifetime);
-                var tcs = new TaskCompletionSource<object>();
 
                 appLifetime.Start();
 
@@ -404,7 +392,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 appLifetime.Start();
 
                 var connectionManager = CreateConnectionManager(LoggerFactory, appLifetime);
-                var tcs = new TaskCompletionSource<object>();
 
                 var connection = connectionManager.CreateConnection(PipeOptions.Default, PipeOptions.Default);
 
@@ -418,7 +405,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime lifetime = null)
         {
             lifetime = lifetime ?? new EmptyApplicationLifetime();
-            return new HttpConnectionManager(loggerFactory, lifetime);
+            return new HttpConnectionManager(loggerFactory, lifetime, Options.Create(new ConnectionOptions()));
         }
 
         [Flags]

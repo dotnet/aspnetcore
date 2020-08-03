@@ -7,6 +7,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -165,7 +166,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS && statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_HANDLE_EOF)
                 {
                     Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    Logger.LogError(0, exception, "Read");
+                    Logger.LogError(LoggerEventIds.ErrorWhileRead, exception, "Read");
                     Abort();
                     throw exception;
                 }
@@ -242,7 +243,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception e)
             {
-                Logger.LogError(0, e, "BeginRead");
+                Logger.LogError(LoggerEventIds.ErrorWhenReadBegun, e, "BeginRead");
                 asyncResult.Dispose();
                 throw;
             }
@@ -258,7 +259,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 else
                 {
                     Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    Logger.LogError(0, exception, "BeginRead");
+                    Logger.LogError(LoggerEventIds.ErrorWhenReadBegun, exception, "BeginRead");
                     Abort();
                     throw exception;
                 }
@@ -365,7 +366,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 asyncResult.Dispose();
                 Abort();
-                Logger.LogError(0, e, "ReadAsync");
+                Logger.LogError(LoggerEventIds.ErrorWhenReadAsync, e, "ReadAsync");
                 throw;
             }
 
@@ -386,7 +387,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 else
                 {
                     Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    Logger.LogError(0, exception, "ReadAsync");
+                    Logger.LogError(LoggerEventIds.ErrorWhenReadAsync, exception, "ReadAsync");
                     Abort();
                     throw exception;
                 }
@@ -432,8 +433,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 var contentLength = RequestContext.Request.ContentLength;
                 if (contentLength.HasValue && _maxSize.HasValue && contentLength.Value > _maxSize.Value)
                 {
-                    throw new IOException(
-                        $"The request's Content-Length {contentLength.Value} is larger than the request body size limit {_maxSize.Value}.");
+                    throw new BadHttpRequestException(
+                        $"The request's Content-Length {contentLength.Value} is larger than the request body size limit {_maxSize.Value}.",
+                        StatusCodes.Status413PayloadTooLarge);
                 }
 
                 HasStarted = true;
@@ -450,7 +452,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _totalRead += bytesRead;
             if (_maxSize.HasValue && _totalRead > _maxSize.Value)
             {
-                exception = new IOException($"The total number of bytes read {_totalRead} has exceeded the request body size limit {_maxSize.Value}.");
+                exception = new BadHttpRequestException(
+                    $"The total number of bytes read {_totalRead} has exceeded the request body size limit {_maxSize.Value}.",
+                    StatusCodes.Status413PayloadTooLarge);
                 return true;
             }
             exception = null;

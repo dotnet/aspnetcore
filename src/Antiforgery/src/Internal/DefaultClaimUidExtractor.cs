@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Antiforgery
         }
 
         /// <inheritdoc />
-        public string ExtractClaimUid(ClaimsPrincipal claimsPrincipal)
+        public string? ExtractClaimUid(ClaimsPrincipal claimsPrincipal)
         {
             Debug.Assert(claimsPrincipal != null);
 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             return Convert.ToBase64String(claimUidBytes);
         }
 
-        public static IList<string> GetUniqueIdentifierParameters(IEnumerable<ClaimsIdentity> claimsIdentities)
+        public static IList<string>? GetUniqueIdentifierParameters(IEnumerable<ClaimsIdentity> claimsIdentities)
         {
             var identitiesList = claimsIdentities as List<ClaimsIdentity>;
             if (identitiesList == null)

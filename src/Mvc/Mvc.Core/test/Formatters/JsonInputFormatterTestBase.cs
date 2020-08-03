@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 using Moq;
@@ -107,6 +108,28 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.False(result.HasError);
             var stringValue = Assert.IsType<string>(result.Model);
             Assert.Equal("abcd", stringValue);
+        }
+
+        [Fact]
+        public async Task JsonFormatterReadsNonUtf8Content()
+        {
+            // Arrange
+            var content = "☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☚☛☜☝☞☟☠☡☢☣☤☥☦☧☨☩☪☫☬☮☯☰☱☲☳☴☵☶☷☸";
+            var formatter = GetInputFormatter();
+
+            var contentBytes = Encoding.Unicode.GetBytes($"\"{content}\"");
+            var httpContext = GetHttpContext(contentBytes, "application/json;charset=utf-16");
+
+            var formatterContext = CreateInputFormatterContext(typeof(string), httpContext);
+
+            // Act
+            var result = await formatter.ReadAsync(formatterContext);
+
+            // Assert
+            Assert.False(result.HasError);
+            var stringValue = Assert.IsType<string>(result.Model);
+            Assert.Equal(content, stringValue);
+            Assert.True(httpContext.Request.Body.CanRead, "Verify that the request stream hasn't been disposed");
         }
 
         [Fact]

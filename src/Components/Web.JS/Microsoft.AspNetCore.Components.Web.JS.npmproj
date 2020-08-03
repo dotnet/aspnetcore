@@ -13,6 +13,12 @@
 
   <ItemGroup>
     <ProjectReference
+      Include="..\..\JSInterop\Microsoft.JSInterop.JS\src\Microsoft.JSInterop.JS.npmproj"
+      ReferenceOutputAssemblies="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework"
+      Private="false" />
+    <ProjectReference
       Include="..\..\SignalR\clients\ts\signalr\signalr.npmproj"
       ReferenceOutputAssemblies="false"
       SkipGetTargetFrameworkProperties="true"
@@ -26,6 +32,9 @@
       Private="false" />
   </ItemGroup>
 
+  <!-- Workaround strange issues with something calling these targets. -->
+  <Target Name="GetTargetFramework" />
+  <Target Name="GetCopyToPublishDirectoryItems" />
   <Target Name="GetTargetPath" />
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />

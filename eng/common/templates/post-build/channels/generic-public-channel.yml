@@ -10,6 +10,8 @@ parameters:
   transportFeed: ''
   shippingFeed: ''
   symbolsFeed: ''
+  # If the channel name is empty, no links will be generated
+  akaMSChannelName: ''
 
 stages:
 - stage: ${{ parameters.stageName }}
@@ -23,9 +25,15 @@ stages:
   - job: publish_symbols
     displayName: Symbol Publishing
     dependsOn: setupMaestroVars
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', ${{ parameters.channelId }} ))
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.TargetChannels'], format('[{0}]', ${{ parameters.channelId }} ))
     variables:
       - group: DotNet-Symbol-Server-Pats
+      - name: AzDOProjectName
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOProjectName'] ]
+      - name: AzDOPipelineId
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOPipelineId'] ]
+      - name: AzDOBuildId
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
     pool:
       vmImage: 'windows-2019'
     steps:
@@ -33,10 +41,14 @@ stages:
         displayName: Download Build Assets
         continueOnError: true
         inputs:
-          buildType: 'current'
+          buildType: specific
+          buildVersionToDownload: specific
+          project: $(AzDOProjectName)
+          pipeline: $(AzDOPipelineId)
+          buildId: $(AzDOBuildId)
           downloadType: 'specific'
           itemPattern: |
-            PDBArtifacts/**
+            PdbArtifacts/**
             BlobArtifacts/**
           downloadPath: '$(Build.ArtifactStagingDirectory)'
 
@@ -73,12 +85,21 @@ stages:
   - job: publish_assets
     displayName: Publish Assets
     dependsOn: setupMaestroVars
+    timeoutInMinutes: 120
     variables:
       - name: BARBuildId
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.BARBuildId'] ]
       - name: IsStableBuild
         value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.IsStableBuild'] ]
-    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.InitialChannels'], format('[{0}]', ${{ parameters.channelId }}))
+      - name: AzDOProjectName
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOProjectName'] ]
+      - name: AzDOPipelineId
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOPipelineId'] ]
+      - name: AzDOBuildId
+        value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
+      - name: ArtifactsCategory
+        value: ${{ coalesce(variables._DotNetArtifactsCategory, '.NETCore') }}
+    condition: contains(dependencies.setupMaestroVars.outputs['setReleaseVars.TargetChannels'], format('[{0}]', ${{ parameters.channelId }} ))
     pool:
       vmImage: 'windows-2019'
     steps:
@@ -86,7 +107,11 @@ stages:
         displayName: Download Build Assets
         continueOnError: true
         inputs:
-          buildType: 'current'
+          buildType: specific
+          buildVersionToDownload: specific
+          project: $(AzDOProjectName)
+          pipeline: $(AzDOPipelineId)
+          buildId: $(AzDOBuildId)
           downloadType: 'specific'
           itemPattern: |
             PackageArtifacts/**
@@ -112,7 +137,7 @@ stages:
         inputs:
           filePath: eng\common\sdk-task.ps1
           arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet
-            /p:ArtifactsCategory=$(_DotNetArtifactsCategory)
+            /p:ArtifactsCategory=$(ArtifactsCategory)
             /p:IsStableBuild=$(IsStableBuild)
             /p:IsInternalBuild=$(IsInternalBuild)
             /p:RepositoryName=$(Build.Repository.Name)
@@ -138,6 +163,9 @@ stages:
             /p:AzureDevOpsStaticTransportFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
             /p:AzureDevOpsStaticSymbolsFeed='${{ parameters.symbolsFeed }}'
             /p:AzureDevOpsStaticSymbolsFeedKey='$(dn-bot-dnceng-artifact-feeds-rw)'
+            /p:LatestLinkShortUrlPrefix=dotnet/'${{ parameters.akaMSChannelName }}'
+            /p:AkaMSClientId=$(akams-client-id)
+            /p:AkaMSClientSecret=$(akams-client-secret)
             ${{ parameters.artifactsPublishingAdditionalParameters }}
 
       - template: ../../steps/publish-logs.yml
@@ -145,6 +173,6 @@ stages:
           StageLabel: '${{ parameters.stageName }}'
           JobLabel: 'AssetsPublishing'
 
-      - template: ../../steps/promote-build.yml
+      - template: ../../steps/add-build-to-channel.yml
         parameters:
           ChannelId: ${{ parameters.channelId }}

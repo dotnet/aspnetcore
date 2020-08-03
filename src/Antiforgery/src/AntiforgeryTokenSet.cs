@@ -18,10 +18,10 @@ namespace Microsoft.AspNetCore.Antiforgery
         /// <param name="formFieldName">The name of the form field used for the request token.</param>
         /// <param name="headerName">The name of the header used for the request token.</param>
         public AntiforgeryTokenSet(
-            string requestToken,
-            string cookieToken,
+            string? requestToken,
+            string? cookieToken,
             string formFieldName,
-            string headerName)
+            string? headerName)
         {
             if (formFieldName == null)
             {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Antiforgery
         /// <summary>
         /// Gets the request token.
         /// </summary>
-        public string RequestToken { get; }
+        public string? RequestToken { get; }
 
         /// <summary>
         /// Gets the name of the form field used for the request token.
@@ -47,11 +47,11 @@ namespace Microsoft.AspNetCore.Antiforgery
         /// <summary>
         /// Gets the name of the header used for the request token.
         /// </summary>
-        public string HeaderName { get; }
+        public string? HeaderName { get; }
 
         /// <summary>
         /// Gets the cookie token.
         /// </summary>
-        public string CookieToken { get; }
+        public string? CookieToken { get; }
     }
 }

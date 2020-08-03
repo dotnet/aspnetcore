@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.Hosting
         /// <remarks>
         ///   The following defaults are applied to the <see cref="IWebHostBuilder"/>:
         ///     use Kestrel as the web server and configure it using the application's configuration providers,
+        ///     configure the <see cref="IWebHostEnvironment.WebRootFileProvider"/> to map static web assets when <see cref="IHostEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
         ///     adds the HostFiltering middleware,
         ///     adds the ForwardedHeaders middleware if ASPNETCORE_FORWARDEDHEADERS_ENABLED=true,
         ///     and enable IIS integration.

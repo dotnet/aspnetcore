@@ -240,12 +240,19 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
             if (process.ExitCode != 0)
             {
-                var output = await process.StandardOutput.ReadToEndAsync();
-                var error = await process.StandardError.ReadToEndAsync();
-                await Out.WriteAsync(output);
-                await Error.WriteAsync(error);
+                using var csprojStream = projectFile.OpenRead();
+                using var csprojReader = new StreamReader(csprojStream);
+                var csprojContent = await csprojReader.ReadToEndAsync();
+                // We suspect that sometimes dotnet add package is giving a non-zero exit code when it has actually succeeded.
+                if (!csprojContent.Contains($"<PackageReference Include=\"{packageId}\" Version=\"{packageVersion}\""))
+                {
+                    var output = await process.StandardOutput.ReadToEndAsync();
+                    var error = await process.StandardError.ReadToEndAsync();
+                    await Out.WriteAsync(output);
+                    await Error.WriteAsync(error);
 
-                throw new ArgumentException($"Could not add package `{packageId}` to `{projectFile.Directory}` due to: `{error}`");
+                    throw new ArgumentException($"Adding package `{packageId}` to `{projectFile.Directory}` returned ExitCode `{process.ExitCode}` and gave error `{error}` and output `{output}`");
+                }
             }
         }
 

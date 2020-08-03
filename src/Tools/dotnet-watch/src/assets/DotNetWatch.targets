@@ -9,9 +9,22 @@ them to a file.
 -->
   <Target Name="GenerateWatchList"
           DependsOnTargets="_CollectWatchItems">
+
+    <PropertyGroup>
+      <_IsMicrosoftNETCoreApp31OrNewer
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '3.1'))">true</_IsMicrosoftNETCoreApp31OrNewer>
+
+      <_IsMicrosoftNETCoreApp31OrNewer Condition="'$(_IsMicrosoftNETCoreApp31OrNewer)' == ''">false</_IsMicrosoftNETCoreApp31OrNewer>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_WatchListLine Include="$(_IsMicrosoftNETCoreApp31OrNewer)" />
+      <_WatchListLine Include="%(Watch.FullPath)" />
+    </ItemGroup>
+
     <WriteLinesToFile Overwrite="true"
                       File="$(_DotNetWatchListFile)"
-                      Lines="@(Watch -> '%(FullPath)')" />
+                      Lines="@(_WatchListLine)" />
   </Target>
 
 <!--

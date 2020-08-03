@@ -146,6 +146,7 @@ namespace Microsoft.AspNetCore
         ///     load <see cref="IConfiguration"/> from environment variables,
         ///     load <see cref="IConfiguration"/> from supplied command line args,
         ///     configure the <see cref="ILoggerFactory"/> to log to the console and debug output,
+        ///     configure the <see cref="IWebHostEnvironment.WebRootFileProvider"/> to map static web assets when <see cref="IHostEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
         ///     adds the HostFiltering middleware,
         ///     adds the ForwardedHeaders middleware if ASPNETCORE_FORWARDEDHEADERS_ENABLED=true,
         ///     and enable IIS integration.
@@ -188,12 +189,18 @@ namespace Microsoft.AspNetCore
                     config.AddCommandLine(args);
                 }
             })
-            .ConfigureLogging((hostingContext, logging) =>
+            .ConfigureLogging((hostingContext, loggingBuilder) =>
             {
-                logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                logging.AddConsole();
-                logging.AddDebug();
-                logging.AddEventSourceLogger();
+                loggingBuilder.Configure(options =>
+                {
+                    options.ActivityTrackingOptions = ActivityTrackingOptions.SpanId
+                                                        | ActivityTrackingOptions.TraceId
+                                                        | ActivityTrackingOptions.ParentId;
+                });
+                loggingBuilder.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+                loggingBuilder.AddConsole();
+                loggingBuilder.AddDebug();
+                loggingBuilder.AddEventSourceLogger();
             }).
             UseDefaultServiceProvider((context, options) =>
             {
@@ -216,7 +223,7 @@ namespace Microsoft.AspNetCore
             });
             builder.UseKestrel((builderContext, options) =>
             {
-                options.Configure(builderContext.Configuration.GetSection("Kestrel"));
+                options.Configure(builderContext.Configuration.GetSection("Kestrel"), reloadOnChange: true);
             })
             .ConfigureServices((hostingContext, services) =>
             {

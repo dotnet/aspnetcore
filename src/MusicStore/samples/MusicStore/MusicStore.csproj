@@ -33,6 +33,9 @@
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
+    <!-- Avoid CS1705 errors due to mix of assemblies brought in transitively. -->
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 
   <Target Name="VerifyPrecompiledViews" AfterTargets="Publish">

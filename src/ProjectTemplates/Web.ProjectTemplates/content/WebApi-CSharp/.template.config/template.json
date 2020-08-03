@@ -9,8 +9,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating an ASP.NET Core application with an example Controller for a RESTful HTTP service. This template can also be used for ASP.NET Core MVC Views and Controllers.",
   "groupIdentity": "Microsoft.Web.WebApi",
-  "precedence": "6000",
-  "identity": "Microsoft.Web.WebApi.CSharp.3.1",
+  "precedence": "7000",
+  "identity": "Microsoft.Web.WebApi.CSharp.5.0",
   "shortName": "webapi",
   "tags": {
     "language": "C#",
@@ -35,6 +35,19 @@
           "condition": "(ExcludeLaunchSettings)",
           "exclude": [
             "Properties/launchSettings.json"
+          ]
+        },
+        {
+          "condition": "(!GenerateApi)",
+            "exclude": [
+              "Services/DownstreamWebApi.cs"
+            ]
+        },
+        {
+          "condition": "(!GenerateGraph)",
+          "exclude": [
+             "Services/MicrosoftGraphServiceExtensions.cs",
+            "Services/TokenAcquisitionCredentialProvider.cs"
           ]
         }
       ]
@@ -209,12 +222,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp5.0",
-          "description": "Target netcoreapp5.0"
+          "choice": "net5.0",
+          "description": "Target net5.0"
         }
       ],
-      "replaces": "netcoreapp5.0",
-      "defaultValue": "netcoreapp5.0"
+      "replaces": "net5.0",
+      "defaultValue": "net5.0"
     },
     "copyrightYear": {
       "type": "generated",
@@ -229,6 +242,37 @@
       "datatype": "bool",
       "description": "If specified, skips the automatic restore of the project on create.",
       "defaultValue": "false"
+    },
+    "CalledApiUrl": {
+        "type": "parameter",
+        "datatype": "string",
+        "replaces": "[WebApiUrl]",
+        "defaultValue" : "https://graph.microsoft.com/v1.0",
+        "description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg or --auth IndividualB2C is specified."
+    },
+    "CallsMicrosoftGraph": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "false",
+        "description": "Specifies if the web app calls Microsoft Graph. This option only applies if --auth SingleOrg is specified."
+    },
+    "CalledApiScopes": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces" :  "user.read",
+      "description": "Scopes to request to call the API from the web app. This option only applies if --auth SingleOrg or --auth IndividualB2C is specified."
+    },
+    "GenerateApi": {
+        "type": "computed",
+        "value": "((IndividualB2CAuth || OrganizationalAuth) && (CalledApiUrl != \"https://graph.microsoft.com/v1.0\" || CalledApiScopes != \"user.read\"))"
+    },
+    "GenerateGraph": {
+        "type": "computed",
+        "value": "(OrganizationalAuth && CallsMicrosoftGraph)"
+    },
+    "GenerateApiOrGraph": {
+        "type": "computed",
+        "value": "(GenerateApi || GenerateGraph)"
     }
   },
   "primaryOutputs": [

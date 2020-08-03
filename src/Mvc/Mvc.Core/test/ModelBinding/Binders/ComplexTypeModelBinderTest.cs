@@ -19,6 +19,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     public class ComplexTypeModelBinderTest
     {
         private static readonly IModelMetadataProvider _metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -1229,8 +1230,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             setup.Configure(options.Value);
 
             var lastIndex = options.Value.ModelBinderProviders.Count - 1;
-            Assert.IsType<ComplexTypeModelBinderProvider>(options.Value.ModelBinderProviders[lastIndex]);
-            options.Value.ModelBinderProviders.RemoveAt(lastIndex);
+            options.Value.ModelBinderProviders.RemoveType<ComplexObjectModelBinderProvider>();
             options.Value.ModelBinderProviders.Add(new TestableComplexTypeModelBinderProvider());
 
             var factory = TestModelBinderFactory.Create(options.Value.ModelBinderProviders.ToArray());
@@ -1662,4 +1662,5 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
         }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 }

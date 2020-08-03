@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
             var originalRequestContent = HasBody(request) ? await DuplicateRequestContent(request) : null;
             CopyRequestHeaders(request.Headers, redirectRequest.Headers);
             var response = await base.SendAsync(request, cancellationToken);
-            while (IsRedirect(response) && remainingRedirects >= 0)
+            while (IsRedirect(response) && remainingRedirects > 0)
             {
                 remainingRedirects--;
                 UpdateRedirectRequest(response, redirectRequest, originalRequestContent);

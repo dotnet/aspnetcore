@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.Http
     {
         private const string UnixPipeHostPrefix = "unix:/";
 
-        public string Host { get; private set; }
-        public string PathBase { get; private set; }
+        public string Host { get; private set; } = default!;
+        public string PathBase { get; private set; } = default!;
         public int Port { get; internal set; }
-        public string Scheme { get; private set; }
+        public string Scheme { get; private set; } = default!;
 
         public bool IsUnixPipe
         {
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Http
             return ToString().GetHashCode();
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as BindingAddress;
             if (other == null)

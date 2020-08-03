@@ -9,8 +9,8 @@
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating a gRPC ASP.NET Core service.",
   "groupIdentity": "Microsoft.Web.Grpc",
-  "precedence": "6000",
-  "identity": "Microsoft.Grpc.Service.CSharp.3.1",
+  "precedence": "7000",
+  "identity": "Microsoft.Grpc.Service.CSharp.5.0",
   "shortName": "grpc",
   "tags": {
     "language": "C#",
@@ -41,11 +41,11 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp5.0",
-          "description": "Target netcoreapp5.0"
+          "choice": "net5.0",
+          "description": "Target net5.0"
         }
       ],
-      "defaultValue": "netcoreapp5.0"
+      "defaultValue": "net5.0"
     },
     "ExcludeLaunchSettings": {
       "type": "parameter",

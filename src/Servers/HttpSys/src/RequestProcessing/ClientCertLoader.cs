@@ -400,13 +400,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     }
                     else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_INVALID_PARAMETER)
                     {
-                        logger.LogError("GetChannelBindingFromTls; Channel binding is not supported.");
+                        logger.LogError(LoggerEventIds.ChannelBindingUnSupported, "GetChannelBindingFromTls; Channel binding is not supported.");
                         return null; // old schannel library which doesn't support CBT
                     }
                     else
                     {
                         // It's up to the consumer to fail if the missing ChannelBinding matters to them.
-                        logger.LogError(0, new HttpSysException((int)statusCode), "GetChannelBindingFromTls");
+                        logger.LogError(LoggerEventIds.ChannelBindingMissing, new HttpSysException((int)statusCode), "GetChannelBindingFromTls");
                         break;
                     }
                 }

@@ -1152,6 +1152,30 @@ describe("HttpConnection", () => {
         }, "Failed to start the connection: Error: nope");
     });
 
+    it("overwrites library headers with user headers on negotiate", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const headers = { "User-Agent": "Custom Agent", "X-HEADER": "VALUE" };
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                headers,
+                httpClient: new TestHttpClient()
+                    .on("POST", (r) => {
+                        expect(r.headers).toEqual(headers);
+                        return new HttpResponse(200, "", "{\"error\":\"nope\"}");
+                    }),
+                logger,
+            };
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            try {
+                await connection.start(TransferFormat.Text);
+            } catch {
+            } finally {
+                await connection.stop();
+            }
+        }, "Failed to start the connection: Error: nope");
+    });
+
     it("logMessageContent displays correctly with binary data", async () => {
         await VerifyLogger.run(async (logger) => {
             const availableTransport = { transport: "LongPolling", transferFormats: ["Text", "Binary"] };
@@ -1196,6 +1220,44 @@ describe("HttpConnection", () => {
             }
 
             expect(sentMessage).toBe("(LongPolling transport) sending data. Binary data of length 5. Content: '0x68 0x69 0x20 0x3a 0x29'.");
+        });
+    });
+
+    it("send after restarting connection works", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                WebSocket: TestWebSocket,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => defaultNegotiateResponse)
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            const closePromise = new PromiseSource();
+            connection.onclose = (e) => {
+                closePromise.resolve();
+            };
+
+            TestWebSocket.webSocketSet = new PromiseSource();
+            let startPromise = connection.start(TransferFormat.Text);
+            await TestWebSocket.webSocketSet;
+            await TestWebSocket.webSocket.openSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            await startPromise;
+
+            await connection.send("text");
+            TestWebSocket.webSocket.close();
+            TestWebSocket.webSocketSet = new PromiseSource();
+
+            await closePromise;
+
+            startPromise = connection.start(TransferFormat.Text);
+            await TestWebSocket.webSocketSet;
+            TestWebSocket.webSocket.onopen(new TestEvent());
+            await startPromise;
+            await connection.send("text");
         });
     });
 

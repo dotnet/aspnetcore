@@ -2,15 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
 using Xunit;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.E2ETesting
 {
@@ -21,10 +18,8 @@ namespace Microsoft.AspNetCore.E2ETesting
         private static readonly AsyncLocal<ILogs> _logs = new AsyncLocal<ILogs>();
         private static readonly AsyncLocal<ITestOutputHelper> _output = new AsyncLocal<ITestOutputHelper>();
 
-        // Limit the number of concurrent browser tests.
-        private readonly static int MaxConcurrentBrowsers = Environment.ProcessorCount * 2;
-        private static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(MaxConcurrentBrowsers);
-        private bool _semaphoreHeld;
+        private ExceptionDispatchInfo _exceptionDispatchInfo;
+        private IWebDriver _browser;
 
         public BrowserTestBase(BrowserFixture browserFixture, ITestOutputHelper output)
         {
@@ -32,7 +27,23 @@ namespace Microsoft.AspNetCore.E2ETesting
             _output.Value = output;
         }
 
-        public IWebDriver Browser { get; set; }
+        public IWebDriver Browser
+        {
+            get
+            {
+                if (_exceptionDispatchInfo != null)
+                {
+                    _exceptionDispatchInfo.Throw();
+                    throw _exceptionDispatchInfo.SourceException;
+                }
+
+                return _browser;
+            }
+            set
+            {
+                _browser = value;
+            }
+        }
 
         public static IWebDriver BrowserAccessor => _asyncBrowser.Value;
 
@@ -44,11 +55,6 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public Task DisposeAsync()
         {
-            if (_semaphoreHeld)
-            {
-                _semaphore.Release();
-            }
-
             return Task.CompletedTask;
         }
 
@@ -70,14 +76,19 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         protected async Task InitializeBrowser(string isolationContext)
         {
-            await _semaphore.WaitAsync(TimeSpan.FromMinutes(30));
-            _semaphoreHeld = true;
+            try
+            {
+                var (browser, logs) = await BrowserFixture.GetOrCreateBrowserAsync(Output, isolationContext);
+                _asyncBrowser.Value = browser;
+                _logs.Value = logs;
 
-            var (browser, logs) = await BrowserFixture.GetOrCreateBrowserAsync(Output, isolationContext);
-            _asyncBrowser.Value = browser;
-            _logs.Value = logs;
-
-            Browser = browser;
+                Browser = browser;
+            }
+            catch (Exception ex)
+            {
+                _exceptionDispatchInfo = ExceptionDispatchInfo.Capture(ex);
+                throw;
+            }
         }
     }
 }

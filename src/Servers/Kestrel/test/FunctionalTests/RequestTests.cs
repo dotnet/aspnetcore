@@ -132,9 +132,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [ConditionalFact]
         [IPv6SupportedCondition]
-#if LIBUV
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1977", FlakyOn.Helix.All)] // https://github.com/dotnet/aspnetcore/issues/8109
-#endif
         public Task RemoteIPv6Address()
         {
             return TestRemoteIPAddress("[::1]", "[::1]", "::1");
@@ -174,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task CanHandleMultipleConcurrentRequests()
         {
             var requestNumber = 0;
-            var ensureConcurrentRequestTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var ensureConcurrentRequestTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(async context =>
             {
@@ -184,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
                 else
                 {
-                    ensureConcurrentRequestTcs.SetResult(null);
+                    ensureConcurrentRequestTcs.SetResult();
                 }
             }, new TestServiceContext(LoggerFactory)))
             {
@@ -503,18 +500,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [MemberData(nameof(ConnectionMiddlewareData))]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23043")]
         public async Task ConnectionClosedTokenFiresOnClientFIN(ListenOptions listenOptions)
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var appStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var connectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(context =>
             {
-                appStartedTcs.SetResult(null);
+                appStartedTcs.SetResult();
 
                 var connectionLifetimeFeature = context.Features.Get<IConnectionLifetimeFeature>();
-                connectionLifetimeFeature.ConnectionClosed.Register(() => connectionClosedTcs.SetResult(null));
+                connectionLifetimeFeature.ConnectionClosed.Register(() => connectionClosedTcs.SetResult());
 
                 return Task.CompletedTask;
             }, testContext, listenOptions))
@@ -538,17 +536,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2181", FlakyOn.Helix.All)]
         [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task ConnectionClosedTokenFiresOnServerFIN(ListenOptions listenOptions)
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var connectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(context =>
             {
                 var connectionLifetimeFeature = context.Features.Get<IConnectionLifetimeFeature>();
-                connectionLifetimeFeature.ConnectionClosed.Register(() => connectionClosedTcs.SetResult(null));
+                connectionLifetimeFeature.ConnectionClosed.Register(() => connectionClosedTcs.SetResult());
 
                 return Task.CompletedTask;
             }, testContext, listenOptions))
@@ -580,12 +577,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task ConnectionClosedTokenFiresOnServerAbort(ListenOptions listenOptions)
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var connectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var connectionClosedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(context =>
             {
                 var connectionLifetimeFeature = context.Features.Get<IConnectionLifetimeFeature>();
-                connectionLifetimeFeature.ConnectionClosed.Register(() => connectionClosedTcs.SetResult(null));
+                connectionLifetimeFeature.ConnectionClosed.Register(() => connectionClosedTcs.SetResult());
 
                 context.Abort();
 
@@ -626,7 +623,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var testContext = new TestServiceContext(LoggerFactory);
 
-            var readTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var readTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var registrationTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var requestId = 0;
 
@@ -716,10 +713,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             const int connectionFinSentEventId = 7;
             const int maxRequestBufferSize = 4096;
 
-            var readCallbackUnwired = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var clientClosedConnection = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var serverClosedConnection = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var appFuncCompleted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var readCallbackUnwired = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var clientClosedConnection = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var serverClosedConnection = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appFuncCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             TestSink.MessageLogged += context =>
             {
@@ -731,11 +728,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 if (context.EventId.Id == connectionPausedEventId)
                 {
-                    readCallbackUnwired.TrySetResult(null);
+                    readCallbackUnwired.TrySetResult();
                 }
                 else if (context.EventId == connectionFinSentEventId)
                 {
-                    serverClosedConnection.SetResult(null);
+                    serverClosedConnection.SetResult();
                 }
             };
 
@@ -763,7 +760,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 await serverClosedConnection.Task;
 
-                appFuncCompleted.SetResult(null);
+                appFuncCompleted.SetResult();
             }, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
@@ -781,7 +778,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await readCallbackUnwired.Task.DefaultTimeout();
                 }
 
-                clientClosedConnection.SetResult(null);
+                clientClosedConnection.SetResult();
 
                 await appFuncCompleted.Task.DefaultTimeout();
                 await server.StopAsync();
@@ -791,14 +788,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-#if LIBUV
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1971", FlakyOn.Helix.All)]
-#endif
         [MemberData(nameof(ConnectionMiddlewareData))]
         public async Task AppCanHandleClientAbortingConnectionMidRequest(ListenOptions listenOptions)
         {
-            var readTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var appStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var readTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var mockKestrelTrace = new Mock<IKestrelTrace>();
             var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object);
@@ -807,7 +801,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             using (var server = new TestServer(async context =>
             {
-                appStartedTcs.SetResult(null);
+                appStartedTcs.SetResult();
 
                 try
                 {

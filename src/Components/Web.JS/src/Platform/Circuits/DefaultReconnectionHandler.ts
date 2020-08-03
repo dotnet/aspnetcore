@@ -1,4 +1,4 @@
-import { ReconnectionHandler, ReconnectionOptions } from './BlazorOptions';
+import { ReconnectionHandler, ReconnectionOptions } from './CircuitStartOptions';
 import { ReconnectDisplay } from './ReconnectDisplay';
 import { DefaultReconnectDisplay } from './DefaultReconnectDisplay';
 import { UserSpecifiedDisplay } from './UserSpecifiedDisplay';

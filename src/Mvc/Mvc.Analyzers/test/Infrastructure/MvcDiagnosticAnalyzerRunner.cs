@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Immutable;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.CodeAnalysis;
@@ -20,7 +24,28 @@ namespace Microsoft.AspNetCore.Mvc
 
         public Task<Diagnostic[]> GetDiagnosticsAsync(string source)
         {
-            return GetDiagnosticsAsync(sources: new[] { source }, Analyzer, Array.Empty<string>());
+            var project = CreateProjectWithReferencesInBinDir(GetType().Assembly, source);
+
+            return GetDiagnosticsAsync(project);
+        }
+
+        public static Project CreateProjectWithReferencesInBinDir(Assembly testAssembly, params string[] source)
+        {
+            // The deps file in the project is incorrect and does not contain "compile" nodes for some references.
+            // However these binaries are always present in the bin output. As a "temporary" workaround, we'll add
+            // every dll file that's present in the test's build output as a metadatareference.
+
+            var project = DiagnosticProject.Create(testAssembly, source);
+
+            foreach (var assembly in Directory.EnumerateFiles(AppContext.BaseDirectory, "*.dll"))
+            {
+                if (!project.MetadataReferences.Any(c => string.Equals(Path.GetFileNameWithoutExtension(c.Display), Path.GetFileNameWithoutExtension(assembly), StringComparison.OrdinalIgnoreCase)))
+                {
+                    project = project.AddMetadataReference(MetadataReference.CreateFromFile(assembly));
+                }
+            }
+
+            return project;
         }
 
         public Task<Diagnostic[]> GetDiagnosticsAsync(Project project)

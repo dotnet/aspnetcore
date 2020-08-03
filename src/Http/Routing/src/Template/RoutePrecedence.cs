@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -219,7 +221,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         // see description on ComputeInboundPrecedenceDigit(TemplateSegment segment)
         //
         // With a RoutePattern, parameters with a required value are treated as a literal segment
-        private static int ComputeInboundPrecedenceDigit(RoutePattern routePattern, RoutePatternPathSegment pathSegment)
+        internal static int ComputeInboundPrecedenceDigit(RoutePattern routePattern, RoutePatternPathSegment pathSegment)
         {
             if (pathSegment.Parts.Count > 1)
             {

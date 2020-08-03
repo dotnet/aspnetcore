@@ -27,6 +27,7 @@ namespace TestServer
             services.AddMvc();
 
             services.AddServerSideBlazor();
+
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
             services.AddAuthorization(options =>
             {
@@ -48,8 +49,8 @@ namespace TestServer
             // Mount the server-side Blazor app on /subdir
             app.Map("/subdir", app =>
             {
+                app.UseBlazorFrameworkFiles();
                 app.UseStaticFiles();
-                app.UseClientSideBlazorFiles<BasicTestApp.Program>();
 
                 app.UseRouting();
                 app.UseEndpoints(endpoints =>
@@ -66,7 +67,7 @@ namespace TestServer
     public class AuthenticationStartup : AuthenticationStartupBase
     {
         public AuthenticationStartup(IConfiguration configuration)
-            : base(configuration, (endpoints) => endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Program>("index.html"))
+            : base(configuration, (endpoints) => endpoints.MapFallbackToFile("index.html"))
         {
         }
     }

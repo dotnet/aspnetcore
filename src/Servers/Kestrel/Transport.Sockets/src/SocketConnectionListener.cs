@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
@@ -23,6 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private Socket _listenSocket;
         private int _schedulerIndex;
         private readonly SocketTransportOptions _options;
+        private SafeSocketHandle _socketHandle;
 
         public EndPoint EndPoint { get; private set; }
 
@@ -62,33 +62,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 throw new InvalidOperationException(SocketsStrings.TransportAlreadyBound);
             }
 
-            // Check if EndPoint is a FileHandleEndpoint before attempting to access EndPoint.AddressFamily
-            // since that will throw an NotImplementedException.
-            if (EndPoint is FileHandleEndPoint)
-            {
-                throw new NotSupportedException(SocketsStrings.FileHandleEndPointNotSupported);
-            }
-
             Socket listenSocket;
 
-            // Unix domain sockets are unspecified
-            var protocolType = EndPoint is UnixDomainSocketEndPoint ? ProtocolType.Unspecified : ProtocolType.Tcp;
-
-            listenSocket = new Socket(EndPoint.AddressFamily, SocketType.Stream, protocolType);
-
-            // Kestrel expects IPv6Any to bind to both IPv6 and IPv4
-            if (EndPoint is IPEndPoint ip && ip.Address == IPAddress.IPv6Any)
+            switch (EndPoint)
             {
-                listenSocket.DualMode = true;
+                case FileHandleEndPoint fileHandle:
+                    _socketHandle = new SafeSocketHandle((IntPtr)fileHandle.FileHandle, ownsHandle: true);
+                    listenSocket = new Socket(_socketHandle);
+                    break;
+                case UnixDomainSocketEndPoint unix:
+                    listenSocket = new Socket(unix.AddressFamily, SocketType.Stream, ProtocolType.Unspecified);
+                    BindSocket();
+                    break;
+                case IPEndPoint ip:
+                    listenSocket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+
+                    // Kestrel expects IPv6Any to bind to both IPv6 and IPv4
+                    if (ip.Address == IPAddress.IPv6Any)
+                    {
+                        listenSocket.DualMode = true;
+                    }
+                    BindSocket();
+                    break;
+                default:
+                    listenSocket = new Socket(EndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                    BindSocket();
+                    break;
             }
 
-            try
+            void BindSocket()
             {
-                listenSocket.Bind(EndPoint);
-            }
-            catch (SocketException e) when (e.SocketErrorCode == SocketError.AddressAlreadyInUse)
-            {
-                throw new AddressInUseException(e.Message, e);
+                try
+                {
+                    listenSocket.Bind(EndPoint);
+                }
+                catch (SocketException e) when (e.SocketErrorCode == SocketError.AddressAlreadyInUse)
+                {
+                    throw new AddressInUseException(e.Message, e);
+                }
             }
 
             EndPoint = listenSocket.LocalEndPoint;
@@ -112,7 +123,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         acceptSocket.NoDelay = _options.NoDelay;
                     }
 
-                    var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[_schedulerIndex], _trace, _options.MaxReadBufferSize, _options.MaxWriteBufferSize);
+                    var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[_schedulerIndex], _trace,
+                        _options.MaxReadBufferSize, _options.MaxWriteBufferSize, _options.WaitForDataBeforeAllocatingBuffer);
 
                     connection.Start();
 
@@ -141,12 +153,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
         {
             _listenSocket?.Dispose();
+
+            _socketHandle?.Dispose();
             return default;
         }
 
         public ValueTask DisposeAsync()
         {
             _listenSocket?.Dispose();
+
+            _socketHandle?.Dispose();
+
             // Dispose the memory pool
             _memoryPool.Dispose();
             return default;

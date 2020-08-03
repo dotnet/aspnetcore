@@ -173,19 +173,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         private static IEnumerable<string> SplitAndTrimPropertyNames(string original)
-        {
-            if (string.IsNullOrEmpty(original))
-            {
-                return Array.Empty<string>();
-            }
-
-            var split = original
-                .Split(',')
-                .Select(piece => piece.Trim())
-                .Where(trimmed => !string.IsNullOrEmpty(trimmed));
-
-            return split;
-        }
+            => original?.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
 
         private void CheckForLocalizer(ClientModelValidationContext context)
         {

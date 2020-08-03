@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                 }
 
                 Configuration = builder 
-                    .AddEnvironmentVariables("E2ETESTS")
+                    .AddEnvironmentVariables("E2ETESTS_")
                     .Build();
 
                 var instance = new E2ETestOptions();
@@ -51,10 +51,14 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
         }
 
-        public int DefaultWaitTimeoutInSeconds { get; set; } = 3;
+        public int DefaultWaitTimeoutInSeconds { get; set; } = 15;
 
         public string ScreenShotsPath { get; set; }
 
         public double DefaultAfterFailureWaitTimeoutInSeconds { get; set; } = 3;
+
+        public bool SauceTest { get; set; }
+
+        public SauceOptions Sauce { get; set; }
     }
 }

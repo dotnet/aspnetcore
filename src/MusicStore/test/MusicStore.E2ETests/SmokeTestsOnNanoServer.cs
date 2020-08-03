@@ -244,7 +244,7 @@ namespace E2ETests
                     _remoteDeploymentConfig.AccountName,
                     _remoteDeploymentConfig.AccountPassword)
                 {
-                    TargetFramework = Tfm.NetCoreApp50,
+                    TargetFramework = Tfm.Net50,
                     ApplicationBaseUriHint = applicationBaseUrl,
                     ApplicationType = applicationType
                 };

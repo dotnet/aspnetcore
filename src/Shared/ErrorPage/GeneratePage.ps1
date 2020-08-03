@@ -2,7 +2,7 @@ param(
     [Parameter(Mandatory = $true)][string]$ToolingRepoPath
 )
 
-$ToolPath = Join-Path $ToolingRepoPath "artifacts\bin\RazorPageGenerator\Debug\netcoreapp5.0\dotnet-razorpagegenerator.exe"
+$ToolPath = Join-Path $ToolingRepoPath "artifacts\bin\RazorPageGenerator\Debug\net5.0\dotnet-razorpagegenerator.exe"
 
 if (!(Test-Path $ToolPath)) {
     throw "Unable to find razor page generator tool at $ToolPath"

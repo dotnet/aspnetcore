@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -21,7 +23,7 @@ namespace RoutingWebSite
                 .AddNewtonsoftJson()
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
-            services.AddSingleton<Transformer>();
+            services.AddTransient<Transformer>();
 
             // Used by some controllers defined in this project.
             services.Configure<RouteOptions>(options => options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer));
@@ -32,8 +34,10 @@ namespace RoutingWebSite
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapDynamicControllerRoute<Transformer>("dynamic/{**slug}");
-                endpoints.MapDynamicPageRoute<Transformer>("dynamicpage/{**slug}");
+                endpoints.MapDynamicControllerRoute<Transformer>("v1/dynamic/{**slug}", new DynamicVersion { Version = "V1" });
+                endpoints.MapDynamicControllerRoute<Transformer>("v2/dynamic/{**slug}", new DynamicVersion { Version = "V2" });
+                endpoints.MapDynamicPageRoute<Transformer>("v1/dynamicpage/{**slug}", new DynamicVersion { Version = "V1" });
+                endpoints.MapDynamicPageRoute<Transformer>("v2/dynamicpage/{**slug}", new DynamicVersion { Version = "V2" });
 
                 endpoints.MapControllerRoute("link", "link_generation/{controller}/{action}/{id?}");
 
@@ -59,7 +63,20 @@ namespace RoutingWebSite
                     results[split[0]] = split[1];
                 }
 
+                results["version"] = ((DynamicVersion)State).Version;
+
                 return new ValueTask<RouteValueDictionary>(results);
+            }
+
+            public override ValueTask<IReadOnlyList<Endpoint>> FilterAsync(HttpContext httpContext, RouteValueDictionary values, IReadOnlyList<Endpoint> endpoints)
+            {
+                var version = ((DynamicVersion)State).Version;
+                if (version == "V2" && version == (string)values["version"])
+                {
+                    // For v1 routes this transformer will work fine, for v2 routes, it will filter them.
+                    return new ValueTask<IReadOnlyList<Endpoint>>(Array.Empty<Endpoint>());
+                }
+                return base.FilterAsync(httpContext, values, endpoints);
             }
         }
     }

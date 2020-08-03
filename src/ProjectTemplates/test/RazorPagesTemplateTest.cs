@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -25,7 +26,8 @@ namespace Templates.Test
 
         public ITestOutputHelper Output { get; }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         public async Task RazorPagesTemplate_NoAuth()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpagesnoauth", Output);
@@ -93,9 +95,11 @@ namespace Templates.Test
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(false)]
         [InlineData(true)]
+        [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
         public async Task RazorPagesTemplate_IndividualAuth(bool useLocalDB)
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpagesindividual" + (useLocalDB ? "uld" : ""), Output);
@@ -209,6 +213,42 @@ namespace Templates.Test
                 await aspNetProcess.AssertPagesOk(pages);
             }
         }
+
+        [Fact]
+        public async Task RazorPagesTemplate_RazorRuntimeCompilation_BuildsAndPublishes()
+        {
+            await BuildAndPublishRazorPagesTemplate(auth: null, new[] { "--razor-runtime-compilation" });
+
+            Assert.False(Directory.Exists(Path.Combine(Project.TemplatePublishDir, "refs")), "The refs directory should not be published.");
+
+            // Verify ref assemblies isn't published
+            var refsDirectory = Path.Combine(Project.TemplatePublishDir, "refs");
+            Assert.False(Directory.Exists(refsDirectory), $"{refsDirectory} should not be in the publish output.");
+        }
+
+        [Theory]
+        [InlineData("IndividualB2C", null)]
+        [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+        [InlineData("SingleOrg", null)]
+        [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+        [InlineData("SingleOrg", new string[] { "--calls-graph" })]
+        public Task RazorPagesTemplate_IdentityWeb_BuildsAndPublishes(string auth, string[] args) => BuildAndPublishRazorPagesTemplate(auth: auth, args: args);
+
+        private async Task BuildAndPublishRazorPagesTemplate(string auth, string[] args)
+        {
+            Project = await ProjectFactory.GetOrCreateProject("razorpages" + Guid.NewGuid().ToString().Substring(0, 10).ToLower(), Output);
+
+            var createResult = await Project.RunDotNetNewAsync("razor", auth: auth, args: args);
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
+
+            // Verify building in debug works
+            var buildResult = await Project.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
+
+            // Publish builds in "release" configuration. Running publish should ensure we can compile in release and that we can publish without issues.
+            buildResult = await Project.RunDotNetPublishAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, buildResult));
+       }
 
 
         private string ReadFile(string basePath, string path)

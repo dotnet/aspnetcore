@@ -6,8 +6,6 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <Description>Roslyn analyzers for ASP.NET Core Components.</Description>
-    <IsShippingPackage>true</IsShippingPackage>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +16,7 @@
   <ItemGroup>
     <None Include="$(TargetPath)" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="build/netstandard2.0/*" Pack="true" PackagePath="build/netstandard2.0" />
+    <None Include="buildTransitive/netstandard2.0/*" Pack="true" PackagePath="buildTransitive/netstandard2.0" />
   </ItemGroup>
 
 </Project>

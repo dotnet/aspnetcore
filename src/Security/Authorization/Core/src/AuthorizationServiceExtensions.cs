@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// A flag indicating whether policy evaluation has succeeded or failed.
         /// This value is <value>true</value> when the user fulfills the policy, otherwise <value>false</value>.
         /// </returns>
-        public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, object resource, AuthorizationPolicy policy)
+        public static Task<AuthorizationResult> AuthorizeAsync(this IAuthorizationService service, ClaimsPrincipal user, object? resource, AuthorizationPolicy policy)
         {
             if (service == null)
             {

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Html
         /// Creates a new <see cref="HtmlString"/>.
         /// </summary>
         /// <param name="value">The HTML encoded value.</param>
-        public HtmlString(string value)
+        public HtmlString(string? value)
         {
             Value = value;
         }
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Html
         /// <summary>
         /// Gets the HTML encoded value.
         /// </summary>
-        public string Value { get; }
+        public string? Value { get; }
 
         /// <inheritdoc />
         public void WriteTo(TextWriter writer, HtmlEncoder encoder)

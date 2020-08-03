@@ -29,16 +29,16 @@ if (Get-Command "node.exe" -ErrorAction SilentlyContinue)
     exit
 }
 
-if (Test-Path "$output_dir\node.exe")
+if (Test-Path "$InstallDir\node.exe")
 {
-    Write-Host "Node.exe found at $output_dir"
+    Write-Host "Node.exe found at $InstallDir"
     exit
 }
 
 $nodeFile="node-v$Version-win-x64"
 $url="http://nodejs.org/dist/v$Version/$nodeFile.zip"
 Write-Host "Starting download of NodeJs ${Version} from $url"
-Invoke-WebRequest -UseBasicParsing -Uri "$url" -OutFile "nodejs.zip"
+& $PSScriptRoot\Download.ps1 $url nodejs.zip
 Write-Host "Done downloading NodeJS ${Version}"
 
 $tempPath = [System.IO.Path]::GetTempPath()

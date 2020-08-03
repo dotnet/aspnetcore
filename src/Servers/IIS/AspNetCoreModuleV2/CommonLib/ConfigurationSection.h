@@ -33,6 +33,8 @@
 #define CS_ASPNETCORE_DETAILEDERRORS                     L"ASPNETCORE_DETAILEDERRORS"
 #define CS_ASPNETCORE_ENVIRONMENT                        L"ASPNETCORE_ENVIRONMENT"
 #define CS_DOTNET_ENVIRONMENT                            L"DOTNET_ENVIRONMENT"
+#define CS_ANCM_LAUNCHER_PATH                            L"ANCM_LAUNCHER_PATH"
+#define CS_ANCM_LAUNCHER_ARGS                            L"ANCM_LAUNCHER_ARGS"
 
 class ConfigurationSection: NonCopyable
 {

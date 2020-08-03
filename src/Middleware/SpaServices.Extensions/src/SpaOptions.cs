@@ -72,14 +72,14 @@ namespace Microsoft.AspNetCore.SpaServices
         public string SourcePath { get; set; }
 
         /// <summary>
-        /// Controls wether the development server should be used with a dynamic or fixed port.
+        /// Controls whether the development server should be used with a dynamic or fixed port.
         /// </summary>
         public int DevServerPort { get; set; } = default(int);
 
         /// <summary>
-        /// Gets or sets the name of the package manager executible, (e.g npm,
+        /// Gets or sets the name of the package manager executable, (e.g npm,
         /// yarn) to run the SPA.
-        /// 
+        ///
         /// The default value is 'npm'.
         /// </summary>
         public string PackageManagerCommand

@@ -8,7 +8,7 @@ import { AbortError, DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, H
 import { MessagePackHubProtocol } from "@microsoft/signalr-protocol-msgpack";
 import { getUserAgentHeader, Platform } from "@microsoft/signalr/dist/esm/Utils";
 
-import { eachTransport, eachTransportAndProtocolAndHttpClient, ENDPOINT_BASE_HTTPS_URL, ENDPOINT_BASE_URL } from "./Common";
+import { DEFAULT_TIMEOUT_INTERVAL, eachTransport, eachTransportAndProtocolAndHttpClient, ENDPOINT_BASE_HTTPS_URL, ENDPOINT_BASE_URL } from "./Common";
 import "./LogBannerReporter";
 import { TestLogger } from "./TestLogger";
 
@@ -21,6 +21,8 @@ const TESTHUBENDPOINT_HTTPS_URL = ENDPOINT_BASE_HTTPS_URL ? (ENDPOINT_BASE_HTTPS
 
 const TESTHUB_NOWEBSOCKETS_ENDPOINT_URL = ENDPOINT_BASE_URL + "/testhub-nowebsockets";
 const TESTHUB_REDIRECT_ENDPOINT_URL = ENDPOINT_BASE_URL + "/redirect?numRedirects=0&baseUrl=" + ENDPOINT_BASE_URL;
+
+jasmine.DEFAULT_TIMEOUT_INTERVAL = DEFAULT_TIMEOUT_INTERVAL;
 
 const commonOptions: IHttpConnectionOptions = {
     logMessageContent: true,
@@ -52,7 +54,7 @@ function getConnectionBuilder(transportType?: HttpTransportType, url?: string, o
 describe("hubConnection", () => {
     eachTransportAndProtocolAndHttpClient((transportType, protocol, httpClient) => {
         describe("using " + protocol.name + " over " + HttpTransportType[transportType] + " transport", () => {
-            it("can invoke server method and receive result", (done) => {
+            it("can invoke server method and receive result", async (done) => {
                 const message = "你好，世界！";
 
                 const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
@@ -64,22 +66,16 @@ describe("hubConnection", () => {
                     done();
                 });
 
-                hubConnection.start().then(() => {
-                    hubConnection.invoke("Echo", message).then((result) => {
-                        expect(result).toBe(message);
-                    }).catch((e) => {
-                        fail(e);
-                    }).then(() => {
-                        hubConnection.stop();
-                    });
-                }).catch((e) => {
-                    fail(e);
-                    done();
-                });
+                await hubConnection.start();
+                const result = await hubConnection.invoke("Echo", message);
+                expect(result).toBe(message);
+
+                await hubConnection.stop();
+                done();
             });
 
             if (shouldRunHttpsTests) {
-                it("using https, can invoke server method and receive result", (done) => {
+                it("using https, can invoke server method and receive result", async (done) => {
                     const message = "你好，世界！";
 
                     const hubConnection = getConnectionBuilder(transportType, TESTHUBENDPOINT_HTTPS_URL, { httpClient })
@@ -91,22 +87,16 @@ describe("hubConnection", () => {
                         done();
                     });
 
-                    hubConnection.start().then(() => {
-                        hubConnection.invoke("Echo", message).then((result) => {
-                            expect(result).toBe(message);
-                        }).catch((e) => {
-                            fail(e);
-                        }).then(() => {
-                            hubConnection.stop();
-                        });
-                    }).catch((e) => {
-                        fail(e);
-                        done();
-                    });
+                    await hubConnection.start();
+                    const result = await hubConnection.invoke("Echo", message);
+                    expect(result).toBe(message);
+
+                    await hubConnection.stop();
+                    done();
                 });
             }
 
-            it("can invoke server method non-blocking and not receive result", (done) => {
+            it("can invoke server method non-blocking and not receive result", async (done) => {
                 const message = "你好，世界！";
 
                 const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
@@ -118,19 +108,14 @@ describe("hubConnection", () => {
                     done();
                 });
 
-                hubConnection.start().then(() => {
-                    hubConnection.send("Echo", message).catch((e) => {
-                        fail(e);
-                    }).then(() => {
-                        hubConnection.stop();
-                    });
-                }).catch((e) => {
-                    fail(e);
-                    done();
-                });
+                await hubConnection.start();
+                await hubConnection.send("Echo", message);
+
+                await hubConnection.stop();
+                done();
             });
 
-            it("can invoke server method structural object and receive structural result", (done) => {
+            it("can invoke server method structural object and receive structural result", async (done) => {
                 const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
                     .withHubProtocol(protocol)
                     .build();
@@ -146,15 +131,11 @@ describe("hubConnection", () => {
                     done();
                 });
 
-                hubConnection.start().then(() => {
-                    hubConnection.send("SendCustomObject", { Name: "test", Value: 42 });
-                }).catch((e) => {
-                    fail(e);
-                    done();
-                });
+                await hubConnection.start();
+                await hubConnection.send("SendCustomObject", { Name: "test", Value: 42 });
             });
 
-            it("can stream server method and receive result", (done) => {
+            it("can stream server method and receive result", async (done) => {
                 const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
                     .withHubProtocol(protocol)
                     .build();
@@ -165,27 +146,23 @@ describe("hubConnection", () => {
                 });
 
                 const received: string[] = [];
-                hubConnection.start().then(() => {
-                    hubConnection.stream<string>("Stream").subscribe({
-                        complete() {
-                            expect(received).toEqual(["a", "b", "c"]);
-                            hubConnection.stop();
-                        },
-                        error(err) {
-                            fail(err);
-                            hubConnection.stop();
-                        },
-                        next(item) {
-                            received.push(item);
-                        },
-                    });
-                }).catch((e) => {
-                    fail(e);
-                    done();
+                await hubConnection.start();
+                hubConnection.stream<string>("Stream").subscribe({
+                    async complete() {
+                        expect(received).toEqual(["a", "b", "c"]);
+                        await hubConnection.stop();
+                    },
+                    async error(err) {
+                        fail(err);
+                        await hubConnection.stop();
+                    },
+                    next(item) {
+                        received.push(item);
+                    },
                 });
             });
 
-            it("can stream server method and cancel stream", (done) => {
+            it("can stream server method and cancel stream", async (done) => {
                 const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
                     .withHubProtocol(protocol)
                     .build();
@@ -195,152 +172,130 @@ describe("hubConnection", () => {
                     done();
                 });
 
-                hubConnection.on("StreamCanceled", () => {
-                    hubConnection.stop();
+                hubConnection.on("StreamCanceled", async () => {
+                    await hubConnection.stop();
                 });
 
-                hubConnection.start().then(() => {
-                    const subscription = hubConnection.stream<string>("InfiniteStream").subscribe({
-                        complete() {
-                        },
-                        error(err) {
-                            fail(err);
-                            hubConnection.stop();
-                        },
-                        next() {
-                        },
-                    });
-
-                    subscription.dispose();
-                }).catch((e) => {
-                    fail(e);
-                    done();
+                await hubConnection.start();
+                const subscription = hubConnection.stream<string>("InfiniteStream").subscribe({
+                    complete() {
+                    },
+                    async error(err) {
+                        fail(err);
+                        await hubConnection.stop();
+                    },
+                    next() {
+                    },
                 });
+
+                subscription.dispose();
             });
 
-            it("rethrows an exception from the server when invoking", (done) => {
+            it("rethrows an exception from the server when invoking", async (done) => {
                 const errorMessage = "An unexpected error occurred invoking 'ThrowException' on the server. InvalidOperationException: An error occurred.";
                 const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
                     .withHubProtocol(protocol)
                     .build();
 
-                hubConnection.start().then(() => {
-                    hubConnection.invoke("ThrowException", "An error occurred.").then(() => {
-                        // exception expected but none thrown
-                        fail();
-                    }).catch((e) => {
-                        expect(e.message).toBe(errorMessage);
-                    }).then(() => {
-                        return hubConnection.stop();
-                    }).then(() => {
-                        done();
-                    });
-                }).catch((e) => {
-                    fail(e);
-                    done();
-                });
+                await hubConnection.start();
+                try {
+                    await hubConnection.invoke("ThrowException", "An error occurred.");
+                    // exception expected but none thrown
+                    fail();
+                } catch (e) {
+                    expect(e.message).toBe(errorMessage);
+                }
+
+                await hubConnection.stop();
+                done();
             });
 
-            it("throws an exception when invoking streaming method with invoke", (done) => {
+            it("throws an exception when invoking streaming method with invoke", async (done) => {
                 const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
                     .withHubProtocol(protocol)
                     .build();
 
-                hubConnection.start().then(() => {
-                    hubConnection.invoke("EmptyStream").then(() => {
-                        // exception expected but none thrown
-                        fail();
-                    }).catch((e) => {
-                        expect(e.message).toBe("The client attempted to invoke the streaming 'EmptyStream' method with a non-streaming invocation.");
-                    }).then(() => {
-                        return hubConnection.stop();
-                    }).then(() => {
-                        done();
-                    });
-                }).catch((e) => {
-                    fail(e);
-                    done();
-                });
+                await hubConnection.start();
+
+                try {
+                    await hubConnection.invoke("EmptyStream");
+                    // exception expected but none thrown
+                    fail();
+                } catch (e) {
+                    expect(e.message).toBe("The client attempted to invoke the streaming 'EmptyStream' method with a non-streaming invocation.");
+                }
+
+                await hubConnection.stop();
+                done();
             });
 
-            it("throws an exception when receiving a streaming result for method called with invoke", (done) => {
+            it("throws an exception when receiving a streaming result for method called with invoke", async (done) => {
                 const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
                     .withHubProtocol(protocol)
                     .build();
 
-                hubConnection.start().then(() => {
-                    hubConnection.invoke("Stream").then(() => {
-                        // exception expected but none thrown
-                        fail();
-                    }).catch((e) => {
-                        expect(e.message).toBe("The client attempted to invoke the streaming 'Stream' method with a non-streaming invocation.");
-                    }).then(() => {
-                        return hubConnection.stop();
-                    }).then(() => {
-                        done();
-                    });
-                }).catch((e) => {
-                    fail(e);
-                    done();
-                });
+                await hubConnection.start();
+
+                try {
+                    await hubConnection.invoke("Stream");
+                    // exception expected but none thrown
+                    fail();
+                } catch (e) {
+                    expect(e.message).toBe("The client attempted to invoke the streaming 'Stream' method with a non-streaming invocation.");
+                }
+
+                await hubConnection.stop();
+                done();
             });
 
-            it("rethrows an exception from the server when streaming", (done) => {
+            it("rethrows an exception from the server when streaming", async (done) => {
                 const errorMessage = "An unexpected error occurred invoking 'StreamThrowException' on the server. InvalidOperationException: An error occurred.";
                 const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
                     .withHubProtocol(protocol)
                     .build();
 
-                hubConnection.start().then(() => {
-                    hubConnection.stream("StreamThrowException", "An error occurred.").subscribe({
-                        complete() {
-                            hubConnection.stop();
-                            fail();
-                        },
-                        error(err) {
-                            expect(err.message).toEqual(errorMessage);
-                            hubConnection.stop();
-                            done();
-                        },
-                        next() {
-                            hubConnection.stop();
-                            fail();
-                        },
-                    });
-                }).catch((e) => {
-                    fail(e);
-                    done();
+                await hubConnection.start();
+                hubConnection.stream("StreamThrowException", "An error occurred.").subscribe({
+                    async complete() {
+                        await hubConnection.stop();
+                        fail();
+                    },
+                    async error(err) {
+                        expect(err.message).toEqual(errorMessage);
+                        await hubConnection.stop();
+                        done();
+                    },
+                    async next() {
+                        await hubConnection.stop();
+                        fail();
+                    },
                 });
             });
 
-            it("throws an exception when invoking hub method with stream", (done) => {
+            it("throws an exception when invoking hub method with stream", async (done) => {
                 const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
                     .withHubProtocol(protocol)
                     .build();
 
-                hubConnection.start().then(() => {
-                    hubConnection.stream("Echo", "42").subscribe({
-                        complete() {
-                            hubConnection.stop();
-                            fail();
-                        },
-                        error(err) {
-                            expect(err.message).toEqual("The client attempted to invoke the non-streaming 'Echo' method with a streaming invocation.");
-                            hubConnection.stop();
-                            done();
-                        },
-                        next() {
-                            hubConnection.stop();
-                            fail();
-                        },
-                    });
-                }).catch((e) => {
-                    fail(e);
-                    done();
+                await hubConnection.start();
+                hubConnection.stream("Echo", "42").subscribe({
+                    async complete() {
+                        await hubConnection.stop();
+                        fail();
+                    },
+                    async error(err) {
+                        expect(err.message).toEqual("The client attempted to invoke the non-streaming 'Echo' method with a streaming invocation.");
+                        await hubConnection.stop();
+                        done();
+                    },
+                    async next() {
+                        await hubConnection.stop();
+                        fail();
+                    },
                 });
             });
 
-            it("can receive server calls", (done) => {
+            it("can receive server calls", async (done) => {
                 const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
                     .withHubProtocol(protocol)
                     .build();
@@ -352,25 +307,22 @@ describe("hubConnection", () => {
                 const idx = Math.floor(Math.random() * (methodName.length - 1));
                 methodName = methodName.substr(0, idx) + methodName[idx].toUpperCase() + methodName.substr(idx + 1);
 
+                const receivePromise = new PromiseSource<string>();
                 hubConnection.on(methodName, (msg) => {
-                    expect(msg).toBe(message);
-                    done();
+                    receivePromise.resolve(msg);
                 });
 
-                hubConnection.start()
-                    .then(() => {
-                        return hubConnection.invoke("InvokeWithString", message);
-                    })
-                    .then(() => {
-                        return hubConnection.stop();
-                    })
-                    .catch((e) => {
-                        fail(e);
-                        done();
-                    });
+                await hubConnection.start();
+                await hubConnection.invoke("InvokeWithString", message);
+
+                const receiveMsg = await receivePromise;
+                expect(receiveMsg).toBe(message);
+
+                await hubConnection.stop();
+                done();
             });
 
-            it("can receive server calls without rebinding handler when restarted", (done) => {
+            it("can receive server calls without rebinding handler when restarted", async (done) => {
                 const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
                     .withHubProtocol(protocol)
                     .build();
@@ -385,22 +337,14 @@ describe("hubConnection", () => {
                 let closeCount = 0;
                 let invocationCount = 0;
 
-                hubConnection.onclose((e) => {
+                hubConnection.onclose(async (e) => {
                     expect(e).toBeUndefined();
                     closeCount += 1;
                     if (closeCount === 1) {
                         // Reconnect
-                        hubConnection.start()
-                            .then(() => {
-                                return hubConnection.invoke("InvokeWithString", message);
-                            })
-                            .then(() => {
-                                return hubConnection.stop();
-                            })
-                            .catch((error) => {
-                                fail(error);
-                                done();
-                            });
+                        await hubConnection.start();
+                        await hubConnection.invoke("InvokeWithString", message);
+                        await hubConnection.stop();
                     } else {
                         expect(invocationCount).toBe(2);
                         done();
@@ -412,17 +356,9 @@ describe("hubConnection", () => {
                     invocationCount += 1;
                 });
 
-                hubConnection.start()
-                    .then(() => {
-                        return hubConnection.invoke("InvokeWithString", message);
-                    })
-                    .then(() => {
-                        return hubConnection.stop();
-                    })
-                    .catch((e) => {
-                        fail(e);
-                        done();
-                    });
+                await hubConnection.start();
+                await hubConnection.invoke("InvokeWithString", message);
+                await hubConnection.stop();
             });
 
             it("closed with error or start fails if hub cannot be created", async (done) => {
@@ -446,7 +382,7 @@ describe("hubConnection", () => {
                 }
             });
 
-            it("can handle different types", (done) => {
+            it("can handle different types", async (done) => {
                 const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
                     .withHubProtocol(protocol)
                     .build();
@@ -468,28 +404,19 @@ describe("hubConnection", () => {
                     String: "Hello, World!",
                 };
 
-                hubConnection.start()
-                    .then(() => {
-                        return hubConnection.invoke("EchoComplexObject", complexObject);
-                    })
-                    .then((value) => {
-                        if (protocol.name === "messagepack") {
-                            // msgpack5 creates a Buffer for byte arrays and jasmine fails to compare a Buffer
-                            // and a Uint8Array even though Buffer instances are also Uint8Array instances
-                            value.ByteArray = new Uint8Array(value.ByteArray);
-                        }
-                        expect(value).toEqual(complexObject);
-                    })
-                    .then(() => {
-                        hubConnection.stop();
-                    })
-                    .catch((e) => {
-                        fail(e);
-                        done();
-                    });
+                await hubConnection.start();
+                const value = await hubConnection.invoke("EchoComplexObject", complexObject);
+                if (protocol.name === "messagepack") {
+                    // msgpack5 creates a Buffer for byte arrays and jasmine fails to compare a Buffer
+                    // and a Uint8Array even though Buffer instances are also Uint8Array instances
+                    value.ByteArray = new Uint8Array(value.ByteArray);
+                }
+                expect(value).toEqual(complexObject);
+
+                await hubConnection.stop();
             });
 
-            it("can receive different types", (done) => {
+            it("can receive different types", async (done) => {
                 const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
                     .withHubProtocol(protocol)
                     .build();
@@ -511,28 +438,19 @@ describe("hubConnection", () => {
                     String: "hello world",
                 };
 
-                hubConnection.start()
-                    .then(() => {
-                        return hubConnection.invoke("SendComplexObject");
-                    })
-                    .then((value) => {
-                        if (protocol.name === "messagepack") {
-                            // msgpack5 creates a Buffer for byte arrays and jasmine fails to compare a Buffer
-                            // and a Uint8Array even though Buffer instances are also Uint8Array instances
-                            value.ByteArray = new Uint8Array(value.ByteArray);
-                        }
-                        expect(value).toEqual(complexObject);
-                    })
-                    .then(() => {
-                        hubConnection.stop();
-                    })
-                    .catch((e) => {
-                        fail(e);
-                        done();
-                    });
+                await hubConnection.start();
+                const value = await hubConnection.invoke("SendComplexObject");
+                if (protocol.name === "messagepack") {
+                    // msgpack5 creates a Buffer for byte arrays and jasmine fails to compare a Buffer
+                    // and a Uint8Array even though Buffer instances are also Uint8Array instances
+                    value.ByteArray = new Uint8Array(value.ByteArray);
+                }
+                expect(value).toEqual(complexObject);
+
+                await hubConnection.stop();
             });
 
-            it("can be restarted", (done) => {
+            it("can be restarted", async (done) => {
                 const message = "你好，世界！";
 
                 const hubConnection = getConnectionBuilder(transportType, undefined, { httpClient })
@@ -540,41 +458,26 @@ describe("hubConnection", () => {
                     .build();
 
                 let closeCount = 0;
-                hubConnection.onclose((error) => {
+                hubConnection.onclose(async (error) => {
                     expect(error).toBe(undefined);
 
                     // Start and invoke again
                     if (closeCount === 0) {
                         closeCount += 1;
-                        hubConnection.start().then(() => {
-                            hubConnection.invoke("Echo", message).then((result) => {
-                                expect(result).toBe(message);
-                            }).catch((e) => {
-                                fail(e);
-                            }).then(() => {
-                                hubConnection.stop();
-                            });
-                        }).catch((e) => {
-                            fail(e);
-                            done();
-                        });
+                        await hubConnection.start();
+                        const value = await hubConnection.invoke("Echo", message);
+                        expect(value).toBe(message);
+                        await hubConnection.stop();
                     } else {
                         done();
                     }
                 });
 
-                hubConnection.start().then(() => {
-                    hubConnection.invoke("Echo", message).then((result) => {
-                        expect(result).toBe(message);
-                    }).catch((e) => {
-                        fail(e);
-                    }).then(() => {
-                        hubConnection.stop();
-                    });
-                }).catch((e) => {
-                    fail(e);
-                    done();
-                });
+                await hubConnection.start();
+                const result = await hubConnection.invoke("Echo", message);
+                expect(result).toBe(message);
+
+                await hubConnection.stop();
             });
 
             it("can stream from client to server with rxjs", async (done) => {
@@ -679,7 +582,6 @@ describe("hubConnection", () => {
             if (transportType !== HttpTransportType.LongPolling) {
                 it("terminates if no messages received within timeout interval", async (done) => {
                     const hubConnection = getConnectionBuilder(transportType).build();
-                    hubConnection.serverTimeoutInMilliseconds = 100;
 
                     hubConnection.onclose((error) => {
                         expect(error).toEqual(new Error("Server timeout elapsed without receiving a message from the server."));
@@ -687,6 +589,12 @@ describe("hubConnection", () => {
                     });
 
                     await hubConnection.start();
+
+                    // set this after start completes to avoid network issues with the handshake taking over 100ms and causing a failure
+                    hubConnection.serverTimeoutInMilliseconds = 1;
+
+                    // invoke a method with a response to reset the timeout using the new value
+                    await hubConnection.invoke("Echo", "");
                 });
             }
 
@@ -1110,6 +1018,34 @@ describe("hubConnection", () => {
                     expect(headerValue).toBeNull();
                 } else {
                     expect(headerValue).toEqual(value);
+                }
+
+                await hubConnection.stop();
+                done();
+            } catch (e) {
+                fail(e);
+            }
+        });
+
+        it("overwrites library headers with user headers", async (done) => {
+            const [name] = getUserAgentHeader();
+            const headers = { [name]: "Custom Agent", "X-HEADER": "VALUE" };
+            const hubConnection = getConnectionBuilder(t, TESTHUBENDPOINT_URL, { headers })
+                .withHubProtocol(new JsonHubProtocol())
+                .build();
+
+            try {
+                await hubConnection.start();
+
+                const customUserHeader = await hubConnection.invoke("GetHeader", "X-HEADER");
+                const headerValue = await hubConnection.invoke("GetHeader", name);
+
+                if ((t === HttpTransportType.ServerSentEvents || t === HttpTransportType.WebSockets) && !Platform.isNode) {
+                    expect(headerValue).toBeNull();
+                    expect(customUserHeader).toBeNull();
+                } else {
+                    expect(headerValue).toEqual("Custom Agent");
+                    expect(customUserHeader).toEqual("VALUE");
                 }
 
                 await hubConnection.stop();

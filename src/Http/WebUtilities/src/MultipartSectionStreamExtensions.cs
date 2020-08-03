@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -26,24 +26,30 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new ArgumentNullException(nameof(section));
             }
 
-            MediaTypeHeaderValue sectionMediaType;
-            MediaTypeHeaderValue.TryParse(section.ContentType, out sectionMediaType);
+            if (section.Body is null)
+            {
+                throw new ArgumentException($"Multipart section must have a body to be read.", nameof(section));
+            }
 
-            Encoding streamEncoding = sectionMediaType?.Encoding;
+            MediaTypeHeaderValue.TryParse(section.ContentType, out var sectionMediaType);
+
+            var streamEncoding = sectionMediaType?.Encoding;
+#pragma warning disable CS0618, SYSLIB0001 // Type or member is obsolete
             if (streamEncoding == null || streamEncoding == Encoding.UTF7)
+#pragma warning restore CS0618, SYSLIB0001 // Type or member is obsolete
             {
                 streamEncoding = Encoding.UTF8;
             }
 
             using (var reader = new StreamReader(
-                section.Body, 
+                section.Body,
                 streamEncoding,
                 detectEncodingFromByteOrderMarks: true,
-                bufferSize: 1024, 
+                bufferSize: 1024,
                 leaveOpen: true))
             {
                 return await reader.ReadToEndAsync();
             }
-        } 
+        }
     }
 }

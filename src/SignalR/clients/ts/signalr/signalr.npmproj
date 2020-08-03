@@ -5,7 +5,6 @@
     <PackageId>@microsoft/signalr</PackageId>
     <IsPackable>true</IsPackable>
     <IsTestProject>false</IsTestProject>
-    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

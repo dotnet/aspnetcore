@@ -3,8 +3,10 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
-    <!-- https://github.com/dotnet/aspnetcore/issues/7939: This unit test requires the shared framework be available in Helix. -->
-    <BuildHelixPayload>false</BuildHelixPayload>
+    <VerifyAncmBinary Condition="'$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' != 'arm'">true</VerifyAncmBinary>
+    <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
+    <TestDependsOnAspNetRef>true</TestDependsOnAspNetRef>
+    <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,6 +37,14 @@
       <_Parameter1>TargetingPackLayoutRoot</_Parameter1>
       <_Parameter2>$(TargetingPackLayoutRoot)</_Parameter2>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+      <_Parameter1>IsTargetingPackBuilding</_Parameter1>
+      <_Parameter2>$(IsTargetingPackBuilding)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+      <_Parameter1>VerifyAncmBinary</_Parameter1>
+      <_Parameter2>$(VerifyAncmBinary)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>
@@ -42,11 +52,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ref\Microsoft.AspNetCore.App.Ref.csproj">
+    <ProjectReference Include="..\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
-    <ProjectReference Include="..\src\Microsoft.AspNetCore.App.Runtime.csproj">
+    <ProjectReference Include="..\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
@@ -54,21 +64,21 @@
 
   <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="InitializeSourceControlInformation">
     <!-- Use the ref pack logic to compute the list of expected targeting pack content -->
-    <MSBuild Projects="$(RepoRoot)src\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj"
+    <MSBuild Projects="$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
         Targets="_ResolveTargetingPackContent"
         SkipNonexistentProjects="false">
       <Output TaskParameter="TargetOutputs" ItemName="_TargetingPackDependencies" />
     </MSBuild>
 
     <!-- This target is defined in eng/targets/Packaging.targets and included in every C# and F# project. -->
-    <MSBuild Projects="$(RepoRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj"
+    <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
         Targets="_GetPackageVersionInfo"
         SkipNonexistentProjects="false">
       <Output TaskParameter="TargetOutputs" ItemName="_RuntimePackageVersionInfo" />
     </MSBuild>
 
     <!-- Runtime and Ref packs may have separate versions. -->
-    <MSBuild Projects="$(RepoRoot)src\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj"
+    <MSBuild Projects="$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
         Targets="_GetPackageVersionInfo"
         SkipNonexistentProjects="false">
       <Output TaskParameter="TargetOutputs" ItemName="_TargetingPackVersionInfo" />
@@ -77,7 +87,29 @@
     <ItemGroup>
       <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
         <_Parameter1>TargetingPackDependencies</_Parameter1>
-        <_Parameter2>@(_TargetingPackDependencies)</_Parameter2>
+        <_Parameter2>@(_TargetingPackDependencies->'%(FileName)')</_Parameter2>
+      </AssemblyAttribute>
+
+      <AspNetCoreTargetingPackDependencies
+        Include="@(_TargetingPackDependencies)"
+        Condition="'%(_TargetingPackDependencies.ReferenceSourceTarget)' == 'ProjectReference'" />
+      <RuntimeTargetingPackDependencies
+        Include="@(_TargetingPackDependencies)"
+        Exclude="@(AspNetCoreTargetingPackDependencies)" />
+
+      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+        <_Parameter1>AspNetCoreTargetingPackDependencies</_Parameter1>
+        <_Parameter2>@(AspNetCoreTargetingPackDependencies->'%(FileName)')</_Parameter2>
+      </AssemblyAttribute>
+
+      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+        <_Parameter1>RuntimeTargetingPackDependencies</_Parameter1>
+        <_Parameter2>@(RuntimeTargetingPackDependencies->'%(FileName)')</_Parameter2>
+      </AssemblyAttribute>
+
+      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+        <_Parameter1>ReferencePackSharedFxVersion</_Parameter1>
+        <_Parameter2>$(ReferencePackSharedFxVersion)</_Parameter2>
       </AssemblyAttribute>
 
       <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">

@@ -1017,11 +1017,18 @@ namespace TestSite
             await context.Response.WriteAsync(httpsPort.HasValue ? httpsPort.Value.ToString() : "NOVALUE");
         }
 
-        public async Task SlowOnCompleted(HttpContext context)
+        public Task Latin1(HttpContext context)
         {
-            // This shouldn't block the response or the server from shutting down.
-            context.Response.OnCompleted(() => Task.Delay(TimeSpan.FromMinutes(5)));
-            await context.Response.WriteAsync("SlowOnCompleted");
+            var value = context.Request.Headers["foo"];
+            Assert.Equal("£", value);
+            return Task.CompletedTask;
+        }
+
+        public Task InvalidCharacter(HttpContext context)
+        {
+            var value = context.Request.Headers["foo"];
+            Assert.Equal("�", value);
+            return Task.CompletedTask;
         }
     }
 }

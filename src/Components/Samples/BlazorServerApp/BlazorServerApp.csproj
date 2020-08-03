@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
     <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
@@ -12,7 +11,6 @@
     <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.Extensions.Hosting" />
-    <Reference Include="Microsoft.AspNetCore.Blazor.DataAnnotations.Validation" />
   </ItemGroup>
 
 </Project>

@@ -1,12 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable warnings
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
@@ -26,6 +29,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private readonly Dictionary<ulong, EventCallback> _eventBindings = new Dictionary<ulong, EventCallback>();
         private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
         private readonly ILogger<Renderer> _logger;
+        private readonly ComponentFactory _componentFactory;
 
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
         private bool _isBatchInProgress;
@@ -54,6 +58,18 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
+            : this(serviceProvider, loggerFactory, GetComponentActivatorOrDefault(serviceProvider))
+        {
+            // This overload is provided for back-compatibility
+        }
+
+        /// <summary>
+        /// Constructs an instance of <see cref="Renderer"/>.
+        /// </summary>
+        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="componentActivator">The <see cref="IComponentActivator"/>.</param>
+        public Renderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, IComponentActivator componentActivator)
         {
             if (serviceProvider is null)
             {
@@ -65,8 +81,20 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
+            if (componentActivator is null)
+            {
+                throw new ArgumentNullException(nameof(componentActivator));
+            }
+
             _serviceProvider = serviceProvider;
             _logger = loggerFactory.CreateLogger<Renderer>();
+            _componentFactory = new ComponentFactory(componentActivator);
+        }
+
+        private static IComponentActivator GetComponentActivatorOrDefault(IServiceProvider serviceProvider)
+        {
+            return serviceProvider.GetService<IComponentActivator>()
+                ?? DefaultComponentActivator.Instance;
         }
 
         /// <summary>
@@ -75,12 +103,18 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public abstract Dispatcher Dispatcher { get; }
 
         /// <summary>
+        /// Gets or sets the <see cref="Components.ElementReferenceContext"/> associated with this <see cref="Renderer"/>,
+        /// if it exists.
+        /// </summary>
+        protected internal ElementReferenceContext? ElementReferenceContext { get; protected set; }
+
+        /// <summary>
         /// Constructs a new component of the specified type.
         /// </summary>
         /// <param name="componentType">The type of the component to instantiate.</param>
         /// <returns>The component instance.</returns>
         protected IComponent InstantiateComponent(Type componentType)
-            => ComponentFactory.Instance.InstantiateComponent(_serviceProvider, componentType);
+            => _componentFactory.InstantiateComponent(_serviceProvider, componentType);
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning
@@ -252,7 +286,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             // Task completed synchronously or is still running. We already processed all of the rendering
             // work that was queued so let our error handler deal with it.
-            return GetErrorHandledTask(task);
+            var result = GetErrorHandledTask(task);
+            return result;
         }
 
         internal void InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
@@ -589,11 +624,43 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 var disposeComponentId = _batchBuilder.ComponentDisposalQueue.Dequeue();
                 var disposeComponentState = GetRequiredComponentState(disposeComponentId);
                 Log.DisposingComponent(_logger, disposeComponentState);
-                if (!disposeComponentState.TryDisposeInBatch(_batchBuilder, out var exception))
+                if (!(disposeComponentState.Component is IAsyncDisposable))
                 {
-                    exceptions ??= new List<Exception>();
-                    exceptions.Add(exception);
+                    if (!disposeComponentState.TryDisposeInBatch(_batchBuilder, out var exception))
+                    {
+                        exceptions ??= new List<Exception>();
+                        exceptions.Add(exception);
+                    }
                 }
+                else
+                {
+                    var result = disposeComponentState.DisposeInBatchAsync(_batchBuilder);
+                    if (result.IsCompleted)
+                    {
+                        if (!result.IsCompletedSuccessfully)
+                        {
+                            exceptions ??= new List<Exception>();
+                            exceptions.Add(result.Exception);
+                        }
+                    }
+                    else
+                    {
+                        AddToPendingTasks(GetHandledAsynchronousDisposalErrorsTask(result));
+
+                        async Task GetHandledAsynchronousDisposalErrorsTask(Task result)
+                        {
+                            try
+                            {
+                                await result;
+                            }
+                            catch (Exception e)
+                            {
+                                HandleException(e);
+                            }
+                        }
+                    }
+                }
+
                 _componentStateById.Remove(disposeComponentId);
                 _batchBuilder.DisposedComponentIds.Append(disposeComponentId);
             }

@@ -2,7 +2,7 @@ import '../src/GlobalExports';
 import { UserSpecifiedDisplay } from '../src/Platform/Circuits/UserSpecifiedDisplay';
 import { DefaultReconnectionHandler } from '../src/Platform/Circuits/DefaultReconnectionHandler';
 import { NullLogger} from '../src/Platform/Logging/Loggers';
-import { resolveOptions, ReconnectionOptions } from "../src/Platform/Circuits/BlazorOptions";
+import { resolveOptions, ReconnectionOptions } from "../src/Platform/Circuits/CircuitStartOptions";
 import { ReconnectDisplay } from '../src/Platform/Circuits/ReconnectDisplay';
 
 const defaultReconnectionOptions = resolveOptions().reconnectionOptions;

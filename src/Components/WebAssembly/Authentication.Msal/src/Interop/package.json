@@ -1,0 +1,18 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "npm run build:release",
+    "build:release": "webpack --mode production --env.production --env.configuration=Release",
+    "build:debug": "webpack --mode development --env.configuration=Debug",
+    "watch": "webpack --watch --mode development --env.configuration=Debug"
+  },
+  "devDependencies": {
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.7.5",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10"
+  },
+  "dependencies": {
+    "msal": "^1.2.1"
+  }
+}

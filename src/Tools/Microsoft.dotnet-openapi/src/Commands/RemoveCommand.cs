@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
     {
         private const string CommandName = "remove";
 
-        private const string SourceArgName = "soruce";
+        private const string SourceArgName = "source";
 
         public RemoveCommand(Application parent, IHttpClientWrapper httpClient) : base(parent, CommandName, httpClient)
         {

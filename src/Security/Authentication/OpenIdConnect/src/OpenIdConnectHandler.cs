@@ -804,9 +804,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         {
             Logger.RedeemingCodeForTokens();
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Post, _configuration.TokenEndpoint);
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, tokenEndpointRequest.TokenEndpoint ?? _configuration.TokenEndpoint);
             requestMessage.Content = new FormUrlEncodedContent(tokenEndpointRequest.Parameters);
-
+            requestMessage.Version = Backchannel.DefaultRequestVersion;
             var responseMessage = await Backchannel.SendAsync(requestMessage);
 
             var contentMediaType = responseMessage.Content.Headers.ContentType?.MediaType;
@@ -869,6 +869,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             Logger.RetrievingClaims();
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, userInfoEndpoint);
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", message.AccessToken);
+            requestMessage.Version = Backchannel.DefaultRequestVersion;
             var responseMessage = await Backchannel.SendAsync(requestMessage);
             responseMessage.EnsureSuccessStatusCode();
             var userInfoResponse = await responseMessage.Content.ReadAsStringAsync();
@@ -910,7 +911,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
                     foreach (var action in Options.ClaimActions)
                     {
-                        action.Run(user.RootElement, identity, ClaimsIssuer);
+                        action.Run(updatedUser.RootElement, identity, ClaimsIssuer);
                     }
                 }
             }

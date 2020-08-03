@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.TestHost
             });
 
             Assert.True(context.RequestAborted.CanBeCanceled);
-            Assert.Equal("HTTP/1.1", context.Request.Protocol);
+            Assert.Equal(HttpProtocol.Http11, context.Request.Protocol);
             Assert.Equal("POST", context.Request.Method);
             Assert.Equal("https", context.Request.Scheme);
             Assert.Equal("example.com", context.Request.Host.Value);
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.TestHost
                 app.Run(async c =>
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
-                    c.Response.Body.Flush();
+                    await c.Response.Body.FlushAsync();
                     await block.Task;
                     await c.Response.WriteAsync("BodyFinished");
                 });
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.TestHost
                 app.Run(async c =>
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
-                    c.Response.Body.Flush();
+                    await c.Response.Body.FlushAsync();
                     await block.Task;
                     await c.Response.WriteAsync("BodyFinished");
                 });
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.TestHost
                 app.Run(async c =>
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
-                    c.Response.Body.Flush();
+                    await c.Response.Body.FlushAsync();
                     await block.Task;
                     await c.Response.WriteAsync("BodyFinished");
                 });

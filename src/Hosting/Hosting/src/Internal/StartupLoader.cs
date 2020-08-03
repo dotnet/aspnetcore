@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -37,15 +39,14 @@ namespace Microsoft.AspNetCore.Hosting
         // 
         // If the Startup class ConfigureServices returns an <see cref="IServiceProvider"/> and there is at least an <see cref="IStartupConfigureServicesFilter"/> registered we
         // throw as the filters can't be applied.
-        public static StartupMethods LoadMethods(IServiceProvider hostingServiceProvider, Type startupType, string environmentName)
+        public static StartupMethods LoadMethods(IServiceProvider hostingServiceProvider, [DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string environmentName, object instance = null)
         {
             var configureMethod = FindConfigureDelegate(startupType, environmentName);
 
             var servicesMethod = FindConfigureServicesDelegate(startupType, environmentName);
             var configureContainerMethod = FindConfigureContainerDelegate(startupType, environmentName);
 
-            object instance = null;
-            if (!configureMethod.MethodInfo.IsStatic || (servicesMethod != null && !servicesMethod.MethodInfo.IsStatic))
+            if (instance == null && (!configureMethod.MethodInfo.IsStatic || (servicesMethod != null && !servicesMethod.MethodInfo.IsStatic)))
             {
                 instance = ActivatorUtilities.GetServiceOrCreateInstance(hostingServiceProvider, startupType);
             }
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Hosting
             // going to be used for anything.
             var type = configureContainerMethod.MethodInfo != null ? configureContainerMethod.GetContainerType() : typeof(object);
 
-            var builder = (ConfigureServicesDelegateBuilder) Activator.CreateInstance(
+            var builder = (ConfigureServicesDelegateBuilder)Activator.CreateInstance(
                 typeof(ConfigureServicesDelegateBuilder<>).MakeGenericType(type),
                 hostingServiceProvider,
                 servicesMethod,
@@ -104,13 +105,13 @@ namespace Microsoft.AspNetCore.Hosting
 
                     // The ConfigureContainer pipeline needs an Action<TContainerBuilder> as source, so we just adapt the
                     // signature with this function.
-                    void Source(TContainerBuilder containerBuilder) => 
+                    void Source(TContainerBuilder containerBuilder) =>
                         action(containerBuilder);
 
                     // The ConfigureContainerBuilder.ConfigureContainerFilters expects an Action<object> as value, but our pipeline
                     // produces an Action<TContainerBuilder> given a source, so we wrap it on an Action<object> that internally casts
                     // the object containerBuilder to TContainerBuilder to match the expected signature of our ConfigureContainer pipeline.
-                    void Target(object containerBuilder) => 
+                    void Target(object containerBuilder) =>
                         BuildStartupConfigureContainerFiltersPipeline(Source)((TContainerBuilder)containerBuilder);
                 }
             }
@@ -273,31 +274,31 @@ namespace Microsoft.AspNetCore.Hosting
             return type;
         }
 
-        internal static ConfigureBuilder FindConfigureDelegate(Type startupType, string environmentName)
+        internal static ConfigureBuilder FindConfigureDelegate([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string environmentName)
         {
             var configureMethod = FindMethod(startupType, "Configure{0}", environmentName, typeof(void), required: true);
             return new ConfigureBuilder(configureMethod);
         }
 
-        internal static ConfigureContainerBuilder FindConfigureContainerDelegate(Type startupType, string environmentName)
+        internal static ConfigureContainerBuilder FindConfigureContainerDelegate([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string environmentName)
         {
             var configureMethod = FindMethod(startupType, "Configure{0}Container", environmentName, typeof(void), required: false);
             return new ConfigureContainerBuilder(configureMethod);
         }
 
-        internal static bool HasConfigureServicesIServiceProviderDelegate(Type startupType, string environmentName)
+        internal static bool HasConfigureServicesIServiceProviderDelegate([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string environmentName)
         {
             return null != FindMethod(startupType, "Configure{0}Services", environmentName, typeof(IServiceProvider), required: false);
         }
 
-        internal static ConfigureServicesBuilder FindConfigureServicesDelegate(Type startupType, string environmentName)
+        internal static ConfigureServicesBuilder FindConfigureServicesDelegate([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string environmentName)
         {
             var servicesMethod = FindMethod(startupType, "Configure{0}Services", environmentName, typeof(IServiceProvider), required: false)
                 ?? FindMethod(startupType, "Configure{0}Services", environmentName, typeof(void), required: false);
             return new ConfigureServicesBuilder(servicesMethod);
         }
 
-        private static MethodInfo FindMethod(Type startupType, string methodName, string environmentName, Type returnType = null, bool required = true)
+        private static MethodInfo FindMethod([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, string methodName, string environmentName, Type returnType = null, bool required = true)
         {
             var methodNameWithEnv = string.Format(CultureInfo.InvariantCulture, methodName, environmentName);
             var methodNameWithNoEnv = string.Format(CultureInfo.InvariantCulture, methodName, "");

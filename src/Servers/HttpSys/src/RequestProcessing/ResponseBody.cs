@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (!RequestContext.DisconnectToken.IsCancellationRequested)
                 {
                     // This is logged rather than thrown because it is too late for an exception to be visible in user code.
-                    Logger.LogError("ResponseStream::Dispose; Fewer bytes were written than were specified in the Content-Length.");
+                    Logger.LogError(LoggerEventIds.FewerBytesThanExpected, "ResponseStream::Dispose; Fewer bytes were written than were specified in the Content-Length.");
                 }
                 _requestContext.Abort();
                 return;
@@ -175,14 +175,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (ThrowWriteExceptions)
                 {
                     var exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    Logger.LogError(0, exception, "Flush");
+                    Logger.LogError(LoggerEventIds.WriteError, exception, "Flush");
                     Abort();
                     throw exception;
                 }
                 else
                 {
                     // Abort the request but do not close the stream, let future writes complete silently
-                    Logger.LogDebug($"Flush; Ignored write exception: {statusCode}");
+                    Logger.LogDebug(LoggerEventIds.WriteErrorIgnored, $"Flush; Ignored write exception: {statusCode}");
                     Abort(dispose: false);
                 }
             }
@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception e)
             {
-                Logger.LogError(0, e, "FlushAsync");
+                Logger.LogError(LoggerEventIds.ErrorWhenFlushAsync, e, "FlushAsync");
                 asyncResult.Dispose();
                 Abort();
                 throw;
@@ -355,21 +355,21 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    Logger.LogDebug($"FlushAsync; Write cancelled with error code: {statusCode}");
+                    Logger.LogDebug(LoggerEventIds.WriteFlushCancelled,$"FlushAsync; Write cancelled with error code: {statusCode}");
                     asyncResult.Cancel(ThrowWriteExceptions);
                 }
                 else if (ThrowWriteExceptions)
                 {
                     asyncResult.Dispose();
                     Exception exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    Logger.LogError(0, exception, "FlushAsync");
+                    Logger.LogError(LoggerEventIds.ErrorWhenFlushAsync, exception, "FlushAsync");
                     Abort();
                     throw exception;
                 }
                 else
                 {
                     // Abort the request but do not close the stream, let future writes complete silently
-                    Logger.LogDebug($"FlushAsync; Ignored write exception: {statusCode}");
+                    Logger.LogDebug(LoggerEventIds.WriteErrorIgnored,$"FlushAsync; Ignored write exception: {statusCode}");
                     asyncResult.FailSilently();
                 }
             }
@@ -639,7 +639,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception e)
             {
-                Logger.LogError(0, e, "SendFileAsync");
+                Logger.LogError(LoggerEventIds.FileSendAsyncError, e, "SendFileAsync");
                 asyncResult.Dispose();
                 Abort();
                 throw;
@@ -649,21 +649,21 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    Logger.LogDebug($"SendFileAsync; Write cancelled with error code: {statusCode}");
+                    Logger.LogDebug(LoggerEventIds.FileSendAsyncCancelled,$"SendFileAsync; Write cancelled with error code: {statusCode}");
                     asyncResult.Cancel(ThrowWriteExceptions);
                 }
                 else if (ThrowWriteExceptions)
                 {
                     asyncResult.Dispose();
                     var exception = new IOException(string.Empty, new HttpSysException((int)statusCode));
-                    Logger.LogError(0, exception, "SendFileAsync");
+                    Logger.LogError(LoggerEventIds.FileSendAsyncError, exception, "SendFileAsync");
                     Abort();
                     throw exception;
                 }
                 else
                 {
                     // Abort the request but do not close the stream, let future writes complete silently
-                    Logger.LogDebug($"SendFileAsync; Ignored write exception: {statusCode}");
+                    Logger.LogDebug(LoggerEventIds.FileSendAsyncErrorIgnored,$"SendFileAsync; Ignored write exception: {statusCode}");
                     asyncResult.FailSilently();
                 }
             }

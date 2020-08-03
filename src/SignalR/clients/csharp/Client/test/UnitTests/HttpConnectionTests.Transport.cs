@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
@@ -162,7 +163,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 testHttpHandler.OnRequest(async (request, next, token) =>
                 {
-                    var requestedWithHeader = request.Headers.GetValues("X-Requested-With");
+                    var requestedWithHeader = request.Headers.GetValues(HeaderNames.XRequestedWith);
                     var requestedWithValue = Assert.Single(requestedWithHeader);
                     Assert.Equal("XMLHttpRequest", requestedWithValue);
 

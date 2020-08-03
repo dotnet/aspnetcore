@@ -101,6 +101,7 @@ namespace Microsoft.AspNetCore.Routing
                 "Configure your application startup by adding app.UseCors() inside the call to Configure(..) in the application startup code. The call to app.UseCors() must appear between app.UseRouting() and app.UseEndpoints(...).");
         }
 
+#nullable disable
         private static class Log
         {
             private static readonly Action<ILogger, string, Exception> _executingEndpoint = LoggerMessage.Define<string>(

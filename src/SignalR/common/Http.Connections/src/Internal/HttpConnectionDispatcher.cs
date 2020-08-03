@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -142,7 +143,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 connection.SupportedFormats = TransferFormat.Text;
 
                 // We only need to provide the Input channel since writing to the application is handled through /send.
-                var sse = new ServerSentEventsServerTransport(connection.Application.Input, connection.ConnectionId, _loggerFactory);
+                var sse = new ServerSentEventsServerTransport(connection.Application.Input, connection.ConnectionId, connection, _loggerFactory);
 
                 await DoPersistentConnection(connectionDelegate, sse, context, connection);
             }
@@ -196,7 +197,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 }
 
                 // Create a new Tcs every poll to keep track of the poll finishing, so we can properly wait on previous polls
-                var currentRequestTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var currentRequestTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 if (!connection.TryActivateLongPollingConnection(
                         connectionDelegate, context, options.LongPolling.PollTimeout,
@@ -216,7 +217,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         connection.Transport.Output.Complete(connection.ApplicationTask.Exception);
 
                         // Wait for the transport to run
-                        await connection.TransportTask;
+                        // Ignore exceptions, it has been logged if there is one and the application has finished
+                        // So there is no one to give the exception to
+                        await connection.TransportTask.NoThrow();
 
                         // If the status code is a 204 it means the connection is done
                         if (context.Response.StatusCode == StatusCodes.Status204NoContent)
@@ -234,12 +237,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                             connection.MarkInactive();
                         }
                     }
-                    else if (resultTask.IsFaulted)
+                    else if (resultTask.IsFaulted || resultTask.IsCanceled)
                     {
                         // Cancel current request to release any waiting poll and let dispose acquire the lock
                         currentRequestTcs.TrySetCanceled();
-
-                        // transport task was faulted, we should remove the connection
+                        // We should be able to safely dispose because there's no more data being written
+                        // We don't need to wait for close here since we've already waited for both sides
                         await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
                     }
                     else
@@ -252,7 +255,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 {
                     // Artificial task queue
                     // This will cause incoming polls to wait until the previous poll has finished updating internal state info
-                    currentRequestTcs.TrySetResult(null);
+                    currentRequestTcs.TrySetResult();
                 }
             }
         }
@@ -434,6 +437,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                         context.Response.StatusCode = StatusCodes.Status404NotFound;
                         context.Response.ContentType = "text/plain";
+
+                        // There are no writes anymore (since this is the write "loop")
+                        // So it is safe to complete the writer
+                        // We complete the writer here because we already have the WriteLock acquired
+                        // and it's unsafe to complete outside of the lock
+                        // Other code isn't guaranteed to be able to acquire the lock before another write
+                        // even if CancelPendingFlush is called, and the other write could hang if there is backpressure
+                        connection.Application.Output.Complete();
                         return;
                     }
                     catch (IOException ex)
@@ -479,13 +490,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 return;
             }
 
-            Log.TerminatingConection(_logger);
+            Log.TerminatingConnection(_logger);
 
-            // Complete the receiving end of the pipe
-            connection.Application.Output.Complete();
-
-            // Dispose the connection gracefully, but don't wait for it. We assign it here so we can wait in tests
-            connection.DisposeAndRemoveTask = _manager.DisposeAndRemoveAsync(connection, closeGracefully: true);
+            // Dispose the connection, but don't wait for it. We assign it here so we can wait in tests
+            connection.DisposeAndRemoveTask = _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
 
             context.Response.StatusCode = StatusCodes.Status202Accepted;
             context.Response.ContentType = "text/plain";
@@ -530,8 +538,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 var existing = connection.HttpContext;
                 if (existing == null)
                 {
-                    var httpContext = CloneHttpContext(context);
-                    connection.HttpContext = httpContext;
+                    CloneHttpContext(context, connection);
                 }
                 else
                 {
@@ -565,12 +572,31 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         private static void CloneUser(HttpContext newContext, HttpContext oldContext)
         {
-            if (oldContext.User.Identity is WindowsIdentity)
+            // If the identity is a WindowsIdentity we need to clone the User.
+            // This is because the WindowsIdentity uses SafeHandle's which are disposed at the end of the request
+            // and accessing the identity can happen outside of the request scope.
+            if (oldContext.User.Identity is WindowsIdentity windowsIdentity)
             {
-                newContext.User = new ClaimsPrincipal();
+                var skipFirstIdentity = false;
+                if (oldContext.User is WindowsPrincipal)
+                {
+                    // We want to explicitly create a WindowsPrincipal instead of a ClaimsPrincipal
+                    // so methods that WindowsPrincipal overrides like 'IsInRole', work as expected.
+                    newContext.User = new WindowsPrincipal((WindowsIdentity)(windowsIdentity.Clone()));
+                    skipFirstIdentity = true;
+                }
+                else
+                {
+                    newContext.User = new ClaimsPrincipal();
+                }
 
                 foreach (var identity in oldContext.User.Identities)
                 {
+                    if (skipFirstIdentity)
+                    {
+                        skipFirstIdentity = false;
+                        continue;
+                    }
                     newContext.User.AddIdentity(identity.Clone());
                 }
             }
@@ -580,7 +606,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             }
         }
 
-        private static HttpContext CloneHttpContext(HttpContext context)
+        private static void CloneHttpContext(HttpContext context, HttpConnectionContext connection)
         {
             // The reason we're copying the base features instead of the HttpContext properties is
             // so that we can get all of the logic built into DefaultHttpContext to extract higher level
@@ -634,14 +660,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             CloneUser(newHttpContext, context);
 
-            // Making request services function property could be tricky and expensive as it would require
-            // DI scope per connection. It would also mean that services resolved in middleware leading up to here
-            // wouldn't be the same instance (but maybe that's fine). For now, we just return an empty service provider
-            newHttpContext.RequestServices = EmptyServiceProvider.Instance;
+            connection.ServiceScope = context.RequestServices.CreateScope();
+            newHttpContext.RequestServices = connection.ServiceScope.ServiceProvider;
 
             // REVIEW: This extends the lifetime of anything that got put into HttpContext.Items
             newHttpContext.Items = new Dictionary<object, object>(context.Items);
-            return newHttpContext;
+
+            connection.HttpContext = newHttpContext;
         }
 
         private async Task<HttpConnectionContext> GetConnectionAsync(HttpContext context)

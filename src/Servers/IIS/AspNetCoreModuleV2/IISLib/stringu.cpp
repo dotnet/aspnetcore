@@ -1065,7 +1065,7 @@ Arguments:
 
 Return Value:
 
-    The index for the first character occurence in the string.
+    The index for the first character occurrence in the string.
 
     -1 if not found.
 
@@ -1112,7 +1112,7 @@ Arguments:
 
 Return Value:
 
-    The index for the first character occurence in the string.
+    The index for the first character occurrence in the string.
 
     -1 if not found.
 
@@ -1161,7 +1161,7 @@ Arguments:
 
 Return Value:
 
-    The index for the last character occurence in the string.
+    The index for the last character occurrence in the string.
 
     -1 if not found.
 

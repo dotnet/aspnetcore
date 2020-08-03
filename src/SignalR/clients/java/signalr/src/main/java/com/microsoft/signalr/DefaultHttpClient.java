@@ -19,21 +19,27 @@ import okhttp3.*;
 final class DefaultHttpClient extends HttpClient {
     private OkHttpClient client = null;
 
-    public DefaultHttpClient() {
-        this(0, null);
+    public DefaultHttpClient(Action1<OkHttpClient.Builder> configureBuilder) {
+        this(null, configureBuilder);
     }
 
     public DefaultHttpClient cloneWithTimeOut(int timeoutInMilliseconds) {
         OkHttpClient newClient = client.newBuilder().readTimeout(timeoutInMilliseconds, TimeUnit.MILLISECONDS)
                 .build();
-        return new DefaultHttpClient(timeoutInMilliseconds, newClient);
+        return new DefaultHttpClient(newClient, null);
     }
 
-    public DefaultHttpClient(int timeoutInMilliseconds, OkHttpClient client) {
+    @Override
+    public void close() {
+        if (this.client != null) {
+            this.client.dispatcher().executorService().shutdown();
+        }
+    }
+
+    public DefaultHttpClient(OkHttpClient client, Action1<OkHttpClient.Builder> configureBuilder) {
         if (client != null) {
             this.client = client;
         } else {
-
             OkHttpClient.Builder builder = new OkHttpClient.Builder().cookieJar(new CookieJar() {
                 private List<Cookie> cookieList = new ArrayList<>();
                 private Lock cookieLock = new ReentrantLock();
@@ -84,9 +90,10 @@ final class DefaultHttpClient extends HttpClient {
                 }
             });
 
-            if (timeoutInMilliseconds > 0) {
-                builder.readTimeout(timeoutInMilliseconds, TimeUnit.MILLISECONDS);
+            if (configureBuilder != null) {
+                configureBuilder.invoke(builder);
             }
+
             this.client = builder.build();
         }
     }

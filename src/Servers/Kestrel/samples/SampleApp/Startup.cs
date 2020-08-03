@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -36,7 +35,7 @@ namespace SampleApp
                 {
                     await next.Invoke();
                 }
-                catch (BadHttpRequestException ex) when (ex.StatusCode == StatusCodes.Status413RequestEntityTooLarge) { }
+                catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex) when (ex.StatusCode == StatusCodes.Status413RequestEntityTooLarge) { }
             });
 
             app.Run(async context =>
@@ -72,8 +71,8 @@ namespace SampleApp
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
                     var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true)
-                          .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                          .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
                 })
                 .UseKestrel((context, options) =>
                 {
@@ -135,8 +134,9 @@ namespace SampleApp
                         .LocalhostEndpoint(basePort + 7)
                         .Load();
 
+                    // reloadOnChange: true is the default
                     options
-                        .Configure(context.Configuration.GetSection("Kestrel"))
+                        .Configure(context.Configuration.GetSection("Kestrel"), reloadOnChange: true)
                         .Endpoint("NamedEndpoint", opt =>
                         {
 
@@ -157,11 +157,13 @@ namespace SampleApp
             if (string.Equals(Process.GetCurrentProcess().Id.ToString(), Environment.GetEnvironmentVariable("LISTEN_PID")))
             {
                 // Use libuv if activated by systemd, since that's currently the only transport that supports being passed a socket handle.
+#pragma warning disable CS0618
                 hostBuilder.UseLibuv(options =>
                  {
                      // Uncomment the following line to change the default number of libuv threads for all endpoints.
                      // options.ThreadCount = 4;
                  });
+#pragma warning restore CS0618
             }
 
             return hostBuilder.Build().RunAsync();

@@ -45,6 +45,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        public void PrerenderingWaitsForAsyncDisposableComponents()
+        {
+            Navigate("/prerendered/prerendered-async-disposal");
+
+            // Prerendered output shows "not connected"
+            Browser.Equal("After async disposal", () => Browser.FindElement(By.Id("disposal-message")).Text);
+        }
+
+        [Fact]
         public void CanUseJSInteropFromOnAfterRenderAsync()
         {
             Navigate("/prerendered/prerendered-interop");
@@ -58,6 +67,63 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Once connected, we can
             Browser.Equal("Hello from interop call", () => Browser.FindElement(By.Id("val-get-by-interop")).Text);
             Browser.Equal("Hello from interop call", () => Browser.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
+        }
+
+        [Fact]
+        public void IsCompatibleWithLazyLoadWebAssembly()
+        {
+            Navigate("/prerendered/WithLazyAssembly");
+
+            var button = Browser.FindElement(By.Id("use-package-button"));
+
+            button.Click();
+
+            AssertLogDoesNotContainCriticalMessages("Could not load file or assembly 'Newtonsoft.Json");
+        }
+
+        [Fact]
+        public void CanInfluenceHeadDuringPrerender()
+        {
+            Navigate("/prerendered/prerendered-head");
+
+            var metaWithBindings = Browser.FindElement(By.Id("meta-with-bindings"));
+            var metaNoBindings = Browser.FindElement(By.Id("meta-no-bindings"));
+
+            // Validate updated head during prerender
+            Browser.Equal("Initial title", () => Browser.Title);
+            Browser.Equal("Initial meta content", () => metaWithBindings.GetAttribute("content"));
+            Browser.Equal("Immutable meta content", () => metaNoBindings.GetAttribute("content"));
+
+            BeginInteractivity();
+
+            // Wait for elements to be recreated with internal ids to permit mutation
+            metaWithBindings = WaitForNewElement(metaWithBindings, "meta-with-bindings");
+            metaNoBindings = WaitForNewElement(metaNoBindings, "meta-no-bindings");
+
+            // Validate updated head after prerender
+            Browser.Equal("Initial title", () => Browser.Title);
+            Browser.Equal("Initial meta content", () => metaWithBindings.GetAttribute("content"));
+            Browser.Equal("Immutable meta content", () => metaNoBindings.GetAttribute("content"));
+
+            // Change parameter of meta component
+            var inputMetaBinding = Browser.FindElement(By.Id("input-meta-binding"));
+            inputMetaBinding.Clear();
+            inputMetaBinding.SendKeys("Updated meta content\n");
+
+            // Wait for meta tag to be recreated with new attributes
+            metaWithBindings = WaitForNewElement(metaWithBindings, "meta-with-bindings");
+
+            // Validate new meta content attribute
+            Browser.Equal("Updated meta content", () => metaWithBindings.GetAttribute("content"));
+
+            IWebElement WaitForNewElement(IWebElement existingElement, string id)
+            {
+                var newElement = existingElement;
+
+                Browser.NotEqual(existingElement, () => newElement = Browser.FindElement(By.Id(id)) ?? newElement);
+
+                return newElement;
+            }
         }
 
         [Fact]
@@ -119,6 +185,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         private void BeginInteractivity()
         {
             Browser.FindElement(By.Id("load-boot-script")).Click();
+        }
+
+        private void AssertLogDoesNotContainCriticalMessages(params string[] messages)
+        {
+            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+            foreach (var message in messages)
+            {
+                Assert.DoesNotContain(log, entry =>
+                {
+                    return entry.Level == LogLevel.Severe
+                    && entry.Message.Contains(message);
+                });
+            }
         }
 
         private void SignInAs(string userName, string roles, bool useSeparateTab = false) =>

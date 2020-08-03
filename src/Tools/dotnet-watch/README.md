@@ -29,6 +29,7 @@ Some configuration options can be passed to `dotnet watch` through environment v
 | Variable                                       | Effect                                                   |
 | ---------------------------------------------- | -------------------------------------------------------- |
 | DOTNET_USE_POLLING_FILE_WATCHER                | If set to "1" or "true", `dotnet watch` will use a polling file watcher instead of CoreFx's `FileSystemWatcher`. Used when watching files on network shares or Docker mounted volumes.                       |
+| DOTNET_WATCH_SUPPRESS_MSBUILD_INCREMENTALISM   | By default, `dotnet watch` optimizes the build by avoiding certain operations such as running restore or re-evaluating the set of watched files on every file change. If set to "1" or "true",  these optimizations are disabled. |
 
 ### MSBuild
 

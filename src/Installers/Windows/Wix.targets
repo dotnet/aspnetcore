@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <GuidInputs>$(Version);$(Platform);$(VersionSuffix)</GuidInputs>
+    <GuidInputs>$(Version);$(Platform);$(VersionSuffix);$(_BuildNumberLabels)</GuidInputs>
   </PropertyGroup>
 
   <Target Name="GenerateGUIDs" BeforeTargets="BeforeBuild" DependsOnTargets="_GeneratePackageGuids;_GenerateBundleGuids" Condition=" '$(DisableGuidGeneration)' != 'true' " />
@@ -64,7 +64,7 @@
 
   <Target Name="CopyToArtifactsDirectory"
           Condition=" '$(IsShipping)' == 'true' AND '$(SkipCopyToArtifactsDirectory)' != 'true' "
-          AfterTargets="Build">
+          BeforeTargets="Build">
     <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(InstallersOutputPath)$(PackageFileName)" />
     <ItemGroup>
       <_cabs Include="$(TargetDir)**/*.cab" />

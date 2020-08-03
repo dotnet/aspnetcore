@@ -8,6 +8,7 @@ using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -17,6 +18,7 @@ namespace Microsoft.AspNetCore.TestHost
         {
             return builder.ConfigureServices(services =>
             {
+                services.AddSingleton<IHostLifetime, NoopHostLifetime>();
                 services.AddSingleton<IServer, TestServer>();
             });
         }

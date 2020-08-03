@@ -1,19 +1,19 @@
 <Project>
-  <PropertyGroup Condition=" HasTrailingSlash('$(ArtifactsDir)') ">
+  <PropertyGroup>
     <!-- The one use of ArtifactsDir in Publish.proj adds an additional slash, confusing itself. -->
-    <ArtifactsDir>$(ArtifactsDir.Substring(0, $([MSBuild]::Subtract($(ArtifactsDir.Length), 1))))</ArtifactsDir>
+    <ArtifactsDir Condition=" HasTrailingSlash('$(ArtifactsDir)') ">$(ArtifactsDir.Substring(0, $([MSBuild]::Subtract($(ArtifactsDir.Length), 1))))</ArtifactsDir>
 
-    <PublishDependsOnTargets>$(PublishDependsOnTargets);_PublishInstallers</PublishDependsOnTargets>
+    <PublishDependsOnTargets>$(PublishDependsOnTargets);_PublishInstallersAndChecksums</PublishDependsOnTargets>
 
     <_UploadPathRoot>aspnetcore</_UploadPathRoot>
   </PropertyGroup>
 
-  <!-- $(InstallersOutputPath) and $(SymbolsOutputPath) are not defined. Root Directory.Build.props is not imported. -->
+  <!-- $(InstallersOutputPath), $(SymbolsOutputPath), and $(ChecksumExtensions) are not defined. Root Directory.Build.props is not imported. -->
   <ItemGroup>
     <!-- Include our "loose" PDBs when publishing symbols. -->
     <FilesToPublishToSymbolServer Include="$(ArtifactsDir)\symbols\**\*.pdb" />
 
-    <!-- Prepare for _PublishInstallers target. -->
+    <!-- Prepare for _PublishInstallersAndChecksums target. -->
     <_InstallersToPublish Remove="@(_InstallersToPublish)" />
     <_InstallersToPublish Include="$(ArtifactsDir)\packages\**\*.jar" UploadPathSegment="jar" />
     <_InstallersToPublish Include="$(ArtifactsDir)\packages\**\*.pom" UploadPathSegment="jar" />
@@ -27,11 +27,16 @@
         Condition=" '$(PublishInstallerBaseVersion)' == 'true' " />
     <_InstallersToPublish Include="$(ArtifactsDir)\installers\**\*.wixlib" UploadPathSegment="Runtime" />
     <_InstallersToPublish Include="$(ArtifactsDir)\installers\**\*.zip" UploadPathSegment="Runtime" />
+    <_ChecksumsToPublish Include="$(ArtifactsDir)\**\*.sha512" />
   </ItemGroup>
 
-  <Target Name="_PublishInstallers">
-    <!-- This target is defined in eng/targets/Packaging.targets and included in every C# and F# project. -->
-    <MSBuild Projects="$(RepoRoot)src\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj"
+  <Target Name="_PublishInstallersAndChecksums">
+    <!-- 
+      This target is defined in eng/targets/Packaging.targets and included in every C# and F# project.
+      We use Microsoft.AspNetCore.DeveloperCertificates.XPlat because it is a nonshipping package, and we need a non-stable version string to use as our publish location.
+      If Microsoft.AspNetCore.DeveloperCertificates.XPlat ever becomes a shipping package, this logic will break, so be careful
+    -->
+    <MSBuild Projects="$(RepoRoot)src\Tools\FirstRunCertGenerator\src\Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj"
         Targets="_GetPackageVersionInfo"
         SkipNonexistentProjects="false">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
@@ -44,6 +49,11 @@
     <ItemGroup>
       <!-- Do not push .nupkg files from Linux and macOS builds. They'll be packed up separately and signed on Windows. -->
       <ItemsToPushToBlobFeed Remove="@(ItemsToPushToBlobFeed)" Condition="'$(OS)' != 'Windows_NT'" />
+
+      <ItemsToPushToBlobFeed Include="@(_ChecksumsToPublish)">
+        <PublishFlatContainer>true</PublishFlatContainer>
+        <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
+      </ItemsToPushToBlobFeed>
 
       <ItemsToPushToBlobFeed Include="@(_InstallersToPublish)">
         <IsShipping>true</IsShipping>

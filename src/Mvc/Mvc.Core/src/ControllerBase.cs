@@ -2387,6 +2387,15 @@ namespace Microsoft.AspNetCore.Mvc
             => new ForbidResult(authenticationSchemes, properties);
 
         /// <summary>
+        /// Creates a <see cref="SignInResult"/>.
+        /// </summary>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> containing the user claims.</param>
+        /// <returns>The created <see cref="SignInResult"/> for the response.</returns>
+        [NonAction]
+        public virtual SignInResult SignIn(ClaimsPrincipal principal)
+            => new SignInResult(principal);
+
+        /// <summary>
         /// Creates a <see cref="SignInResult"/> with the specified authentication scheme.
         /// </summary>
         /// <param name="principal">The <see cref="ClaimsPrincipal"/> containing the user claims.</param>
@@ -2395,6 +2404,18 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual SignInResult SignIn(ClaimsPrincipal principal, string authenticationScheme)
             => new SignInResult(authenticationScheme, principal);
+
+        /// <summary>
+        /// Creates a <see cref="SignInResult"/> with <paramref name="properties"/>.
+        /// </summary>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> containing the user claims.</param>
+        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
+        /// <returns>The created <see cref="SignInResult"/> for the response.</returns>
+        [NonAction]
+        public virtual SignInResult SignIn(
+            ClaimsPrincipal principal,
+            AuthenticationProperties properties)
+            => new SignInResult(principal, properties);
 
         /// <summary>
         /// Creates a <see cref="SignInResult"/> with the specified authentication scheme and
@@ -2410,6 +2431,23 @@ namespace Microsoft.AspNetCore.Mvc
             AuthenticationProperties properties,
             string authenticationScheme)
             => new SignInResult(authenticationScheme, principal, properties);
+
+        /// <summary>
+        /// Creates a <see cref="SignOutResult"/>.
+        /// </summary>
+        /// <returns>The created <see cref="SignOutResult"/> for the response.</returns>
+        [NonAction]
+        public virtual SignOutResult SignOut()
+            => new SignOutResult();
+
+        /// <summary>
+        /// Creates a <see cref="SignOutResult"/> with <paramref name="properties"/>.
+        /// </summary>
+        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
+        /// <returns>The created <see cref="SignOutResult"/> for the response.</returns>
+        [NonAction]
+        public virtual SignOutResult SignOut(AuthenticationProperties properties)
+            => new SignOutResult(properties);
 
         /// <summary>
         /// Creates a <see cref="SignOutResult"/> with the specified authentication schemes.

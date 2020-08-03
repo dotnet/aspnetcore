@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <Compile Include="$(ToolSharedSourceRoot)TestHelpers\**\*.cs" />
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Content Include="TestProjects\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
@@ -29,14 +28,14 @@
   </Target>
 
   <!-- Do not publish in source build -->
-  <Target Name="PublishDotNetWatchOnBuild" BeforeTargets="Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
+  <Target Name="PublishDotNetWatchOnBuild" BeforeTargets="Build" Condition="'$(DotNetBuildFromSource)' != 'true' and '$(ExcludeFromBuild)' != 'true'">
     <MSBuild Projects="..\src\dotnet-watch.csproj"
       Targets="Publish"
       Properties="PublishDir=$(OutputPath)\tool\;Configuration=$(Configuration)" />
   </Target>
 
   <!-- Do not publish in source build -->
-  <Target Name="PublishDotNetWatchOnPublish" BeforeTargets="Publish" Condition="'$(DotNetBuildFromSource)' != 'true'">
+  <Target Name="PublishDotNetWatchOnPublish" BeforeTargets="Publish" Condition="'$(DotNetBuildFromSource)' != 'true' and '$(ExcludeFromBuild)' != 'true'">
     <MSBuild Projects="..\src\dotnet-watch.csproj"
       Targets="Publish"
       Properties="PublishDir=$(PublishDir)\tool\;Configuration=$(Configuration)" />

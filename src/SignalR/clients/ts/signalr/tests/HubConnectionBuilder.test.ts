@@ -73,12 +73,14 @@ class CapturingConsole {
 registerUnhandledRejectionHandler();
 
 describe("HubConnectionBuilder", () => {
-    eachMissingValue((val, name) => {
-        it(`withUrl throws if url is ${name}`, () => {
+    for (const val of [undefined, null, ""]) {
+        it(`withUrl throws if url is ${String(val)}`, () => {
             const builder = new HubConnectionBuilder();
-            expect(() => builder.withUrl(val!)).toThrow("The 'url' argument is required.");
+            expect(() => builder.withUrl(val!)).toThrow(/The 'url' argument (is required|should not be empty)./);
         });
+    }
 
+    eachMissingValue((val, name) => {
         it(`withHubProtocol throws if protocol is ${name}`, () => {
             const builder = new HubConnectionBuilder();
             expect(() => builder.withHubProtocol(val!)).toThrow("The 'protocol' argument is required.");

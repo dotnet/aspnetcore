@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
-            return _lifetimeManager.SendAllAsync(method, args);
+            return _lifetimeManager.SendAllAsync(method, args, cancellationToken);
         }
     }
 

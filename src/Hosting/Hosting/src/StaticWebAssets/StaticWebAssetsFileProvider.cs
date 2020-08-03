@@ -46,6 +46,11 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         {
             var modifiedSub = NormalizePath(subpath);
 
+            if (BasePath == "/")
+            {
+                return InnerProvider.GetDirectoryContents(modifiedSub);
+            }
+
             if (StartsWithBasePath(modifiedSub, out var physicalPath))
             {
                 return InnerProvider.GetDirectoryContents(physicalPath.Value);
@@ -67,6 +72,11 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         {
             var modifiedSub = NormalizePath(subpath);
 
+            if (BasePath == "/")
+            {
+                return InnerProvider.GetFileInfo(subpath);
+            }
+
             if (!StartsWithBasePath(modifiedSub, out var physicalPath))
             {
                 return new NotFoundFileInfo(subpath);
@@ -86,7 +96,7 @@ namespace Microsoft.AspNetCore.Hosting.StaticWebAssets
         private static string NormalizePath(string path)
         {
             path = path.Replace('\\', '/');
-            return path != null && path.StartsWith("/") ? path : "/" + path;
+            return path.StartsWith("/") ? path : "/" + path;
         }
 
         private bool StartsWithBasePath(string subpath, out PathString rest)

@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp50)
+                .WithTfms(Tfm.Net50)
                 .WithApplicationTypes(ApplicationType.Portable);
 
         public static IEnumerable<object[]> InvalidTestVariants
@@ -90,13 +90,13 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
         public async Task ShutdownMultipleTimesWorks(TestVariant variant)
         {
             // Must publish to set env vars in web.config
-            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);    
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
-            
+
             // Shutdown once
             var response = await deploymentResult.HttpClient.GetAsync("/Shutdown");
-            
+
             // Wait for server to start again.
             int i;
             for (i = 0; i < 10; i++)
@@ -108,16 +108,16 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
                     break;
                 }
             }
-            
+
             if (i == 10)
             {
                 // Didn't restart after 10 retries
                 Assert.False(true);
             }
-            
+
             // Shutdown again
             response = await deploymentResult.HttpClient.GetAsync("/Shutdown");
-            
+
             // return if server starts again.
             for (i = 0; i < 10; i++)
             {
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
                     return;
                 }
             }
-            
+
             // Test failure if this happens.
             Assert.False(true);
         }

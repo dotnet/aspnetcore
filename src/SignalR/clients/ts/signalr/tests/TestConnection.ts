@@ -13,6 +13,7 @@ export class TestConnection implements IConnection {
     public onclose: ((error?: Error) => void) | null;
 
     public sentData: any[];
+    public parsedSentData: any[];
     public lastInvocationId: string | null;
 
     private autoHandshake: boolean | null;
@@ -21,6 +22,7 @@ export class TestConnection implements IConnection {
         this.onreceive = null;
         this.onclose = null;
         this.sentData = [];
+        this.parsedSentData = [];
         this.lastInvocationId = null;
         this.autoHandshake = autoHandshake;
         this.baseUrl = "http://example.com";
@@ -43,8 +45,10 @@ export class TestConnection implements IConnection {
         }
         if (this.sentData) {
             this.sentData.push(invocation);
+            this.parsedSentData.push(parsedInvocation);
         } else {
             this.sentData = [invocation];
+            this.parsedSentData = [parsedInvocation];
         }
         return Promise.resolve();
     }

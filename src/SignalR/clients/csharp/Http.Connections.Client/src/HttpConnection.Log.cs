@@ -66,6 +66,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             private static readonly Action<ILogger, HttpTransportType, Exception> _transportStarted =
                 LoggerMessage.Define<HttpTransportType>(LogLevel.Debug, new EventId(18, "TransportStarted"), "Transport '{Transport}' started.");
 
+            private static readonly Action<ILogger, Exception> _serverSentEventsNotSupportedByBrowser =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(19, "ServerSentEventsNotSupportedByBrowser"), "Skipping ServerSentEvents because they are not supported by the browser.");
+
             public static void Starting(ILogger logger)
             {
                 _starting(logger, null);
@@ -166,6 +169,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             public static void TransportStarted(ILogger logger, HttpTransportType transportType)
             {
                 _transportStarted(logger, transportType, null);
+            }
+
+            public static void ServerSentEventsNotSupportedByBrowser(ILogger logger)
+            {
+                _serverSentEventsNotSupportedByBrowser(logger, null);
             }
         }
     }

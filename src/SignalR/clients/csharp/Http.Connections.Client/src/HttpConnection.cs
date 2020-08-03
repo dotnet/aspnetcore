@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         private bool _started;
         private bool _disposed;
         private bool _hasInherentKeepAlive;
+        private bool _isRunningInBrowser;
 
         private readonly HttpClient _httpClient;
         private readonly HttpConnectionOptions _httpConnectionOptions;
@@ -150,6 +151,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 _httpClient = CreateHttpClient();
             }
 
+            _isRunningInBrowser = Utils.IsRunningInBrowser();
+
+
+            if (httpConnectionOptions.Transports == HttpTransportType.ServerSentEvents && _isRunningInBrowser)
+            {
+                throw new ArgumentException("ServerSentEvents can not be the only transport specified when running in the browser.", nameof(httpConnectionOptions));
+            }
+
             _transportFactory = new DefaultTransportFactory(httpConnectionOptions.Transports, _loggerFactory, _httpClient, httpConnectionOptions, GetAccessTokenAsync);
             _logScope = new ConnectionLogScope();
 
@@ -205,7 +214,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 return;
             }
 
-            await _connectionLock.WaitAsync();
+            await _connectionLock.WaitAsync(cancellationToken);
             try
             {
                 CheckDisposed();
@@ -362,6 +371,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     {
                         Log.WebSocketsNotSupportedByOperatingSystem(_logger);
                         transportExceptions.Add(new TransportFailedException("WebSockets", "The transport is not supported on this operating system."));
+                        continue;
+                    }
+
+                    if (transportType == HttpTransportType.ServerSentEvents && _isRunningInBrowser)
+                    {
+                        Log.ServerSentEventsNotSupportedByBrowser(_logger);
+                        transportExceptions.Add(new TransportFailedException("ServerSentEvents", "The transport is not supported in the browser."));
                         continue;
                     }
 

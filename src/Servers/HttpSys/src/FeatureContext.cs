@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (IsNotInitialized(Fields.Protocol))
                 {
-                    _httpProtocolVersion = Request.ProtocolVersion.GetHttpProtocolVersion();
+                    _httpProtocolVersion = HttpProtocol.GetHttpProtocol(Request.ProtocolVersion);
                     SetInitialized(Fields.Protocol);
                 }
                 return _httpProtocolVersion;
@@ -333,7 +333,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (IsNotInitialized(Fields.ClientCertificate))
             {
-                _clientCert = await Request.GetClientCertificateAsync(cancellationToken);
+                var method = _requestContext.Server.Options.ClientCertificateMethod;
+                if (method != ClientCertificateMethod.NoCertificate)
+                {
+                    // Check if a cert was already available on the connection.
+                    _clientCert = Request.ClientCertificate;
+                }
+
+                if (_clientCert == null && method == ClientCertificateMethod.AllowRenegotation)
+                {
+                    _clientCert = await Request.GetClientCertificateAsync(cancellationToken);
+                }
+
                 SetInitialized(Fields.ClientCertificate);
             }
             return _clientCert;
@@ -624,6 +635,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private static TimeSpan? GetCacheTtl(RequestContext requestContext)
         {
             var response = requestContext.Response;
+            // A 304 response is supposed to have the same headers as its associated 200 response, including Cache-Control, but the 304 response itself
+            // should not be cached. Otherwise Http.Sys will serve the 304 response to all requests without checking conditional headers like If-None-Match.
+            if (response.StatusCode == StatusCodes.Status304NotModified)
+            {
+                return null;
+            }
+
             // Only consider kernel-mode caching if the Cache-Control response header is present.
             var cacheControlHeader = response.Headers[HeaderNames.CacheControl];
             if (string.IsNullOrEmpty(cacheControlHeader))

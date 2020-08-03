@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             try
             {
-                var serverConnectionCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var serverConnectionCompletedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 async Task EchoServer(ConnectionContext connection)
                 {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     }
                     finally
                     {
-                        serverConnectionCompletedTcs.TrySetResult(null);
+                        serverConnectionCompletedTcs.TrySetResult();
                     }
                 }
 

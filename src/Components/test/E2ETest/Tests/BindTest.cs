@@ -7,6 +7,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -215,10 +216,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("Fourth", () => boundValue.Text);
             Assert.Equal("Fourth choice", target.SelectedOption.Text);
 
+            // verify that changing an option value and selected value at the same time works.
+            Browser.FindElement(By.Id("change-variable-value")).Click();
+            Browser.Equal("Sixth", () => boundValue.Text);
+
             // Verify we can select options whose value is empty
             // https://github.com/dotnet/aspnetcore/issues/17735
             target.SelectByText("Empty value");
             Browser.Equal(string.Empty, () => boundValue.Text);
+            Browser.Equal("Empty value", () => target.SelectedOption.Text);
         }
 
         [Fact]
@@ -237,6 +243,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // https://github.com/dotnet/aspnetcore/issues/17735
             target.SelectByText("Empty value");
             Browser.Equal(string.Empty, () => boundValue.Text);
+            Browser.Equal("Empty value", () => target.SelectedOption.Text);
         }
 
         [Fact]
@@ -356,6 +363,66 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanBindTextboxShort()
+        {
+            var target = Browser.FindElement(By.Id("textbox-short"));
+            var boundValue = Browser.FindElement(By.Id("textbox-short-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-short-mirror"));
+            Assert.Equal("-42", target.GetAttribute("value"));
+            Assert.Equal("-42", boundValue.Text);
+            Assert.Equal("-42", mirrorValue.GetAttribute("value"));
+
+            // Clear target; value resets to zero
+            target.Clear();
+            Browser.Equal("0", () => target.GetAttribute("value"));
+            Assert.Equal("0", boundValue.Text);
+            Assert.Equal("0", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            // Leading zeros are not preserved
+            target.SendKeys("42");
+            Browser.Equal("042", () => target.GetAttribute("value"));
+            target.SendKeys("\t");
+            Browser.Equal("42", () => target.GetAttribute("value"));
+            Assert.Equal("42", boundValue.Text);
+            Assert.Equal("42", mirrorValue.GetAttribute("value"));
+        }
+
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23826")]
+        public void CanBindTextboxNullableShort()
+        {
+            var target = Browser.FindElement(By.Id("textbox-nullable-short"));
+            var boundValue = Browser.FindElement(By.Id("textbox-nullable-short-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-nullable-short-mirror"));
+            Assert.Equal(string.Empty, target.GetAttribute("value"));
+            Assert.Equal(string.Empty, boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            Browser.Equal("", () => boundValue.Text);
+            Assert.Equal("", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.SendKeys("-42\t");
+            Browser.Equal("-42", () => boundValue.Text);
+            Assert.Equal("-42", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            target.SendKeys("42\t");
+            Browser.Equal("42", () => boundValue.Text);
+            Assert.Equal("42", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            target.SendKeys("\t");
+            Browser.Equal(string.Empty, () => boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+        }
+
+        [Fact]
         public void CanBindTextboxFloat()
         {
             var target = Browser.FindElement(By.Id("textbox-float"));
@@ -445,6 +512,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23596")]
         public void CanBindTextboxNullableDouble()
         {
             var target = Browser.FindElement(By.Id("textbox-nullable-double"));

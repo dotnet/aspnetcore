@@ -1,8 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable warnings
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
@@ -30,7 +34,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             AppendDiffEntriesForRange(ref diffContext, 0, oldTree.Count, 0, newTree.Count);
 
             var editsSegment = editsBuffer.ToSegment(editsBufferStartLength, editsBuffer.Count);
-            return new RenderTreeDiff(componentId, editsSegment);
+            var result = new RenderTreeDiff(componentId, editsSegment);
+            return result;
         }
 
         public static void DisposeFrames(RenderBatchBuilder batchBuilder, ArrayRange<RenderTreeFrame> frames)
@@ -307,7 +312,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 {
                     if (result.ContainsKey(key))
                     {
-                        ThrowExceptionForDuplicateKey(key);
+                        ThrowExceptionForDuplicateKey(key, frame);
                     }
 
                     result[key] = new KeyedItemInfo(oldStartIndex, -1);
@@ -330,7 +335,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     {
                         if (existingEntry.NewIndex >= 0)
                         {
-                            ThrowExceptionForDuplicateKey(key);
+                            ThrowExceptionForDuplicateKey(key, frame);
                         }
 
                         result[key] = new KeyedItemInfo(existingEntry.OldIndex, newStartIndex);
@@ -343,9 +348,19 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             return result;
         }
 
-        private static void ThrowExceptionForDuplicateKey(object key)
+        private static void ThrowExceptionForDuplicateKey(object key, in RenderTreeFrame frame)
         {
-            throw new InvalidOperationException($"More than one sibling has the same key value, '{key}'. Key values must be unique.");
+            switch (frame.FrameType)
+            {
+                case RenderTreeFrameType.Component:
+                    throw new InvalidOperationException($"More than one sibling of component '{frame.ComponentType}' has the same key value, '{key}'. Key values must be unique.");
+
+                case RenderTreeFrameType.Element:
+                    throw new InvalidOperationException($"More than one sibling of element '{frame.ElementName}' has the same key value, '{key}'. Key values must be unique.");
+
+                default:
+                    throw new InvalidOperationException($"More than one sibling has the same key value, '{key}'. Key values must be unique.");
+            }
         }
 
         private static object KeyValue(ref RenderTreeFrame frame)
@@ -907,7 +922,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // based on the common usage of attributes for DOM events.
             if ((newFrame.AttributeValue is MulticastDelegate || newFrame.AttributeValue is EventCallback) &&
                 newFrame.AttributeName.Length >= 3 &&
-                newFrame.AttributeName.StartsWith("on"))
+                newFrame.AttributeName.StartsWith("on", StringComparison.Ordinal))
             {
                 diffContext.Renderer.AssignEventHandlerId(ref newFrame);
             }
@@ -915,7 +930,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         private static void InitializeNewElementReferenceCaptureFrame(ref DiffContext diffContext, ref RenderTreeFrame newFrame)
         {
-            var newElementReference = ElementReference.CreateWithUniqueId();
+            var newElementReference = ElementReference.CreateWithUniqueId(diffContext.Renderer.ElementReferenceContext);
             newFrame = newFrame.WithElementReferenceCaptureId(newElementReference.Id);
             newFrame.ElementReferenceCaptureAction(newElementReference);
         }

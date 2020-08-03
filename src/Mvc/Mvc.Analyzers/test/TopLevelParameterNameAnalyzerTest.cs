@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         private async Task<bool> IsProblematicParameterTest([CallerMemberName] string testMethod = "")
         {
             var testSource = MvcTestSource.Read(GetType().Name, testMethod);
-            var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
+            var project = MvcDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { testSource.Source });
 
             var compilation = await project.GetCompilationAsync();
 
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         private async Task<Compilation> GetCompilationForGetName()
         {
             var testSource = MvcTestSource.Read(GetType().Name, "GetNameTests");
-            var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
+            var project = MvcDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { testSource.Source });
 
             var compilation = await project.GetCompilationAsync();
             return compilation;
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         {
             var testMethod = nameof(SpecifiesModelType_ReturnsFalse_IfModelBinderDoesNotSpecifyType);
             var testSource = MvcTestSource.Read(GetType().Name, "SpecifiesModelTypeTests");
-            var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
+            var project = MvcDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { testSource.Source });
 
             var compilation = await project.GetCompilationAsync();
             Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         {
             var testMethod = nameof(SpecifiesModelType_ReturnsTrue_IfModelBinderSpecifiesTypeFromConstructor);
             var testSource = MvcTestSource.Read(GetType().Name, "SpecifiesModelTypeTests");
-            var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
+            var project = MvcDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { testSource.Source });
 
             var compilation = await project.GetCompilationAsync();
             Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         {
             var testMethod = nameof(SpecifiesModelType_ReturnsTrue_IfModelBinderSpecifiesTypeFromProperty);
             var testSource = MvcTestSource.Read(GetType().Name, "SpecifiesModelTypeTests");
-            var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
+            var project = MvcDiagnosticAnalyzerRunner.CreateProjectWithReferencesInBinDir(GetType().Assembly, new[] { testSource.Source });
 
             var compilation = await project.GetCompilationAsync();
             Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));

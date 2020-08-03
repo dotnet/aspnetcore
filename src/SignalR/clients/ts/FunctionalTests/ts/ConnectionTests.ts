@@ -5,13 +5,15 @@
 // tslint:disable:no-floating-promises
 
 import { HttpTransportType, IHttpConnectionOptions, TransferFormat } from "@microsoft/signalr";
-import { eachHttpClient, eachTransport, ECHOENDPOINT_URL } from "./Common";
+import { DEFAULT_TIMEOUT_INTERVAL, eachHttpClient, eachTransport, ECHOENDPOINT_URL } from "./Common";
 import { TestLogger } from "./TestLogger";
 
 // We want to continue testing HttpConnection, but we don't export it anymore. So just pull it in directly from the source file.
 import { HttpConnection } from "@microsoft/signalr/dist/esm/HttpConnection";
 import { Platform } from "@microsoft/signalr/dist/esm/Utils";
 import "./LogBannerReporter";
+
+jasmine.DEFAULT_TIMEOUT_INTERVAL = DEFAULT_TIMEOUT_INTERVAL;
 
 const commonOptions: IHttpConnectionOptions = {
     logMessageContent: true,

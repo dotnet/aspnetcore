@@ -1,0 +1,10 @@
+﻿@inject NavigationManager Navigation
+@using Microsoft.Extensions.Options
+@inject IOptions<RemoteAuthenticationOptions<ApiAuthorizationProviderOptions>> Options
+@code {
+
+    protected override void OnInitialized()
+    {
+        Navigation.NavigateTo($"{Options.Value.AuthenticationPaths.LogInPath}?returnUrl={Uri.EscapeDataString(Navigation.Uri)}");
+    }
+}

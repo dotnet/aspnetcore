@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var serviceContext = new TestServiceContext(LoggerFactory);
             var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
 
-            var appRunningEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appRunningEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = new TestServer(context =>
             {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 //     return context.Request.Body.ReadAsync(new byte[1], 0, 1);
 
                 var readTask = context.Request.Body.ReadAsync(new byte[1], 0, 1);
-                appRunningEvent.SetResult(null);
+                appRunningEvent.SetResult();
                 return readTask;
             }, serviceContext))
             {
@@ -104,13 +104,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             date.OnHeartbeat(clock.UtcNow);
             serviceContext.DateHeaderValueManager = date;
 
-            var appRunningEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appRunningEvent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = new TestServer(context =>
             {
                 context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate = null;
 
-                appRunningEvent.SetResult(null);
+                appRunningEvent.SetResult();
                 return Task.CompletedTask;
             }, serviceContext))
             {
@@ -146,8 +146,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var serviceContext = new TestServiceContext(LoggerFactory);
             var heartbeatManager = new HeartbeatManager(serviceContext.ConnectionManager);
 
-            var appRunningTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var exceptionSwallowedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var appRunningTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var exceptionSwallowedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = new TestServer(async context =>
             {
@@ -157,15 +157,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 // See comment in RequestTimesOutWhenRequestBodyNotReceivedAtSpecifiedMinimumRate for
                 // why we call ReadAsync before setting the appRunningEvent.
                 var readTask = context.Request.Body.ReadAsync(new byte[1], 0, 1);
-                appRunningTcs.SetResult(null);
+                appRunningTcs.SetResult();
 
                 try
                 {
                     await readTask;
                 }
-                catch (BadHttpRequestException ex) when (ex.StatusCode == 408)
+                catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex) when (ex.StatusCode == 408)
                 {
-                    exceptionSwallowedTcs.SetResult(null);
+                    exceptionSwallowedTcs.SetResult();
                 }
                 catch (Exception ex)
                 {

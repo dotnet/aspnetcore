@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http2Cat;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Client;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

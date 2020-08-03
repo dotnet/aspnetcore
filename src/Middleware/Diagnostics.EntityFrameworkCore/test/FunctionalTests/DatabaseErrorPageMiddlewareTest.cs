@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -27,10 +28,19 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [Fact]
         public async Task Successful_requests_pass_thru()
         {
-            var builder = new WebHostBuilder().Configure(app => app
-                .UseDatabaseErrorPage()
-                .UseMiddleware<SuccessMiddleware>());
-            var server = new TestServer(builder);
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app => app
+                    .UseDatabaseErrorPage()
+                    .UseMiddleware<SuccessMiddleware>());
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
@@ -53,10 +63,19 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [Fact]
         public async Task Non_database_exceptions_pass_thru()
         {
-            var builder = new WebHostBuilder().Configure(app => app
-                .UseDatabaseErrorPage()
-                .UseMiddleware<ExceptionMiddleware>());
-            var server = new TestServer(builder);
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app => app
+                    .UseDatabaseErrorPage()
+                    .UseMiddleware<ExceptionMiddleware>());
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await server.CreateClient().GetAsync("http://localhost/"));
@@ -82,7 +101,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             using (var database = SqlTestStore.CreateScratch())
             {
-                TestServer server = SetupTestServer<BloggingContext, DatabaseErrorButNoMigrationsMiddleware>(database);
+                using var host = await SetupServer<BloggingContext, DatabaseErrorButNoMigrationsMiddleware>(database);
+                using var server = host.GetTestServer();
                 var ex = await Assert.ThrowsAsync<DbUpdateException>(async () =>
                     await server.CreateClient().GetAsync("http://localhost/"));
 
@@ -114,7 +134,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             using (var database = SqlTestStore.CreateScratch())
             {
-                TestServer server = SetupTestServer<BloggingContext, NoMigrationsMiddleware>(database);
+                using var host = await SetupServer<BloggingContext, NoMigrationsMiddleware>(database);
+                using var server = host.GetTestServer();
                 HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
@@ -142,13 +163,13 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        public void No_exception_on_diagnostic_event_received_when_null_state()
+        public async Task No_exception_on_diagnostic_event_received_when_null_state()
         {
             using (var database = SqlTestStore.CreateScratch())
             {
-                using (var server = SetupTestServer<BloggingContext, NoMigrationsMiddleware>(database))
+                using (var server = await SetupServer<BloggingContext, NoMigrationsMiddleware>(database))
                 {
-                    using (var db = server.Host.Services.GetService<BloggingContext>())
+                    using (var db = server.Services.GetService<BloggingContext>())
                     {
                         db.Blogs.Add(new Blog());
 
@@ -172,7 +193,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             using (var database = SqlTestStore.CreateScratch())
             {
-                TestServer server = SetupTestServer<BloggingContextWithMigrations, PendingMigrationsMiddleware>(database);
+                using var host = await SetupServer<BloggingContextWithMigrations, PendingMigrationsMiddleware>(database);
+                using var server = host.GetTestServer();
                 HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
@@ -208,7 +230,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             using (var database = SqlTestStore.CreateScratch())
             {
-                TestServer server = SetupTestServer<BloggingContextWithPendingModelChanges, PendingModelChangesMiddleware>(database);
+                using var host = await SetupServer<BloggingContextWithPendingModelChanges, PendingModelChangesMiddleware>(database);
+                using var server = host.GetTestServer();
                 HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
@@ -245,7 +268,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             using (var database = SqlTestStore.CreateScratch())
             {
-                TestServer server = SetupTestServer<BloggingContextWithMigrations, ApplyMigrationsMiddleware>(database);
+                using var host = await SetupServer<BloggingContextWithMigrations, ApplyMigrationsMiddleware>(database);
+                using var server = host.GetTestServer();
                 var client = server.CreateClient();
 
                 var expectedMigrationsEndpoint = "/ApplyDatabaseMigrations";
@@ -302,7 +326,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
             using (var database = SqlTestStore.CreateScratch())
             {
-                var builder = new WebHostBuilder()
+                using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
                     .Configure(app =>
                     {
                         app.UseDatabaseErrorPage(new DatabaseErrorPageOptions
@@ -317,7 +345,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                         services.AddDbContext<BloggingContextWithMigrations>(
                             optionsBuilder => optionsBuilder.UseSqlite(database.ConnectionString));
                     });
-                var server = new TestServer(builder);
+                }).Build();
+
+                await host.StartAsync();
+
+                var server = host.GetTestServer();
 
                 HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
@@ -335,16 +367,24 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             var logProvider = new TestLoggerProvider();
 
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseDatabaseErrorPage();
-                    app.UseMiddleware<ContextNotRegisteredInServicesMiddleware>();
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseDatabaseErrorPage();
+                        app.UseMiddleware<ContextNotRegisteredInServicesMiddleware>();
 #pragma warning disable CS0618 // Type or member is obsolete
-                    app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
+                        app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
 #pragma warning restore CS0618 // Type or member is obsolete
-                });
-            var server = new TestServer(builder);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             try
             {
@@ -391,7 +431,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             {
                 var logProvider = new TestLoggerProvider();
 
-                var server = SetupTestServer<BloggingContextWithSnapshotThatThrows, ExceptionInLogicMiddleware>(database, logProvider);
+                using var host = await SetupServer<BloggingContextWithSnapshotThatThrows, ExceptionInLogicMiddleware>(database, logProvider);
+                using var server = host.GetTestServer();
 
                 try
                 {
@@ -430,7 +471,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
             using (var database = SqlTestStore.CreateScratch())
             {
-                TestServer server = SetupTestServer<BloggingContext, WrappedExceptionMiddleware>(database);
+                using var host = await SetupServer<BloggingContext, WrappedExceptionMiddleware>(database);
+                using var server = host.GetTestServer();
                 HttpResponseMessage response = await server.CreateClient().GetAsync("http://localhost/");
 
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
@@ -461,29 +503,36 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             }
         }
 
-        private static TestServer SetupTestServer<TContext, TMiddleware>(SqlTestStore database, ILoggerProvider logProvider = null)
+        private static async Task<IHost> SetupServer<TContext, TMiddleware>(SqlTestStore database, ILoggerProvider logProvider = null)
             where TContext : DbContext
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseDatabaseErrorPage();
-
-                    app.UseMiddleware<TMiddleware>();
-
-                    if (logProvider != null)
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
                     {
-#pragma warning disable CS0618 // Type or member is obsolete
-                        app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
-#pragma warning restore CS0618 // Type or member is obsolete
-                    }
-                })
-                .ConfigureServices(services =>
-                {
-                    services.AddDbContext<TContext>(optionsBuilder => optionsBuilder.UseSqlite(database.ConnectionString));
-                });
+                        app.UseDatabaseErrorPage();
 
-            return new TestServer(builder);
+                        app.UseMiddleware<TMiddleware>();
+
+                        if (logProvider != null)
+                        {
+#pragma warning disable CS0618 // Type or member is obsolete
+                            app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
+#pragma warning restore CS0618 // Type or member is obsolete
+                        }
+                    })
+                    .ConfigureServices(services =>
+                    {
+                        services.AddDbContext<TContext>(optionsBuilder => optionsBuilder.UseSqlite(database.ConnectionString));
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            return host;
         }
 
         private static UrlEncoder _urlEncoder = UrlEncoder.Default;

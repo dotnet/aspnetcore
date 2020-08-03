@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the <see cref="Http.HttpContext"/> associated with this context.
         /// </summary>
-        public virtual HttpContext HttpContext => ActionContext?.HttpContext;
+        public virtual HttpContext HttpContext => ActionContext?.HttpContext!;
 
         /// <summary>
         /// Gets or sets an indication that the current binder is handling the top-level object.
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets or sets the name of the top-level model. This is not reset to <see cref="string.Empty"/> when value
         /// providers have no match for that model.
         /// </summary>
-        public string OriginalModelName { get; protected set; }
+        public string OriginalModelName { get; protected set; } = default!;
 
         /// <summary>
         /// Gets or sets the <see cref="ModelStateDictionary"/> used to capture <see cref="ModelStateEntry"/> values

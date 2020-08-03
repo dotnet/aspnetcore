@@ -9,11 +9,12 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Client
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
     public class SocketConnectionFactory : IConnectionFactory, IAsyncDisposable
     {
@@ -61,7 +62,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Client
                 PipeScheduler.ThreadPool,
                 _trace,
                 _options.MaxReadBufferSize,
-                _options.MaxWriteBufferSize);
+                _options.MaxWriteBufferSize,
+                _options.WaitForDataBeforeAllocatingBuffer);
 
             socketConnection.Start();
             return socketConnection;

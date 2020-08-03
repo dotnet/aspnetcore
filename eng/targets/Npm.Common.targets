@@ -36,12 +36,13 @@
       <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
     </Exec>
 
-    <Error Text="Building *.npmproj but NodeJS was not detected on path. Ensure NodeJS is on path or disable building NodeJS projects with /p:BuildNodeJs=false. Skipping NodeJS projects will also skip managed projects depending on them, including Components, Mvc and Analysers." Condition="'$(ErrorCode)' != '0'"/>
+    <Error Text="Building *.npmproj but NodeJS was not detected on path. Ensure NodeJS is on path or disable building NodeJS projects with -noBuildNodeJS or --no-build-nodejs. Skipping NodeJS projects will also skip managed projects depending on them, including Components, Mvc and Analysers." Condition="'$(ErrorCode)' != '0'"/>
   </Target>
 
   <Target Name="Restore">
+    <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Restore" />
     <Message Importance="High" Text="Running yarn install on $(MSBuildProjectFullPath)" />
-    <Yarn Command="install --mutex network $(InstallArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
+    <Yarn Command="install --mutex network $(InstallArgs)" StandardOutputImportance="High" StandardErrorImportance="High" IgnoreStandardErrorWarningFormat="$(IgnoreYarnWarnings)" />
   </Target>
 
   <Target Name="PrepareForBuild">
@@ -54,6 +55,7 @@
   </Target>
 
   <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
+    <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Build" />
     <CallTarget Targets="_Pack" Condition="'$(PackOnBuild)' == 'true'" />
   </Target>
 
@@ -101,7 +103,7 @@
     <Copy SourceFiles="$(PackageJson)" DestinationFiles="$(_BackupPackageJson)" />
 
     <Yarn Command="version --no-git-tag-version --new-version $(PackageVersion)" />
-    <Exec Command="node $(MSBuildThisFileDirectory)..\scripts\update-packagejson-links.js $(PackageJson) $(PackageVersion)" />
+    <Exec Command="node &quot;$(MSBuildThisFileDirectory)..\scripts\update-packagejson-links.js&quot; &quot;$(PackageJson)&quot; $(PackageVersion)" />
     <Yarn Command="pack --filename $(PackageFileName)" />
 
     <Move SourceFiles="$(_PackageTargetPath)" DestinationFolder="$(PackageOutputPath)" />
@@ -117,7 +119,8 @@
     <Move SourceFiles="$(_BackupPackageJson)" DestinationFiles="$(PackageJson)" />
   </Target>
 
-  <Target Name="Test" Condition="'$(IsTestProject)' == 'true'">
+  <Target Name="Test" Condition="'$(IsTestProject)' == 'true' AND '$(SkipTests)' != 'true'">
+    <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Test" />
     <Message Importance="High" Text="Running npm tests for $(MSBuildProjectName)" />
     <Yarn Command="$(NpmTestArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
   </Target>

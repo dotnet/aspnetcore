@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void MapFallbackToClientSideBlazor_FilePath()
         {
-            Navigate("/filepath");
+            Navigate("/subdir/filepath");
             WaitUntilLoaded();
             Assert.NotNull(Browser.FindElement(By.Id("test-selector")));
         }
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void MapFallbackToClientSideBlazor_Pattern_FilePath()
         {
-            Navigate("/pattern_filepath/test");
+            Navigate("/subdir/pattern_filepath/test");
             WaitUntilLoaded();
             Assert.NotNull(Browser.FindElement(By.Id("test-selector")));
         }
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void MapFallbackToClientSideBlazor_AssemblyPath_FilePath()
         {
-            Navigate("/assemblypath_filepath");
+            Navigate("/subdir/assemblypath_filepath");
             WaitUntilLoaded();
             Assert.NotNull(Browser.FindElement(By.Id("test-selector")));
         }
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void MapFallbackToClientSideBlazor_AssemblyPath_Pattern_FilePath()
         {
-            Navigate("/assemblypath_pattern_filepath/test");
+            Navigate("/subdir/assemblypath_pattern_filepath/test");
             WaitUntilLoaded();
             Assert.NotNull(Browser.FindElement(By.Id("test-selector")));
         }

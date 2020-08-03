@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components
     // IMPORTANT
     //
     // Many of these names are used in code generation. Keep these in sync with the code generation code
-    // See: src/Microsoft.AspNetCore.Components.Razor.Extensions/ComponentsApi.cs
+    // See: src/Components/Analyzers/src/ComponentsApi.cs
 
     // Most of the developer-facing component lifecycle concepts are encapsulated in this
     // base class. The core components rendering system doesn't know about them (it only knows
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Components
             StateHasChanged();
         }
 
-        Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, object arg)
+        Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, object? arg)
         {
             var task = callback.InvokeAsync(arg);
             var shouldAwaitTask = task.Status != TaskStatus.RanToCompletion &&

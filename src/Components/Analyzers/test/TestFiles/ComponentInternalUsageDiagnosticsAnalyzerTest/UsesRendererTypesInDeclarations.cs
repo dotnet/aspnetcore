@@ -22,11 +22,15 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Tests.TestFiles.ComponentInt
             throw new NotImplementedException();
         }
 
-        /*MMParameter*/protected override Task UpdateDisplayAsync(in RenderBatch renderBatch) 
+        /*MMParameter*/protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
         {
             throw new NotImplementedException();
         }
 
         /*MMReturnType*/private Renderer GetRenderer() => _field;
+
+        public interface ITestInterface
+        {
+        }
     }
 }

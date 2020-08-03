@@ -7,7 +7,6 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Formatters.Json;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -67,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
 
             var httpContext = context.HttpContext;
-            var inputStream = GetInputStream(httpContext, encoding);
+            var (inputStream, usesTranscodingStream) = GetInputStream(httpContext, encoding);
 
             object model;
             try
@@ -98,9 +97,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
             finally
             {
-                if (inputStream is TranscodingReadStream transcoding)
+                if (usesTranscodingStream)
                 {
-                    await transcoding.DisposeAsync();
+                    await inputStream.DisposeAsync();
                 }
             }
 
@@ -119,14 +118,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
         }
 
-        private Stream GetInputStream(HttpContext httpContext, Encoding encoding)
+        private (Stream inputStream, bool usesTranscodingStream) GetInputStream(HttpContext httpContext, Encoding encoding)
         {
             if (encoding.CodePage == Encoding.UTF8.CodePage)
             {
-                return httpContext.Request.Body;
+                return (httpContext.Request.Body, false);
             }
 
-            return new TranscodingReadStream(httpContext.Request.Body, encoding);
+            var inputStream = Encoding.CreateTranscodingStream(httpContext.Request.Body, encoding, Encoding.UTF8, leaveOpen: true);
+            return (inputStream, true);
         }
 
         private static class Log

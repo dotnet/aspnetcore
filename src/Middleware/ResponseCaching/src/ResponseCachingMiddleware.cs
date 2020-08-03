@@ -14,6 +14,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCaching
 {
+    /// <summary>
+    /// Enable HTTP response caching.
+    /// </summary>
     public class ResponseCachingMiddleware
     {
         private static readonly TimeSpan DefaultExpirationTimeSpan = TimeSpan.FromSeconds(10);
@@ -29,6 +32,13 @@ namespace Microsoft.AspNetCore.ResponseCaching
         private readonly IResponseCache _cache;
         private readonly IResponseCachingKeyProvider _keyProvider;
 
+        /// <summary>
+        /// Creates a new <see cref="ResponseCachingMiddleware"/>.
+        /// </summary>
+        /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
+        /// <param name="options">The options for this middleware.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
+        /// <param name="poolProvider">The <see cref="ObjectPoolProvider"/> used for creating <see cref="ObjectPool"/> instances.</param>
         public ResponseCachingMiddleware(
             RequestDelegate next,
             IOptions<ResponseCachingOptions> options,
@@ -88,6 +98,11 @@ namespace Microsoft.AspNetCore.ResponseCaching
             _keyProvider = keyProvider;
         }
 
+        /// <summary>
+        /// Invokes the logic of the middleware.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
+        /// <returns>A <see cref="Task"/> that completes when the middleware has completed processing.</returns>
         public async Task Invoke(HttpContext httpContext)
         {
             var context = new ResponseCachingContext(httpContext, _logger);
@@ -192,7 +207,7 @@ namespace Microsoft.AspNetCore.ResponseCaching
                     {
                         try
                         {
-                            await body.CopyToAsync(response.Body, StreamUtilities.BodySegmentSize, context.HttpContext.RequestAborted);
+                            await body.CopyToAsync(response.BodyWriter, context.HttpContext.RequestAborted);
                         }
                         catch (OperationCanceledException)
                         {
@@ -343,19 +358,19 @@ namespace Microsoft.AspNetCore.ResponseCaching
             if (context.ShouldCacheResponse && context.ResponseCachingStream.BufferingEnabled)
             {
                 var contentLength = context.HttpContext.Response.ContentLength;
-                var bufferStream = context.ResponseCachingStream.GetBufferStream();
-                if (!contentLength.HasValue || contentLength == bufferStream.Length
-                    || (bufferStream.Length == 0
+                var cachedResponseBody = context.ResponseCachingStream.GetCachedResponseBody();
+                if (!contentLength.HasValue || contentLength == cachedResponseBody.Length
+                    || (cachedResponseBody.Length == 0
                         && HttpMethods.IsHead(context.HttpContext.Request.Method)))
                 {
                     var response = context.HttpContext.Response;
                     // Add a content-length if required
                     if (!response.ContentLength.HasValue && StringValues.IsNullOrEmpty(response.Headers[HeaderNames.TransferEncoding]))
                     {
-                        context.CachedResponse.Headers[HeaderNames.ContentLength] = HeaderUtilities.FormatNonNegativeInt64(bufferStream.Length);
+                        context.CachedResponse.Headers[HeaderNames.ContentLength] = HeaderUtilities.FormatNonNegativeInt64(cachedResponseBody.Length);
                     }
 
-                    context.CachedResponse.Body = bufferStream;
+                    context.CachedResponse.Body = cachedResponseBody;
                     _logger.ResponseCached();
                     _cache.Set(context.StorageVaryKey ?? context.BaseKey, context.CachedResponse, context.CachedResponseValidFor);
                 }

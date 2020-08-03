@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Http
         // Using .'static readonly' means that all consumers get these exact same
         // 'string' instance, which means the 'ReferenceEquals' checks below work
         // and allow us to optimize comparisons when these constants are used.
-        
+
         // Please do NOT change these to 'const'
         public static readonly string Connect = "CONNECT";
         public static readonly string Delete = "DELETE";
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Http
         /// </returns>
         public static bool IsConnect(string method)
         {
-            return object.ReferenceEquals(Connect, method) || StringComparer.OrdinalIgnoreCase.Equals(Connect, method);
+            return Equals(Connect, method);
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Http
         /// </returns>
         public static bool IsDelete(string method)
         {
-            return object.ReferenceEquals(Delete, method) || StringComparer.OrdinalIgnoreCase.Equals(Delete, method);
+            return Equals(Delete, method);
         }
 
         /// <summary>
@@ -57,11 +57,11 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="method">The  HTTP request method.</param>
         /// <returns>
-         /// <see langword="true" /> if the method is GET; otherwise, <see langword="false" />.
+        /// <see langword="true" /> if the method is GET; otherwise, <see langword="false" />.
         /// </returns>
         public static bool IsGet(string method)
         {
-            return object.ReferenceEquals(Get, method) || StringComparer.OrdinalIgnoreCase.Equals(Get, method);
+            return Equals(Get, method);
         }
 
         /// <summary>
@@ -69,11 +69,11 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
-         /// <see langword="true" /> if the method is HEAD; otherwise, <see langword="false" />.
+        /// <see langword="true" /> if the method is HEAD; otherwise, <see langword="false" />.
         /// </returns>
         public static bool IsHead(string method)
         {
-            return object.ReferenceEquals(Head, method) || StringComparer.OrdinalIgnoreCase.Equals(Head, method);
+            return Equals(Head, method);
         }
 
         /// <summary>
@@ -81,11 +81,11 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="method">The HTTP request method.</param>
         /// <returns>
-         /// <see langword="true" /> if the method is OPTIONS; otherwise, <see langword="false" />.
+        /// <see langword="true" /> if the method is OPTIONS; otherwise, <see langword="false" />.
         /// </returns>
         public static bool IsOptions(string method)
         {
-            return object.ReferenceEquals(Options, method) || StringComparer.OrdinalIgnoreCase.Equals(Options, method);
+            return Equals(Options, method);
         }
 
         /// <summary>
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Http
         /// </returns>
         public static bool IsPatch(string method)
         {
-            return object.ReferenceEquals(Patch, method) || StringComparer.OrdinalIgnoreCase.Equals(Patch, method);
+            return Equals(Patch, method);
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Http
         /// </returns>
         public static bool IsPost(string method)
         {
-            return object.ReferenceEquals(Post, method) || StringComparer.OrdinalIgnoreCase.Equals(Post, method);
+            return Equals(Post, method);
         }
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Http
         /// </returns>
         public static bool IsPut(string method)
         {
-            return object.ReferenceEquals(Put, method) || StringComparer.OrdinalIgnoreCase.Equals(Put, method);
+            return Equals(Put, method);
         }
 
         /// <summary>
@@ -133,7 +133,39 @@ namespace Microsoft.AspNetCore.Http
         /// </returns>
         public static bool IsTrace(string method)
         {
-            return object.ReferenceEquals(Trace, method) || StringComparer.OrdinalIgnoreCase.Equals(Trace, method);
+            return Equals(Trace, method);
+        }
+
+        /// <summary>
+        ///  Returns the equivalent static instance, or the original instance if none match. This conversion is optional but allows for performance optimizations when comparing method values elsewhere.
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        public static string GetCanonicalizedValue(string method) => method switch
+        {
+            string _ when IsGet(method) => Get,
+            string _ when IsPost(method) => Post,
+            string _ when IsPut(method) => Put,
+            string _ when IsDelete(method) => Delete,
+            string _ when IsOptions(method) => Options,
+            string _ when IsHead(method) => Head,
+            string _ when IsPatch(method) => Patch,
+            string _ when IsTrace(method) => Trace,
+            string _ when IsConnect(method) => Connect,
+            string _ => method
+        };
+
+        /// <summary>
+        /// Returns a value that indicates if the HTTP methods are the same. 
+        /// </summary>
+        /// <param name="methodA">The first HTTP request method to compare.</param>
+        /// <param name="methodB">The second HTTP request method to compare.</param>
+        /// <returns>
+        /// <see langword="true" /> if the methods are the same; otherwise, <see langword="false" />.
+        /// </returns>
+        public static bool Equals(string methodA, string methodB)
+        {
+            return object.ReferenceEquals(methodA, methodB) || StringComparer.OrdinalIgnoreCase.Equals(methodA, methodB);
         }
     }
 }

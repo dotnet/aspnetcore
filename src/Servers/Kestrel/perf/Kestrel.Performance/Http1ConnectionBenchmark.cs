@@ -79,13 +79,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private void ParseData()
         {
-            if (!_parser.ParseRequestLine(new Adapter(this), _buffer, out var consumed, out var examined))
+            var reader = new SequenceReader<byte>(_buffer);
+            if (!_parser.ParseRequestLine(new Adapter(this), ref reader))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }
-
-            _buffer = _buffer.Slice(consumed, _buffer.End);
-            var reader = new SequenceReader<byte>(_buffer);
 
             if (!_parser.ParseHeaders(new Adapter(this), ref reader))
             {
@@ -112,8 +110,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             public void OnHeadersComplete(bool endStream)
                 => RequestHandler.Connection.OnHeadersComplete();
 
-            public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
-                => RequestHandler.Connection.OnStartLine(method, version, target, path, query, customMethod, pathEncoded);
+            public void OnStartLine(HttpVersionAndMethod versionAndMethod, TargetOffsetPathLength targetPath, Span<byte> startLine)
+                => RequestHandler.Connection.OnStartLine(versionAndMethod, targetPath, startLine);
+
+            public void OnStaticIndexedHeader(int index)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

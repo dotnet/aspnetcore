@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
+using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private readonly ILogger _logger;
         private readonly TimeSpan _closeTimeout;
         private volatile bool _aborted;
+        private bool _isRunningInBrowser;
 
         private IDuplexPipe _transport;
 
@@ -36,8 +38,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         {
             _webSocket = new ClientWebSocket();
 
-            // Issue in ClientWebSocket prevents user-agent being set - https://github.com/dotnet/corefx/issues/26627
-            //_webSocket.Options.SetRequestHeader("User-Agent", Constants.UserAgentHeader.ToString());
+            // Full Framework will throw when trying to set the User-Agent header
+            // So avoid setting it in netstandard2.0 and only set it in netstandard2.1 and higher
+#if !NETSTANDARD2_0
+            _webSocket.Options.SetRequestHeader("User-Agent", Constants.UserAgentHeader.ToString());
+#else
+            // Set an alternative user agent header on Full framework
+            _webSocket.Options.SetRequestHeader("X-SignalR-User-Agent", Constants.UserAgentHeader.ToString());
+#endif
 
             if (httpConnectionOptions != null)
             {
@@ -87,6 +95,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             // Ignore the HttpConnectionOptions access token provider. We were given an updated delegate from the HttpConnection.
             _accessTokenProvider = accessTokenProvider;
+
+            _isRunningInBrowser = Utils.IsRunningInBrowser();
         }
 
         public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
@@ -113,7 +123,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                 var accessToken = await _accessTokenProvider();
                 if (!string.IsNullOrEmpty(accessToken))
                 {
-                    _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {accessToken}");
+                    // We can't use request headers in the browser, so instead append the token as a query string in that case
+                    if (_isRunningInBrowser)
+                    {
+                        var accessTokenEncoded = UrlEncoder.Default.Encode(accessToken);
+                        accessTokenEncoded = "access_token=" + accessTokenEncoded;
+                        resolvedUrl = Utils.AppendQueryString(resolvedUrl, accessTokenEncoded);
+                    }
+                    else
+                    {
+                        _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {accessToken}");
+                    }
                 }
             }
 

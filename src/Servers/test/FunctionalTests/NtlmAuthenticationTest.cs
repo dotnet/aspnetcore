@@ -22,7 +22,7 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys, ServerType.Kestrel)
-                .WithTfms(Tfm.NetCoreApp50)
+                .WithTfms(Tfm.Net50)
                 .WithAllHostingModels();
 
         [ConditionalTheory]

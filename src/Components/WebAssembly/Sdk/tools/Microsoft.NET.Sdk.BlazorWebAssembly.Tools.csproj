@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net5.0</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+    <IsShipping>false</IsShipping>
+    <DisablePubternalApiCheck>true</DisablePubternalApiCheck>
+
+    <UseAppHost>false</UseAppHost>
+    <RuntimeIdentifier />
+
+    <!-- Need to build this project in source build -->
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
+  </ItemGroup>
+
+</Project>

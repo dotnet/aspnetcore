@@ -1,14 +1,5 @@
 <Project>
-  <PropertyGroup>
-    <TargetRuntimeIdentifier Condition="'$(TargetRuntimeIdentifier)' == ''">$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(BuildAllProjects)' == 'true' ">
-    <BuildNative Condition="'$(BuildNative)' == ''">true</BuildNative>
-    <BuildManaged Condition="'$(BuildManaged)' == ''">true</BuildManaged>
-    <BuildNodeJS Condition="'$(BuildNodeJS)' == ''">true</BuildNodeJS>
-    <BuildJava Condition="'$(BuildJava)' == ''">true</BuildJava>
-  </PropertyGroup>
+  <Import Project="Common.props" />
 
   <!-- These projects are always excluded, even when -projects is specified on command line. -->
   <ItemGroup>
@@ -34,8 +25,7 @@
                       $(RepoRoot)src\Installers\**\*.*proj;
                       $(RepoRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
                       $(RepoRoot)src\Components\Web.JS\node_modules\**\*.*proj;
-                      $(RepoRoot)src\Components\Blazor\Build\testassets\**\*.*proj;
-                      $(RepoRoot)src\ProjectTemplates\BlazorWasm.ProjectTemplates\content\**\*.csproj;
+                      $(RepoRoot)src\Components\WebAssembly\Build\testassets\**\*.csproj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.csproj;
                       $(RepoRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.fsproj;
                       $(RepoRoot)src\ProjectTemplates\Web.Spa.ProjectTemplates\content\**\*.csproj;
@@ -43,7 +33,7 @@
 
     <!-- Exclude the benchmarks because they use <PackageReference>. -->
     <ProjectToExclude Include="
-                      $(RepoRoot)src\Components\benchmarkapps\**\*.csproj;
+                      $(RepoRoot)src\Components\benchmarkapps\BlazingPizza.Server\**\*.csproj;
                       $(RepoRoot)src\Mvc\benchmarkapps\**\*.csproj;
                       $(RepoRoot)src\Servers\Kestrel\perf\PlatformBenchmarks\**\*.csproj;
                       $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
@@ -51,7 +41,7 @@
   </ItemGroup>
 
   <Choose>
-    <!-- Project selection can be overridden on the command line by passing in -projects -->
+    <!-- Project selection can be overridden on the command line by passing in -projects. -->
     <When Condition="'$(ProjectToBuild)' != ''">
       <ItemGroup>
         <ProjectToBuild Include="$(ProjectToBuild)" Exclude="@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*">
@@ -94,21 +84,20 @@
                         Include="$(RepoRoot)src\Installers\Rpm\**\*.*proj" />
       </ItemGroup>
 
-      <ItemGroup>
-        <NativeProjects Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64') "
-                        Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)">
-          <!-- Required to prevent triggering double-builds. See src\Servers\IIS\ResolveIisReferences.targets for details. -->
-          <AdditionalProperties Condition="'$(TargetArchitecture)' == 'x64'">Platform=x64</AdditionalProperties>
-          <AdditionalProperties Condition="'$(TargetArchitecture)' == 'x86'">Platform=Win32</AdditionalProperties>
-        </NativeProjects>
+      <ItemGroup Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64') ">
+        <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=x64" />
+        <NativeProjects Include="$(RepoRoot)src\**\*.vcxproj" Exclude="@(ProjectToExclude)" AdditionalProperties="Platform=Win32" />
+      </ItemGroup>
 
-        <ProjectToBuild Condition=" '$(BuildNative)' == 'true'" Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
-        <ProjectToExclude Condition=" '$(BuildNative)' != 'true'" Include="@(NativeProjects)" />
+      <ItemGroup>
+        <ProjectToBuild Condition=" $(BuildNative) " Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToExclude Condition=" !$(BuildNative) " Include="@(NativeProjects)" />
 
         <NodeJsProjects Include="
                           $(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj;
                           $(RepoRoot)src\SignalR\**\*.npmproj;
                           $(RepoRoot)src\Middleware\**\*.npmproj;
+                          $(RepoRoot)src\JSInterop\**\*.npmproj;
                           "
                         RestoreInParallel="false"
                         Exclude="@(ProjectToExclude)" />
@@ -122,13 +111,21 @@
         <ProjectToBuild Condition=" '$(BuildJava)' == 'true'" Include="@(JavaProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildJava)' != 'true'" Include="@(JavaProjects)" />
 
+        <!-- These interop test projects can only be restored and built after the shared framework is built -->
+        <InteropProjects Include="$(RepoRoot)src\Grpc\**\*.csproj"
+                      Exclude="@(ProjectToExclude)" />
+
+        <ProjectToBuild Condition=" '$(BuildInteropProjects)' == 'true'" Include="@(InteropProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToExclude Condition=" '$(BuildInteropProjects)' != 'true'" Include="@(InteropProjects)" />
+
         <!--
           Use caution to avoid deep recursion. If the globbing pattern picks up something which exceeds MAX_PATH,
           the entire pattern will silently fail to evaluate correctly.
         -->
         <DotNetProjects Include="
-                          $(RepoRoot)src\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj;
-                          $(RepoRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj;
+                          $(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj;
+                          $(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj;
+                          $(RepoRoot)src\Framework\App.Ref.Internal\src\Microsoft.AspNetCore.App.Ref.Internal.csproj;
                           $(RepoRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
                           $(RepoRoot)src\DefaultBuilder\**\*.*proj;
                           $(RepoRoot)src\Features\JsonPatch\**\*.*proj;
@@ -141,8 +138,10 @@
                           $(RepoRoot)src\Servers\**\*.csproj;
                           $(RepoRoot)src\Security\**\*.*proj;
                           $(RepoRoot)src\SiteExtensions\Microsoft.Web.Xdt.Extensions\**\*.csproj;
+                          $(RepoRoot)src\SiteExtensions\LoggingAggregate\test\**\*.csproj;
                           $(RepoRoot)src\Shared\**\*.*proj;
                           $(RepoRoot)src\Tools\**\*.*proj;
+                          $(RepoRoot)src\Logging.AzureAppServices\**\src\*.csproj;
                           $(RepoRoot)src\Middleware\**\*.csproj;
                           $(RepoRoot)src\Razor\**\*.*proj;
                           $(RepoRoot)src\Mvc\**\*.*proj;
@@ -151,15 +150,63 @@
                           $(RepoRoot)src\SignalR\**\*.csproj;
                           $(RepoRoot)src\Components\**\*.csproj;
                           $(RepoRoot)src\Analyzers\**\*.csproj;
+                          $(RepoRoot)src\FileProviders\**\*.csproj;
+                          $(RepoRoot)src\Configuration.KeyPerFile\**\*.csproj;
+                          $(RepoRoot)src\Localization\**\*.csproj;
+                          $(RepoRoot)src\ObjectPool\**\*.csproj;
+                          $(RepoRoot)src\JSInterop\**\*.csproj;
+                          $(RepoRoot)src\WebEncoders\**\*.csproj;
+                          $(RepoRoot)src\HealthChecks\**\*.csproj;
+                          $(RepoRoot)src\Testing\**\*.csproj;
                           $(RepoRoot)src\ProjectTemplates\*\*.csproj;
                           $(RepoRoot)src\ProjectTemplates\testassets\*\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);
                           @(ProjectToExclude);
+                          $(RepoRoot)src\Razor\test\testassets\**\*.*proj;
+                          $(RepoRoot)src\Components\WebAssembly\Sdk\testassets\**\*.*proj;
                           $(RepoRoot)**\node_modules\**\*;
                           $(RepoRoot)**\bin\**\*;
-                          $(RepoRoot)**\obj\**\*;" />
+                          $(RepoRoot)**\obj\**\*;"
+                        Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
+        <DotNetProjects Include="
+                          $(RepoRoot)src\DefaultBuilder\**\src\*.csproj;
+                          $(RepoRoot)src\Features\JsonPatch\**\src\*.csproj;
+                          $(RepoRoot)src\DataProtection\**\src\*.csproj;
+                          $(RepoRoot)src\Antiforgery\**\src\*.csproj;
+                          $(RepoRoot)src\Hosting\**\src\*.csproj;
+                          $(RepoRoot)src\Http\**\src\*.csproj;
+                          $(RepoRoot)src\Html\**\src\*.csproj;
+                          $(RepoRoot)src\Identity\**\src\*.csproj;
+                          $(RepoRoot)src\Servers\**\src\*.csproj;
+                          $(RepoRoot)src\Security\**\src\*.csproj;
+                          $(RepoRoot)src\SiteExtensions\**\src\*.csproj;
+                          $(RepoRoot)src\Tools\**\src\*.csproj;
+                          $(RepoRoot)src\Logging.AzureAppServices\**\src\*.csproj;
+                          $(RepoRoot)src\Middleware\**\src\*.csproj;
+                          $(RepoRoot)src\Razor\**\src\*.csproj;
+                          $(RepoRoot)src\Mvc\**\src\*.csproj;
+                          $(RepoRoot)src\Azure\**\src\*.csproj;
+                          $(RepoRoot)src\SignalR\**\src\*.csproj;
+                          $(RepoRoot)src\Components\**\src\*.csproj;
+                          $(RepoRoot)src\FileProviders\**\src\*.csproj;
+                          $(RepoRoot)src\Configuration.KeyPerFile\**\src\*.csproj;
+                          $(RepoRoot)src\Localization\**\src\*.csproj;
+                          $(RepoRoot)src\ObjectPool\**\src\*.csproj;
+                          $(RepoRoot)src\JSInterop\**\src\*.csproj;
+                          $(RepoRoot)src\WebEncoders\**\src\*.csproj;
+                          $(RepoRoot)src\HealthChecks\**\src\*.csproj;
+                          $(RepoRoot)src\Testing\**\src\*.csproj;
+                          "
+                        Exclude="
+                          @(ProjectToBuild);
+                          @(ProjectToExclude);
+                          $(RepoRoot)src\Razor\test\testassets\**\*.*proj;
+                          $(RepoRoot)**\node_modules\**\*;
+                          $(RepoRoot)**\bin\**\*;
+                          $(RepoRoot)**\obj\**\*;"
+                        Condition=" '$(BuildMainlyReferenceProviders)' == 'true' " />
 
         <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(DotNetProjects)" Exclude="@(ProjectToExclude)" />
         <ProjectToExclude Condition=" '$(BuildManaged)' != 'true'" Include="@(DotNetProjects)" />

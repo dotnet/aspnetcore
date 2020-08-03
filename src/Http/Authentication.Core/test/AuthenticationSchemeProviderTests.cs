@@ -41,11 +41,11 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
             }).BuildServiceProvider();
 
             var provider = services.GetRequiredService<IAuthenticationSchemeProvider>();
-            Assert.Equal("B", (await provider.GetDefaultForbidSchemeAsync()).Name);
-            Assert.Equal("B", (await provider.GetDefaultAuthenticateSchemeAsync()).Name);
-            Assert.Equal("B", (await provider.GetDefaultChallengeSchemeAsync()).Name);
-            Assert.Equal("B", (await provider.GetDefaultSignInSchemeAsync()).Name);
-            Assert.Equal("B", (await provider.GetDefaultSignOutSchemeAsync()).Name);
+            Assert.Equal("B", (await provider.GetDefaultForbidSchemeAsync())!.Name);
+            Assert.Equal("B", (await provider.GetDefaultAuthenticateSchemeAsync())!.Name);
+            Assert.Equal("B", (await provider.GetDefaultChallengeSchemeAsync())!.Name);
+            Assert.Equal("B", (await provider.GetDefaultSignInSchemeAsync())!.Name);
+            Assert.Equal("B", (await provider.GetDefaultSignOutSchemeAsync())!.Name);
         }
 
 
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
             var provider = services.GetRequiredService<IAuthenticationSchemeProvider>();
             var scheme = await provider.GetDefaultSignOutSchemeAsync();
             Assert.NotNull(scheme);
-            Assert.Equal("signin", scheme.Name);
+            Assert.Equal("signin", scheme!.Name);
         }
 
         [Fact]
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
             var provider = services.GetRequiredService<IAuthenticationSchemeProvider>();
             var scheme = await provider.GetDefaultForbidSchemeAsync();
             Assert.NotNull(scheme);
-            Assert.Equal("challenge", scheme.Name);
+            Assert.Equal("challenge", scheme!.Name);
         }
 
         [Fact]
@@ -99,11 +99,11 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
             }).BuildServiceProvider();
 
             var provider = services.GetRequiredService<IAuthenticationSchemeProvider>();
-            Assert.Equal("B", (await provider.GetDefaultForbidSchemeAsync()).Name);
-            Assert.Equal("C", (await provider.GetDefaultAuthenticateSchemeAsync()).Name);
-            Assert.Equal("A", (await provider.GetDefaultChallengeSchemeAsync()).Name);
-            Assert.Equal("C", (await provider.GetDefaultSignInSchemeAsync()).Name);
-            Assert.Equal("A", (await provider.GetDefaultSignOutSchemeAsync()).Name);
+            Assert.Equal("B", (await provider.GetDefaultForbidSchemeAsync())!.Name);
+            Assert.Equal("C", (await provider.GetDefaultAuthenticateSchemeAsync())!.Name);
+            Assert.Equal("A", (await provider.GetDefaultChallengeSchemeAsync())!.Name);
+            Assert.Equal("C", (await provider.GetDefaultSignInSchemeAsync())!.Name);
+            Assert.Equal("A", (await provider.GetDefaultSignOutSchemeAsync())!.Name);
         }
 
         [Fact]
@@ -176,12 +176,12 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
                 throw new NotImplementedException();
             }
 
-            public Task ChallengeAsync(AuthenticationProperties properties)
+            public Task ChallengeAsync(AuthenticationProperties? properties)
             {
                 throw new NotImplementedException();
             }
 
-            public Task ForbidAsync(AuthenticationProperties properties)
+            public Task ForbidAsync(AuthenticationProperties? properties)
             {
                 throw new NotImplementedException();
             }
@@ -194,12 +194,12 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
 
         private class SignInHandler : Handler, IAuthenticationSignInHandler
         {
-            public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
+            public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
             {
                 throw new NotImplementedException();
             }
 
-            public Task SignOutAsync(AuthenticationProperties properties)
+            public Task SignOutAsync(AuthenticationProperties? properties)
             {
                 throw new NotImplementedException();
             }
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
 
         private class SignOutHandler : Handler, IAuthenticationSignOutHandler
         {
-            public Task SignOutAsync(AuthenticationProperties properties)
+            public Task SignOutAsync(AuthenticationProperties? properties)
             {
                 throw new NotImplementedException();
             }

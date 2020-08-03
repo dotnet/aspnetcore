@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
                 exceptions.Add(e);
             };
 
-            // Receive the ack for the intial batch
+            // Receive the ack for the initial batch
             _ = renderer.OnRenderCompletedAsync(2, null);
             // Receive the ack for the second batch
             _ = renderer.OnRenderCompletedAsync(2, null);
@@ -437,7 +437,7 @@ namespace Microsoft.AspNetCore.Components.Web.Rendering
         private class TestRemoteRenderer : RemoteRenderer
         {
             public TestRemoteRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory, CircuitOptions options, CircuitClientProxy client, ILogger logger)
-                : base(serviceProvider, loggerFactory, options, client, logger)
+                : base(serviceProvider, loggerFactory, options, client, logger, null)
             {
             }
 

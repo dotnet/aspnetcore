@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Templates.Test.Helpers;
@@ -70,6 +71,7 @@ namespace Templates.Test
 
         [Theory]
         [MemberData(nameof(TemplateBaselines))]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23993")]
         public async Task Template_Produces_The_Right_Set_Of_FilesAsync(string arguments, string[] expectedFiles)
         {
             Project = await ProjectFactory.GetOrCreateProject("baseline" + SanitizeArgs(arguments), Output);
@@ -90,7 +92,13 @@ namespace Templates.Test
                     relativePath.EndsWith(".props", StringComparison.Ordinal) ||
                     relativePath.EndsWith(".targets", StringComparison.Ordinal) ||
                     relativePath.StartsWith("bin/", StringComparison.Ordinal) ||
-                    relativePath.StartsWith("obj/", StringComparison.Ordinal))
+                    relativePath.StartsWith("obj/", StringComparison.Ordinal) ||
+                    relativePath.EndsWith(".sln", StringComparison.Ordinal) ||
+                    relativePath.EndsWith(".targets", StringComparison.Ordinal) ||
+                    relativePath.StartsWith("bin/", StringComparison.Ordinal) ||
+                    relativePath.StartsWith("obj/", StringComparison.Ordinal) ||
+                    relativePath.Contains("/bin/", StringComparison.Ordinal) ||
+                    relativePath.Contains("/obj/", StringComparison.Ordinal))
                 {
                     continue;
                 }
@@ -114,6 +122,16 @@ namespace Templates.Test
             if (arguments.Contains("--support-pages-and-views true"))
             {
                 text += "supportpagesandviewstrue";
+            }
+
+            if (arguments.Contains("-ho"))
+            {
+                text += "hosted";
+            }
+
+            if (arguments.Contains("--pwa"))
+            {
+                text += "pwa";
             }
 
             return text;

@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.Hosting
 {
     public static class HostingAbstractionsWebHostBuilderExtensions
     {
-        private static readonly string ServerUrlsSeparator = ";";
-
         /// <summary>
         /// Use the given configuration settings on the web host.
         /// </summary>
@@ -144,7 +142,7 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(urls));
             }
 
-            return hostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, string.Join(ServerUrlsSeparator, urls));
+            return hostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, string.Join(';', urls));
         }
 
         /// <summary>

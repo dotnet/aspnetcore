@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
         }
 
         public TestServer(RequestDelegate app, TestServiceContext context, ListenOptions listenOptions)
-            : this(app, context, options => options.ListenOptions.Add(listenOptions), _ => { })
+            : this(app, context, options => options.CodeBackedListenOptions.Add(listenOptions), _ => { })
         {
         }
 
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                     };
 
                     configureListenOptions(listenOptions);
-                    options.ListenOptions.Add(listenOptions);
+                    options.CodeBackedListenOptions.Add(listenOptions);
                 },
                 _ => { })
         {

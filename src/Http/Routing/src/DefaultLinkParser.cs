@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing
             _createMatcher = CreateRoutePatternMatcher;
         }
 
-        public override RouteValueDictionary ParsePathByAddress<TAddress>(TAddress address, PathString path)
+        public override RouteValueDictionary? ParsePathByAddress<TAddress>(TAddress address, PathString path)
         {
             var endpoints = GetEndpoints(address);
             if (endpoints.Count == 0)
@@ -117,7 +118,7 @@ namespace Microsoft.AspNetCore.Routing
         internal MatcherState GetMatcherState(RouteEndpoint endpoint) => _matcherCache.EnsureInitialized().GetOrAdd(endpoint, _createMatcher);
 
         // Internal for testing
-        internal bool TryParse(RouteEndpoint endpoint, PathString path, out RouteValueDictionary values)
+        internal bool TryParse(RouteEndpoint endpoint, PathString path, [NotNullWhen(true)] out RouteValueDictionary? values)
         {
             var (matcher, constraints) = GetMatcherState(endpoint);
 
@@ -168,6 +169,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+#nullable disable
         private static class Log
         {
             public static class EventIds

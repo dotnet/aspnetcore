@@ -22,14 +22,15 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
 {
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
-    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81,
-        SkipReason = "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support")]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10,
+        SkipReason = "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support or incompatible ciphers on Windows 8.1")]
     public class TlsTests : LoggedTest
     {
         private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/7000")]
+        [QuarantinedTest]
+        [SkipOnHelix("Ubuntu 20.04 disables TLS1.1 by default which SslStream requires in this scenario", Queues = "Ubuntu.2004.Amd64.Open")]
         public async Task TlsHandshakeRejectsTlsLessThan12()
         {
             using (var server = new TestServer(context =>

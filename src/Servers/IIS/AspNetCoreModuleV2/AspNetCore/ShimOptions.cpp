@@ -54,6 +54,11 @@ ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
         .value_or(environmentVariables[CS_ASPNETCORE_ENVIRONMENT]);
     const auto dotnetEnvironment = Environment::GetEnvironmentVariableValue(CS_DOTNET_ENVIRONMENT)
         .value_or(environmentVariables[CS_DOTNET_ENVIRONMENT]);
+    // We prefer the environment variables for LAUNCHER_PATH and LAUNCHER_ARGS
+    m_strProcessPath = Environment::GetEnvironmentVariableValue(CS_ANCM_LAUNCHER_PATH)
+        .value_or(m_strProcessPath);
+    m_strArguments = Environment::GetEnvironmentVariableValue(CS_ANCM_LAUNCHER_ARGS)
+        .value_or(m_strArguments);
 
     auto detailedErrorsEnabled = equals_ignore_case(L"1", detailedErrors) || equals_ignore_case(L"true", detailedErrors);
     auto aspnetCoreEnvironmentEnabled = equals_ignore_case(L"Development", aspnetCoreEnvironment);

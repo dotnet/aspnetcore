@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
@@ -29,8 +30,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                                          ITransferFormatFeature,
                                          IHttpContextFeature,
                                          IHttpTransportFeature,
-                                         IConnectionInherentKeepAliveFeature
+                                         IConnectionInherentKeepAliveFeature,
+                                         IConnectionLifetimeFeature
     {
+        private static long _tenSeconds = TimeSpan.FromSeconds(10).Ticks;
+
         private readonly object _stateLock = new object();
         private readonly object _itemsLock = new object();
         private readonly object _heartbeatLock = new object();
@@ -39,10 +43,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private PipeWriterStream _applicationStream;
         private IDuplexPipe _application;
         private IDictionary<object, object> _items;
+        private CancellationTokenSource _connectionClosedTokenSource;
+
+        private CancellationTokenSource _sendCts;
+        private bool _activeSend;
+        private long _startedSendTime;
+        private readonly object _sendingLock = new object();
+        internal CancellationToken SendingToken { get; private set; }
 
         // This tcs exists so that multiple calls to DisposeAsync all wait asynchronously
         // on the same task
-        private readonly TaskCompletionSource<object> _disposeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _disposeTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         /// <summary>
         /// Creates the DefaultConnectionContext without Pipes to avoid upfront allocations.
@@ -74,13 +85,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             Features.Set<IHttpContextFeature>(this);
             Features.Set<IHttpTransportFeature>(this);
             Features.Set<IConnectionInherentKeepAliveFeature>(this);
-        }
+            Features.Set<IConnectionLifetimeFeature>(this);
 
-        internal HttpConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application, ILogger logger = null)
-            : this(id, null, logger)
-        {
-            Transport = transport;
-            Application = application;
+            _connectionClosedTokenSource = new CancellationTokenSource();
+            ConnectionClosed = _connectionClosedTokenSource.Token;
         }
 
         public CancellationTokenSource Cancellation { get; set; }
@@ -91,6 +99,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         // Used for testing only
         internal Task DisposeAndRemoveTask { get; set; }
+
+        // Used for LongPolling because we need to create a scope that spans the lifetime of multiple requests on the cloned HttpContext
+        internal IServiceScope ServiceScope { get; set; }
 
         public Task TransportTask { get; set; }
 
@@ -169,6 +180,15 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public HttpContext HttpContext { get; set; }
 
+        public override CancellationToken ConnectionClosed { get; set; }
+
+        public override void Abort()
+        {
+            ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
+
+            HttpContext?.Abort();
+        }
+
         public void OnHeartbeat(Action<object> action, object state)
         {
             lock (_heartbeatLock)
@@ -235,6 +255,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         (identity as IDisposable)?.Dispose();
                     }
                 }
+
+                ServiceScope?.Dispose();
             }
 
             await disposeTask;
@@ -258,8 +280,26 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     }
                     else
                     {
-                        // The other transports don't close their own output, so we can do it here safely
-                        Application?.Output.Complete();
+                        // Normally it isn't safe to try and acquire this lock because the Send can hold onto it for a long time if there is backpressure
+                        // It is safe to wait for this lock now because the Send will be in one of 4 states
+                        // 1. In the middle of a write which is in the middle of being canceled by the CancelPendingFlush above, when it throws
+                        //    an OperationCanceledException it will complete the PipeWriter which will make any other Send waiting on the lock
+                        //    throw an InvalidOperationException if they call Write
+                        // 2. About to write and see that there is a pending cancel from the CancelPendingFlush, go to 1 to see what happens
+                        // 3. Enters the Send and sees the Dispose state from DisposeAndRemoveAsync and releases the lock
+                        // 4. No Send in progress
+                        await WriteLock.WaitAsync();
+                        try
+                        {
+                            // Complete the applications read loop
+                            Application?.Output.Complete();
+                        }
+                        finally
+                        {
+                            WriteLock.Release();
+                        }
+
+                        Application?.Input.CancelPendingRead();
                     }
                 }
 
@@ -286,6 +326,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         // Now complete the application
                         Application?.Output.Complete();
                         Application?.Input.Complete();
+
+                        // Trigger ConnectionClosed
+                        ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
                     }
                 }
                 else
@@ -293,6 +336,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     // If the transport is complete, complete the application pipes
                     Application?.Output.Complete(transportTask.Exception?.InnerException);
                     Application?.Input.Complete();
+
+                    // Trigger ConnectionClosed
+                    ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
 
                     try
                     {
@@ -311,7 +357,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 }
 
                 // Notify all waiters that we're done disposing
-                _disposeTcs.TrySetResult(null);
+                _disposeTcs.TrySetResult();
             }
             catch (OperationCanceledException)
             {
@@ -401,7 +447,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         nonClonedContext.Response.RegisterForDispose(timeoutSource);
                         nonClonedContext.Response.RegisterForDispose(tokenSource);
 
-                        var longPolling = new LongPollingServerTransport(timeoutSource.Token, Application.Input, loggerFactory);
+                        var longPolling = new LongPollingServerTransport(timeoutSource.Token, Application.Input, loggerFactory, this);
 
                         // Start the transport
                         TransportTask = longPolling.ProcessRequestAsync(nonClonedContext, tokenSource.Token);
@@ -505,6 +551,40 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             // Running this in an async method turns sync exceptions into async ones
             await connectionDelegate(this);
+        }
+
+        internal void StartSendCancellation()
+        {
+            lock (_sendingLock)
+            {
+                if (_sendCts == null || _sendCts.IsCancellationRequested)
+                {
+                    _sendCts = new CancellationTokenSource();
+                    SendingToken = _sendCts.Token;
+                }
+                _startedSendTime = DateTime.UtcNow.Ticks;
+                _activeSend = true;
+            }
+        }
+        internal void TryCancelSend(long currentTicks)
+        {
+            lock (_sendingLock)
+            {
+                if (_activeSend)
+                {
+                    if (currentTicks - _startedSendTime > _tenSeconds)
+                    {
+                        _sendCts.Cancel();
+                    }
+                }
+            }
+        }
+        internal void StopSendCancellation()
+        {
+            lock (_sendingLock)
+            {
+                _activeSend = false;
+            }
         }
 
         private static class Log

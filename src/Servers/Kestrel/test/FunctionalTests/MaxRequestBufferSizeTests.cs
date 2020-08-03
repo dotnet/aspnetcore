@@ -108,8 +108,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
         [Theory]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2489", FlakyOn.AzP.All)]
         [MemberData(nameof(LargeUploadData))]
+        [QuarantinedTest] // This is inherently flaky and should never be unquarantined.
         public async Task LargeUpload(long? maxRequestBufferSize, bool connectionAdapter, bool expectPause)
         {
             // Parameters
@@ -118,8 +118,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var bytesWrittenPollingInterval = TimeSpan.FromMilliseconds(bytesWrittenTimeout.TotalMilliseconds / 10);
             var maxSendSize = 4096;
 
-            var startReadingRequestBody = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var clientFinishedSendingRequestBody = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var startReadingRequestBody = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var clientFinishedSendingRequestBody = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var lastBytesWritten = DateTime.MaxValue;
 
             var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         }
 
                         Assert.Equal(data.Length, bytesWritten);
-                        clientFinishedSendingRequestBody.TrySetResult(null);
+                        clientFinishedSendingRequestBody.TrySetResult();
                     };
 
                     var sendTask = sendFunc();
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         Assert.InRange(bytesWritten, minimumExpectedBytesWritten, maximumExpectedBytesWritten);
 
                         // Tell server to start reading request body
-                        startReadingRequestBody.TrySetResult(null);
+                        startReadingRequestBody.TrySetResult();
 
                         // Wait for sendTask to finish sending the remaining bytes
                         await sendTask;
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         await sendTask;
 
                         // Tell server to start reading request body
-                        startReadingRequestBody.TrySetResult(null);
+                        startReadingRequestBody.TrySetResult();
                     }
 
                     await AssertStreamContains(stream, $"bytesRead: {data.Length}");
@@ -211,8 +211,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var bytesWrittenPollingInterval = TimeSpan.FromMilliseconds(bytesWrittenTimeout.TotalMilliseconds / 10);
             var maxSendSize = 4096;
 
-            var startReadingRequestBody = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var clientFinishedSendingRequestBody = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var startReadingRequestBody = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var clientFinishedSendingRequestBody = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var lastBytesWritten = DateTime.MaxValue;
 
             var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                             lastBytesWritten = DateTime.Now;
                         }
 
-                        clientFinishedSendingRequestBody.TrySetResult(null);
+                        clientFinishedSendingRequestBody.TrySetResult();
                     };
 
                     var ignore = sendFunc();
@@ -276,16 +276,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
             // Allow appfunc to unblock
-            startReadingRequestBody.SetResult(null);
-            clientFinishedSendingRequestBody.SetResult(null);
+            startReadingRequestBody.SetResult();
+            clientFinishedSendingRequestBody.SetResult();
             await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
         }
 
         private async Task<IWebHost> StartWebHost(long? maxRequestBufferSize,
             byte[] expectedBody,
             bool useConnectionAdapter,
-            TaskCompletionSource<object> startReadingRequestBody,
-            TaskCompletionSource<object> clientFinishedSendingRequestBody,
+            TaskCompletionSource startReadingRequestBody,
+            TaskCompletionSource clientFinishedSendingRequestBody,
             Func<MemoryPool<byte>> memoryPoolFactory = null)
         {
             var host = TransportSelector.GetWebHostBuilder(memoryPoolFactory, maxRequestBufferSize)

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.TestHost
         private bool _pipelineFinished;
         private bool _returningResponse;
         private object _testContext;
-        private Pipe _requestPipe;
+        private readonly Pipe _requestPipe;
 
         private Action<HttpContext> _responseReadCompleteCallback;
         private Task _sendRequestStreamTask;
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.TestHost
             _requestLifetimeFeature = new RequestLifetimeFeature(Abort);
 
             var request = _httpContext.Request;
-            request.Protocol = "HTTP/1.1";
+            request.Protocol = HttpProtocol.Http11;
             request.Method = HttpMethods.Get;
 
             _requestPipe = new Pipe();
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.TestHost
             async Task RunRequestAsync()
             {
                 // HTTP/2 specific features must be added after the request has been configured.
-                if (string.Equals("HTTP/2", _httpContext.Request.Protocol, StringComparison.OrdinalIgnoreCase))
+                if (HttpProtocol.IsHttp2(_httpContext.Request.Protocol))
                 {
                     _httpContext.Features.Set<IHttpResetFeature>(this);
                 }
@@ -110,8 +110,30 @@ namespace Microsoft.AspNetCore.TestHost
                 try
                 {
                     await _application.ProcessRequestAsync(_testContext);
-                    await CompleteRequestAsync();
+
+                    // Determine whether request body was complete when the delegate exited.
+                    // This could throw an error if there was a pending server read. Needs to
+                    // happen before completing the response so the response returns the error.
+                    var requestBodyInProgress = RequestBodyReadInProgress();
+                    if (requestBodyInProgress)
+                    {
+                        // If request is still in progress then abort it.
+                        CancelRequestBody();
+                    }
+
+                    // Matches Kestrel server: response is completed before request is drained
                     await CompleteResponseAsync();
+
+                    if (!requestBodyInProgress)
+                    {
+                        // Writer was already completed in send request callback.
+                        await _requestPipe.Reader.CompleteAsync();
+
+                        // Don't wait for request to drain. It could block indefinitely. In a real server
+                        // we would wait for a timeout and then kill the socket.
+                        // Potential future improvement: add logging that the request timed out
+                    }
+
                     _application.DisposeContext(_testContext, exception: null);
                 }
                 catch (Exception ex)
@@ -158,40 +180,15 @@ namespace Microsoft.AspNetCore.TestHost
             CancelRequestBody();
         }
 
-        private async Task CompleteRequestAsync()
+        private bool RequestBodyReadInProgress()
         {
-            bool requestBodyInProgress;
             try
             {
-                requestBodyInProgress = !_requestPipe.Reader.TryRead(out var result) || !result.IsCompleted;
+                return !_requestPipe.Reader.TryRead(out var result) || !result.IsCompleted;
             }
             catch (Exception ex)
             {
                 throw new InvalidOperationException("An error occurred when completing the request. Request delegate may have finished while there is a pending read of the request body.", ex);
-            }
-
-            if (requestBodyInProgress)
-            {
-                // If request is still in progress then abort it.
-                CancelRequestBody();
-            }
-            else
-            {
-                // Writer was already completed in send request callback.
-                await _requestPipe.Reader.CompleteAsync();
-            }
-
-            if (_sendRequestStreamTask != null)
-            {
-                try
-                {
-                    // Ensure duplex request is either completely read or has been aborted.
-                    await _sendRequestStreamTask;
-                }
-                catch (OperationCanceledException)
-                {
-                    // Request was canceled, likely because it wasn't read before the request ended.
-                }
             }
         }
 

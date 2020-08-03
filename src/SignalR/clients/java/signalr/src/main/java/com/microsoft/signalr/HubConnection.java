@@ -20,17 +20,19 @@ import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.subjects.*;
+import okhttp3.OkHttpClient;
 
 /**
  * A connection used to invoke hub methods on a SignalR Server.
  */
-public class HubConnection {
+public class HubConnection implements AutoCloseable {
     private static final String RECORD_SEPARATOR = "\u001e";
     private static final List<Class<?>> emptyArray = new ArrayList<>();
     private static final int MAX_NEGOTIATE_ATTEMPTS = 100;
 
     private String baseUrl;
     private Transport transport;
+    private boolean customTransport = false;
     private OnReceiveCallBack callback;
     private final CallbackMap handlers = new CallbackMap();
     private HubProtocol protocol;
@@ -59,6 +61,7 @@ public class HubConnection {
     private String connectionId;
     private final int negotiateVersion = 1;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
+    private ScheduledExecutorService handshakeTimeout = null;
 
     /**
      * Sets the server timeout interval for the connection.
@@ -111,7 +114,7 @@ public class HubConnection {
     }
 
     // For testing purposes
-    Map<String,Observable> getStreamMap() {
+    Map<String, Observable> getStreamMap() {
         return this.streamMap;
     }
 
@@ -124,7 +127,8 @@ public class HubConnection {
     }
 
     HubConnection(String url, Transport transport, boolean skipNegotiate, HttpClient httpClient,
-                  Single<String> accessTokenProvider, long handshakeResponseTimeout, Map<String, String> headers, TransportEnum transportEnum) {
+                  Single<String> accessTokenProvider, long handshakeResponseTimeout, Map<String, String> headers, TransportEnum transportEnum,
+                  Action1<OkHttpClient.Builder> configureBuilder) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("A valid url is required.");
         }
@@ -141,11 +145,12 @@ public class HubConnection {
         if (httpClient != null) {
             this.httpClient = httpClient;
         } else {
-            this.httpClient = new DefaultHttpClient();
+            this.httpClient = new DefaultHttpClient(configureBuilder);
         }
 
         if (transport != null) {
             this.transport = transport;
+            this.customTransport = true;
         } else if (transportEnum != null) {
             this.transportEnum = transportEnum;
         }
@@ -246,8 +251,8 @@ public class HubConnection {
     }
 
     private void timeoutHandshakeResponse(long timeout, TimeUnit unit) {
-        ScheduledExecutorService scheduledThreadPool = Executors.newSingleThreadScheduledExecutor();
-        scheduledThreadPool.schedule(() -> {
+        handshakeTimeout = Executors.newSingleThreadScheduledExecutor();
+        handshakeTimeout.schedule(() -> {
             // If onError is called on a completed subject the global error handler is called
             if (!(handshakeResponseSubject.hasComplete() || handshakeResponseSubject.hasThrowable()))
             {
@@ -518,6 +523,11 @@ public class HubConnection {
                 connectionState = null;
             }
 
+            if (pingTimer != null) {
+                pingTimer.cancel();
+                pingTimer = null;
+            }
+
             logger.info("HubConnection stopped.");
             hubConnectionState = HubConnectionState.DISCONNECTED;
             handshakeResponseSubject.onComplete();
@@ -526,6 +536,15 @@ public class HubConnection {
             transportEnum = TransportEnum.ALL;
             this.localHeaders.clear();
             this.streamMap.clear();
+
+            if (this.handshakeTimeout != null) {
+                this.handshakeTimeout.shutdownNow();
+                this.handshakeTimeout = null;
+            }
+
+            if (this.customTransport == false) {
+                this.transport = null;
+            }
         } finally {
             hubConnectionStateLock.unlock();
         }
@@ -1090,6 +1109,18 @@ public class HubConnection {
             }
 
             return handlers.get(0).getClasses();
+        }
+    }
+
+    @Override
+    public void close() {
+        try {
+            stop().blockingAwait();
+        } finally {
+            // Don't close HttpClient if it's passed in by the user
+            if (this.httpClient != null && this.httpClient instanceof DefaultHttpClient) {
+                this.httpClient.close();
+            }
         }
     }
 }

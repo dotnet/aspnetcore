@@ -131,14 +131,9 @@ namespace Microsoft.AspNetCore.WebSockets
                 }
 
                 TimeSpan keepAliveInterval = _options.KeepAliveInterval;
-                int receiveBufferSize = _options.ReceiveBufferSize;
                 var advancedAcceptContext = acceptContext as ExtendedWebSocketAcceptContext;
                 if (advancedAcceptContext != null)
                 {
-                    if (advancedAcceptContext.ReceiveBufferSize.HasValue)
-                    {
-                        receiveBufferSize = advancedAcceptContext.ReceiveBufferSize.Value;
-                    }
                     if (advancedAcceptContext.KeepAliveInterval.HasValue)
                     {
                         keepAliveInterval = advancedAcceptContext.KeepAliveInterval.Value;

@@ -90,7 +90,7 @@ namespace BlazingPizza.Server
                 },
                 new Topping()
                 {
-                    Name = "Fresh tomatos",
+                    Name = "Fresh tomatoes",
                     Price = 1.50m,
                 },
                 new Topping()

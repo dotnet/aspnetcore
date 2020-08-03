@@ -84,7 +84,9 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                     return;
                 }
 
+#pragma warning disable RS1030 // Do not invoke Compilation.GetSemanticModel() method within a diagnostic analyzer
                 var semanticModel = operationAnalysisContext.Compilation.GetSemanticModel(methodSyntax.SyntaxTree);
+#pragma warning restore RS1030 // Do not invoke Compilation.GetSemanticModel() method within a diagnostic analyzer
                 var methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax, operationAnalysisContext.CancellationToken);
 
                 if (!ApiControllerFacts.IsApiControllerAction(symbolCache, methodSymbol))

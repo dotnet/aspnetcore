@@ -45,13 +45,13 @@ namespace Microsoft.AspNetCore.ResponseCaching
             }
         }
 
-        internal Stream GetBufferStream()
+        internal CachedResponseBody GetCachedResponseBody()
         {
             if (!BufferingEnabled)
             {
                 throw new InvalidOperationException("Buffer stream cannot be retrieved since buffering is disabled.");
             }
-            return new SegmentReadStream(_segmentWriteStream.GetSegments(), _segmentWriteStream.Length);
+            return new CachedResponseBody(_segmentWriteStream.GetSegments(), _segmentWriteStream.Length);
         }
 
         internal void DisableBuffering()

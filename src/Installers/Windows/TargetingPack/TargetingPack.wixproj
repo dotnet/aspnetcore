@@ -70,8 +70,12 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <PropertyGroup>
+    <!-- Everything built in this project _except_ the final package are shipping assets. -->
+    <_GeneratedPackageVersion>$(PackageVersion)</_GeneratedPackageVersion>
+    <_GeneratedPackageVersion
+        Condition="! $(PackageVersion.Contains('$(_PreReleaseLabel)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</_GeneratedPackageVersion>
     <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Targeting Pack ($(Platform))</ProductName>
-    <PackageFileName>$(TargetingPackInstallerBaseName)-$(PackageVersion)-win-$(Platform)$(TargetExt)</PackageFileName>
+    <PackageFileName>$(TargetingPackInstallerBaseName)-$(_GeneratedPackageVersion)-win-$(Platform)$(TargetExt)</PackageFileName>
     <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
 
     <!-- Suppresses building this project completely during servicing builds. -->
@@ -82,11 +86,6 @@
       Condition="'$(IsTargetingPackBuilding)' != 'false'">
     <PropertyGroup>
       <MsiFullPath>$(InstallersOutputPath)$(PackageFileName)</MsiFullPath>
-
-      <!-- Everything built in this project _except_ the final package are shipping assets. -->
-      <_GeneratedPackageVersion>$(PackageVersion)</_GeneratedPackageVersion>
-      <_GeneratedPackageVersion
-          Condition="! $(PackageVersion.Contains('$(_PreReleaseLabel)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</_GeneratedPackageVersion>
     </PropertyGroup>
 
     <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
@@ -100,6 +99,8 @@
                       '$(RepoRoot)' ^
                       '$(AspNetCoreMajorVersion)' ^
                       '$(AspNetCoreMinorVersion)' ^
-                      '$(PackageIconFullPath)'" />
+                      '$(PackageIcon)' ^
+                      '$(PackageIconFullPath)' ^
+                      '$(PackageLicenseExpression)' " />
   </Target>
 </Project>

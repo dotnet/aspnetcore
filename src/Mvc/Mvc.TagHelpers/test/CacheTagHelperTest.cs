@@ -907,26 +907,28 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             };
 
             var invokeCount = 0;
-            var tagHelperOutput = new TagHelperOutput(
-                "cache",
-                new TagHelperAttributeList(),
-                getChildContentAsync: (useCachedResult, _) =>
-                {
-                    invokeCount++;
 
-                    var content = new DefaultTagHelperContent();
-                    content.SetContent(expected);
-                    return Task.FromResult<TagHelperContent>(content);
-                });
+            Func<bool, HtmlEncoder, Task<TagHelperContent>> getChildContentAsync = (useCachedResult, _) =>
+            {
+                invokeCount++;
+
+                var content = new DefaultTagHelperContent();
+                content.SetContent(expected);
+                return Task.FromResult<TagHelperContent>(content);
+            };
+
+            var tagHelperOutput1 = new TagHelperOutput("cache", new TagHelperAttributeList(), getChildContentAsync);
+            var tagHelperOutput2 = new TagHelperOutput("cache", new TagHelperAttributeList(), getChildContentAsync);
 
             // Act
-            var task1 = Task.Run(() => cacheTagHelper1.ProcessAsync(GetTagHelperContext(cache.Key1), tagHelperOutput));
-            var task2 = Task.Run(() => cacheTagHelper2.ProcessAsync(GetTagHelperContext(cache.Key2), tagHelperOutput));
+            var task1 = Task.Run(() => cacheTagHelper1.ProcessAsync(GetTagHelperContext(cache.Key1), tagHelperOutput1));
+            var task2 = Task.Run(() => cacheTagHelper2.ProcessAsync(GetTagHelperContext(cache.Key2), tagHelperOutput2));
 
             // Assert
             await Task.WhenAll(task1, task2);
-            Assert.Equal(encoder.Encode(expected), tagHelperOutput.Content.GetContent());
-            Assert.Equal(1, invokeCount);
+            Assert.Equal(1, invokeCount); // We expect getChildContentAsync to be invoked exactly once.
+            Assert.Equal(encoder.Encode(expected), tagHelperOutput1.Content.GetContent());
+            Assert.Equal(encoder.Encode(expected), tagHelperOutput2.Content.GetContent());
         }
 
         private static ViewContext GetViewContext()

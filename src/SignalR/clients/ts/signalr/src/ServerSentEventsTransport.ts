@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { HttpClient } from "./HttpClient";
+import { MessageHeaders } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
 import { EventSourceConstructor } from "./Polyfills";
@@ -17,18 +18,20 @@ export class ServerSentEventsTransport implements ITransport {
     private readonly eventSourceConstructor: EventSourceConstructor;
     private eventSource?: EventSource;
     private url?: string;
+    private headers: MessageHeaders;
 
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((error?: Error) => void) | null;
 
     constructor(httpClient: HttpClient, accessTokenFactory: (() => string | Promise<string>) | undefined, logger: ILogger,
-                logMessageContent: boolean, eventSourceConstructor: EventSourceConstructor, withCredentials: boolean) {
+                logMessageContent: boolean, eventSourceConstructor: EventSourceConstructor, withCredentials: boolean, headers: MessageHeaders) {
         this.httpClient = httpClient;
         this.accessTokenFactory = accessTokenFactory;
         this.logger = logger;
         this.logMessageContent = logMessageContent;
         this.withCredentials = withCredentials;
         this.eventSourceConstructor = eventSourceConstructor;
+        this.headers = headers;
 
         this.onreceive = null;
         this.onclose = null;
@@ -64,13 +67,12 @@ export class ServerSentEventsTransport implements ITransport {
             } else {
                 // Non-browser passes cookies via the dictionary
                 const cookies = this.httpClient.getCookieString(url);
-                const headers = {
-                    Cookie: cookies,
-                };
+                const headers: MessageHeaders = {};
+                headers.Cookie = cookies;
                 const [name, value] = getUserAgentHeader();
                 headers[name] = value;
 
-                eventSource = new this.eventSourceConstructor(url, { withCredentials: this.withCredentials, headers } as EventSourceInit);
+                eventSource = new this.eventSourceConstructor(url, { withCredentials: this.withCredentials, headers: { ...headers, ...this.headers} } as EventSourceInit);
             }
 
             try {
@@ -112,7 +114,7 @@ export class ServerSentEventsTransport implements ITransport {
         if (!this.eventSource) {
             return Promise.reject(new Error("Cannot send until the transport is connected"));
         }
-        return sendMessage(this.logger, "SSE", this.httpClient, this.url!, this.accessTokenFactory, data, this.logMessageContent, this.withCredentials);
+        return sendMessage(this.logger, "SSE", this.httpClient, this.url!, this.accessTokenFactory, data, this.logMessageContent, this.withCredentials, this.headers);
     }
 
     public stop(): Promise<void> {

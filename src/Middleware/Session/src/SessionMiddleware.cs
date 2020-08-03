@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Session
                 response.Cookies.Append(_options.Cookie.Name, _cookieValue, cookieOptions);
 
                 var responseHeaders = response.Headers;
-                responseHeaders[HeaderNames.CacheControl] = "no-cache";
+                responseHeaders[HeaderNames.CacheControl] = "no-cache,no-store";
                 responseHeaders[HeaderNames.Pragma] = "no-cache";
                 responseHeaders[HeaderNames.Expires] = "-1";
             }

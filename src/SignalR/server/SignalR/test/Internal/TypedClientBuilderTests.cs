@@ -39,6 +39,30 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
         }
 
         [Fact]
+        public async Task ProducesImplementationThatProxiesMethodsToIRenamedClientProxyAsync()
+        {
+            var clientProxy = new MockProxy();
+            var typedProxy = TypedClientBuilder<IRenamedTestClient>.Build(clientProxy);
+
+            var objArg = new object();
+            var task = typedProxy.MethodAsync("foo", 42, objArg);
+            Assert.False(task.IsCompleted);
+
+            Assert.Collection(clientProxy.Sends,
+                send =>
+                {
+                    Assert.Equal("Method", send.Method);
+                    Assert.Equal("foo", send.Arguments[0]);
+                    Assert.Equal(42, send.Arguments[1]);
+                    Assert.Equal(CancellationToken.None, send.CancellationToken);
+                    Assert.Same(objArg, send.Arguments[2]);
+                    send.Complete();
+                });
+
+            await task.OrTimeout();
+        }
+
+        [Fact]
         public async Task SupportsSubInterfaces()
         {
             var clientProxy = new MockProxy();
@@ -189,6 +213,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
             Task Method(string arg1, int arg2, object arg3);
         }
 
+        public interface IRenamedTestClient
+        {
+            [HubMethodName("Method")]
+            Task MethodAsync(string arg1, int arg2, object arg3);
+        }
+
         public interface IVoidMethodClient
         {
             void Method(string arg1, int arg2, object arg3);
@@ -236,7 +266,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
 
             public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken)
             {
-                var tcs = new TaskCompletionSource<object>();
+                var tcs = new TaskCompletionSource();
 
                 Sends.Add(new SendContext(method, args, cancellationToken, tcs));
 
@@ -246,13 +276,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
 
         private struct SendContext
         {
-            private TaskCompletionSource<object> _tcs;
+            private TaskCompletionSource _tcs;
 
             public string Method { get; }
             public object[] Arguments { get; }
             public CancellationToken CancellationToken { get; }
 
-            public SendContext(string method, object[] arguments, CancellationToken cancellationToken, TaskCompletionSource<object> tcs) : this()
+            public SendContext(string method, object[] arguments, CancellationToken cancellationToken, TaskCompletionSource tcs) : this()
             {
                 Method = method;
                 Arguments = arguments;
@@ -262,7 +292,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
 
             public void Complete()
             {
-                _tcs.TrySetResult(null);
+                _tcs.TrySetResult();
             }
         }
     }

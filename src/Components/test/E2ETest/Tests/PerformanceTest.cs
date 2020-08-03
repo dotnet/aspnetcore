@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
@@ -13,11 +14,11 @@ using Xunit.Abstractions;
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class PerformanceTest
-        : ServerTestBase<DevHostServerFixture<Blazor.E2EPerformance.Program>>
+        : ServerTestBase<DevHostServerFixture<Wasm.Performance.TestApp.Program>>
     {
         public PerformanceTest(
             BrowserFixture browserFixture,
-            DevHostServerFixture<Blazor.E2EPerformance.Program> serverFixture,
+            DevHostServerFixture<Wasm.Performance.TestApp.Program> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
@@ -35,6 +36,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23366")]
         public void BenchmarksRunWithoutError()
         {
             // In CI, we only verify that the benchmarks run without throwing any
@@ -52,10 +54,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 () => runAllButton.Displayed || Browser.FindElements(By.CssSelector(".benchmark-error")).Any(),
                 TimeSpan.FromSeconds(60));
 
-            var finishedBenchmarks = Browser.FindElements(By.CssSelector(".benchmark-idle"));
-            var failedBenchmarks = Browser.FindElements(By.CssSelector(".benchmark-error"));
-            Assert.NotEmpty(finishedBenchmarks);
-            Assert.Empty(failedBenchmarks);
+            Browser.DoesNotExist(By.CssSelector(".benchmark-error")); // no failures
+            Browser.Exists(By.CssSelector(".benchmark-idle")); // everything's done
         }
     }
 }

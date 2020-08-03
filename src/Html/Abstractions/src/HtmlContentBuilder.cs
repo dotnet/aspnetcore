@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Encodings.Web;
 
@@ -11,6 +12,7 @@ namespace Microsoft.AspNetCore.Html
     /// <summary>
     /// An <see cref="IHtmlContentBuilder"/> implementation using an in memory list.
     /// </summary>
+    [DebuggerDisplay("{DebuggerToString()}")]
     public class HtmlContentBuilder : IHtmlContentBuilder
     {
         /// <summary>
@@ -61,7 +63,7 @@ namespace Microsoft.AspNetCore.Html
         internal IList<object> Entries { get; }
 
         /// <inheritdoc />
-        public IHtmlContentBuilder Append(string unencoded)
+        public IHtmlContentBuilder Append(string? unencoded)
         {
             if (!string.IsNullOrEmpty(unencoded))
             {
@@ -72,7 +74,7 @@ namespace Microsoft.AspNetCore.Html
         }
 
         /// <inheritdoc />
-        public IHtmlContentBuilder AppendHtml(IHtmlContent htmlContent)
+        public IHtmlContentBuilder AppendHtml(IHtmlContent? htmlContent)
         {
             if (htmlContent == null)
             {
@@ -84,7 +86,7 @@ namespace Microsoft.AspNetCore.Html
         }
 
         /// <inheritdoc />
-        public IHtmlContentBuilder AppendHtml(string encoded)
+        public IHtmlContentBuilder AppendHtml(string? encoded)
         {
             if (!string.IsNullOrEmpty(encoded))
             {
@@ -109,17 +111,16 @@ namespace Microsoft.AspNetCore.Html
                 throw new ArgumentNullException(nameof(destination));
             }
 
-            for (var i = 0; i < Entries.Count; i++)
+            var count = Entries.Count;
+            for (var i = 0; i < count; i++)
             {
                 var entry = Entries[i];
 
-                string entryAsString;
-                IHtmlContentContainer entryAsContainer;
-                if ((entryAsString = entry as string)  != null)
+                if (entry is string entryAsString)
                 {
                     destination.Append(entryAsString);
                 }
-                else if ((entryAsContainer = entry as IHtmlContentContainer) != null)
+                else if (entry is IHtmlContentContainer entryAsContainer)
                 {
                     // Since we're copying, do a deep flatten.
                     entryAsContainer.CopyTo(destination);
@@ -140,17 +141,16 @@ namespace Microsoft.AspNetCore.Html
                 throw new ArgumentNullException(nameof(destination));
             }
 
-            for (var i = 0; i < Entries.Count; i++)
+            var count = Entries.Count;
+            for (var i = 0; i < count; i++)
             {
                 var entry = Entries[i];
 
-                string entryAsString;
-                IHtmlContentContainer entryAsContainer;
-                if ((entryAsString = entry as string) != null)
+                if (entry is string entryAsString)
                 {
                     destination.Append(entryAsString);
                 }
-                else if ((entryAsContainer = entry as IHtmlContentContainer) != null)
+                else if (entry is IHtmlContentContainer entryAsContainer)
                 {
                     // Since we're moving, do a deep flatten.
                     entryAsContainer.MoveTo(destination);
@@ -178,7 +178,8 @@ namespace Microsoft.AspNetCore.Html
                 throw new ArgumentNullException(nameof(encoder));
             }
 
-            for (var i = 0; i < Entries.Count; i++)
+            var count = Entries.Count;
+            for (var i = 0; i < count; i++)
             {
                 var entry = Entries[i];
 
@@ -197,11 +198,9 @@ namespace Microsoft.AspNetCore.Html
 
         private string DebuggerToString()
         {
-            using (var writer = new StringWriter())
-            {
-                WriteTo(writer, HtmlEncoder.Default);
-                return writer.ToString();
-            }
+            using var writer = new StringWriter();
+            WriteTo(writer, HtmlEncoder.Default);
+            return writer.ToString();
         }
     }
 }

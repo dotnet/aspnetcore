@@ -1,12 +1,9 @@
 using System;
 using System.Buffers;
 using System.Net;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.MsQuic;
-using Microsoft.AspNetCore.Connections.Abstractions.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
@@ -26,26 +23,25 @@ namespace QuicSampleClient
                })
                .ConfigureServices(services =>
                {
-                   services.AddSingleton<IConnectionFactory, MsQuicConnectionFactory>();
-                   services.AddSingleton<MsQuicClientService>();
-                   services.AddOptions<MsQuicTransportOptions>();
-                   services.Configure<MsQuicTransportOptions>((options) =>
+                   services.AddSingleton<IMultiplexedConnectionFactory, QuicConnectionFactory>();
+                   services.AddSingleton<QuicClientService>();
+                   services.AddOptions<QuicTransportOptions>();
+                   services.Configure<QuicTransportOptions>((options) =>
                    {
                        options.Alpn = "QuicTest";
-                       options.RegistrationName = "Quic-AspNetCore-client";
-                       options.Certificate = CertificateLoader.LoadFromStoreCert("localhost", StoreName.My.ToString(), StoreLocation.CurrentUser, true);
+                       options.Certificate = null;
                        options.IdleTimeout = TimeSpan.FromHours(1);
                    });
                })
                .Build();
-            await host.Services.GetService<MsQuicClientService>().RunAsync();
+            await host.Services.GetService<QuicClientService>().RunAsync();
         }
 
-        private class MsQuicClientService
+        private class QuicClientService
         {
-            private readonly IConnectionFactory _connectionFactory;
-            private readonly ILogger<MsQuicClientService> _logger;
-            public MsQuicClientService(IConnectionFactory connectionFactory, ILogger<MsQuicClientService> logger)
+            private readonly IMultiplexedConnectionFactory _connectionFactory;
+            private readonly ILogger<QuicClientService> _logger;
+            public QuicClientService(IMultiplexedConnectionFactory connectionFactory, ILogger<QuicClientService> logger)
             {
                 _connectionFactory = connectionFactory;
                 _logger = logger;
@@ -53,11 +49,9 @@ namespace QuicSampleClient
 
             public async Task RunAsync()
             {
-                var start = Console.ReadLine();
                 Console.WriteLine("Starting");
                 var connectionContext = await _connectionFactory.ConnectAsync(new IPEndPoint(IPAddress.Loopback, 5555));
-                var createStreamFeature = connectionContext.Features.Get<IQuicCreateStreamFeature>();
-                var streamContext = await createStreamFeature.StartBidirectionalStreamAsync();
+                var streamContext = await connectionContext.ConnectAsync();
 
                 Console.CancelKeyPress += new ConsoleCancelEventHandler((sender, args) =>
                 {
@@ -82,10 +76,11 @@ namespace QuicSampleClient
                         }
 
                         var readResult = await streamContext.Transport.Input.ReadAsync();
-                        if (readResult.IsCanceled)
+                        if (readResult.IsCanceled || readResult.IsCompleted)
                         {
                             break;
                         }
+
                         if (readResult.Buffer.Length > 0)
                         {
                             Console.WriteLine(Encoding.ASCII.GetString(readResult.Buffer.ToArray()));
