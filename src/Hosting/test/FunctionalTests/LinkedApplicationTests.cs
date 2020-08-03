@@ -12,7 +12,9 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 {
     public class LinkedApplicationTests : LoggedTest
     {
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux)]
         public async Task LinkedApplicationWorks()
         {
             using (StartLog(out var loggerFactory))
