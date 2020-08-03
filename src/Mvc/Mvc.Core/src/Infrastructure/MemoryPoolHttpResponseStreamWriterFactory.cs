@@ -11,9 +11,9 @@ using Microsoft.AspNetCore.WebUtilities;
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     /// <summary>
-    /// An <see cref="IHttpResponseWriterFactory"/> that uses pooled buffers.
+    /// An <see cref="IHttpResponseStreamWriterFactory"/> that uses pooled buffers.
     /// </summary>
-    internal class MemoryPoolHttpResponseStreamWriterFactory : IHttpResponseWriterFactory
+    internal class MemoryPoolHttpResponseStreamWriterFactory : IHttpResponseStreamWriterFactory
     {
         /// <summary>
         /// The default size of buffers <see cref="HttpResponseStreamWriter"/>s will allocate.
@@ -28,7 +28,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// </remarks>
         public static readonly int DefaultBufferSize = 16 * 1024;
 
-        // TODO: remove
         private readonly ArrayPool<byte> _bytePool;
         private readonly ArrayPool<char> _charPool;
 
@@ -60,7 +59,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             _charPool = charPool;
         }
 
-        // TODO: remove
         /// <inheritdoc />
         public TextWriter CreateWriter(Stream stream, Encoding encoding)
         {
@@ -75,22 +73,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
 
             return new HttpResponseStreamWriter(stream, encoding, DefaultBufferSize, _bytePool, _charPool);
-        }
-
-        /// <inheritdoc />
-        public TextWriter CreateWriter(PipeWriter writer, Encoding encoding)
-        {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            if (encoding == null)
-            {
-                throw new ArgumentNullException(nameof(encoding));
-            }
-
-            return new HttpResponsePipeWriter(writer, encoding);
         }
     }
 }

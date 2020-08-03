@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
@@ -15,17 +16,22 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     {
         private const string DefaultContentType = "text/plain; charset=utf-8";
         private readonly ILogger<ContentResultExecutor> _logger;
-        private readonly IHttpResponseWriterFactory _httpResponsePipeWriterFactory;
+        private readonly IHttpResponseStreamWriterFactory _httpResponseStreamWriterFactory;
+
+        public ContentResultExecutor(ILogger<ContentResultExecutor> logger)
+        {
+            _logger = logger;
+        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="ContentResultExecutor"/>.
         /// </summary>
         /// <param name="logger">The logger to use.</param>
         /// <param name="httpResponseStreamWriterFactory">The stream writer factory.</param>
-        public ContentResultExecutor(ILogger<ContentResultExecutor> logger, IHttpResponseWriterFactory httpResponseStreamWriterFactory)
+        public ContentResultExecutor(ILogger<ContentResultExecutor> logger, IHttpResponseStreamWriterFactory httpResponseStreamWriterFactory)
         {
             _logger = logger;
-            _httpResponsePipeWriterFactory = httpResponseStreamWriterFactory;
+            _httpResponseStreamWriterFactory = httpResponseStreamWriterFactory;
         }
 
         /// <inheritdoc />
@@ -63,7 +69,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 response.ContentLength = resolvedContentTypeEncoding.GetByteCount(result.Content);
 
-                await using (var textWriter = _httpResponsePipeWriterFactory.CreateWriter(response.BodyWriter, resolvedContentTypeEncoding))
+                await using (var textWriter = _httpResponseStreamWriterFactory != null
+                    ? _httpResponseStreamWriterFactory.CreateWriter(response.Body, resolvedContentTypeEncoding)
+                    : new HttpResponsePipeWriter(response.BodyWriter, resolvedContentTypeEncoding))
                 {
                     await textWriter.WriteAsync(result.Content);
 

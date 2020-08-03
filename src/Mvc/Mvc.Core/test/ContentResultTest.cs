@@ -268,8 +268,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             var services = new ServiceCollection();
             services.AddSingleton<IActionResultExecutor<ContentResult>>(new ContentResultExecutor(
-                new Logger<ContentResultExecutor>(NullLoggerFactory.Instance),
-                new MemoryPoolHttpResponseStreamWriterFactory(ArrayPool<byte>.Shared, charArrayPool.Object)));
+                new Logger<ContentResultExecutor>(NullLoggerFactory.Instance)));
             return services;
         }
 

@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             try
             {
-                await using (var textWriter = context.WriterFactory(responseWriter, writerSettings.Encoding))
+                await using (var textWriter = new HttpResponsePipeWriter(responseWriter, writerSettings.Encoding))
                 {
                     using (var xmlWriter = CreateXmlWriter(context, textWriter, writerSettings))
                     {

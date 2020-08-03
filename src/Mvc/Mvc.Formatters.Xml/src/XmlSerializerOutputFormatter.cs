@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             try
             {
-                await using (var textWriter = context.WriterFactory(responseWriter, selectedEncoding))
+                await using (var textWriter = new HttpResponsePipeWriter(responseWriter, selectedEncoding))
                 {
                     using (var xmlWriter = CreateXmlWriter(context, textWriter, writerSettings))
                     {

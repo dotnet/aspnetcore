@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private readonly ILogger<ViewComponentResult> _logger;
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly ITempDataDictionaryFactory _tempDataDictionaryFactory;
-        private IHttpResponseWriterFactory _writerFactory;
+        private IHttpResponseStreamWriterFactory _writerFactory;
 
         /// <summary>
         /// This constructor is obsolete and will be removed in a future version.
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             HtmlEncoder htmlEncoder,
             IModelMetadataProvider modelMetadataProvider,
             ITempDataDictionaryFactory tempDataDictionaryFactory,
-            IHttpResponseWriterFactory writerFactory)
+            IHttpResponseStreamWriterFactory writerFactory)
         {
             if (mvcHelperOptions == null)
             {
@@ -136,9 +136,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 response.StatusCode = result.StatusCode.Value;
             }
 
-            _writerFactory ??= context.HttpContext.RequestServices.GetRequiredService<IHttpResponseWriterFactory>();
+            //_writerFactory ??= context.HttpContext.RequestServices.GetRequiredService<IHttpResponseStreamWriterFactory>();
 
-            await using (var writer = _writerFactory.CreateWriter(response.BodyWriter, resolvedContentTypeEncoding))
+            await using (var writer = _writerFactory != null
+                ? _writerFactory.CreateWriter(response.Body, resolvedContentTypeEncoding)
+                : new HttpResponsePipeWriter(response.BodyWriter, resolvedContentTypeEncoding))
             {
                 var viewContext = new ViewContext(
                     context,
@@ -165,7 +167,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 else
                 {
                     await using var bufferingStream = new FileBufferingPipeWriter(response.BodyWriter);
-                    await using (var intermediateWriter = _writerFactory.CreateWriter(bufferingStream, resolvedContentTypeEncoding))
+                    await using (var intermediateWriter = new HttpResponsePipeWriter(response.BodyWriter, resolvedContentTypeEncoding))
                     {
                         viewComponentResult.WriteTo(intermediateWriter, _htmlEncoder);
                     }

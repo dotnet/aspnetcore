@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             try
             {
-                await using (var writer = context.WriterFactory(responseWriter, selectedEncoding))
+                await using (var writer = new HttpResponsePipeWriter(responseWriter, selectedEncoding))
                 {
                     using (var jsonWriter = CreateJsonWriter(writer))
                     {

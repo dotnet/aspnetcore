@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             Encoding = Encoding.UTF8
         }.ToString();
 
-        private readonly IHttpResponseWriterFactory _writerFactory;
+        private readonly IHttpResponseStreamWriterFactory _writerFactory;
         private readonly ILogger _logger;
         private readonly MvcOptions _mvcOptions;
         private readonly MvcNewtonsoftJsonOptions _jsonOptions;
@@ -35,13 +35,13 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         /// <summary>
         /// Creates a new <see cref="NewtonsoftJsonResultExecutor"/>.
         /// </summary>
-        /// <param name="writerFactory">The <see cref="IHttpResponseWriterFactory"/>.</param>
+        /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="logger">The <see cref="ILogger{NewtonsoftJsonResultExecutor}"/>.</param>
         /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
         /// <param name="jsonOptions">Accessor to <see cref="MvcNewtonsoftJsonOptions"/>.</param>
         /// <param name="charPool">The <see cref="ArrayPool{Char}"/> for creating <see cref="T:char[]"/> buffers.</param>
         public NewtonsoftJsonResultExecutor(
-            IHttpResponseWriterFactory writerFactory,
+            IHttpResponseStreamWriterFactory writerFactory,
             ILogger<NewtonsoftJsonResultExecutor> logger,
             IOptions<MvcOptions> mvcOptions,
             IOptions<MvcNewtonsoftJsonOptions> jsonOptions,
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
             try
             {
-                await using (var writer = _writerFactory.CreateWriter(responseWriter, resolvedContentTypeEncoding))
+                await using (var writer = new HttpResponsePipeWriter(responseWriter, resolvedContentTypeEncoding))
                 {
                     using var jsonWriter = new JsonTextWriter(writer);
                     jsonWriter.ArrayPool = _charPool;
