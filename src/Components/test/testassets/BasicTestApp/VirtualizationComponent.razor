@@ -7,7 +7,7 @@
     Synchronous:<br />
     <div id="sync-container" style="background-color: #eee; height: 500px; overflow-y: auto">
         <Virtualize Items="@fixedItems" ItemSize="itemSize">
-            <div id="sync-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+            <div @key="context" id="sync-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
         </Virtualize>
     </div>
 </p>
@@ -19,7 +19,7 @@
     <div id="async-container" style="background-color: #eee; height: 500px; overflow-y: auto">
         <Virtualize ItemsProvider="GetItemsAsync" ItemSize="itemSize">
             <ItemContent>
-                <div id="async-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+                <div @key="context" id="async-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
             </ItemContent>
             <Placeholder>
                 <div id="async-placeholder" style="height: @(itemSize)px; background-color: orange;">Loading item @context.Index...</div>
@@ -31,7 +31,7 @@
 <p id="viewport-as-root">
     Viewport as root:<br />
     <Virtualize Items="@fixedItems" ItemSize="itemSize">
-        <div style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
+        <div @key="context" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
     </Virtualize>
 </p>
 

@@ -147,21 +147,20 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
             var renderIndex = _itemsBefore;
             var placeholdersBeforeCount = Math.Min(_loadedItemsStartIndex, lastItemIndex);
 
-            // This is a rare case where it's valid for the sequence number to be programmatically incremented.
-            // This is only true because we know for certain that no other content will be alongside it.
-
             builder.OpenRegion(3);
 
             // Render placeholders before the loaded items.
             for (; renderIndex < placeholdersBeforeCount; renderIndex++)
             {
+                // This is a rare case where it's valid for the sequence number to be programmatically incremented.
+                // This is only true because we know for certain that no other content will be alongside it.
                 builder.AddContent(renderIndex, _placeholder, new PlaceholderContext(renderIndex));
             }
 
             builder.CloseRegion();
 
             // Render the loaded items.
-            if (_loadedItems != null)
+            if (_loadedItems != null && _itemTemplate != null)
             {
                 var itemsToShow = _loadedItems
                     .Skip(_itemsBefore - _loadedItemsStartIndex)
@@ -171,7 +170,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
 
                 foreach (var item in itemsToShow)
                 {
-                    builder.AddContent(renderIndex, _itemTemplate, item);
+                    _itemTemplate(item)(builder);
                     renderIndex++;
                 }
 
