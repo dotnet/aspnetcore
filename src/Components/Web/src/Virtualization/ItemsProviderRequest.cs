@@ -3,7 +3,7 @@
 
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Components.Web
+namespace Microsoft.AspNetCore.Components.Web.Virtualization
 {
     /// <summary>
     /// Represents a request to an <see cref="ItemsProviderDelegate{TItem}"/>.
@@ -30,14 +30,14 @@ namespace Microsoft.AspNetCore.Components.Web
         /// Constructs a new <see cref="ItemsProviderRequest"/> instance.
         /// </summary>
         /// <param name="startIndex">The start index of the data segment requested.</param>
-        /// <param name="requestedCount">The requested number of items to be provided.</param>
+        /// <param name="count">The requested number of items to be provided.</param>
         /// <param name="cancellationToken">
         /// The <see cref="System.Threading.CancellationToken"/> used to relay cancellation of the request.
         /// </param>
-        public ItemsProviderRequest(int startIndex, int requestedCount, CancellationToken cancellationToken)
+        public ItemsProviderRequest(int startIndex, int count, CancellationToken cancellationToken)
         {
             StartIndex = startIndex;
-            Count = requestedCount;
+            Count = count;
             CancellationToken = cancellationToken;
         }
     }

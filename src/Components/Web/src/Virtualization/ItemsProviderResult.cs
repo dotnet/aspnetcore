@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Components.Web
+namespace Microsoft.AspNetCore.Components.Web.Virtualization
 {
     /// <summary>
     /// Represents the result of a <see cref="ItemsProviderDelegate{TItem}"/>.

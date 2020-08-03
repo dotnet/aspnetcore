@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Web
+namespace Microsoft.AspNetCore.Components.Web.Virtualization
 {
     /// <summary>
     /// Provides functionality for rendering a virtualized list of items.
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Components.Web
         /// Gets or sets the item template for the list.
         /// </summary>
         [Parameter]
-        public RenderFragment<TItem>? Item { get; set; }
+        public RenderFragment<TItem>? ItemContent { get; set; }
 
         /// <summary>
         /// Gets or sets the template for items that have not yet been loaded in memory.
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Components.Web
                     $"and non-null.");
             }
 
-            _itemTemplate = Item ?? ChildContent;
+            _itemTemplate = ItemContent ?? ChildContent;
             _placeholder = Placeholder ?? DefaultPlaceholder;
         }
 
