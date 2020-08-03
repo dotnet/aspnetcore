@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.CodeAnalysis.Razor.Serialization
 {
@@ -25,56 +24,54 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
                 return null;
             }
 
-            var descriptor = JObject.Load(reader);
-            var descriptorKind = descriptor[nameof(TagHelperDescriptor.Kind)].Value<string>();
-            var typeName = descriptor[nameof(TagHelperDescriptor.Name)].Value<string>();
-            var assemblyName = descriptor[nameof(TagHelperDescriptor.AssemblyName)].Value<string>();
-            var tagMatchingRules = descriptor[nameof(TagHelperDescriptor.TagMatchingRules)].Value<JArray>();
-            var boundAttributes = descriptor[nameof(TagHelperDescriptor.BoundAttributes)].Value<JArray>();
-            var childTags = descriptor[nameof(TagHelperDescriptor.AllowedChildTags)].Value<JArray>();
-            var documentation = descriptor[nameof(TagHelperDescriptor.Documentation)].Value<string>();
-            var tagOutputHint = descriptor[nameof(TagHelperDescriptor.TagOutputHint)].Value<string>();
-            var caseSensitive = descriptor[nameof(TagHelperDescriptor.CaseSensitive)].Value<bool>();
-            var diagnostics = descriptor[nameof(TagHelperDescriptor.Diagnostics)].Value<JArray>();
-            var metadata = descriptor[nameof(TagHelperDescriptor.Metadata)].Value<JObject>();
-
+            // Required tokens (order matters)
+            var descriptorKind = reader.ReadNextStringProperty(nameof(TagHelperDescriptor.Kind));
+            var typeName = reader.ReadNextStringProperty(nameof(TagHelperDescriptor.Name));
+            var assemblyName = reader.ReadNextStringProperty(nameof(TagHelperDescriptor.AssemblyName));
             var builder = TagHelperDescriptorBuilder.Create(descriptorKind, typeName, assemblyName);
 
-            builder.Documentation = documentation;
-            builder.TagOutputHint = tagOutputHint;
-            builder.CaseSensitive = caseSensitive;
-
-            foreach (var tagMatchingRule in tagMatchingRules)
+            reader.ReadProperties(propertyName =>
             {
-                var rule = tagMatchingRule.Value<JObject>();
-                builder.TagMatchingRule(b => ReadTagMatchingRule(b, rule, serializer));
-            }
-
-            foreach (var boundAttribute in boundAttributes)
-            {
-                var attribute = boundAttribute.Value<JObject>();
-                builder.BindAttribute(b => ReadBoundAttribute(b, attribute, serializer));
-            }
-
-            foreach (var childTag in childTags)
-            {
-                var tag = childTag.Value<JObject>();
-                builder.AllowChildTag(childTagBuilder => ReadAllowedChildTag(childTagBuilder, tag, serializer));
-            }
-
-            foreach (var diagnostic in diagnostics)
-            {
-                var diagnosticReader = diagnostic.CreateReader();
-                var diagnosticObject = serializer.Deserialize<RazorDiagnostic>(diagnosticReader);
-                builder.Diagnostics.Add(diagnosticObject);
-            }
-
-            var metadataReader = metadata.CreateReader();
-            var metadataValue = serializer.Deserialize<Dictionary<string, string>>(metadataReader);
-            foreach (var item in metadataValue)
-            {
-                builder.Metadata[item.Key] = item.Value;
-            }
+                switch (propertyName)
+                {
+                    case nameof(TagHelperDescriptor.Documentation):
+                        if (reader.Read())
+                        {
+                            var documentation = (string)reader.Value;
+                            builder.Documentation = documentation;
+                        }
+                        break;
+                    case nameof(TagHelperDescriptor.TagOutputHint):
+                        if (reader.Read())
+                        {
+                            var tagOutputHint = (string)reader.Value;
+                            builder.TagOutputHint = tagOutputHint;
+                        }
+                        break;
+                    case nameof(TagHelperDescriptor.CaseSensitive):
+                        if (reader.Read())
+                        {
+                            var caseSensitive = (bool)reader.Value;
+                            builder.CaseSensitive = caseSensitive;
+                        }
+                        break;
+                    case nameof(TagHelperDescriptor.TagMatchingRules):
+                        ReadTagMatchingRules(reader, builder);
+                        break;
+                    case nameof(TagHelperDescriptor.BoundAttributes):
+                        ReadBoundAttributes(reader, builder);
+                        break;
+                    case nameof(TagHelperDescriptor.AllowedChildTags):
+                        ReadAllowedChildTags(reader, builder);
+                        break;
+                    case nameof(TagHelperDescriptor.Diagnostics):
+                        ReadDiagnostics(reader, builder.Diagnostics);
+                        break;
+                    case nameof(TagHelperDescriptor.Metadata):
+                        ReadMetadata(reader, builder.Metadata);
+                        break;
+                }
+            });
 
             return builder.Build();
         }
@@ -94,11 +91,17 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
             writer.WritePropertyName(nameof(TagHelperDescriptor.AssemblyName));
             writer.WriteValue(tagHelper.AssemblyName);
 
-            writer.WritePropertyName(nameof(TagHelperDescriptor.Documentation));
-            writer.WriteValue(tagHelper.Documentation);
+            if (tagHelper.Documentation != null)
+            {
+                writer.WritePropertyName(nameof(TagHelperDescriptor.Documentation));
+                writer.WriteValue(tagHelper.Documentation);
+            }
 
-            writer.WritePropertyName(nameof(TagHelperDescriptor.TagOutputHint));
-            writer.WriteValue(tagHelper.TagOutputHint);
+            if (tagHelper.TagOutputHint != null)
+            {
+                writer.WritePropertyName(nameof(TagHelperDescriptor.TagOutputHint));
+                writer.WriteValue(tagHelper.TagOutputHint);
+            }
 
             writer.WritePropertyName(nameof(TagHelperDescriptor.CaseSensitive));
             writer.WriteValue(tagHelper.CaseSensitive);
@@ -111,24 +114,33 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
             }
             writer.WriteEndArray();
 
-            writer.WritePropertyName(nameof(TagHelperDescriptor.BoundAttributes));
-            writer.WriteStartArray();
-            foreach (var boundAttribute in tagHelper.BoundAttributes)
+            if (tagHelper.BoundAttributes != null && tagHelper.BoundAttributes.Count > 0)
             {
-                WriteBoundAttribute(writer, boundAttribute, serializer);
+                writer.WritePropertyName(nameof(TagHelperDescriptor.BoundAttributes));
+                writer.WriteStartArray();
+                foreach (var boundAttribute in tagHelper.BoundAttributes)
+                {
+                    WriteBoundAttribute(writer, boundAttribute, serializer);
+                }
+                writer.WriteEndArray();
             }
-            writer.WriteEndArray();
 
-            writer.WritePropertyName(nameof(TagHelperDescriptor.AllowedChildTags));
-            writer.WriteStartArray();
-            foreach (var allowedChildTag in tagHelper.AllowedChildTags)
+            if (tagHelper.AllowedChildTags != null && tagHelper.AllowedChildTags.Count > 0)
             {
-                WriteAllowedChildTags(writer, allowedChildTag, serializer);
+                writer.WritePropertyName(nameof(TagHelperDescriptor.AllowedChildTags));
+                writer.WriteStartArray();
+                foreach (var allowedChildTag in tagHelper.AllowedChildTags)
+                {
+                    WriteAllowedChildTags(writer, allowedChildTag, serializer);
+                }
+                writer.WriteEndArray();
             }
-            writer.WriteEndArray();
 
-            writer.WritePropertyName(nameof(TagHelperDescriptor.Diagnostics));
-            serializer.Serialize(writer, tagHelper.Diagnostics);
+            if (tagHelper.Diagnostics != null && tagHelper.Diagnostics.Count > 0)
+            {
+                writer.WritePropertyName(nameof(TagHelperDescriptor.Diagnostics));
+                serializer.Serialize(writer, tagHelper.Diagnostics);
+            }
 
             writer.WritePropertyName(nameof(TagHelperDescriptor.Metadata));
             WriteMetadata(writer, tagHelper.Metadata);
@@ -165,31 +177,49 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
             writer.WritePropertyName(nameof(BoundAttributeDescriptor.TypeName));
             writer.WriteValue(boundAttribute.TypeName);
 
-            writer.WritePropertyName(nameof(BoundAttributeDescriptor.IsEnum));
-            writer.WriteValue(boundAttribute.IsEnum);
+            if (boundAttribute.IsEnum)
+            {
+                writer.WritePropertyName(nameof(BoundAttributeDescriptor.IsEnum));
+                writer.WriteValue(boundAttribute.IsEnum);
+            }
 
-            writer.WritePropertyName(nameof(BoundAttributeDescriptor.IndexerNamePrefix));
-            writer.WriteValue(boundAttribute.IndexerNamePrefix);
+            if (boundAttribute.IndexerNamePrefix != null)
+            {
+                writer.WritePropertyName(nameof(BoundAttributeDescriptor.IndexerNamePrefix));
+                writer.WriteValue(boundAttribute.IndexerNamePrefix);
+            }
 
-            writer.WritePropertyName(nameof(BoundAttributeDescriptor.IndexerTypeName));
-            writer.WriteValue(boundAttribute.IndexerTypeName);
+            if (boundAttribute.IndexerTypeName != null)
+            {
+                writer.WritePropertyName(nameof(BoundAttributeDescriptor.IndexerTypeName));
+                writer.WriteValue(boundAttribute.IndexerTypeName);
+            }
 
-            writer.WritePropertyName(nameof(BoundAttributeDescriptor.Documentation));
-            writer.WriteValue(boundAttribute.Documentation);
+            if (boundAttribute.Documentation != null)
+            {
+                writer.WritePropertyName(nameof(BoundAttributeDescriptor.Documentation));
+                writer.WriteValue(boundAttribute.Documentation);
+            }
 
-            writer.WritePropertyName(nameof(BoundAttributeDescriptor.Diagnostics));
-            serializer.Serialize(writer, boundAttribute.Diagnostics);
+            if (boundAttribute.Diagnostics != null && boundAttribute.Diagnostics.Count > 0)
+            {
+                writer.WritePropertyName(nameof(BoundAttributeDescriptor.Diagnostics));
+                serializer.Serialize(writer, boundAttribute.Diagnostics);
+            }
 
             writer.WritePropertyName(nameof(BoundAttributeDescriptor.Metadata));
             WriteMetadata(writer, boundAttribute.Metadata);
 
-            writer.WritePropertyName(nameof(BoundAttributeDescriptor.BoundAttributeParameters));
-            writer.WriteStartArray();
-            foreach (var boundAttributeParameter in boundAttribute.BoundAttributeParameters)
+            if (boundAttribute.BoundAttributeParameters != null && boundAttribute.BoundAttributeParameters.Count > 0)
             {
-                WriteBoundAttributeParameter(writer, boundAttributeParameter, serializer);
+                writer.WritePropertyName(nameof(BoundAttributeDescriptor.BoundAttributeParameters));
+                writer.WriteStartArray();
+                foreach (var boundAttributeParameter in boundAttribute.BoundAttributeParameters)
+                {
+                    WriteBoundAttributeParameter(writer, boundAttributeParameter, serializer);
+                }
+                writer.WriteEndArray();
             }
-            writer.WriteEndArray();
 
             writer.WriteEndObject();
         }
@@ -198,23 +228,29 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
         {
             writer.WriteStartObject();
 
-            writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Kind));
-            writer.WriteValue(boundAttributeParameter.Kind);
-
             writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Name));
             writer.WriteValue(boundAttributeParameter.Name);
 
             writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.TypeName));
             writer.WriteValue(boundAttributeParameter.TypeName);
 
-            writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.IsEnum));
-            writer.WriteValue(boundAttributeParameter.IsEnum);
+            if (boundAttributeParameter.IsEnum != default)
+            {
+                writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.IsEnum));
+                writer.WriteValue(boundAttributeParameter.IsEnum);
+            }
 
-            writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Documentation));
-            writer.WriteValue(boundAttributeParameter.Documentation);
+            if (boundAttributeParameter.Documentation != null)
+            {
+                writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Documentation));
+                writer.WriteValue(boundAttributeParameter.Documentation);
+            }
 
-            writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Diagnostics));
-            serializer.Serialize(writer, boundAttributeParameter.Diagnostics);
+            if (boundAttributeParameter.Diagnostics != null && boundAttributeParameter.Diagnostics.Count > 0)
+            {
+                writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Diagnostics));
+                serializer.Serialize(writer, boundAttributeParameter.Diagnostics);
+            }
 
             writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Metadata));
             WriteMetadata(writer, boundAttributeParameter.Metadata);
@@ -240,22 +276,34 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
             writer.WritePropertyName(nameof(TagMatchingRuleDescriptor.TagName));
             writer.WriteValue(ruleDescriptor.TagName);
 
-            writer.WritePropertyName(nameof(TagMatchingRuleDescriptor.ParentTag));
-            writer.WriteValue(ruleDescriptor.ParentTag);
-
-            writer.WritePropertyName(nameof(TagMatchingRuleDescriptor.TagStructure));
-            writer.WriteValue(ruleDescriptor.TagStructure);
-
-            writer.WritePropertyName(nameof(TagMatchingRuleDescriptor.Attributes));
-            writer.WriteStartArray();
-            foreach (var requiredAttribute in ruleDescriptor.Attributes)
+            if (ruleDescriptor.ParentTag != null)
             {
-                WriteRequiredAttribute(writer, requiredAttribute, serializer);
+                writer.WritePropertyName(nameof(TagMatchingRuleDescriptor.ParentTag));
+                writer.WriteValue(ruleDescriptor.ParentTag);
             }
-            writer.WriteEndArray();
 
-            writer.WritePropertyName(nameof(TagMatchingRuleDescriptor.Diagnostics));
-            serializer.Serialize(writer, ruleDescriptor.Diagnostics);
+            if (ruleDescriptor.TagStructure != default)
+            {
+                writer.WritePropertyName(nameof(TagMatchingRuleDescriptor.TagStructure));
+                writer.WriteValue(ruleDescriptor.TagStructure);
+            }
+
+            if (ruleDescriptor.Attributes != null && ruleDescriptor.Attributes.Count > 0)
+            {
+                writer.WritePropertyName(nameof(TagMatchingRuleDescriptor.Attributes));
+                writer.WriteStartArray();
+                foreach (var requiredAttribute in ruleDescriptor.Attributes)
+                {
+                    WriteRequiredAttribute(writer, requiredAttribute, serializer);
+                }
+                writer.WriteEndArray();
+            }
+
+            if (ruleDescriptor.Diagnostics != null && ruleDescriptor.Diagnostics.Count > 0)
+            {
+                writer.WritePropertyName(nameof(TagMatchingRuleDescriptor.Diagnostics));
+                serializer.Serialize(writer, ruleDescriptor.Diagnostics);
+            }
 
             writer.WriteEndObject();
         }
@@ -267,176 +315,538 @@ namespace Microsoft.CodeAnalysis.Razor.Serialization
             writer.WritePropertyName(nameof(RequiredAttributeDescriptor.Name));
             writer.WriteValue(requiredAttribute.Name);
 
-            writer.WritePropertyName(nameof(RequiredAttributeDescriptor.NameComparison));
-            writer.WriteValue(requiredAttribute.NameComparison);
+            if (requiredAttribute.NameComparison != default)
+            {
+                writer.WritePropertyName(nameof(RequiredAttributeDescriptor.NameComparison));
+                writer.WriteValue(requiredAttribute.NameComparison);
+            }
 
-            writer.WritePropertyName(nameof(RequiredAttributeDescriptor.Value));
-            writer.WriteValue(requiredAttribute.Value);
+            if (requiredAttribute.Value != null)
+            {
+                writer.WritePropertyName(nameof(RequiredAttributeDescriptor.Value));
+                writer.WriteValue(requiredAttribute.Value);
+            }
 
-            writer.WritePropertyName(nameof(RequiredAttributeDescriptor.ValueComparison));
-            writer.WriteValue(requiredAttribute.ValueComparison);
+            if (requiredAttribute.ValueComparison != default)
+            {
+                writer.WritePropertyName(nameof(RequiredAttributeDescriptor.ValueComparison));
+                writer.WriteValue(requiredAttribute.ValueComparison);
+            }
 
-            writer.WritePropertyName(nameof(RequiredAttributeDescriptor.Diagnostics));
-            serializer.Serialize(writer, requiredAttribute.Diagnostics);
+            if (requiredAttribute.Diagnostics != null && requiredAttribute.Diagnostics.Count > 0)
+            {
+                writer.WritePropertyName(nameof(RequiredAttributeDescriptor.Diagnostics));
+                serializer.Serialize(writer, requiredAttribute.Diagnostics);
+            }
 
-            writer.WritePropertyName(nameof(RequiredAttributeDescriptor.Metadata));
-            WriteMetadata(writer, requiredAttribute.Metadata);
+            if (requiredAttribute.Metadata != null && requiredAttribute.Metadata.Count > 0)
+            {
+                writer.WritePropertyName(nameof(RequiredAttributeDescriptor.Metadata));
+                WriteMetadata(writer, requiredAttribute.Metadata);
+            }
 
             writer.WriteEndObject();
         }
 
-        private static void ReadTagMatchingRule(TagMatchingRuleDescriptorBuilder builder, JObject rule, JsonSerializer serializer)
+        private static void ReadBoundAttributes(JsonReader reader, TagHelperDescriptorBuilder builder)
         {
-            var tagName = rule[nameof(TagMatchingRuleDescriptor.TagName)].Value<string>();
-            var attributes = rule[nameof(TagMatchingRuleDescriptor.Attributes)].Value<JArray>();
-            var parentTag = rule[nameof(TagMatchingRuleDescriptor.ParentTag)].Value<string>();
-            var tagStructure = rule[nameof(TagMatchingRuleDescriptor.TagStructure)].Value<int>();
-            var diagnostics = rule[nameof(TagMatchingRuleDescriptor.Diagnostics)].Value<JArray>();
-
-            builder.TagName = tagName;
-            builder.ParentTag = parentTag;
-            builder.TagStructure = (TagStructure)tagStructure;
-
-            foreach (var attribute in attributes)
+            if (!reader.Read())
             {
-                var attibuteValue = attribute.Value<JObject>();
-                builder.Attribute(b => ReadRequiredAttribute(b, attibuteValue, serializer));
+                return;
             }
 
-            foreach (var diagnostic in diagnostics)
+            if (reader.TokenType != JsonToken.StartArray)
             {
-                var diagnosticReader = diagnostic.CreateReader();
-                var diagnosticObject = serializer.Deserialize<RazorDiagnostic>(diagnosticReader);
-                builder.Diagnostics.Add(diagnosticObject);
+                return;
             }
+
+            do
+            {
+                ReadBoundAttribute(reader, builder);
+            } while (reader.TokenType != JsonToken.EndArray);
         }
 
-        private static void ReadRequiredAttribute(RequiredAttributeDescriptorBuilder builder, JObject attribute, JsonSerializer serializer)
+        private static void ReadBoundAttribute(JsonReader reader, TagHelperDescriptorBuilder builder)
         {
-            var name = attribute[nameof(RequiredAttributeDescriptor.Name)].Value<string>();
-            var nameComparison = attribute[nameof(RequiredAttributeDescriptor.NameComparison)].Value<int>();
-            var value = attribute[nameof(RequiredAttributeDescriptor.Value)].Value<string>();
-            var valueComparison = attribute[nameof(RequiredAttributeDescriptor.ValueComparison)].Value<int>();
-            var diagnostics = attribute[nameof(RequiredAttributeDescriptor.Diagnostics)].Value<JArray>();
-            var metadata = attribute[nameof(RequiredAttributeDescriptor.Metadata)].Value<JObject>();
-
-            builder.Name = name;
-            builder.NameComparisonMode = (RequiredAttributeDescriptor.NameComparisonMode)nameComparison;
-            builder.Value = value;
-            builder.ValueComparisonMode = (RequiredAttributeDescriptor.ValueComparisonMode)valueComparison;
-
-            foreach (var diagnostic in diagnostics)
+            if (!reader.Read())
             {
-                var diagnosticReader = diagnostic.CreateReader();
-                var diagnosticObject = serializer.Deserialize<RazorDiagnostic>(diagnosticReader);
-                builder.Diagnostics.Add(diagnosticObject);
+                return;
             }
 
-            var metadataReader = metadata.CreateReader();
-            var metadataValue = serializer.Deserialize<Dictionary<string, string>>(metadataReader);
-            foreach (var item in metadataValue)
+            if (reader.TokenType != JsonToken.StartObject)
             {
-                builder.Metadata[item.Key] = item.Value;
+                return;
             }
+
+            builder.BindAttribute(attribute =>
+            {
+                reader.ReadProperties(propertyName =>
+                {
+                    switch (propertyName)
+                    {
+                        case nameof(BoundAttributeDescriptor.Name):
+                            if (reader.Read())
+                            {
+                                var name = (string)reader.Value;
+                                attribute.Name = name;
+                            }
+                            break;
+                        case nameof(BoundAttributeDescriptor.TypeName):
+                            if (reader.Read())
+                            {
+                                var typeName = (string)reader.Value;
+                                attribute.TypeName = typeName;
+                            }
+                            break;
+                        case nameof(BoundAttributeDescriptor.Documentation):
+                            if (reader.Read())
+                            {
+                                var documentation = (string)reader.Value;
+                                attribute.Documentation = documentation;
+                            }
+                            break;
+                        case nameof(BoundAttributeDescriptor.IndexerNamePrefix):
+                            if (reader.Read())
+                            {
+                                var indexerNamePrefix = (string)reader.Value;
+                                if (indexerNamePrefix != null)
+                                {
+                                    attribute.IsDictionary = true;
+                                    attribute.IndexerAttributeNamePrefix = indexerNamePrefix;
+                                }
+                            }
+                            break;
+                        case nameof(BoundAttributeDescriptor.IndexerTypeName):
+                            if (reader.Read())
+                            {
+                                var indexerTypeName = (string)reader.Value;
+                                if (indexerTypeName != null)
+                                {
+                                    attribute.IsDictionary = true;
+                                    attribute.IndexerValueTypeName = indexerTypeName;
+                                }
+                            }
+                            break;
+                        case nameof(BoundAttributeDescriptor.IsEnum):
+                            if (reader.Read())
+                            {
+                                var isEnum = (bool)reader.Value;
+                                attribute.IsEnum = isEnum;
+                            }
+                            break;
+                        case nameof(BoundAttributeDescriptor.BoundAttributeParameters):
+                            ReadBoundAttributeParameters(reader, attribute);
+                            break;
+                        case nameof(BoundAttributeDescriptor.Diagnostics):
+                            ReadDiagnostics(reader, attribute.Diagnostics);
+                            break;
+                        case nameof(BoundAttributeDescriptor.Metadata):
+                            ReadMetadata(reader, attribute.Metadata);
+                            break;
+                    }
+                });
+            });
         }
 
-        private static void ReadAllowedChildTag(AllowedChildTagDescriptorBuilder builder, JObject childTag, JsonSerializer serializer)
+        private static void ReadBoundAttributeParameters(JsonReader reader, BoundAttributeDescriptorBuilder builder)
         {
-            var name = childTag[nameof(AllowedChildTagDescriptor.Name)].Value<string>();
-            var displayName = childTag[nameof(AllowedChildTagDescriptor.DisplayName)].Value<string>();
-            var diagnostics = childTag[nameof(AllowedChildTagDescriptor.Diagnostics)].Value<JArray>();
-
-            builder.Name = name;
-            builder.DisplayName = displayName;
-
-            foreach (var diagnostic in diagnostics)
+            if (!reader.Read())
             {
-                var diagnosticReader = diagnostic.CreateReader();
-                var diagnosticObject = serializer.Deserialize<RazorDiagnostic>(diagnosticReader);
-                builder.Diagnostics.Add(diagnosticObject);
+                return;
             }
+
+            if (reader.TokenType != JsonToken.StartArray)
+            {
+                return;
+            }
+
+            do
+            {
+                ReadBoundAttributeParameter(reader, builder);
+            } while (reader.TokenType != JsonToken.EndArray);
         }
 
-        private static void ReadBoundAttribute(BoundAttributeDescriptorBuilder builder, JObject attribute, JsonSerializer serializer)
+        private static void ReadBoundAttributeParameter(JsonReader reader, BoundAttributeDescriptorBuilder builder)
         {
-            var descriptorKind = attribute[nameof(BoundAttributeDescriptor.Kind)].Value<string>();
-            var name = attribute[nameof(BoundAttributeDescriptor.Name)].Value<string>();
-            var typeName = attribute[nameof(BoundAttributeDescriptor.TypeName)].Value<string>();
-            var isEnum = attribute[nameof(BoundAttributeDescriptor.IsEnum)].Value<bool>();
-            var indexerNamePrefix = attribute[nameof(BoundAttributeDescriptor.IndexerNamePrefix)].Value<string>();
-            var indexerTypeName = attribute[nameof(BoundAttributeDescriptor.IndexerTypeName)].Value<string>();
-            var documentation = attribute[nameof(BoundAttributeDescriptor.Documentation)].Value<string>();
-            var diagnostics = attribute[nameof(BoundAttributeDescriptor.Diagnostics)].Value<JArray>();
-            var metadata = attribute[nameof(BoundAttributeDescriptor.Metadata)].Value<JObject>();
-            var boundAttributeParameters = attribute[nameof(BoundAttributeDescriptor.BoundAttributeParameters)].Value<JArray>();
-
-            builder.Name = name;
-            builder.TypeName = typeName;
-            builder.Documentation = documentation;
-
-            if (indexerNamePrefix != null)
+            if (!reader.Read())
             {
-                builder.AsDictionary(indexerNamePrefix, indexerTypeName);
+                return;
             }
 
-            if (isEnum)
+            if (reader.TokenType != JsonToken.StartObject)
             {
-                builder.IsEnum = true;
+                return;
             }
 
-            foreach (var diagnostic in diagnostics)
+            builder.BindAttributeParameter(parameter =>
             {
-                var diagnosticReader = diagnostic.CreateReader();
-                var diagnosticObject = serializer.Deserialize<RazorDiagnostic>(diagnosticReader);
-                builder.Diagnostics.Add(diagnosticObject);
-            }
-
-            var metadataReader = metadata.CreateReader();
-            var metadataValue = serializer.Deserialize<Dictionary<string, string>>(metadataReader);
-            foreach (var item in metadataValue)
-            {
-                builder.Metadata[item.Key] = item.Value;
-            }
-
-            foreach (var boundAttributeParameter in boundAttributeParameters)
-            {
-                var parameter = boundAttributeParameter.Value<JObject>();
-                builder.BindAttributeParameter(b => ReadBoundAttributeParameter(b, parameter, serializer));
-            }
+                reader.ReadProperties(propertyName =>
+                {
+                    switch (propertyName)
+                    {
+                        case nameof(BoundAttributeParameterDescriptor.Name):
+                            if (reader.Read())
+                            {
+                                var name = (string)reader.Value;
+                                parameter.Name = name;
+                            }
+                            break;
+                        case nameof(BoundAttributeParameterDescriptor.TypeName):
+                            if (reader.Read())
+                            {
+                                var typeName = (string)reader.Value;
+                                parameter.TypeName = typeName;
+                            }
+                            break;
+                        case nameof(BoundAttributeParameterDescriptor.IsEnum):
+                            if (reader.Read())
+                            {
+                                var isEnum = (bool)reader.Value;
+                                parameter.IsEnum = isEnum;
+                            }
+                            break;
+                        case nameof(BoundAttributeParameterDescriptor.Documentation):
+                            if (reader.Read())
+                            {
+                                var documentation = (string)reader.Value;
+                                parameter.Documentation = documentation;
+                            }
+                            break;
+                        case nameof(BoundAttributeParameterDescriptor.Metadata):
+                            ReadMetadata(reader, parameter.Metadata);
+                            break;
+                        case nameof(BoundAttributeParameterDescriptor.Diagnostics):
+                            ReadDiagnostics(reader, parameter.Diagnostics);
+                            break;
+                    }
+                });
+            });
         }
 
-        private static void ReadBoundAttributeParameter(BoundAttributeParameterDescriptorBuilder builder, JObject parameter, JsonSerializer serializer)
+        private static void ReadTagMatchingRules(JsonReader reader, TagHelperDescriptorBuilder builder)
         {
-            var descriptorKind = parameter[nameof(BoundAttributeParameterDescriptor.Kind)].Value<string>();
-            var name = parameter[nameof(BoundAttributeParameterDescriptor.Name)].Value<string>();
-            var typeName = parameter[nameof(BoundAttributeParameterDescriptor.TypeName)].Value<string>();
-            var isEnum = parameter[nameof(BoundAttributeParameterDescriptor.IsEnum)].Value<bool>();
-            var documentation = parameter[nameof(BoundAttributeParameterDescriptor.Documentation)].Value<string>();
-            var diagnostics = parameter[nameof(BoundAttributeParameterDescriptor.Diagnostics)].Value<JArray>();
-            var metadata = parameter[nameof(BoundAttributeParameterDescriptor.Metadata)].Value<JObject>();
-
-            builder.Name = name;
-            builder.TypeName = typeName;
-            builder.Documentation = documentation;
-
-            if (isEnum)
+            if (!reader.Read())
             {
-                builder.IsEnum = true;
+                return;
             }
 
-            foreach (var diagnostic in diagnostics)
+            if (reader.TokenType != JsonToken.StartArray)
             {
-                var diagnosticReader = diagnostic.CreateReader();
-                var diagnosticObject = serializer.Deserialize<RazorDiagnostic>(diagnosticReader);
-                builder.Diagnostics.Add(diagnosticObject);
+                return;
             }
 
-            var metadataReader = metadata.CreateReader();
-            var metadataValue = serializer.Deserialize<Dictionary<string, string>>(metadataReader);
-            foreach (var item in metadataValue)
+            do
             {
-                builder.Metadata[item.Key] = item.Value;
+                ReadTagMatchingRule(reader, builder);
+            } while (reader.TokenType != JsonToken.EndArray);
+        }
+
+        private static void ReadTagMatchingRule(JsonReader reader, TagHelperDescriptorBuilder builder)
+        {
+            if (!reader.Read())
+            {
+                return;
             }
+
+            if (reader.TokenType != JsonToken.StartObject)
+            {
+                return;
+            }
+
+            builder.TagMatchingRule(rule =>
+            {
+                reader.ReadProperties(propertyName =>
+                {
+                    switch (propertyName)
+                    {
+                        case nameof(TagMatchingRuleDescriptor.TagName):
+                            if (reader.Read())
+                            {
+                                var tagName = (string)reader.Value;
+                                rule.TagName = tagName;
+                            }
+                            break;
+                        case nameof(TagMatchingRuleDescriptor.ParentTag):
+                            if (reader.Read())
+                            {
+                                var parentTag = (string)reader.Value;
+                                rule.ParentTag = parentTag;
+                            }
+                            break;
+                        case nameof(TagMatchingRuleDescriptor.TagStructure):
+                            rule.TagStructure = (TagStructure)reader.ReadAsInt32();
+                            break;
+                        case nameof(TagMatchingRuleDescriptor.Attributes):
+                            ReadRequiredAttributeValues(reader, rule);
+                            break;
+                        case nameof(TagMatchingRuleDescriptor.Diagnostics):
+                            ReadDiagnostics(reader, rule.Diagnostics);
+                            break;
+                    }
+                });
+            });
+        }
+
+        private static void ReadRequiredAttributeValues(JsonReader reader, TagMatchingRuleDescriptorBuilder builder)
+        {
+            if (!reader.Read())
+            {
+                return;
+            }
+
+            if (reader.TokenType != JsonToken.StartArray)
+            {
+                return;
+            }
+
+            do
+            {
+                ReadRequiredAttribute(reader, builder);
+            } while (reader.TokenType != JsonToken.EndArray);
+        }
+
+        private static void ReadRequiredAttribute(JsonReader reader, TagMatchingRuleDescriptorBuilder builder)
+        {
+            if (!reader.Read())
+            {
+                return;
+            }
+
+            if (reader.TokenType != JsonToken.StartObject)
+            {
+                return;
+            }
+
+            builder.Attribute(attribute =>
+            {
+                reader.ReadProperties(propertyName =>
+                {
+                    switch (propertyName)
+                    {
+                        case nameof(RequiredAttributeDescriptor.Name):
+                            if (reader.Read())
+                            {
+                                var name = (string)reader.Value;
+                                attribute.Name = name;
+                            }
+                            break;
+                        case nameof(RequiredAttributeDescriptor.NameComparison):
+                            var nameComparison = (RequiredAttributeDescriptor.NameComparisonMode)reader.ReadAsInt32();
+                            attribute.NameComparisonMode = nameComparison;
+                            break;
+                        case nameof(RequiredAttributeDescriptor.Value):
+                            if (reader.Read())
+                            {
+                                var value = (string)reader.Value;
+                                attribute.Value = value;
+                            }
+                            break;
+                        case nameof(RequiredAttributeDescriptor.ValueComparison):
+                            var valueComparison = (RequiredAttributeDescriptor.ValueComparisonMode)reader.ReadAsInt32();
+                            attribute.ValueComparisonMode = valueComparison;
+                            break;
+                        case nameof(RequiredAttributeDescriptor.Diagnostics):
+                            ReadDiagnostics(reader, attribute.Diagnostics);
+                            break;
+                        case nameof(RequiredAttributeDescriptor.Metadata):
+                            ReadMetadata(reader, attribute.Metadata);
+                            break;
+                    }
+                });
+            });
+        }
+
+        private static void ReadAllowedChildTags(JsonReader reader, TagHelperDescriptorBuilder builder)
+        {
+            if (!reader.Read())
+            {
+                return;
+            }
+
+            if (reader.TokenType != JsonToken.StartArray)
+            {
+                return;
+            }
+
+            do
+            {
+                ReadAllowedChildTag(reader, builder);
+            } while (reader.TokenType != JsonToken.EndArray);
+        }
+
+        private static void ReadAllowedChildTag(JsonReader reader, TagHelperDescriptorBuilder builder)
+        {
+            if (!reader.Read())
+            {
+                return;
+            }
+
+            if (reader.TokenType != JsonToken.StartObject)
+            {
+                return;
+            }
+
+            builder.AllowChildTag(childTag =>
+            {
+                reader.ReadProperties(propertyName =>
+                {
+                    switch (propertyName)
+                    {
+                        case nameof(AllowedChildTagDescriptor.Name):
+                            if (reader.Read())
+                            {
+                                var name = (string)reader.Value;
+                                childTag.Name = name;
+                            }
+                            break;
+                        case nameof(AllowedChildTagDescriptor.DisplayName):
+                            if (reader.Read())
+                            {
+                                var displayName = (string)reader.Value;
+                                childTag.DisplayName = displayName;
+                            }
+                            break;
+                        case nameof(AllowedChildTagDescriptor.Diagnostics):
+                            ReadDiagnostics(reader, childTag.Diagnostics);
+                            break;
+                    }
+                });
+            });
+        }
+
+        private static void ReadMetadata(JsonReader reader, IDictionary<string, string> metadata)
+        {
+            if (!reader.Read())
+            {
+                return;
+            }
+
+            if (reader.TokenType != JsonToken.StartObject)
+            {
+                return;
+            }
+
+            reader.ReadProperties(propertyName =>
+            {
+                if (reader.Read())
+                {
+                    var value = (string)reader.Value;
+                    metadata[propertyName] = value;
+                }
+            });
+        }
+
+        private static void ReadDiagnostics(JsonReader reader, RazorDiagnosticCollection diagnostics)
+        {
+            if (!reader.Read())
+            {
+                return;
+            }
+
+            if (reader.TokenType != JsonToken.StartArray)
+            {
+                return;
+            }
+
+            do
+            {
+                ReadDiagnostic(reader, diagnostics);
+            } while (reader.TokenType != JsonToken.EndArray);
+        }
+
+        private static void ReadDiagnostic(JsonReader reader, RazorDiagnosticCollection diagnostics)
+        {
+            if (!reader.Read())
+            {
+                return;
+            }
+
+            if (reader.TokenType != JsonToken.StartObject)
+            {
+                return;
+            }
+
+            string id = default;
+            int severity = default;
+            string message = default;
+            SourceSpan sourceSpan = default;
+
+            reader.ReadProperties(propertyName =>
+            {
+                switch (propertyName)
+                {
+                    case nameof(RazorDiagnostic.Id):
+                        if (reader.Read())
+                        {
+                            id = (string)reader.Value;
+                        }
+                        break;
+                    case nameof(RazorDiagnostic.Severity):
+                        severity = reader.ReadAsInt32().Value;
+                        break;
+                    case "Message":
+                        if (reader.Read())
+                        {
+                            message = (string)reader.Value;
+                        }
+                        break;
+                    case nameof(RazorDiagnostic.Span):
+                        sourceSpan = ReadSourceSpan(reader);
+                        break;
+                }
+            });
+
+            var descriptor = new RazorDiagnosticDescriptor(id, () => message, (RazorDiagnosticSeverity)severity);
+
+            var diagnostic = RazorDiagnostic.Create(descriptor, sourceSpan);
+            diagnostics.Add(diagnostic);
+        }
+
+        private static SourceSpan ReadSourceSpan(JsonReader reader)
+        {
+            if (!reader.Read())
+            {
+                return SourceSpan.Undefined;
+            }
+
+            if (reader.TokenType != JsonToken.StartObject)
+            {
+                return SourceSpan.Undefined;
+            }
+
+            string filePath = default;
+            int absoluteIndex = default;
+            int lineIndex = default;
+            int characterIndex = default;
+            int length = default;
+
+            reader.ReadProperties(propertyName =>
+            {
+                switch (propertyName)
+                {
+                    case nameof(SourceSpan.FilePath):
+                        if (reader.Read())
+                        {
+                            filePath = (string)reader.Value;
+                        }
+                        break;
+                    case nameof(SourceSpan.AbsoluteIndex):
+                        absoluteIndex = reader.ReadAsInt32().Value;
+                        break;
+                    case nameof(SourceSpan.LineIndex):
+                        lineIndex = reader.ReadAsInt32().Value;
+                        break;
+                    case nameof(SourceSpan.CharacterIndex):
+                        characterIndex = reader.ReadAsInt32().Value;
+                        break;
+                    case nameof(SourceSpan.Length):
+                        length = reader.ReadAsInt32().Value;
+                        break;
+                }
+            });
+
+            var sourceSpan = new SourceSpan(filePath, absoluteIndex, lineIndex, characterIndex, length);
+            return sourceSpan;
         }
     }
 }

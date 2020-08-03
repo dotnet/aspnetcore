@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains the Razor parser and code generation infrastructure.</Description>
@@ -10,6 +10,9 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)HashCodeCombiner\*.cs" />
+    <Compile Include="$(SharedSourceRoot)RazorShared\MemoryCache.cs">
+      <Link>Shared\MemoryCache.cs</Link>
+    </Compile>
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This assembly contains infrastructure supporting Razor MSBuild integration.</Description>
@@ -32,6 +32,9 @@
     </Compile>
     <Compile Include="$(SharedSourceRoot)RazorShared\RazorDiagnosticJsonConverter.cs">
       <Link>Shared\RazorDiagnosticJsonConverter.cs</Link>
+    </Compile>
+    <Compile Include="$(SharedSourceRoot)RazorShared\JsonReaderExtensions.cs">
+      <Link>Shared\JsonReaderExtensions.cs</Link>
     </Compile>
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
   </ItemGroup>
