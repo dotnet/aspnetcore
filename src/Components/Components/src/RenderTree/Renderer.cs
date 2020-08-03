@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <summary>
         /// Notifies the renderer that an event has occurred.
         /// </summary>
-        /// <param name="eventHandlerId">The <see cref="RenderTreeFrame.AttributeEventHandlerIdField"/> value from the original event attribute.</param>
+        /// <param name="eventHandlerId">The <see cref="RenderTreeFrame.AttributeEventHandlerId"/> value from the original event attribute.</param>
         /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
         /// <param name="fieldInfo">Information that the renderer can use to update the state of the existing render tree to match the UI.</param>
         /// <returns>
