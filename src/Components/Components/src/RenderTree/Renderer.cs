@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <summary>
         /// Notifies the renderer that an event has occurred.
         /// </summary>
-        /// <param name="eventHandlerId">The <see cref="RenderTreeFrame.AttributeEventHandlerId"/> value from the original event attribute.</param>
+        /// <param name="eventHandlerId">The <see cref="RenderTreeFrame.AttributeEventHandlerIdField"/> value from the original event attribute.</param>
         /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
         /// <param name="fieldInfo">Information that the renderer can use to update the state of the existing render tree to match the UI.</param>
         /// <returns>
@@ -292,20 +292,20 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         internal void InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
         {
-            if (frame.FrameType != RenderTreeFrameType.Component)
+            if (frame.FrameTypeField != RenderTreeFrameType.Component)
             {
-                throw new ArgumentException($"The frame's {nameof(RenderTreeFrame.FrameType)} property must equal {RenderTreeFrameType.Component}", nameof(frame));
+                throw new ArgumentException($"The frame's {nameof(RenderTreeFrame.FrameTypeField)} property must equal {RenderTreeFrameType.Component}", nameof(frame));
             }
 
-            if (frame.ComponentState != null)
+            if (frame.ComponentStateField != null)
             {
                 throw new ArgumentException($"The frame already has a non-null component instance", nameof(frame));
             }
 
-            var newComponent = InstantiateComponent(frame.ComponentType);
+            var newComponent = InstantiateComponent(frame.ComponentTypeField);
             var newComponentState = AttachAndInitComponent(newComponent, parentComponentId);
-            frame.ComponentState = newComponentState;
-            frame.ComponentId = newComponentState.ComponentId;
+            frame.ComponentStateField = newComponentState;
+            frame.ComponentIdField = newComponentState.ComponentId;
         }
 
         internal void AddToPendingTasks(Task task)
@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         {
             var id = ++_lastEventHandlerId;
 
-            if (frame.AttributeValue is EventCallback callback)
+            if (frame.AttributeValueField is EventCallback callback)
             {
                 // We hit this case when a EventCallback object is produced that needs an explicit receiver.
                 // Common cases for this are "chained bind" or "chained event handler" when a component
@@ -353,7 +353,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 // the receiver.
                 _eventBindings.Add(id, callback);
             }
-            else if (frame.AttributeValue is MulticastDelegate @delegate)
+            else if (frame.AttributeValueField is MulticastDelegate @delegate)
             {
                 // This is the common case for a delegate, where the receiver of the event
                 // is the same as delegate.Target. In this case since the receiver is implicit we can
@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // NOTE: we do not to handle EventCallback<T> here. EventCallback<T> is only used when passing
             // a callback to a component, and never when used to attaching a DOM event handler.
 
-            frame.AttributeEventHandlerId = id;
+            frame.AttributeEventHandlerIdField = id;
         }
 
         /// <summary>

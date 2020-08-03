@@ -23,9 +23,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             _items[_itemsInUse++] = new RenderTreeFrame
             {
-                Sequence = sequence,
-                FrameType = RenderTreeFrameType.Element,
-                ElementName = elementName,
+                SequenceField = sequence,
+                FrameTypeField = RenderTreeFrameType.Element,
+                ElementNameField = elementName,
             };
         }
 
@@ -38,9 +38,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             _items[_itemsInUse++] = new RenderTreeFrame
             {
-                Sequence = sequence,
-                FrameType = RenderTreeFrameType.Text,
-                TextContent = textContent,
+                SequenceField = sequence,
+                FrameTypeField = RenderTreeFrameType.Text,
+                TextContentField = textContent,
             };
         }
 
@@ -53,9 +53,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             _items[_itemsInUse++] = new RenderTreeFrame
             {
-                Sequence = sequence,
-                FrameType = RenderTreeFrameType.Markup,
-                MarkupContent = markupContent,
+                SequenceField = sequence,
+                FrameTypeField = RenderTreeFrameType.Markup,
+                MarkupContentField = markupContent,
             };
         }
 
@@ -68,10 +68,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             _items[_itemsInUse++] = new RenderTreeFrame
             {
-                Sequence = sequence,
-                FrameType = RenderTreeFrameType.Attribute,
-                AttributeName = attributeName,
-                AttributeValue = attributeValue,
+                SequenceField = sequence,
+                FrameTypeField = RenderTreeFrameType.Attribute,
+                AttributeNameField = attributeName,
+                AttributeValueField = attributeValue,
             };
         }
 
@@ -84,9 +84,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             
             _items[_itemsInUse++] = new RenderTreeFrame
             {
-                Sequence = sequence,
-                FrameType = RenderTreeFrameType.Component,
-                ComponentType = componentType,
+                SequenceField = sequence,
+                FrameTypeField = RenderTreeFrameType.Component,
+                ComponentTypeField = componentType,
             };
         }
 
@@ -99,9 +99,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             
             _items[_itemsInUse++] = new RenderTreeFrame
             {
-                Sequence = sequence,
-                FrameType = RenderTreeFrameType.ElementReferenceCapture,
-                ElementReferenceCaptureAction = elementReferenceCaptureAction,
+                SequenceField = sequence,
+                FrameTypeField = RenderTreeFrameType.ElementReferenceCapture,
+                ElementReferenceCaptureActionField = elementReferenceCaptureAction,
             };
         }
 
@@ -114,10 +114,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             
             _items[_itemsInUse++] = new RenderTreeFrame
             {
-                Sequence = sequence,
-                FrameType = RenderTreeFrameType.ComponentReferenceCapture,
-                ComponentReferenceCaptureAction = componentReferenceCaptureAction,
-                ComponentReferenceCaptureParentFrameIndex = parentFrameIndexValue,
+                SequenceField = sequence,
+                FrameTypeField = RenderTreeFrameType.ComponentReferenceCapture,
+                ComponentReferenceCaptureActionField = componentReferenceCaptureAction,
+                ComponentReferenceCaptureParentFrameIndexField = parentFrameIndexValue,
             };
         }
 
@@ -130,8 +130,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             
             _items[_itemsInUse++] = new RenderTreeFrame
             {
-                Sequence = sequence,
-                FrameType = RenderTreeFrameType.Region,
+                SequenceField = sequence,
+                FrameTypeField = RenderTreeFrameType.Region,
             };
         }
     }

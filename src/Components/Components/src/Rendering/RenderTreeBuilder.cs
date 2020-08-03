@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 ProcessDuplicateAttributes(first: indexOfEntryBeingClosed + 1);
             }
 
-            _entries.Buffer[indexOfEntryBeingClosed].ElementSubtreeLength = _entries.Count - indexOfEntryBeingClosed;
+            _entries.Buffer[indexOfEntryBeingClosed].ElementSubtreeLengthField = _entries.Count - indexOfEntryBeingClosed;
         }
 
         /// <summary>
@@ -413,13 +413,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="frame">A <see cref="RenderTreeFrame"/> holding the name and value of the attribute.</param>
         public void AddAttribute(int sequence, RenderTreeFrame frame)
         {
-            if (frame.FrameType != RenderTreeFrameType.Attribute)
+            if (frame.FrameTypeField != RenderTreeFrameType.Attribute)
             {
-                throw new ArgumentException($"The {nameof(frame.FrameType)} must be {RenderTreeFrameType.Attribute}.");
+                throw new ArgumentException($"The {nameof(frame.FrameTypeField)} must be {RenderTreeFrameType.Attribute}.");
             }
 
             AssertCanAddAttribute();
-            frame.Sequence = sequence;
+            frame.SequenceField = sequence;
             _entries.Append(frame);
         }
 
@@ -468,12 +468,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             ref var prevFrame = ref _entries.Buffer[_entries.Count - 1];
-            if (prevFrame.FrameType != RenderTreeFrameType.Attribute)
+            if (prevFrame.FrameTypeField != RenderTreeFrameType.Attribute)
             {
-                throw new InvalidOperationException($"Incorrect frame type: '{prevFrame.FrameType}'");
+                throw new InvalidOperationException($"Incorrect frame type: '{prevFrame.FrameTypeField}'");
             }
 
-            prevFrame.AttributeEventUpdatesAttributeName = updatesAttributeName;
+            prevFrame.AttributeEventUpdatesAttributeNameField = updatesAttributeName;
         }
 
         /// <summary>
@@ -520,16 +520,16 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             var parentFrameIndexValue = parentFrameIndex.Value;
             ref var parentFrame = ref _entries.Buffer[parentFrameIndexValue];
-            switch (parentFrame.FrameType)
+            switch (parentFrame.FrameTypeField)
             {
                 case RenderTreeFrameType.Element:
-                    parentFrame.ElementKey = value; // It's a ref var, so this writes to the array
+                    parentFrame.ElementKeyField = value; // It's a ref var, so this writes to the array
                     break;
                 case RenderTreeFrameType.Component:
-                    parentFrame.ComponentKey = value; // It's a ref var, so this writes to the array
+                    parentFrame.ComponentKeyField = value; // It's a ref var, so this writes to the array
                     break;
                 default:
-                    throw new InvalidOperationException($"Cannot set a key on a frame of type {parentFrame.FrameType}.");
+                    throw new InvalidOperationException($"Cannot set a key on a frame of type {parentFrame.FrameTypeField}.");
             }
         }
 
@@ -563,7 +563,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 ProcessDuplicateAttributes(first: indexOfEntryBeingClosed + 1);
             }
 
-            _entries.Buffer[indexOfEntryBeingClosed].ComponentSubtreeLength = _entries.Count - indexOfEntryBeingClosed;
+            _entries.Buffer[indexOfEntryBeingClosed].ComponentSubtreeLengthField = _entries.Count - indexOfEntryBeingClosed;
         }
 
         /// <summary>
@@ -596,7 +596,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             var parentFrameIndexValue = parentFrameIndex.Value;
-            if (_entries.Buffer[parentFrameIndexValue].FrameType != RenderTreeFrameType.Component)
+            if (_entries.Buffer[parentFrameIndexValue].FrameTypeField != RenderTreeFrameType.Component)
             {
                 throw new InvalidOperationException(ComponentReferenceCaptureInvalidParentMessage);
             }
@@ -631,7 +631,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public void CloseRegion()
         {
             var indexOfEntryBeingClosed = _openElementIndices.Pop();
-            _entries.Buffer[indexOfEntryBeingClosed].RegionSubtreeLength = _entries.Count - indexOfEntryBeingClosed;
+            _entries.Buffer[indexOfEntryBeingClosed].RegionSubtreeLengthField = _entries.Count - indexOfEntryBeingClosed;
         }
 
         private void AssertCanAddAttribute()
@@ -650,7 +650,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             var parentIndex = GetCurrentParentFrameIndex();
             return parentIndex.HasValue
-                ? _entries.Buffer[parentIndex.Value].FrameType
+                ? _entries.Buffer[parentIndex.Value].FrameTypeField
                 : (RenderTreeFrameType?)null;
         }
 
@@ -699,7 +699,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             for (var i = first; i <= last; i++)
             {
-                if (buffer[i].FrameType != RenderTreeFrameType.Attribute)
+                if (buffer[i].FrameTypeField != RenderTreeFrameType.Attribute)
                 {
                     last = i - 1;
                     break;
@@ -711,12 +711,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
             for (var i = last; i >= first; i--)
             {
                 ref var frame = ref buffer[i];
-                Debug.Assert(frame.FrameType == RenderTreeFrameType.Attribute, $"Frame type is {frame.FrameType} at {i}");
+                Debug.Assert(frame.FrameTypeField == RenderTreeFrameType.Attribute, $"Frame type is {frame.FrameTypeField} at {i}");
 
-                if (!seenAttributeNames.TryGetValue(frame.AttributeName, out var index))
+                if (!seenAttributeNames.TryGetValue(frame.AttributeNameField, out var index))
                 {
                     // This is the first time seeing this attribute name. Add to the dictionary and move on.
-                    seenAttributeNames.Add(frame.AttributeName, i);
+                    seenAttributeNames.Add(frame.AttributeNameField, i);
                 }
                 else if (index < i)
                 {
@@ -724,7 +724,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                     // This is the case for a null event handler, or bool false value.
                     //
                     // We need to update our tracking, in case the attribute appeared 3 or more times.
-                    seenAttributeNames[frame.AttributeName] = i;
+                    seenAttributeNames[frame.AttributeNameField] = i;
                 }
                 else if (index > i)
                 {
@@ -755,7 +755,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             for (var i = first; i < _entries.Count; i++)
             {
                 ref var frame = ref buffer[i];
-                if (frame.FrameType != RenderTreeFrameType.None)
+                if (frame.FrameTypeField != RenderTreeFrameType.None)
                 {
                     buffer[offset++] = frame;
                 }
