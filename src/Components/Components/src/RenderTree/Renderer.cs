@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         {
             if (frame.FrameTypeField != RenderTreeFrameType.Component)
             {
-                throw new ArgumentException($"The frame's {nameof(RenderTreeFrame.FrameTypeField)} property must equal {RenderTreeFrameType.Component}", nameof(frame));
+                throw new ArgumentException($"The frame's {nameof(RenderTreeFrame.FrameType)} property must equal {RenderTreeFrameType.Component}", nameof(frame));
             }
 
             if (frame.ComponentStateField != null)

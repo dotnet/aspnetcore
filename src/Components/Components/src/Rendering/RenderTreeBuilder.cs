@@ -415,7 +415,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             if (frame.FrameTypeField != RenderTreeFrameType.Attribute)
             {
-                throw new ArgumentException($"The {nameof(frame.FrameTypeField)} must be {RenderTreeFrameType.Attribute}.");
+                throw new ArgumentException($"The {nameof(frame.FrameType)} must be {RenderTreeFrameType.Attribute}.");
             }
 
             AssertCanAddAttribute();
