@@ -248,12 +248,12 @@ namespace Microsoft.AspNetCore.Components.Reflection
         {
             private const int MaxCachedWriterLookups = 100;
             private readonly Dictionary<string, IPropertySetter> _underlyingWriters;
-            private readonly ConcurrentDictionary<StringObjectIdentityKey, IPropertySetter?> _writerCache;
+            private readonly ConcurrentDictionary<string, IPropertySetter?> _referenceEqualityWritersCache;
 
             public WritersForType(Type targetType)
             {
                 _underlyingWriters = new Dictionary<string, IPropertySetter>(StringComparer.OrdinalIgnoreCase);
-                _writerCache = new ConcurrentDictionary<StringObjectIdentityKey, IPropertySetter?>();
+                _referenceEqualityWritersCache = new ConcurrentDictionary<string, IPropertySetter?>(ReferenceEqualityComparer.Instance);
 
                 foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
                 {
@@ -318,9 +318,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 // having to hash the string. We only fall back on hashing the string if the cache gets full,
                 // which would only be in very unusual situations because components don't typically have many
                 // parameters, and the parameterName strings usually come from compile-time constants.
-                var cacheKey = new StringObjectIdentityKey(parameterName);
-
-                if (!_writerCache.TryGetValue(cacheKey, out writer))
+                if (!_referenceEqualityWritersCache.TryGetValue(parameterName, out writer))
                 {
                     _underlyingWriters.TryGetValue(parameterName, out writer);
 
@@ -331,35 +329,13 @@ namespace Microsoft.AspNetCore.Components.Reflection
                     // lookup misses just as much as hits, since then we can more quickly identify
                     // incoming values that don't have a corresponding writer and thus will end up
                     // being passed as catch-all parameter values.
-                    if (_writerCache.Count < MaxCachedWriterLookups)
+                    if (_referenceEqualityWritersCache.Count < MaxCachedWriterLookups)
                     {
-                        _writerCache.TryAdd(cacheKey, writer);
+                        _referenceEqualityWritersCache.TryAdd(parameterName, writer);
                     }
                 }
 
                 return writer != null;
-            }
-
-            // Adapts a string dictionary to one which never uses string.GetHashCode.
-            // Should only be used in the limited cases described above (i.e., when the
-            // key values are nearly always interned, and the cache size is limited)
-            private struct StringObjectIdentityKey : IEquatable<StringObjectIdentityKey>
-            {
-                private readonly string _value;
-
-                public StringObjectIdentityKey(string value)
-                {
-                    _value = value;
-                }
-
-                public bool Equals([AllowNull] StringObjectIdentityKey other)
-                    => ReferenceEquals(_value, other._value);
-
-                public override bool Equals(object? obj)
-                    => obj is StringObjectIdentityKey other && ReferenceEquals(_value, other._value);
-
-                public override int GetHashCode()
-                    => RuntimeHelpers.GetHashCode(_value);
             }
         }
     }
