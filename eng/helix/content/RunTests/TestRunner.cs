@@ -322,9 +322,7 @@ namespace RunTests
                     // Combine the directory name + log name for the copied log file name to avoid overwriting duplicate test names in different test projects
                     var logName = $"{Path.GetFileName(Path.GetDirectoryName(file))}_{Path.GetFileName(file)}";
                     Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, logName)}");
-                    // Need to copy to HELIX_WORKITEM_UPLOAD_ROOT and HELIX_WORKITEM_UPLOAD_ROOT/../ in order for Azure Devops attachments to link properly and for Helix to store the logs
                     File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, logName));
-                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "..", logName));
                 }
             }
             else
@@ -338,9 +336,7 @@ namespace RunTests
                 {
                     var fileName = Path.GetFileName(file);
                     Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName)}");
-                    // Need to copy to HELIX_WORKITEM_UPLOAD_ROOT and HELIX_WORKITEM_UPLOAD_ROOT/../ in order for Azure Devops attachments to link properly and for Helix to store the logs
                     File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName));
-                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "..", fileName));
                 }
             }
             else
