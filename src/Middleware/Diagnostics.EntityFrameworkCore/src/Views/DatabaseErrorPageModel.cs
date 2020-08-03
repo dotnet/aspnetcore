@@ -10,26 +10,17 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
     internal class DatabaseErrorPageModel
     {
         public DatabaseErrorPageModel(
-            Type contextType,
             Exception exception,
-            bool databaseExists,
-            bool pendingModelChanges,
-            IEnumerable<string> pendingMigrations,
+            IEnumerable<DatabaseContextDetails> contextDetails,
             DatabaseErrorPageOptions options)
         {
-            ContextType = contextType;
             Exception = exception;
-            DatabaseExists = databaseExists;
-            PendingModelChanges = pendingModelChanges;
-            PendingMigrations = pendingMigrations;
+            ContextDetails = contextDetails;
             Options = options;
         }
 
-        public virtual Type ContextType { get; }
         public virtual Exception Exception { get; }
-        public virtual bool DatabaseExists { get; }
-        public virtual bool PendingModelChanges { get; }
-        public virtual IEnumerable<string> PendingMigrations { get; }
+        public virtual IEnumerable<DatabaseContextDetails> ContextDetails { get; }
         public virtual DatabaseErrorPageOptions Options { get; }
     }
 }

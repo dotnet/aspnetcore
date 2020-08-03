@@ -23,11 +23,17 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             var options = new DatabaseErrorPageOptions();
 
             var model = new DatabaseErrorPageModel(
-                contextType: typeof(BloggingContext),
-                exception: new Exception(),
-                databaseExists: false,
-                pendingModelChanges: false,
-                pendingMigrations: new string[] { },
+                new Exception(),
+                new DatabaseContextDetails[]
+                {
+                    new DatabaseContextDetails
+                    {
+                        Type = typeof(BloggingContext),
+                        DatabaseExists = false,
+                        PendingModelChanges = false,
+                        PendingMigrations = new string[] { }
+                    }
+                },
                 options: options);
 
             var content = await ExecutePage(options, model);
@@ -43,11 +49,17 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             var options = new DatabaseErrorPageOptions();
 
             var model = new DatabaseErrorPageModel(
-                contextType: typeof(BloggingContext),
-                exception: new Exception(),
-                databaseExists: false,
-                pendingModelChanges: false,
-                pendingMigrations: new[] { "111_MigrationOne" },
+                new Exception(),
+                new DatabaseContextDetails[]
+                {
+                    new DatabaseContextDetails
+                    {
+                        Type = typeof(BloggingContext),
+                        DatabaseExists = false,
+                        PendingModelChanges = false,
+                        PendingMigrations = new string[] { "111_MigrationOne" }
+                    }
+                },
                 options: options);
 
             var content = await ExecutePage(options, model);
@@ -63,11 +75,17 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             var options = new DatabaseErrorPageOptions();
 
             var model = new DatabaseErrorPageModel(
-                contextType: typeof(BloggingContext),
-                exception: new Exception(),
-                databaseExists: true,
-                pendingModelChanges: false,
-                pendingMigrations: new[] { "111_MigrationOne" },
+                new Exception(),
+                new DatabaseContextDetails[]
+                {
+                    new DatabaseContextDetails
+                    {
+                        Type = typeof(BloggingContext),
+                        DatabaseExists = true,
+                        PendingModelChanges = false,
+                        PendingMigrations = new string[] { "111_MigrationOne" }
+                    }
+                },
                 options: options);
 
             var content = await ExecutePage(options, model);
@@ -83,11 +101,17 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             var options = new DatabaseErrorPageOptions();
 
             var model = new DatabaseErrorPageModel(
-                contextType: typeof(BloggingContext),
-                exception: new Exception(),
-                databaseExists: true,
-                pendingModelChanges: true,
-                pendingMigrations: new[] { "111_MigrationOne" },
+                new Exception(),
+                new DatabaseContextDetails[]
+                {
+                    new DatabaseContextDetails
+                    {
+                        Type = typeof(BloggingContext),
+                        DatabaseExists = true,
+                        PendingModelChanges = true,
+                        PendingMigrations = new string[] { "111_MigrationOne" }
+                    }
+                },
                 options: options);
 
             var content = await ExecutePage(options, model);
@@ -103,11 +127,17 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             var options = new DatabaseErrorPageOptions();
 
             var model = new DatabaseErrorPageModel(
-                contextType: typeof(BloggingContext),
-                exception: new Exception(),
-                databaseExists: true,
-                pendingModelChanges: true,
-                pendingMigrations: new string[] { },
+                new Exception(),
+                new DatabaseContextDetails[]
+                {
+                    new DatabaseContextDetails
+                    {
+                        Type = typeof(BloggingContext),
+                        DatabaseExists = true,
+                        PendingModelChanges = true,
+                        PendingMigrations = new string[] { }
+                    }
+                },
                 options: options);
 
             var content = await ExecutePage(options, model);
@@ -123,11 +153,17 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             var options = new DatabaseErrorPageOptions();
 
             var model = new DatabaseErrorPageModel(
-                contextType: typeof(BloggingContext),
-                exception: new Exception("Something bad happened"),
-                databaseExists: false,
-                pendingModelChanges: false,
-                pendingMigrations: new string[] { },
+                new Exception("Something bad happened"),
+                new DatabaseContextDetails[]
+                {
+                    new DatabaseContextDetails
+                    {
+                        Type = typeof(BloggingContext),
+                        DatabaseExists = false,
+                        PendingModelChanges = false,
+                        PendingMigrations = new string[] { }
+                    }
+                },
                 options: options);
 
             var content = await ExecutePage(options, model);
@@ -141,11 +177,17 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             var options = new DatabaseErrorPageOptions();
 
             var model = new DatabaseErrorPageModel(
-                contextType: typeof(BloggingContext),
-                exception: new Exception("Something bad happened", new Exception("Because something more badder happened")),
-                databaseExists: false,
-                pendingModelChanges: false,
-                pendingMigrations: new string[] { },
+                new Exception("Something bad happened", new Exception("Because something more badder happened")),
+                new DatabaseContextDetails[]
+                {
+                    new DatabaseContextDetails
+                    {
+                        Type = typeof(BloggingContext),
+                        DatabaseExists = false,
+                        PendingModelChanges = false,
+                        PendingMigrations = new string[] { }
+                    }
+                },
                 options: options);
 
             var content = await ExecutePage(options, model);
@@ -161,12 +203,18 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             options.MigrationsEndPointPath = "/HitThisEndPoint";
 
             var model = new DatabaseErrorPageModel(
-               contextType: typeof(BloggingContext),
-               exception: new Exception(),
-               databaseExists: true,
-               pendingModelChanges: false,
-               pendingMigrations: new[] { "111_MigrationOne" },
-               options: options);
+                new Exception(),
+                new DatabaseContextDetails[]
+                {
+                    new DatabaseContextDetails
+                    {
+                        Type = typeof(BloggingContext),
+                        DatabaseExists = true,
+                        PendingModelChanges = false,
+                        PendingMigrations = new string[] { "111_MigrationOne" }
+                    }
+                },
+                options: options);
 
             var content = await ExecutePage(options, model);
 

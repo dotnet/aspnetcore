@@ -56,6 +56,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         ///     consumes them to detect database related exception.
         /// </param>
         /// <param name="options">The options to control what information is displayed on the error page.</param>
+        [Obsolete("This is obsolete and will be removed in a future version. Use DatabaseExceptionHandler instead.")]
         public DatabaseErrorPageMiddleware(
             RequestDelegate next,
             ILoggerFactory loggerFactory,
@@ -116,81 +117,18 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                     if (ShouldDisplayErrorPage(exception))
                     {
                         var contextType = _localDiagnostic.Value.ContextType;
-                        var context = (DbContext)httpContext.RequestServices.GetService(contextType);
+                        var details = await httpContext.GetContextDetailsAsync(contextType, _logger);
 
-                        if (context == null)
+                        if (details != null && (details.PendingModelChanges || details.PendingMigrations.Count() > 0))
                         {
-                            _logger.ContextNotRegisteredDatabaseErrorPageMiddleware(contextType.FullName);
-                        }
-                        else
-                        {
-                            var relationalDatabaseCreator = context.GetService<IDatabaseCreator>() as IRelationalDatabaseCreator;
-                            if (relationalDatabaseCreator == null)
+                            var page = new DatabaseErrorPage
                             {
-                                _logger.NotRelationalDatabase();
-                            }
-                            else
-                            {
-                                var databaseExists = await relationalDatabaseCreator.ExistsAsync();
+                                Model = new DatabaseErrorPageModel(exception, new DatabaseContextDetails[] { details }, _options)
+                            };
 
-                                if (databaseExists)
-                                {
-                                    databaseExists = await relationalDatabaseCreator.HasTablesAsync();
-                                }
+                            await page.ExecuteAsync(httpContext);
 
-                                var migrationsAssembly = context.GetService<IMigrationsAssembly>();
-                                var modelDiffer = context.GetService<IMigrationsModelDiffer>();
-
-                                var snapshotModel = migrationsAssembly.ModelSnapshot?.Model;
-                                if (snapshotModel is IConventionModel conventionModel)
-                                {
-                                    var conventionSet = context.GetService<IConventionSetBuilder>().CreateConventionSet();
-
-                                    var typeMappingConvention = conventionSet.ModelFinalizingConventions.OfType<TypeMappingConvention>().FirstOrDefault();
-                                    if (typeMappingConvention != null)
-                                    {
-                                        typeMappingConvention.ProcessModelFinalizing(conventionModel.Builder, null);
-                                    }
-
-                                    var relationalModelConvention = conventionSet.ModelFinalizedConventions.OfType<RelationalModelConvention>().FirstOrDefault();
-                                    if (relationalModelConvention != null)
-                                    {
-                                        snapshotModel = relationalModelConvention.ProcessModelFinalized(conventionModel);
-                                    }
-                                }
-
-                                if (snapshotModel is IMutableModel mutableModel)
-                                {
-                                    snapshotModel = mutableModel.FinalizeModel();
-                                }
-
-                                // HasDifferences will return true if there is no model snapshot, but if there is an existing database
-                                // and no model snapshot then we don't want to show the error page since they are most likely targeting
-                                // and existing database and have just misconfigured their model
-
-                                var pendingModelChanges
-                                    = (!databaseExists || migrationsAssembly.ModelSnapshot != null)
-                                      && modelDiffer.HasDifferences(snapshotModel?.GetRelationalModel(), context.Model.GetRelationalModel());
-
-                                var pendingMigrations
-                                    = (databaseExists
-                                        ? await context.Database.GetPendingMigrationsAsync()
-                                        : context.Database.GetMigrations())
-                                    .ToArray();
-
-                                if (pendingModelChanges || pendingMigrations.Length > 0)
-                                {
-                                    var page = new DatabaseErrorPage
-                                    {
-                                        Model = new DatabaseErrorPageModel(
-                                            contextType, exception, databaseExists, pendingModelChanges, pendingMigrations, _options)
-                                    };
-
-                                    await page.ExecuteAsync(httpContext);
-
-                                    return;
-                                }
-                            }
+                            return;
                         }
                     }
                 }
