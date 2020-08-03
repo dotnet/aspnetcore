@@ -284,8 +284,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             var reader = new ConfigurationReader(config);
             var endpoint = reader.Endpoints.First();
-            Assert.NotNull(endpoint.SNI);
-            Assert.False(endpoint.SNI.Any());
+            Assert.NotNull(endpoint.Sni);
+            Assert.False(endpoint.Sni.Any());
         }
 
         [Fact]
@@ -294,16 +294,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {
                 new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
-                new KeyValuePair<string, string>("Endpoints:End1:SNI:*.example.org:Protocols", "Http1"),
-                new KeyValuePair<string, string>("Endpoints:End1:SNI:*.example.org:SslProtocols:0", "Tls12"),
-                new KeyValuePair<string, string>("Endpoints:End1:SNI:*.example.org:Certificate:Path", "/path/cert.pfx"),
-                new KeyValuePair<string, string>("Endpoints:End1:SNI:*.example.org:Certificate:Password", "certpassword"),
+                new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Protocols", "Http1"),
+                new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:SslProtocols:0", "Tls12"),
+                new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Certificate:Path", "/path/cert.pfx"),
+                new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Certificate:Password", "certpassword"),
                 new KeyValuePair<string, string>("Endpoints:End1:SNI:*.example.org:ClientCertificateMode", "AllowCertificate"),
             }).Build();
 
             var reader = new ConfigurationReader(config);
             var endpoint = reader.Endpoints.First();
-            var sni = endpoint.SNI["*.EXAMPLE.org"];
+            var sni = endpoint.Sni["*.EXAMPLE.org"];
 
             Assert.NotNull(sni);
 

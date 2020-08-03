@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private const string EndpointsKey = "Endpoints";
         private const string UrlKey = "Url";
         private const string ClientCertificateModeKey = "ClientCertificateMode";
-        private const string SNIKey = "SNI";
+        private const string SniKey = "Sni";
 
         private readonly IConfiguration _configuration;
 
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     Certificate = new CertificateConfig(endpointConfig.GetSection(CertificateKey)),
                     SslProtocols = ParseSslProcotols(endpointConfig.GetSection(SslProtocolsKey)),
                     ClientCertificateMode = ParseClientCertificateMode(endpointConfig[ClientCertificateModeKey]),
-                    SNI = ReadSni(endpointConfig.GetSection(SNIKey)),
+                    Sni = ReadSni(endpointConfig.GetSection(SniKey)),
                 };
 
                 endpoints.Add(endpoint);
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             foreach (var sniChild in sniConfig.GetChildren())
             {
-                // "SNI": {
+                // "Sni": {
                 //     "a.example.org": {
                 //         "Protocols": "Http1AndHttp2",
                 //         "SslProtocols": [ "Tls11", "Tls12", "Tls13"],
@@ -205,11 +205,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     //        "Password": "testPassword"
     //    },
     //    "ClientCertificateMode" : "NoCertificate"
-    // }
-    // *OR*
-    // "EndpointName": {
-    //     "Url": "https://*",
-    //     "SNI": {
+    //     "Sni": {
     //         "a.example.org": {
     //             "Protocols": "Http1AndHttp2",
     //             "SslProtocols": [ "Tls11", "Tls12", "Tls13"],
@@ -224,7 +220,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     //                 "Path": "testCert2.pfx",
     //                 "Password": "testPassword"
     //             }
-    //         }
+    //         },
+    //         // The following should work once https://github.com/dotnet/runtime/issues/40218 is resolved
+    //         "*": {}
     //     }
     // }
     internal class EndpointConfig
@@ -238,7 +236,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public SslProtocols? SslProtocols { get; set; }
         public CertificateConfig Certificate { get; set; }
         public ClientCertificateMode? ClientCertificateMode { get; set; }
-        public Dictionary<string, SniConfig> SNI { get; set; }
+        public Dictionary<string, SniConfig> Sni { get; set; }
 
         // Compare config sections because it's accessible to app developers via an Action<EndpointConfiguration> callback.
         // We cannot rely entirely on comparing config sections for equality, because KestrelConfigurationLoader.Reload() sets
@@ -263,12 +261,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             (SslProtocols ?? System.Security.Authentication.SslProtocols.None) == (other.SslProtocols ?? System.Security.Authentication.SslProtocols.None) &&
             Certificate == other.Certificate &&
             (ClientCertificateMode ?? Https.ClientCertificateMode.NoCertificate) == (other.ClientCertificateMode ?? Https.ClientCertificateMode.NoCertificate) &&
-            CompareSniDictionaries(SNI, other.SNI) &&
+            CompareSniDictionaries(Sni, other.Sni) &&
             _configSectionClone == other._configSectionClone;
 
         public override int GetHashCode() => HashCode.Combine(Name, Url,
             Protocols ?? ListenOptions.DefaultHttpProtocols, SslProtocols ?? System.Security.Authentication.SslProtocols.None,
-            Certificate, ClientCertificateMode ?? Https.ClientCertificateMode.NoCertificate, SNI.Count, _configSectionClone);
+            Certificate, ClientCertificateMode ?? Https.ClientCertificateMode.NoCertificate, Sni.Count, _configSectionClone);
 
         public static bool operator ==(EndpointConfig lhs, EndpointConfig rhs) => lhs is null ? rhs is null : lhs.Equals(rhs);
         public static bool operator !=(EndpointConfig lhs, EndpointConfig rhs) => !(lhs == rhs);

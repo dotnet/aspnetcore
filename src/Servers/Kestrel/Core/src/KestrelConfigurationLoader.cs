@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 // EndpointDefaults or configureEndpoint may have added an https adapter.
                 if (https && !listenOptions.IsTls)
                 {
-                    if (endpoint.SNI.Count == 0)
+                    if (endpoint.Sni.Count == 0)
                     {
                         if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
                         {

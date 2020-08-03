@@ -41,11 +41,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _fallbackServerCertificateSelector = fallbackOptions.ServerCertificateSelector;
             _onAuthenticateCallback = fallbackOptions.OnAuthenticate;
 
-            foreach (var (name, sniConfig) in endpointConfig.SNI)
+            foreach (var (name, sniConfig) in endpointConfig.Sni)
             {
                 var sslOptions = new SslServerAuthenticationOptions
                 {
-                    ServerCertificate = configLoader.LoadCertificate(sniConfig.Certificate, $"{endpointConfig.Name}:SNI:{name}"),
+                    ServerCertificate = configLoader.LoadCertificate(sniConfig.Certificate, $"{endpointConfig.Name}:Sni:{name}"),
                     EnabledSslProtocols = sniConfig.SslProtocols ?? fallbackOptions.SslProtocols,
                     CertificateRevocationCheckMode = fallbackOptions.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
                 };
