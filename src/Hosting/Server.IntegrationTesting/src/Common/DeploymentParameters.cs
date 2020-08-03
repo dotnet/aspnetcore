@@ -113,6 +113,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         /// </summary>
         public string ApplicationBaseUriHint { get; set; }
 
+        public bool RestoreDependencies { get; set; }
+
         /// <summary>
         /// Scheme used by the deployed application if <see cref="ApplicationBaseUriHint"/> is empty.
         /// </summary>

@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                                  // avoids triggering builds of dependencies of the test app which could cause issues like https://github.com/dotnet/arcade/issues/2941
                                  + $" --no-dependencies"
                                  + $" /p:TargetArchitecture={deploymentParameters.RuntimeArchitecture}"
-                                 + " --no-restore";
+                                 + (deploymentParameters.RestoreDependencies ? "" : " --no-restore");
 
                 if (deploymentParameters.ApplicationType == ApplicationType.Standalone)
                 {

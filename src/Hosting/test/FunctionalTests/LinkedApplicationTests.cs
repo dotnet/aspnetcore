@@ -12,9 +12,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 {
     public class LinkedApplicationTests : LoggedTest
     {
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        [OSSkipCondition(OperatingSystems.Linux)]
+        [Fact]
         public async Task LinkedApplicationWorks()
         {
             using (StartLog(out var loggerFactory))
@@ -35,6 +33,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     RuntimeArchitecture = RuntimeArchitecture.x64,
                     ApplicationType = ApplicationType.Standalone,
                     PublishApplicationBeforeDeployment = true,
+                    RestoreDependencies = true,
                     StatusMessagesEnabled = false
                 };
 
