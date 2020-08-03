@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -28,6 +30,18 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         private static readonly Version Win10_Regressed_DataFrame = new Version(10, 0, 20145, 0);
 
+        public static readonly IEnumerable<KeyValuePair<string, string>> Headers = new[]
+        {
+            new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(HeaderNames.Scheme, "https"),
+            new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:443"),
+            new KeyValuePair<string, string>("user-agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0"),
+            new KeyValuePair<string, string>("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
+            new KeyValuePair<string, string>("accept-language", "en-US,en;q=0.5"),
+            new KeyValuePair<string, string>("accept-encoding", "gzip, deflate, br"),
+            new KeyValuePair<string, string>("upgrade-insecure-requests", "1"),
+        };
+
         [ConditionalFact]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
         public async Task AppException_BeforeResponseHeaders_500()
@@ -36,13 +50,13 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             await new HostBuilder()
-                .UseHttp2Cat(deploymentResult.ApplicationBaseUri + "AppException_BeforeResponseHeaders_500", async h2Connection =>
+                .UseHttp2Cat(deploymentResult.ApplicationBaseUri, async h2Connection =>
                 {
                     await h2Connection.InitializeConnectionAsync();
 
                     h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
 
-                    await h2Connection.StartStreamAsync(1, Http2Utilities.BrowserRequestHeaders, endStream: true);
+                    await h2Connection.StartStreamAsync(1, GetHeaders("/AppException_BeforeResponseHeaders_500"), endStream: true);
 
                     await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                     {
@@ -80,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
                     h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
 
-                    await h2Connection.StartStreamAsync(1, Http2Utilities.BrowserRequestHeaders, endStream: true);
+                    await h2Connection.StartStreamAsync(1, GetHeaders("/AppException_AfterHeaders_PriorOSVersions_ResetCancel"), endStream: true);
 
                     await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                     {
@@ -109,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
                     h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
 
-                    await h2Connection.StartStreamAsync(1, Http2Utilities.BrowserRequestHeaders, endStream: true);
+                    await h2Connection.StartStreamAsync(1, GetHeaders("/AppException_AfterHeaders_ResetInternalError"), endStream: true);
 
                     await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
                     {
@@ -358,6 +372,15 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     h2Connection.Logger.LogInformation("Connection stopped.");
                 })
                 .Build().RunAsync();
+        }
+
+        private static List<KeyValuePair<string, string>> GetHeaders(string path)
+        {
+            var headers = Headers.ToList();
+
+            var kvp = new KeyValuePair<string, string>(HeaderNames.Path, path);
+            headers.Add(kvp);
+            return headers;
         }
 
         private IISDeploymentParameters GetHttpsDeploymentParameters()
