@@ -146,7 +146,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
                 await closingMessageTask;
                 cts.Cancel();
-                await stopServerTask;
+                try
+                {
+                    await stopServerTask;
+                }
+                catch (OperationCanceledException)
+                {
+
+                }
             }
 
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closing."));

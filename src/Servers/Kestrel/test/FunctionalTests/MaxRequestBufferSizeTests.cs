@@ -272,7 +272,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     // Dispose host prior to closing connection to verify the server doesn't throw during shutdown
                     // if a connection no longer has alloc and read callbacks configured.
-                    await host.StopAsync();
+                    try
+                    {
+                        await host.StopAsync();
+                    }
+                    catch (OperationCanceledException)
+                    {
+
+                    }
                     host.Dispose();
                 }
             }
