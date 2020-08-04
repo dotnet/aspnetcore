@@ -10,6 +10,7 @@ describe('LoginMenuComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
+      imports: [RouterTestingModule], 
       declarations: [ LoginMenuComponent ]
     })
     .compileComponents();
