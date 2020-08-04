@@ -127,6 +127,35 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 .Build().RunAsync();
         }
 
+
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Custom Reset support was added in Win10_20H2.")]
+        public async Task Goaway()
+        {
+            var deploymentParameters = GetHttpsDeploymentParameters();
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            await new HostBuilder()
+                .UseHttp2Cat(deploymentResult.ApplicationBaseUri, async h2Connection =>
+                {
+                    await h2Connection.InitializeConnectionAsync();
+
+                    h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
+
+                    await h2Connection.StartStreamAsync(1, GetHeaders("/Goaway"), endStream: true);
+
+                    //await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
+                    //{
+                    //    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
+                    //});
+
+                    var frame = await h2Connection.ReceiveFrameAsync();
+
+                    h2Connection.Logger.LogInformation("Connection stopped.");
+                })
+                .Build().RunAsync();
+        }
+
         [ConditionalFact]
         [RequiresNewHandler]
         public async Task Reset_Http1_NotSupported()

@@ -1315,6 +1315,12 @@ namespace TestSite
             }
         }
 
+        public Task Goaway(HttpContext httpContext)
+        {
+            httpContext.Response.Headers["Connection"] = "close";
+            return Task.CompletedTask;
+        }
+
         public async Task Reset_DuringRequestBody_Resets_Complete(HttpContext httpContext)
         {
             await _resetDuringRequestBodyResetsCts.Task;
