@@ -534,13 +534,17 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     httpClientHandler.Proxy = _httpConnectionOptions.Proxy;
                 }
 
-                // Only access HttpClientHandler.ClientCertificates and HttpClientHandler.CookieContainer
-                // if the user has configured those options
-                // Some variants of Mono do not support client certs or cookies and will throw NotImplementedException
-                if (_httpConnectionOptions.Cookies.Count > 0)
+                try
                 {
+                    // On supported platforms, we need to pass the cookie container to the http client
+                    // so that we can capture any cookies from the negotiate response and give them to WebSockets.
                     httpClientHandler.CookieContainer = _httpConnectionOptions.Cookies;
                 }
+                // Some variants of Mono do not support client certs or cookies and will throw NotImplementedException
+                catch (NotImplementedException) { }
+
+                // Only access HttpClientHandler.ClientCertificates
+                // if the user has configured those options
                 // https://github.com/aspnet/SignalR/issues/2232
                 var clientCertificates = _httpConnectionOptions.ClientCertificates;
                 if (clientCertificates?.Count > 0)
