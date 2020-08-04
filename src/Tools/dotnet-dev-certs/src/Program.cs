@@ -284,7 +284,6 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                         return InvalidCertificateState;
                     }
                 }
-                reporter.Verbose("A valid certificate was found.");
             }
 
             if (trust != null && trust.HasValue())
@@ -306,6 +305,14 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 {
                     reporter.Warn("Checking the HTTPS development certificate trust status was requested. Checking whether the certificate is trusted or not is not supported on Linux distributions." +
                         "For instructions on how to manually validate the certificate is trusted on your Linux distribution, go to https://aka.ms/dev-certs-trust");
+                }
+            }
+            else
+            {
+                reporter.Output("A valid certificate was found.");
+                if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    reporter.Output("Run the command with both --check and --trust options to ensure that the certificate is not only valid but also trusted.");
                 }
             }
 
