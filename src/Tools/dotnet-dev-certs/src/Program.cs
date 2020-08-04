@@ -223,8 +223,9 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                         break;
                 }
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                reporter.Error($"An unexpected error occurred: {exception}");
                 return ErrorImportingCertificate;
             }
 
