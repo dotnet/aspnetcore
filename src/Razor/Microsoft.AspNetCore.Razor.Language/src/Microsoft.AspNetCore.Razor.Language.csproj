@@ -10,9 +10,6 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)HashCodeCombiner\*.cs" />
-    <Compile Include="$(SharedSourceRoot)RazorShared\MemoryCache.cs">
-      <Link>Shared\MemoryCache.cs</Link>
-    </Compile>
   </ItemGroup>
 
 </Project>

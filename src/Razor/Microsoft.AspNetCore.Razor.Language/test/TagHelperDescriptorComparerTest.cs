@@ -15,12 +15,6 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         private static readonly TestFile TagHelpersTestFile = TestFile.Create("TestFiles/taghelpers.json", typeof(TagHelperDescriptorComparerTest));
 
-        public TagHelperDescriptorComparerTest()
-        {
-            // Disables caching for hash code validation testing
-            TagHelperDescriptorCache.CacheEnabled = false;
-        }
-
         [Fact]
         public void GetHashCode_SameTagHelperDescriptors_HashCodeMatches()
         {
