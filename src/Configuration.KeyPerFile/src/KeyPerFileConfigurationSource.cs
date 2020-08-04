@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
         /// Constructor;
         /// </summary>
         public KeyPerFileConfigurationSource()
-            => IgnoreCondition = s => IgnorePrefix != null && s.StartsWith(IgnorePrefix);
+            => IgnoreCondition = s => IgnorePrefix != null && s.StartsWith(IgnorePrefix, StringComparison.Ordinal);
 
         /// <summary>
         /// The FileProvider whos root "/" directory files will be used as configuration data.

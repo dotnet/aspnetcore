@@ -198,7 +198,7 @@ namespace Templates.Test
         [InlineData("SingleOrg", new string[] { "--calls-graph" })]
         public async Task BlazorServerTemplat_IdentityWeb_BuildAndPublish(string auth, string[] args)
         {
-            Project = await ProjectFactory.GetOrCreateProject("blazorserveridweb" + Guid.NewGuid().ToString().Substring(0, 10).ToLower(), Output);
+            Project = await ProjectFactory.GetOrCreateProject("blazorserveridweb" + Guid.NewGuid().ToString().Substring(0, 10).ToLowerInvariant(), Output);
 
             var createResult = await Project.RunDotNetNewAsync("blazorserver", auth: auth, args: args);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));

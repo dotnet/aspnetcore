@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
@@ -1906,8 +1907,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Null(await userMgr.GetLockoutEndDateAsync(user));
 
             // set to a valid value
-            await userMgr.SetLockoutEndDateAsync(user, DateTimeOffset.Parse("01/01/2014"));
-            Assert.Equal(DateTimeOffset.Parse("01/01/2014"), await userMgr.GetLockoutEndDateAsync(user));
+            await userMgr.SetLockoutEndDateAsync(user, DateTimeOffset.Parse("01/01/2014", CultureInfo.InvariantCulture));
+            Assert.Equal(DateTimeOffset.Parse("01/01/2014", CultureInfo.InvariantCulture), await userMgr.GetLockoutEndDateAsync(user));
         }
 
         /// <summary>

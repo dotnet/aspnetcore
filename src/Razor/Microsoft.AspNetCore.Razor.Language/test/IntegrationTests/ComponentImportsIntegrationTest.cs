@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 item =>
                 {
                     Assert.Equal("RZ9987", item.Id);
-                    Assert.Equal(@"The '@page' directive specified in _Imports.razor file will not be imported. The directive must appear at the top of each Razor file", item.GetMessage());
+                    Assert.Equal(@"The '@page' directive specified in _Imports.razor file will not be imported. The directive must appear at the top of each Razor file", item.GetMessage(CultureInfo.CurrentCulture));
                 });
         }
 
@@ -83,19 +84,19 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 {
                     Assert.Equal("RZ9978", item.Id);
                     Assert.Equal(0, item.Span.LineIndex);
-                    Assert.Equal(@"The directives @addTagHelper, @removeTagHelper and @tagHelperPrefix are not valid in a component document. Use '@using <namespace>' directive instead.", item.GetMessage());
+                    Assert.Equal(@"The directives @addTagHelper, @removeTagHelper and @tagHelperPrefix are not valid in a component document. Use '@using <namespace>' directive instead.", item.GetMessage(CultureInfo.CurrentCulture));
                 },
                 item =>
                 {
                     Assert.Equal("RZ9978", item.Id);
                     Assert.Equal(1, item.Span.LineIndex);
-                    Assert.Equal(@"The directives @addTagHelper, @removeTagHelper and @tagHelperPrefix are not valid in a component document. Use '@using <namespace>' directive instead.", item.GetMessage());
+                    Assert.Equal(@"The directives @addTagHelper, @removeTagHelper and @tagHelperPrefix are not valid in a component document. Use '@using <namespace>' directive instead.", item.GetMessage(CultureInfo.CurrentCulture));
                 },
                 item =>
                 {
                     Assert.Equal("RZ9978", item.Id);
                     Assert.Equal(2, item.Span.LineIndex);
-                    Assert.Equal(@"The directives @addTagHelper, @removeTagHelper and @tagHelperPrefix are not valid in a component document. Use '@using <namespace>' directive instead.", item.GetMessage());
+                    Assert.Equal(@"The directives @addTagHelper, @removeTagHelper and @tagHelperPrefix are not valid in a component document. Use '@using <namespace>' directive instead.", item.GetMessage(CultureInfo.CurrentCulture));
                 });
         }
 
@@ -116,7 +117,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 item =>
                 {
                     Assert.Equal("RZ10003", item.Id);
-                    Assert.Equal(@"Markup, code and block directives are not valid in component imports.", item.GetMessage());
+                    Assert.Equal(@"Markup, code and block directives are not valid in component imports.", item.GetMessage(CultureInfo.CurrentCulture));
                 });
         }
 
@@ -134,7 +135,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 item =>
                 {
                     Assert.Equal("RZ10003", item.Id);
-                    Assert.Equal(@"Markup, code and block directives are not valid in component imports.", item.GetMessage());
+                    Assert.Equal(@"Markup, code and block directives are not valid in component imports.", item.GetMessage(CultureInfo.CurrentCulture));
                 });
         }
 
@@ -151,7 +152,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 item =>
                 {
                     Assert.Equal("RZ10003", item.Id);
-                    Assert.Equal(@"Markup, code and block directives are not valid in component imports.", item.GetMessage());
+                    Assert.Equal(@"Markup, code and block directives are not valid in component imports.", item.GetMessage(CultureInfo.CurrentCulture));
                 });
         }
 
@@ -172,19 +173,19 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 {
                     Assert.Equal("RZ10003", item.Id);
                     Assert.Equal(0, item.Span.LineIndex);
-                    Assert.Equal(@"Markup, code and block directives are not valid in component imports.", item.GetMessage());
+                    Assert.Equal(@"Markup, code and block directives are not valid in component imports.", item.GetMessage(CultureInfo.CurrentCulture));
                 },
                 item =>
                 {
                     Assert.Equal("RZ10003", item.Id);
                     Assert.Equal(1, item.Span.LineIndex);
-                    Assert.Equal(@"Markup, code and block directives are not valid in component imports.", item.GetMessage());
+                    Assert.Equal(@"Markup, code and block directives are not valid in component imports.", item.GetMessage(CultureInfo.CurrentCulture));
                 },
                 item =>
                 {
                     Assert.Equal("RZ10003", item.Id);
                     Assert.Equal(2, item.Span.LineIndex);
-                    Assert.Equal(@"Markup, code and block directives are not valid in component imports.", item.GetMessage());
+                    Assert.Equal(@"Markup, code and block directives are not valid in component imports.", item.GetMessage(CultureInfo.CurrentCulture));
                 });
         }
     }

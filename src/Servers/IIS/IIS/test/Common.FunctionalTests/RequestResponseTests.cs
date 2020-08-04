@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             {
                 if (i == 43) continue; // %2B "+" gives a 404.11 (URL_DOUBLE_ESCAPED)
                 stringBuilder.Append("%");
-                stringBuilder.Append(i.ToString("X2"));
+                stringBuilder.Append(i.ToString("X2", CultureInfo.InvariantCulture));
             }
             var rawPath = stringBuilder.ToString();
             var response = await SendSocketRequestAsync(rawPath);
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             {
                 if (i == 9 || i == 10) continue; // \t and \r are allowed by Http.Sys.
                 var response = await SendSocketRequestAsync("/" + (char)i);
-                Assert.True(string.Equals(400, response.Status), i.ToString("X2") + ";" + response);
+                Assert.True(string.Equals(400, response.Status), i.ToString("X2", CultureInfo.InvariantCulture) + ";" + response);
             }
         }
 
@@ -94,8 +95,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         {
             for (var i = 0; i < 32; i++)
             {
-                var response = await SendSocketRequestAsync("/%" + i.ToString("X2"));
-                Assert.True(string.Equals(400, response.Status), i.ToString("X2") + ";" + response);
+                var response = await SendSocketRequestAsync("/%" + i.ToString("X2", CultureInfo.InvariantCulture));
+                Assert.True(string.Equals(400, response.Status), i.ToString("X2", CultureInfo.InvariantCulture) + ";" + response);
             }
         }
 
@@ -711,14 +712,14 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     "",
                     "");
                 var headers = await connection.ReceiveHeaders();
-                var status = int.Parse(headers[0].Substring(9, 3));
+                var status = int.Parse(headers[0].Substring(9, 3), CultureInfo.InvariantCulture);
                 if (headers.Contains("Transfer-Encoding: chunked"))
                 {
                     var bytes0 = await connection.ReceiveChunk();
                     Assert.False(bytes0.IsEmpty);
                     return (status, Encoding.UTF8.GetString(bytes0.Span));
                 }
-                var length = int.Parse(headers.Single(h => h.StartsWith("Content-Length: ")).Substring("Content-Length: ".Length));
+                var length = int.Parse(headers.Single(h => h.StartsWith("Content-Length: ", StringComparison.Ordinal)).Substring("Content-Length: ".Length), CultureInfo.InvariantCulture);
                 var bytes1 = await connection.Receive(length);
                 return (status, Encoding.ASCII.GetString(bytes1.Span));
             }

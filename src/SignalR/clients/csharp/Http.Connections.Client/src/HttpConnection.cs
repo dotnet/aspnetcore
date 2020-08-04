@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 // Get a connection ID from the server
                 Log.EstablishingConnection(logger, url);
                 var urlBuilder = new UriBuilder(url);
-                if (!urlBuilder.Path.EndsWith("/"))
+                if (!urlBuilder.Path.EndsWith("/", StringComparison.Ordinal))
                 {
                     urlBuilder.Path += "/";
                 }

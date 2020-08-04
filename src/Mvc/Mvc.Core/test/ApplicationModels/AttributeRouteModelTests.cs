@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Routing;
 using Xunit;
@@ -165,6 +166,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             // Arrange
             var expected = string.Format(
+                CultureInfo.InvariantCulture,
                 "The route template '{0}' has invalid syntax. {1}",
                 template,
                 reason);

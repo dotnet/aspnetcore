@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -144,7 +145,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             var subject = subjectMatch.Groups[1].Value;
             using var checkTrustProcess = Process.Start(new ProcessStartInfo(
                 MacOSFindCertificateCommandLine,
-                string.Format(MacOSFindCertificateCommandLineArgumentsFormat, subject))
+                string.Format(CultureInfo.InvariantCulture, MacOSFindCertificateCommandLineArgumentsFormat, subject))
             {
                 RedirectStandardOutput = true
             });
@@ -194,6 +195,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 var processInfo = new ProcessStartInfo(
                     MacOSRemoveCertificateTrustCommandLine,
                     string.Format(
+                        CultureInfo.InvariantCulture,
                         MacOSRemoveCertificateTrustCommandLineArgumentsFormat,
                         certificatePath
                     ));
@@ -226,6 +228,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             var processInfo = new ProcessStartInfo(
                 MacOSDeleteCertificateCommandLine,
                 string.Format(
+                    CultureInfo.InvariantCulture,
                     MacOSDeleteCertificateCommandLineArgumentsFormat,
                     certificate.Thumbprint.ToUpperInvariant(),
                     keyChain
@@ -269,6 +272,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             var processInfo = new ProcessStartInfo(
                 MacOSAddCertificateToKeyChainCommandLine,
             string.Format(
+                CultureInfo.InvariantCulture,
                 MacOSAddCertificateToKeyChainCommandLineArgumentsFormat,
                 certificatePath,
                 password

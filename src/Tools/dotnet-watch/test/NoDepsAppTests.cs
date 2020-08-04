@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             File.WriteAllText(fileToChange, programCs);
 
             await _app.HasRestarted();
-            Assert.DoesNotContain(_app.Process.Output, l => l.StartsWith("Exited with error code"));
+            Assert.DoesNotContain(_app.Process.Output, l => l.StartsWith("Exited with error code", StringComparison.Ordinal));
 
             var processIdentifier2 = await _app.GetProcessIdentifier();
             Assert.NotEqual(processIdentifier, processIdentifier2);

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 {
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 
         public override string ToString()
         {
-            return string.Format("{0}, {1}, {2}", Id, Name, Age);
+            return string.Format(CultureInfo.InvariantCulture, "{0}, {1}, {2}", Id, Name, Age);
         }
 
         public object Unwrap(Type declaredType)

@@ -210,7 +210,7 @@ namespace Microsoft.Extensions.Logging.Testing.Tests
             return string.Join(Environment.NewLine, input.Split(new[] { Environment.NewLine }, StringSplitOptions.None)
                 .Select(line =>
                 {
-                    var strippedPrefix = line.IndexOf("[") >= 0 ? line.Substring(line.IndexOf("[")) : line;
+                    var strippedPrefix = line.IndexOf('[') >= 0 ? line.Substring(line.IndexOf('[')) : line;
 
                     var strippedDuration = DurationRegex.Replace(strippedPrefix, "DURATION");
                     var strippedTimestamp = TimestampRegex.Replace(strippedDuration, "TIMESTAMP");

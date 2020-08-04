@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 for (var i = store.Certificates.Count - 1; i >= 0; i--)
                 {
                     var cert = store.Certificates[i];
-                    if (cert.Issuer.StartsWith(_certIssuerPrefix))
+                    if (cert.Issuer.StartsWith(_certIssuerPrefix, StringComparison.Ordinal))
                     {
                         store.Remove(cert);
                     }

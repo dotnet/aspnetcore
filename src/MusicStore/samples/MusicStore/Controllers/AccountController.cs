@@ -1,3 +1,5 @@
+using System;
+using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -236,7 +238,7 @@ namespace MusicStore.Controllers
 #endif
             }
 
-            ModelState.AddModelError("", string.Format("We could not locate an account with email : {0}", model.Email));
+            ModelState.AddModelError("", string.Format(CultureInfo.InvariantCulture, "We could not locate an account with email : {0}", model.Email));
 
             // If we got this far, something failed, redisplay form
             return View(model);
@@ -459,7 +461,7 @@ namespace MusicStore.Controllers
             // TODO: Currently SignInManager.SignOut does not sign out OpenIdc and does not have a way to pass in a specific
             // AuthType to sign out.
             var appEnv = HttpContext.RequestServices.GetService<IWebHostEnvironment>();
-            if (appEnv.EnvironmentName.StartsWith("OpenIdConnect"))
+            if (appEnv.EnvironmentName.StartsWith("OpenIdConnect", StringComparison.Ordinal))
             {
                 return new SignOutResult("OpenIdConnect", new AuthenticationProperties
                 {

@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
 
-            var dotnetLocationWithoutExtension = _dotnetLocation.Substring(0, _dotnetLocation.LastIndexOf("."));
+            var dotnetLocationWithoutExtension = _dotnetLocation.Substring(0, _dotnetLocation.LastIndexOf(".", StringComparison.Ordinal));
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", dotnetLocationWithoutExtension));
 
             await StartAsync(deploymentParameters);
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
 
-            var dotnetLocationWithoutExtension = _dotnetLocation.Substring(0, _dotnetLocation.LastIndexOf(".")).ToUpperInvariant();
+            var dotnetLocationWithoutExtension = _dotnetLocation.Substring(0, _dotnetLocation.LastIndexOf(".", StringComparison.Ordinal)).ToUpperInvariant();
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", dotnetLocationWithoutExtension));
 
             await StartAsync(deploymentParameters);

@@ -129,7 +129,7 @@ namespace Templates.Test.Helpers
                 foreach (var command in lines.Where(l => l.Contains("dotnet new") && l.Contains(packageName, StringComparison.OrdinalIgnoreCase)))
                 {
                     var uninstallCommand = command.TrimStart();
-                    Debug.Assert(uninstallCommand.StartsWith("dotnet new"));
+                    Debug.Assert(uninstallCommand.StartsWith("dotnet new", StringComparison.Ordinal));
                     uninstallCommand = uninstallCommand.Substring("dotnet new".Length);
                     await RunDotNetNew(output, uninstallCommand);
                 }

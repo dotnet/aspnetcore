@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var sampleInputInt = 10;
             var input = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<DummyClass><SampleInt>"
-                + sampleInputInt.ToString() + "</SampleInt></DummyClass>";
+                + sampleInputInt.ToString(CultureInfo.InvariantCulture) + "</SampleInt></DummyClass>";
             var content = new StringContent(input, Encoding.UTF8, "application/xml-xmlser");
 
             // Act
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal(sampleInputInt.ToString(), await response.Content.ReadAsStringAsync());
+            Assert.Equal(sampleInputInt.ToString(CultureInfo.InvariantCulture), await response.Content.ReadAsStringAsync());
         }
 
         [ConditionalFact]

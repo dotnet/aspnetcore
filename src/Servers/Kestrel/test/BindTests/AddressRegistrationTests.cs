@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         {
                             options.Listen(endPoint, listenOptions =>
                             {
-                                if (testUrl.StartsWith("https"))
+                                if (testUrl.StartsWith("https", StringComparison.Ordinal))
                                 {
                                     listenOptions.UseHttps(TestResources.GetTestCertificate());
                                 }

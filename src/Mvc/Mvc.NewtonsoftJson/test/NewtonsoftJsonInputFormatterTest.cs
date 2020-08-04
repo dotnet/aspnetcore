@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -528,7 +529,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             public override short ReadJson(JsonReader reader, Type objectType, short existingValue, bool hasExistingValue, JsonSerializer serializer)
             {
-                return short.Parse(reader.Value.ToString());
+                return short.Parse(reader.Value.ToString(), CultureInfo.InvariantCulture);
             }
 
             public override void WriteJson(JsonWriter writer, short value, JsonSerializer serializer)

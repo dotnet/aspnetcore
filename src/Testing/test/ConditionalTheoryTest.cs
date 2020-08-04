@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -155,7 +156,7 @@ namespace Microsoft.AspNetCore.Testing
 
             public override string ToString()
             {
-                return Data.ToString();
+                return Data.ToString(CultureInfo.InvariantCulture);
             }
         }
     }

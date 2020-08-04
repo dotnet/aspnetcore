@@ -400,7 +400,7 @@ namespace Microsoft.AspNetCore.Antiforgery
             var pragmaHeader = response.Headers[HeaderNames.Pragma];
             if (!logWarning
                 && !string.IsNullOrEmpty(pragmaHeader)
-                && string.Compare(pragmaHeader, "no-cache", ignoreCase: true) != 0)
+                && !string.Equals(pragmaHeader, "no-cache", StringComparison.OrdinalIgnoreCase))
             {
                 logWarning = true;
             }

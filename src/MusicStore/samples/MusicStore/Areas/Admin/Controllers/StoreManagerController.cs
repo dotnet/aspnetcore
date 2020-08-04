@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -194,7 +195,7 @@ namespace MusicStore.Areas.Admin.Controllers
 
         private static string GetCacheKey(int id)
         {
-            return string.Format("album_{0}", id);
+            return $"album_{id}";
         }
 
         // NOTE: this is used for end to end testing only
@@ -213,7 +214,7 @@ namespace MusicStore.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            return Content(album.AlbumId.ToString());
+            return Content(album.AlbumId.ToString(CultureInfo.InvariantCulture));
         }
     }
 }

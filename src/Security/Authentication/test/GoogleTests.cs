@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             });
             using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://example.com/challenge");
-            Assert.Contains(transaction.SetCookie, cookie => cookie.StartsWith(".AspNetCore.Correlation."));
+            Assert.Contains(transaction.SetCookie, cookie => cookie.StartsWith(".AspNetCore.Correlation.", StringComparison.Ordinal));
         }
 
         [Fact]
