@@ -1188,7 +1188,30 @@ namespace TestSite
 
         public async Task Reset_BeforeResponse_Resets_Complete(HttpContext httpContext)
         {
-            await _Reset_BeforeResponse_ResetsCt.Task;
+            await _Reset_BeforeResponse_Zero_ResetsCt.Task;
+        }
+
+        private TaskCompletionSource<object> _Reset_BeforeResponse_Zero_ResetsCt = new TaskCompletionSource<object>();
+        public Task Reset_BeforeResponse_Zero_Resets(HttpContext httpContext)
+        {
+            try
+            {
+                Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+                var feature = httpContext.Features.Get<IHttpResetFeature>();
+                Assert.NotNull(feature);
+                feature.Reset(0); // Zero should be an allowed errorCode
+                _Reset_BeforeResponse_Zero_ResetsCt.SetResult(0);
+            }
+            catch (Exception ex)
+            {
+                _Reset_BeforeResponse_Zero_ResetsCt.SetException(ex);
+            }
+            return Task.FromResult(0);
+        }
+
+        public async Task Reset_BeforeResponse_Resets_Zero_Complete(HttpContext httpContext)
+        {
+            await _Reset_BeforeResponse_Zero_ResetsCt.Task;
         }
 
         private TaskCompletionSource<object> _Reset_AfterResponseHeaders_ResetsCt = new TaskCompletionSource<object>();

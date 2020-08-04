@@ -408,6 +408,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         void IHttpResetFeature.Reset(int errorCode)
         {
+            if (errorCode < 0)
+            {
+                throw new ArgumentOutOfRangeException("'errorCode' cannot be negative");
+            }
+
             SetResetCode(errorCode);
             AbortIO(clientDisconnect: false);
         }

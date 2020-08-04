@@ -214,6 +214,35 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Reset support was added in Win10_20H2.")]
+        public async Task Reset_BeforeResponse_Zero_Resets()
+        {
+            var deploymentParameters = GetHttpsDeploymentParameters();
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            await new HostBuilder()
+                .UseHttp2Cat(deploymentResult.ApplicationBaseUri, async h2Connection =>
+                {
+                    await h2Connection.InitializeConnectionAsync();
+
+                    h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
+
+                    await h2Connection.StartStreamAsync(1, GetHeaders("/Reset_BeforeResponse_Zero_Resets"), endStream: true);
+
+                    var resetFrame = await h2Connection.ReceiveFrameAsync();
+                    Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, expectedErrorCode: (Http2ErrorCode)0);
+
+                    // Any app errors?
+                    var client = CreateClient();
+                    var response = await client.GetAsync(deploymentResult.ApplicationBaseUri + "/Reset_BeforeResponse_Zero_Resets_Complete");
+                    Assert.True(response.IsSuccessStatusCode);
+
+                    h2Connection.Logger.LogInformation("Connection stopped.");
+                })
+                .Build().RunAsync();
+        }
+
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Reset support was added in Win10_20H2.")]
         public async Task Reset_AfterResponseHeaders_Resets()
         {
             var deploymentParameters = GetHttpsDeploymentParameters();
