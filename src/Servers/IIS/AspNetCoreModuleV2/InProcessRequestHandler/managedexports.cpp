@@ -601,4 +601,13 @@ http_reset_stream(
     pHttpResponse->ResetStream(errorCode);
 }
 
+HRESULT
+http_response_set_need_goaway(
+    _In_ IN_PROCESS_HANDLER* pInProcessHandler
+    )
+{
+    IHttpResponse4* pHttpResponse = (IHttpResponse4*)pInProcessHandler->QueryHttpContext()->GetResponse();
+    pHttpResponse->SetNeedGoAway();
+    return 0;
+}
 // End of export
