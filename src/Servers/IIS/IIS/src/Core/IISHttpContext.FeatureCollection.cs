@@ -409,19 +409,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         void IHttpResetFeature.Reset(int errorCode)
         {
             SetResetCode(errorCode);
-            Abort(new Exception());
+            AbortIO(clientDisconnect: false);
         }
 
         internal unsafe void SetResetCode(int errorCode)
         {
-            try
-            {
-                NativeMethods.HttpResetStream(_pInProcessHandler, (ulong)errorCode);
-            }
-            catch (ObjectDisposedException)
-            {
-                // RequestQueueHandle may have been closed
-            }
+            NativeMethods.HttpResetStream(_pInProcessHandler, (ulong)errorCode);
         }
 
         void IHttpResponseBodyFeature.DisableBuffering()

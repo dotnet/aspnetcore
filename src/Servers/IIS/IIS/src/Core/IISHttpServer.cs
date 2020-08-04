@@ -202,9 +202,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 server = (IISHttpServer)GCHandle.FromIntPtr(serverContext).Target;
 
-                server._nativeApplication.StopCallsIntoManaged();
-                server._shutdownSignal.TrySetResult(null);
-                server._cancellationTokenRegistration.Dispose();
+                server?._nativeApplication.StopCallsIntoManaged();
+                server?._shutdownSignal.TrySetResult(null);
+                server?._cancellationTokenRegistration.Dispose();
             }
             catch (Exception ex)
             {
