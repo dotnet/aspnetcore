@@ -30,9 +30,9 @@
     <Compile Include="$(SharedSourceRoot)RazorShared\JsonReaderExtensions.cs">
       <Link>Shared\JsonReaderExtensions.cs</Link>
     </Compile>
-    <None Include="$(SharedSourceRoot)RazorShared\taghelpers.json">
+    <EmbeddedResource Include="$(SharedSourceRoot)RazorShared\taghelpers.json">
       <Link>TestFiles\taghelpers.json</Link>
-    </None>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
