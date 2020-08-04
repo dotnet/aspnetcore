@@ -20,10 +20,11 @@ namespace Microsoft.DotNet.Watcher.Tools
         private readonly byte[] ReloadMessage = Encoding.UTF8.GetBytes("Reload");
         private readonly byte[] WaitMessage = Encoding.UTF8.GetBytes("Wait");
         private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: (?<url>.*)$", RegexOptions.None | RegexOptions.Compiled, TimeSpan.FromSeconds(10));
-
         private readonly bool _runningInTest;
         private readonly bool _suppressLaunchBrowser;
+        private readonly bool _suppressBrowserRefresh;
         private readonly string _browserPath;
+
         private bool _canLaunchBrowser;
         private Process _browserProcess;
         private bool _browserLaunched;
@@ -36,6 +37,10 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             var suppressLaunchBrowser = Environment.GetEnvironmentVariable("DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER");
             _suppressLaunchBrowser = (suppressLaunchBrowser == "1" || suppressLaunchBrowser == "true");
+
+            var suppressBrowserRefresh = Environment.GetEnvironmentVariable("DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH");
+            _suppressBrowserRefresh = (suppressBrowserRefresh == "1" || suppressBrowserRefresh == "true");
+
             _runningInTest = Environment.GetEnvironmentVariable("__DOTNET_WATCH_RUNNING_AS_TEST") == "true";
             _browserPath = Environment.GetEnvironmentVariable("DOTNET_WATCH_BROWSER_PATH");
         }
@@ -57,14 +62,20 @@ namespace Microsoft.DotNet.Watcher.Tools
                     _canLaunchBrowser = true;
                     _launchPath = launchPath;
                     _cancellationToken = cancellationToken;
-
-                    _refreshServer = new BrowserRefreshServer(context.Reporter);
-                    var serverUrl = await _refreshServer.StartAsync(cancellationToken);
-
-                    context.Reporter.Verbose($"Refresh server running at {serverUrl}.");
-                    context.ProcessSpec.EnvironmentVariables["DOTNET_WATCH_REFRESH_URL"] = serverUrl;
-
                     context.ProcessSpec.OnOutput += OnOutput;
+
+                    if (!_suppressBrowserRefresh)
+                    {
+                        _refreshServer = new BrowserRefreshServer(context.Reporter);
+                        var serverUrl = await _refreshServer.StartAsync(cancellationToken);
+
+                        context.Reporter.Verbose($"Refresh server running at {serverUrl}.");
+                        context.ProcessSpec.EnvironmentVariables["ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT"] = serverUrl;
+
+                        var pathToMiddleware = Path.Combine(AppContext.BaseDirectory, "middleware", "Microsoft.AspNetCore.Watch.BrowserRefresh.dll");
+                        context.ProcessSpec.EnvironmentVariables["DOTNET_STARTUP_HOOKS"] = pathToMiddleware;
+                        context.ProcessSpec.EnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Microsoft.AspNetCore.Watch.BrowserRefresh";
+                    }
                 }
             }
 
@@ -73,9 +84,19 @@ namespace Microsoft.DotNet.Watcher.Tools
                 if (context.Iteration > 0)
                 {
                     // We've detected a change. Notify the browser.
-                    await _refreshServer.SendMessage(WaitMessage, cancellationToken);
+                    await SendMessage(WaitMessage, cancellationToken);
                 }
             }
+        }
+
+        private Task SendMessage(byte[] message, CancellationToken cancellationToken)
+        {
+            if (_refreshServer is null)
+            {
+                return Task.CompletedTask;
+            }
+
+            return _refreshServer.SendMessage(message, cancellationToken);
         }
 
         private void OnOutput(object sender, DataReceivedEventArgs eventArgs)
@@ -114,7 +135,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 else
                 {
                     _reporter.Verbose("Reloading browser.");
-                    _ = _refreshServer.SendMessage(ReloadMessage, _cancellationToken);
+                    _ = SendMessage(ReloadMessage, _cancellationToken);
                 }
             }
         }
