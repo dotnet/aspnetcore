@@ -179,6 +179,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         /// </summary>
         public Action<DeploymentParameters> UserAdditionalCleanup { get; set; }
 
+        /// <summary>
+        /// Timeout for publish
+        /// </summary>
+        public TimeSpan? PublishTimeout { get; set; }
+
         public override string ToString()
         {
             return string.Format(
