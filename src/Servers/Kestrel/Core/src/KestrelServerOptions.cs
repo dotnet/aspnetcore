@@ -14,7 +14,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
@@ -240,7 +242,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <returns>A <see cref="KestrelConfigurationLoader"/> for further endpoint configuration.</returns>
         public KestrelConfigurationLoader Configure(IConfiguration config, bool reloadOnChange)
         {
-            var loader = new KestrelConfigurationLoader(this, config, reloadOnChange);
+            if (ApplicationServices is null)
+            {
+                throw new InvalidOperationException($"{nameof(ApplicationServices)} must not be null. This is normally set automatically via {nameof(IConfigureOptions<KestrelServerOptions>)}.");
+            }
+
+            var logger = ApplicationServices!.GetRequiredService<ILogger<KestrelServer>>();
+            var hostEnvironment = ApplicationServices!.GetRequiredService<IHostEnvironment>();
+
+            var loader = new KestrelConfigurationLoader(this, config, hostEnvironment, reloadOnChange, logger);
             ConfigurationLoader = loader;
             return loader;
         }

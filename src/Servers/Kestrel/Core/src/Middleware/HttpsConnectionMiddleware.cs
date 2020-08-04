@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
         private readonly ConnectionDelegate _next;
         private readonly TimeSpan _handshakeTimeout;
-        private readonly ILogger _logger;
+        private readonly ILogger<HttpsConnectionMiddleware> _logger;
         private readonly Func<Stream, SslStream> _sslStreamFactory;
 
         // The following fields are only set by HttpsConnectionAdapterOptions ctor.
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             return new X509Certificate2(certificate);
         }
 
-        internal static HttpProtocols ValidateAndNormalizeHttpProtocols(HttpProtocols httpProtocols, ILogger logger)
+        internal static HttpProtocols ValidateAndNormalizeHttpProtocols(HttpProtocols httpProtocols, ILogger<HttpsConnectionMiddleware> logger)
         {
             // This configuration will always fail per-request, preemptively fail it here. See HttpConnection.SelectProtocol().
             if (httpProtocols == HttpProtocols.Http2)
@@ -427,12 +427,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 eventId: new EventId(4, "Http2DefaultCiphersInsufficient"),
                 formatString: CoreStrings.Http2DefaultCiphersInsufficient);
 
-        public static void AuthenticationFailed(this ILogger logger, Exception exception) => _authenticationFailed(logger, exception);
+        public static void AuthenticationFailed(this ILogger<HttpsConnectionMiddleware> logger, Exception exception) => _authenticationFailed(logger, exception);
 
-        public static void AuthenticationTimedOut(this ILogger logger) => _authenticationTimedOut(logger, null);
+        public static void AuthenticationTimedOut(this ILogger<HttpsConnectionMiddleware> logger) => _authenticationTimedOut(logger, null);
 
-        public static void HttpsConnectionEstablished(this ILogger logger, string connectionId, SslProtocols sslProtocol) => _httpsConnectionEstablished(logger, connectionId, sslProtocol, null);
+        public static void HttpsConnectionEstablished(this ILogger<HttpsConnectionMiddleware> logger, string connectionId, SslProtocols sslProtocol) => _httpsConnectionEstablished(logger, connectionId, sslProtocol, null);
 
-        public static void Http2DefaultCiphersInsufficient(this ILogger logger) => _http2DefaultCiphersInsufficient(logger, null);
+        public static void Http2DefaultCiphersInsufficient(this ILogger<HttpsConnectionMiddleware> logger) => _http2DefaultCiphersInsufficient(logger, null);
     }
 }

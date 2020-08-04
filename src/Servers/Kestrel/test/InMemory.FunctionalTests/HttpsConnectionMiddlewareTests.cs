@@ -12,6 +12,7 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using Castle.Core.Logging;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -24,6 +25,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
@@ -69,9 +71,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var env = new Mock<IHostEnvironment>();
             env.SetupGet(e => e.ContentRootPath).Returns(Directory.GetCurrentDirectory());
 
-            options.ApplicationServices = new ServiceCollection().AddSingleton(env.Object).AddLogging().BuildServiceProvider();
-            var loader = new KestrelConfigurationLoader(options, configuration, reloadOnChange: false);
+            var serviceProvider =  new ServiceCollection().AddLogging().BuildServiceProvider();
+            options.ApplicationServices = serviceProvider;
+
+            var logger = serviceProvider.GetRequiredService<ILogger<KestrelServer>>();
+            var loader = new KestrelConfigurationLoader(options, configuration, env.Object, reloadOnChange: false, logger);
             loader.Load();
+
             void ConfigureListenOptions(ListenOptions listenOptions)
             {
                 listenOptions.KestrelServerOptions = options;

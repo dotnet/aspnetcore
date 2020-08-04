@@ -9,6 +9,7 @@ using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.Logging;
@@ -30,11 +31,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private readonly SniOptions _wildcardHostOptions = null;
 
         public SniOptionsSelector(
-            KestrelConfigurationLoader configLoader,
+            ICertificateConfigLoader certifcateConfigLoader,
             EndpointConfig endpointConfig,
             HttpsConnectionAdapterOptions fallbackOptions,
             HttpProtocols fallbackHttpProtocols,
-            ILogger logger)
+            ILogger<HttpsConnectionMiddleware> logger)
         {
             _endpointName = endpointConfig.Name;
 
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 var sslOptions = new SslServerAuthenticationOptions
                 {
-                    ServerCertificate = configLoader.LoadCertificate(sniConfig.Certificate, $"{endpointConfig.Name}:Sni:{name}"),
+                    ServerCertificate = certifcateConfigLoader.LoadCertificate(sniConfig.Certificate, $"{endpointConfig.Name}:Sni:{name}"),
                     EnabledSslProtocols = sniConfig.SslProtocols ?? fallbackOptions.SslProtocols,
                     CertificateRevocationCheckMode = fallbackOptions.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
                 };

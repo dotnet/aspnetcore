@@ -58,19 +58,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             new EventId(7, "MissingOrInvalidCertificateKeyFile"),
             "The certificate key file at '{CertificateKeyFilePath}' can not be found, contains malformed data or does not contain a PEM encoded key in PKCS8 format.");
 
-        public static void LocatedDevelopmentCertificate(this ILogger logger, X509Certificate2 certificate) => _locatedDevelopmentCertificate(logger, certificate.Subject, certificate.Thumbprint, null);
+        public static void LocatedDevelopmentCertificate(this ILogger<KestrelServer> logger, X509Certificate2 certificate) => _locatedDevelopmentCertificate(logger, certificate.Subject, certificate.Thumbprint, null);
 
-        public static void UnableToLocateDevelopmentCertificate(this ILogger logger) => _unableToLocateDevelopmentCertificate(logger, null);
+        public static void UnableToLocateDevelopmentCertificate(this ILogger<KestrelServer> logger) => _unableToLocateDevelopmentCertificate(logger, null);
 
-        public static void FailedToLocateDevelopmentCertificateFile(this ILogger logger, string certificatePath) => _failedToLocateDevelopmentCertificateFile(logger, certificatePath, null);
+        public static void FailedToLocateDevelopmentCertificateFile(this ILogger<KestrelServer> logger, string certificatePath) => _failedToLocateDevelopmentCertificateFile(logger, certificatePath, null);
 
-        public static void FailedToLoadDevelopmentCertificate(this ILogger logger, string certificatePath) => _failedToLoadDevelopmentCertificate(logger, certificatePath, null);
+        public static void FailedToLoadDevelopmentCertificate(this ILogger<KestrelServer> logger, string certificatePath) => _failedToLoadDevelopmentCertificate(logger, certificatePath, null);
 
-        public static void BadDeveloperCertificateState(this ILogger logger) => _badDeveloperCertificateState(logger, null);
+        public static void BadDeveloperCertificateState(this ILogger<KestrelServer> logger) => _badDeveloperCertificateState(logger, null);
 
-        public static void DeveloperCertificateFirstRun(this ILogger logger, string message) => _developerCertificateFirstRun(logger, message, null);
+        public static void DeveloperCertificateFirstRun(this ILogger<KestrelServer> logger, string message) => _developerCertificateFirstRun(logger, message, null);
 
-        public static void FailedToLoadCertificate(this ILogger logger, string certificatePath) => _failedToLoadCertificate(logger, certificatePath, null);
-        public static void FailedToLoadCertificateKey(this ILogger logger, string certificateKeyPath) => _failedToLoadCertificateKey(logger, certificateKeyPath, null);
+        public static void FailedToLoadCertificate(this ILogger<KestrelServer> logger, string certificatePath) => _failedToLoadCertificate(logger, certificatePath, null);
+
+        public static void FailedToLoadCertificateKey(this ILogger<KestrelServer> logger, string certificateKeyPath) => _failedToLoadCertificateKey(logger, certificateKeyPath, null);
     }
 }
