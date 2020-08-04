@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,7 +12,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Serialization;
 using Microsoft.Extensions.CommandLineUtils;
-using Microsoft.VisualStudio.LanguageServices.Razor.Serialization;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Razor.Tools
@@ -201,6 +200,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 if (GenerateDeclaration.HasValue())
                 {
                     b.Features.Add(new SetSuppressPrimaryMethodBodyOptionFeature());
+                    b.Features.Add(new SuppressChecksumOptionsFeature());
                 }
 
                 if (RootNamespace.HasValue())
@@ -227,6 +227,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             });
 
             var results = GenerateCode(engine, sourceItems);
+            var isGeneratingDeclaration = GenerateDeclaration.HasValue();
 
             foreach (var result in results)
             {
@@ -255,6 +256,18 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 {
                     // Only output the file if we generated it without errors.
                     var outputFilePath = result.InputItem.OutputPath;
+                    var generatedCode = result.CSharpDocument.GeneratedCode;
+                    if (isGeneratingDeclaration)
+                    {
+                        // When emiting declarations, only write if it the contents are different.
+                        // This allows build incrementalism to kick in when the declaration remains unchanged between builds.
+                        if (File.Exists(outputFilePath) &&
+                            string.Equals(File.ReadAllText(outputFilePath), generatedCode, StringComparison.Ordinal))
+                        {
+                            continue;
+                        }
+                    }
+
                     File.WriteAllText(outputFilePath, result.CSharpDocument.GeneratedCode);
                 }
             }

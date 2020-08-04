@@ -4,10 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
 
@@ -35,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             // Arrange
             var model = new TestModel();
             var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>> { EditContext = new EditContext(model), ValueExpression = () => model.StringProperty };
-            await RenderAndGetTestInputComponentAsync(rootComponent);
+            await InputRenderer.RenderAndGetComponent(rootComponent);
 
             // Act/Assert
             rootComponent.EditContext = new EditContext(model);
@@ -51,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>> { EditContext = new EditContext(model) };
 
             // Act/Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => RenderAndGetTestInputComponentAsync(rootComponent));
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => InputRenderer.RenderAndGetComponent(rootComponent));
             Assert.Contains($"{typeof(TestInputComponent<string>)} requires a value for the 'ValueExpression' parameter. Normally this is provided automatically when using 'bind-Value'.", ex.Message);
         }
 
@@ -68,7 +65,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             };
 
             // Act
-            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
             // Assert
             Assert.Equal("some value", inputComponent.CurrentValue);
@@ -87,7 +84,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             };
 
             // Act
-            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
             // Assert
             Assert.Same(rootComponent.EditContext, inputComponent.EditContext);
@@ -106,7 +103,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             };
 
             // Act
-            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
             // Assert
             Assert.Equal(FieldIdentifier.Create(() => model.StringProperty), inputComponent.FieldIdentifier);
@@ -123,7 +120,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 Value = "initial value",
                 ValueExpression = () => model.StringProperty
             };
-            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
             Assert.Equal("initial value", inputComponent.CurrentValue);
 
             // Act
@@ -146,7 +143,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 ValueChanged = val => valueChangedCallLog.Add(val),
                 ValueExpression = () => model.StringProperty
             };
-            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
             Assert.Empty(valueChangedCallLog);
 
             // Act
@@ -169,7 +166,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 ValueChanged = val => valueChangedCallLog.Add(val),
                 ValueExpression = () => model.StringProperty
             };
-            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
             Assert.Empty(valueChangedCallLog);
 
             // Act
@@ -190,7 +187,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 Value = "initial value",
                 ValueExpression = () => model.StringProperty
             };
-            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
             Assert.False(rootComponent.EditContext.IsModified(() => model.StringProperty));
 
             // Act
@@ -213,7 +210,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
 
             // Act/Assert: Initially, it's valid and unmodified
-            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
             Assert.Equal("valid", inputComponent.CssClass); //  no Class was specified
 
             // Act/Assert: Modify the field
@@ -251,7 +248,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
 
             // Act/Assert
-            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
             Assert.Equal("my-class other-class valid", inputComponent.CssClass);
 
             // Act/Assert: Retains custom class when changing field class
@@ -270,7 +267,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 Value = new DateTime(1915, 3, 2),
                 ValueExpression = () => model.DateProperty
             };
-            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
             // Act/Assert
             Assert.Equal("1915/03/02", inputComponent.CurrentValueAsString);
@@ -289,7 +286,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 ValueExpression = () => model.DateProperty
             };
             var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
-            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
             var numValidationStateChanges = 0;
             rootComponent.EditContext.OnValidationStateChanged += (sender, eventArgs) => { numValidationStateChanges++; };
 
@@ -319,7 +316,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 ValueExpression = () => model.DateProperty
             };
             var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
-            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
             var numValidationStateChanges = 0;
             rootComponent.EditContext.OnValidationStateChanged += (sender, eventArgs) => { numValidationStateChanges++; };
 
@@ -470,21 +467,6 @@ namespace Microsoft.AspNetCore.Components.Forms
             Assert.Equal("userSpecifiedValue", component.AdditionalAttributes["aria-invalid"]);
         }
 
-        private static TComponent FindComponent<TComponent>(CapturedBatch batch)
-            => batch.ReferenceFrames
-                    .Where(f => f.FrameType == RenderTreeFrameType.Component)
-                    .Select(f => f.Component)
-                    .OfType<TComponent>()
-                    .Single();
-
-        private static async Task<TComponent> RenderAndGetTestInputComponentAsync<TValue, TComponent>(TestInputHostComponent<TValue, TComponent> hostComponent) where TComponent : TestInputComponent<TValue>
-        {
-            var testRenderer = new TestRenderer();
-            var componentId = testRenderer.AssignRootComponentId(hostComponent);
-            await testRenderer.RenderRootComponentAsync(componentId);
-            return FindComponent<TComponent>(testRenderer.Batches.Single());
-        }
-
         class TestModel
         {
             public string StringProperty { get; set; }
@@ -530,7 +512,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
-        class TestDateInputComponent : TestInputComponent<DateTime>
+        private class TestDateInputComponent : TestInputComponent<DateTime>
         {
             protected override string FormatValueAsString(DateTime value)
                 => value.ToString("yyyy/MM/dd");
@@ -547,36 +529,6 @@ namespace Microsoft.AspNetCore.Components.Forms
                     validationErrorMessage = "Bad date value";
                     return false;
                 }
-            }
-        }
-
-        class TestInputHostComponent<TValue, TComponent> : AutoRenderComponent where TComponent : TestInputComponent<TValue>
-        {
-            public Dictionary<string, object> AdditionalAttributes { get; set; }
-
-            public EditContext EditContext { get; set; }
-
-            public TValue Value { get; set; }
-
-            public Action<TValue> ValueChanged { get; set; }
-
-            public Expression<Func<TValue>> ValueExpression { get; set; }
-
-            protected override void BuildRenderTree(RenderTreeBuilder builder)
-            {
-                builder.OpenComponent<CascadingValue<EditContext>>(0);
-                builder.AddAttribute(1, "Value", EditContext);
-                builder.AddAttribute(2, "ChildContent", new RenderFragment(childBuilder =>
-                {
-                    childBuilder.OpenComponent<TComponent>(0);
-                    childBuilder.AddAttribute(0, "Value", Value);
-                    childBuilder.AddAttribute(1, "ValueChanged",
-                        EventCallback.Factory.Create(this, ValueChanged));
-                    childBuilder.AddAttribute(2, "ValueExpression", ValueExpression);
-                    childBuilder.AddMultipleAttributes(3, AdditionalAttributes);
-                    childBuilder.CloseComponent();
-                }));
-                builder.CloseComponent();
             }
         }
     }

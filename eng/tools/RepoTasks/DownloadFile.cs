@@ -100,7 +100,7 @@ namespace RepoTasks
 
             Log.LogMessage(MessageImportance.High, $"Attempting download '{source}' to '{target}'");
 
-            using (var httpClient = new HttpClient())
+            using (var httpClient = new HttpClient { Timeout = TimeSpan.FromMinutes(5) })
             {
                 for (int retryNumber = 0; retryNumber < MaxRetries; retryNumber++)
                 {

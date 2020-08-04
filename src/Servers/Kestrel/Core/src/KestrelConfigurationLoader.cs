@@ -280,6 +280,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 if (https)
                 {
                     httpsOptions.SslProtocols = ConfigurationReader.EndpointDefaults.SslProtocols ?? SslProtocols.None;
+                    httpsOptions.ClientCertificateMode = ConfigurationReader.EndpointDefaults.ClientCertificateMode ?? ClientCertificateMode.NoCertificate;
 
                     // Defaults
                     Options.ApplyHttpsDefaults(httpsOptions);
@@ -287,6 +288,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     if (endpoint.SslProtocols.HasValue)
                     {
                         httpsOptions.SslProtocols = endpoint.SslProtocols.Value;
+                    }
+
+                    if (endpoint.ClientCertificateMode.HasValue)
+                    {
+                        httpsOptions.ClientCertificateMode = endpoint.ClientCertificateMode.Value;
                     }
 
                     // Specified

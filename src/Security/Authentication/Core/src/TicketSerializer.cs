@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
-        public virtual AuthenticationTicket Deserialize(byte[] data)
+        public virtual AuthenticationTicket? Deserialize(byte[] data)
         {
             using (var memory = new MemoryStream(data))
             {
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
-        public virtual AuthenticationTicket Read(BinaryReader reader)
+        public virtual AuthenticationTicket? Read(BinaryReader reader)
         {
             if (reader == null)
             {

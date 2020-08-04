@@ -26,8 +26,13 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <see cref="IResponseCookiesFeature"/> and the <see cref="IHttpResponseFeature"/>.
         /// </param>
         public ResponseCookiesFeature(IFeatureCollection features)
-            : this(features, builderPool: null)
         {
+            if (features == null)
+            {
+                throw new ArgumentNullException(nameof(features));
+            }
+
+            _features.Initalize(features);
         }
 
         /// <summary>
@@ -38,6 +43,7 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <see cref="IResponseCookiesFeature"/> and the <see cref="IHttpResponseFeature"/>.
         /// </param>
         /// <param name="builderPool">The <see cref="ObjectPool{T}"/>, if available.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
         public ResponseCookiesFeature(IFeatureCollection features, ObjectPool<StringBuilder>? builderPool)
         {
             if (features == null)

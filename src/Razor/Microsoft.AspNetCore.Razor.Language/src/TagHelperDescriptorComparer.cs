@@ -120,6 +120,48 @@ namespace Microsoft.AspNetCore.Razor.Language
             hash.Add(descriptor.Kind, StringComparer.Ordinal);
             hash.Add(descriptor.AssemblyName, StringComparer.Ordinal);
             hash.Add(descriptor.Name, StringComparer.Ordinal);
+            hash.Add(descriptor.DisplayName, StringComparer.Ordinal);
+            hash.Add(descriptor.CaseSensitive ? 1 : 0);
+
+            if (descriptor.BoundAttributes != null)
+            {
+                for (var i = 0; i < descriptor.BoundAttributes.Count; i++)
+                {
+                    hash.Add(descriptor.BoundAttributes[i]);
+                }
+            }
+
+            if (descriptor.TagMatchingRules != null)
+            {
+                for (var i = 0; i < descriptor.TagMatchingRules.Count; i++)
+                {
+                    hash.Add(descriptor.TagMatchingRules[i]);
+                }
+            }
+
+            if (descriptor.AllowedChildTags != null)
+            {
+                for (var i = 0; i < descriptor.AllowedChildTags.Count; i++)
+                {
+                    hash.Add(descriptor.AllowedChildTags[i]);
+                }
+            }
+
+            if (descriptor.Diagnostics != null)
+            {
+                for (var i = 0; i < descriptor.Diagnostics.Count; i++)
+                {
+                    hash.Add(descriptor.Diagnostics[i]);
+                }
+            }
+
+            if (descriptor.Metadata != null)
+            {
+                foreach (var kvp in descriptor.Metadata)
+                {
+                    hash.Add(kvp.Value, StringComparer.Ordinal);
+                }
+            }
 
             return hash.CombinedHash;
         }

@@ -853,13 +853,13 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             [Event(50, Level = EventLevel.Verbose)]
             public void WindowsRemoveCertificateFromRootStoreNotFound() => WriteEvent(50, "The certificate was not trusted.");
 
-            [Event(50, Level = EventLevel.Verbose)]
+            [Event(51, Level = EventLevel.Verbose)]
             public void CorrectCertificateStateStart(string certificate) => WriteEvent(51, $"Correcting the the certificate state for '{certificate}'");
 
-            [Event(51, Level = EventLevel.Verbose)]
+            [Event(52, Level = EventLevel.Verbose)]
             public void CorrectCertificateStateEnd() => WriteEvent(52, "Finished correcting the certificate state");
 
-            [Event(52, Level = EventLevel.Error)]
+            [Event(53, Level = EventLevel.Error)]
             public void CorrectCertificateStateError(string error) => WriteEvent(53, $"An error has ocurred while correcting the certificate state: {error}.");
 
             [Event(54, Level = EventLevel.Verbose)]

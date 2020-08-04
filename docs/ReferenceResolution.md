@@ -100,16 +100,64 @@ is changing to `Microsoft.AspNetCore.BetterThanOrange`, you would need to make t
   </ItemGroup>
 ```
 
-## Updating dependencies manually
+## A darc cheatsheet
 
-If the `dotnet-maestro` bot has not correctly updated the dependencies, it may be worthwhile running `darc` manually:
+`darc` is a command-line tool that is used for dependency management in the dotnet ecosystem of repos. `darc` can be installed using the `darc-init` scripts located inside the `eng/common` directory. Once `darc` is installed, you'll need to set up the appropriate access tokens as outlined [in the official Darc docs](https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md#setting-up-your-darc-client).
 
-1. Install `darc` as described in <https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md#setting-up-your-darc-client>
-2. Run `darc update-dependencies --channel '.NET Core 3.1 Release'`
-   * Use `'trigger-subscriptions'` to prod the bot to create a PR if you do not want to make local changes
-   * Use `'.NET 3 Eng''` to update dependencies from dotnet/arcade
-   * Use `'.NET Eng - Latest'` to update dependencies from dotnet/arcade in the `master` branch
-   * Use `'VS Master'` to update dependencies from dotnet/roslyn in the `master` branch
-   * Use `'.NET 5 Dev'` to update dependencies from dotnet/efcore or dotnet/runtime in the `master` branch
-3. `git diff` to confirm the tool's changes
-4. Proceed with usual commit and PR
+Once `darc` is installed and set-up, it can be used to modify the subscriptions and dependencies in a project.
+
+**Getting the list of subscriptions in a repo**
+
+Subscriptions are objects that define the ecosystem repos we are listening for updates to, the frequency we are looking for updates, and more.
+
+```bash
+darc get-subscriptions --target-branch master --target-repo aspnetcore$ --regex
+```
+
+**Disable/enable a subscription**
+
+```bash
+darc subscription-status --id {subscriptionIdHere} --enable
+darc subscription-status --id {subscriptionIdHere} --disable
+```
+
+**Trigger a subscription**
+
+Triggering a subscription will search for updates in its dependencies and open a PR in the target repo via the dotnet-maestro bot with these changes.
+
+```bash
+darc trigger-subscriptions --id {subscriptionIdHere}
+```
+
+**Manually update dependencies**
+
+If the `dotnet-maestro` bot has not correctly updated the dependencies, `darc update-dependencies` may be used to update the dependencies manually. Note, you'll need to run the commands below in a separate branch and submit a PR with the changes. These are the things that the bot should do for you if you use `trigger-subscriptions` or automatically (when the subscription fires e.g. about 15 minutes after a dependency's build completes if `Update Frequency: EveryBuild`).
+
+```bash
+darc update-dependencies --channel '.NET Core 3.1 Release'
+darc update-dependencies --channel '.NET 5 Dev' --source-repo efcore
+```
+
+Generally, using `trigger-subscriptions` is preferred for creating dependency updates instead of manually updating dependencies in your own PR.
+
+**Toggling batchability of subscription**
+
+Subscriptions can be batched. When a dependency update is detected, `darc` will bundle the commits for that update with existing dependency PRs. To toggle whether a subscription is batched or not, you will need to use the `update-subscription` command.
+
+```bash
+darc update-subscription --id {subscriptionIdHere}
+```
+
+Your shell's default editor will open and allow you to edit the metadata of the subscription.
+
+To disable batching, set `Batchable` to `False` and update the `Merge Policies` section with the following YAML.
+
+```
+  - Name: Standard
+    Properties: {}
+```
+
+To enable batching, set `Batchable` to `True` and remove any `Merge Policies` set on the subscription.
+
+Note: Merge policies can only be set on unbatched subscriptions. Be sure to set/unset the `Merge Policies` field properly as you toggle batchability.
+

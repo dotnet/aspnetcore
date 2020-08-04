@@ -19,10 +19,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Features;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -3338,6 +3336,52 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     await client.SendInvocationAsync(nameof(MethodHub.ProtocolError)).OrTimeout();
                     await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task SerializationExceptionsSendSelfArePassedToOnDisconnectedAsync()
+        {
+            using (StartVerifiableLog(write => write.EventId.Name == "FailedWritingMessage"))
+            {
+                var state = new ConnectionLifetimeState();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(s => s.AddSingleton(state), LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ConnectionLifetimeHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    // Test HubConnectionContext.WriteCore(HubMessage) codepath
+                    await client.SendInvocationAsync(nameof(ConnectionLifetimeHub.ProtocolErrorSelf)).OrTimeout();
+
+                    await connectionHandlerTask.OrTimeout();
+
+                    Assert.IsType<System.Text.Json.JsonException>(state.DisconnectedException);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task SerializationExceptionsSendAllArePassedToOnDisconnectedAsync()
+        {
+            using (StartVerifiableLog(write => write.EventId.Name == "FailedWritingMessage"))
+            {
+                var state = new ConnectionLifetimeState();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(s => s.AddSingleton(state), LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ConnectionLifetimeHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    // Test HubConnectionContext.WriteCore(SerializedHubMessage) codepath
+                    await client.SendInvocationAsync(nameof(ConnectionLifetimeHub.ProtocolErrorAll)).OrTimeout();
+
+                    await connectionHandlerTask.OrTimeout();
+
+                    Assert.IsType<System.Text.Json.JsonException>(state.DisconnectedException);
                 }
             }
         }

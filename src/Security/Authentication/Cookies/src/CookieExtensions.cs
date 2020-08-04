@@ -17,13 +17,13 @@ namespace Microsoft.Extensions.DependencyInjection
         public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, string authenticationScheme)
             => builder.AddCookie(authenticationScheme, configureOptions: null);
 
-        public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, Action<CookieAuthenticationOptions> configureOptions) 
+        public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, Action<CookieAuthenticationOptions>? configureOptions) 
             => builder.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, configureOptions);
 
-        public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, string authenticationScheme, Action<CookieAuthenticationOptions> configureOptions)
+        public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, string authenticationScheme, Action<CookieAuthenticationOptions>? configureOptions)
             => builder.AddCookie(authenticationScheme, displayName: null, configureOptions: configureOptions);
 
-        public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<CookieAuthenticationOptions> configureOptions)
+        public static AuthenticationBuilder AddCookie(this AuthenticationBuilder builder, string authenticationScheme, string? displayName, Action<CookieAuthenticationOptions>? configureOptions)
         {
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<CookieAuthenticationOptions>, PostConfigureCookieAuthenticationOptions>());
             builder.Services.AddOptions<CookieAuthenticationOptions>(authenticationScheme).Validate(o => o.Cookie.Expiration == null, "Cookie.Expiration is ignored, use ExpireTimeSpan instead.");

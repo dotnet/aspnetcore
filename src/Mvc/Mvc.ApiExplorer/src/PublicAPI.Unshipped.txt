@@ -1,0 +1,98 @@
+#nullable enable
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.ActionDescriptor.get -> Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.ActionDescriptor.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.ApiDescription() -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.GroupName.get -> string? (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.GroupName.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.HttpMethod.get -> string? (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.HttpMethod.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.ParameterDescriptions.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription!>! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.RelativePath.get -> string! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.RelativePath.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.SupportedRequestFormats.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiRequestFormat!>! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.SupportedResponseTypes.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType!>! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionExtensions
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroup
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroupCollection
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroupCollection.Version.get -> int
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroupCollectionProvider
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionProviderContext (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionProviderContext.Actions.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor!>! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionProviderContext.ApiDescriptionProviderContext(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor!>! actions) -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionProviderContext.Results.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription!>! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.ApiParameterDescription() -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.BindingInfo.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo? (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.BindingInfo.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.DefaultValue.get -> object? (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.DefaultValue.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.IsRequired.get -> bool (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.IsRequired.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.ModelMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.ModelMetadata.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.Name.get -> string! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.Name.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.ParameterDescriptor.get -> Microsoft.AspNetCore.Mvc.Abstractions.ParameterDescriptor! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.ParameterDescriptor.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.RouteInfo.get -> Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterRouteInfo? (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.RouteInfo.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.Source.get -> Microsoft.AspNetCore.Mvc.ModelBinding.BindingSource! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.Source.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.Type.get -> System.Type! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription.Type.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterRouteInfo (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterRouteInfo.ApiParameterRouteInfo() -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterRouteInfo.Constraints.get -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Routing.IRouteConstraint!>? (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterRouteInfo.Constraints.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterRouteInfo.DefaultValue.get -> object? (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterRouteInfo.DefaultValue.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterRouteInfo.IsOptional.get -> bool (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterRouteInfo.IsOptional.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiRequestFormat (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiRequestFormat.ApiRequestFormat() -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiRequestFormat.Formatter.get -> Microsoft.AspNetCore.Mvc.Formatters.IInputFormatter! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiRequestFormat.Formatter.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiRequestFormat.MediaType.get -> string! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiRequestFormat.MediaType.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseFormat (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseFormat.ApiResponseFormat() -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseFormat.Formatter.get -> Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseFormat.Formatter.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseFormat.MediaType.get -> string! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseFormat.MediaType.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.ApiResponseFormats.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseFormat!>! (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.ApiResponseFormats.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.ApiResponseType() -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.IsDefaultResponse.get -> bool (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.IsDefaultResponse.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.ModelMetadata.get -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata? (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.ModelMetadata.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.StatusCode.get -> int (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.StatusCode.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.Type.get -> System.Type? (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.ApiResponseType.Type.set -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.DefaultApiDescriptionProvider
+Microsoft.AspNetCore.Mvc.ApiExplorer.DefaultApiDescriptionProvider.Order.get -> int
+Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionGroupCollectionProvider
+Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionProvider (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionProvider.OnProvidersExecuted(Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionProviderContext! context) -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionProvider.OnProvidersExecuting(Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionProviderContext! context) -> void (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionProvider.Order.get -> int (forwarded, contained in Microsoft.AspNetCore.Mvc.Abstractions)
+Microsoft.Extensions.DependencyInjection.MvcApiExplorerMvcCoreBuilderExtensions
+~Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroup.ApiDescriptionGroup(string groupName, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription> items) -> void
+~Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroup.GroupName.get -> string
+~Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroup.Items.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription>
+~Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroupCollection.ApiDescriptionGroupCollection(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroup> items, int version) -> void
+~Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroupCollection.Items.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroup>
+~Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroupCollectionProvider.ApiDescriptionGroupCollectionProvider(Microsoft.AspNetCore.Mvc.Infrastructure.IActionDescriptorCollectionProvider actionDescriptorCollectionProvider, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionProvider> apiDescriptionProviders) -> void
+~Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroupCollectionProvider.ApiDescriptionGroups.get -> Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroupCollection
+~Microsoft.AspNetCore.Mvc.ApiExplorer.DefaultApiDescriptionProvider.DefaultApiDescriptionProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions> optionsAccessor, Microsoft.AspNetCore.Routing.IInlineConstraintResolver constraintResolver, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider, Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultTypeMapper mapper, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Routing.RouteOptions> routeOptions) -> void
+~Microsoft.AspNetCore.Mvc.ApiExplorer.DefaultApiDescriptionProvider.OnProvidersExecuted(Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionProviderContext context) -> void
+~Microsoft.AspNetCore.Mvc.ApiExplorer.DefaultApiDescriptionProvider.OnProvidersExecuting(Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionProviderContext context) -> void
+~Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionGroupCollectionProvider.ApiDescriptionGroups.get -> Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionGroupCollection
+~static Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionExtensions.GetProperty<T>(this Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription apiDescription) -> T
+~static Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionExtensions.SetProperty<T>(this Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription apiDescription, T value) -> void
+~static Microsoft.Extensions.DependencyInjection.MvcApiExplorerMvcCoreBuilderExtensions.AddApiExplorer(this Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder builder) -> Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder

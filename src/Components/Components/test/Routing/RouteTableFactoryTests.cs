@@ -226,6 +226,23 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             Assert.Single(context.Parameters, p => p.Key == "parameter" && (string)p.Value == expectedValue);
         }
 
+        [Theory]
+        [InlineData("/blog/value1", "value1")]
+        [InlineData("/blog/value1/foo%20bar", "value1/foo bar")]
+        public void CanMatchCatchAllParameterTemplate(string path, string expectedValue)
+        {
+            // Arrange
+            var routeTable = new TestRouteTableBuilder().AddRoute("/blog/{*parameter}").Build();
+            var context = new RouteContext(path);
+
+            // Act
+            routeTable.Route(context);
+
+            // Assert
+            Assert.NotNull(context.Handler);
+            Assert.Single(context.Parameters, p => p.Key == "parameter" && (string)p.Value == expectedValue);
+        }
+
         [Fact]
         public void CanMatchTemplateWithMultipleParameters()
         {
@@ -237,6 +254,29 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             {
                 ["some"] = "an",
                 ["route"] = "path"
+            };
+
+            // Act
+            routeTable.Route(context);
+
+            // Assert
+            Assert.NotNull(context.Handler);
+            Assert.Equal(expectedParameters, context.Parameters);
+        }
+
+
+        [Fact]
+        public void CanMatchTemplateWithMultipleParametersAndCatchAllParameter()
+        {
+            // Arrange
+            var routeTable = new TestRouteTableBuilder().AddRoute("/{some}/awesome/{route}/with/{*catchAll}").Build();
+            var context = new RouteContext("/an/awesome/path/with/some/catch/all/stuff");
+
+            var expectedParameters = new Dictionary<string, object>
+            {
+                ["some"] = "an",
+                ["route"] = "path",
+                ["catchAll"] = "some/catch/all/stuff"
             };
 
             // Act
@@ -476,7 +516,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
 
 
         [Fact]
-        public void PrefersLiteralTemplateOverParmeterizedTemplates()
+        public void PrefersLiteralTemplateOverParameterizedTemplates()
         {
             // Arrange
             var routeTable = new TestRouteTableBuilder()

@@ -6,7 +6,6 @@ import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { EventFieldInfo } from './EventFieldInfo';
 import { dispatchEvent } from './RendererEventDispatcher';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
-import { profileEnd, profileStart } from '../Platform/Profiling';
 const selectValuePropname = '_blazorSelectValue';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -41,8 +40,6 @@ export class BrowserRenderer {
   }
 
   public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {
-    profileStart('updateComponent');
-
     const element = this.childComponentLocations[componentId];
     if (!element) {
       throw new Error(`No element is currently associated with component ${componentId}`);
@@ -70,8 +67,6 @@ export class BrowserRenderer {
     if ((activeElementBefore instanceof HTMLElement) && ownerDocument && ownerDocument.activeElement !== activeElementBefore) {
       activeElementBefore.focus();
     }
-
-    profileEnd('updateComponent');
   }
 
   public disposeComponent(componentId: number) {
@@ -238,7 +233,8 @@ export class BrowserRenderer {
       document.createElementNS('http://www.w3.org/2000/svg', tagName) :
       document.createElement(tagName);
     const newElement = toLogicalElement(newDomElementRaw);
-    insertLogicalChild(newDomElementRaw, parent, childIndex);
+
+    let inserted = false;
 
     // Apply attributes
     const descendantsEndIndexExcl = frameIndex + frameReader.subtreeLength(frame);
@@ -247,6 +243,8 @@ export class BrowserRenderer {
       if (frameReader.frameType(descendantFrame) === FrameType.attribute) {
         this.applyAttribute(batch, componentId, newDomElementRaw, descendantFrame);
       } else {
+        insertLogicalChild(newDomElementRaw, parent, childIndex);
+        inserted = true;        
         // As soon as we see a non-attribute child, all the subsequent child frames are
         // not attributes, so bail out and insert the remnants recursively
         this.insertFrameRange(batch, componentId, newElement, 0, frames, descendantIndex, descendantsEndIndexExcl);
@@ -254,15 +252,38 @@ export class BrowserRenderer {
       }
     }
 
-    // We handle setting 'value' on a <select> in two different ways:
-    // [1] When inserting a corresponding <option>, in case you're dynamically adding options
+    // this element did not have any children, so it's not inserted yet.
+    if (!inserted) {
+        insertLogicalChild(newDomElementRaw, parent, childIndex);
+    }
+
+    // We handle setting 'value' on a <select> in three different ways:
+    // [1] When inserting a corresponding <option>, in case you're dynamically adding options.
+    //     This is the case below.
     // [2] After we finish inserting the <select>, in case the descendant options are being
-    //     added as an opaque markup block rather than individually
-    // Right here we implement [2]
-    if (newDomElementRaw instanceof HTMLSelectElement && selectValuePropname in newDomElementRaw) {
+    //     added as an opaque markup block rather than individually. This is the other case below.
+    // [3] In case the the value of the select and the option value is changed in the same batch.
+    //     We just receive an attribute frame and have to set the select value afterwards.     
+
+    if (newDomElementRaw instanceof HTMLOptionElement)
+    {
+      // Situation 1
+      this.trySetSelectValueFromOptionElement(newDomElementRaw);
+    } else if (newDomElementRaw instanceof HTMLSelectElement && selectValuePropname in newDomElementRaw) {
+      // Situation 2
       const selectValue: string | null = newDomElementRaw[selectValuePropname];
       setSelectElementValue(newDomElementRaw, selectValue);
     }
+  }
+
+  private trySetSelectValueFromOptionElement(optionElement: HTMLOptionElement) {
+    const selectElem = this.findClosestAncestorSelectElement(optionElement);
+    if (selectElem && (selectValuePropname in selectElem) && selectElem[selectValuePropname] === optionElement.value) {
+      setSelectElementValue(selectElem, optionElement.value);
+      delete selectElem[selectValuePropname];
+      return true;
+    }
+    return false;
   }
 
   private insertComponent(batch: RenderBatch, parent: LogicalElement, childIndex: number, frame: RenderTreeFrame) {
@@ -385,13 +406,10 @@ export class BrowserRenderer {
         } else {
           element.removeAttribute('value');
         }
+        
         // See above for why we have this special handling for <select>/<option>
-        // Note that this is only one of the two cases where we set the value on a <select>
-        const selectElem = this.findClosestAncestorSelectElement(element);
-        if (selectElem && (selectValuePropname in selectElem) && selectElem[selectValuePropname] === value) {
-          this.tryApplyValueProperty(batch, selectElem, attributeFrame);
-          delete selectElem[selectValuePropname];
-        }
+        // Situation 3
+        this.trySetSelectValueFromOptionElement(<HTMLOptionElement>element);
         return true;
       }
       default:

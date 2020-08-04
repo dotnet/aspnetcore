@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.TestHost
                 if (request.Version == HttpVersion.Version20)
                 {
                     // https://tools.ietf.org/html/rfc7540
-                    req.Protocol =  HttpProtocol.Http2;
+                    req.Protocol = HttpProtocol.Http2;
                 }
                 else
                 {
@@ -142,12 +142,13 @@ namespace Microsoft.AspNetCore.TestHost
                 }
                 req.QueryString = QueryString.FromUriComponent(request.RequestUri);
 
-                if (requestContent != null)
+                // Reading the ContentLength will add it to the Headers‼
+                // https://github.com/dotnet/runtime/blob/874399ab15e47c2b4b7c6533cc37d27d47cb5242/src/libraries/System.Net.Http/src/System/Net/Http/Headers/HttpContentHeaders.cs#L68-L87
+                _ = requestContent.Headers.ContentLength;
+
+                foreach (var header in requestContent.Headers)
                 {
-                    foreach (var header in requestContent.Headers)
-                    {
-                        req.Headers.Append(header.Key, header.Value.ToArray());
-                    }
+                    req.Headers.Append(header.Key, header.Value.ToArray());
                 }
 
                 req.Body = new AsyncStreamWrapper(reader.AsStream(), () => contextBuilder.AllowSynchronousIO);

@@ -3,6 +3,9 @@
   <PropertyGroup>
     <ContainsFunctionalTestAssets>true</ContainsFunctionalTestAssets>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+
+    <!-- https://github.com/dotnet/aspnetcore/issues/24182 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>

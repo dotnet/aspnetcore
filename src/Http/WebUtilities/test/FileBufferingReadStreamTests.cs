@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Moq;
@@ -157,7 +158,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                 Assert.Equal("Buffer limit exceeded.", exception.Message);
                 Assert.False(stream.InMemory);
                 Assert.NotNull(stream.TempFileName);
-                Assert.False(File.Exists(tempFileName));
             }
 
             Assert.False(File.Exists(tempFileName));
@@ -287,7 +287,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                 Assert.Equal("Buffer limit exceeded.", exception.Message);
                 Assert.False(stream.InMemory);
                 Assert.NotNull(stream.TempFileName);
-                Assert.False(File.Exists(tempFileName));
             }
 
             Assert.False(File.Exists(tempFileName));
@@ -349,6 +348,138 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             Assert.False(File.Exists(tempFileName));
+        }
+
+        [Fact]
+        public async Task CopyToAsyncWorks()
+        {
+            var data = Enumerable.Range(0, 1024).Select(b => (byte)b).Reverse().ToArray();
+            var inner = new MemoryStream(data);
+
+            using var stream = new FileBufferingReadStream(inner, 1024 * 1024, bufferLimit: null, GetCurrentDirectory());
+
+            var withoutBufferMs = new MemoryStream();
+            await stream.CopyToAsync(withoutBufferMs);
+
+            var withBufferMs = new MemoryStream();
+            stream.Position = 0;
+            await stream.CopyToAsync(withBufferMs);
+
+            Assert.Equal(data, withoutBufferMs.ToArray());
+            Assert.Equal(data, withBufferMs.ToArray());
+        }
+
+        [Fact]
+        public async Task CopyToAsyncWorksWithFileThreshold()
+        {
+            var data = Enumerable.Range(0, 1024).Select(b => (byte)b).Reverse().ToArray();
+            var inner = new MemoryStream(data);
+
+            using var stream = new FileBufferingReadStream(inner, 100, bufferLimit: null, GetCurrentDirectory());
+
+            var withoutBufferMs = new MemoryStream();
+            await stream.CopyToAsync(withoutBufferMs);
+
+            var withBufferMs = new MemoryStream();
+            stream.Position = 0;
+            await stream.CopyToAsync(withBufferMs);
+
+            Assert.Equal(data, withoutBufferMs.ToArray());
+            Assert.Equal(data, withBufferMs.ToArray());
+        }
+
+        [Fact]
+        public async Task ReadAsyncThenCopyToAsyncWorks()
+        {
+            var data = Enumerable.Range(0, 1024).Select(b => (byte)b).ToArray();
+            var inner = new MemoryStream(data);
+
+            using var stream = new FileBufferingReadStream(inner, 1024 * 1024, bufferLimit: null, GetCurrentDirectory());
+
+            var withoutBufferMs = new MemoryStream();
+            var buffer = new byte[100];
+            await stream.ReadAsync(buffer);
+            await stream.CopyToAsync(withoutBufferMs);
+
+            Assert.Equal(data.AsMemory(0, 100).ToArray(), buffer);
+            Assert.Equal(data.AsMemory(100).ToArray(), withoutBufferMs.ToArray());
+        }
+
+        [Fact]
+        public async Task ReadThenCopyToAsyncWorks()
+        {
+            var data = Enumerable.Range(0, 1024).Select(b => (byte)b).ToArray();
+            var inner = new MemoryStream(data);
+
+            using var stream = new FileBufferingReadStream(inner, 1024 * 1024, bufferLimit: null, GetCurrentDirectory());
+
+            var withoutBufferMs = new MemoryStream();
+            var buffer = new byte[100];
+            var read = stream.Read(buffer);
+            await stream.CopyToAsync(withoutBufferMs);
+
+            Assert.Equal(100, read);
+            Assert.Equal(data.AsMemory(0, read).ToArray(), buffer);
+            Assert.Equal(data.AsMemory(read).ToArray(), withoutBufferMs.ToArray());
+        }
+
+        [Fact]
+        public async Task ReadThenSeekThenCopyToAsyncWorks()
+        {
+            var data = Enumerable.Range(0, 1024).Select(b => (byte)b).ToArray();
+            var inner = new MemoryStream(data);
+
+            using var stream = new FileBufferingReadStream(inner, 1024 * 1024, bufferLimit: null, GetCurrentDirectory());
+
+            var withoutBufferMs = new MemoryStream();
+            var buffer = new byte[100];
+            var read = stream.Read(buffer);
+            stream.Position = 0;
+            await stream.CopyToAsync(withoutBufferMs);
+
+            Assert.Equal(100, read);
+            Assert.Equal(data.AsMemory(0, read).ToArray(), buffer);
+            Assert.Equal(data.ToArray(), withoutBufferMs.ToArray());
+        }
+
+        [Fact]
+        public void PartialReadThenSeekReplaysBuffer()
+        {
+            var data = Enumerable.Range(0, 1024).Select(b => (byte)b).ToArray();
+            var inner = new MemoryStream(data);
+
+            using var stream = new FileBufferingReadStream(inner, 1024 * 1024, bufferLimit: null, GetCurrentDirectory());
+
+            var withoutBufferMs = new MemoryStream();
+            var buffer = new byte[100];
+            var read1 = stream.Read(buffer);
+            stream.Position = 0;
+            var buffer2 = new byte[200];
+            var read2 = stream.Read(buffer2);
+            Assert.Equal(100, read1);
+            Assert.Equal(100, read2);
+            Assert.Equal(data.AsMemory(0, read1).ToArray(), buffer);
+            Assert.Equal(data.AsMemory(0, read2).ToArray(), buffer2.AsMemory(0, read2).ToArray());
+        }
+
+        [Fact]
+        public async Task PartialReadAsyncThenSeekReplaysBuffer()
+        {
+            var data = Enumerable.Range(0, 1024).Select(b => (byte)b).ToArray();
+            var inner = new MemoryStream(data);
+
+            using var stream = new FileBufferingReadStream(inner, 1024 * 1024, bufferLimit: null, GetCurrentDirectory());
+
+            var withoutBufferMs = new MemoryStream();
+            var buffer = new byte[100];
+            var read1 = await stream.ReadAsync(buffer);
+            stream.Position = 0;
+            var buffer2 = new byte[200];
+            var read2 = await stream.ReadAsync(buffer2);
+            Assert.Equal(100, read1);
+            Assert.Equal(100, read2);
+            Assert.Equal(data.AsMemory(0, read1).ToArray(), buffer);
+            Assert.Equal(data.AsMemory(0, read2).ToArray(), buffer2.AsMemory(0, read2).ToArray());
         }
 
         private static string GetCurrentDirectory()

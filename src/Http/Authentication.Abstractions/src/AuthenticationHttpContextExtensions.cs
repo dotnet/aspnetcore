@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <returns>The result.</returns>
-        public static Task ChallengeAsync(this HttpContext context, string scheme) =>
+        public static Task ChallengeAsync(this HttpContext context, string? scheme) =>
             context.ChallengeAsync(scheme, properties: null);
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <returns>The task.</returns>
-        public static Task ForbidAsync(this HttpContext context, string scheme) =>
+        public static Task ForbidAsync(this HttpContext context, string? scheme) =>
             context.ForbidAsync(scheme, properties: null);
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="principal">The user.</param>
         /// <returns>The task.</returns>
-        public static Task SignInAsync(this HttpContext context, string scheme, ClaimsPrincipal principal) =>
+        public static Task SignInAsync(this HttpContext context, string? scheme, ClaimsPrincipal principal) =>
             context.SignInAsync(scheme, principal, properties: null);
 
         /// <summary>

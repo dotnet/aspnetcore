@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Don't bother passing the following assemblies to the (ignored) build or copying the files into our bin. -->
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" ReferenceOutputAssembly="false" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X" ReferenceOutputAssembly="false" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X" ReferenceOutputAssembly="false" />

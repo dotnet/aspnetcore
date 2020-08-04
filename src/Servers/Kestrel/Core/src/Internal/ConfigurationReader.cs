@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Authentication;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
@@ -18,6 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private const string EndpointDefaultsKey = "EndpointDefaults";
         private const string EndpointsKey = "Endpoints";
         private const string UrlKey = "Url";
+        private const string ClientCertificateModeKey = "ClientCertificateMode";
 
         private readonly IConfiguration _configuration;
 
@@ -50,6 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         // "EndpointDefaults": {
         //    "Protocols": "Http1AndHttp2",
         //    "SslProtocols": [ "Tls11", "Tls12", "Tls13"],
+        //    "ClientCertificateMode" : "NoCertificate"
         // }
         private EndpointDefaults ReadEndpointDefaults()
         {
@@ -57,7 +60,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             return new EndpointDefaults
             {
                 Protocols = ParseProtocols(configSection[ProtocolsKey]),
-                SslProtocols = ParseSslProcotols(configSection.GetSection(SslProtocolsKey))
+                SslProtocols = ParseSslProcotols(configSection.GetSection(SslProtocolsKey)),
+                ClientCertificateMode = ParseClientCertificateMode(configSection[ClientCertificateModeKey])
             };
         }
 
@@ -75,7 +79,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 //    "Certificate": {
                 //        "Path": "testCert.pfx",
                 //        "Password": "testPassword"
-                //    }
+                //    },
+                //    "ClientCertificateMode" : "NoCertificate"
                 // }
 
                 var url = endpointConfig[UrlKey];
@@ -91,13 +96,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     Protocols = ParseProtocols(endpointConfig[ProtocolsKey]),
                     ConfigSection = endpointConfig,
                     Certificate = new CertificateConfig(endpointConfig.GetSection(CertificateKey)),
-                    SslProtocols = ParseSslProcotols(endpointConfig.GetSection(SslProtocolsKey))
+                    SslProtocols = ParseSslProcotols(endpointConfig.GetSection(SslProtocolsKey)),
+                    ClientCertificateMode = ParseClientCertificateMode(endpointConfig[ClientCertificateModeKey])
                 };
 
                 endpoints.Add(endpoint);
             }
 
             return endpoints;
+        }
+
+        private ClientCertificateMode? ParseClientCertificateMode(string clientCertificateMode)
+        {
+            if (Enum.TryParse<ClientCertificateMode>(clientCertificateMode, ignoreCase: true, out var result))
+            {
+                return result;
+            }
+
+            return null;
         }
 
         private static HttpProtocols? ParseProtocols(string protocols)
@@ -129,11 +145,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     // "EndpointDefaults": {
     //    "Protocols": "Http1AndHttp2",
     //    "SslProtocols": [ "Tls11", "Tls12", "Tls13"],
+    //    "ClientCertificateMode" : "NoCertificate"
     // }
     internal class EndpointDefaults
     {
         public HttpProtocols? Protocols { get; set; }
         public SslProtocols? SslProtocols { get; set; }
+        public ClientCertificateMode? ClientCertificateMode { get; set; }
     }
 
     // "EndpointName": {
@@ -143,7 +161,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     //    "Certificate": {
     //        "Path": "testCert.pfx",
     //        "Password": "testPassword"
-    //    }
+    //    },
+    //    "ClientCertificateMode" : "NoCertificate"
     // }
     internal class EndpointConfig
     {
@@ -155,6 +174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public HttpProtocols? Protocols { get; set; }
         public SslProtocols? SslProtocols { get; set; }
         public CertificateConfig Certificate { get; set; }
+        public ClientCertificateMode? ClientCertificateMode { get; set; }
 
         // Compare config sections because it's accessible to app developers via an Action<EndpointConfiguration> callback.
         // We cannot rely entirely on comparing config sections for equality, because KestrelConfigurationLoader.Reload() sets

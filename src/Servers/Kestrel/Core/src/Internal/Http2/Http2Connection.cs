@@ -107,10 +107,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             var connectionWindow = (uint)http2Limits.InitialConnectionWindowSize;
             _inputFlowControl = new InputFlowControl(connectionWindow, connectionWindow / 2);
 
-            if (http2Limits.KeepAlivePingInterval != TimeSpan.MaxValue)
+            if (http2Limits.KeepAlivePingDelay != TimeSpan.MaxValue)
             {
                 _keepAlive = new Http2KeepAlive(
-                    http2Limits.KeepAlivePingInterval,
+                    http2Limits.KeepAlivePingDelay,
                     http2Limits.KeepAlivePingTimeout,
                     context.ServiceContext.SystemClock);
             }

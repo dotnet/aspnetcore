@@ -325,7 +325,8 @@ namespace Microsoft.AspNetCore.Hosting
 
             _logger.Shutdown();
 
-            var timeoutToken = new CancellationTokenSource(Options.ShutdownTimeout).Token;
+            using var timeoutCTS = new CancellationTokenSource(Options.ShutdownTimeout);
+            var timeoutToken = timeoutCTS.Token;
             if (!cancellationToken.CanBeCanceled)
             {
                 cancellationToken = timeoutToken;
@@ -383,7 +384,7 @@ namespace Microsoft.AspNetCore.Hosting
             switch (serviceProvider)
             {
                 case IAsyncDisposable asyncDisposable:
-                    await asyncDisposable.DisposeAsync();
+                    await asyncDisposable.DisposeAsync().ConfigureAwait(false);
                     break;
                 case IDisposable disposable:
                     disposable.Dispose();

@@ -71,6 +71,7 @@ namespace Microsoft.AspNetCore.Components.Web
                     "touch" => Deserialize<TouchEventArgs>(eventArgsJson),
                     "unknown" => EventArgs.Empty,
                     "wheel" => Deserialize<WheelEventArgs>(eventArgsJson),
+                    "toggle" => Deserialize<EventArgs>(eventArgsJson),
                     _ => throw new InvalidOperationException($"Unsupported event type '{eventArgsType}'. EventId: '{eventHandlerId}'."),
                 };
             }

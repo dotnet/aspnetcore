@@ -24,18 +24,14 @@
     <Reference Include="Microsoft.Build.Utilities.Core" />
     <Reference Include="System.Reflection.Metadata"  Condition="'$(TargetFramework)'=='net46'" />
 
-    <ProjectReference
-      Include="..\..\Microsoft.AspNetCore.Razor.Tools\src\Microsoft.AspNetCore.Razor.Tools.csproj"
+    <Reference Include="rzc"
       Targets="Publish"
       ReferenceOutputAssembly="false"
-      IsImplicityDefined="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
 
-    <ProjectReference
-      Include="..\..\Microsoft.AspNetCore.Mvc.Razor.Extensions\src\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj"
+    <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions"
       ReferenceOutputAssembly="false"
-      IsImplicityDefined="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework;TargetFrameworks" />
   </ItemGroup>
@@ -73,12 +69,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <RazorToolsOutput Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Razor.Tools\$(Configuration)\netcoreapp3.0\publish\**\*.*" />
+      <RazorToolsOutput Include="$(ArtifactsBinDir)rzc\$(Configuration)\netcoreapp3.0\publish\**\*.*" />
       <MvcRazorExtensionOutput Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Mvc.Razor.Extensions\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
     </ItemGroup>
 
     <Error
-      Text="rzc outputs were not found in $(ArtifactsBinDir)Microsoft.AspNetCore.Razor.Tools\$(Configuration)\netcoreapp3.0\publish"
+      Text="rzc outputs were not found in $(ArtifactsBinDir)rzc\$(Configuration)\netcoreapp3.0\publish"
       Condition="'@(RazorToolsOutput->Count())' == '0'" />
 
     <Error
