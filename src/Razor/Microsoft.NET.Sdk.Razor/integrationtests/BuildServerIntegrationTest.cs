@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var repositoryRoot = ProjectDirectory.SearchUp(AppContext.BaseDirectory, "global.json");
             var solutionRoot = Path.Combine(repositoryRoot, "src", "Razor");
             var toolAssemblyDirectory = Path.Combine(solutionRoot, "Microsoft.AspNetCore.Razor.Tools", "src");
-            var toolAssemblyPath = Path.Combine(toolAssemblyDirectory, "Microsoft.AspNetCore.Razor.Tools.csproj");
+            var toolAssemblyPath = Path.Combine(toolAssemblyDirectory, "rzc.csproj");
             var projectDirectory = new TestProjectDirectory(solutionRoot, toolAssemblyDirectory, toolAssemblyPath);
             var publishDir = Path.Combine(Path.GetTempPath(), "Razor", Path.GetRandomFileName(), "RzcPublish");
             var publishResult = await MSBuildProcessManager.RunProcessAsync(projectDirectory, $"/t:Publish /p:PublishDir=\"{publishDir}\"");
