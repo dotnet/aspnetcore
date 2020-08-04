@@ -4,6 +4,7 @@
 package com.microsoft.signalr;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -101,7 +102,7 @@ class LongPollingTransport implements Transport {
                     } else {
                         if (response.getContent() != null) {
                             logger.debug("Message received.");
-                            onReceiveThread.submit(() ->this.onReceive(response.getContent()));
+                            onReceiveThread.submit(() ->this.onReceive(ByteBuffer.wrap(response.getContent().getBytes(StandardCharsets.UTF_8))));
                         } else {
                             logger.debug("Poll timed out, reissuing.");
                         }
@@ -139,7 +140,7 @@ class LongPollingTransport implements Transport {
     }
 
     @Override
-    public void onReceive(String message) {
+    public void onReceive(ByteBuffer message) {
         this.onReceiveCallBack.invoke(message);
         logger.debug("OnReceived callback has been invoked.");
     }

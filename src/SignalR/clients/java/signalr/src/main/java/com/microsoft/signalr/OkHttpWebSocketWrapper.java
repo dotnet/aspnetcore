@@ -64,7 +64,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
 
     @Override
     public Completable send(ByteBuffer message) {
-    	ByteString bs = ByteString.of(message);
+        ByteString bs = ByteString.of(message);
         websocketClient.send(bs);
         return Completable.complete();
     }
@@ -87,12 +87,12 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
 
         @Override
         public void onMessage(WebSocket webSocket, String message) {
-            onReceive.invoke(message);
+            onReceive.invoke(ByteBuffer.wrap(message.getBytes(StandardCharsets.UTF_8)));
         }
         
         @Override
         public void onMessage(WebSocket webSocket, ByteString bytes) {
-        	onReceive.invoke(new String(bytes.toByteArray(), StandardCharsets.ISO_8859_1));
+            onReceive.invoke(bytes.asByteBuffer());
         }
 
         @Override

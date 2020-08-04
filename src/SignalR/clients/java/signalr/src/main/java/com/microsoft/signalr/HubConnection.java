@@ -28,7 +28,7 @@ import okhttp3.OkHttpClient;
  * A connection used to invoke hub methods on a SignalR Server.
  */
 public class HubConnection implements AutoCloseable {
-    private static final String RECORD_SEPARATOR = "\u001e";
+    private static final byte RECORD_SEPARATOR = 0x1e;
     private static final List<Class<?>> emptyArray = new ArrayList<>();
     private static final int MAX_NEGOTIATE_ATTEMPTS = 100;
 
@@ -136,7 +136,7 @@ public class HubConnection implements AutoCloseable {
         }
 
         this.baseUrl = url;
-        this.protocol = new JsonHubProtocol();
+        this.protocol = new MessagePackHubProtocol();
 
         if (accessTokenProvider != null) {
             this.accessTokenProvider = accessTokenProvider;
@@ -167,8 +167,10 @@ public class HubConnection implements AutoCloseable {
         this.callback = (payload) -> {
             resetServerTimeout();
             if (!handshakeReceived) {
-                int handshakeLength = payload.indexOf(RECORD_SEPARATOR) + 1;
-                String handshakeResponseString = payload.substring(0, handshakeLength - 1);
+            	// The handshake will always be a UTF8 Json string, so we can convert the ByteBuffer to that to read the beginning of the payload
+            	String payloadStr = new String(payload.array(), StandardCharsets.UTF_8);
+                int handshakeLength = payloadStr.indexOf(RECORD_SEPARATOR) + 1;
+                String handshakeResponseString = payloadStr.substring(0, handshakeLength - 1);
                 HandshakeResponseMessage handshakeResponse;
                 try {
                     handshakeResponse = HandshakeProtocol.parseHandshakeResponse(handshakeResponseString);
@@ -186,15 +188,18 @@ public class HubConnection implements AutoCloseable {
                 }
                 handshakeReceived = true;
                 handshakeResponseSubject.onComplete();
+                
+                // Increment the ByteBuffer payload by the byte length of the handshake + the byte length of the record separator (1)
+                int readBytes = handshakeResponseString.getBytes(StandardCharsets.UTF_8).length + 1;
+                payload = payload.position(payload.position() + readBytes);
 
-                payload = payload.substring(handshakeLength);
                 // The payload only contained the handshake response so we can return.
-                if (payload.length() == 0) {
+                if (!payload.hasRemaining()) {
                     return;
                 }
             }
 
-            List<HubMessage> messages = protocol.parseMessages(ByteBuffer.wrap(payload.getBytes(StandardCharsets.UTF_8)), connectionState);
+            List<HubMessage> messages = protocol.parseMessages(payload, connectionState);
 
             for (HubMessage message : messages) {
                 logger.debug("Received message of type {}.", message.getMessageType());

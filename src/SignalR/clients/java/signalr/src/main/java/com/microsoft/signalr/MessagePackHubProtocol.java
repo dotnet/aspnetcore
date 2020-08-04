@@ -90,12 +90,12 @@ class MessagePackHubProtocol implements HubProtocol {
                         break;
                 }
                 // Make sure that we actually read the right number of bytes
-                long readBytes = unpacker.getTotalReadBytes();
+                int readBytes = (int) unpacker.getTotalReadBytes();
                 if (readBytes != length) {
-                	throw new RuntimeException(String.format("MessagePack message was length %d but claimed to be length %d.", readBytes, length));
+                    throw new RuntimeException(String.format("MessagePack message was length %d but claimed to be length %d.", readBytes, length));
                 }
                 unpacker.close();
-                payload = payload.position(payload.position() + (int) readBytes);
+                payload = payload.position(payload.position() + readBytes);
             }
         } catch (MessagePackException | IOException ex) {
             throw new RuntimeException("Error reading MessagePack data.", ex);
@@ -160,7 +160,7 @@ class MessagePackHubProtocol implements HubProtocol {
         // invocationId may be nil
         String invocationId = null;
         if (!unpacker.tryUnpackNil()) {
-        	invocationId = unpacker.unpackString();
+            invocationId = unpacker.unpackString();
         }
         
         // For MsgPack, we represent an empty invocation ID as an empty string,

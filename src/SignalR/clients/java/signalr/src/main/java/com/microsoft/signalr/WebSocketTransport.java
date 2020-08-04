@@ -72,7 +72,7 @@ class WebSocketTransport implements Transport {
     }
 
     @Override
-    public void onReceive(String message) {
+    public void onReceive(ByteBuffer message) {
         this.onReceiveCallBack.invoke(message);
     }
 

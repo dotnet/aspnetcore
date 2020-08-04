@@ -11,7 +11,7 @@ interface Transport {
     Completable start(String url);
     Completable send(ByteBuffer message);
     void setOnReceive(OnReceiveCallBack callback);
-    void onReceive(String message);
+    void onReceive(ByteBuffer message);
     void setOnClose(TransportOnClosedCallback onCloseCallback);
     Completable stop();
 }
