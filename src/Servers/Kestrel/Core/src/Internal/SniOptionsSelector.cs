@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Security;
 using System.Security.Authentication;
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private readonly Action<ConnectionContext, SslServerAuthenticationOptions> _onAuthenticateCallback;
 
         private readonly Dictionary<string, SniOptions> _fullNameOptions = new Dictionary<string, SniOptions>(StringComparer.OrdinalIgnoreCase);
-        private readonly List<(string, SniOptions)> _wildcardPrefixOptions = new List<(string, SniOptions)>();
+        private readonly SortedList<string, SniOptions> _wildcardPrefixOptions = new SortedList<string, SniOptions>(LongestStringFirstComparer.Instance);
         private readonly SniOptions _wildcardHostOptions = null;
 
         public SniOptionsSelector(
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 }
                 else if (name.StartsWith(wildcardPrefix, StringComparison.Ordinal))
                 {
-                    _wildcardPrefixOptions.Add((name, sniOptions));
+                    _wildcardPrefixOptions.Add(name, sniOptions);
                 }
                 else
                 {
@@ -152,7 +153,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             sniOptions = null;
 
-            var matchedNameLength = 0;
             ReadOnlySpan<char> serverNameSpan = serverName;
 
             foreach (var (nameCandidate, optionsCandidate) in _wildcardPrefixOptions)
@@ -160,15 +160,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 ReadOnlySpan<char> nameCandidateSpan = nameCandidate;
 
                 // Only slice off 1 character, the `*`. We want to match the leading `.` also.
-                if (serverNameSpan.EndsWith(nameCandidateSpan.Slice(1), StringComparison.OrdinalIgnoreCase) &&
-                    nameCandidateSpan.Length > matchedNameLength)
+                if (serverNameSpan.EndsWith(nameCandidateSpan.Slice(1), StringComparison.OrdinalIgnoreCase))
                 {
-                    matchedNameLength = nameCandidateSpan.Length;
                     sniOptions = optionsCandidate;
+                    return true;
                 }
             }
 
-            return sniOptions != null;
+            return false;
         }
 
         // TODO: Reflection based test to ensure we clone everything!
@@ -194,6 +193,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             public SslServerAuthenticationOptions SslOptions { get; set; }
             public HttpProtocols HttpProtocols { get; set; }
+        }
+
+        private class LongestStringFirstComparer : IComparer<string>
+        {
+            public static LongestStringFirstComparer Instance { get; } = new LongestStringFirstComparer();
+
+            private LongestStringFirstComparer()
+            {
+            }
+
+            public int Compare(string x, string y)
+            {
+                // Flip x and y to put the longest instead of the shortest string first in the SortedList.
+                return y.Length.CompareTo(x.Length);
+            }
         }
     }
 }

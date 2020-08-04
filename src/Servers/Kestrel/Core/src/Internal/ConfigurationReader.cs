@@ -134,7 +134,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                 var sni = new SniConfig
                 {
-                    Name = sniChild.Key,
                     Protocols = ParseProtocols(sniChild[ProtocolsKey]),
                     Certificate = new CertificateConfig(sniChild.GetSection(CertificateKey)),
                     SslProtocols = ParseSslProcotols(sniChild.GetSection(SslProtocolsKey)),
@@ -292,7 +291,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
     internal class SniConfig
     {
-        public string Name { get; set; }
         public HttpProtocols? Protocols { get; set; }
         public SslProtocols? SslProtocols { get; set; }
         public CertificateConfig Certificate { get; set; }
@@ -300,13 +298,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public override bool Equals(object obj) =>
             obj is SniConfig other &&
-            Name == other.Name &&
             (Protocols ?? ListenOptions.DefaultHttpProtocols) == (other.Protocols ?? ListenOptions.DefaultHttpProtocols) &&
             Certificate == other.Certificate &&
             (SslProtocols ?? System.Security.Authentication.SslProtocols.None) == (other.SslProtocols ?? System.Security.Authentication.SslProtocols.None) &&
             (ClientCertificateMode ?? Https.ClientCertificateMode.NoCertificate) == (other.ClientCertificateMode ?? Https.ClientCertificateMode.NoCertificate);
 
-        public override int GetHashCode() => HashCode.Combine(Name,
+        public override int GetHashCode() => HashCode.Combine(
             Protocols ?? ListenOptions.DefaultHttpProtocols, SslProtocols ?? System.Security.Authentication.SslProtocols.None,
             Certificate, ClientCertificateMode ?? Https.ClientCertificateMode.NoCertificate);
 
@@ -324,6 +321,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             ConfigSection = configSection;
             ConfigSection.Bind(this);
+        }
+
+        // For testing
+        internal CertificateConfig()
+        {
         }
 
         public IConfigurationSection ConfigSection { get; }
@@ -352,13 +354,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public override bool Equals(object obj) =>
             obj is CertificateConfig other &&
             Path == other.Path &&
+            KeyPath == other.KeyPath &&
             Password == other.Password &&
             Subject == other.Subject &&
             Store == other.Store &&
             Location == other.Location &&
             (AllowInvalid ?? false) == (other.AllowInvalid ?? false);
 
-        public override int GetHashCode() => HashCode.Combine(Path, Password, Subject, Store, Location, AllowInvalid ?? false);
+        public override int GetHashCode() => HashCode.Combine(Path, KeyPath, Password, Subject, Store, Location, AllowInvalid ?? false);
 
         public static bool operator ==(CertificateConfig lhs, CertificateConfig rhs) => lhs is null ? rhs is null : lhs.Equals(rhs);
         public static bool operator !=(CertificateConfig lhs, CertificateConfig rhs) => !(lhs == rhs);

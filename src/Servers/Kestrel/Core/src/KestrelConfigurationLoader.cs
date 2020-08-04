@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
             ConfigurationReader = new ConfigurationReader(Configuration);
 
-            LoadDefaultCert(ConfigurationReader);
+            LoadDefaultCert();
 
             foreach (var endpoint in ConfigurationReader.Endpoints)
             {
@@ -393,9 +393,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             return new ValueTask<SslServerAuthenticationOptions>(options);
         }
 
-        private void LoadDefaultCert(ConfigurationReader configReader)
+        private void LoadDefaultCert()
         {
-            if (configReader.Certificates.TryGetValue("Default", out var defaultCertConfig))
+            if (ConfigurationReader.Certificates.TryGetValue("Default", out var defaultCertConfig))
             {
                 var defaultCert = CertificateConfigLoader.LoadCertificate(defaultCertConfig, "Default");
                 if (defaultCert != null)
@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
             else
             {
-                var (certificate, certificateConfig) = FindDeveloperCertificateFile(configReader, Logger);
+                var (certificate, certificateConfig) = FindDeveloperCertificateFile();
                 if (certificate != null)
                 {
                     Logger.LocatedDevelopmentCertificate(certificate);
@@ -416,12 +416,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
         }
 
-        private (X509Certificate2, CertificateConfig) FindDeveloperCertificateFile(ConfigurationReader configReader, ILogger<KestrelServer> logger)
+        private (X509Certificate2, CertificateConfig) FindDeveloperCertificateFile()
         {
             string certificatePath = null;
             try
             {
-                if (configReader.Certificates.TryGetValue("Development", out var certificateConfig) &&
+                if (ConfigurationReader.Certificates.TryGetValue("Development", out var certificateConfig) &&
                     certificateConfig.Path == null &&
                     certificateConfig.Password != null &&
                     TryGetCertificatePath(out certificatePath) &&
@@ -436,12 +436,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                 }
                 else if (!string.IsNullOrEmpty(certificatePath))
                 {
-                    logger.FailedToLocateDevelopmentCertificateFile(certificatePath);
+                    Logger.FailedToLocateDevelopmentCertificateFile(certificatePath);
                 }
             }
             catch (CryptographicException)
             {
-                logger.FailedToLoadDevelopmentCertificate(certificatePath);
+                Logger.FailedToLoadDevelopmentCertificate(certificatePath);
             }
 
             return (null, null);

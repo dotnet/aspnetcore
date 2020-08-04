@@ -307,7 +307,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             Assert.NotNull(sni);
 
-            Assert.Equal("*.example.org", sni.Name);
             Assert.Equal(HttpProtocols.Http1, sni.Protocols);
             Assert.Equal(SslProtocols.Tls12, sni.SslProtocols);
             Assert.Equal("/path/cert.pfx", sni.Certificate.Path);
