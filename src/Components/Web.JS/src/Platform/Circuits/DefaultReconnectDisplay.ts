@@ -64,6 +64,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
       this.document.body.appendChild(this.modal);
     }
     this.modal.style.display = 'block';
+    this.modal.classList.add('show');
     this.button.style.display = 'none';
     this.reloadParagraph.style.display = 'none';
     this.message.textContent = 'Attempting to reconnect to the server...';
@@ -71,6 +72,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
   hide(): void {
     this.modal.style.display = 'none';
+    this.modal.classList.remove('show');
   }
 
   failed(): void {
