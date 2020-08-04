@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     ApplicationType = ApplicationType.Standalone,
                     PublishApplicationBeforeDeployment = true,
                     RestoreDependencies = true,
+                    PublishTimeout = TimeSpan.FromMinutes(10), // Machines are slow (these tests restore)
                     StatusMessagesEnabled = false
                 };
 

@@ -234,6 +234,7 @@ namespace Microsoft.AspNetCore.Hosting
             return this;
         }
 
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2006:UnrecognizedReflectionPattern", Justification = "We need to call a generic method on IHostBuilder.")]
         private void UseStartup([DynamicallyAccessedMembers(StartupLinkerOptions.Accessibility)] Type startupType, HostBuilderContext context, IServiceCollection services, object instance = null)
         {
             var webHostBuilderContext = GetWebHostBuilderContext(context);
@@ -275,12 +276,12 @@ namespace Microsoft.AspNetCore.Hosting
                     var actionType = typeof(Action<,>).MakeGenericType(typeof(HostBuilderContext), containerType);
 
                     // Get the private ConfigureContainer method on this type then close over the container type
-                    var configureCallback = GetType().GetMethod(nameof(ConfigureContainer), BindingFlags.NonPublic | BindingFlags.Instance)
+                    var configureCallback = typeof(GenericWebHostBuilder).GetMethod(nameof(ConfigureContainerImpl), BindingFlags.NonPublic | BindingFlags.Instance)
                                                      .MakeGenericMethod(containerType)
                                                      .CreateDelegate(actionType, this);
 
                     // _builder.ConfigureContainer<T>(ConfigureContainer);
-                    typeof(IHostBuilder).GetMethods().First(m => m.Name == nameof(IHostBuilder.ConfigureContainer))
+                    typeof(IHostBuilder).GetMethod(nameof(IHostBuilder.ConfigureContainer))
                         .MakeGenericMethod(containerType)
                         .InvokeWithoutWrappingExceptions(_builder, new object[] { configureCallback });
                 }
@@ -310,7 +311,7 @@ namespace Microsoft.AspNetCore.Hosting
             });
         }
 
-        private void ConfigureContainer<TContainer>(HostBuilderContext context, TContainer container)
+        private void ConfigureContainerImpl<TContainer>(HostBuilderContext context, TContainer container)
         {
             var instance = context.Properties[_startupKey];
             var builder = (ConfigureContainerBuilder)context.Properties[typeof(ConfigureContainerBuilder)];
