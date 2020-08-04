@@ -222,6 +222,7 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
+        [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "We're warning at the entry point. This is an implementation detail.")]
         public static Type FindStartupType(string startupAssemblyName, string environmentName)
         {
             if (string.IsNullOrEmpty(startupAssemblyName))
