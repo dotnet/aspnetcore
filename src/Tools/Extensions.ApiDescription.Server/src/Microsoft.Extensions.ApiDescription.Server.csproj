@@ -11,18 +11,21 @@
     <PackageId>$(MSBuildProjectName)</PackageId>
     <PackageTags>MSBuild;Swagger;OpenAPI;code generation;Web API;service reference;document generation</PackageTags>
     <DevelopmentDependency>true</DevelopmentDependency>
+  </PropertyGroup>
 
+  <ItemGroup>
     <!--
       Publish the referenced projects when building .NET Core bits. This is not needed for full framework builds
       because publish output matches what was built.
     -->
-    <ProjectReferenceBuildTargets
-        Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">Build;Publish</ProjectReferenceBuildTargets>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <Reference Include="dotnet-getdocument" Condition=" '$(TargetFramework)' == 'netcoreapp2.1' " />
-    <Reference Include="GetDocument.Insider" />
+    <Reference Include="dotnet-getdocument"
+        Targets="Publish"
+        ReferenceOutputAssembly="false"
+        SkipGetTargetFrameworkProperties="true"
+        UndefineProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier;PublishDir" />
+    <Reference Include="GetDocument.Insider" ReferenceOutputAssembly="false">
+      <Targets Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">Publish</Targets>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

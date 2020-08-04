@@ -14,6 +14,7 @@ describe('DefaultReconnectDisplay', () => {
         expect(element).toBeDefined();
         expect(element!.id).toBe('test-dialog-id');
         expect(element!.style.display).toBe('block');
+        expect(element!.classList).toContain('show');
 
         expect(display.message.textContent).toBe('Attempting to reconnect to the server...');
         expect(display.button.style.display).toBe('none');
@@ -36,6 +37,7 @@ describe('DefaultReconnectDisplay', () => {
         display.hide();
 
         expect(display.modal.style.display).toBe('none');
+        expect(display.modal.classList).not.toContain('show');
     });
 
     it ('updates message on fail', () => {
@@ -46,6 +48,7 @@ describe('DefaultReconnectDisplay', () => {
         display.failed();
 
         expect(display.modal.style.display).toBe('block');
+        expect(display.modal.classList).toContain('show');
         expect(display.message.innerHTML).toBe('Reconnection failed. Try <a href=\"\">reloading</a> the page if you\'re unable to reconnect.');
         expect(display.button.style.display).toBe('block');
     });
@@ -58,6 +61,7 @@ describe('DefaultReconnectDisplay', () => {
         display.rejected();
 
         expect(display.modal.style.display).toBe('block');
+        expect(display.modal.classList).toContain('show');
         expect(display.message.innerHTML).toBe('Could not reconnect to the server. <a href=\"\">Reload</a> the page to restore functionality.');
         expect(display.button.style.display).toBe('none');
     });

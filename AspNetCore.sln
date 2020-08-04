@@ -1063,7 +1063,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.AspNetCore.Razor.Tools", "Microsoft.AspNetCore.Razor.Tools", "{B9704650-5360-416C-9393-FAF707766AA8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Tools", "src\Razor\Microsoft.AspNetCore.Razor.Tools\src\Microsoft.AspNetCore.Razor.Tools.csproj", "{4C84173F-5C1F-49A1-895A-C0CA11DE84B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Tools", "src\Razor\Microsoft.AspNetCore.Razor.Tools\src\rzc.csproj", "{4C84173F-5C1F-49A1-895A-C0CA11DE84B1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Tools.Test", "src\Razor\Microsoft.AspNetCore.Razor.Tools\test\Microsoft.AspNetCore.Razor.Tools.Test.csproj", "{FE095F11-4CD2-406D-A2BB-1BE569603BF0}"
 EndProject
@@ -1295,7 +1295,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.ApiDes
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GetDocumentInsider", "GetDocumentInsider", "{A1B75FC7-A777-4412-A635-D0C9ED8FE7A0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GetDocumentInsider", "src\Tools\GetDocumentInsider\src\GetDocumentInsider.csproj", "{DD63EA3C-929C-48FF-8E8A-8F3CC553E93B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GetDocumentInsider", "src\Tools\GetDocumentInsider\src\GetDocument.Insider.csproj", "{DD63EA3C-929C-48FF-8E8A-8F3CC553E93B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.ApiDescription.Client.Tests", "src\Tools\Extensions.ApiDescription.Client\test\Microsoft.Extensions.ApiDescription.Client.Tests.csproj", "{34E40892-48C1-4D3D-AB49-FAC3C4C00B42}"
 EndProject
