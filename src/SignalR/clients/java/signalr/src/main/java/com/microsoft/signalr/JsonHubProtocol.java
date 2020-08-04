@@ -39,7 +39,7 @@ class JsonHubProtocol implements HubProtocol {
 
     @Override
     public List<HubMessage> parseMessages(ByteBuffer payload, InvocationBinder binder) {
-    String payloadStr = new String(payload.array(), StandardCharsets.UTF_8);
+        String payloadStr = new String(payload.array(), StandardCharsets.UTF_8);
         if (payloadStr.length() == 0) {
             return null;
         }

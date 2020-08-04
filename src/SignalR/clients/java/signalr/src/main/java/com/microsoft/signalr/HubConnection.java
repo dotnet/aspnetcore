@@ -166,11 +166,11 @@ public class HubConnection implements AutoCloseable {
 
         this.callback = (payload) -> {
             resetServerTimeout();
-        	// MessagePack library can't handle read-only ByteBuffer - copy into an array-backed ByteBuffer if this is the case
+            // MessagePack library can't handle read-only ByteBuffer - copy into an array-backed ByteBuffer if this is the case
             if (payload.isReadOnly()) {
-            	byte[] payloadBytes = new byte[payload.remaining()];
-            	payload.get(payloadBytes, 0, payloadBytes.length);
-            	payload = ByteBuffer.wrap(payloadBytes);
+                byte[] payloadBytes = new byte[payload.remaining()];
+                payload.get(payloadBytes, 0, payloadBytes.length);
+                payload = ByteBuffer.wrap(payloadBytes);
             }
             if (!handshakeReceived) {
                 // The handshake will always be a UTF8 Json string, so we can convert the ByteBuffer to that to read the beginning of the payload
