@@ -128,7 +128,7 @@ public class HubConnection implements AutoCloseable {
         return transport;
     }
 
-    HubConnection(String url, Transport transport, boolean skipNegotiate, HttpClient httpClient,
+    HubConnection(String url, Transport transport, boolean skipNegotiate, HttpClient httpClient, HubProtocol protocol,
                   Single<String> accessTokenProvider, long handshakeResponseTimeout, Map<String, String> headers, TransportEnum transportEnum,
                   Action1<OkHttpClient.Builder> configureBuilder) {
         if (url == null || url.isEmpty()) {
@@ -136,7 +136,7 @@ public class HubConnection implements AutoCloseable {
         }
 
         this.baseUrl = url;
-        this.protocol = new JsonHubProtocol();
+        this.protocol = protocol;
 
         if (accessTokenProvider != null) {
             this.accessTokenProvider = accessTokenProvider;
