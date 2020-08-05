@@ -82,6 +82,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void CanInfluenceHeadDuringPrerender()
         {
             Navigate("/prerendered/prerendered-head");
