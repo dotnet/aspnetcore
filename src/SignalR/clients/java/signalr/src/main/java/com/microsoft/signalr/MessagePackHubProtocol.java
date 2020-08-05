@@ -22,7 +22,7 @@ import org.msgpack.core.MessagePacker;
 import org.msgpack.core.MessageUnpacker;
 import org.msgpack.value.ValueType;
 
-class MessagePackHubProtocol implements HubProtocol {
+public class MessagePackHubProtocol implements HubProtocol {
     
     private static final int ERROR_RESULT = 1;
     private static final int VOID_RESULT = 2;
