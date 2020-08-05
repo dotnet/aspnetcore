@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Net.Security;
+using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
@@ -427,6 +429,90 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var options = sniOptionsSelector.GetOptions(new MockConnectionContext(), "www.example.org");
             Assert.Same(selectorCertificate, options.ServerCertificate);
+        }
+
+        [Fact]
+        public void CloneSslOptionsClonesAllProperties()
+        {
+            var propertyNames = typeof(SslServerAuthenticationOptions).GetProperties().Select(property => property.Name).ToList();
+
+            CipherSuitesPolicy cipherSuitesPolicy = null;
+
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // The CipherSuitesPolicy ctor throws a PlatformNotSupportedException on Windows.
+                cipherSuitesPolicy = new CipherSuitesPolicy(new[] { TlsCipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 });
+            }
+
+            // Set options properties to non-default values to verify they're copied.
+            var options = new SslServerAuthenticationOptions
+            {
+                // Defaults to true
+                AllowRenegotiation = false,
+                // Defaults to null
+                ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 },
+                // Defaults to X509RevocationMode.NoCheck
+                CertificateRevocationCheckMode = X509RevocationMode.Offline,
+                // Defaults to null
+                CipherSuitesPolicy = cipherSuitesPolicy,
+                // Defaults to false
+                ClientCertificateRequired = true,
+                // Defaults to SslProtocols.None
+                EnabledSslProtocols = SslProtocols.Tls13 | SslProtocols.Tls11,
+                // Defaults to EncryptionPolicy.RequireEncryption
+                EncryptionPolicy = EncryptionPolicy.NoEncryption,
+                // Defaults to null
+                RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
+                // Defaults to null
+                ServerCertificate = new X509Certificate2(),
+                // Defaults to null
+                ServerCertificateContext = SslStreamCertificateContext.Create(_x509Certificate2, additionalCertificates: null, offline: true),
+                // Defaults to null
+                ServerCertificateSelectionCallback = (sender, serverName) => null,
+            };
+
+            var clonedOptions = SniOptionsSelector.CloneSslOptions(options);
+
+            Assert.NotSame(options, clonedOptions);
+
+            Assert.Equal(options.AllowRenegotiation, clonedOptions.AllowRenegotiation);
+            Assert.True(propertyNames.Remove(nameof(options.AllowRenegotiation)));
+
+            // Ensure the List<SslApplicationProtocol> is also cloned since it could be modified by a user callback.
+            Assert.NotSame(options.ApplicationProtocols, clonedOptions.ApplicationProtocols);
+            Assert.Equal(Assert.Single(options.ApplicationProtocols), Assert.Single(clonedOptions.ApplicationProtocols));
+            Assert.True(propertyNames.Remove(nameof(options.ApplicationProtocols)));
+
+            Assert.Equal(options.CertificateRevocationCheckMode, clonedOptions.CertificateRevocationCheckMode);
+            Assert.True(propertyNames.Remove(nameof(options.CertificateRevocationCheckMode)));
+
+            Assert.Same(options.CipherSuitesPolicy, clonedOptions.CipherSuitesPolicy);
+            Assert.True(propertyNames.Remove(nameof(options.CipherSuitesPolicy)));
+
+            Assert.Equal(options.ClientCertificateRequired, clonedOptions.ClientCertificateRequired);
+            Assert.True(propertyNames.Remove(nameof(options.ClientCertificateRequired)));
+
+            Assert.Equal(options.EnabledSslProtocols, clonedOptions.EnabledSslProtocols);
+            Assert.True(propertyNames.Remove(nameof(options.EnabledSslProtocols)));
+
+            Assert.Equal(options.EncryptionPolicy, clonedOptions.EncryptionPolicy);
+            Assert.True(propertyNames.Remove(nameof(options.EncryptionPolicy)));
+
+            Assert.Same(options.RemoteCertificateValidationCallback, clonedOptions.RemoteCertificateValidationCallback);
+            Assert.True(propertyNames.Remove(nameof(options.RemoteCertificateValidationCallback)));
+
+            // Technically the ServerCertificate could be reset/reimported, but I'm hoping this is uncommon. Trying to clone the certificate and/or context seems risky.
+            Assert.Same(options.ServerCertificate, clonedOptions.ServerCertificate);
+            Assert.True(propertyNames.Remove(nameof(options.ServerCertificate)));
+
+            Assert.Same(options.ServerCertificateContext, clonedOptions.ServerCertificateContext);
+            Assert.True(propertyNames.Remove(nameof(options.ServerCertificateContext)));
+
+            Assert.Same(options.ServerCertificateSelectionCallback, clonedOptions.ServerCertificateSelectionCallback);
+            Assert.True(propertyNames.Remove(nameof(options.ServerCertificateSelectionCallback)));
+
+            // Ensure we've checked every property. When new properties get added, we'll have to update this test along with the CloneSslOptions implementation.
+            Assert.Empty(propertyNames);
         }
 
         private class MockCertificateConfigLoader : ICertificateConfigLoader
