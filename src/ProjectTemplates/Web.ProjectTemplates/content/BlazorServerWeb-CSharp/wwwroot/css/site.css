@@ -181,12 +181,3 @@ app {
         display: block;
     }
 }
-
-#components-reconnect-modal.show {
-    animation: VISIBILITY 500ms linear;
-}
-
-@keyframes VISIBILITY {
-    0%,99% { visibility: hidden; }
-    100% { visibility: visible; }
-}

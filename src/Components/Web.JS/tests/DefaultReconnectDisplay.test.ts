@@ -1,6 +1,6 @@
 import { DefaultReconnectDisplay } from "../src/Platform/Circuits/DefaultReconnectDisplay";
-import {JSDOM} from 'jsdom';
-import { NullLogger} from '../src/Platform/Logging/Loggers';
+import { JSDOM } from 'jsdom';
+import { NullLogger } from '../src/Platform/Logging/Loggers';
 
 describe('DefaultReconnectDisplay', () => {
 
@@ -14,10 +14,16 @@ describe('DefaultReconnectDisplay', () => {
         expect(element).toBeDefined();
         expect(element!.id).toBe('test-dialog-id');
         expect(element!.style.display).toBe('block');
-        expect(element!.classList).toContain('show');
+        expect(element!.style.visibility).toBe('hidden');
 
         expect(display.message.textContent).toBe('Attempting to reconnect to the server...');
         expect(display.button.style.display).toBe('none');
+
+        // Visibility changes asynchronously to allow animation
+        return new Promise(resolve => setTimeout(() => {
+            expect(element!.style.visibility).toBe('visible');
+            resolve();
+        }, 1));
     });
 
     it ('does not add element to the body multiple times', () => {
@@ -37,7 +43,6 @@ describe('DefaultReconnectDisplay', () => {
         display.hide();
 
         expect(display.modal.style.display).toBe('none');
-        expect(display.modal.classList).not.toContain('show');
     });
 
     it ('updates message on fail', () => {
@@ -48,7 +53,6 @@ describe('DefaultReconnectDisplay', () => {
         display.failed();
 
         expect(display.modal.style.display).toBe('block');
-        expect(display.modal.classList).toContain('show');
         expect(display.message.innerHTML).toBe('Reconnection failed. Try <a href=\"\">reloading</a> the page if you\'re unable to reconnect.');
         expect(display.button.style.display).toBe('block');
     });
@@ -61,7 +65,6 @@ describe('DefaultReconnectDisplay', () => {
         display.rejected();
 
         expect(display.modal.style.display).toBe('block');
-        expect(display.modal.classList).toContain('show');
         expect(display.message.innerHTML).toBe('Could not reconnect to the server. <a href=\"\">Reload</a> the page to restore functionality.');
         expect(display.button.style.display).toBe('none');
     });
