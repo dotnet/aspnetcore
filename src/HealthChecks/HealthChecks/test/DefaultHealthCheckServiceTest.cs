@@ -530,6 +530,40 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             // Assert
             Assert.False(hangs);
         }
+        
+        [Fact]
+        public async Task CheckHealthAsync_WithFailureStatus()
+        {
+            // Arrange
+            var service = CreateHealthChecksService(b =>
+            {
+                b.AddCheck<FailCapturingCheck>("degraded", HealthStatus.Degraded);
+                b.AddCheck<FailCapturingCheck>("healthy", HealthStatus.Healthy);
+                b.AddCheck<FailCapturingCheck>("unhealthy", HealthStatus.Unhealthy);
+            });
+
+            // Act
+            var results = await service.CheckHealthAsync();
+
+            // Assert
+            Assert.Collection(
+                results.Entries,
+                actual =>
+                {
+                    Assert.Equal("degraded", actual.Key);
+                    Assert.Equal(HealthStatus.Degraded, actual.Value.Status);
+                },
+                actual =>
+                {
+                    Assert.Equal("healthy", actual.Key);
+                    Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
+                },
+                actual =>
+                {
+                    Assert.Equal("unhealthy", actual.Key);
+                    Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
+                });
+        }
 
         private static DefaultHealthCheckService CreateHealthChecksService(Action<IHealthChecksBuilder> configure)
         {
@@ -569,6 +603,14 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                     { "name", context.Registration.Name },
                 };
                 return Task.FromResult(HealthCheckResult.Healthy(data: data));
+            }
+        }
+        
+        private class FailCapturingCheck : IHealthCheck
+        {
+            public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+            {
+                throw new Exception("check failed");
             }
         }
     }
