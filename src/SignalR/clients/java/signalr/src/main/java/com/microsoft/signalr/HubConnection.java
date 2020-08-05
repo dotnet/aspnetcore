@@ -136,7 +136,7 @@ public class HubConnection implements AutoCloseable {
         }
 
         this.baseUrl = url;
-        this.protocol = new MessagePackHubProtocol();
+        this.protocol = new JsonHubProtocol();
 
         if (accessTokenProvider != null) {
             this.accessTokenProvider = accessTokenProvider;
@@ -197,7 +197,7 @@ public class HubConnection implements AutoCloseable {
                 
                 // Increment the ByteBuffer payload by the byte length of the handshake + the byte length of the record separator (1)
                 int readBytes = handshakeResponseString.getBytes(StandardCharsets.UTF_8).length + 1;
-                payload = payload.position(payload.position() + readBytes);
+                payload.position(payload.position() + readBytes);
 
                 // The payload only contained the handshake response so we can return.
                 if (!payload.hasRemaining()) {

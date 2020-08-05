@@ -95,7 +95,7 @@ class MessagePackHubProtocol implements HubProtocol {
                     throw new RuntimeException(String.format("MessagePack message was length %d but claimed to be length %d.", readBytes, length));
                 }
                 unpacker.close();
-                payload = payload.position(payload.position() + readBytes);
+                payload.position(payload.position() + readBytes);
             }
         } catch (MessagePackException | IOException ex) {
             throw new RuntimeException("Error reading MessagePack data.", ex);
