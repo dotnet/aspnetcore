@@ -190,5 +190,16 @@ $@"<footer>
             var output = Encoding.UTF8.GetString(stream.ToArray());
             Assert.Equal(expected, output);
         }
+
+        [Fact]
+        public void GetWebSocketClientJavaScript_Works()
+        {
+            // Act
+            var script = WebSocketScriptInjection.GetWebSocketClientJavaScript("some-host");
+
+            // Assert
+            Assert.Contains("// dotnet-watch browser reload script", script);
+            Assert.Contains("'some-host'", script);
+        }
     }
 }

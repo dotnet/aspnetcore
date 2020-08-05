@@ -19,7 +19,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         private readonly byte[] _bodyBytes = Encoding.UTF8.GetBytes(BodyMarker);
         private readonly byte[] _scriptInjectionBytes;
 
-        public static WebSocketScriptInjection Instance { get; } = new WebSocketScriptInjection(GetWebSocketClientJavaScript());
+        public static WebSocketScriptInjection Instance { get; } = new WebSocketScriptInjection(
+            GetWebSocketClientJavaScript(Environment.GetEnvironmentVariable("ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT")));
 
         public WebSocketScriptInjection(string clientScript)
         {
@@ -75,9 +76,13 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             return true;
         }
 
-        private static string GetWebSocketClientJavaScript()
+        internal static string GetWebSocketClientJavaScript(string? hostString)
         {
-            var hostString = Environment.GetEnvironmentVariable("ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT");
+            if (string.IsNullOrEmpty(hostString))
+            {
+                throw new InvalidOperationException("We expect ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT to be specified.");
+            }
+
             var jsFileName = "Microsoft.AspNetCore.Watch.BrowserRefresh.WebSocketScriptInjection.js";
             using var reader = new StreamReader(typeof(WebSocketScriptInjection).Assembly.GetManifestResourceStream(jsFileName)!);
             var script = reader.ReadToEnd().Replace("{{hostString}}", hostString);

@@ -9,11 +9,11 @@ setTimeout(function () {
   }
   connection.onmessage = function (message) {
     if (message.data === 'Reload') {
-      console.debug("Server is ready. Reloading...");
+      console.debug('Server is ready. Reloading...');
       location.reload();
     } else if (message.data === 'Wait') {
-      console.debug("File changes detected. Waiting for application to rebuild.");
-      const t = document.title; const r = ["☱", "☲", "☴"]; let i = 0;
+      console.debug('File changes detected. Waiting for application to rebuild.');
+      const t = document.title; const r = ['☱', '☲', '☴']; let i = 0;
       setInterval(function () { document.title = r[i++ % r.length] + ' ' + t; }, 240);
     }
   }
