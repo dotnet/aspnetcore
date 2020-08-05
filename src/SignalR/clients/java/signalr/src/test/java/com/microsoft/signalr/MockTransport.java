@@ -53,7 +53,7 @@ class MockTransport implements Transport {
 
     @Override
     public Completable send(ByteBuffer message) {
-        if (!(ignorePings && message.equals("{\"type\":6}" + RECORD_SEPARATOR))) {
+        if (!(ignorePings && TestUtils.ByteBufferToString(message).equals("{\"type\":6}" + RECORD_SEPARATOR))) {
             sentMessages.add(message);
             sendSubject.onSuccess(message);
             sendSubject = SingleSubject.create();

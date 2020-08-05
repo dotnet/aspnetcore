@@ -467,7 +467,7 @@ class HubConnectionTest {
 
         stream.onComplete();
         messages = mockTransport.getSentMessages();
-        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[3]);
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.ByteBufferToString(messages[3]));
     }
 
     @Test
@@ -578,8 +578,8 @@ class HubConnectionTest {
         assertTrue(hubConnection.getStreamMap().isEmpty());
 
         messages = mockTransport.getSentMessages();
-        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[5]);
-        assertEquals("{\"type\":3,\"invocationId\":\"2\",\"error\":\"java.lang.Exception: Exception\"}\u001E", messages[6]);
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.ByteBufferToString(messages[5]));
+        assertEquals("{\"type\":3,\"invocationId\":\"2\",\"error\":\"java.lang.Exception: Exception\"}\u001E", TestUtils.ByteBufferToString(messages[6]));
 
         hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertTrue(hubConnection.getStreamMap().isEmpty());
