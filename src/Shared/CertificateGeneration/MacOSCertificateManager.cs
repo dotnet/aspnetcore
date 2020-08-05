@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
     internal class MacOSCertificateManager : CertificateManager
     {
         private const string CertificateSubjectRegex = "CN=(.*[^,]+).*";
-        private static readonly string MacOSUserKeyChain = Environment.GetEnvironmentVariable("HOME") + "/Library/Keychains/login.keychain-db";
         private const string MacOSSystemKeyChain = "/Library/Keychains/System.keychain";
         private const string MacOSFindCertificateCommandLine = "security";
         private static readonly string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p " + MacOSSystemKeyChain;
@@ -24,9 +23,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         private const string MacOSDeleteCertificateCommandLineArgumentsFormat = "security delete-certificate -Z {0} {1}";
         private const string MacOSTrustCertificateCommandLine = "sudo";
         private static readonly string MacOSTrustCertificateCommandLineArguments = "security add-trusted-cert -d -r trustRoot -k " + MacOSSystemKeyChain + " ";
-
-        private const string MacOSAddCertificateToKeyChainCommandLine = "security";
-        private static readonly string MacOSAddCertificateToKeyChainCommandLineArgumentsFormat = "import {0} -k " + MacOSUserKeyChain + " -t cert -f pkcs12 -P {1} -A";
 
         public const string InvalidCertificateState = "The ASP.NET Core developer certificate is in an invalid state. " +
             "To fix this issue, run the following commands 'dotnet dev-certs https --clean' and 'dotnet dev-certs https' to remove all existing ASP.NET Core development certificates " +
@@ -256,47 +252,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         // We don't have a good way of checking on the underlying implementation if ti is exportable, so just return true.
         protected override bool IsExportable(X509Certificate2 c) => true;
 
-        protected override X509Certificate2 SaveCertificateCore(X509Certificate2 certificate)
-        {
-            // security import https.pfx -k $loginKeyChain -t cert -f pkcs12 -P password -A;
-            var passwordBytes = new byte[48];
-            RandomNumberGenerator.Fill(passwordBytes.AsSpan()[0..35]);
-            var password = Convert.ToBase64String(passwordBytes, 0, 36);
-            var certBytes = certificate.Export(X509ContentType.Pfx, password);
-            var certificatePath = Path.GetTempFileName();
-            File.WriteAllBytes(certificatePath, certBytes);
-
-            var processInfo = new ProcessStartInfo(
-                MacOSAddCertificateToKeyChainCommandLine,
-            string.Format(
-                MacOSAddCertificateToKeyChainCommandLineArgumentsFormat,
-                certificatePath,
-                password
-            ))
-            {
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-
-            Log.MacOSAddCertificateToKeyChainStart(MacOSUserKeyChain, GetDescription(certificate));
-            using (var process = Process.Start(processInfo))
-            {
-                var output = process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
-                process.WaitForExit();
-
-                if (process.ExitCode != 0)
-                {
-                    Log.MacOSAddCertificateToKeyChainError(process.ExitCode);
-                    throw new InvalidOperationException($@"There was an error importing the certificate into the user key chain '{certificate.Thumbprint}'.
-
-{output}");
-                }
-            }
-
-            Log.MacOSAddCertificateToKeyChainEnd();
-
-            return certificate;
-        }
+        // There is nothing special to do on macOS for storing the certificate in the store, so we just return the certificate.
+        protected override X509Certificate2 CertificateForStore(X509Certificate2 certificate) => certificate;
 
         protected override IList<X509Certificate2> GetCertificatesToRemove(StoreName storeName, StoreLocation storeLocation)
         {

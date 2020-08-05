@@ -371,7 +371,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         public abstract bool IsTrusted(X509Certificate2 certificate);
 
-        protected abstract X509Certificate2 SaveCertificateCore(X509Certificate2 certificate);
+        // On non macOS platforms, some work must be done to create a certificate suitable for persisting in the system store
+        protected abstract X509Certificate2 CertificateForStore(X509Certificate2 certificate);
 
         protected abstract void TrustCertificateCore(X509Certificate2 certificate);
 
@@ -548,12 +549,16 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         internal X509Certificate2 SaveCertificate(X509Certificate2 certificate)
         {
-            var name = StoreName.My;
-            var location = StoreLocation.CurrentUser;
+            const StoreName name = StoreName.My;
+            const StoreLocation location = StoreLocation.CurrentUser;
 
+            certificate = CertificateForStore(certificate);
             Log.SaveCertificateInStoreStart(GetDescription(certificate), name, location);
 
-            certificate = SaveCertificateCore(certificate);
+            using var store = new X509Store(name, location);
+            store.Open(OpenFlags.ReadWrite);
+            store.Add(certificate);
+            store.Close();
 
             Log.SaveCertificateInStoreEnd();
             return certificate;
