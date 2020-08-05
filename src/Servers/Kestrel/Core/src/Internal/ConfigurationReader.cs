@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     Certificate = new CertificateConfig(endpointConfig.GetSection(CertificateKey)),
                     SslProtocols = ParseSslProcotols(endpointConfig.GetSection(SslProtocolsKey)),
                     ClientCertificateMode = ParseClientCertificateMode(endpointConfig[ClientCertificateModeKey]),
-                    Sni = ReadSni(endpointConfig.GetSection(SniKey)),
+                    Sni = ReadSni(endpointConfig.GetSection(SniKey), endpointConfig.Key),
                 };
 
                 endpoints.Add(endpoint);
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             return endpoints;
         }
 
-        private Dictionary<string, SniConfig> ReadSni(IConfigurationSection sniConfig)
+        private Dictionary<string, SniConfig> ReadSni(IConfigurationSection sniConfig, string endpointName)
         {
             var sniDictionary = new Dictionary<string, SniConfig>(0, StringComparer.OrdinalIgnoreCase);
 
@@ -132,6 +132,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 //     }
                 // }
 
+                if (string.IsNullOrEmpty(sniChild.Key))
+                {
+                    throw new InvalidOperationException(CoreStrings.FormatSniNameCannotBeEmpty(endpointName));
+                }
+
                 var sni = new SniConfig
                 {
                     Protocols = ParseProtocols(sniChild[ProtocolsKey]),
@@ -140,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     ClientCertificateMode = ParseClientCertificateMode(sniChild[ClientCertificateModeKey])
                 };
 
-                sniDictionary[sniChild.Key] = sni;
+                sniDictionary.Add(sniChild.Key, sni);
             }
 
             return sniDictionary;

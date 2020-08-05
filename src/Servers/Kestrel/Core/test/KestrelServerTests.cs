@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -495,6 +496,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(mockLoggerFactory.Object);
             serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
+            serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
 
             var options = new KestrelServerOptions
             {
@@ -631,6 +633,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(mockLoggerFactory.Object);
             serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
+            serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
 
             var options = new KestrelServerOptions
             {

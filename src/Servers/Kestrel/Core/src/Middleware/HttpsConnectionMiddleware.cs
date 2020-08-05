@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
     {
         private const string EnableWindows81Http2 = "Microsoft.AspNetCore.Server.Kestrel.EnableWindows81Http2";
 
-        private static readonly bool _isWindowsVersionIncompatible = IsWindowsVersionIncompatible();
+        private static readonly bool _isWindowsVersionIncompatibleWithHttp2 = IsWindowsVersionIncompatibleWithHttp2();
 
         private readonly ConnectionDelegate _next;
         private readonly TimeSpan _handshakeTimeout;
@@ -369,12 +369,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 {
                     throw new NotSupportedException(CoreStrings.Http2NoTlsOsx);
                 }
-                else if (_isWindowsVersionIncompatible)
+                else if (_isWindowsVersionIncompatibleWithHttp2)
                 {
                     throw new NotSupportedException(CoreStrings.Http2NoTlsWin81);
                 }
             }
-            else if (httpProtocols == HttpProtocols.Http1AndHttp2 && _isWindowsVersionIncompatible)
+            else if (httpProtocols == HttpProtocols.Http1AndHttp2 && _isWindowsVersionIncompatibleWithHttp2)
             {
                 logger.Http2DefaultCiphersInsufficient();
                 return HttpProtocols.Http1;
@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             return httpProtocols;
         }
 
-        private static bool IsWindowsVersionIncompatible()
+        private static bool IsWindowsVersionIncompatibleWithHttp2()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {

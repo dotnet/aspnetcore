@@ -18,17 +18,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal class SniOptionsSelector
     {
-        private const string wildcardHost = "*";
-        private const string wildcardPrefix = "*.";
+        private const string WildcardHost = "*";
+        private const string WildcardPrefix = "*.";
 
         private readonly string _endpointName;
 
         private readonly Func<ConnectionContext, string, X509Certificate2> _fallbackServerCertificateSelector;
         private readonly Action<ConnectionContext, SslServerAuthenticationOptions> _onAuthenticateCallback;
 
-        private readonly Dictionary<string, SniOptions> _fullNameOptions = new Dictionary<string, SniOptions>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, SniOptions> _exactNameOptions = new Dictionary<string, SniOptions>(StringComparer.OrdinalIgnoreCase);
         private readonly SortedList<string, SniOptions> _wildcardPrefixOptions = new SortedList<string, SniOptions>(LongestStringFirstComparer.Instance);
-        private readonly SniOptions _wildcardHostOptions = null;
+        private readonly SniOptions _wildcardOptions = null;
 
         public SniOptionsSelector(
             ICertificateConfigLoader certifcateConfigLoader,
@@ -85,17 +85,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     HttpProtocols = httpProtocols,
                 };
 
-                if (name.Equals(wildcardHost, StringComparison.Ordinal))
+                if (name.Equals(WildcardHost, StringComparison.Ordinal))
                 {
-                    _wildcardHostOptions = sniOptions;
+                    _wildcardOptions = sniOptions;
                 }
-                else if (name.StartsWith(wildcardPrefix, StringComparison.Ordinal))
+                else if (name.StartsWith(WildcardPrefix, StringComparison.Ordinal))
                 {
-                    _wildcardPrefixOptions.Add(name, sniOptions);
+                    // Only slice off 1 character, the `*`. We want to match the leading `.` also.
+                    _wildcardPrefixOptions.Add(name.Substring(1), sniOptions);
                 }
                 else
                 {
-                    _fullNameOptions[name] = sniOptions;
+                    _exactNameOptions.Add(name, sniOptions);
                 }
             }
         }
@@ -104,13 +105,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             SniOptions sniOptions = null;
 
-            if (!string.IsNullOrEmpty(serverName) && !_fullNameOptions.TryGetValue(serverName, out sniOptions))
+            if (!string.IsNullOrEmpty(serverName) && !_exactNameOptions.TryGetValue(serverName, out sniOptions))
             {
-                TryGetWildcardPrefixedOptions(serverName, out sniOptions);
+                foreach (var (suffix, options) in _wildcardPrefixOptions)
+                {
+                    if (serverName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        sniOptions = options;
+                        break;
+                    }
+                }
             }
 
             // Fully wildcarded ("*") options can be used even when given an empty server name.
-            sniOptions ??= _wildcardHostOptions;
+            sniOptions ??= _wildcardOptions;
 
             if (sniOptions is null)
             {
@@ -147,27 +155,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
 
             return sslOptions;
-        }
-
-        private bool TryGetWildcardPrefixedOptions(string serverName, out SniOptions sniOptions)
-        {
-            sniOptions = null;
-
-            ReadOnlySpan<char> serverNameSpan = serverName;
-
-            foreach (var (nameCandidate, optionsCandidate) in _wildcardPrefixOptions)
-            {
-                ReadOnlySpan<char> nameCandidateSpan = nameCandidate;
-
-                // Only slice off 1 character, the `*`. We want to match the leading `.` also.
-                if (serverNameSpan.EndsWith(nameCandidateSpan.Slice(1), StringComparison.OrdinalIgnoreCase))
-                {
-                    sniOptions = optionsCandidate;
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         // TODO: Reflection based test to ensure we clone everything!

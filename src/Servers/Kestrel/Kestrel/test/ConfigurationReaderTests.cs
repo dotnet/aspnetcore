@@ -289,6 +289,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         }
 
         [Fact]
+        public void ReadEndpointWithEmptySniKey_Throws()
+        {
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
+                new KeyValuePair<string, string>("Endpoints:End1:Sni::Protocols", "Http1"),
+            }).Build();
+
+            var reader = new ConfigurationReader(config);
+            var ex = Assert.Throws<InvalidOperationException>(() => reader.Endpoints);
+
+            Assert.Equal(CoreStrings.FormatSniNameCannotBeEmpty("End1"), ex.Message);
+        }
+
+        [Fact]
         public void ReadEndpointWithSniConfigured_ReturnsCorrectValue()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
