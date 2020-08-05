@@ -247,6 +247,7 @@
     <IdentityServer4StoragePackageVersion>3.0.0</IdentityServer4StoragePackageVersion>
     <IdentityServer4EntityFrameworkStoragePackageVersion>3.0.0</IdentityServer4EntityFrameworkStoragePackageVersion>
     <MessagePackPackageVersion>2.1.90</MessagePackPackageVersion>
+    <MicrosoftAspNetCoreAuthPackageVersion>5.0.0-preview.8.20404.9</MicrosoftAspNetCoreAuthPackageVersion>
     <MicrosoftIdentityWebPackageVersion>0.2.1-preview</MicrosoftIdentityWebPackageVersion>
     <MicrosoftIdentityWebUIPackageVersion>0.2.1-preview</MicrosoftIdentityWebUIPackageVersion>
     <MicrosoftGraphPackageVersion>3.8.0</MicrosoftGraphPackageVersion>
