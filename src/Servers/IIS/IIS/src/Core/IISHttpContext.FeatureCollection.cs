@@ -398,7 +398,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         internal IHttpResetFeature GetResetFeature()
         {
             // Check version is above 2.
-            if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpSupportTrailer(_pInProcessHandler))
+            if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpHasResponse4(_pInProcessHandler))
             {
                 return this;
             }

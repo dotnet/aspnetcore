@@ -144,12 +144,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
                     await h2Connection.StartStreamAsync(1, GetHeaders("/Goaway"), endStream: true);
 
-                    //await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
-                    //{
-                    //    Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
-                    //});
-
                     var frame = await h2Connection.ReceiveFrameAsync();
+                    Assert.Equal(Http2FrameType.GOAWAY, frame.Type);
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
                 })
