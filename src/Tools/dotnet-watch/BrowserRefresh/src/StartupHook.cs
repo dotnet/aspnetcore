@@ -5,6 +5,6 @@ internal class StartupHook
 {
     public static void Initialize()
     {
-        // We're in!
+        // This method exists to make startup hook load successfully. We do not need to do anything interesting here.
     }
 }
