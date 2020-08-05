@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -72,16 +73,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     }
                 }
 
-                var hostBuilder = TransportSelector.GetWebHostBuilder()
-                    .UseKestrel(o =>
+                var hostBuilder = TransportSelector.GetHostBuilder()
+                    .ConfigureWebHost(webHostBuilder =>
                     {
-                        o.ListenUnixSocket(path, builder =>
-                        {
-                            builder.Run(EchoServer);
-                        });
+                        webHostBuilder
+                            .UseKestrel(o =>
+                            {
+                                o.ListenUnixSocket(path, builder =>
+                                {
+                                    builder.Run(EchoServer);
+                                });
+                            })
+                            .Configure(c => { });
                     })
-                    .ConfigureServices(AddTestLogging)
-                    .Configure(c => { });
+                    .ConfigureServices(AddTestLogging);
 
                 using (var host = hostBuilder.Build())
                 {
@@ -100,7 +105,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         {
                             var bytesReceived = await socket.ReceiveAsync(buffer.AsMemory(read, buffer.Length - read), SocketFlags.None).DefaultTimeout();
                             read += bytesReceived;
-                            if (bytesReceived <= 0) break;
+                            if (bytesReceived <= 0)
+                            {
+                                break;
+                            }
                         }
 
                         Assert.Equal(data, buffer);
@@ -134,17 +142,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             try
             {
-                var hostBuilder = TransportSelector.GetWebHostBuilder()
-                    .UseUrls(url)
-                    .UseKestrel()
-                    .ConfigureServices(AddTestLogging)
-                    .Configure(app =>
+                var hostBuilder = TransportSelector.GetHostBuilder()
+                    .ConfigureWebHost(webHostBuilder =>
                     {
-                        app.Run(async context =>
-                        {
-                            await context.Response.WriteAsync("Hello World");
-                        });
-                    });
+                        webHostBuilder
+                            .UseUrls(url)
+                            .UseKestrel()
+                            .Configure(app =>
+                            {
+                                app.Run(async context =>
+                                {
+                                    await context.Response.WriteAsync("Hello World");
+                                });
+                            });
+                    })
+                    .ConfigureServices(AddTestLogging);
 
                 using (var host = hostBuilder.Build())
                 {
@@ -165,7 +177,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         {
                             var bytesReceived = await socket.ReceiveAsync(readBuffer.AsMemory(read), SocketFlags.None).DefaultTimeout();
                             read += bytesReceived;
-                            if (bytesReceived <= 0) break;
+                            if (bytesReceived <= 0)
+                            {
+                                break;
+                            }
                         }
 
                         var httpResponse = Encoding.ASCII.GetString(readBuffer, 0, read);

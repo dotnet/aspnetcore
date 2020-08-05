@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             _canListenToOpenTcpSocketHandleSocket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
 
-            using (var server = new TestServer(_ => Task.CompletedTask, new TestServiceContext(LoggerFactory),
+            await using (var server = new TestServer(_ => Task.CompletedTask, new TestServiceContext(LoggerFactory),
                 new ListenOptions((ulong)_canListenToOpenTcpSocketHandleSocket.Handle)))
             {
                 using (var connection = new TestConnection(((IPEndPoint)_canListenToOpenTcpSocketHandleSocket.LocalEndPoint).Port))
@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
                 }
-                await server.StopAsync();
             }
         }
     }

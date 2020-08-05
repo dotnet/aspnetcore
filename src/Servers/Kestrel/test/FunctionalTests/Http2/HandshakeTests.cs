@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
         public async Task TlsAlpnHandshakeSelectsHttp2From1and2()
         {
-            using (var server = new TestServer(context =>
+            await using (var server = new TestServer(context =>
             {
                 var tlsFeature = context.Features.Get<ITlsApplicationProtocolFeature>();
                 Assert.NotNull(tlsFeature);
@@ -103,8 +103,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
             {
                 var result = await Client.GetStringAsync($"https://localhost:{server.Port}/");
                 Assert.Equal("hello world HTTP/2", result);
-
-                await server.StopAsync();
             }
         }
 
@@ -113,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
         public async Task TlsAlpnHandshakeSelectsHttp2()
         {
-            using (var server = new TestServer(context =>
+            await using (var server = new TestServer(context =>
             {
                 var tlsFeature = context.Features.Get<ITlsApplicationProtocolFeature>();
                 Assert.NotNull(tlsFeature);
@@ -133,7 +131,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
             {
                 var result = await Client.GetStringAsync($"https://localhost:{server.Port}/");
                 Assert.Equal("hello world HTTP/2", result);
-                await server.StopAsync();
             }
         }
     }
