@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.IO;
 
@@ -8,6 +11,8 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         private Stream? _stream;
 
         internal InputFile Owner { get; set; } = default!;
+
+        public int Id { get; set; }
 
         public string? Name { get; set; }
 
@@ -27,5 +32,8 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         }
 
         public event EventHandler? OnDataRead;
+
+        internal void InvokeOnDataRead()
+            => OnDataRead?.Invoke(this, EventArgs.Empty);
     }
 }

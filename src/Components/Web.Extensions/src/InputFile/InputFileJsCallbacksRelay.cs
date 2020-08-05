@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
@@ -8,12 +11,13 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
     {
         private readonly IInputFileJsCallbacks _callbacks;
 
-        private readonly IDisposable _selfReference;
+        public IDisposable DotNetReference { get; }
 
         public InputFileJsCallbacksRelay(IInputFileJsCallbacks callbacks)
         {
             _callbacks = callbacks;
-            _selfReference = DotNetObjectReference.Create(this);
+
+            DotNetReference = DotNetObjectReference.Create(this);
         }
 
         [JSInvokable]
@@ -22,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
         public void Dispose()
         {
-            _selfReference.Dispose();
+            DotNetReference.Dispose();
         }
     }
 }

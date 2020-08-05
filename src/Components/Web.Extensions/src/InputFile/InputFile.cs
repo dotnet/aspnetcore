@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,8 +13,6 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
     public class InputFile : ComponentBase, IInputFileJsCallbacks, IDisposable
     {
-        private const string JsFunctionsPrefix = "_blazorInputFile";
-
         private ElementReference _inputFileElement;
 
         private InputFileJsCallbacksRelay? _jsCallbacksRelay;
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             if (firstRender)
             {
                 _jsCallbacksRelay = new InputFileJsCallbacksRelay(this);
-                await JSRuntime.InvokeVoidAsync($"{JsFunctionsPrefix}.init", _jsCallbacksRelay, _inputFileElement);
+                await JSRuntime.InvokeVoidAsync(InputFileInterop.Init, _jsCallbacksRelay.DotNetReference, _inputFileElement);
             }
         }
 
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
         internal Stream OpenFileStream(FileListEntry file)
             => RuntimeInformation.IsOSPlatform(OSPlatform.Browser) ?
-                new MemoryStream() : // TODO: SharedMemoryFileListEntryStream
+                (Stream)new SharedMemoryFileListEntryStream(JSRuntime, _inputFileElement, file) :
                 new MemoryStream();  // TODO: RemoteFileListEntryStream
 
         Task IInputFileJsCallbacks.NotifyChange(FileListEntry[] files)
