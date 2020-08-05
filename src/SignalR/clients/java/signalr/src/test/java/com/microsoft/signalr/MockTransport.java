@@ -42,8 +42,7 @@ class MockTransport implements Transport {
         this.url = url;
         if (autoHandshake) {
             try {
-            	ByteBuffer invokeBuffer = ByteBuffer.wrap(("{}" + RECORD_SEPARATOR).getBytes(StandardCharsets.UTF_8));
-                onReceiveCallBack.invoke(invokeBuffer);
+                onReceiveCallBack.invoke(TestUtils.StringToByteBuffer("{}" + RECORD_SEPARATOR));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -89,11 +88,11 @@ class MockTransport implements Transport {
     }
 
     public void receiveMessage(String message) {
-        this.onReceive(ByteBuffer.wrap(message.getBytes(StandardCharsets.UTF_8)));
+        this.onReceive(TestUtils.StringToByteBuffer(message));
     }
 
-    public String[] getSentMessages() {
-        return sentMessages.toArray(new String[sentMessages.size()]);
+    public ByteBuffer[] getSentMessages() {
+        return sentMessages.toArray(new ByteBuffer[sentMessages.size()]);
     }
 
     public SingleSubject<ByteBuffer> getNextSentMessage() {

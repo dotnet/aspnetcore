@@ -3,6 +3,9 @@
 
 package com.microsoft.signalr;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+
 class TestUtils {
     static HubConnection createHubConnection(String url) {
         return createHubConnection(url, new MockTransport(true), true, new TestHttpClient());
@@ -19,5 +22,13 @@ class TestUtils {
                 .shouldSkipNegotiate(skipNegotiate);
 
         return builder.build();
+    }
+    
+    static String ByteBufferToString(ByteBuffer buffer) {
+    	return new String(buffer.array(), StandardCharsets.UTF_8);
+    }
+    
+    static ByteBuffer StringToByteBuffer(String s) {
+    	return ByteBuffer.wrap(s.getBytes(StandardCharsets.UTF_8));
     }
 }
