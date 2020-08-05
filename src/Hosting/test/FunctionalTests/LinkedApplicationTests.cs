@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
     public class LinkedApplicationTests : LoggedTest
     {
         [Fact]
+        [QuarantinedTest]
         public async Task LinkedApplicationWorks()
         {
             using (StartLog(out var loggerFactory))
