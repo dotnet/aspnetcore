@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
@@ -27,52 +28,49 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             _scriptInjectionBytes = Encoding.UTF8.GetBytes(clientScript);
         }
 
-        public bool TryInjectLiveReloadScript(Stream baseStream, byte[] buffer, int offset, int count)
+        public bool TryInjectLiveReloadScript(Stream baseStream, ReadOnlySpan<byte> buffer)
         {
-            var span = buffer.AsSpan(offset, count);
-            var index = span.LastIndexOf(_bodyBytes);
+            var index = buffer.LastIndexOf(_bodyBytes);
             if (index == -1)
             {
-                baseStream.Write(span);
+                baseStream.Write(buffer);
                 return false;
             }
 
             if (index > 0)
             {
-                baseStream.Write(span.Slice(0, index));
-                span = span[index..];
+                baseStream.Write(buffer.Slice(0, index));
+                buffer = buffer[index..];
             }
 
             // Write the injected script
             baseStream.Write(_scriptInjectionBytes);
 
             // Write the rest of the buffer/HTML doc
-            baseStream.Write(span);
+            baseStream.Write(buffer);
             return true;
         }
 
-        public async ValueTask<bool> TryInjectLiveReloadScriptAsync(Stream baseStream, byte[] buffer, int offset, int count)
+        public async ValueTask<bool> TryInjectLiveReloadScriptAsync(Stream baseStream, ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) 
         {
-            var index = buffer.AsSpan(offset, count).LastIndexOf(_bodyBytes);
+            var index = buffer.Span.LastIndexOf(_bodyBytes);
             if (index == -1)
             {
-                await baseStream.WriteAsync(buffer, offset, count);
+                await baseStream.WriteAsync(buffer, cancellationToken);
                 return false;
             }
 
-            var memory = buffer.AsMemory(offset, count);
-
             if (index > 0)
             {
-                await baseStream.WriteAsync(memory.Slice(0, index));
-                memory = memory[index..];
+                await baseStream.WriteAsync(buffer.Slice(0, index), cancellationToken);
+                buffer = buffer[index..];
             }
 
             // Write the injected script
-            await baseStream.WriteAsync(_scriptInjectionBytes);
+            await baseStream.WriteAsync(_scriptInjectionBytes, cancellationToken);
 
             // Write the rest of the buffer/HTML doc
-            await baseStream.WriteAsync(memory);
+            await baseStream.WriteAsync(buffer, cancellationToken);
             return true;
         }
 

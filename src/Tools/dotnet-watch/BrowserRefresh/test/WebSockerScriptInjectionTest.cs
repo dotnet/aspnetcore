@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var input = Encoding.UTF8.GetBytes("<div>this is not a real body tag.</div>");
 
             // Act
-            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input, 0, input.Length);
+            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input);
 
             // Assert
             Assert.False(result);
@@ -47,7 +48,7 @@ $@"<footer>
 </html>");
 
             // Act
-            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input, 0, input.Length);
+            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input);
 
             // Assert
             Assert.True(result);
@@ -64,7 +65,7 @@ $@"<footer>
             var input = Encoding.UTF8.GetBytes("unused</table></body>");
 
             // Act
-            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input, 6, input.Length - 6);
+            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input.AsMemory(6));
 
             // Assert
             Assert.True(result);
@@ -81,7 +82,7 @@ $@"<footer>
             var input = Encoding.UTF8.GetBytes("unused</body>");
 
             // Act
-            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input, 6, input.Length - 6);
+            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input.AsMemory(6));
 
             // Assert
             Assert.True(result);
@@ -98,7 +99,7 @@ $@"<footer>
             var input = Encoding.UTF8.GetBytes("</body></html>");
 
             // Act
-            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input, 0, input.Length);
+            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input);
 
             // Assert
             Assert.True(result);
@@ -115,7 +116,7 @@ $@"<footer>
             var input = Encoding.UTF8.GetBytes("</body>");
 
             // Act
-            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input, 0, input.Length);
+            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input);
 
             // Assert
             Assert.True(result);
@@ -129,10 +130,10 @@ $@"<footer>
             // Arrange
             var expected = $"<p></body>some text</p>{ClientScript}</body>";
             var stream = new MemoryStream();
-            var input = Encoding.UTF8.GetBytes("abc<p></body>some text</p></body>");
+            var input = Encoding.UTF8.GetBytes("abc<p></body>some text</p></body>").AsMemory(3);
 
             // Act
-            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input, 3, input.Length - 3);
+            var result = await ScriptInjection.TryInjectLiveReloadScriptAsync(stream, input);
 
             // Assert
             Assert.True(result);
@@ -146,10 +147,10 @@ $@"<footer>
             // Arrange
             var expected = "<p>Hello world</p>";
             var stream = new MemoryStream();
-            var input = Encoding.UTF8.GetBytes(expected);
+            var input = Encoding.UTF8.GetBytes(expected).AsSpan();
 
             // Act
-            var result = ScriptInjection.TryInjectLiveReloadScript(stream, input, 0, input.Length);
+            var result = ScriptInjection.TryInjectLiveReloadScript(stream, input);
 
             // Assert
             Assert.False(result);
@@ -163,10 +164,10 @@ $@"<footer>
             // Arrange
             var expected = $"</table>{ClientScript}</body>";
             var stream = new MemoryStream();
-            var input = Encoding.UTF8.GetBytes("</table></body>");
+            var input = Encoding.UTF8.GetBytes("</table></body>").AsSpan();
 
             // Act
-            var result = ScriptInjection.TryInjectLiveReloadScript(stream, input, 0, input.Length);
+            var result = ScriptInjection.TryInjectLiveReloadScript(stream, input);
 
             // Assert
             Assert.True(result);
@@ -180,10 +181,10 @@ $@"<footer>
             // Arrange
             var expected = $"</table>{ClientScript}</body>";
             var stream = new MemoryStream();
-            var input = Encoding.UTF8.GetBytes("unused</table></body>");
+            var input = Encoding.UTF8.GetBytes("unused</table></body>").AsSpan(6);
 
             // Act
-            var result = ScriptInjection.TryInjectLiveReloadScript(stream, input, 6, input.Length - 6);
+            var result = ScriptInjection.TryInjectLiveReloadScript(stream, input);
 
             // Assert
             Assert.True(result);

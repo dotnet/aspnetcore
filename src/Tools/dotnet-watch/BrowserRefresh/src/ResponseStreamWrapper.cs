@@ -56,12 +56,19 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         public override void Write(ReadOnlySpan<byte> buffer)
         {
             OnWrite();
-
-            _baseStream.Write(buffer);
+            if (IsHtmlResponse && !ScriptInjectionPerformed)
+            {
+                ScriptInjectionPerformed = WebSocketScriptInjection.Instance.TryInjectLiveReloadScript(_baseStream, buffer);
+            }
+            else
+            {
+                _baseStream.Write(buffer);
+            }
         }
 
         public override void WriteByte(byte value)
         {
+            OnWrite();
             _baseStream.WriteByte(value);
         }
 
@@ -71,7 +78,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                ScriptInjectionPerformed = WebSocketScriptInjection.Instance.TryInjectLiveReloadScript(_baseStream, buffer, offset, count);
+                ScriptInjectionPerformed = WebSocketScriptInjection.Instance.TryInjectLiveReloadScript(_baseStream, buffer.AsSpan(offset, count));
             }
             else
             {
@@ -85,7 +92,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                ScriptInjectionPerformed = await WebSocketScriptInjection.Instance.TryInjectLiveReloadScriptAsync(_baseStream, buffer, offset, count);
+                ScriptInjectionPerformed = await WebSocketScriptInjection.Instance.TryInjectLiveReloadScriptAsync(_baseStream, buffer.AsMemory(offset, count), cancellationToken);
             }
             else
             {
@@ -99,13 +106,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                var materialized = buffer.ToArray();
-
-                ScriptInjectionPerformed = await WebSocketScriptInjection.Instance.TryInjectLiveReloadScriptAsync(
-                    _baseStream,
-                    materialized,
-                    0,
-                    materialized.Length);
+                ScriptInjectionPerformed = await WebSocketScriptInjection.Instance.TryInjectLiveReloadScriptAsync(_baseStream, buffer, cancellationToken);
             }
             else
             {
