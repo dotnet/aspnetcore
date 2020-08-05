@@ -5,6 +5,8 @@ package com.microsoft.signalr;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +35,7 @@ class JsonHubProtocolTest {
     @Test
     public void verifyWriteMessage() {
         InvocationMessage invocationMessage = new InvocationMessage(null, null, "test", new Object[] {"42"}, null);
-        String result = jsonHubProtocol.writeMessage(invocationMessage);
+        String result = new String(jsonHubProtocol.writeMessage(invocationMessage).array(), StandardCharsets.UTF_8);
         String expectedResult = "{\"type\":1,\"target\":\"test\",\"arguments\":[\"42\"]}\u001E";
         assertEquals(expectedResult, result);
     }
@@ -41,9 +43,10 @@ class JsonHubProtocolTest {
     @Test
     public void parsePingMessage() {
         String stringifiedMessage = "{\"type\":6}\u001E";
+        ByteBuffer message = ByteBuffer.wrap(stringifiedMessage.getBytes(StandardCharsets.UTF_8));
         TestBinder binder = new TestBinder(PingMessage.getInstance());
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
 
         //We know it's only one message
         assertNotNull(messages);
@@ -54,9 +57,10 @@ class JsonHubProtocolTest {
     @Test
     public void parseCloseMessage() {
         String stringifiedMessage = "{\"type\":7}\u001E";
+        ByteBuffer message = ByteBuffer.wrap(stringifiedMessage.getBytes(StandardCharsets.UTF_8));
         TestBinder binder = new TestBinder(new CloseMessage());
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
 
         //We know it's only one message
         assertNotNull(messages);
@@ -73,9 +77,10 @@ class JsonHubProtocolTest {
     @Test
     public void parseCloseMessageWithError() {
         String stringifiedMessage = "{\"type\":7,\"error\": \"There was an error\"}\u001E";
+        ByteBuffer message = ByteBuffer.wrap(stringifiedMessage.getBytes(StandardCharsets.UTF_8));
         TestBinder binder = new TestBinder(new CloseMessage("There was an error"));
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
 
         //We know it's only one message
         assertNotNull(messages);
@@ -92,9 +97,10 @@ class JsonHubProtocolTest {
     @Test
     public void parseSingleMessage() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
+        ByteBuffer message = ByteBuffer.wrap(stringifiedMessage.getBytes(StandardCharsets.UTF_8));
         TestBinder binder = new TestBinder(new InvocationMessage(null, "1", "test", new Object[] { 42 }, null));
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
 
         //We know it's only one message
         assertNotNull(messages);
@@ -115,27 +121,30 @@ class JsonHubProtocolTest {
     @Test
     public void parseSingleUnsupportedStreamInvocationMessage() {
         String stringifiedMessage = "{\"type\":4,\"Id\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
+        ByteBuffer message = ByteBuffer.wrap(stringifiedMessage.getBytes(StandardCharsets.UTF_8));
         TestBinder binder = new TestBinder(new StreamInvocationMessage(null, "1", "test", new Object[] { 42 }, null));
 
-        Throwable exception = assertThrows(UnsupportedOperationException.class, () -> jsonHubProtocol.parseMessages(stringifiedMessage, binder));
+        Throwable exception = assertThrows(UnsupportedOperationException.class, () -> jsonHubProtocol.parseMessages(message, binder));
         assertEquals("The message type STREAM_INVOCATION is not supported yet.", exception.getMessage());
     }
 
     @Test
     public void parseSingleUnsupportedCancelInvocationMessage() {
         String stringifiedMessage = "{\"type\":5,\"invocationId\":123}\u001E";
+        ByteBuffer message = ByteBuffer.wrap(stringifiedMessage.getBytes(StandardCharsets.UTF_8));
         TestBinder binder = new TestBinder(null);
 
-        Throwable exception = assertThrows(UnsupportedOperationException.class, () -> jsonHubProtocol.parseMessages(stringifiedMessage, binder));
+        Throwable exception = assertThrows(UnsupportedOperationException.class, () -> jsonHubProtocol.parseMessages(message, binder));
         assertEquals("The message type CANCEL_INVOCATION is not supported yet.", exception.getMessage());
     }
 
     @Test
     public void parseTwoMessages() {
-        String twoMessages = "{\"type\":1,\"target\":\"one\",\"arguments\":[42]}\u001E{\"type\":1,\"target\":\"two\",\"arguments\":[43]}\u001E";
+        String stringifiedMessage = "{\"type\":1,\"target\":\"one\",\"arguments\":[42]}\u001E{\"type\":1,\"target\":\"two\",\"arguments\":[43]}\u001E";
+        ByteBuffer message = ByteBuffer.wrap(stringifiedMessage.getBytes(StandardCharsets.UTF_8));
         TestBinder binder = new TestBinder(new InvocationMessage(null, "1", "one", new Object[] { 42 }, null));
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(twoMessages, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
         
         assertNotNull(messages);
         assertEquals(2, messages.size());
@@ -166,9 +175,10 @@ class JsonHubProtocolTest {
     @Test
     public void parseSingleMessageMutipleArgs() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42, 24]}\u001E";
+        ByteBuffer message = ByteBuffer.wrap(stringifiedMessage.getBytes(StandardCharsets.UTF_8));
         TestBinder binder = new TestBinder(new InvocationMessage(null, "1", "test", new Object[] { 42, 24 }, null));
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
         
         assertNotNull(messages);
         assertEquals(1, messages.size());
@@ -176,11 +186,11 @@ class JsonHubProtocolTest {
         //We know it's only one message
         assertEquals(HubMessageType.INVOCATION, messages.get(0).getMessageType());
 
-        InvocationMessage message = (InvocationMessage)messages.get(0);
-        assertEquals("test", message.getTarget());
-        assertEquals(null, message.getInvocationId());
-        int messageResult = (int) message.getArguments()[0];
-        int messageResult2 = (int) message.getArguments()[1];
+        InvocationMessage invocationMessage = (InvocationMessage)messages.get(0);
+        assertEquals("test", invocationMessage.getTarget());
+        assertEquals(null, invocationMessage.getInvocationId());
+        int messageResult = (int) invocationMessage.getArguments()[0];
+        int messageResult2 = (int) invocationMessage.getArguments()[1];
         assertEquals(42, messageResult);
         assertEquals(24, messageResult2);
     }
@@ -188,9 +198,10 @@ class JsonHubProtocolTest {
     @Test
     public void parseMessageWithOutOfOrderProperties() {
         String stringifiedMessage = "{\"arguments\":[42, 24],\"type\":1,\"target\":\"test\"}\u001E";
+        ByteBuffer message = ByteBuffer.wrap(stringifiedMessage.getBytes(StandardCharsets.UTF_8));
         TestBinder binder = new TestBinder(new InvocationMessage(null, "1", "test", new Object[] { 42, 24 }, null));
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
         
         assertNotNull(messages);
         assertEquals(1, messages.size());
@@ -198,11 +209,11 @@ class JsonHubProtocolTest {
         // We know it's only one message
         assertEquals(HubMessageType.INVOCATION, messages.get(0).getMessageType());
 
-        InvocationMessage message = (InvocationMessage) messages.get(0);
-        assertEquals("test", message.getTarget());
-        assertEquals(null, message.getInvocationId());
-        int messageResult = (int) message.getArguments()[0];
-        int messageResult2 = (int) message.getArguments()[1];
+        InvocationMessage invocationMessage = (InvocationMessage) messages.get(0);
+        assertEquals("test", invocationMessage.getTarget());
+        assertEquals(null, invocationMessage.getInvocationId());
+        int messageResult = (int) invocationMessage.getArguments()[0];
+        int messageResult2 = (int) invocationMessage.getArguments()[1];
         assertEquals(42, messageResult);
         assertEquals(24, messageResult2);
     }
@@ -210,9 +221,10 @@ class JsonHubProtocolTest {
     @Test
     public void parseCompletionMessageWithOutOfOrderProperties() {
         String stringifiedMessage = "{\"type\":3,\"result\":42,\"invocationId\":\"1\"}\u001E";
+        ByteBuffer message = ByteBuffer.wrap(stringifiedMessage.getBytes(StandardCharsets.UTF_8));
         TestBinder binder = new TestBinder(new CompletionMessage(null, "1", 42, null));
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
         
         assertNotNull(messages);
         assertEquals(1, messages.size());
@@ -220,94 +232,100 @@ class JsonHubProtocolTest {
         // We know it's only one message
         assertEquals(HubMessageType.COMPLETION, messages.get(0).getMessageType());
 
-        CompletionMessage message = (CompletionMessage) messages.get(0);
-        assertEquals(null, message.getError());
-        assertEquals(42 , message.getResult());
+        CompletionMessage completionMessage = (CompletionMessage) messages.get(0);
+        assertEquals(null, completionMessage.getError());
+        assertEquals(42 , completionMessage.getResult());
     }
 
     @Test
     public void invocationBindingFailureWhileParsingTooManyArgumentsWithOutOfOrderProperties() {
         String stringifiedMessage = "{\"arguments\":[42, 24],\"type\":1,\"target\":\"test\"}\u001E";
+        ByteBuffer message = ByteBuffer.wrap(stringifiedMessage.getBytes(StandardCharsets.UTF_8));
         TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
         
         assertNotNull(messages);
         assertEquals(1, messages.size());
         
         assertEquals(InvocationBindingFailureMessage.class, messages.get(0).getClass());
-        InvocationBindingFailureMessage message = (InvocationBindingFailureMessage)messages.get(0);
-        assertEquals("Invocation provides 2 argument(s) but target expects 1.", message.getException().getMessage());
+        InvocationBindingFailureMessage invocationBindingFailureMessage = (InvocationBindingFailureMessage)messages.get(0);
+        assertEquals("Invocation provides 2 argument(s) but target expects 1.", invocationBindingFailureMessage.getException().getMessage());
     }
 
     @Test
     public void invocationBindingFailureWhileParsingTooManyArguments() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42, 24]}\u001E";
+        ByteBuffer message = ByteBuffer.wrap(stringifiedMessage.getBytes(StandardCharsets.UTF_8));
         TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
         
         assertNotNull(messages);
         assertEquals(1, messages.size());
         
         assertEquals(InvocationBindingFailureMessage.class, messages.get(0).getClass());
-        InvocationBindingFailureMessage message = (InvocationBindingFailureMessage) messages.get(0);
-        assertEquals("Invocation provides 2 argument(s) but target expects 1.", message.getException().getMessage());
+        InvocationBindingFailureMessage invocationBindingFailureMessage = (InvocationBindingFailureMessage) messages.get(0);
+        assertEquals("Invocation provides 2 argument(s) but target expects 1.", invocationBindingFailureMessage.getException().getMessage());
     }
 
     @Test
     public void invocationBindingFailureWhileParsingTooFewArguments() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
+        ByteBuffer message = ByteBuffer.wrap(stringifiedMessage.getBytes(StandardCharsets.UTF_8));
         TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42, 24 }, null));
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
         
         assertNotNull(messages);
         assertEquals(1, messages.size());
         
         assertEquals(InvocationBindingFailureMessage.class, messages.get(0).getClass());
-        InvocationBindingFailureMessage message = (InvocationBindingFailureMessage) messages.get(0);
-        assertEquals("Invocation provides 1 argument(s) but target expects 2.", message.getException().getMessage());
+        InvocationBindingFailureMessage invocationBindingFailureMessage = (InvocationBindingFailureMessage) messages.get(0);
+        assertEquals("Invocation provides 1 argument(s) but target expects 2.", invocationBindingFailureMessage.getException().getMessage());
     }
 
     @Test
     public void invocationBindingFailureWhenParsingIncorrectType() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[\"true\"]}\u001E";
+        ByteBuffer message = ByteBuffer.wrap(stringifiedMessage.getBytes(StandardCharsets.UTF_8));
         TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
         
         assertNotNull(messages);
         assertEquals(1, messages.size());
         
         assertEquals(InvocationBindingFailureMessage.class, messages.get(0).getClass());
-        InvocationBindingFailureMessage message = (InvocationBindingFailureMessage) messages.get(0);
-        assertEquals("java.lang.NumberFormatException: For input string: \"true\"", message.getException().getMessage());
+        InvocationBindingFailureMessage invocationBindingFailureMessage = (InvocationBindingFailureMessage) messages.get(0);
+        assertEquals("java.lang.NumberFormatException: For input string: \"true\"", invocationBindingFailureMessage.getException().getMessage());
     }
 
     @Test
     public void invocationBindingFailureStillReadsJsonPayloadAfterFailure() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[\"true\"],\"invocationId\":\"123\"}\u001E";
+        ByteBuffer message = ByteBuffer.wrap(stringifiedMessage.getBytes(StandardCharsets.UTF_8));
         TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
 
-        List<HubMessage> messages = jsonHubProtocol.parseMessages(stringifiedMessage, binder);
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
         
         assertNotNull(messages);
         assertEquals(1, messages.size());
         
         assertEquals(InvocationBindingFailureMessage.class, messages.get(0).getClass());
-        InvocationBindingFailureMessage message = (InvocationBindingFailureMessage) messages.get(0);
-        assertEquals("java.lang.NumberFormatException: For input string: \"true\"", message.getException().getMessage());
-        assertEquals("123", message.getInvocationId());
+        InvocationBindingFailureMessage invocationBindingFailureMessage = (InvocationBindingFailureMessage) messages.get(0);
+        assertEquals("java.lang.NumberFormatException: For input string: \"true\"", invocationBindingFailureMessage.getException().getMessage());
+        assertEquals("123", invocationBindingFailureMessage.getInvocationId());
     }
 
     @Test
     public void errorWhileParsingIncompleteMessage() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":";
+        ByteBuffer message = ByteBuffer.wrap(stringifiedMessage.getBytes(StandardCharsets.UTF_8));
         TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42, 24 }, null));
 
         RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> jsonHubProtocol.parseMessages(stringifiedMessage, binder));
+                () -> jsonHubProtocol.parseMessages(message, binder));
         assertEquals("Message is incomplete.", exception.getMessage());
     }
 

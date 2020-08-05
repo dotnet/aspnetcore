@@ -5,6 +5,8 @@ package com.microsoft.signalr;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -2287,9 +2289,11 @@ class HubConnectionTest {
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
-        String message = mockTransport.getNextSentMessage().timeout(1, TimeUnit.SECONDS).blockingGet();
+        ByteBuffer messageBuffer = mockTransport.getNextSentMessage().timeout(1, TimeUnit.SECONDS).blockingGet();
+        String message = new String(messageBuffer.array(), StandardCharsets.UTF_8);
         assertEquals("{\"type\":6}" + RECORD_SEPARATOR, message);
-        message = mockTransport.getNextSentMessage().timeout(1, TimeUnit.SECONDS).blockingGet();
+        messageBuffer = mockTransport.getNextSentMessage().timeout(1, TimeUnit.SECONDS).blockingGet();
+        message = new String(messageBuffer.array(), StandardCharsets.UTF_8);
         assertEquals("{\"type\":6}" + RECORD_SEPARATOR, message);
 
         hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();

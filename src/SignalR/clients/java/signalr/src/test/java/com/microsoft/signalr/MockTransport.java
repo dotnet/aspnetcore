@@ -3,6 +3,8 @@
 
 package com.microsoft.signalr;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import io.reactivex.Completable;
@@ -11,14 +13,14 @@ import io.reactivex.subjects.SingleSubject;
 
 class MockTransport implements Transport {
     private OnReceiveCallBack onReceiveCallBack;
-    private ArrayList<String> sentMessages = new ArrayList<>();
+    private ArrayList<ByteBuffer> sentMessages = new ArrayList<>();
     private String url;
     private TransportOnClosedCallback onClose;
     final private boolean ignorePings;
     final private boolean autoHandshake;
     final private CompletableSubject startSubject = CompletableSubject.create();
     final private CompletableSubject stopSubject = CompletableSubject.create();
-    private SingleSubject<String> sendSubject = SingleSubject.create();
+    private SingleSubject<ByteBuffer> sendSubject = SingleSubject.create();
 
     private static final String RECORD_SEPARATOR = "\u001e";
 
@@ -40,7 +42,8 @@ class MockTransport implements Transport {
         this.url = url;
         if (autoHandshake) {
             try {
-                onReceiveCallBack.invoke("{}" + RECORD_SEPARATOR);
+            	ByteBuffer invokeBuffer = ByteBuffer.wrap(("{}" + RECORD_SEPARATOR).getBytes(StandardCharsets.UTF_8));
+                onReceiveCallBack.invoke(invokeBuffer);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -50,7 +53,7 @@ class MockTransport implements Transport {
     }
 
     @Override
-    public Completable send(String message) {
+    public Completable send(ByteBuffer message) {
         if (!(ignorePings && message.equals("{\"type\":6}" + RECORD_SEPARATOR))) {
             sentMessages.add(message);
             sendSubject.onSuccess(message);
@@ -65,7 +68,7 @@ class MockTransport implements Transport {
     }
 
     @Override
-    public void onReceive(String message) {
+    public void onReceive(ByteBuffer message) {
         this.onReceiveCallBack.invoke(message);
     }
 
@@ -86,14 +89,14 @@ class MockTransport implements Transport {
     }
 
     public void receiveMessage(String message) {
-        this.onReceive(message);
+        this.onReceive(ByteBuffer.wrap(message.getBytes(StandardCharsets.UTF_8)));
     }
 
     public String[] getSentMessages() {
         return sentMessages.toArray(new String[sentMessages.size()]);
     }
 
-    public SingleSubject<String> getNextSentMessage() {
+    public SingleSubject<ByteBuffer> getNextSentMessage() {
         return sendSubject;
     }
 

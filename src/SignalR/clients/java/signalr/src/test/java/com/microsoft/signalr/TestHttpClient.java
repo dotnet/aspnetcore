@@ -3,6 +3,7 @@
 
 package com.microsoft.signalr;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ class TestHttpClient extends HttpClient {
     }
 
     @Override
-    public Single<HttpResponse> send(HttpRequest request, String body) {
+    public Single<HttpResponse> send(HttpRequest request, ByteBuffer body) {
         this.sentRequests.add(request);
         return this.handler.invoke(request);
     }

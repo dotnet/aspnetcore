@@ -5,6 +5,8 @@ package com.microsoft.signalr;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -39,7 +41,8 @@ public class LongPollingTransportTest {
 
         Map<String, String> headers = new HashMap<>();
         LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
-        Throwable exception = assertThrows(RuntimeException.class, () -> transport.send("First").timeout(1, TimeUnit.SECONDS).blockingAwait());
+        ByteBuffer sendBuffer = ByteBuffer.wrap("First".getBytes(StandardCharsets.UTF_8));
+        Throwable exception = assertThrows(RuntimeException.class, () -> transport.send(sendBuffer).timeout(1, TimeUnit.SECONDS).blockingAwait());
         assertEquals(Exception.class, exception.getCause().getClass());
         assertEquals("Cannot send unless the transport is active.", exception.getCause().getMessage());
         assertFalse(transport.isActive());
@@ -117,7 +120,8 @@ public class LongPollingTransportTest {
 
         // The transport doesn't need to be active to trigger onReceive for the case
         // when we are handling the last outstanding poll.
-        transport.onReceive("TEST");
+        ByteBuffer onReceiveBuffer = ByteBuffer.wrap("TEST".getBytes(StandardCharsets.UTF_8));
+        transport.onReceive(onReceiveBuffer);
         assertTrue(onReceivedRan.get());
     }
 
@@ -145,7 +149,7 @@ public class LongPollingTransportTest {
         AtomicReference<String> message = new AtomicReference<>();
         transport.setOnReceive((msg -> {
             onReceiveCalled.set(true);
-            message.set(msg);
+            message.set(new String(msg.array(), StandardCharsets.UTF_8));
             block.onComplete();
         }) );
 
@@ -227,7 +231,8 @@ public class LongPollingTransportTest {
         transport.setOnClose((error) -> {});
 
         transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
-        assertTrue(transport.send("TEST").blockingAwait(1, TimeUnit.SECONDS));
+        ByteBuffer sendBuffer = ByteBuffer.wrap("TEST".getBytes(StandardCharsets.UTF_8));
+        assertTrue(transport.send(sendBuffer).blockingAwait(1, TimeUnit.SECONDS));
         close.onComplete();
         assertEquals(headerValue.get(), "VALUE");
     }
@@ -258,7 +263,8 @@ public class LongPollingTransportTest {
         transport.setOnClose((error) -> {});
 
         transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
-        assertTrue(transport.send("TEST").blockingAwait(1, TimeUnit.SECONDS));
+        ByteBuffer sendBuffer = ByteBuffer.wrap("TEST".getBytes(StandardCharsets.UTF_8));
+        assertTrue(transport.send(sendBuffer).blockingAwait(1, TimeUnit.SECONDS));
         assertEquals(headerValue.get(), "Bearer TOKEN");
         close.onComplete();
     }
@@ -294,7 +300,8 @@ public class LongPollingTransportTest {
 
         transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
         secondGet.blockingAwait(1, TimeUnit.SECONDS);
-        assertTrue(transport.send("TEST").blockingAwait(1, TimeUnit.SECONDS));
+        ByteBuffer sendBuffer = ByteBuffer.wrap("TEST".getBytes(StandardCharsets.UTF_8));
+        assertTrue(transport.send(sendBuffer).blockingAwait(1, TimeUnit.SECONDS));
         assertEquals("Bearer TOKEN2", headerValue.get());
         close.onComplete();
     }
