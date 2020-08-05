@@ -28,8 +28,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_HTTP2_TrailersAvailable()
         {
-            var version = System.Environment.OSVersion.Version;
-
             var deploymentParameters = GetHttpsDeploymentParameters();
             var deploymentResult = await DeployAsync(deploymentParameters);
 
