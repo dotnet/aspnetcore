@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
     /// </summary>
     public class ResponseStreamWrapper : Stream
     {
+        private static readonly MediaTypeHeaderValue _textHtmlMediaType = new MediaTypeHeaderValue("text/html");
         private readonly Stream _baseStream;
         private readonly HttpContext _context;
         private readonly ILogger _logger;
@@ -70,9 +71,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                ScriptInjectionPerformed = WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(buffer, offset, count, _baseStream)
-                    .GetAwaiter()
-                    .GetResult();
+                ScriptInjectionPerformed = WebSocketScriptInjection.Instance.TryInjectLiveReloadScript(_baseStream, buffer, offset, count);
             }
             else
             {
@@ -86,7 +85,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             if (IsHtmlResponse && !ScriptInjectionPerformed)
             {
-                ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(buffer, offset, count, _baseStream);
+                ScriptInjectionPerformed = await WebSocketScriptInjection.Instance.TryInjectLiveReloadScriptAsync(_baseStream, buffer, offset, count);
             }
             else
             {
@@ -102,11 +101,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             {
                 var materialized = buffer.ToArray();
 
-                ScriptInjectionPerformed = await WebSocketScriptInjection.TryInjectLiveReloadScriptAsync(
+                ScriptInjectionPerformed = await WebSocketScriptInjection.Instance.TryInjectLiveReloadScriptAsync(
+                    _baseStream,
                     materialized,
                     0,
-                    materialized.Length,
-                    _baseStream);
+                    materialized.Length);
             }
             else
             {
@@ -116,7 +115,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
         private void OnWrite()
         {
-            if (_isHtmlResponse != null)
+            if (_isHtmlResponse.HasValue)
             {
                 return;
             }
@@ -126,8 +125,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             _isHtmlResponse =
                 (response.StatusCode == StatusCodes.Status200OK || response.StatusCode == StatusCodes.Status500InternalServerError) &&
                 MediaTypeHeaderValue.TryParse(response.ContentType, out var mediaType) &&
-                mediaType.MediaType == "text/html" &&
-                (!mediaType.Charset.HasValue || mediaType.Charset == "utf-8");
+                mediaType.IsSubsetOf(_textHtmlMediaType) &&
+                (!mediaType.Charset.HasValue || mediaType.Charset.Equals("utf-8", StringComparison.OrdinalIgnoreCase));
 
             if (_isHtmlResponse.Value)
             {

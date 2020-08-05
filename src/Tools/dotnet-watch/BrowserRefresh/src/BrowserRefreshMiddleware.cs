@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -29,9 +27,17 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             {
                 // Use a custom StreamWrapper to rewrite output on Write/WriteAsync
                 using var responseStreamWrapper = new ResponseStreamWrapper(context, _logger);
+                var originalBodyFeature = context.Features.Get<IHttpResponseBodyFeature>();
                 context.Features.Set<IHttpResponseBodyFeature>(new StreamResponseBodyFeature(responseStreamWrapper));
 
-                await _next(context);
+                try
+                {
+                    await _next(context);
+                }
+                finally
+                {
+                    context.Features.Set(originalBodyFeature);
+                }
 
                 if (responseStreamWrapper.IsHtmlResponse && _logger.IsEnabled(LogLevel.Debug))
                 {

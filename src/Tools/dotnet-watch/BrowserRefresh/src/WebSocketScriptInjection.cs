@@ -12,32 +12,66 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
     /// Helper class that handles the HTML injection into
     /// a string or byte array.
     /// </summary>
-    public static class WebSocketScriptInjection
+    public class WebSocketScriptInjection
     {
         private const string BodyMarker = "</body>";
 
-        private static readonly byte[] _bodyBytes = Encoding.UTF8.GetBytes(BodyMarker);
-        private static readonly byte[] _scriptInjectionBytes = Encoding.UTF8.GetBytes(GetWebSocketClientJavaScript());
+        private readonly byte[] _bodyBytes = Encoding.UTF8.GetBytes(BodyMarker);
+        private readonly byte[] _scriptInjectionBytes;
 
-        public static async ValueTask<bool> TryInjectLiveReloadScriptAsync(byte[] buffer, int offset, int count, Stream baseStream)
+        public static WebSocketScriptInjection Instance { get; } = new WebSocketScriptInjection(GetWebSocketClientJavaScript());
+
+        public WebSocketScriptInjection(string clientScript)
         {
-            var index = buffer.AsSpan(offset, count).LastIndexOf(_bodyBytes);
+            _scriptInjectionBytes = Encoding.UTF8.GetBytes(clientScript);
+        }
+
+        public bool TryInjectLiveReloadScript(Stream baseStream, byte[] buffer, int offset, int count)
+        {
+            var span = buffer.AsSpan(offset, count);
+            var index = span.LastIndexOf(_bodyBytes);
             if (index == -1)
             {
-                await baseStream.WriteAsync(buffer, 0, buffer.Length);
+                baseStream.Write(span);
                 return false;
             }
 
             if (index > 0)
             {
-                await baseStream.WriteAsync(buffer, offset, index - 1);
+                baseStream.Write(span.Slice(0, index));
+                span = span[index..];
+            }
+
+            // Write the injected script
+            baseStream.Write(_scriptInjectionBytes);
+
+            // Write the rest of the buffer/HTML doc
+            baseStream.Write(span);
+            return true;
+        }
+
+        public async ValueTask<bool> TryInjectLiveReloadScriptAsync(Stream baseStream, byte[] buffer, int offset, int count)
+        {
+            var index = buffer.AsSpan(offset, count).LastIndexOf(_bodyBytes);
+            if (index == -1)
+            {
+                await baseStream.WriteAsync(buffer, offset, count);
+                return false;
+            }
+
+            var memory = buffer.AsMemory(offset, count);
+
+            if (index > 0)
+            {
+                await baseStream.WriteAsync(memory.Slice(0, index));
+                memory = memory[index..];
             }
 
             // Write the injected script
             await baseStream.WriteAsync(_scriptInjectionBytes);
 
             // Write the rest of the buffer/HTML doc
-            await baseStream.WriteAsync(buffer, index, buffer.Length - index);
+            await baseStream.WriteAsync(memory);
             return true;
         }
 
