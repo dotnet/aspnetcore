@@ -1317,7 +1317,7 @@ namespace TestSite
 
         public Task Goaway(HttpContext httpContext)
         {
-            httpContext.Response.Headers["Connection"] = "close";
+            httpContext.Response.Headers[HeaderNames.Connection] = "close";
             return Task.CompletedTask;
         }
 
