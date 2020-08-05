@@ -8,6 +8,7 @@ import java.io.StringReader;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.gson.Gson;
@@ -39,7 +40,9 @@ public class JsonHubProtocol implements HubProtocol {
 
     @Override
     public List<HubMessage> parseMessages(ByteBuffer payload, InvocationBinder binder) {
-        String payloadStr = new String(payload.array(), StandardCharsets.UTF_8);
+        // The position of the ByteBuffer may have been incremented - make sure we only grab the remaining bytes
+        byte[] payloadBytes = Arrays.copyOfRange(payload.array(), payload.position(), payload.capacity());
+        String payloadStr = new String(payloadBytes, StandardCharsets.UTF_8);
         if (payloadStr.length() == 0) {
             return null;
         }
