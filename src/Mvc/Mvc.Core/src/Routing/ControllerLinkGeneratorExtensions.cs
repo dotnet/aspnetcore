@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Routing
 
         private static RouteValueDictionary GetAmbientValues(HttpContext httpContext)
         {
-            return httpContext?.Features.Get<IRouteValuesFeature>()?.RouteValues;
+            return httpContext?.Features?.Get<IRouteValuesFeature>()?.RouteValues;
         }
     }
 }
