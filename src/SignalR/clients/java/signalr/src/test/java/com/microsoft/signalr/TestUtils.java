@@ -25,10 +25,10 @@ class TestUtils {
     }
     
     static String ByteBufferToString(ByteBuffer buffer) {
-    	return new String(buffer.array(), StandardCharsets.UTF_8);
+        return new String(buffer.array(), StandardCharsets.UTF_8);
     }
     
     static ByteBuffer StringToByteBuffer(String s) {
-    	return ByteBuffer.wrap(s.getBytes(StandardCharsets.UTF_8));
+        return ByteBuffer.wrap(s.getBytes(StandardCharsets.UTF_8));
     }
 }
