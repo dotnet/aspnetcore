@@ -276,6 +276,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         await host.StopAsync();
                     }
+                    // Remove when https://github.com/dotnet/runtime/issues/40290 is fixed
                     catch (OperationCanceledException)
                     {
 

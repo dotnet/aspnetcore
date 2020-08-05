@@ -150,6 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 {
                     await stopServerTask;
                 }
+                // Remove when https://github.com/dotnet/runtime/issues/40290 is fixed
                 catch (OperationCanceledException)
                 {
 
