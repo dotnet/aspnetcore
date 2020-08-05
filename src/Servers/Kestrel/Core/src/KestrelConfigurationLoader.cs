@@ -6,14 +6,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.Security;
-using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Certificates.Generation;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -21,7 +16,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -36,12 +30,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             IConfiguration configuration,
             IHostEnvironment hostEnvironment,
             bool reloadOnChange,
-            ILogger<KestrelServer> logger)
+            ILogger<KestrelServer> logger,
+            ILogger<HttpsConnectionMiddleware> httpsLogger)
         {
             Options = options ?? throw new ArgumentNullException(nameof(options));
             Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             HostEnvironment = hostEnvironment ?? throw new ArgumentNullException(nameof(hostEnvironment));
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            HttpsLogger = httpsLogger ?? throw new ArgumentNullException(nameof(logger));
 
             ReloadOnChange = reloadOnChange;
 
@@ -60,9 +56,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
         private IHostEnvironment HostEnvironment { get; }
         private ILogger<KestrelServer> Logger { get; }
+        private ILogger<HttpsConnectionMiddleware> HttpsLogger { get; }
+
         private ConfigurationReader ConfigurationReader { get; set; }
 
-        private ICertificateConfigLoader CertificateConfigLoader { get; set; }
+        private ICertificateConfigLoader CertificateConfigLoader { get; }
 
         private IDictionary<string, Action<EndpointConfiguration>> EndpointConfigurations { get; }
             = new Dictionary<string, Action<EndpointConfiguration>>(0, StringComparer.OrdinalIgnoreCase);
@@ -233,9 +231,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             return this;
         }
 
-        // Called from ApplyEndpointDefaults so it applies to even explicit Listen endpoints.
+        // Called from KestrelServerOptions.ApplyEndpointDefaults so it applies to even explicit Listen endpoints.
         // Does not require a call to Load.
-        internal void ApplyConfigurationDefaults(ListenOptions listenOptions)
+        internal void ApplyEndpointDefaults(ListenOptions listenOptions)
         {
             var defaults = ConfigurationReader.EndpointDefaults;
 
@@ -243,6 +241,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             {
                 listenOptions.Protocols = defaults.Protocols.Value;
             }
+        }
+
+        // Called from KestrelServerOptions.ApplyHttpsDefaults so it applies to even explicit Listen endpoints.
+        // Does not require a call to Load.
+        internal void ApplyHttpsDefaults(HttpsConnectionAdapterOptions httpsOptions)
+        {
+            var defaults = ConfigurationReader.EndpointDefaults;
+
+            if (defaults.SslProtocols.HasValue)
+            {
+                httpsOptions.SslProtocols = defaults.SslProtocols.Value;
+            }
+
+            if (defaults.ClientCertificateMode.HasValue)
+            {
+                httpsOptions.ClientCertificateMode = defaults.ClientCertificateMode.Value;
+            }
+        }
+
+        internal SniOptionsSelector GetDefaultSniOptionsSelector(HttpsConnectionAdapterOptions fallbackHttpsOptions, HttpProtocols fallbackHttpProtocols)
+        {
+            if (ConfigurationReader.EndpointDefaults.Sni.Count == 0)
+            {
+                return null;
+            }
+
+            return new SniOptionsSelector(
+                ConfigurationReader.EndpointDefaultsKey,
+                ConfigurationReader.EndpointDefaults.Sni,
+                CertificateConfigLoader,
+                fallbackHttpsOptions,
+                fallbackHttpProtocols,
+                HttpsLogger);
         }
 
         public void Load()
@@ -298,9 +329,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 
                 if (https)
                 {
-                    httpsOptions.SslProtocols = ConfigurationReader.EndpointDefaults.SslProtocols ?? SslProtocols.None;
-                    httpsOptions.ClientCertificateMode = ConfigurationReader.EndpointDefaults.ClientCertificateMode ?? ClientCertificateMode.NoCertificate;
-
                     // Defaults
                     Options.ApplyHttpsDefaults(httpsOptions);
 
@@ -320,8 +348,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     }
                     else
                     {
-                        // Ensure endpoint is reloaded if it used the default protocol and the ClientCertificateMode changed.
+                        // Ensure endpoint is reloaded if it used the default mode and the ClientCertificateMode changed.
                         endpoint.ClientCertificateMode = ConfigurationReader.EndpointDefaults.ClientCertificateMode;
+                    }
+
+                    if (endpoint.Sni.Count == 0)
+                    {
+                        // Ensure endpoint is reloaded if it used the default SNI config and it changed.
+                        // No need to configure httpsOptions for SNI since the SniOptionsSelector will now use the EndpointDefaults SNI config.
+                        endpoint.Sni = ConfigurationReader.EndpointDefaults.Sni;
                     }
 
                     // A cert specified directly on the endpoint overrides any defaults.
@@ -369,11 +404,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     }
                     else
                     {
-                        // Use HttpsConnectionMiddleware logger instead of KestrelServer logger to preserve existing logging category.
-                        var logger = Options.ApplicationServices.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
-                        var sniOptionsSelector = new SniOptionsSelector(CertificateConfigLoader, endpoint, httpsOptions, listenOptions.Protocols, logger);
-
-                        listenOptions.UseHttps(SniCallback, sniOptionsSelector, httpsOptions.HandshakeTimeout);
+                        var sniOptionsSelector = new SniOptionsSelector(endpoint.Name, endpoint.Sni, CertificateConfigLoader, httpsOptions, listenOptions.Protocols, HttpsLogger);
+                        listenOptions.UseHttps(SniOptionsSelector.OptionsCallback, sniOptionsSelector, httpsOptions.HandshakeTimeout);
                     }
                 }
 
@@ -384,13 +416,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
 
             return (endpointsToStop, endpointsToStart);
-        }
-
-        private static ValueTask<SslServerAuthenticationOptions> SniCallback(ConnectionContext connection, SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken)
-        {
-            var sniOptionsSelector = (SniOptionsSelector)state;
-            var options = sniOptionsSelector.GetOptions(connection, clientHelloInfo.ServerName);
-            return new ValueTask<SslServerAuthenticationOptions>(options);
         }
 
         private void LoadDefaultCert()

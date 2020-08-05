@@ -317,27 +317,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             return new SslDuplexPipe(transport, inputPipeOptions, outputPipeOptions, _sslStreamFactory);
         }
 
-        private static async ValueTask<SslServerAuthenticationOptions> ServerOptionsCallback(SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken)
+        private static async ValueTask<SslServerAuthenticationOptions> ServerOptionsCallback(SslStream sslStream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken)
         {
             var (middleware, context, feature) = (ValueTuple<HttpsConnectionMiddleware, ConnectionContext, Core.Internal.TlsConnectionFeature>)state;
 
             feature.HostName = clientHelloInfo.ServerName;
+            context.Features.Set(sslStream);
 
-            var sslOptions = await middleware._httpsOptionsCallback(context, stream, clientHelloInfo, middleware._httpsOptionsCallbackState, cancellationToken);
+            var sslOptions = await middleware._httpsOptionsCallback(context, sslStream, clientHelloInfo, middleware._httpsOptionsCallbackState, cancellationToken);
 
-            // REVIEW: Cache results? We don't do this for ServerCertificateSelectionCallback.
-            if (sslOptions.ServerCertificate is X509Certificate2 cert)
-            {
-                EnsureCertificateIsAllowedForServerAuth(cert);
-            }
-
-            // REVIEW: Should we write any event before this?
             KestrelEventSource.Log.TlsHandshakeStart(context, sslOptions);
 
             return sslOptions;
         }
 
-        private static void EnsureCertificateIsAllowedForServerAuth(X509Certificate2 certificate)
+        internal static void EnsureCertificateIsAllowedForServerAuth(X509Certificate2 certificate)
         {
             if (!CertificateLoader.IsCertificateAllowedForServerAuth(certificate))
             {

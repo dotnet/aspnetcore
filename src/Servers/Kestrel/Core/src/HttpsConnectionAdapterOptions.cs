@@ -8,7 +8,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https
 {

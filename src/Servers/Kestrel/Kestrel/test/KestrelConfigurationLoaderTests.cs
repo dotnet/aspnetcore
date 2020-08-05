@@ -672,7 +672,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(ran1);
         }
 
-
         [Fact]
         public void DefaultEndpointConfigureSection_ConfigureHttpsDefaultsCanOverrideSslProtocols()
         {
@@ -802,7 +801,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             Assert.True(ran1);
         }
 
-
         [Fact]
         public void DefaultEndpointConfigureSection_ConfigureHttpsDefaultsCanOverrideClientCertificateMode()
         {
@@ -831,6 +829,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
                 .Load();
 
             Assert.True(ran1);
+        }
+
+        [Fact]
+        public void DefaultConfigSection_CanConfigureSni()
+        {
+            var serverOptions = CreateServerOptions();
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:Protocols", "Http1"),
+                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:SslProtocols:0", "Tls12"),
+                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:ClientCertificateMode", "AllowCertificate"),
+            }).Build();
+
+            var (_, endpointsToStart) = serverOptions.Configure(config).Reload();
+            var end1 = Assert.Single(endpointsToStart);
+            var (name, sniConfig) = Assert.Single(end1?.EndpointConfig?.Sni);
+
+            Assert.Equal("*.example.org", name);
+            Assert.Equal(HttpProtocols.Http1, sniConfig.Protocols);
+            Assert.Equal(SslProtocols.Tls12, sniConfig.SslProtocols);
+            Assert.Equal(ClientCertificateMode.AllowCertificate, sniConfig.ClientCertificateMode);
+        }
+
+        [Fact]
+        public void DefaultConfigSection_SniConfigurationIsOverriddenByNotMergedWithEndpointSpecificConfigSection()
+        {
+            var serverOptions = CreateServerOptions();
+
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+                new KeyValuePair<string, string>("Endpoints:End1:Sni:*:Protocols", "Http1AndHttp2"),
+                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:Protocols", "Http1"),
+                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:SslProtocols:0", "Tls12"),
+                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:ClientCertificateMode", "AllowCertificate"),
+            }).Build();
+
+            var (_, endpointsToStart) = serverOptions.Configure(config).Reload();
+            var end1 = Assert.Single(endpointsToStart);
+            var (name, sniConfig) = Assert.Single(end1?.EndpointConfig?.Sni);
+
+            Assert.Equal("*", name);
+            Assert.Equal(HttpProtocols.Http1AndHttp2, sniConfig.Protocols);
         }
 
         [Fact]

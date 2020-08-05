@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -56,14 +57,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public void ConfigureThrowsInvalidOperationExceptionIfApplicationServicesIsNotSet()
+        {
+            var options = new KestrelServerOptions();
+            Assert.Throws<InvalidOperationException>(() => options.Configure());
+        }
+
+        [Fact]
         public void CanCallListenAfterConfigure()
         {
             var options = new KestrelServerOptions();
 
             // Ensure configure doesn't throw because of missing services.
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
             serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
+            serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
+            serviceCollection.AddSingleton(Mock.Of<ILogger<HttpsConnectionMiddleware>>());
             options.ApplicationServices = serviceCollection.BuildServiceProvider();
 
             options.Configure();
@@ -80,13 +89,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var ex = Assert.Throws<ArgumentNullException>(() => options.RequestHeaderEncodingSelector = null);
             Assert.Equal("value", ex.ParamName);
-        }
-
-        [Fact]
-        public void ConfigureThrowsInvalidOperationExceptionIfApplicationServicesIsNotSet()
-        {
-            var options = new KestrelServerOptions();
-            Assert.Throws<InvalidOperationException>(() => options.Configure());
         }
     }
 }

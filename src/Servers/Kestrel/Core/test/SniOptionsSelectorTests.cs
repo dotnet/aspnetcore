@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -21,41 +22,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class SniOptionsSelectorTests
     {
+        private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
+
         [Fact]
         public void PrefersExactMatchOverWildcardPrefixOverWildcardOnly()
         {
-            var endpointConfig = new EndpointConfig
+            var sniDictionary = new Dictionary<string, SniConfig>
             {
-                Sni = new Dictionary<string, SniConfig>
                 {
+                    "www.example.org",
+                    new SniConfig
                     {
-                        "www.example.org",
-                        new SniConfig
+                        Certificate = new CertificateConfig
                         {
-                            Certificate = new CertificateConfig
-                            {
-                                Path = "Exact"
-                            }
+                            Path = "Exact"
                         }
-                    },
+                    }
+                },
+                {
+                    "*.example.org",
+                    new SniConfig
                     {
-                        "*.example.org",
-                        new SniConfig
+                        Certificate = new CertificateConfig
                         {
-                            Certificate = new CertificateConfig
-                            {
-                                Path = "WildcardPrefix"
-                            }
+                            Path = "WildcardPrefix"
                         }
-                    },
+                    }
+                },
+                {
+                    "*",
+                    new SniConfig
                     {
-                        "*",
-                        new SniConfig
+                        Certificate = new CertificateConfig
                         {
-                            Certificate = new CertificateConfig
-                            {
-                                Path = "WildcardOnly"
-                            }
+                            Path = "WildcardOnly"
                         }
                     }
                 }
@@ -65,9 +65,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
 
             var sniOptionsSelector = new SniOptionsSelector(
+                "TestEndpointName",
+                sniDictionary,
                 mockCertificateConfigLoader,
-                endpointConfig,
-                fallbackOptions: new HttpsConnectionAdapterOptions(),
+                fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
                 fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
@@ -93,28 +94,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void PerfersLongerWildcardPrefixOverShorterWildcardPrefix()
         {
-            var endpointConfig = new EndpointConfig
+            var sniDictionary = new Dictionary<string, SniConfig>
             {
-                Sni = new Dictionary<string, SniConfig>
                 {
+                    "*.a.example.org",
+                    new SniConfig
                     {
-                        "*.a.example.org",
-                        new SniConfig
+                        Certificate = new CertificateConfig
                         {
-                            Certificate = new CertificateConfig
-                            {
-                                Path = "Long"
-                            }
+                            Path = "Long"
                         }
-                    },
+                    }
+                },
+                {
+                    "*.example.org",
+                    new SniConfig
                     {
-                        "*.example.org",
-                        new SniConfig
+                        Certificate = new CertificateConfig
                         {
-                            Certificate = new CertificateConfig
-                            {
-                                Path = "Short"
-                            }
+                            Path = "Short"
                         }
                     }
                 }
@@ -124,9 +122,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
 
             var sniOptionsSelector = new SniOptionsSelector(
+                "TestEndpointName",
+                sniDictionary,
                 mockCertificateConfigLoader,
-                endpointConfig,
-                fallbackOptions: new HttpsConnectionAdapterOptions(),
+                fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
                 fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
@@ -141,28 +140,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void ServerNameMatchingIsCaseInsensitive()
         {
-            var endpointConfig = new EndpointConfig
+            var sniDictionary = new Dictionary<string, SniConfig>
             {
-                Sni = new Dictionary<string, SniConfig>
                 {
+                    "Www.Example.Org",
+                    new SniConfig
                     {
-                        "Www.Example.Org",
-                        new SniConfig
+                        Certificate = new CertificateConfig
                         {
-                            Certificate = new CertificateConfig
-                            {
-                                Path = "Exact"
-                            }
+                            Path = "Exact"
                         }
-                    },
+                    }
+                },
+                {
+                    "*.Example.Org",
+                    new SniConfig
                     {
-                        "*.Example.Org",
-                        new SniConfig
+                        Certificate = new CertificateConfig
                         {
-                            Certificate = new CertificateConfig
-                            {
-                                Path = "WildcardPrefix"
-                            }
+                            Path = "WildcardPrefix"
                         }
                     }
                 }
@@ -172,9 +168,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
 
             var sniOptionsSelector = new SniOptionsSelector(
+                "TestEndpointName",
+                sniDictionary,
                 mockCertificateConfigLoader,
-                endpointConfig,
-                fallbackOptions: new HttpsConnectionAdapterOptions(),
+                fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
                 fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
@@ -191,44 +188,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void GetOptionsThrowsAnAuthenticationExceptionIfThereIsNoMatchingSniSection()
         {
-            var endpointConfig = new EndpointConfig
-            {
-                Name = "TestEndpointName",
-                Sni = new Dictionary<string, SniConfig>()
-            };
-
-            var mockCertificateConfigLoader = new MockCertificateConfigLoader();
-            var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
-
             var sniOptionsSelector = new SniOptionsSelector(
-                mockCertificateConfigLoader,
-                endpointConfig,
-                fallbackOptions: new HttpsConnectionAdapterOptions(),
+                "TestEndpointName",
+                new Dictionary<string, SniConfig>(),
+                new MockCertificateConfigLoader(),
+                fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
                 fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
             var authExWithServerName = Assert.Throws<AuthenticationException>(() => sniOptionsSelector.GetOptions(new MockConnectionContext(), "example.org"));
-            Assert.Equal(CoreStrings.FormatSniNotConfiguredForServerName("example.org", endpointConfig.Name), authExWithServerName.Message);
+            Assert.Equal(CoreStrings.FormatSniNotConfiguredForServerName("example.org", "TestEndpointName"), authExWithServerName.Message);
 
             var authExWithoutServerName = Assert.Throws<AuthenticationException>(() => sniOptionsSelector.GetOptions(new MockConnectionContext(), null));
-            Assert.Equal(CoreStrings.FormatSniNotConfiguredToAllowNoServerName(endpointConfig.Name), authExWithoutServerName.Message);
+            Assert.Equal(CoreStrings.FormatSniNotConfiguredToAllowNoServerName("TestEndpointName"), authExWithoutServerName.Message);
         }
 
         [Fact]
         public void WildcardOnlyMatchesNullServerNameDueToNoAlpn()
         {
-            var endpointConfig = new EndpointConfig
+            var sniDictionary = new Dictionary<string, SniConfig>
             {
-                Sni = new Dictionary<string, SniConfig>
                 {
+                    "*",
+                    new SniConfig
                     {
-                        "*",
-                        new SniConfig
+                        Certificate = new CertificateConfig
                         {
-                            Certificate = new CertificateConfig
-                            {
-                                Path = "WildcardOnly"
-                            }
+                            Path = "WildcardOnly"
                         }
                     }
                 }
@@ -238,9 +224,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var pathDictionary = mockCertificateConfigLoader.CertToPathDictionary;
 
             var sniOptionsSelector = new SniOptionsSelector(
+                "TestEndpointName",
+                sniDictionary,
                 mockCertificateConfigLoader,
-                endpointConfig,
-                fallbackOptions: new HttpsConnectionAdapterOptions(),
+                fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
                 fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
@@ -251,24 +238,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void CachesSslServerAuthenticationOptions()
         {
-            var endpointConfig = new EndpointConfig
+            var sniDictionary = new Dictionary<string, SniConfig>
             {
-                Sni = new Dictionary<string, SniConfig>
                 {
+                    "www.example.org",
+                    new SniConfig
                     {
-                        "www.example.org",
-                        new SniConfig
-                        {
-                            Certificate = new CertificateConfig()
-                        }
+                        Certificate = new CertificateConfig()
                     }
                 }
             };
 
             var sniOptionsSelector = new SniOptionsSelector(
+                "TestEndpointName",
+                sniDictionary,
                 new MockCertificateConfigLoader(),
-                endpointConfig,
-                fallbackOptions: new HttpsConnectionAdapterOptions(),
+                fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
                 fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
@@ -280,16 +265,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void ClonesSslServerAuthenticationOptionsIfAnOnAuthenticateCallbackIsDefined()
         {
-            var endpointConfig = new EndpointConfig
+            var sniDictionary = new Dictionary<string, SniConfig>
             {
-                Sni = new Dictionary<string, SniConfig>
                 {
+                    "www.example.org",
+                    new SniConfig
                     {
-                        "www.example.org",
-                        new SniConfig
-                        {
-                            Certificate = new CertificateConfig()
-                        }
+                        Certificate = new CertificateConfig()
                     }
                 }
             };
@@ -305,8 +287,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             var sniOptionsSelector = new SniOptionsSelector(
+                "TestEndpointName",
+                sniDictionary,
                 new MockCertificateConfigLoader(),
-                endpointConfig,
                 fallbackOptions,
                 fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
@@ -323,25 +306,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void ClonesSslServerAuthenticationOptionsIfTheFallbackServerCertificateSelectorIsUsed()
         {
-            var endpointConfig = new EndpointConfig
+            var sniDictionary = new Dictionary<string, SniConfig>
             {
-                Sni = new Dictionary<string, SniConfig>
                 {
+                    "selector.example.org",
+                    new SniConfig()
+                },
+                {
+                    "config.example.org",
+                    new SniConfig
                     {
-                        "selector.example.org",
-                        new SniConfig()
-                    },
-                    {
-                        "config.example.org",
-                        new SniConfig
-                        {
-                            Certificate = new CertificateConfig()
-                        }
+                        Certificate = new CertificateConfig()
                     }
                 }
             };
 
-            var selectorCertificate = new X509Certificate2();
+            var selectorCertificate = _x509Certificate2;
 
             var fallbackOptions = new HttpsConnectionAdapterOptions
             {
@@ -350,8 +330,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             var sniOptionsSelector = new SniOptionsSelector(
+                "TestEndpointName",
+                sniDictionary,
                 new MockCertificateConfigLoader(),
-                endpointConfig,
                 fallbackOptions,
                 fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
@@ -378,19 +359,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void ConstructorThrowsInvalidOperationExceptionIfNoCertificateDefiniedInConfigOrFallback()
         {
-            var endpointConfig = new EndpointConfig
+            var sniDictionary = new Dictionary<string, SniConfig>
             {
-                Sni = new Dictionary<string, SniConfig>
-                {
-                    { "www.example.org", new SniConfig() }
-                }
+                { "www.example.org", new SniConfig() }
             };
 
             var ex = Assert.Throws<InvalidOperationException>(
                 () => new SniOptionsSelector(
+                    "TestEndpointName",
+                    sniDictionary,
                     new MockCertificateConfigLoader(),
-                    endpointConfig,
-                    fallbackOptions: new HttpsConnectionAdapterOptions(),
+                    fallbackHttpsOptions: new HttpsConnectionAdapterOptions(),
                     fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
                     logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>()));
 
@@ -400,12 +379,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void FallsBackToHttpsConnectionAdapterCertificate()
         {
-            var endpointConfig = new EndpointConfig
+            var sniDictionary = new Dictionary<string, SniConfig>
             {
-                Sni = new Dictionary<string, SniConfig>
-                {
-                    { "www.example.org", new SniConfig() }
-                }
+                { "www.example.org", new SniConfig() }
             };
 
             var fallbackOptions = new HttpsConnectionAdapterOptions
@@ -414,8 +390,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             var sniOptionsSelector = new SniOptionsSelector(
+                "TestEndpointName",
+                sniDictionary,
                 new MockCertificateConfigLoader(),
-                endpointConfig,
                 fallbackOptions,
                 fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
@@ -427,15 +404,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void FallsBackToHttpsConnectionAdapterServerCertificateSelectorOverServerCertificate()
         {
-            var endpointConfig = new EndpointConfig
+            var sniDictionary = new Dictionary<string, SniConfig>
             {
-                Sni = new Dictionary<string, SniConfig>
-                {
-                    { "www.example.org", new SniConfig() }
-                }
+                { "www.example.org", new SniConfig() }
             };
 
-            var selectorCertificate = new X509Certificate2();
+            var selectorCertificate = _x509Certificate2;
 
             var fallbackOptions = new HttpsConnectionAdapterOptions
             {
@@ -444,8 +418,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
 
             var sniOptionsSelector = new SniOptionsSelector(
+                "TestEndpointName",
+                sniDictionary,
                 new MockCertificateConfigLoader(),
-                endpointConfig,
                 fallbackOptions,
                 fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
@@ -457,6 +432,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private class MockCertificateConfigLoader : ICertificateConfigLoader
         {
             public Dictionary<object, string> CertToPathDictionary { get; } = new Dictionary<object, string>(ReferenceEqualityComparer.Instance);
+
+            public bool SkipValidation => true;
 
             public X509Certificate2 LoadCertificate(CertificateConfig certInfo, string endpointName)
             {

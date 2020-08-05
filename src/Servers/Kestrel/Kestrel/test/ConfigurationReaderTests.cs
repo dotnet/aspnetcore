@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         }
 
         [Fact]
-        public void ReadEndpointWithoutSniConfigured_ReturnsEmptyCollection()
+        public void ReadEndpointsOrEndpointDefaultsWithEmptySniSection_ReturnsEmptyCollection()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {
@@ -283,28 +283,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             }).Build();
 
             var reader = new ConfigurationReader(config);
+
             var endpoint = reader.Endpoints.First();
             Assert.NotNull(endpoint.Sni);
             Assert.False(endpoint.Sni.Any());
+
+            var endpointDefaults = reader.EndpointDefaults;
+            Assert.NotNull(endpointDefaults.Sni);
+            Assert.False(endpointDefaults.Sni.Any());
         }
 
         [Fact]
-        public void ReadEndpointWithEmptySniKey_Throws()
+        public void ReadEndpointsOrEndpointDefaultsWithEmptySniKey_Throws()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {
                 new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
                 new KeyValuePair<string, string>("Endpoints:End1:Sni::Protocols", "Http1"),
+                new KeyValuePair<string, string>("EndpointDefaults:Sni::Protocols", "Http1"),
             }).Build();
 
             var reader = new ConfigurationReader(config);
-            var ex = Assert.Throws<InvalidOperationException>(() => reader.Endpoints);
+            var end1Ex = Assert.Throws<InvalidOperationException>(() => reader.Endpoints);
+            var defaultEx = Assert.Throws<InvalidOperationException>(() => reader.EndpointDefaults);
 
-            Assert.Equal(CoreStrings.FormatSniNameCannotBeEmpty("End1"), ex.Message);
+            Assert.Equal(CoreStrings.FormatSniNameCannotBeEmpty("End1"), end1Ex.Message);
+            Assert.Equal(CoreStrings.FormatSniNameCannotBeEmpty("EndpointDefaults"), defaultEx.Message);
         }
 
         [Fact]
-        public void ReadEndpointWithSniConfigured_ReturnsCorrectValue()
+        public void ReadEndpointsOrEndpointDefaultsWithSniConfigured_ReturnsCorrectValue()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {
@@ -314,19 +322,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
                 new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Certificate:Path", "/path/cert.pfx"),
                 new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Certificate:Password", "certpassword"),
                 new KeyValuePair<string, string>("Endpoints:End1:SNI:*.example.org:ClientCertificateMode", "AllowCertificate"),
+                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:Protocols", "Http1"),
+                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:SslProtocols:0", "Tls12"),
+                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:Certificate:Path", "/path/cert.pfx"),
+                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:Certificate:Password", "certpassword"),
+                new KeyValuePair<string, string>("EndpointDefaults:SNI:*.example.org:ClientCertificateMode", "AllowCertificate"),
             }).Build();
 
             var reader = new ConfigurationReader(config);
-            var endpoint = reader.Endpoints.First();
-            var sni = endpoint.Sni["*.EXAMPLE.org"];
 
-            Assert.NotNull(sni);
+            static void VerifySniConfig(SniConfig config)
+            {
+                Assert.NotNull(config);
 
-            Assert.Equal(HttpProtocols.Http1, sni.Protocols);
-            Assert.Equal(SslProtocols.Tls12, sni.SslProtocols);
-            Assert.Equal("/path/cert.pfx", sni.Certificate.Path);
-            Assert.Equal("certpassword", sni.Certificate.Password);
-            Assert.Equal(ClientCertificateMode.AllowCertificate, sni.ClientCertificateMode);
+                Assert.Equal(HttpProtocols.Http1, config.Protocols);
+                Assert.Equal(SslProtocols.Tls12, config.SslProtocols);
+                Assert.Equal("/path/cert.pfx", config.Certificate.Path);
+                Assert.Equal("certpassword", config.Certificate.Password);
+                Assert.Equal(ClientCertificateMode.AllowCertificate, config.ClientCertificateMode);
+            }
+
+            VerifySniConfig(reader.Endpoints.First().Sni["*.Example.org"]);
+            VerifySniConfig(reader.EndpointDefaults.Sni["*.Example.org"]);
         }
 
         [Fact]

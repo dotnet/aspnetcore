@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Certificates
         public IHostEnvironment HostEnvironment { get; }
         public ILogger<KestrelServer> Logger { get; }
 
+        public bool SkipValidation => false;
+
         public X509Certificate2 LoadCertificate(CertificateConfig certInfo, string endpointName)
         {
             if (certInfo is null)
