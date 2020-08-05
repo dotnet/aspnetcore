@@ -26,5 +26,11 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
             Assert.Equal("?query", await _fixture.Client.GetStringAsync("/HelloWorld/Query%3F%3F?query"));
         }
+
+        [ConditionalFact]
+        public async Task CheckCompleteAsync()
+        {
+            await _fixture.Client.GetStringAsync("/CompleteAsync");
+        }
     }
 }

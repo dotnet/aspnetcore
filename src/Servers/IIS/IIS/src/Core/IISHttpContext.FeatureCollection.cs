@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 return ResponsePipeWrapper.CompleteAsync().AsTask();
             }
 
-            return Task.CompletedTask;
+            return AsyncIO.FlushAsync(moreData: false).AsTask();
         }
 
         bool IHttpUpgradeFeature.IsUpgradableRequest => true;

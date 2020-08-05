@@ -1315,6 +1315,25 @@ namespace TestSite
             }
         }
 
+        public Task Goaway(HttpContext httpContext)
+        {
+            httpContext.Response.Headers["Connection"] = "close";
+            return Task.CompletedTask;
+        }
+
+        private TaskCompletionSource<object> _completeAsync = new TaskCompletionSource<object>();
+        public async Task CompleteAsync(HttpContext httpContext)
+        {
+            await httpContext.Response.CompleteAsync();
+            await _completeAsync.Task;
+        }
+
+        public Task CompleteAsync_Completed(HttpContext httpContext)
+        {
+            _completeAsync.TrySetResult(null);
+            return Task.CompletedTask;
+        }
+
         public async Task Reset_DuringRequestBody_Resets_Complete(HttpContext httpContext)
         {
             await _resetDuringRequestBodyResetsCts.Task;
