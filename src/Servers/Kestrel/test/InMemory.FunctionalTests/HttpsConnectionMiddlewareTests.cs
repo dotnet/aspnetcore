@@ -165,6 +165,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
+        [Fact(Skip = "https://github.com/dotnet/runtime/issues/40402")]
+        public async Task ClientCertificateRequiredConfiguredInCallbackContinuesWhenNoCertificate()
+        {
+            void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.UseHttps((connection, stream, clientHelloInfo, state, cancellationToken) =>
+                    new ValueTask<SslServerAuthenticationOptions>(new SslServerAuthenticationOptions
+                    {
+                        ServerCertificate = _x509Certificate2,
+                        // From the API Docs: "Note that this is only a request --
+                        // if no certificate is provided, the server still accepts the connection request."
+                        // Not to mention this is equivalent to the test above.
+                        ClientCertificateRequired = true,
+                        RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
+                        CertificateRevocationCheckMode = X509RevocationMode.NoCheck
+                    }), state: null, HttpsConnectionAdapterOptions.DefaultHandshakeTimeout);
+            }
+
+            await using (var server = new TestServer(context =>
+                {
+                    var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+                    Assert.NotNull(tlsFeature);
+                    Assert.Null(tlsFeature.ClientCertificate);
+                    return context.Response.WriteAsync("hello world");
+                }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+            {
+                var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
+                Assert.Equal("hello world", result);
+            }
+        }
+
         [Fact]
         public void ThrowsWhenNoServerCertificateIsProvided()
         {

@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
     /// </summary>
     public class HttpsConnectionAdapterOptions
     {
+        internal static TimeSpan DefaultHandshakeTimeout = TimeSpan.FromSeconds(10);
+
         private TimeSpan _handshakeTimeout;
 
         /// <summary>
@@ -24,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public HttpsConnectionAdapterOptions()
         {
             ClientCertificateMode = ClientCertificateMode.NoCertificate;
-            HandshakeTimeout = TimeSpan.FromSeconds(10);
+            HandshakeTimeout = DefaultHandshakeTimeout;
         }
 
         /// <summary>
