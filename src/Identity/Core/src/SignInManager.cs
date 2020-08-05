@@ -169,16 +169,22 @@ namespace Microsoft.AspNetCore.Identity
         public virtual async Task RefreshSignInAsync(TUser user)
         {
             var auth = await Context.AuthenticateAsync(IdentityConstants.ApplicationScheme);
-            var claims = new List<Claim>();
+            IList<Claim> claims = Array.Empty<Claim>();
+
             var authenticationMethod = auth?.Principal?.FindFirst(ClaimTypes.AuthenticationMethod);
-            if (authenticationMethod != null)
-            {
-                claims.Add(authenticationMethod);
-            }
             var amr = auth?.Principal?.FindFirst("amr");
-            if (amr != null)
+
+            if (authenticationMethod != null || amr != null)
             {
-                claims.Add(amr);
+                claims = new List<Claim>();
+                if (authenticationMethod != null)
+                {
+                    claims.Add(authenticationMethod);
+                }
+                if (amr != null)
+                {
+                    claims.Add(amr);
+                }
             }
 
             await SignInWithClaimsAsync(user, auth?.Properties, claims);
@@ -203,9 +209,10 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>The task object representing the asynchronous operation.</returns>
         public virtual Task SignInAsync(TUser user, AuthenticationProperties authenticationProperties, string authenticationMethod = null)
         {
-            var additionalClaims = new List<Claim>();
+            IList<Claim> additionalClaims = Array.Empty<Claim>();
             if (authenticationMethod != null)
             {
+                additionalClaims = new List<Claim>();
                 additionalClaims.Add(new Claim(ClaimTypes.AuthenticationMethod, authenticationMethod));
             }
             return SignInWithClaimsAsync(user, authenticationProperties, additionalClaims);

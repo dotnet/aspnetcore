@@ -107,12 +107,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal static IList<string> GenerateChallenges(AuthenticationSchemes authSchemes)
         {
-            IList<string> challenges = new List<string>();
-
             if (authSchemes == AuthenticationSchemes.None)
             {
-                return challenges;
+                return Array.Empty<string>();
             }
+
+            IList<string> challenges = new List<string>();
 
             // Order by strength.
             if ((authSchemes & AuthenticationSchemes.Kerberos) == AuthenticationSchemes.Kerberos)

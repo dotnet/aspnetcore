@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Http.Features
                     }
                     else
                     {
-                        var headers = new List<string>();
+                        var headers = new List<string>(_parsedValues.Count);
                         foreach (var pair in _parsedValues)
                         {
                             headers.Add(new CookieHeaderValue(pair.Key, pair.Value).ToString());

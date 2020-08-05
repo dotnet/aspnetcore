@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             // Stop firing the timer
             _nextHeartbeat.Stop();
 
-            var tasks = new List<Task>();
+            var tasks = new List<Task>(_connections.Count);
 
             // REVIEW: In the future we can consider a hybrid where we first try to wait for shutdown
             // for a certain time frame then after some grace period we shutdown more aggressively
