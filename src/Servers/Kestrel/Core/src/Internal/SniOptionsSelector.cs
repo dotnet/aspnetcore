@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Security;
 using System.Security.Authentication;
@@ -117,6 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 if (serverName is null)
                 {
+                    // There was no ALPN
                     throw new AuthenticationException(CoreStrings.FormatSniNotConfiguredToAllowNoServerName(_endpointName));
                 }
                 else
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         }
 
         // TODO: Reflection based test to ensure we clone everything!
-        // This won't catch issues related to mutable subproperties, but the existing subproperties look like they're mosly immutable.
+        // This won't catch issues related to mutable subproperties, but the existing subproperties look like they're mostly immutable.
         // The exception are the ApplicationProtocols list which we clone and the ServerCertificate because of methods like Import() and Reset() :(
         internal static SslServerAuthenticationOptions CloneSslOptions(SslServerAuthenticationOptions sslOptions) =>
             new SslServerAuthenticationOptions
