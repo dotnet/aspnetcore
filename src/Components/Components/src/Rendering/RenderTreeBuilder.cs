@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Rendering
@@ -27,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private readonly Stack<int> _openElementIndices = new Stack<int>();
         private RenderTreeFrameType? _lastNonAttributeFrameType;
         private bool _hasSeenAddMultipleAttributes;
-        private MultipleAttributesDictionary? _seenAttributeNames;
+        private Dictionary<string, int>? _seenAttributeNames;
 
         /// <summary>
         /// The reserved parameter name used for supplying child content.
@@ -707,21 +706,22 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             // Now that we've found the last attribute, we can iterate backwards and process duplicates.
-            var seenAttributeNames = (_seenAttributeNames ??= new MultipleAttributesDictionary());
+            var seenAttributeNames = (_seenAttributeNames ??= new Dictionary<string, int>(SimplifiedStringHashComparer.Instance));
             for (var i = last; i >= first; i--)
             {
                 ref var frame = ref buffer[i];
                 Debug.Assert(frame.FrameTypeField == RenderTreeFrameType.Attribute, $"Frame type is {frame.FrameTypeField} at {i}");
 
-                if (!seenAttributeNames.TryAdd(frame.AttributeNameField, i, out var index))
+                if (!seenAttributeNames.TryAdd(frame.AttributeNameField, i))
                 {
+                    var index = seenAttributeNames[frame.AttributeNameField];
                     if (index < i)
                     {
                         // This attribute is overriding a "silent frame" where we didn't create a frame for an AddAttribute call.
                         // This is the case for a null event handler, or bool false value.
                         //
                         // We need to update our tracking, in case the attribute appeared 3 or more times.
-                        seenAttributeNames.Replace(frame.AttributeNameField, i);
+                        seenAttributeNames[frame.AttributeNameField] = i;
                     }
                     else if (index > i)
                     {
@@ -778,8 +778,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 return;
             }
 
-            var seenAttributeNames = (_seenAttributeNames ??= new MultipleAttributesDictionary());
-            seenAttributeNames.TryAdd(name, _entries.Count, out _); // See comment in ProcessAttributes for why this is OK.
+            var seenAttributeNames = (_seenAttributeNames ??= new Dictionary<string, int>(SimplifiedStringHashComparer.Instance));
+            seenAttributeNames[name] = _entries.Count; // See comment in ProcessAttributes for why this is OK.
         }
 
         void IDisposable.Dispose()
