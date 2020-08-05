@@ -64,6 +64,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public void ConfigureThrowsInvalidOperationExceptionIfApplicationServicesDoesntHaveRequiredServices()
+        {
+            var options = new KestrelServerOptions
+            {
+                ApplicationServices = new ServiceCollection().BuildServiceProvider()
+            };
+
+            Assert.Throws<InvalidOperationException>(() => options.Configure());
+        }
+
+        [Fact]
         public void CanCallListenAfterConfigure()
         {
             var options = new KestrelServerOptions();

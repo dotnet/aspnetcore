@@ -839,7 +839,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {
                 new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:Protocols", "Http1"),
+                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:Protocols", "None"),
                 new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:SslProtocols:0", "Tls12"),
                 new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:ClientCertificateMode", "AllowCertificate"),
             }).Build();
@@ -849,7 +849,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             var (name, sniConfig) = Assert.Single(end1?.EndpointConfig?.Sni);
 
             Assert.Equal("*.example.org", name);
-            Assert.Equal(HttpProtocols.Http1, sniConfig.Protocols);
+            Assert.Equal(HttpProtocols.None, sniConfig.Protocols);
             Assert.Equal(SslProtocols.Tls12, sniConfig.SslProtocols);
             Assert.Equal(ClientCertificateMode.AllowCertificate, sniConfig.ClientCertificateMode);
         }
@@ -862,7 +862,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {
                 new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-                new KeyValuePair<string, string>("Endpoints:End1:Sni:*:Protocols", "Http1AndHttp2"),
+                new KeyValuePair<string, string>("Endpoints:End1:Sni:*:Protocols", "None"),
                 new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:Protocols", "Http1"),
                 new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:SslProtocols:0", "Tls12"),
                 new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:ClientCertificateMode", "AllowCertificate"),
@@ -873,7 +873,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             var (name, sniConfig) = Assert.Single(end1?.EndpointConfig?.Sni);
 
             Assert.Equal("*", name);
-            Assert.Equal(HttpProtocols.Http1AndHttp2, sniConfig.Protocols);
+            Assert.Equal(HttpProtocols.None, sniConfig.Protocols);
         }
 
         [Fact]
