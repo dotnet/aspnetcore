@@ -92,7 +92,13 @@ public class MessagePackHubProtocol implements HubProtocol {
                 // Make sure that we actually read the right number of bytes
                 int readBytes = (int) unpacker.getTotalReadBytes();
                 if (readBytes != length) {
-                    throw new RuntimeException(String.format("MessagePack message was length %d but claimed to be length %d.", readBytes, length));
+                    // Check what the last message was
+                    if (hubMessages.get(hubMessages.size() - 1).getMessageType() != HubMessageType.INVOCATION_BINDING_FAILURE) {
+                        throw new RuntimeException(String.format("MessagePack message was length %d but claimed to be length %d.", readBytes, length));
+                    // If it was an invocation binding failure, we have to correct the position of the buffer
+                    } else {
+                        payload.position(payload.position() + (length - readBytes));
+                    }
                 }
                 unpacker.close();
                 payload.position(payload.position() + readBytes);
@@ -253,7 +259,11 @@ public class MessagePackHubProtocol implements HubProtocol {
     }
     
     private HubMessage createCloseMessage(MessageUnpacker unpacker, int itemCount) throws IOException {
-        String error = unpacker.unpackString();
+        // error may be nil
+        String error = null;
+        if (!unpacker.tryUnpackNil()) {
+            error = unpacker.unpackString();
+        }
         boolean allowReconnect = false;
         
         if (itemCount > 2) {
