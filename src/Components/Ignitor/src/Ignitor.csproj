@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!-- Intentionally targeting netcoreapp3.0 because we do not want to update the Benchmark client to use 3.1 -->
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <IsShippingPackage>false</IsShippingPackage>
     <DefineConstants>$(DefineConstants);IGNITOR</DefineConstants>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
