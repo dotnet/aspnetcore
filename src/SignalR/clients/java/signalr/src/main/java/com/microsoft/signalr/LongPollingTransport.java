@@ -161,9 +161,9 @@ class LongPollingTransport implements Transport {
             return this.updateHeaderToken().andThen(Completable.defer(() -> {
                 HttpRequest request = new HttpRequest();
                 request.addHeaders(headers);
-                return this.pollingClient.delete(this.url, request).ignoreElement();
-            })).andThen(Completable.defer(() -> {
-                return this.receiveLoop.doOnComplete(() -> {
+                return this.pollingClient.delete(this.url, request).ignoreElement()
+                .andThen(receiveLoop)
+                .doOnComplete(() -> {
                     cleanup(this.closeError);
                 });
             })).doOnError(e -> {
