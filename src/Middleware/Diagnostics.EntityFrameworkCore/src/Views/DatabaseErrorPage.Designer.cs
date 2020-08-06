@@ -411,7 +411,7 @@ body .titleerror {
                     req.open(""POST"", """);
 #nullable restore
 #line 196 "DatabaseErrorPage.cshtml"
-                                 Write(JavaScriptEncode(Model.Options.MigrationsEndPointPath.Value));
+                                 Write(JavaScriptEncode(Model.PathBase.Add(Model.Options.MigrationsEndPointPath).Value));
 
 #line default
 #line hidden

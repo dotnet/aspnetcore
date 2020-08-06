@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                         {
                             var page = new DatabaseErrorPage
                             {
-                                Model = new DatabaseErrorPageModel(exception, new DatabaseContextDetails[] { details }, _options)
+                                Model = new DatabaseErrorPageModel(exception, new DatabaseContextDetails[] { details }, _options, httpContext.Request.PathBase)
                             };
 
                             await page.ExecuteAsync(httpContext);

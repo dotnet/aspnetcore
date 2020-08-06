@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                         {
                             var page = new DatabaseErrorPage
                             {
-                                Model = new DatabaseErrorPageModel(errorContext.Exception, contextDetails, _options)
+                                Model = new DatabaseErrorPageModel(errorContext.Exception, contextDetails, _options, errorContext.HttpContext.Request.PathBase)
                             };
 
                             await page.ExecuteAsync(errorContext.HttpContext);
@@ -65,6 +65,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 catch (Exception e)
                 {
                     _logger.DatabaseErrorPageMiddlewareException(e);
+                    return;
                 }
             }
 

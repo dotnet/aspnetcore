@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
@@ -119,6 +121,8 @@ namespace MusicStore
                 options.ClientId = "000000004012C08A";
                 options.ClientSecret = "GaMQ2hCnqAC6EcDLnXsAeBVIJOLmeutL";
             });
+
+            services.AddSingleton<IDeveloperPageExceptionFilter, DatabaseExceptionFilter>();
         }
 
         //This method is invoked when ASPNETCORE_ENVIRONMENT is 'Development' or is not defined
@@ -131,8 +135,6 @@ namespace MusicStore
             // Display custom error page in production when error occurs
             // During development use the ErrorPage middleware to display error information in the browser
             app.UseDeveloperExceptionPage();
-
-            app.UseDatabaseErrorPage();
 
             Configure(app);
         }

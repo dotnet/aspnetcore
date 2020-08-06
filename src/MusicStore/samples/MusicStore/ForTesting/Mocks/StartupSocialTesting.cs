@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Authentication.Twitter;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
@@ -140,6 +141,7 @@ namespace MusicStore
                 options.Scope.Add("wl.signin");
             });
 
+            services.AddSingleton<IDeveloperPageExceptionFilter, DatabaseExceptionFilter>();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -159,8 +161,6 @@ namespace MusicStore
             // Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
             // Note: Not recommended for production.
             app.UseDeveloperExceptionPage();
-
-            app.UseDatabaseErrorPage();
 
             // Configure Session.
             app.UseSession();

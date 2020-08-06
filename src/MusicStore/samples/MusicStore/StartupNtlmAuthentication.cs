@@ -4,6 +4,8 @@ using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -94,6 +96,8 @@ namespace MusicStore
                         authBuilder.RequireClaim("ManageStore", "Allowed");
                     });
             });
+
+            services.AddSingleton<IDeveloperPageExceptionFilter, DatabaseExceptionFilter>();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -114,7 +118,6 @@ namespace MusicStore
             // request pipeline.
             // Note: Not recommended for production.
             app.UseDeveloperExceptionPage();
-            app.UseDatabaseErrorPage();
 
             app.Use((context, next) =>
             {

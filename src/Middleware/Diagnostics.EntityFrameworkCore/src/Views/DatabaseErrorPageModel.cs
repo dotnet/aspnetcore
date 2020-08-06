@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
 {
@@ -12,15 +13,18 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views
         public DatabaseErrorPageModel(
             Exception exception,
             IEnumerable<DatabaseContextDetails> contextDetails,
-            DatabaseErrorPageOptions options)
+            DatabaseErrorPageOptions options,
+            PathString pathBase)
         {
             Exception = exception;
             ContextDetails = contextDetails;
             Options = options;
+            PathBase = pathBase;
         }
 
         public virtual Exception Exception { get; }
         public virtual IEnumerable<DatabaseContextDetails> ContextDetails { get; }
         public virtual DatabaseErrorPageOptions Options { get; }
+        public virtual PathString PathBase { get; }
     }
 }

@@ -34,7 +34,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                         PendingMigrations = new string[] { }
                     }
                 },
-                options: options);
+                options: options,
+                pathBase: PathString.Empty);
 
             var content = await ExecutePage(options, model);
 
@@ -60,7 +61,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                         PendingMigrations = new string[] { "111_MigrationOne" }
                     }
                 },
-                options: options);
+                options: options,
+                pathBase: PathString.Empty);
 
             var content = await ExecutePage(options, model);
 
@@ -86,7 +88,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                         PendingMigrations = new string[] { "111_MigrationOne" }
                     }
                 },
-                options: options);
+                options: options,
+                pathBase: PathString.Empty);
 
             var content = await ExecutePage(options, model);
 
@@ -112,7 +115,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                         PendingMigrations = new string[] { "111_MigrationOne" }
                     }
                 },
-                options: options);
+                options: options,
+                pathBase: PathString.Empty);
 
             var content = await ExecutePage(options, model);
 
@@ -138,7 +142,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                         PendingMigrations = new string[] { }
                     }
                 },
-                options: options);
+                options: options,
+                pathBase: PathString.Empty);
 
             var content = await ExecutePage(options, model);
 
@@ -164,7 +169,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                         PendingMigrations = new string[] { }
                     }
                 },
-                options: options);
+                options: options,
+                pathBase: PathString.Empty);
 
             var content = await ExecutePage(options, model);
 
@@ -188,7 +194,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                         PendingMigrations = new string[] { }
                     }
                 },
-                options: options);
+                options: options,
+                pathBase: PathString.Empty);
 
             var content = await ExecutePage(options, model);
 
@@ -214,13 +221,39 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                         PendingMigrations = new string[] { "111_MigrationOne" }
                     }
                 },
-                options: options);
+                options: options,
+                pathBase: PathString.Empty);
 
             var content = await ExecutePage(options, model);
 
             Assert.Contains(options.MigrationsEndPointPath.Value, content);
         }
 
+        [Fact]
+        public async Task PathBase_is_respected()
+        {
+            var options = new DatabaseErrorPageOptions();
+            options.MigrationsEndPointPath = "/HitThisEndPoint";
+
+            var model = new DatabaseErrorPageModel(
+                new Exception(),
+                new DatabaseContextDetails[]
+                {
+                    new DatabaseContextDetails
+                    {
+                        Type = typeof(BloggingContext),
+                        DatabaseExists = true,
+                        PendingModelChanges = false,
+                        PendingMigrations = new string[] { "111_MigrationOne" }
+                    }
+                },
+                options: options,
+                pathBase: "/PathBase");
+
+            var content = await ExecutePage(options, model);
+
+            Assert.Contains("/PathBase/HitThisEndPoint", content);
+        }
 
         private static async Task<string> ExecutePage(DatabaseErrorPageOptions options, DatabaseErrorPageModel model)
         {

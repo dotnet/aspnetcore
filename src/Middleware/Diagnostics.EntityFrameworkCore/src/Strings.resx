@@ -196,7 +196,7 @@
     <value>Alternatively, you can apply pending migrations from a command prompt at your project directory:</value>
   </data>
   <data name="DatabaseErrorPage_NoDbOrMigrationsInfo" xml:space="preserve">
-    <value>A database need to be created for the following:</value>
+    <value>A database needs to be created for the following:</value>
   </data>
   <data name="DatabaseErrorPage_PendingChangesInfo" xml:space="preserve">
     <value>Pending model changes are detected in the following:</value>

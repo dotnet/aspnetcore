@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.HttpsPolicy;
 #endif
 using Microsoft.AspNetCore.SpaServices.AngularCli;
 #if (IndividualLocalAuth)
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Company.WebApplication1.Data;
 using Company.WebApplication1.Models;
@@ -42,6 +44,8 @@ namespace Company.WebApplication1
 #else
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddSingleton<IDeveloperPageExceptionFilter, DatabaseExceptionFilter>();
 #endif
 
             services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
@@ -70,9 +74,6 @@ namespace Company.WebApplication1
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-#if (IndividualLocalAuth)
-                app.UseDatabaseErrorPage();
-#endif
             }
             else
             {

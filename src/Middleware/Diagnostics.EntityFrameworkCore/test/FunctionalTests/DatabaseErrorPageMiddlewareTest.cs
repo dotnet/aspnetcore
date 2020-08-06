@@ -386,10 +386,10 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     .UseTestServer()
                     .Configure(app =>
                     {
-                        app.UseDatabaseErrorPage();
-                        app.UseMiddleware<ContextNotRegisteredInServicesMiddleware>();
 #pragma warning disable CS0618 // Type or member is obsolete
+                        app.UseDatabaseErrorPage();
 #pragma warning restore CS0618 // Type or member is obsolete
+                        app.UseMiddleware<ContextNotRegisteredInServicesMiddleware>();
 #pragma warning disable CS0618 // Type or member is obsolete
                         app.ApplicationServices.GetService<ILoggerFactory>().AddProvider(logProvider);
 #pragma warning restore CS0618 // Type or member is obsolete

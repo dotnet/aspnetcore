@@ -3,6 +3,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
@@ -103,6 +104,8 @@ namespace MusicStore
             {
                 options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequireClaim("ManageStore", "Allowed").Build());
             });
+
+            services.AddSingleton<IDeveloperPageExceptionFilter, DatabaseExceptionFilter>();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -122,8 +125,6 @@ namespace MusicStore
             // Display custom error page in production when error occurs
             // During development use the ErrorPage middleware to display error information in the browser
             app.UseDeveloperExceptionPage();
-
-            app.UseDatabaseErrorPage();
 
             // Configure Session.
             app.UseSession();
