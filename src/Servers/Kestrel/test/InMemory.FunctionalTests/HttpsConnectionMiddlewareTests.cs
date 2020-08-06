@@ -95,6 +95,73 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81)]
+        public async Task CanUseDefaultSniConfiguration()
+        {
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
+            {
+                ["EndpointDefaults:Sni:*.example.org:Protocols"] = "Http1",
+                ["EndpointDefaults:Sni:dot.net:Protocols"] = "None",
+            }).Build();
+
+            var options = new KestrelServerOptions();
+            var env = new Mock<IHostEnvironment>();
+            env.SetupGet(e => e.ContentRootPath).Returns(Directory.GetCurrentDirectory());
+
+            options.ApplicationServices = new ServiceCollection()
+                .AddLogging()
+                .AddSingleton(env.Object)
+                .BuildServiceProvider();
+
+            options.Configure(configuration).Load();
+
+            void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.KestrelServerOptions = options;
+                listenOptions.UseHttps(_x509Certificate2);
+                // We don't need to set listenOptions.Protocols since it will be flowed through the HttpProtocolsFeature
+            };
+
+            await using var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), ConfigureListenOptions);
+
+            using var exampleConnection = server.CreateConnection();
+            var exampleSslOptions = new SslClientAuthenticationOptions
+            {
+                TargetHost = "a.example.org",
+                ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http11, SslApplicationProtocol.Http2 },
+            };
+
+            using var exampleStream = OpenSslStream(exampleConnection.Stream);
+            await exampleStream.AuthenticateAsClientAsync(exampleSslOptions);
+
+            Assert.Equal(SslApplicationProtocol.Http11, exampleStream.NegotiatedApplicationProtocol);
+
+            using var dotnetConnection = server.CreateConnection();
+            var dotnetSslOptions = new SslClientAuthenticationOptions
+            {
+                TargetHost = "dot.net",
+                ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http11, SslApplicationProtocol.Http2 },
+            };
+
+            using var dotnetStream = OpenSslStream(dotnetConnection.Stream);
+            await dotnetStream.AuthenticateAsClientAsync(dotnetSslOptions);
+
+            // HttpProtocols.None was configured, so there is no negotiated protocol
+            Assert.True(dotnetStream.NegotiatedApplicationProtocol.Protocol.IsEmpty);
+
+            using var emptyNameConnection = server.CreateConnection();
+            var emptyNameSslOptions = new SslClientAuthenticationOptions
+            {
+                TargetHost = "",
+            };
+
+            using var refusedStream = OpenSslStream(emptyNameConnection.Stream);
+            // We expect the handshake to throw here because Kestrel refuses the connection due to there being no TargetHost and now wildcard config.
+            await Assert.ThrowsAsync<IOException>(async () => await refusedStream.AuthenticateAsClientAsync(emptyNameSslOptions));
+        }
+
         [Fact]
         public async Task HandshakeDetailsAreAvailable()
         {
