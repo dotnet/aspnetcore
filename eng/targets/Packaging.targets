@@ -7,7 +7,7 @@
                  See $(RepoRoot)eng\tools\BaselineGenerator\README.md for instructions on updating this baseline." />
   </Target>
 
-  <!-- This target is used to get the package versions of projects -->
+  <!-- This target is used to get the package versions of projects. A variant also exists in Npm.Common.targets. -->
   <Target Name="_GetPackageVersionInfo" DependsOnTargets="$(GetPackageVersionDependsOn)"
           Returns="@(_ProjectPathWithVersion)">
     <ItemGroup>
