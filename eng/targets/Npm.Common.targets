@@ -29,7 +29,7 @@
     <BuildOutputFiles Include="dist\**\*.js" />
   </ItemGroup>
 
-  <Target Name="_CheckForInvalidConfiguration">
+  <Target Name="_CheckForInvalidConfiguration" Condition=" '$(DisableYarnCheck)' != 'true' ">
     <Error Text="Missing expected property: PackageId" Condition="'$(IsPackable)' != 'false' and '$(PackageId)' == ''" />
 
     <Exec ContinueOnError="true" Command="node -v" StandardOutputImportance="Low">
@@ -114,6 +114,19 @@
   </Target>
 
   <Target Name="Pack" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="$(PackDependsOn)" />
+
+  <!-- This target is used to get the package versions of projects. A variant also exists in Packaging.targets. -->
+  <Target Name="_GetPackageVersionInfo" Returns="@(_ProjectPathWithVersion)">
+    <ItemGroup>
+      <_ProjectPathWithVersion Include="$(MSBuildProjectFullPath)">
+        <PackageId>$(PackageId)</PackageId>
+        <PackageVersion>$(PackageVersionForPackageVersionInfo)</PackageVersion>
+        <VersionSuffix>$(VersionSuffix)</VersionSuffix>
+        <!-- Fill in the item though variable names like "@microsoft/signalrPackageVersion" are likely invalid. -->
+        <VersionVariableName>$(PackageId.Replace('.',''))PackageVersion</VersionVariableName>
+      </_ProjectPathWithVersion>
+    </ItemGroup>
+  </Target>
 
   <Target Name="_RestoreBackupPackageJsonFile">
     <Move SourceFiles="$(_BackupPackageJson)" DestinationFiles="$(PackageJson)" />
