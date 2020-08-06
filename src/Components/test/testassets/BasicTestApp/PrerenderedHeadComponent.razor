@@ -23,7 +23,23 @@
 
 <Meta id="meta-no-bindings" content="Immutable meta content" />
 
+@if (isInteractive)
+{
+    <span id="interactive-indicator">Interactive mode enabled.</span>
+}
+
 @code {
     private string title = "Initial title";
     private string metaContent = "Initial meta content";
+
+    private bool isInteractive;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            isInteractive = true;
+            StateHasChanged();
+        }
+    }
 }
