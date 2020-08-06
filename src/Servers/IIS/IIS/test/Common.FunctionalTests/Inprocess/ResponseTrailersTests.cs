@@ -18,15 +18,18 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class ResponseTrailersTests : IISFunctionalTestBase
     {
+        private const string WindowsVersionForTrailers = "10.0.20180";
+
         public ResponseTrailersTests(PublishedSitesFixture fixture) : base(fixture)
         {
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.20180")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_HTTP2_TrailersAvailable()
         {
             var version = System.Environment.OSVersion.Version;
+
             var deploymentParameters = GetHttpsDeploymentParameters();
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -38,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.20180")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_HTTP1_TrailersNotAvailable()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel: IntegrationTesting.HostingModel.OutOfProcess);
@@ -53,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.20180")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_ProhibitedTrailers_Blocked()
         {
             var deploymentParameters = GetHttpsDeploymentParameters();
@@ -67,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.20180")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_NoBody_TrailersSent()
         {
             var deploymentParameters = GetHttpsDeploymentParameters();
@@ -82,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.20180")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_WithBody_TrailersSent()
         {
             var deploymentParameters = GetHttpsDeploymentParameters();
@@ -98,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.20180")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_WithContentLengthBody_TrailersSent()
         {
             var body = "Hello World";
@@ -116,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.20180")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_WithTrailersBeforeContentLengthBody_TrailersSent()
         {
             var body = "Hello World";
@@ -137,7 +140,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.20180")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_WithContentLengthBodyAndDeclared_TrailersSent()
         {
             var body = "Hello World";
@@ -159,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.20180")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
         public async Task ResponseTrailers_MultipleValues_SentAsSeparateHeaders()
         {
             var deploymentParameters = GetHttpsDeploymentParameters();

@@ -439,10 +439,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 var headerNameBytes = Encoding.ASCII.GetBytes(headerPair.Key);
                 fixed (byte* pHeaderName = headerNameBytes)
                 {
+                    var isFirst = true;
                     for (var i = 0; i < headerValues.Count; i++)
                     {
-                        var isFirst = i == 0;
-
                         var headerValue = headerValues[i];
                         if (string.IsNullOrEmpty(headerValue))
                         {
@@ -454,6 +453,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                         {
                             NativeMethods.HttpResponseSetTrailer(_pInProcessHandler, pHeaderName, pHeaderValue, (ushort)headerValueBytes.Length, replace: isFirst);
                         }
+
+                        isFirst = false;
                     }
                 }
             }
