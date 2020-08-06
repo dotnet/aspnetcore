@@ -76,11 +76,6 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
         internal static string GetWebSocketClientJavaScript(string? hostString)
         {
-            if (string.IsNullOrEmpty(hostString))
-            {
-                throw new InvalidOperationException("We expect ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT to be specified.");
-            }
-
             var jsFileName = "Microsoft.AspNetCore.Watch.BrowserRefresh.WebSocketScriptInjection.js";
             using var reader = new StreamReader(typeof(WebSocketScriptInjection).Assembly.GetManifestResourceStream(jsFileName)!);
             var script = reader.ReadToEnd().Replace("{{hostString}}", hostString);
