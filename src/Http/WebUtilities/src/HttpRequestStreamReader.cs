@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private const int MinBufferSize = 128;
         private const int MaxSharedBuilderCapacity = 360; // also the max capacity used in StringBuilderCache
 
-        private Stream _stream;
+        private readonly Stream _stream;
         private readonly Encoding _encoding;
         private readonly Decoder _decoder;
 
@@ -25,8 +26,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly ArrayPool<char> _charPool;
 
         private readonly int _byteBufferSize;
-        private byte[] _byteBuffer;
-        private char[] _charBuffer;
+        private readonly byte[] _byteBuffer;
+        private readonly char[] _charBuffer;
 
         private int _charBufferIndex;
         private int _charsRead;
@@ -233,6 +234,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             return ReadAsync(memory).AsTask();
         }
 
+        [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]
         public override async ValueTask<int> ReadAsync(Memory<char> buffer, CancellationToken cancellationToken = default)
         {
             if (_disposed)

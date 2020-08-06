@@ -183,8 +183,7 @@ namespace Microsoft.AspNetCore.Html
             {
                 var entry = Entries[i];
 
-                var entryAsString = entry as string;
-                if (entryAsString != null)
+                if (entry is string entryAsString)
                 {
                     encoder.Encode(writer, entryAsString);
                 }
