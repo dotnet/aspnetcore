@@ -1,0 +1,32 @@
+﻿@using System.IO; 
+@using Microsoft.AspNetCore.Components.Web.Extensions
+
+<InputFile OnChange="HandleSelection" />
+
+<p>@fileName</p>
+<p>@content</p>
+
+@code {
+    string fileName;
+    string content;
+
+    async Task HandleSelection(IFileListEntry[] files)
+    {
+        var file = files.FirstOrDefault();
+        fileName = null;
+
+        if (file != null)
+        {
+            content = "Loading...";
+
+            using var reader = new StreamReader(file.Data);
+
+            content = await reader.ReadToEndAsync();
+            fileName = file.Name;
+            //var ms = new MemoryStream();
+            //await file.Data.CopyToAsync(ms);
+
+            //status = $"Finished loading {file.Size} bytes from {file.Name}";
+        }
+    }
+}

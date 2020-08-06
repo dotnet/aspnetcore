@@ -2,18 +2,26 @@
 
     // Exported functions
 
-    function init(elem, callbackWrapper) {
+    function init(callbackWrapper, elem) {
         elem._blazorInputFileNextFileId = 0;
 
-        elem.addEventListener('change', function (event) {
+        elem.addEventListener('click', function () {
+            // Permits replacing an existing file with a new one of the same file name.
+            elem.value = '';
+        });
+
+        elem.addEventListener('change', function () {
             // Reduce to purely serializable data, plus an index by ID.
             elem._blazorFilesById = {};
 
             const fileList = Array.prototype.map.call(elem.files, function (file) {
                 const result = {
-                    ...file,
-                    lastModified: new Date(file.lastModified).toISOString(),
                     id: ++elem._blazorInputFileNextFileId,
+                    lastModified: new Date(file.lastModified).toISOString(),
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    relativePath: file.webkitRelativePath,
                 };
 
                 elem._blazorFilesById[result.id] = result;
@@ -25,7 +33,6 @@
             });
 
             callbackWrapper.invokeMethodAsync('NotifyChange', fileList);
-            // TODO: Handle the case where a file is re-uploaded.
         });
     }
 
@@ -36,7 +43,22 @@
     }
 
     function readFileDataSharedMemory(readRequest) {
-        // TODO
+        const inputFileElementReferenceId = Blazor.platform.readStringField(readRequest, 0);
+        const inputFileElement = document.querySelector(`[_bl_${inputFileElementReferenceId}]`);
+        const fileId = Blazor.platform.readInt32Field(readRequest, 4);
+        const sourceOffset = Blazor.platform.readUint64Field(readRequest, 8);
+        const destination = Blazor.platform.readInt32Field(readRequest, 16);
+        const destinationOffset = Blazor.platform.readInt32Field(readRequest, 20);
+        const maxBytes = Blazor.platform.readInt32Field(readRequest, 24);
+
+        const sourceArrayBuffer = getFileById(inputFileElement, fileId).arrayBuffer;
+        const bytesToRead = Math.min(maxBytes, sourceArrayBuffer.byteLength - sourceOffset);
+        const sourceUint8Array = new Uint8Array(sourceArrayBuffer, sourceOffset, bytesToRead);
+
+        const destinationUint8Array = Blazor.platform.toUint8Array(destination);
+        destinationUint8Array.set(sourceUint8Array, destinationOffset);
+
+        return bytesToRead;
     }
 
     // Local helpers

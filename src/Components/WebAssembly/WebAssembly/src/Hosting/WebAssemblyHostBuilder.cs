@@ -187,6 +187,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         internal void InitializeDefaultServices()
         {
             Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
+            Services.AddSingleton<IJSUnmarshalledRuntime>(DefaultWebAssemblyJSRuntime.Instance);
             Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
             Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
             Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));

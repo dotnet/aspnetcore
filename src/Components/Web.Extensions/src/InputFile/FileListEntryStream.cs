@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
@@ -13,16 +12,10 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
     {
         private long _position;
 
-        protected IJSRuntime JSRuntime { get; }
-
-        protected ElementReference InputFileElement { get; }
-
         protected FileListEntry File { get; }
 
-        protected FileListEntryStream(IJSRuntime jsRuntime, ElementReference inputFileElement, FileListEntry file)
+        protected FileListEntryStream(FileListEntry file)
         {
-            JSRuntime = jsRuntime;
-            InputFileElement = inputFileElement;
             File = file;
         }
 
