@@ -3,7 +3,7 @@
 
 package com.microsoft.signalr;
 
-enum TransferFormat {
+public enum TransferFormat {
     TEXT,
     BINARY
 }

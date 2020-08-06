@@ -3,13 +3,9 @@
 
 package com.microsoft.signalr;
 
-import java.awt.List;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
-
-import org.msgpack.core.MessageUnpacker;
 
 class Utils {
     public static String appendQueryString(String original, String queryStringValue) {
@@ -32,7 +28,7 @@ class Utils {
         return value;
     }
     
-    public static int readLengthHeader(ByteBuffer bb) throws IOException {
+    public static int readLengthHeader(ByteBuffer buffer) throws IOException {
         // The payload starts with a length prefix encoded as a VarInt. VarInts use the most significant bit
         // as a marker whether the byte is the last byte of the VarInt or if it spans to the next byte. Bytes
         // appear in the reverse order - i.e. the first byte contains the least significant bits of the value
@@ -52,8 +48,8 @@ class Utils {
         
         do {
             // If we run out of bytes before we finish reading the length header, the message is malformed
-            if (bb.hasRemaining()) {
-                curr = bb.get();
+            if (buffer.hasRemaining()) {
+                curr = buffer.get();
             } else {
                 throw new RuntimeException("The length header was incomplete");
             }

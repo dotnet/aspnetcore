@@ -41,8 +41,7 @@ public class JsonHubProtocol implements HubProtocol {
     @Override
     public List<HubMessage> parseMessages(ByteBuffer payload, InvocationBinder binder) {
         // The position of the ByteBuffer may have been incremented - make sure we only grab the remaining bytes
-        byte[] payloadBytes = Arrays.copyOfRange(payload.array(), payload.position(), payload.capacity());
-        String payloadStr = new String(payloadBytes, StandardCharsets.UTF_8);
+        String payloadStr = new String(payload.array(), payload.position(), payload.remaining(), StandardCharsets.UTF_8);
         if (payloadStr.length() == 0) {
             return null;
         }

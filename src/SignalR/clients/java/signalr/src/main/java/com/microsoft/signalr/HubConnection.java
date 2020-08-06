@@ -166,17 +166,21 @@ public class HubConnection implements AutoCloseable {
 
         this.callback = (payload) -> {
             resetServerTimeout();
-            // MessagePack library can't handle read-only ByteBuffer - copy into an array-backed ByteBuffer if this is the case
-            if (payload.isReadOnly()) {
-                byte[] payloadBytes = new byte[payload.remaining()];
-                payload.get(payloadBytes, 0, payloadBytes.length);
-                payload = ByteBuffer.wrap(payloadBytes);
-            }
             if (!handshakeReceived) {
-                // The handshake will always be a UTF8 Json string, so we can convert the ByteBuffer to that to read the beginning of the payload
-                String payloadStr = new String(payload.array(), StandardCharsets.UTF_8);
-                int handshakeLength = payloadStr.indexOf(RECORD_SEPARATOR) + 1;
-                String handshakeResponseString = payloadStr.substring(0, handshakeLength - 1);
+            	List<Byte> handshakeByteList = new ArrayList<Byte>();
+            	byte curr = payload.get();
+            	// Add the handshake to handshakeBytes, but not the record separator
+            	while (curr != RECORD_SEPARATOR) {
+            		handshakeByteList.add(curr);
+            		curr = payload.get();
+            	}
+            	int handshakeLength = handshakeByteList.size() + 1;
+            	byte[] handshakeBytes = new byte[handshakeLength - 1];
+            	for (int i = 0; i < handshakeLength - 1; i++) {
+            		handshakeBytes[i] = handshakeByteList.get(i);
+            	}
+                // The handshake will always be a UTF8 Json string
+                String handshakeResponseString = new String(handshakeBytes, StandardCharsets.UTF_8);
                 HandshakeResponseMessage handshakeResponse;
                 try {
                     handshakeResponse = HandshakeProtocol.parseHandshakeResponse(handshakeResponseString);
@@ -194,10 +198,6 @@ public class HubConnection implements AutoCloseable {
                 }
                 handshakeReceived = true;
                 handshakeResponseSubject.onComplete();
-                
-                // Increment the ByteBuffer payload by the byte length of the handshake + the byte length of the record separator (1)
-                int readBytes = handshakeResponseString.getBytes(StandardCharsets.UTF_8).length + 1;
-                payload.position(payload.position() + readBytes);
 
                 // The payload only contained the handshake response so we can return.
                 if (!payload.hasRemaining()) {
@@ -205,6 +205,13 @@ public class HubConnection implements AutoCloseable {
                 }
             }
 
+            // MessagePack library can't handle read-only ByteBuffer - copy into an array-backed ByteBuffer if this is the case
+            if (payload.isReadOnly()) {
+                byte[] payloadBytes = new byte[payload.remaining()];
+                payload.get(payloadBytes, 0, payloadBytes.length);
+                payload = ByteBuffer.wrap(payloadBytes);
+            }
+            
             List<HubMessage> messages = protocol.parseMessages(payload, connectionState);
 
             for (HubMessage message : messages) {
@@ -385,12 +392,12 @@ public class HubConnection implements AutoCloseable {
             transport.setOnClose((message) -> stopConnection(message));
 
             return transport.start(negotiateResponse.getFinalUrl()).andThen(Completable.defer(() -> {
-                String handshake = HandshakeProtocol.createHandshakeRequestMessage(
+                ByteBuffer handshake = HandshakeProtocol.createHandshakeRequestMessage(
                         new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
 
                 connectionState = new ConnectionState(this);
 
-                return transport.send(ByteBuffer.wrap(handshake.getBytes(StandardCharsets.UTF_8))).andThen(Completable.defer(() -> {
+                return transport.send(handshake).andThen(Completable.defer(() -> {
                     timeoutHandshakeResponse(handshakeResponseTimeout, TimeUnit.MILLISECONDS);
                     return handshakeResponseSubject.andThen(Completable.defer(() -> {
                         hubConnectionStateLock.lock();

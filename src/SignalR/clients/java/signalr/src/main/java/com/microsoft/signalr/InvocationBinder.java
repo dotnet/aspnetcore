@@ -5,7 +5,7 @@ package com.microsoft.signalr;
 
 import java.util.List;
 
-interface InvocationBinder {
+public interface InvocationBinder {
     Class<?> getReturnType(String invocationId);
     List<Class<?>> getParameterTypes(String methodName);
 }

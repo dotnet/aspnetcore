@@ -5,15 +5,16 @@ package com.microsoft.signalr;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.nio.ByteBuffer;
 import org.junit.jupiter.api.Test;
 
 class HandshakeProtocolTest {
     @Test
     public void VerifyCreateHandshakerequestMessage() {
         HandshakeRequestMessage handshakeRequest = new HandshakeRequestMessage("json", 1);
-        String result = HandshakeProtocol.createHandshakeRequestMessage(handshakeRequest);
+        ByteBuffer result = HandshakeProtocol.createHandshakeRequestMessage(handshakeRequest);
         String expectedResult = "{\"protocol\":\"json\",\"version\":1}\u001E";
-        assertEquals(expectedResult, result);
+        assertEquals(expectedResult, TestUtils.ByteBufferToString(result));
     }
 
     @Test
