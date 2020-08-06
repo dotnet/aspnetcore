@@ -242,7 +242,7 @@ namespace Templates.Test
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             // Verify building in debug works
-            var buildResult = await Project.RunDotNetBuildAsync();
+            var buildResult = await Project.RunDotNetBuildAsync(additionalArgs: "/p:NoWarn=NU1605");
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
 
             // Publish builds in "release" configuration. Running publish should ensure we can compile in release and that we can publish without issues.
