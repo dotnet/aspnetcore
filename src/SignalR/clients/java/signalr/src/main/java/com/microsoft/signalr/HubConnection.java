@@ -167,18 +167,18 @@ public class HubConnection implements AutoCloseable {
         this.callback = (payload) -> {
             resetServerTimeout();
             if (!handshakeReceived) {
-            	List<Byte> handshakeByteList = new ArrayList<Byte>();
-            	byte curr = payload.get();
-            	// Add the handshake to handshakeBytes, but not the record separator
-            	while (curr != RECORD_SEPARATOR) {
-            		handshakeByteList.add(curr);
-            		curr = payload.get();
-            	}
-            	int handshakeLength = handshakeByteList.size() + 1;
-            	byte[] handshakeBytes = new byte[handshakeLength - 1];
-            	for (int i = 0; i < handshakeLength - 1; i++) {
-            		handshakeBytes[i] = handshakeByteList.get(i);
-            	}
+                List<Byte> handshakeByteList = new ArrayList<Byte>();
+                byte curr = payload.get();
+                // Add the handshake to handshakeBytes, but not the record separator
+                while (curr != RECORD_SEPARATOR) {
+                    handshakeByteList.add(curr);
+                    curr = payload.get();
+                }
+                int handshakeLength = handshakeByteList.size() + 1;
+                byte[] handshakeBytes = new byte[handshakeLength - 1];
+                for (int i = 0; i < handshakeLength - 1; i++) {
+                    handshakeBytes[i] = handshakeByteList.get(i);
+                }
                 // The handshake will always be a UTF8 Json string
                 String handshakeResponseString = new String(handshakeBytes, StandardCharsets.UTF_8);
                 HandshakeResponseMessage handshakeResponse;
