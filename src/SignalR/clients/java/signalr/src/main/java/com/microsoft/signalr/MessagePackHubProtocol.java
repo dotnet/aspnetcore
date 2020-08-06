@@ -523,6 +523,14 @@ public class MessagePackHubProtocol implements HubProtocol {
                     break;
                 default:
                     item = unpacker.unpackInt();
+                    // unpackInt could correspond to an int, short, char, or byte - cast those literally here
+                    if (itemType.equals(Short.class)) {
+                        item = ((Integer) item).shortValue();
+                    } else if (itemType.equals(Character.class)) {
+                        item = (char) ((Integer) item).shortValue();
+                    } else if (itemType.equals(Byte.class)) {
+                        item = ((Integer) item).byteValue();
+                    }
                     break;
                 }
                 break;
@@ -572,9 +580,6 @@ public class MessagePackHubProtocol implements HubProtocol {
             default:
                 break;
         }
-        if (itemType.isPrimitive()) {
-        return Utils.toPrimitive(itemType, item);
-        }
         return itemType.cast(item);
     }
 
@@ -590,6 +595,9 @@ public class MessagePackHubProtocol implements HubProtocol {
             packer.packLong((long) o);
         } else if (o instanceof Short) {
             packer.packShort((short) o);
+        // Pack char as short
+        } else if (o instanceof Character) {
+            packer.packShort((short) ((Character) o).charValue());
         } else if (o instanceof Integer) {
             packer.packInt((int) o);
         } else if (o instanceof Double) {
@@ -600,7 +608,6 @@ public class MessagePackHubProtocol implements HubProtocol {
             packer.packString((String) o);
         } else if (o instanceof Byte) {
             packer.packByte((byte) o);
-        // Unsure about this
         } else if (o instanceof Collection<?>) {
             @SuppressWarnings("unchecked")
             Collection<Object> list = (Collection<Object>) o;

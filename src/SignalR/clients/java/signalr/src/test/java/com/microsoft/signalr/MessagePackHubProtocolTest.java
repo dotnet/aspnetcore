@@ -43,9 +43,9 @@ class MessagePackHubProtocolTest {
     
     @Test
     public void verifyWriteInvocationMessageWithHeaders() {
-    	Map<String, String> headers = new HashMap<String, String>();
-    	headers.put("a", "b");
-    	headers.put("c", "d");
+        Map<String, String> headers = new HashMap<String, String>();
+        headers.put("a", "b");
+        headers.put("c", "d");
         InvocationMessage invocationMessage = new InvocationMessage(headers, null, "test", new Object[] { 42 }, null);
         ByteBuffer result = messagePackHubProtocol.writeMessage(invocationMessage);
         byte[] expectedBytes = {0x14, (byte) 0x96, 0x01, (byte) 0x82, (byte) 0xA1, 0x61, (byte) 0xA1, 0x62, (byte) 0xA1, 0x63, 
@@ -56,7 +56,7 @@ class MessagePackHubProtocolTest {
     
     @Test
     public void verifyWriteStreamItem() {
-    	StreamItem streamItem = new StreamItem(null, "id", 42);
+        StreamItem streamItem = new StreamItem(null, "id", 42);
         ByteBuffer result = messagePackHubProtocol.writeMessage(streamItem);
         byte[] expectedBytes = {0x07, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA2, 0x69, 0x64, 0x2A};
         ByteString expectedResult = ByteString.of(expectedBytes);
@@ -65,7 +65,7 @@ class MessagePackHubProtocolTest {
     
     @Test
     public void verifyWriteCompletionMessageNonVoid() {
-    	CompletionMessage completionMessage = new CompletionMessage(null, "id", 42, null);
+        CompletionMessage completionMessage = new CompletionMessage(null, "id", 42, null);
         ByteBuffer result = messagePackHubProtocol.writeMessage(completionMessage);
         byte[] expectedBytes = {0x08, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA2, 0x69, 0x64, 0x03, 0x2A};
         ByteString expectedResult = ByteString.of(expectedBytes);
@@ -74,7 +74,7 @@ class MessagePackHubProtocolTest {
     
     @Test
     public void verifyWriteCompletionMessageVoid() {
-    	CompletionMessage completionMessage = new CompletionMessage(null, "id", null, null);
+        CompletionMessage completionMessage = new CompletionMessage(null, "id", null, null);
         ByteBuffer result = messagePackHubProtocol.writeMessage(completionMessage);
         byte[] expectedBytes = {0x07, (byte) 0x94, 0x03, (byte) 0x80, (byte) 0xA2, 0x69, 0x64, 0x02};
         ByteString expectedResult = ByteString.of(expectedBytes);
@@ -83,7 +83,7 @@ class MessagePackHubProtocolTest {
     
     @Test
     public void verifyWriteCompletionMessageError() {
-    	CompletionMessage completionMessage = new CompletionMessage(null, "id", null, "error");
+        CompletionMessage completionMessage = new CompletionMessage(null, "id", null, "error");
         ByteBuffer result = messagePackHubProtocol.writeMessage(completionMessage);
         byte[] expectedBytes = {0x0D, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA2, 0x69, 0x64, 0x01, (byte) 0xA5, 0x65, 0x72, 0x72, 0x6F, 0x72};
         ByteString expectedResult = ByteString.of(expectedBytes);
@@ -92,7 +92,7 @@ class MessagePackHubProtocolTest {
     
     @Test
     public void verifyWriteStreamInvocationMessage() {
-    	List<String> streamIds = new ArrayList<String>();
+        List<String> streamIds = new ArrayList<String>();
         streamIds.add("stream");
         StreamInvocationMessage streamInvocationMessage = new StreamInvocationMessage(null, "id", "test", new Object[] {42}, streamIds);
         ByteBuffer result = messagePackHubProtocol.writeMessage(streamInvocationMessage);
@@ -104,7 +104,7 @@ class MessagePackHubProtocolTest {
     
     @Test
     public void verifyWriteCancelInvocationMessage() {
-    	CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(null, "id");
+        CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(null, "id");
         ByteBuffer result = messagePackHubProtocol.writeMessage(cancelInvocationMessage);
         byte[] expectedBytes = {0x06, (byte) 0x93, 0x05, (byte) 0x80, (byte) 0xA2, 0x69, 0x64};
         ByteString expectedResult = ByteString.of(expectedBytes);
@@ -121,7 +121,7 @@ class MessagePackHubProtocolTest {
     
     @Test
     public void verifyWriteCloseMessage() {
-    	CloseMessage closeMessage = new CloseMessage();
+        CloseMessage closeMessage = new CloseMessage();
         ByteBuffer result = messagePackHubProtocol.writeMessage(closeMessage);
         byte[] expectedBytes = {0x04, (byte) 0x93, 0x07, (byte) 0xC0, (byte) 0xC2};
         ByteString expectedResult = ByteString.of(expectedBytes);
@@ -130,7 +130,7 @@ class MessagePackHubProtocolTest {
     
     @Test
     public void verifyWriteCloseMessageWithError() {
-    	CloseMessage closeMessage = new CloseMessage("Error");
+        CloseMessage closeMessage = new CloseMessage("Error");
         ByteBuffer result = messagePackHubProtocol.writeMessage(closeMessage);
         byte[] expectedBytes = {0x09, (byte) 0x93, 0x07, (byte) 0xA5, 0x45, 0x72, 0x72, 0x6F, 0x72, (byte) 0xC2};
         ByteString expectedResult = ByteString.of(expectedBytes);
@@ -513,9 +513,9 @@ class MessagePackHubProtocolTest {
     
     @Test
     public void errorWhenLengthHeaderTooLong() {
-    	byte[] messageBytes = {0x0D, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, 
-    	    0x2A, (byte) 0x90};
-    	ByteBuffer message = ByteBuffer.wrap(messageBytes);
+        byte[] messageBytes = {0x0D, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, 
+            0x2A, (byte) 0x90};
+        ByteBuffer message = ByteBuffer.wrap(messageBytes);
         TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
         
         RuntimeException exception = assertThrows(RuntimeException.class,
@@ -525,14 +525,105 @@ class MessagePackHubProtocolTest {
     
     @Test
     public void errorWhenLengthHeaderTooShort() {
-    	byte[] messageBytes = {0x0B, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, 
-    	    0x2A, (byte) 0x90};
-    	ByteBuffer message = ByteBuffer.wrap(messageBytes);
+        byte[] messageBytes = {0x0B, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, 
+            0x2A, (byte) 0x90};
+        ByteBuffer message = ByteBuffer.wrap(messageBytes);
         TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
         
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> messagePackHubProtocol.parseMessages(message, binder));
         assertEquals("MessagePack message was length 12 but claimed to be length 11.", exception.getMessage());
     }
+    
+    @Test
+    public void parseMessageWithTwoByteLengthHeader() {
+        // Test that a long message w/ a 2-byte length header is still parsed correctly
+        byte[] messageBytes = {(byte) 0x87, 0x01, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, 
+            (byte) 0x91, (byte) 0xD9, 0x7A, 0x54, 0x68, 0x69, 0x73, 0x20, 0x69, 0x73, 0x20, 0x61, 0x20, 0x72, 0x65, 0x61, 0x6C, 0x6C, 
+            0x79, 0x20, 0x6C, 0x6F, 0x6E, 0x67, 0x20, 0x61, 0x72, 0x67, 0x75, 0x6D, 0x65, 0x6E, 0x74, 0x20, 0x74, 0x6F, 0x20, 0x6D, 
+            0x61, 0x6B, 0x65, 0x20, 0x74, 0x68, 0x65, 0x20, 0x6C, 0x65, 0x6E, 0x67, 0x74, 0x68, 0x20, 0x6F, 0x66, 0x20, 0x74, 0x68, 
+            0x69, 0x73, 0x20, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x20, 0x6D, 0x6F, 0x72, 0x65, 0x20, 0x74, 0x68, 0x61, 0x6E, 
+            0x20, 0x31, 0x32, 0x37, 0x20, 0x62, 0x79, 0x74, 0x65, 0x73, 0x2E, 0x20, 0x57, 0x65, 0x20, 0x6A, 0x75, 0x73, 0x74, 0x20, 
+            0x6E, 0x65, 0x65, 0x64, 0x20, 0x61, 0x20, 0x66, 0x65, 0x77, 0x20, 0x6D, 0x6F, 0x72, 0x65, 0x20, 0x63, 0x68, 0x61, 0x72, 
+            0x61, 0x63, 0x74, 0x65, 0x72, 0x73, 0x2E, (byte) 0x90};
+        ByteBuffer message = ByteBuffer.wrap(messageBytes);
+        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { "arg" }, null));
 
+        List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
+
+        //We know it's only one message
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+
+        assertEquals(HubMessageType.INVOCATION, messages.get(0).getMessageType());
+
+        //We can safely cast here because we know that it's an invocation message.
+        InvocationMessage invocationMessage = (InvocationMessage) messages.get(0);
+
+        assertEquals("test", invocationMessage.getTarget());
+        assertEquals(null, invocationMessage.getInvocationId());
+        assertEquals(null, invocationMessage.getHeaders());
+        assertEquals(null, invocationMessage.getStreamIds());
+
+        String messageResult = (String)invocationMessage.getArguments()[0];
+        assertEquals("This is a really long argument to make the length of this message more than "
+            + "127 bytes. We just need a few more characters.", messageResult);
+    }
+    
+    @Test
+    public void verifyWriteInvocationMessageWithTwoByteLengthHeader() {
+        InvocationMessage invocationMessage = new InvocationMessage(null, null, "test", new Object[] { "This is a really long argument to make "
+                + "the length of this message more than 127 bytes. We just need a few more characters." }, null);
+        ByteBuffer result = messagePackHubProtocol.writeMessage(invocationMessage);
+        byte[] expectedBytes = {(byte) 0x87, 0x01, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, 
+            (byte) 0x91, (byte) 0xD9, 0x7A, 0x54, 0x68, 0x69, 0x73, 0x20, 0x69, 0x73, 0x20, 0x61, 0x20, 0x72, 0x65, 0x61, 0x6C, 0x6C, 
+            0x79, 0x20, 0x6C, 0x6F, 0x6E, 0x67, 0x20, 0x61, 0x72, 0x67, 0x75, 0x6D, 0x65, 0x6E, 0x74, 0x20, 0x74, 0x6F, 0x20, 0x6D, 
+            0x61, 0x6B, 0x65, 0x20, 0x74, 0x68, 0x65, 0x20, 0x6C, 0x65, 0x6E, 0x67, 0x74, 0x68, 0x20, 0x6F, 0x66, 0x20, 0x74, 0x68, 
+            0x69, 0x73, 0x20, 0x6D, 0x65, 0x73, 0x73, 0x61, 0x67, 0x65, 0x20, 0x6D, 0x6F, 0x72, 0x65, 0x20, 0x74, 0x68, 0x61, 0x6E, 
+            0x20, 0x31, 0x32, 0x37, 0x20, 0x62, 0x79, 0x74, 0x65, 0x73, 0x2E, 0x20, 0x57, 0x65, 0x20, 0x6A, 0x75, 0x73, 0x74, 0x20, 
+            0x6E, 0x65, 0x65, 0x64, 0x20, 0x61, 0x20, 0x66, 0x65, 0x77, 0x20, 0x6D, 0x6F, 0x72, 0x65, 0x20, 0x63, 0x68, 0x61, 0x72, 
+            0x61, 0x63, 0x74, 0x65, 0x72, 0x73, 0x2E, (byte) 0x90};
+        ByteString expectedResult = ByteString.of(expectedBytes);
+        assertEquals(expectedResult, ByteString.of(result));
+    }
+    
+    @Test
+    public void parseInvocationMessageWithPrimitiveArgs() {
+        byte[] messageBytes = {0x1D, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x96, 0x01, (byte) 0xCB, 
+            0x40, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, (byte) 0xC3, 0x11, 0x63, (byte) 0xCE, (byte) 0xC6, (byte) 0xAE, (byte) 0xA1, 0x55, (byte) 0x90};
+        ByteBuffer message = ByteBuffer.wrap(messageBytes);
+        int i = 1;
+        double d = 2.5d;
+        boolean bool = true;
+        byte bite = 0x11;
+        char c = 'c';
+        long l = 3333333333l;
+        
+        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { i, d, bool, bite, c, l }, null));
+
+        List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
+
+        //We know it's only one message
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+
+        assertEquals(HubMessageType.INVOCATION, messages.get(0).getMessageType());
+
+        //We can safely cast here because we know that it's an invocation message.
+        InvocationMessage invocationMessage = (InvocationMessage) messages.get(0);
+
+        assertEquals("test", invocationMessage.getTarget());
+        assertEquals(null, invocationMessage.getInvocationId());
+        assertEquals(null, invocationMessage.getHeaders());
+        assertEquals(null, invocationMessage.getStreamIds());
+        
+        Object[] args = invocationMessage.getArguments();
+        assertEquals(6, args.length);
+        assertEquals(i, (int)args[0]);
+        assertEquals(d, (double)args[1]);
+        assertEquals(bool, (boolean)args[2]);
+        assertEquals(bite, (byte)args[3]);
+        assertEquals(c, (char)args[4]);
+        assertEquals(l, (long)args[5]);
+    }
 }
