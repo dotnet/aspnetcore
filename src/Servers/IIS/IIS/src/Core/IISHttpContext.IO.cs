@@ -169,6 +169,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                         // if request is done no need to flush, http.sys would do it for us
                         if (result.IsCompleted)
                         {
+                            // When is the reader completed? Is it always after the request pipeline exits? Or can CompleteAsync make it complete early?
+                            if (HasTrailers)
+                            {
+                                SetResponseTrailers();
+                            }
+
                             break;
                         }
 
