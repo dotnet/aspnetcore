@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public Task Build_SimpleMvc_UsingDotnetMSBuildAndWithoutBuildServer_CanBuildSuccessfully()
             => Build_SimpleMvc_WithoutBuildServer_CanBuildSuccessfully(MSBuildProcessKind.Dotnet);
 
-        [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/24427")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InitializeTestProject("SimpleMvc")]
         public Task Build_SimpleMvc_UsingDesktopMSBuildAndWithoutBuildServer_CanBuildSuccessfully()
@@ -96,14 +96,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildFailed(result);
 
             // Verifying that the error correctly gets mapped to the original source
-            var filePath = Path.Combine(Project.DirectoryPath, "Views", "Home", "Index.cshtml");
-            var location = filePath + "(1,27)";
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Absolute paths on OSX don't work well.
-                location = null;
-            }
-            Assert.BuildError(result, "CS1503", location);
+            Assert.BuildError(result, "CS1503", location: Path.Combine("Views", "Home", "Index.cshtml") + "(1,27)");
 
             // Compilation failed without creating the views assembly
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");

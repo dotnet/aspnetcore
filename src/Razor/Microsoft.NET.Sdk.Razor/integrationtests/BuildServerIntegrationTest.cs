@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public Task Build_SimpleMvc_WithServer_UsingDotnetMSBuild_CanBuildSuccessfully()
             => Build_SimpleMvc_CanBuildSuccessfully(MSBuildProcessKind.Dotnet);
 
-        [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/24427")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InitializeTestProject("SimpleMvc")]
         public Task Build_SimpleMvc_WithServer_UsingDesktopMSBuild_CanBuildSuccessfully()

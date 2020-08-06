@@ -12,9 +12,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Http
     /// </summary>
     public static class WebAssemblyHttpRequestMessageExtensions
     {
-        private static readonly HttpRequestOptionsKey<IDictionary<string, object>> FetchRequestOptionsKey = new HttpRequestOptionsKey<IDictionary<string, object>>("WebAssemblyFetchOptions");
-        private static readonly HttpRequestOptionsKey<bool> WebAssemblyEnableStreamingResponseKey = new HttpRequestOptionsKey<bool>("WebAssemblyEnableStreamingResponse");
-
         /// <summary>
         /// Configures a value for the 'credentials' option for the HTTP request.
         /// </summary>
@@ -129,15 +126,17 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Http
                 throw new ArgumentNullException(nameof(requestMessage));
             }
 
+            const string FetchRequestOptionsKey = "WebAssemblyFetchOptions";
             IDictionary<string, object> fetchOptions;
-            if (requestMessage.Options.TryGetValue(FetchRequestOptionsKey, out var entry))
+
+            if (requestMessage.Properties.TryGetValue(FetchRequestOptionsKey, out var entry))
             {
-                fetchOptions = entry;
+                fetchOptions = (IDictionary<string, object>)entry;
             }
             else
             {
                 fetchOptions = new Dictionary<string, object>(StringComparer.Ordinal);
-                requestMessage.Options.Set(FetchRequestOptionsKey, fetchOptions);
+                requestMessage.Properties[FetchRequestOptionsKey] = fetchOptions;
             }
 
             fetchOptions[name] = value;
@@ -162,7 +161,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Http
                 throw new ArgumentNullException(nameof(requestMessage));
             }
 
-            requestMessage.Options.Set(WebAssemblyEnableStreamingResponseKey, streamingEnabled);
+            requestMessage.Properties["WebAssemblyEnableStreamingResponse"] = streamingEnabled;
 
             return requestMessage;
         }

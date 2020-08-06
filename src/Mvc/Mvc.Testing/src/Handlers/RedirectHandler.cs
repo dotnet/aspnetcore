@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -152,10 +152,9 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
                 redirect.Content = originalContent;
             }
 
-            foreach (var property in response.RequestMessage.Options)
+            foreach (var property in response.RequestMessage.Properties)
             {
-                var key = new HttpRequestOptionsKey<object>(property.Key);
-                redirect.Options.Set(key, property.Value);
+                redirect.Properties.Add(property.Key, property.Value);
             }
         }
 
