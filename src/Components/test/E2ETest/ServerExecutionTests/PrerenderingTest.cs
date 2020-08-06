@@ -9,6 +9,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit;
@@ -82,6 +83,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void CanInfluenceHeadDuringPrerender()
         {
             Navigate("/prerendered/prerendered-head");
