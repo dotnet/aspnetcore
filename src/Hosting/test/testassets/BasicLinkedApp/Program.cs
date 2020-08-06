@@ -28,10 +28,18 @@ namespace BasicLinkedApp
                     .ConfigureLogging(logging =>
                     {
                         logging.AddConsole();
+                        logging.SetMinimumLevel(LogLevel.Debug);
                     })
                     .ConfigureWebHost(webHostBuilder =>
                     {
-                        webHostBuilder.UseKestrel().UseStartup<Startup>();
+                        webHostBuilder.UseKestrel(o =>
+                        {
+                            o.ConfigureEndpointDefaults(lo =>
+                            {
+                                lo.UseConnectionLogging();
+                            });
+
+                        }).UseStartup<Startup>();
                     });
         }
     }
