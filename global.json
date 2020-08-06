@@ -1,9 +1,9 @@
 {
   "sdk": {
-    "version": "5.0.100-preview.7.20366.6"
+    "version": "5.0.100-preview.7.20330.3"
   },
   "tools": {
-    "dotnet": "5.0.100-preview.7.20366.6",
+    "dotnet": "5.0.100-preview.7.20330.3",
     "runtimes": {
       "dotnet/x64": [
         "2.1.18",
