@@ -93,11 +93,11 @@ public class MessagePackHubProtocol implements HubProtocol {
                 int readBytes = (int) unpacker.getTotalReadBytes();
                 if (readBytes != length) {
                     // Check what the last message was
-                    if (hubMessages.get(hubMessages.size() - 1).getMessageType() != HubMessageType.INVOCATION_BINDING_FAILURE) {
-                        throw new RuntimeException(String.format("MessagePack message was length %d but claimed to be length %d.", readBytes, length));
                     // If it was an invocation binding failure, we have to correct the position of the buffer
-                    } else {
+                    if (hubMessages.get(hubMessages.size() - 1).getMessageType() == HubMessageType.INVOCATION_BINDING_FAILURE) {
                         payload.position(payload.position() + (length - readBytes));
+                    } else {
+                        throw new RuntimeException(String.format("MessagePack message was length %d but claimed to be length %d.", readBytes, length));
                     }
                 }
                 unpacker.close();

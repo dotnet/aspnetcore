@@ -17,9 +17,9 @@ class TestUtils {
 
     static HubConnection createHubConnection(String url, Transport transport, boolean skipNegotiate, HttpClient client) {
         HttpHubConnectionBuilder builder = HubConnectionBuilder.create(url)
-                .withTransportImplementation(transport)
-                .withHttpClient(client)
-                .shouldSkipNegotiate(skipNegotiate);
+            .withTransportImplementation(transport)
+            .withHttpClient(client)
+            .shouldSkipNegotiate(skipNegotiate);
 
         return builder.build();
     }
