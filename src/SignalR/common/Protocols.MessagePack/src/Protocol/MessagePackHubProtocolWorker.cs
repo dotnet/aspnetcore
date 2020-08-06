@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
             if (streamIdCount > 0)
             {
-                streams = new List<string>((int)streamIdCount);
+                streams = new List<string>();
                 for (var i = 0; i < streamIdCount; i++)
                 {
                     streams.Add(reader.ReadString());
