@@ -352,9 +352,10 @@ namespace Microsoft.AspNetCore.WebUtilities
         [Fact]
         public async Task CopyToAsyncWorks()
         {
+            // 4K is the lower bound on buffer sizes
             var bufferSize = 4096;
-            var expectedWrites = 8;
-            var data = Enumerable.Range(0, bufferSize * expectedWrites).Select(b => (byte)b).ToArray();
+            var mostExpectedWrites = 8;
+            var data = Enumerable.Range(0, bufferSize * mostExpectedWrites).Select(b => (byte)b).ToArray();
             var inner = new MemoryStream(data);
 
             using var stream = new FileBufferingReadStream(inner, 1024 * 1024, bufferLimit: null, GetCurrentDirectory());
@@ -367,18 +368,18 @@ namespace Microsoft.AspNetCore.WebUtilities
             await stream.CopyToAsync(withBufferMs);
 
             Assert.Equal(data, withoutBufferMs.ToArray());
-            Assert.Equal(expectedWrites, withoutBufferMs.NumberOfWrites);
+            Assert.Equal(mostExpectedWrites, withoutBufferMs.NumberOfWrites);
             Assert.Equal(data, withBufferMs.ToArray());
-            // MemoryStreams always write the entire buffeer
-            Assert.Equal(1, withBufferMs.NumberOfWrites);
+            Assert.InRange(withBufferMs.NumberOfWrites, 1, mostExpectedWrites);
         }
 
         [Fact]
         public async Task CopyToAsyncWorksWithFileThreshold()
         {
+            // 4K is the lower bound on buffer sizes
             var bufferSize = 4096;
-            var expectedWrites = 8;
-            var data = Enumerable.Range(0, bufferSize * expectedWrites).Select(b => (byte)b).Reverse().ToArray();
+            var mostExpectedWrites = 8;
+            var data = Enumerable.Range(0, bufferSize * mostExpectedWrites).Select(b => (byte)b).Reverse().ToArray();
             var inner = new MemoryStream(data);
 
             using var stream = new FileBufferingReadStream(inner, 100, bufferLimit: null, GetCurrentDirectory());
@@ -391,9 +392,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             await stream.CopyToAsync(withBufferMs);
 
             Assert.Equal(data, withoutBufferMs.ToArray());
-            Assert.Equal(expectedWrites, withoutBufferMs.NumberOfWrites);
+            Assert.Equal(mostExpectedWrites, withoutBufferMs.NumberOfWrites);
             Assert.Equal(data, withBufferMs.ToArray());
-            Assert.Equal(expectedWrites, withBufferMs.NumberOfWrites);
+            Assert.InRange(withBufferMs.NumberOfWrites, 1, mostExpectedWrites);
         }
 
         [Fact]

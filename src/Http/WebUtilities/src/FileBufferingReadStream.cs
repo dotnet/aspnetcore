@@ -363,10 +363,10 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
         {
-            // Ignore the buffer size since the base Stream implementation has weird behavior when the stream is
+            // Set a minimum buffer size of 4K since the base Stream implementation has weird behavior when the stream is
             // seekable *and* the length is 0 (it passes in a buffer size of 1).
             // See https://github.com/dotnet/runtime/blob/222415c56c9ea73530444768c0e68413eb374f5d/src/libraries/System.Private.CoreLib/src/System/IO/Stream.cs#L164-L184
-            bufferSize = 4096;
+            bufferSize = Math.Max(4096, bufferSize);
 
             // If we're completed buffered then copy from the underlying source
             if (_completelyBuffered)
