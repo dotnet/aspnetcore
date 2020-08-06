@@ -358,7 +358,7 @@ if (-not $foundJdk -and $RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJ
 # Initialize global variables need to be set before the import of Arcade is imported
 $restore = $RunRestore
 
-# Though VS Code may indicate $nodeReuse and $msbuildEngine are unused, tools.ps1 uses them.
+# Though VS Code may indicate $nodeReuse, $msbuildEngine, and (later) $_MSBuildExe are unused, tools.ps1 uses them.
 
 # Disable node reuse - Workaround perpetual issues in node reuse and custom task assemblies
 $nodeReuse = $false
@@ -439,6 +439,24 @@ try {
         Write-Host
         Remove-Item variable:global:_BuildTool -ErrorAction Ignore
         $msbuildEngine = 'vs'
+
+        # Work around discovering C++ components when using xcopy version of msbuild.
+        $local:msbuildPath = InitializeVisualStudioMSBuild -install:$restore
+        if ($local:msbuildPath -like '*\.tools\msbuild\*') {
+            # This hack is based on knowing at least VS 16.5 should be available on Windows CI agents.
+            $local:vsRequirements = $GlobalJson.tools.vs
+            $local:vsRequirements.version = '16.5'
+            Remove-Item variable:global:_MSBuildExe
+
+            # Will also set $env:VSINSTALLDIR and other VS environment variables.
+            $local:msbuildFromVSPath = InitializeVisualStudioMSBuild -install:$restore $local:vsRequirements
+
+            $local:msbuildextensionspath = Resolve-Path (Join-Path "$local:msbuildFromVSPath" "..\..\..")
+            $MSBuildArguments += "/p:MSBuildExtensionsPath=$local:msbuildextensionspath"
+            $MSBuildArguments += "/p:MSBuildExtensionsPath32=$local:msbuildextensionspath"
+
+            $global:_MSBuildExe = $local:msbuildPath
+        }
 
         MSBuild $toolsetBuildProj /p:RepoRoot=$RepoRoot @MSBuildArguments
     }
