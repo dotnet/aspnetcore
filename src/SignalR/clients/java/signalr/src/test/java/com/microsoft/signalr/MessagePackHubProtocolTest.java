@@ -5,7 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import okio.ByteString;
 
 import org.junit.jupiter.api.Test;
@@ -27,13 +30,109 @@ class MessagePackHubProtocolTest {
     public void checkTransferFormat() {
         assertEquals(TransferFormat.BINARY, messagePackHubProtocol.getTransferFormat());
     }
-
+    
     @Test
-    public void verifyWriteMessage() {
+    public void verifyWriteInvocationMessage() {
         InvocationMessage invocationMessage = new InvocationMessage(null, null, "test", new Object[] { 42 }, null);
         ByteBuffer result = messagePackHubProtocol.writeMessage(invocationMessage);
         byte[] expectedBytes = {0x0C, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 
             0x74, (byte) 0x91, 0x2A, (byte) 0x90};
+        ByteString expectedResult = ByteString.of(expectedBytes);
+        assertEquals(expectedResult, ByteString.of(result));
+    }
+    
+    @Test
+    public void verifyWriteInvocationMessageWithHeaders() {
+    	Map<String, String> headers = new HashMap<String, String>();
+    	headers.put("a", "b");
+    	headers.put("c", "d");
+        InvocationMessage invocationMessage = new InvocationMessage(headers, null, "test", new Object[] { 42 }, null);
+        ByteBuffer result = messagePackHubProtocol.writeMessage(invocationMessage);
+        byte[] expectedBytes = {0x14, (byte) 0x96, 0x01, (byte) 0x82, (byte) 0xA1, 0x61, (byte) 0xA1, 0x62, (byte) 0xA1, 0x63, 
+            (byte) 0xA1, 0x64, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, 0x2A, (byte) 0x90};
+        ByteString expectedResult = ByteString.of(expectedBytes);
+        assertEquals(expectedResult, ByteString.of(result));
+    }
+    
+    @Test
+    public void verifyWriteStreamItem() {
+    	StreamItem streamItem = new StreamItem(null, "id", 42);
+        ByteBuffer result = messagePackHubProtocol.writeMessage(streamItem);
+        byte[] expectedBytes = {0x07, (byte) 0x94, 0x02, (byte) 0x80, (byte) 0xA2, 0x69, 0x64, 0x2A};
+        ByteString expectedResult = ByteString.of(expectedBytes);
+        assertEquals(expectedResult, ByteString.of(result));
+    }
+    
+    @Test
+    public void verifyWriteCompletionMessageNonVoid() {
+    	CompletionMessage completionMessage = new CompletionMessage(null, "id", 42, null);
+        ByteBuffer result = messagePackHubProtocol.writeMessage(completionMessage);
+        byte[] expectedBytes = {0x08, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA2, 0x69, 0x64, 0x03, 0x2A};
+        ByteString expectedResult = ByteString.of(expectedBytes);
+        assertEquals(expectedResult, ByteString.of(result));
+    }
+    
+    @Test
+    public void verifyWriteCompletionMessageVoid() {
+    	CompletionMessage completionMessage = new CompletionMessage(null, "id", null, null);
+        ByteBuffer result = messagePackHubProtocol.writeMessage(completionMessage);
+        byte[] expectedBytes = {0x07, (byte) 0x94, 0x03, (byte) 0x80, (byte) 0xA2, 0x69, 0x64, 0x02};
+        ByteString expectedResult = ByteString.of(expectedBytes);
+        assertEquals(expectedResult, ByteString.of(result));
+    }
+    
+    @Test
+    public void verifyWriteCompletionMessageError() {
+    	CompletionMessage completionMessage = new CompletionMessage(null, "id", null, "error");
+        ByteBuffer result = messagePackHubProtocol.writeMessage(completionMessage);
+        byte[] expectedBytes = {0x0D, (byte) 0x95, 0x03, (byte) 0x80, (byte) 0xA2, 0x69, 0x64, 0x01, (byte) 0xA5, 0x65, 0x72, 0x72, 0x6F, 0x72};
+        ByteString expectedResult = ByteString.of(expectedBytes);
+        assertEquals(expectedResult, ByteString.of(result));
+    }
+    
+    @Test
+    public void verifyWriteStreamInvocationMessage() {
+    	List<String> streamIds = new ArrayList<String>();
+        streamIds.add("stream");
+        StreamInvocationMessage streamInvocationMessage = new StreamInvocationMessage(null, "id", "test", new Object[] {42}, streamIds);
+        ByteBuffer result = messagePackHubProtocol.writeMessage(streamInvocationMessage);
+        byte[] expectedBytes = {0x15, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA2, 0x69, 0x64, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, 
+            0x2A, (byte) 0x91, (byte) 0xA6, 0x73, 0x74, 0x72, 0x65, 0x61, 0x6D};
+        ByteString expectedResult = ByteString.of(expectedBytes);
+        assertEquals(expectedResult, ByteString.of(result));
+    }
+    
+    @Test
+    public void verifyWriteCancelInvocationMessage() {
+    	CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(null, "id");
+        ByteBuffer result = messagePackHubProtocol.writeMessage(cancelInvocationMessage);
+        byte[] expectedBytes = {0x06, (byte) 0x93, 0x05, (byte) 0x80, (byte) 0xA2, 0x69, 0x64};
+        ByteString expectedResult = ByteString.of(expectedBytes);
+        assertEquals(expectedResult, ByteString.of(result));
+    }
+    
+    @Test
+    public void verifyWritePingMessage() {
+        ByteBuffer result = messagePackHubProtocol.writeMessage(PingMessage.getInstance());
+        byte[] expectedBytes = {0x02, (byte) 0x91, 0x06};
+        ByteString expectedResult = ByteString.of(expectedBytes);
+        assertEquals(expectedResult, ByteString.of(result));
+    }
+    
+    @Test
+    public void verifyWriteCloseMessage() {
+    	CloseMessage closeMessage = new CloseMessage();
+        ByteBuffer result = messagePackHubProtocol.writeMessage(closeMessage);
+        byte[] expectedBytes = {0x04, (byte) 0x93, 0x07, (byte) 0xC0, (byte) 0xC2};
+        ByteString expectedResult = ByteString.of(expectedBytes);
+        assertEquals(expectedResult, ByteString.of(result));
+    }
+    
+    @Test
+    public void verifyWriteCloseMessageWithError() {
+    	CloseMessage closeMessage = new CloseMessage("Error");
+        ByteBuffer result = messagePackHubProtocol.writeMessage(closeMessage);
+        byte[] expectedBytes = {0x09, (byte) 0x93, 0x07, (byte) 0xA5, 0x45, 0x72, 0x72, 0x6F, 0x72, (byte) 0xC2};
         ByteString expectedResult = ByteString.of(expectedBytes);
         assertEquals(expectedResult, ByteString.of(result));
     }
@@ -113,6 +212,38 @@ class MessagePackHubProtocolTest {
         assertEquals("test", invocationMessage.getTarget());
         assertEquals(null, invocationMessage.getInvocationId());
         assertEquals(null, invocationMessage.getHeaders());
+        assertEquals(null, invocationMessage.getStreamIds());
+
+        int messageResult = (int)invocationMessage.getArguments()[0];
+        assertEquals(42, messageResult);
+    }
+    
+    @Test
+    public void parseSingleInvocationMessageWithHeaders() {
+        byte[] messageBytes = {0x14, (byte) 0x96, 0x01, (byte) 0x82, (byte) 0xA1, 0x61, (byte) 0xA1, 0x62, (byte) 0xA1, 0x63, 
+                (byte) 0xA1, 0x64, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, 0x2A, (byte) 0x90};
+        ByteBuffer message = ByteBuffer.wrap(messageBytes);
+        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
+
+        List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
+
+        //We know it's only one message
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+
+        assertEquals(HubMessageType.INVOCATION, messages.get(0).getMessageType());
+
+        //We can safely cast here because we know that it's an invocation message.
+        InvocationMessage invocationMessage = (InvocationMessage) messages.get(0);
+
+        assertEquals("test", invocationMessage.getTarget());
+        assertEquals(null, invocationMessage.getInvocationId());
+
+        Map<String, String> headers = invocationMessage.getHeaders();
+        assertEquals(2, headers.size());
+        assertEquals("b", headers.get("a"));
+        assertEquals("d", headers.get("c"));
+        
         assertEquals(null, invocationMessage.getStreamIds());
 
         int messageResult = (int)invocationMessage.getArguments()[0];
@@ -378,6 +509,30 @@ class MessagePackHubProtocolTest {
         
         int secondMessageResult = (int)invocationMessage2.getArguments()[0];
         assertEquals(42, secondMessageResult);
+    }
+    
+    @Test
+    public void errorWhenLengthHeaderTooLong() {
+    	byte[] messageBytes = {0x0D, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, 
+    	    0x2A, (byte) 0x90};
+    	ByteBuffer message = ByteBuffer.wrap(messageBytes);
+        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
+        
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> messagePackHubProtocol.parseMessages(message, binder));
+        assertEquals("MessagePack message was length 12 but claimed to be length 13.", exception.getMessage());
+    }
+    
+    @Test
+    public void errorWhenLengthHeaderTooShort() {
+    	byte[] messageBytes = {0x0B, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, 
+    	    0x2A, (byte) 0x90};
+    	ByteBuffer message = ByteBuffer.wrap(messageBytes);
+        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
+        
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> messagePackHubProtocol.parseMessages(message, binder));
+        assertEquals("MessagePack message was length 12 but claimed to be length 11.", exception.getMessage());
     }
 
 }
