@@ -5,7 +5,6 @@
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
     <IsShipping>false</IsShipping>
-    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
     <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
     <DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>true</DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
