@@ -9,24 +9,18 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 {
-    public class DatabaseErrorHandler : IDeveloperPageExceptionFilter
+    public class DatabaseExceptionFilter : IDeveloperPageExceptionFilter
     {
         private readonly ILogger _logger;
         private readonly DatabaseErrorPageOptions _options;
 
-        public DatabaseErrorHandler(ILogger<DatabaseErrorHandler> logger, IOptions<DatabaseErrorPageOptions> options)
+        public DatabaseExceptionFilter(ILogger<DatabaseExceptionFilter> logger, IOptions<DatabaseErrorPageOptions> options)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
@@ -39,7 +33,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 try
                 {
                     // Look for DbContext classes registered in the service provider
-                    // TODO: Decouple
                     var registeredContexts = errorContext.HttpContext.RequestServices.GetServices<DbContextOptions>()
                         .Select(o => o.ContextType);
 
@@ -73,13 +66,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 {
                     _logger.DatabaseErrorPageMiddlewareException(e);
                 }
+            }
 
-                await next(errorContext);
-            }
-            else
-            {
-                await next(errorContext);
-            }
+            await next(errorContext);
         }
     }
 }

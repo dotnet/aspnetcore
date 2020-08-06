@@ -22,9 +22,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
     {
         public static async Task<DatabaseContextDetails> GetContextDetailsAsync(this HttpContext httpContext, Type dbcontextType, ILogger logger)
         {
-            // TODO: Decouple
             var context = (DbContext)httpContext.RequestServices.GetService(dbcontextType);
-            // TODO: Decouple
             var relationalDatabaseCreator = context.GetService<IDatabaseCreator>() as IRelationalDatabaseCreator;
             if (relationalDatabaseCreator == null)
             {
@@ -39,26 +37,20 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                     databaseExists = await relationalDatabaseCreator.HasTablesAsync();
                 }
 
-                // TODO: Decouple
                 var migrationsAssembly = context.GetService<IMigrationsAssembly>();
-                // TODO: Decouple
                 var modelDiffer = context.GetService<IMigrationsModelDiffer>();
 
                 var snapshotModel = migrationsAssembly.ModelSnapshot?.Model;
-                // TODO: Decouple
                 if (snapshotModel is IConventionModel conventionModel)
                 {
-                    // TODO: Decouple
                     var conventionSet = context.GetService<IConventionSetBuilder>().CreateConventionSet();
 
-                    // TODO: Decouple
                     var typeMappingConvention = conventionSet.ModelFinalizingConventions.OfType<TypeMappingConvention>().FirstOrDefault();
                     if (typeMappingConvention != null)
                     {
                         typeMappingConvention.ProcessModelFinalizing(conventionModel.Builder, null);
                     }
 
-                    // TODO: Decouple
                     var relationalModelConvention = conventionSet.ModelFinalizedConventions.OfType<RelationalModelConvention>().FirstOrDefault();
                     if (relationalModelConvention != null)
                     {
@@ -66,7 +58,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                     }
                 }
 
-                // TODO: Decouple
                 if (snapshotModel is IMutableModel mutableModel)
                 {
                     snapshotModel = mutableModel.FinalizeModel();

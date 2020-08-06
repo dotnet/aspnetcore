@@ -74,13 +74,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
                 if (db != null)
                 {
-                    // TODO: Decouple
                     var dbName = db.GetType().FullName;
                     try
                     {
                         _logger.ApplyingMigrations(dbName);
 
-                        // TODO: Decouple
                         await db.Database.MigrateAsync();
 
                         context.Response.StatusCode = (int)HttpStatusCode.NoContent;
@@ -119,7 +117,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 return null;
             }
 
-            // TODO: Decouple
             // Look for DbContext classes registered in the service provider
             var registeredContexts = context.RequestServices.GetServices<DbContextOptions>()
                 .Select(o => o.ContextType);
@@ -137,7 +134,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
             var contextType = Type.GetType(contextTypeName);
 
-            // TODO: Decouple
             var db = (DbContext)context.RequestServices.GetService(contextType);
 
             return db;
