@@ -17,6 +17,11 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
     public class JwtBearerOptions : AuthenticationSchemeOptions
     {
         private JwtSecurityTokenHandler _defaultHandler = new JwtSecurityTokenHandler();
+        
+        public JwtBearerOptions()
+        {
+            SecurityTokenValidators = new List<ISecurityTokenValidator> { _defaultHandler };
+        }
     
         /// <summary>
         /// Gets or sets if HTTPS is required for the metadata address or authority.
@@ -92,7 +97,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// <summary>
         /// Gets the ordered list of <see cref="ISecurityTokenValidator"/> used to validate access tokens.
         /// </summary>
-        public IList<ISecurityTokenValidator> SecurityTokenValidators { get; } = new List<ISecurityTokenValidator> { _defaultHandler };
+        public IList<ISecurityTokenValidator> SecurityTokenValidators { get; private set; }
 
         /// <summary>
         /// Gets or sets the parameters used to validate identity tokens.
