@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task PING_WithinKeepAliveTimeout_ResetsKeepAliveTimeout()
+        public async Task PING_WithinKeepAliveTimeout_ResetKeepAliveTimeout()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
             var limits = _serviceContext.ServerOptions.Limits;
@@ -136,7 +136,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Once);
             _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Never);
 
-            // Ping server
             await SendPingAsync(Http2PingFrameFlags.NONE);
             await ExpectAsync(Http2FrameType.PING,
                 withLength: 8,
@@ -145,6 +144,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // Server resets keep alive timeout
             _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Once);
+        }
+
+        [Fact]
+        public async Task PING_NoKeepAliveTimeout_DoesNotResetKeepAliveTimeout()
+        {
+            var mockSystemClock = _serviceContext.MockSystemClock;
+            var limits = _serviceContext.ServerOptions.Limits;
+
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
+
+            CreateConnection();
+
+            await InitializeConnectionAsync(_noopApplication);
+
+            // Connection starts and sets keep alive timeout
+            _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Once);
+            _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Never);
+            _mockTimeoutControl.Verify(c => c.CancelTimeout(), Times.Never);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+
+            // Starting a stream cancels the keep alive timeout
+            _mockTimeoutControl.Verify(c => c.CancelTimeout(), Times.Once);
+
+            await SendPingAsync(Http2PingFrameFlags.NONE);
+            await ExpectAsync(Http2FrameType.PING,
+                withLength: 8,
+                withFlags: (byte)Http2PingFrameFlags.ACK,
+                withStreamId: 0);
+
+            // Server doesn't reset keep alive timeout because it isn't running
+            _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Never);
         }
 
         [Fact]
