@@ -175,6 +175,39 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             Assert.Equal(new[] { "TrailerValue0", "TrailerValue1" }, response.TrailingHeaders.GetValues("TrailerName"));
         }
 
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
+        public async Task ResponseTrailers_CompleteAsyncNoBody_TrailersSent()
+        {
+            var deploymentParameters = GetHttpsDeploymentParameters();
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_CompleteAsyncNoBody_TrailersSent");
+            response.EnsureSuccessStatusCode();
+            Assert.Equal(HttpVersion.Version20, response.Version);
+            Assert.NotEmpty(response.TrailingHeaders);
+            Assert.Equal("TrailerValue", response.TrailingHeaders.GetValues("TrailerName").Single());
+
+            var response2 = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_CompleteAsyncNoBody_TrailersSent_Completed");
+        }
+
+        [ConditionalFact]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers)]
+        public async Task ResponseTrailers_CompleteAsyncWithBody_TrailersSent()
+        {
+            var deploymentParameters = GetHttpsDeploymentParameters();
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_CompleteAsyncWithBody_TrailersSent");
+            response.EnsureSuccessStatusCode();
+            Assert.Equal(HttpVersion.Version20, response.Version);
+            Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
+            Assert.NotEmpty(response.TrailingHeaders);
+            Assert.Equal("Trailer Value", response.TrailingHeaders.GetValues("TrailerName").Single());
+
+            var response2 = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_CompleteAsyncWithBody_TrailersSent_Completed");
+        }
+
         private IISDeploymentParameters GetHttpsDeploymentParameters()
         {
             var port = TestPortHelper.GetNextSSLPort();

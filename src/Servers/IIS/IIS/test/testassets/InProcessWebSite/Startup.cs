@@ -1396,6 +1396,35 @@ namespace TestSite
             await _onCompletedHttpContext.Task;
         }
 
+        private TaskCompletionSource<object> _responseTrailers_CompleteAsyncNoBody_TrailersSent = new TaskCompletionSource<object>();
+        public async Task ResponseTrailers_CompleteAsyncNoBody_TrailersSent(HttpContext httpContext)
+        {
+            httpContext.Response.AppendTrailer("trailername", "TrailerValue");
+            await httpContext.Response.CompleteAsync();
+            await _responseTrailers_CompleteAsyncNoBody_TrailersSent.Task;
+        }
+
+        public Task ResponseTrailers_CompleteAsyncNoBody_TrailersSent_Completed(HttpContext httpContext)
+        {
+            _responseTrailers_CompleteAsyncNoBody_TrailersSent.TrySetResult(null);
+            return Task.CompletedTask;
+        }
+
+        private TaskCompletionSource<object> _responseTrailers_CompleteAsyncWithBody_TrailersSent = new TaskCompletionSource<object>();
+        public async Task ResponseTrailers_CompleteAsyncWithBody_TrailersSent(HttpContext httpContext)
+        {
+            await httpContext.Response.WriteAsync("Hello World");
+            httpContext.Response.AppendTrailer("TrailerName", "Trailer Value");
+            await httpContext.Response.CompleteAsync();
+            await _responseTrailers_CompleteAsyncWithBody_TrailersSent.Task;
+        }
+
+        public Task ResponseTrailers_CompleteAsyncWithBody_TrailersSent_Completed(HttpContext httpContext)
+        {
+            _responseTrailers_CompleteAsyncWithBody_TrailersSent.TrySetResult(null);
+            return Task.CompletedTask;
+        }
+
         internal static readonly HashSet<(string, StringValues, StringValues)> NullTrailers = new HashSet<(string, StringValues, StringValues)>()
         {
             ("NullString", (string)null, (string)null),
