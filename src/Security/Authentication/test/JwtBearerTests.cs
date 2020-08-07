@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         }
 
         [Fact]
-        public async Task MapInboundClaimsDefaultsToTrue()
+        public void MapInboundClaimsDefaultsToTrue()
         {
             var options = new JwtBearerOptions();
             Assert.True(options.MapInboundClaims);
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         }
 
         [Fact]
-        public async Task MapInboundClaimsCanBeSetToFalse()
+        public void MapInboundClaimsCanBeSetToFalse()
         {
             var options = new JwtBearerOptions();
             options.MapInboundClaims = false;
