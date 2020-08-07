@@ -40,6 +40,8 @@ dependencies {
     api 'io.reactivex.rxjava2:rxjava:2.2.3'
     implementation 'org.slf4j:slf4j-api:1.7.25'
     compile 'org.msgpack:msgpack-core:0.8.20'
+    compile 'org.msgpack:jackson-dataformat-msgpack:0.8.20'
+    compile 'com.squareup.okhttp3:okhttp:3.11.0'
 }
 
 spotless {

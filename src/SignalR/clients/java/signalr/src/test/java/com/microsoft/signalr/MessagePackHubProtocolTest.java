@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import okio.ByteString;
 
 import org.junit.jupiter.api.Test;
@@ -589,8 +592,9 @@ class MessagePackHubProtocolTest {
     
     @Test
     public void parseInvocationMessageWithPrimitiveArgs() {
-        byte[] messageBytes = {0x1D, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x96, 0x01, (byte) 0xCB, 
-            0x40, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, (byte) 0xC3, 0x11, 0x63, (byte) 0xCE, (byte) 0xC6, (byte) 0xAE, (byte) 0xA1, 0x55, (byte) 0x90};
+        byte[] messageBytes = {0x1E, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x96, 0x01, (byte) 0xCB, 
+            0x40, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, (byte) 0xC3, 0x11, (byte) 0xA1, 0x63, (byte) 0xCE, (byte) 0xC6, (byte) 0xAE, (byte) 0xA1, 
+            0x55, (byte) 0x90};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
         int i = 1;
         double d = 2.5d;
@@ -625,5 +629,128 @@ class MessagePackHubProtocolTest {
         assertEquals(bite, (byte)args[3]);
         assertEquals(c, (char)args[4]);
         assertEquals(l, (long)args[5]);
+    }
+    
+    @Test
+    public void verifyWriteInvocationMessageWithPrimitiveArgs() {
+        int i = 1;
+        double d = 2.5d;
+        boolean bool = true;
+        byte bite = 0x11;
+        char c = 'c';
+        long l = 3333333333l;
+        InvocationMessage invocationMessage = new InvocationMessage(null, null, "test", new Object[] { i, d, bool, bite, c, l }, null);
+        ByteBuffer result = messagePackHubProtocol.writeMessage(invocationMessage);
+        byte[] expectedBytes = {0x1E, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x96, 0x01, 
+            (byte) 0xCB, 0x40, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, (byte) 0xC3, 0x11, (byte) 0xA1, 0x63, (byte) 0xCE, (byte) 0xC6, (byte) 0xAE, 
+            (byte) 0xA1, 0x55, (byte) 0x90}; 
+        ByteString expectedResult = ByteString.of(expectedBytes);
+        assertEquals(expectedResult, ByteString.of(result));
+    }
+    
+    @Test
+    public void parseInvocationMessageWithArrayArg() {
+        // Make sure that the same bytes can be parsed as both an Array and a List
+        byte[] messageBytes = {0x10, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, (byte) 0x94, 0x01, 
+            0x02, 0x03, 0x04, (byte) 0x90};
+        ByteBuffer message = ByteBuffer.wrap(messageBytes);
+        
+        TestBinder arrayBinder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { new int[] {} }, null));
+        TestBinder listBinder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { new ArrayList<Integer>() }, null));
+        
+        List<HubMessage> arrayMessages = messagePackHubProtocol.parseMessages(message, arrayBinder);
+        message.flip();
+        List<HubMessage> listMessages = messagePackHubProtocol.parseMessages(message, listBinder);
+        
+        //We know it's only one message
+        assertNotNull(arrayMessages);
+        assertEquals(1, arrayMessages.size());
+        
+        assertNotNull(listMessages);
+        assertEquals(1, listMessages.size());
+
+        assertEquals(HubMessageType.INVOCATION, arrayMessages.get(0).getMessageType());
+        assertEquals(HubMessageType.INVOCATION, listMessages.get(0).getMessageType());
+
+        //We can safely cast here because we know that it's an invocation message.
+        InvocationMessage arrayInvocationMessage = (InvocationMessage) arrayMessages.get(0);
+        InvocationMessage listInvocationMessage = (InvocationMessage) listMessages.get(0);
+
+        assertEquals("test", arrayInvocationMessage.getTarget());
+        assertEquals(null, arrayInvocationMessage.getInvocationId());
+        assertEquals(null, arrayInvocationMessage.getHeaders());
+        assertEquals(null, arrayInvocationMessage.getStreamIds());
+        
+        assertEquals("test", listInvocationMessage.getTarget());
+        assertEquals(null, listInvocationMessage.getInvocationId());
+        assertEquals(null, listInvocationMessage.getHeaders());
+        assertEquals(null, listInvocationMessage.getStreamIds());
+        
+        int[] arrayArg = (int[])arrayInvocationMessage.getArguments()[0];
+        @SuppressWarnings("unchecked")
+        List<Integer> listArg = (ArrayList<Integer>)listInvocationMessage.getArguments()[0];
+        
+        assertEquals(4, arrayArg.length);
+        assertEquals(4, listArg.size());
+        for (int i = 0; i < arrayArg.length; i++) {
+            assertEquals(i + 1, arrayArg[i]);
+            assertEquals(i + 1, (int) listArg.get(i));
+        }
+    }
+    
+    @Test
+    public void verifyWriteInvocationMessageWithArrayArg() {
+        InvocationMessage invocationMessage = new InvocationMessage(null, null, "test", new Object[] { new int[] { 1, 2, 3, 4 } }, null);
+        ByteBuffer result = messagePackHubProtocol.writeMessage(invocationMessage);
+        byte[] expectedBytes = {0x10, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, (byte) 0x94, 0x01, 
+                0x02, 0x03, 0x04, (byte) 0x90}; 
+        ByteString expectedResult = ByteString.of(expectedBytes);
+        assertEquals(expectedResult, ByteString.of(result));
+    }
+    
+    @Test
+    public void parseInvocationMessageWithMapArg() {
+        byte[] messageBytes = {0x23, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, (byte) 0x82, (byte) 0xA5, 
+            0x61, 0x70, 0x70, 0x6C, 0x65, (byte) 0xA6, 0x62, 0x61, 0x6E, 0x61, 0x6E, 0x61, (byte) 0xA3, 0x6B, 0x65, 0x79, (byte) 0xA5, 0x76, 0x61, 0x6C, 0x75, 
+            0x65, (byte) 0x90};
+        ByteBuffer message = ByteBuffer.wrap(messageBytes);
+        
+        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { new HashMap<String, String>() }, null));
+
+        List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
+
+        //We know it's only one message
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+
+        assertEquals(HubMessageType.INVOCATION, messages.get(0).getMessageType());
+
+        //We can safely cast here because we know that it's an invocation message.
+        InvocationMessage invocationMessage = (InvocationMessage) messages.get(0);
+
+        assertEquals("test", invocationMessage.getTarget());
+        assertEquals(null, invocationMessage.getInvocationId());
+        assertEquals(null, invocationMessage.getHeaders());
+        assertEquals(null, invocationMessage.getStreamIds());
+        
+        @SuppressWarnings("unchecked")
+        Map<String, String> result = (HashMap<String, String>)invocationMessage.getArguments()[0];
+        assertEquals(2, result.size());
+        assertEquals("value", result.get("key"));
+        assertEquals("banana", result.get("apple"));
+    }
+    
+    @Test
+    public void verifyWriteInvocationMessageWithMapArg() {
+        SortedMap<String, String> argument = new TreeMap<String, String>();
+        argument.put("apple", "banana");
+        argument.put("key", "value");
+        InvocationMessage invocationMessage = new InvocationMessage(null, null, "test", new Object[] { argument }, null);
+        ByteBuffer result = messagePackHubProtocol.writeMessage(invocationMessage);
+        byte[] expectedBytes = {0x23, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, (byte) 0x82, (byte) 0xA5, 
+                0x61, 0x70, 0x70, 0x6C, 0x65, (byte) 0xA6, 0x62, 0x61, 0x6E, 0x61, 0x6E, 0x61, (byte) 0xA3, 0x6B, 0x65, 0x79, (byte) 0xA5, 0x76, 0x61, 0x6C, 0x75, 
+                0x65, (byte) 0x90};
+        ByteString expectedResult = ByteString.of(expectedBytes);
+        assertEquals(expectedResult, ByteString.of(result));
     }
 }

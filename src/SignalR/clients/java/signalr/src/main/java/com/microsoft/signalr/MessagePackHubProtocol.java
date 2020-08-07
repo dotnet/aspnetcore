@@ -4,11 +4,8 @@
 package com.microsoft.signalr;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +17,10 @@ import org.msgpack.core.MessagePack;
 import org.msgpack.core.MessagePackException;
 import org.msgpack.core.MessagePacker;
 import org.msgpack.core.MessageUnpacker;
+import org.msgpack.jackson.dataformat.MessagePackFactory;
 import org.msgpack.value.ValueType;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MessagePackHubProtocol implements HubProtocol {
     
@@ -523,11 +523,9 @@ public class MessagePackHubProtocol implements HubProtocol {
                     break;
                 default:
                     item = unpacker.unpackInt();
-                    // unpackInt could correspond to an int, short, char, or byte - cast those literally here
+                    // unpackInt could correspond to an int, short, or byte - cast those literally here
                     if (itemType.equals(Short.class)) {
                         item = ((Integer) item).shortValue();
-                    } else if (itemType.equals(Character.class)) {
-                        item = (char) ((Integer) item).shortValue();
                     } else if (itemType.equals(Byte.class)) {
                         item = ((Integer) item).byteValue();
                     }
@@ -539,6 +537,10 @@ public class MessagePackHubProtocol implements HubProtocol {
                 break;
             case STRING:
                 item = unpacker.unpackString();
+                // ObjectMapper packs chars as Strings - correct back to char while unpacking if necessary
+                if (itemType.equals(char.class) || itemType.equals(Character.class)) {
+                    item = ((String) item).charAt(0);
+                }
                 break;
             case BINARY:
                 length = unpacker.unpackBinaryHeader();
@@ -547,18 +549,20 @@ public class MessagePackHubProtocol implements HubProtocol {
                 item = binaryValue;
                 break;
             case ARRAY:
+                // All collections are returned as arrays
+                System.out.println(itemType);
                 length = unpacker.unpackArrayHeader();
                 Object[] arrayValue = new Object[length];
                 for (int i = 0; i < length; i++) {
                     arrayValue[i] = readValue(unpacker, new Object().getClass());
                 }
-                item = arrayValue;
-                //If the itemType is an array, we return an array. Else we convert the array to a list.
-                if (!itemType.isArray()) {
-                    item = new ArrayList<Object>(Arrays.asList(arrayValue));
-                }
+                // Round trip the array to correct it to a Collection if applicable
+                ObjectMapper objectMapper = new ObjectMapper(new MessagePackFactory());
+                byte[] arrayBytes = objectMapper.writeValueAsBytes(arrayValue);
+                item = objectMapper.readValue(arrayBytes, itemType);
                 break;
             case MAP:
+                System.out.println(itemType.getTypeName());
                 length = unpacker.unpackMapHeader();
                 Map<Object, Object> mapValue = new HashMap<Object, Object>();
                 for (int i = 0; i < length; i++) {
@@ -584,53 +588,7 @@ public class MessagePackHubProtocol implements HubProtocol {
     }
 
     private void writeValue(Object o, MessagePacker packer) throws IOException {
-
-        if (o == null) {
-            packer.packNil();
-        } else if (o instanceof Boolean) {
-            packer.packBoolean((boolean) o);
-        } else if (o instanceof BigInteger) {
-            packer.packBigInteger((BigInteger) o);
-        } else if (o instanceof Long) {
-            packer.packLong((long) o);
-        } else if (o instanceof Short) {
-            packer.packShort((short) o);
-        // Pack char as short
-        } else if (o instanceof Character) {
-            packer.packShort((short) ((Character) o).charValue());
-        } else if (o instanceof Integer) {
-            packer.packInt((int) o);
-        } else if (o instanceof Double) {
-            packer.packDouble((double) o);
-        } else if (o instanceof Float) {
-            packer.packFloat((float) o);
-        } else if (o instanceof String) {
-            packer.packString((String) o);
-        } else if (o instanceof Byte) {
-            packer.packByte((byte) o);
-        } else if (o instanceof Collection<?>) {
-            @SuppressWarnings("unchecked")
-            Collection<Object> list = (Collection<Object>) o;
-            packer.packArrayHeader(list.size());
-            for (Object item: list) {
-                writeValue(item, packer);
-            }
-        } else if (o.getClass().isArray()) {
-            Object[] array = (Object[]) o;
-            packer.packArrayHeader(array.length);
-            for (Object item: array) {
-                writeValue(item, packer);
-            }
-        } else if (o instanceof Map<?, ?>) {
-            @SuppressWarnings("unchecked")
-            Map<Object, Object> map = (HashMap<Object, Object>) o;
-            packer.packMapHeader(map.size());
-            for (Object k: map.keySet()) {
-                writeValue(k, packer);
-                writeValue(map.get(k), packer);
-            }
-        } else {
-            throw new RuntimeException("Only base MessagePack types are currently supported");
-        }
+        ObjectMapper objectMapper = new ObjectMapper(new MessagePackFactory());
+        packer.addPayload(objectMapper.writeValueAsBytes(o));
     }
 }
