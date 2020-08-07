@@ -247,7 +247,7 @@ namespace RunTests
             {
                 // Timeout test run 5 minutes before the Helix job would timeout
                 var cts = new CancellationTokenSource(Options.Timeout.Subtract(TimeSpan.FromMinutes(5)));
-                var commonTestArgs = $"test {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=5m\"";
+                var commonTestArgs = $"test {Options.Target} --logger:trx --logger:xunit --logger:\"console;verbosity=normal\" --collect:execution --blame \"CollectHangDump;TestTimeout=5m\"";
                 if (Options.Quarantined)
                 {
                     Console.WriteLine("Running quarantined tests.");
@@ -342,6 +342,20 @@ namespace RunTests
             else
             {
                 Console.WriteLine("No dmps found in TestResults");
+            }
+            Console.WriteLine($"Copying TestResults/**/*.trx to {HELIX_WORKITEM_UPLOAD_ROOT}/");
+            if (Directory.Exists("TestResults"))
+            {
+                foreach (var file in Directory.EnumerateFiles("TestResults", "*.trx", SearchOption.AllDirectories))
+                {
+                    var fileName = Path.GetFileName(file);
+                    Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName)}");
+                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName));
+                }
+            }
+            else
+            {
+                Console.WriteLine("No trx found in TestResults");
             }
         }
     }
