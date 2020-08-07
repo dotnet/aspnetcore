@@ -550,7 +550,6 @@ public class MessagePackHubProtocol implements HubProtocol {
                 break;
             case ARRAY:
                 // All collections are returned as arrays
-                System.out.println(itemType);
                 length = unpacker.unpackArrayHeader();
                 Object[] arrayValue = new Object[length];
                 for (int i = 0; i < length; i++) {
@@ -562,7 +561,6 @@ public class MessagePackHubProtocol implements HubProtocol {
                 item = objectMapper.readValue(arrayBytes, itemType);
                 break;
             case MAP:
-                System.out.println(itemType.getTypeName());
                 length = unpacker.unpackMapHeader();
                 Map<Object, Object> mapValue = new HashMap<Object, Object>();
                 for (int i = 0; i < length; i++) {
