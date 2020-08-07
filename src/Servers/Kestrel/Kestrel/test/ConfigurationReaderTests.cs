@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         }
 
         [Fact]
-        public void ReadEndpointsOrEndpointDefaultsWithEmptySniSection_ReturnsEmptyCollection()
+        public void ReadEndpointWithEmptySniSection_ReturnsEmptyCollection()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {
@@ -287,32 +287,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             var endpoint = reader.Endpoints.First();
             Assert.NotNull(endpoint.Sni);
             Assert.False(endpoint.Sni.Any());
-
-            var endpointDefaults = reader.EndpointDefaults;
-            Assert.NotNull(endpointDefaults.Sni);
-            Assert.False(endpointDefaults.Sni.Any());
         }
 
         [Fact]
-        public void ReadEndpointsOrEndpointDefaultsWithEmptySniKey_Throws()
+        public void ReadEndpointWithEmptySniKey_Throws()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {
                 new KeyValuePair<string, string>("Endpoints:End1:Url", "http://*:5001"),
                 new KeyValuePair<string, string>("Endpoints:End1:Sni::Protocols", "Http1"),
-                new KeyValuePair<string, string>("EndpointDefaults:Sni::Protocols", "Http1"),
             }).Build();
 
             var reader = new ConfigurationReader(config);
             var end1Ex = Assert.Throws<InvalidOperationException>(() => reader.Endpoints);
-            var defaultEx = Assert.Throws<InvalidOperationException>(() => reader.EndpointDefaults);
 
             Assert.Equal(CoreStrings.FormatSniNameCannotBeEmpty("End1"), end1Ex.Message);
-            Assert.Equal(CoreStrings.FormatSniNameCannotBeEmpty("EndpointDefaults"), defaultEx.Message);
         }
 
         [Fact]
-        public void ReadEndpointsOrEndpointDefaultsWithSniConfigured_ReturnsCorrectValue()
+        public void ReadEndpointWithSniConfigured_ReturnsCorrectValue()
         {
             var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
             {
@@ -322,11 +315,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
                 new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Certificate:Path", "/path/cert.pfx"),
                 new KeyValuePair<string, string>("Endpoints:End1:Sni:*.example.org:Certificate:Password", "certpassword"),
                 new KeyValuePair<string, string>("Endpoints:End1:SNI:*.example.org:ClientCertificateMode", "AllowCertificate"),
-                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:Protocols", "Http1"),
-                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:SslProtocols:0", "Tls12"),
-                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:Certificate:Path", "/path/cert.pfx"),
-                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:Certificate:Password", "certpassword"),
-                new KeyValuePair<string, string>("EndpointDefaults:SNI:*.example.org:ClientCertificateMode", "AllowCertificate"),
             }).Build();
 
             var reader = new ConfigurationReader(config);
@@ -343,7 +331,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             }
 
             VerifySniConfig(reader.Endpoints.First().Sni["*.Example.org"]);
-            VerifySniConfig(reader.EndpointDefaults.Sni["*.Example.org"]);
         }
 
         [Fact]

@@ -75,7 +75,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 Protocols = ParseProtocols(configSection[ProtocolsKey]),
                 SslProtocols = ParseSslProcotols(configSection.GetSection(SslProtocolsKey)),
                 ClientCertificateMode = ParseClientCertificateMode(configSection[ClientCertificateModeKey]),
-                Sni = ReadSni(configSection.GetSection(SniKey), EndpointDefaultsKey)
             };
         }
 

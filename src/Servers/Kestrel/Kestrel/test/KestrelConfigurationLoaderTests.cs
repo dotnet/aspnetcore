@@ -832,51 +832,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         }
 
         [Fact]
-        public void DefaultConfigSection_CanConfigureSni()
-        {
-            var serverOptions = CreateServerOptions();
-
-            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
-            {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:Protocols", "None"),
-                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:SslProtocols:0", "Tls12"),
-                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:ClientCertificateMode", "AllowCertificate"),
-            }).Build();
-
-            var (_, endpointsToStart) = serverOptions.Configure(config).Reload();
-            var end1 = Assert.Single(endpointsToStart);
-            var (name, sniConfig) = Assert.Single(end1?.EndpointConfig?.Sni);
-
-            Assert.Equal("*.example.org", name);
-            Assert.Equal(HttpProtocols.None, sniConfig.Protocols);
-            Assert.Equal(SslProtocols.Tls12, sniConfig.SslProtocols);
-            Assert.Equal(ClientCertificateMode.AllowCertificate, sniConfig.ClientCertificateMode);
-        }
-
-        [Fact]
-        public void DefaultConfigSection_SniConfigurationIsOverriddenByNotMergedWithEndpointSpecificConfigSection()
-        {
-            var serverOptions = CreateServerOptions();
-
-            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
-            {
-                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-                new KeyValuePair<string, string>("Endpoints:End1:Sni:*:Protocols", "None"),
-                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:Protocols", "Http1"),
-                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:SslProtocols:0", "Tls12"),
-                new KeyValuePair<string, string>("EndpointDefaults:Sni:*.example.org:ClientCertificateMode", "AllowCertificate"),
-            }).Build();
-
-            var (_, endpointsToStart) = serverOptions.Configure(config).Reload();
-            var end1 = Assert.Single(endpointsToStart);
-            var (name, sniConfig) = Assert.Single(end1?.EndpointConfig?.Sni);
-
-            Assert.Equal("*", name);
-            Assert.Equal(HttpProtocols.None, sniConfig.Protocols);
-        }
-
-        [Fact]
         public void Reload_IdentifiesEndpointsToStartAndStop()
         {
             var serverOptions = CreateServerOptions();

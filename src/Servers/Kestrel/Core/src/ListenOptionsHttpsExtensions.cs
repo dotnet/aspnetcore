@@ -184,21 +184,12 @@ namespace Microsoft.AspNetCore.Hosting
             configureOptions(options);
             listenOptions.KestrelServerOptions.ApplyDefaultCert(options);
 
-            var sniOptionsSelector = listenOptions.KestrelServerOptions.ConfigurationLoader?.GetDefaultSniOptionsSelector(options, listenOptions.Protocols);
-
-            if (options.ServerCertificate == null && options.ServerCertificateSelector == null && sniOptionsSelector == null)
+            if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
             {
                 throw new InvalidOperationException(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound);
             }
 
-            if (sniOptionsSelector is null)
-            {
-                return listenOptions.UseHttps(options);
-            }
-            else
-            {
-                return listenOptions.UseHttps(SniOptionsSelector.OptionsCallback, sniOptionsSelector, options.HandshakeTimeout);
-            }
+            return listenOptions.UseHttps(options);
         }
 
         // Use Https if a default cert is available
@@ -208,22 +199,12 @@ namespace Microsoft.AspNetCore.Hosting
             listenOptions.KestrelServerOptions.ApplyHttpsDefaults(options);
             listenOptions.KestrelServerOptions.ApplyDefaultCert(options);
 
-            var sniOptionsSelector = listenOptions.KestrelServerOptions.ConfigurationLoader?.GetDefaultSniOptionsSelector(options, listenOptions.Protocols);
-
-            if (options.ServerCertificate == null && options.ServerCertificateSelector == null && sniOptionsSelector == null)
+            if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
             {
                 return false;
             }
 
-            if (sniOptionsSelector is null)
-            {
-                listenOptions.UseHttps(options);
-            }
-            else
-            {
-                listenOptions.UseHttps(SniOptionsSelector.OptionsCallback, sniOptionsSelector, options.HandshakeTimeout);
-            }
-
+            listenOptions.UseHttps(options);
             return true;
         }
 

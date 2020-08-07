@@ -260,22 +260,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             }
         }
 
-        internal SniOptionsSelector GetDefaultSniOptionsSelector(HttpsConnectionAdapterOptions fallbackHttpsOptions, HttpProtocols fallbackHttpProtocols)
-        {
-            if (ConfigurationReader.EndpointDefaults.Sni.Count == 0)
-            {
-                return null;
-            }
-
-            return new SniOptionsSelector(
-                ConfigurationReader.EndpointDefaultsKey,
-                ConfigurationReader.EndpointDefaults.Sni,
-                CertificateConfigLoader,
-                fallbackHttpsOptions,
-                fallbackHttpProtocols,
-                HttpsLogger);
-        }
-
         public void Load()
         {
             if (_loaded)
@@ -350,13 +334,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     {
                         // Ensure endpoint is reloaded if it used the default mode and the ClientCertificateMode changed.
                         endpoint.ClientCertificateMode = ConfigurationReader.EndpointDefaults.ClientCertificateMode;
-                    }
-
-                    if (endpoint.Sni.Count == 0)
-                    {
-                        // Ensure endpoint is reloaded if it used the default SNI config and it changed.
-                        // No need to configure httpsOptions for SNI since the SniOptionsSelector will now use the EndpointDefaults SNI config.
-                        endpoint.Sni = ConfigurationReader.EndpointDefaults.Sni;
                     }
 
                     // A cert specified directly on the endpoint overrides any defaults.

@@ -674,7 +674,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Defaults to true
                 AllowRenegotiation = false,
                 // Defaults to null
-                ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http3 },
+                ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http2 },
                 // Defaults to X509RevocationMode.NoCheck
                 CertificateRevocationCheckMode = X509RevocationMode.Offline,
                 // Defaults to null
