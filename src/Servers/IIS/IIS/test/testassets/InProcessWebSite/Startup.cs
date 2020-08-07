@@ -35,6 +35,7 @@ namespace TestSite
     public partial class Startup
     {
         public static bool StartupHookCalled;
+        private IHttpContextAccessor _httpContextAccessor;
 
         public void Configure(IApplicationBuilder app, IHttpContextAccessor httpContextAccessor)
         {
@@ -1324,7 +1325,6 @@ namespace TestSite
         }
 
         private TaskCompletionSource<object> _completeAsync = new TaskCompletionSource<object>();
-        private IHttpContextAccessor _httpContextAccessor;
 
         public async Task CompleteAsync(HttpContext httpContext)
         {
