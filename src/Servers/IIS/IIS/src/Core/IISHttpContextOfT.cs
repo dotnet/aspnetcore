@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _application = application;
         }
 
-        public override async Task ProcessRequestAsync()
+        public override async Task<bool> ProcessRequestAsync()
         {
             var context = default(TContext);
             var success = true;
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
 
                 // Complete response writer and request reader pipe sides
-                _bodyOutput.Dispose();
+                _bodyOutput.Complete();
                 _bodyInputPipe?.Reader.Complete();
 
                 // Allow writes to drain
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
 
                 // Cancel all remaining IO, there might be reads pending if not entire request body was sent by client
-                AsyncIO?.Dispose();
+                AsyncIO?.Complete();
 
                 if (_readBodyTask != null)
                 {
@@ -104,9 +104,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             finally
             {
-                // We're done with anything that touches the request or response, unblock the client.
-                PostCompletion(ConvertRequestCompletionResults(success));
-
                 if (_onCompleted != null)
                 {
                     await FireOnCompleted();
@@ -121,12 +118,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     ReportApplicationError(ex);
                 }
             }
-        }
-
-        private static NativeMethods.REQUEST_NOTIFICATION_STATUS ConvertRequestCompletionResults(bool success)
-        {
-            return success ? NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_CONTINUE
-                           : NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
+            return success;
         }
     }
 }

@@ -89,7 +89,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             }
         }
 
-
         public ValueTask FlushAsync(bool moreData)
         {
             var flush = GetFlushOperation();
@@ -137,7 +136,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             nextContinuation?.Invoke();
         }
 
-        public void Dispose()
+        public void Complete()
         {
             lock (_contextSync)
             {

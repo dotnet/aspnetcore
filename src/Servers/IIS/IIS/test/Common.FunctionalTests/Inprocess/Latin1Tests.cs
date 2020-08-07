@@ -85,7 +85,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             var deploymentResult = await DeployAsync(deploymentParameters);
-            await deploymentResult.HttpClient.GetAsync("/CompleteAsync");
+            var response = await deploymentResult.HttpClient.GetAsync("/CompleteAsync");
+            var response2 = await deploymentResult.HttpClient.GetAsync("/CompleteAsync_Completed");
         }
     }
 }

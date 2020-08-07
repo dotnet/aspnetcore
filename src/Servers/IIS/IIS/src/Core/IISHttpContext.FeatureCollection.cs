@@ -199,14 +199,26 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         // TODO: In the future this could complete the body all the way down to the server. For now it just ensures
         // any unflushed data gets flushed.
-        protected Task CompleteResponseBodyAsync()
+        protected async Task CompleteResponseBodyAsync()
         {
             if (ResponsePipeWrapper != null)
             {
-                return ResponsePipeWrapper.CompleteAsync().AsTask();
+                await ResponsePipeWrapper.CompleteAsync().AsTask();
             }
 
-            return AsyncIO.FlushAsync(moreData: false).AsTask();
+            if (!HasResponseStarted)
+            {
+                await InitializeResponse(flushHeaders: false);
+            }
+
+            // Completing the body output will trigger a final flush to IIS.
+            // We'd rather not bypass the bodyoutput to flush, to guarantee we avoid
+            // calling flush twice at the same time.
+            // awaiting the writeBodyTask guarantees the response has finished the final flush.
+            _bodyOutput.Complete();
+            await _writeBodyTask;
+
+            return;
         }
 
         bool IHttpUpgradeFeature.IsUpgradableRequest => true;

@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             }
         }
 
-        public void Dispose()
+        public void Complete()
         {
             lock (_contextLock)
             {

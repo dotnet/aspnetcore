@@ -36,18 +36,20 @@ namespace TestSite
     {
         public static bool StartupHookCalled;
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, IHttpContextAccessor httpContextAccessor)
         {
             if (Environment.GetEnvironmentVariable("ENABLE_HTTPS_REDIRECTION") != null)
             {
                 app.UseHttpsRedirection();
             }
             TestStartup.Register(app, this);
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public void ConfigureServices(IServiceCollection serviceCollection)
         {
             serviceCollection.AddResponseCompression();
+            serviceCollection.AddHttpContextAccessor();
         }
 #if FORWARDCOMPAT
         private async Task ContentRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IHostingEnvironment>().ContentRootPath);
@@ -1322,6 +1324,8 @@ namespace TestSite
         }
 
         private TaskCompletionSource<object> _completeAsync = new TaskCompletionSource<object>();
+        private IHttpContextAccessor _httpContextAccessor;
+
         public async Task CompleteAsync(HttpContext httpContext)
         {
             await httpContext.Response.CompleteAsync();
@@ -1344,6 +1348,52 @@ namespace TestSite
             // This shouldn't block the response or the server from shutting down.
             context.Response.OnCompleted(() => Task.Delay(TimeSpan.FromMinutes(5)));
             await context.Response.WriteAsync("SlowOnCompleted");
+        }
+
+        private TaskCompletionSource<object> _onCompletedHttpContext = new TaskCompletionSource<object>();
+        public async Task OnCompletedHttpContext(HttpContext context)
+        {
+            // This shouldn't block the response or the server from shutting down.
+            context.Response.OnCompleted(async () =>
+            {
+                var context = _httpContextAccessor.HttpContext;
+
+                await Task.Delay(500);
+                // Access all fields of the connection after final flush.
+                try
+                {
+                    _ = context.Connection.RemoteIpAddress;
+                    _ = context.Connection.LocalIpAddress;
+                    _ = context.Connection.Id;
+                    _ = context.Connection.ClientCertificate;
+                    _ = context.Connection.LocalPort;
+                    _ = context.Connection.RemotePort;
+
+                    _ = context.Request.ContentLength;
+                    _ = context.Request.Headers;
+                    _ = context.Request.Query;
+                    _ = context.Request.Body;
+                    _ = context.Request.ContentType;
+
+                    _ = context.Response.StatusCode;
+                    _ = context.Response.Body;
+                    _ = context.Response.Headers;
+                    _ = context.Response.ContentType;
+                }
+                catch (Exception ex)
+                {
+                    _onCompletedHttpContext.TrySetResult(ex);
+                }
+
+                _onCompletedHttpContext.TrySetResult(null);
+            });
+
+            await context.Response.WriteAsync("SlowOnCompleted");
+        }
+
+        public async Task OnCompletedHttpContext_Completed(HttpContext httpContext)
+        {
+            await _onCompletedHttpContext.Task;
         }
 
         internal static readonly HashSet<(string, StringValues, StringValues)> NullTrailers = new HashSet<(string, StringValues, StringValues)>()
