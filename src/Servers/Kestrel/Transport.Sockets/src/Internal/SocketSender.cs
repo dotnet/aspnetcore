@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             if (_bufferList == null)
             {
-                _bufferList = new List<ArraySegment<byte>>((int)buffer.Length);
+                _bufferList = new List<ArraySegment<byte>>();
             }
             else
             {
