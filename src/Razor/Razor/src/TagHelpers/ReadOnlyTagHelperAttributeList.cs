@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                     matchedAttributes.Add(attribute);
                 }
             }
-            attributes = matchedAttributes ?? Array.Empty<TagHelperAttribute>() as IReadOnlyList<TagHelperAttribute>;
+            attributes = matchedAttributes ?? (IReadOnlyList<TagHelperAttribute>)Array.Empty<TagHelperAttribute>();
 
             return matchedAttributes != null;
         }
