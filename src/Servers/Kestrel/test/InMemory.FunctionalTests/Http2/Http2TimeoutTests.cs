@@ -121,6 +121,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task PING_WithinKeepAliveTimeout_ResetsKeepAliveTimeout()
+        {
+            var mockSystemClock = _serviceContext.MockSystemClock;
+            var limits = _serviceContext.ServerOptions.Limits;
+
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
+
+            CreateConnection();
+
+            await InitializeConnectionAsync(_noopApplication);
+
+            // Connection starts and sets keep alive timeout
+            _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Once);
+            _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Never);
+
+            // Ping server
+            await SendPingAsync(Http2PingFrameFlags.NONE);
+            await ExpectAsync(Http2FrameType.PING,
+                withLength: 8,
+                withFlags: (byte)Http2PingFrameFlags.ACK,
+                withStreamId: 0);
+
+            // Server resets keep alive timeout
+            _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Once);
+        }
+
+        [Fact]
         public async Task HEADERS_ReceivedWithoutAllCONTINUATIONs_WithinRequestHeadersTimeout_AbortsConnection()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
