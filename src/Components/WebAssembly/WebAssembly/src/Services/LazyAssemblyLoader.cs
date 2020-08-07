@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         /// <returns>A list of the loaded <see cref="Assembly"/></returns>
         public async Task<IEnumerable<Assembly>> LoadAssembliesAsync(IEnumerable<string> assembliesToLoad)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Browser))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER")))
             {
                 return await LoadAssembliesInClientAsync(assembliesToLoad);
             }
