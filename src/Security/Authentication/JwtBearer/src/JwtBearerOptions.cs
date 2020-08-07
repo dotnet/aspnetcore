@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// <summary>
         /// Gets or sets the <see cref="MapInboundClaims"/> property on the default instance of <see cref="JwtSecurityTokenHandler"/> in SecurityTokenValidators, which is used when determining 
         /// whether or not to map claim types that are extracted when validating a <see cref="JwtSecurityToken"/>. 
-        /// <para>If this is set to true, the <see cref="Claim.Type"/> is set to the JSON claim 'name' after translating using this mapping. Otherwise, no mapping occurs.</para>
+        /// <para>If this is set to true, the Claim Type is set to the JSON claim 'name' after translating using this mapping. Otherwise, no mapping occurs.</para>
         /// <para>The default value is true.</para>
         /// </summary>
         public bool MapInboundClaims
