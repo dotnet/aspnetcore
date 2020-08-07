@@ -4001,6 +4001,22 @@ namespace Microsoft.AspNetCore.Components.Test
                 requestedType => Assert.Equal(typeof(TestComponent), requestedType));
         }
 
+        [Fact]
+        public async Task ThrowsIfComponentProducesInvalidRenderTree()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenElement(0, "myElem");
+            });
+            var rootComponentId = renderer.AssignRootComponentId(component);
+
+            // Act/Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+            Assert.StartsWith($"Render output is invalid for component of type '{typeof(TestComponent).FullName}'. A frame of type 'Element' was left unclosed.", ex.Message);
+        }
+
         private class TestComponentActivator<TResult> : IComponentActivator where TResult : IComponent, new()
         {
             public List<Type> RequestedComponentTypes { get; } = new List<Type>();
