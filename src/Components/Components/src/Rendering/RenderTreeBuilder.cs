@@ -685,6 +685,17 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public ArrayRange<RenderTreeFrame> GetFrames() =>
             _entries.ToRange();
 
+        internal void AssertTreeIsValid(IComponent component)
+        {
+            if (_openElementIndices.Count > 0)
+            {
+                // It's never valid to leave an element/component/region unclosed. Doing so
+                // could cause undefined behavior in diffing.
+                ref var invalidFrame = ref _entries.Buffer[_openElementIndices.Peek()];
+                throw new InvalidOperationException($"Render output is invalid for component of type '{component.GetType().FullName}'. A frame of type '{invalidFrame.FrameType}' was left unclosed. Do not use try/catch inside rendering logic, because partial output cannot be undone.");
+            }
+        }
+
         // Internal for testing
         internal void ProcessDuplicateAttributes(int first)
         {

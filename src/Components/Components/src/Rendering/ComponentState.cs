@@ -69,6 +69,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
             CurrentRenderTree.Clear();
             renderFragment(CurrentRenderTree);
 
+            CurrentRenderTree.AssertTreeIsValid(Component);
+
             var diff = RenderTreeDiffBuilder.ComputeDiff(
                 _renderer,
                 batchBuilder,
