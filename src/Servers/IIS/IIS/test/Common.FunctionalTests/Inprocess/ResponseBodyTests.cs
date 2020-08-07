@@ -45,5 +45,16 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             Assert.Equal("SlowOnCompleted", await _fixture.Client.GetStringAsync($"/OnCompletedHttpContext"));
             Assert.Equal("", await _fixture.Client.GetStringAsync($"/OnCompletedHttpContext_Completed"));
         }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        public async Task ResponseBodyTest_CompleteAsyncWorks()
+        {
+            var response = await _fixture.Client.GetAsync("/CompleteAsync");
+            Assert.True(response.IsSuccessStatusCode);
+            var response2 = await _fixture.Client.GetAsync("/CompleteAsync_Completed");
+            Assert.True(response2.IsSuccessStatusCode);
+
+        }
     }
 }

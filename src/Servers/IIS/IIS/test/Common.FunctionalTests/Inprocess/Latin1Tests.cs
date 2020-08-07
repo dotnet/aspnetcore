@@ -78,15 +78,5 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                 await connection.ReceiveStartsWith("HTTP/1.1 400 Bad Request");
             }
         }
-
-        [ConditionalFact]
-        [RequiresNewHandler]
-        public async Task CompleteAsync()
-        {
-            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-            var response = await deploymentResult.HttpClient.GetAsync("/CompleteAsync");
-            var response2 = await deploymentResult.HttpClient.GetAsync("/CompleteAsync_Completed");
-        }
     }
 }
