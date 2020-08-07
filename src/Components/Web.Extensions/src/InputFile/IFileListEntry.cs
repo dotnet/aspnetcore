@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
         string? Type { get; }
 
+        string? RelativePath { get; }
+
         Stream Data { get; }
 
         event EventHandler OnDataRead;

@@ -22,6 +22,8 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
         public string? Type { get; set; }
 
+        public string? RelativePath { get; set; }
+
         public Stream Data
         {
             get

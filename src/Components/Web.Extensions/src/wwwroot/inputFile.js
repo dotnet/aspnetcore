@@ -42,6 +42,12 @@
         });
     }
 
+    function readFileData(elem, fileId, startOffset, count) {
+        return getArrayBufferFromFileAsync(elem, fileId).then(function (arrayBuffer) {
+            return btoa(String.fromCharCode.apply(null, new Uint8Array(arrayBuffer, startOffset, count)));
+        });
+    }
+
     function readFileDataSharedMemory(readRequest) {
         const inputFileElementReferenceId = Blazor.platform.readStringField(readRequest, 0);
         const inputFileElement = document.querySelector(`[_bl_${inputFileElementReferenceId}]`);
@@ -92,6 +98,7 @@
     window._blazorInputFile = {
         init,
         ensureArrayBufferReadyForSharedMemoryInterop,
+        readFileData,
         readFileDataSharedMemory,
     };
 })();

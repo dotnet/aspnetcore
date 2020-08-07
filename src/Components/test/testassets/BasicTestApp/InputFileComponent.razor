@@ -1,19 +1,67 @@
-﻿@using System.IO; 
+﻿@using System.IO;
 @using Microsoft.AspNetCore.Components.Web.Extensions
 
-<InputFile OnChange="HandleSelection" />
+<h1>File preview</h1>
+
+<InputFile OnChange="LoadFiles" />
 
 <p>@fileName</p>
+<p>@(fileSize.HasValue ? $"{fileSize} bytes" : null)</p>
 <p>@content</p>
 
+<h1>Multiple files</h1>
+
+<p>A multi-file picker that displays information about selection and shows progress as each one is loaded.</p>
+
+<label for="uploadFiles">Select File(s)</label>
+<InputFile id="uploadFiles" multiple OnChange="SetSelectedFiles" />
+
+<label for="uploadFolder">Select Folder</label>
+<InputFile id="uploadFolder" multiple webkitdirectory OnChange="SetSelectedFiles" />
+
+@if (selectedFiles != null)
+{
+    foreach (var file in selectedFiles)
+    {
+        var isLoading = file.Data.Position > 0;
+
+        <div class="file-row">-->
+            <!-- File info -->
+            <div>
+                <h2>@file.Name</h2>
+                Size: <strong>@file.Size bytes</strong>;
+                Last modified: <strong>@file.LastModified.ToString()</strong>;
+                Type: <strong>@file.Type</strong>
+                Relative Path: <strong>@file.RelativePath</strong>
+            </div>
+
+            <!-- Upload button -->
+            <button @onclick="() => LoadFile(file)" disabled="@isLoading">
+                @if (!isLoading)
+                {
+                    <span>Load</span>
+                }
+                else
+                {
+                    <span>Loaded @((100.0 * file.Data.Position / file.Size).ToString("0"))%</span>
+                }
+            </button>
+        </div>
+    }
+}
+
 @code {
+    IFileListEntry[] selectedFiles;
+
     string fileName;
+    int? fileSize;
     string content;
 
-    async Task HandleSelection(IFileListEntry[] files)
+    async Task LoadFiles(IFileListEntry[] files)
     {
         var file = files.FirstOrDefault();
         fileName = null;
+        fileSize = null;
 
         if (file != null)
         {
@@ -23,10 +71,23 @@
 
             content = await reader.ReadToEndAsync();
             fileName = file.Name;
-            //var ms = new MemoryStream();
-            //await file.Data.CopyToAsync(ms);
-
-            //status = $"Finished loading {file.Size} bytes from {file.Name}";
+            fileSize = file.Size;
         }
+    }
+
+    void SetSelectedFiles(IFileListEntry[] files)
+    {
+        selectedFiles = files;
+    }
+
+    async Task LoadFile(IFileListEntry file)
+    {
+        // So the UI updates to show progress
+        file.OnDataRead += (sender, eventArgs) => InvokeAsync(StateHasChanged);
+
+        // Just load into .NET memory to show it can be done
+        // Alternatively it could be saved to disk, or parsed in memory, or similar
+        var ms = new MemoryStream();
+        await file.Data.CopyToAsync(ms);
     }
 }
