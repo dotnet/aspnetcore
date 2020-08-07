@@ -68,8 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     }
                 }
 
-                // SkipValidation is only true in tests.
-                if (!certifcateConfigLoader.SkipValidation && sslOptions.ServerCertificate is X509Certificate2 cert2)
+                if (!certifcateConfigLoader.IsTestMock && sslOptions.ServerCertificate is X509Certificate2 cert2)
                 {
                     HttpsConnectionMiddleware.EnsureCertificateIsAllowedForServerAuth(cert2);
                 }

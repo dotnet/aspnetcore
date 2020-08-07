@@ -7,8 +7,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Certificates
 {
     internal interface ICertificateConfigLoader
     {
-        // SkipValidation is only true in tests.
-        bool SkipValidation { get; }
+        bool IsTestMock { get; }
 
         X509Certificate2 LoadCertificate(CertificateConfig certInfo, string endpointName);
     }

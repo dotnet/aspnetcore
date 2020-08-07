@@ -743,7 +743,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             public Dictionary<object, string> CertToPathDictionary { get; } = new Dictionary<object, string>(ReferenceEqualityComparer.Instance);
 
-            public bool SkipValidation => true;
+            public bool IsTestMock => true;
 
             public X509Certificate2 LoadCertificate(CertificateConfig certInfo, string endpointName)
             {
