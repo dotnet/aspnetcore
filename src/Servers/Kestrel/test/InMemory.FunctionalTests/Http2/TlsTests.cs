@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
         [SkipOnHelix("Ubuntu 20.04 disables TLS1.1 by default which SslStream requires in this scenario", Queues = "Ubuntu.2004.Amd64.Open")]
         public async Task TlsHandshakeRejectsTlsLessThan12()
         {
-            using (var server = new TestServer(context =>
+            await using (var server = new TestServer(context =>
             {
                 var tlsFeature = context.Features.Get<ITlsApplicationProtocolFeature>();
                 Assert.NotNull(tlsFeature);
@@ -66,7 +66,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
                     await WaitForConnectionErrorAsync(reader, ignoreNonGoAwayFrames: false, expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.INADEQUATE_SECURITY);
                     reader.Complete();
                 }
-                await server.StopAsync();
             }
         }
 

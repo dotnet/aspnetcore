@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -51,8 +51,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             var hash = HashCodeCombiner.Start();
-            hash.Add(descriptor.Kind);
+            hash.Add(descriptor.Kind, StringComparer.Ordinal);
             hash.Add(descriptor.Name, StringComparer.Ordinal);
+            hash.Add(descriptor.TypeName, StringComparer.Ordinal);
+            hash.Add(descriptor.Metadata?.Count);
 
             return hash.CombinedHash;
         }

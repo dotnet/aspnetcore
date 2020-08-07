@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public Task Build_SimpleMvc_WithServer_UsingDotnetMSBuild_CanBuildSuccessfully()
             => Build_SimpleMvc_CanBuildSuccessfully(MSBuildProcessKind.Dotnet);
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/24427")]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InitializeTestProject("SimpleMvc")]
         public Task Build_SimpleMvc_WithServer_UsingDesktopMSBuild_CanBuildSuccessfully()
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var repositoryRoot = ProjectDirectory.SearchUp(AppContext.BaseDirectory, "global.json");
             var solutionRoot = Path.Combine(repositoryRoot, "src", "Razor");
             var toolAssemblyDirectory = Path.Combine(solutionRoot, "Microsoft.AspNetCore.Razor.Tools", "src");
-            var toolAssemblyPath = Path.Combine(toolAssemblyDirectory, "Microsoft.AspNetCore.Razor.Tools.csproj");
+            var toolAssemblyPath = Path.Combine(toolAssemblyDirectory, "rzc.csproj");
             var projectDirectory = new TestProjectDirectory(solutionRoot, toolAssemblyDirectory, toolAssemblyPath);
             var publishDir = Path.Combine(Path.GetTempPath(), "Razor", Path.GetRandomFileName(), "RzcPublish");
             var publishResult = await MSBuildProcessManager.RunProcessAsync(projectDirectory, $"/t:Publish /p:PublishDir=\"{publishDir}\"");

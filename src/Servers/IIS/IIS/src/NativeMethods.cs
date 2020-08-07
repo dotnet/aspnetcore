@@ -142,6 +142,11 @@ namespace Microsoft.AspNetCore.Server.IIS
         private static extern unsafe int http_response_set_unknown_header(IntPtr pInProcessHandler, byte* pszHeaderName, byte* pszHeaderValue, ushort usHeaderValueLength, bool fReplace);
 
         [DllImport(AspNetCoreModuleDll)]
+        private static extern unsafe int http_has_response4(IntPtr pInProcessHandler, out bool isResponse4);
+        [DllImport(AspNetCoreModuleDll)]
+        private static extern unsafe int http_response_set_trailer(IntPtr pInProcessHandler, byte* pszHeaderName, byte* pszHeaderValue, ushort usHeaderValueLength, bool replace);
+
+        [DllImport(AspNetCoreModuleDll)]
         private static extern unsafe int http_response_set_known_header(IntPtr pInProcessHandler, int headerId, byte* pHeaderValue, ushort length, bool fReplace);
 
         [DllImport(AspNetCoreModuleDll)]
@@ -306,6 +311,18 @@ namespace Microsoft.AspNetCore.Server.IIS
             {
                 http_set_startup_error_page_content(bytePtr, content.Length);
             }
+        }
+
+        internal static unsafe void HttpResponseSetTrailer(IntPtr pInProcessHandler, byte* pHeaderName, byte* pHeaderValue, ushort length, bool replace)
+        {
+            Validate(http_response_set_trailer(pInProcessHandler, pHeaderName, pHeaderValue, length, false));
+        }
+
+        internal static unsafe bool HttpSupportTrailer(IntPtr pInProcessHandler)
+        {
+            bool supportsTrailers;
+            Validate(http_has_response4(pInProcessHandler, out supportsTrailers));
+            return supportsTrailers;
         }
 
         private static void Validate(int hr)

@@ -11,7 +11,7 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
         internal const ushort IPv4 = 2;
         internal const ushort IPv6 = 23;
 
-        internal static unsafe IPEndPoint INetToIPEndPoint(SOCKADDR_INET inetAddress)
+        internal static unsafe IPEndPoint INetToIPEndPoint(ref SOCKADDR_INET inetAddress)
         {
             if (inetAddress.si_family == IPv4)
             {

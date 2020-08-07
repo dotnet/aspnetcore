@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 foreach (var parameter in parameters)
                 {
                     var parameterName = parameter.Name;
-                    if (!writers.WritersByName.TryGetValue(parameterName, out var writer))
+                    if (!writers.TryGetValue(parameterName, out var writer))
                     {
                         // Case 1: There is nowhere to put this value.
                         ThrowForUnknownIncomingParameterName(targetType, parameterName);
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                         isCaptureUnmatchedValuesParameterSetExplicitly = true;
                     }
 
-                    if (writers.WritersByName.TryGetValue(parameterName, out var writer))
+                    if (writers.TryGetValue(parameterName, out var writer))
                     {
                         if (!writer.Cascading && parameter.Cascading)
                         {
@@ -245,9 +245,15 @@ namespace Microsoft.AspNetCore.Components.Reflection
 
         private class WritersForType
         {
+            private const int MaxCachedWriterLookups = 100;
+            private readonly Dictionary<string, IPropertySetter> _underlyingWriters;
+            private readonly ConcurrentDictionary<string, IPropertySetter?> _referenceEqualityWritersCache;
+
             public WritersForType(Type targetType)
             {
-                WritersByName = new Dictionary<string, IPropertySetter>(StringComparer.OrdinalIgnoreCase);
+                _underlyingWriters = new Dictionary<string, IPropertySetter>(StringComparer.OrdinalIgnoreCase);
+                _referenceEqualityWritersCache = new ConcurrentDictionary<string, IPropertySetter?>(ReferenceEqualityComparer.Instance);
+
                 foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
                 {
                     var parameterAttribute = propertyInfo.GetCustomAttribute<ParameterAttribute>();
@@ -267,14 +273,14 @@ namespace Microsoft.AspNetCore.Components.Reflection
 
                     var propertySetter = MemberAssignment.CreatePropertySetter(targetType, propertyInfo, cascading: cascadingParameterAttribute != null);
 
-                    if (WritersByName.ContainsKey(propertyName))
+                    if (_underlyingWriters.ContainsKey(propertyName))
                     {
                         throw new InvalidOperationException(
                             $"The type '{targetType.FullName}' declares more than one parameter matching the " +
                             $"name '{propertyName.ToLowerInvariant()}'. Parameter names are case-insensitive and must be unique.");
                     }
 
-                    WritersByName.Add(propertyName, propertySetter);
+                    _underlyingWriters.Add(propertyName, propertySetter);
 
                     if (parameterAttribute != null && parameterAttribute.CaptureUnmatchedValues)
                     {
@@ -298,11 +304,38 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 }
             }
 
-            public Dictionary<string, IPropertySetter> WritersByName { get; }
-
             public IPropertySetter? CaptureUnmatchedValuesWriter { get; }
 
             public string? CaptureUnmatchedValuesPropertyName { get; }
+
+            public bool TryGetValue(string parameterName, [MaybeNullWhen(false)] out IPropertySetter writer)
+            {
+                // In intensive parameter-passing scenarios, one of the most expensive things we do is the
+                // lookup from parameterName to writer. Pre-5.0 that was because of the string hashing.
+                // To optimize this, we now have a cache in front of the lookup which is keyed by parameterName's
+                // object identity (not its string hash). So in most cases we can resolve the lookup without
+                // having to hash the string. We only fall back on hashing the string if the cache gets full,
+                // which would only be in very unusual situations because components don't typically have many
+                // parameters, and the parameterName strings usually come from compile-time constants.
+                if (!_referenceEqualityWritersCache.TryGetValue(parameterName, out writer))
+                {
+                    _underlyingWriters.TryGetValue(parameterName, out writer);
+
+                    // Note that because we're not locking around this, it's possible we might
+                    // actually write more than MaxCachedWriterLookups entries due to concurrent
+                    // writes. However this won't cause any problems.
+                    // Also note that the value we're caching might be 'null'. It's valid to cache
+                    // lookup misses just as much as hits, since then we can more quickly identify
+                    // incoming values that don't have a corresponding writer and thus will end up
+                    // being passed as catch-all parameter values.
+                    if (_referenceEqualityWritersCache.Count < MaxCachedWriterLookups)
+                    {
+                        _referenceEqualityWritersCache.TryAdd(parameterName, writer);
+                    }
+                }
+
+                return writer != null;
+            }
         }
     }
 }

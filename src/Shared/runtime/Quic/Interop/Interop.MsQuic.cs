@@ -9,7 +9,7 @@ internal static partial class Interop
 {
     internal static class MsQuic
     {
-        [DllImport(Libraries.MsQuic)]
-        internal static unsafe extern uint MsQuicOpen(int version, out MsQuicNativeMethods.NativeApi* registration);
+        [DllImport(Libraries.MsQuic, CallingConvention = CallingConvention.Cdecl)]
+        internal static unsafe extern uint MsQuicOpen(out MsQuicNativeMethods.NativeApi* registration);
     }
 }

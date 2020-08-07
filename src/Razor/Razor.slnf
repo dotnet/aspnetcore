@@ -14,7 +14,7 @@
       "src\\Razor\\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X\\test\\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.Test.csproj",
       "src\\Razor\\Microsoft.AspNetCore.Razor.Language\\src\\Microsoft.AspNetCore.Razor.Language.csproj",
       "src\\Razor\\Microsoft.AspNetCore.Razor.Language\\test\\Microsoft.AspNetCore.Razor.Language.Test.csproj",
-      "src\\Razor\\Microsoft.AspNetCore.Razor.Tools\\src\\Microsoft.AspNetCore.Razor.Tools.csproj",
+      "src\\Razor\\Microsoft.AspNetCore.Razor.Tools\\src\\rzc.csproj",
       "src\\Razor\\Microsoft.AspNetCore.Razor.Tools\\test\\Microsoft.AspNetCore.Razor.Tools.Test.csproj",
       "src\\Razor\\Microsoft.CodeAnalysis.Razor\\src\\Microsoft.CodeAnalysis.Razor.csproj",
       "src\\Razor\\Microsoft.CodeAnalysis.Razor\\test\\Microsoft.CodeAnalysis.Razor.Test.csproj",

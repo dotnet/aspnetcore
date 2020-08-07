@@ -26,9 +26,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     /// <summary>
     /// Summary description for TestServer
     /// </summary>
-    internal class TestServer : IDisposable, IStartup
+    internal class TestServer : IAsyncDisposable, IStartup
     {
-        private IWebHost _host;
+        private IHost _host;
         private ListenOptions _listenOptions;
         private readonly RequestDelegate _app;
 
@@ -70,32 +70,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             _app = app;
             Context = context;
 
-            _host = TransportSelector.GetWebHostBuilder(context.MemoryPoolFactory, context.ServerOptions.Limits.MaxRequestBufferSize)
-                .UseKestrel(options =>
+            _host = TransportSelector.GetHostBuilder(context.MemoryPoolFactory, context.ServerOptions.Limits.MaxRequestBufferSize)
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    configureKestrel(options);
-                    _listenOptions = options.ListenOptions.First();
-                })
-                .ConfigureServices(services =>
-                {
-                    services.AddSingleton<IStartup>(this);
-                    services.AddSingleton(context.LoggerFactory);
-                    services.AddSingleton<IServer>(sp =>
-                    {
-                        // Manually configure options on the TestServiceContext.
-                        // We're doing this so we can use the same instance that was passed in
-                        var configureOptions = sp.GetServices<IConfigureOptions<KestrelServerOptions>>();
-                        foreach (var c in configureOptions)
+                    webHostBuilder
+                        .UseKestrel(options =>
                         {
-                            c.Configure(context.ServerOptions);
-                        }
+                            configureKestrel(options);
+                            _listenOptions = options.ListenOptions.First();
+                        })
+                        .ConfigureServices(services =>
+                        {
+                            services.AddSingleton<IStartup>(this);
+                            services.AddSingleton(context.LoggerFactory);
+                            services.AddSingleton<IServer>(sp =>
+                            {
+                                // Manually configure options on the TestServiceContext.
+                                // We're doing this so we can use the same instance that was passed in
+                                var configureOptions = sp.GetServices<IConfigureOptions<KestrelServerOptions>>();
+                                foreach (var c in configureOptions)
+                                {
+                                    c.Configure(context.ServerOptions);
+                                }
 
-                        return new KestrelServer(new List<IConnectionListenerFactory>() { sp.GetRequiredService<IConnectionListenerFactory>() }, context);
-                    });
-                    configureServices(services);
+                                return new KestrelServer(new List<IConnectionListenerFactory>() { sp.GetRequiredService<IConnectionListenerFactory>() }, context);
+                            });
+                            configureServices(services);
+                        })
+                        .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName)
+                        .UseSetting(WebHostDefaults.ShutdownTimeoutKey, TestConstants.DefaultTimeout.TotalSeconds.ToString())
+                        .Configure(app => { app.Run(_app); });
                 })
-                .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName)
-                .UseSetting(WebHostDefaults.ShutdownTimeoutKey, TestConstants.DefaultTimeout.TotalSeconds.ToString())
                 .Build();
 
             _host.Start();
@@ -130,9 +135,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             return _host.StopAsync(token);
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            _host.Dispose();
+            await _host.StopAsync().ConfigureAwait(false);
+            // The concrete Host implements IAsyncDisposable
+            await ((IAsyncDisposable)_host).DisposeAsync().ConfigureAwait(false);
         }
     }
 }

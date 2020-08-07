@@ -142,8 +142,8 @@ namespace Microsoft.AspNetCore.Components
 
             var oldIndex = oldParameters._ownerIndex;
             var newIndex = _ownerIndex;
-            var oldEndIndexExcl = oldIndex + oldParameters._frames[oldIndex].ComponentSubtreeLength;
-            var newEndIndexExcl = newIndex + _frames[newIndex].ComponentSubtreeLength;
+            var oldEndIndexExcl = oldIndex + oldParameters._frames[oldIndex].ComponentSubtreeLengthField;
+            var newEndIndexExcl = newIndex + _frames[newIndex].ComponentSubtreeLengthField;
             while (true)
             {
                 // First, stop if we've reached the end of either subtree
@@ -162,21 +162,21 @@ namespace Microsoft.AspNetCore.Components
                     ref var newFrame = ref _frames[newIndex];
 
                     // Stop if we've reached the end of either subtree's sequence of attributes
-                    oldFinished = oldFrame.FrameType != RenderTreeFrameType.Attribute;
-                    newFinished = newFrame.FrameType != RenderTreeFrameType.Attribute;
+                    oldFinished = oldFrame.FrameTypeField != RenderTreeFrameType.Attribute;
+                    newFinished = newFrame.FrameTypeField != RenderTreeFrameType.Attribute;
                     if (oldFinished || newFinished)
                     {
                         return oldFinished == newFinished; // Same only if we have same number of parameters
                     }
                     else
                     {
-                        if (!string.Equals(oldFrame.AttributeName, newFrame.AttributeName, StringComparison.Ordinal))
+                        if (!string.Equals(oldFrame.AttributeNameField, newFrame.AttributeNameField, StringComparison.Ordinal))
                         {
                             return false; // Different names
                         }
 
-                        var oldValue = oldFrame.AttributeValue;
-                        var newValue = newFrame.AttributeValue;
+                        var oldValue = oldFrame.AttributeValueField;
+                        var newValue = newFrame.AttributeValueField;
                         if (ChangeDetection.MayHaveChanged(oldValue, newValue))
                         {
                             return false;
@@ -216,8 +216,8 @@ namespace Microsoft.AspNetCore.Components
         public static ParameterView FromDictionary(IDictionary<string, object> parameters)
         {
             var frames = new RenderTreeFrame[parameters.Count + 1];
-            frames[0] = RenderTreeFrame.Element(0, GeneratedParameterViewElementName)
-                .WithElementSubtreeLength(frames.Length);
+            frames[0] = RenderTreeFrame.Element(0, GeneratedParameterViewElementName);
+            frames[0].ElementSubtreeLengthField = frames.Length;
 
             var i = 0;
             foreach (var kvp in parameters)
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Components
             {
                 _frames = frames;
                 _ownerIndex = ownerIndex;
-                _ownerDescendantsEndIndexExcl = ownerIndex + _frames[ownerIndex].ElementSubtreeLength;
+                _ownerDescendantsEndIndexExcl = ownerIndex + _frames[ownerIndex].ElementSubtreeLengthField;
                 _currentIndex = ownerIndex;
                 _current = default;
             }
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Components
 
                 // ... or if you get to its first non-attribute descendant (because attributes
                 // are always before any other type of descendant)
-                if (_frames[nextIndex].FrameType != RenderTreeFrameType.Attribute)
+                if (_frames[nextIndex].FrameTypeField != RenderTreeFrameType.Attribute)
                 {
                     return false;
                 }
@@ -329,7 +329,7 @@ namespace Microsoft.AspNetCore.Components
                 _currentIndex = nextIndex;
 
                 ref var frame = ref _frames[_currentIndex];
-                _current = new ParameterValue(frame.AttributeName, frame.AttributeValue, false);
+                _current = new ParameterValue(frame.AttributeNameField, frame.AttributeValueField, false);
 
                 return true;
             }

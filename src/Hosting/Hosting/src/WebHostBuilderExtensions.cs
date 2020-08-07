@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -25,7 +27,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<IApplicationBuilder> configureApp)
         {
-            return hostBuilder.Configure((_, app) => configureApp(app), configureApp.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name);
+            return hostBuilder.Configure((_, app) => configureApp(app), configureApp.GetMethodInfo().DeclaringType!.GetTypeInfo().Assembly.GetName().Name!);
         }
 
         /// <summary>
@@ -36,7 +38,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, IApplicationBuilder> configureApp)
         {
-            return hostBuilder.Configure(configureApp, configureApp.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name);
+            return hostBuilder.Configure(configureApp, configureApp.GetMethodInfo().DeclaringType!.GetTypeInfo().Assembly.GetName().Name!);
         }
 
         private static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, IApplicationBuilder> configureApp, string startupAssemblyName)
@@ -77,7 +79,7 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(startupFactory));
             }
 
-            var startupAssemblyName = startupFactory.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name;
+            var startupAssemblyName = startupFactory.GetMethodInfo().DeclaringType!.GetTypeInfo().Assembly.GetName().Name;
 
             hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
 

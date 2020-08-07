@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -16,15 +16,22 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)BenchmarkRunner\*.cs" />
-    <None Include="MSN.cshtml" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="taghelpers.json" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="BlazorServerTagHelpers.razor" CopyToOutputDirectory="PreserveNewest" />
+
     <Compile Include="$(SharedSourceRoot)RazorShared\TagHelperDescriptorJsonConverter.cs">
       <Link>Shared\TagHelperDescriptorJsonConverter.cs</Link>
     </Compile>
     <Compile Include="$(SharedSourceRoot)RazorShared\RazorDiagnosticJsonConverter.cs">
       <Link>Shared\RazorDiagnosticJsonConverter.cs</Link>
     </Compile>
+    <Compile Include="$(SharedSourceRoot)RazorShared\JsonReaderExtensions.cs">
+      <Link>Shared\JsonReaderExtensions.cs</Link>
+    </Compile>
+    
+    <None Include="MSN.cshtml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(SharedSourceRoot)RazorShared\taghelpers.json" CopyToOutputDirectory="PreserveNewest">
+      <Link>taghelpers.json</Link>
+    </None>
+    <None Include="BlazorServerTagHelpers.razor" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -79,8 +79,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 //    https://stackoverflow.com/a/37983587/102052
                 //
                 // 2. If "dotnet publish" does hang indefinitely for some reason, tests should fail fast with an error message.
-                const int timeoutMinutes = 5;
-                if (hostProcess.WaitForExit(milliseconds: timeoutMinutes * 60 * 1000))
+                var timeout = deploymentParameters.PublishTimeout ?? TimeSpan.FromMinutes(5);
+
+                if (hostProcess.WaitForExit(milliseconds: (int)timeout.TotalMilliseconds))
                 {
                     if (hostProcess.ExitCode != 0)
                     {
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 }
                 else
                 {
-                    var message = $"{DotnetCommandName} publish failed to exit after {timeoutMinutes} minutes";
+                    var message = $"{DotnetCommandName} publish failed to exit after {timeout.TotalMinutes} minutes";
                     logger.LogError(message);
                     throw new Exception(message);
                 }
