@@ -58,7 +58,7 @@ export class BrowserRenderer {
       }
     }
 
-    const ownerDocument = getClosestDomElement(element).ownerDocument;
+    const ownerDocument = getClosestDomElement(element) ? getClosestDomElement(element).ownerDocument : null;
     const activeElementBefore = ownerDocument && ownerDocument.activeElement;
 
     this.applyEdits(batch, componentId, element, 0, edits, referenceFrames);
