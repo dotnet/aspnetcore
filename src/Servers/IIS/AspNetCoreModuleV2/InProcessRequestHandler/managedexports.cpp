@@ -589,4 +589,16 @@ http_response_set_trailer(
     IHttpResponse4* pHttpResponse = (IHttpResponse4*)pInProcessHandler->QueryHttpContext()->GetResponse();
     return pHttpResponse->SetTrailer(pszHeaderName, pszHeaderValue, usHeaderValueLength, fReplace);
 }
+
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+VOID
+http_reset_stream(
+    _In_ IN_PROCESS_HANDLER* pInProcessHandler,
+    ULONG errorCode
+)
+{
+    IHttpResponse4* pHttpResponse = (IHttpResponse4*)pInProcessHandler->QueryHttpContext()->GetResponse();
+    pHttpResponse->ResetStream(errorCode);
+}
+
 // End of export

@@ -1033,7 +1033,7 @@ namespace TestSite
             return Task.CompletedTask;
         }
 
-        #if !FORWARDCOMPAT
+#if !FORWARDCOMPAT
         public Task ResponseTrailers_HTTP2_TrailersAvailable(HttpContext context)
         {
             Assert.Equal("HTTP/2", context.Request.Protocol);
@@ -1133,6 +1133,191 @@ namespace TestSite
             }
 
             return Task.FromResult(0);
+        }
+
+        public Task AppException_BeforeResponseHeaders_500(HttpContext context)
+        {
+            throw new Exception("Application exception");
+        }
+
+        public async Task AppException_AfterHeaders_PriorOSVersions_ResetCancel(HttpContext httpContext)
+        {
+            await httpContext.Response.Body.FlushAsync();
+            throw new Exception("Application exception");
+        }
+
+        public async Task AppException_AfterHeaders_ResetInternalError(HttpContext httpContext)
+        {
+            await httpContext.Response.Body.FlushAsync();
+            throw new Exception("Application exception");
+        }
+
+        public Task Reset_PriorOSVersions_NotSupported(HttpContext httpContext)
+        {
+            Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+            var feature = httpContext.Features.Get<IHttpResetFeature>();
+            Assert.Null(feature);
+            return httpContext.Response.WriteAsync("Hello World");
+        }
+
+        public Task Reset_Http1_NotSupported(HttpContext httpContext)
+        {
+            Assert.Equal("HTTP/1.1", httpContext.Request.Protocol);
+            var feature = httpContext.Features.Get<IHttpResetFeature>();
+            Assert.Null(feature);
+            return httpContext.Response.WriteAsync("Hello World");
+        }
+
+        private TaskCompletionSource<object> _resetBeforeResponseResetsCts = new TaskCompletionSource<object>();
+        public Task Reset_BeforeResponse_Resets(HttpContext httpContext)
+        {
+            try
+            {
+                Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+                var feature = httpContext.Features.Get<IHttpResetFeature>();
+                Assert.NotNull(feature);
+                feature.Reset(1111); // Custom
+                _resetBeforeResponseResetsCts.SetResult(0);
+            }
+            catch (Exception ex)
+            {
+                _resetBeforeResponseResetsCts.SetException(ex);
+            }
+            return Task.FromResult(0);
+        }
+
+        public async Task Reset_BeforeResponse_Resets_Complete(HttpContext httpContext)
+        {
+            await _resetBeforeResponseResetsCts.Task;
+        }
+
+        private TaskCompletionSource<object> _resetBeforeResponseZeroResetsCts = new TaskCompletionSource<object>();
+        public Task Reset_BeforeResponse_Zero_Resets(HttpContext httpContext)
+        {
+            try
+            {
+                Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+                var feature = httpContext.Features.Get<IHttpResetFeature>();
+                Assert.NotNull(feature);
+                feature.Reset(0); // Zero should be an allowed errorCode
+                _resetBeforeResponseZeroResetsCts.SetResult(0);
+            }
+            catch (Exception ex)
+            {
+                _resetBeforeResponseZeroResetsCts.SetException(ex);
+            }
+            return Task.FromResult(0);
+        }
+
+        public async Task Reset_BeforeResponse_Resets_Zero_Complete(HttpContext httpContext)
+        {
+            await _resetBeforeResponseZeroResetsCts.Task;
+        }
+
+        private TaskCompletionSource<object> _resetAfterResponseHeadersResetsCts = new TaskCompletionSource<object>();
+
+        public async Task Reset_AfterResponseHeaders_Resets(HttpContext httpContext)
+        {
+            try
+            {
+                Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+                var feature = httpContext.Features.Get<IHttpResetFeature>();
+                Assert.NotNull(feature);
+                await httpContext.Response.Body.FlushAsync();
+                feature.Reset(1111); // Custom
+                _resetAfterResponseHeadersResetsCts.SetResult(0);
+            }
+            catch (Exception ex)
+            {
+                _resetAfterResponseHeadersResetsCts.SetException(ex);
+            }
+        }
+        public async Task Reset_AfterResponseHeaders_Resets_Complete(HttpContext httpContext)
+        {
+            await _resetAfterResponseHeadersResetsCts.Task;
+        }
+
+        private TaskCompletionSource<object> _resetDuringResponseBodyResetsCts = new TaskCompletionSource<object>();
+
+        public async Task Reset_DuringResponseBody_Resets(HttpContext httpContext)
+        {
+            try
+            {
+                Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+                var feature = httpContext.Features.Get<IHttpResetFeature>();
+                Assert.NotNull(feature);
+                await httpContext.Response.WriteAsync("Hello World");
+                await httpContext.Response.Body.FlushAsync();
+                feature.Reset(1111); // Custom
+                _resetDuringResponseBodyResetsCts.SetResult(0);
+            }
+            catch (Exception ex)
+            {
+                _resetDuringResponseBodyResetsCts.SetException(ex);
+            }
+        }
+
+        public async Task Reset_DuringResponseBody_Resets_Complete(HttpContext httpContext)
+        {
+            await _resetDuringResponseBodyResetsCts.Task;
+        }
+
+        private TaskCompletionSource<object> _resetBeforeRequestBodyResetsCts = new TaskCompletionSource<object>();
+
+        public async Task Reset_BeforeRequestBody_Resets(HttpContext httpContext)
+        {
+            try
+            {
+                Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+                var feature = httpContext.Features.Get<IHttpResetFeature>();
+                Assert.NotNull(feature);
+                var readTask = httpContext.Request.Body.ReadAsync(new byte[10], 0, 10);
+
+                feature.Reset(1111);
+
+                await Assert.ThrowsAsync<IOException>(() => readTask);
+
+                _resetBeforeRequestBodyResetsCts.SetResult(0);
+            }
+            catch (Exception ex)
+            {
+                _resetBeforeRequestBodyResetsCts.SetException(ex);
+            }
+        }
+
+        public async Task Reset_BeforeRequestBody_Resets_Complete(HttpContext httpContext)
+        {
+            await _resetBeforeRequestBodyResetsCts.Task;
+        }
+
+        private TaskCompletionSource<object> _resetDuringRequestBodyResetsCts = new TaskCompletionSource<object>();
+
+        public async Task Reset_DuringRequestBody_Resets(HttpContext httpContext)
+        {
+            try
+            {
+                Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+                var feature = httpContext.Features.Get<IHttpResetFeature>();
+                Assert.NotNull(feature);
+
+                var read = await httpContext.Request.Body.ReadAsync(new byte[10], 0, 10);
+                Assert.Equal(10, read);
+
+                var readTask = httpContext.Request.Body.ReadAsync(new byte[10], 0, 10);
+                feature.Reset(1111);
+                await Assert.ThrowsAsync<IOException>(() => readTask);
+
+                _resetDuringRequestBodyResetsCts.SetResult(0);
+            }
+            catch (Exception ex)
+            {
+                _resetDuringRequestBodyResetsCts.SetException(ex);
+            }
+        }
+
+        public async Task Reset_DuringRequestBody_Resets_Complete(HttpContext httpContext)
+        {
+            await _resetDuringRequestBodyResetsCts.Task;
         }
 
         internal static readonly HashSet<(string, StringValues, StringValues)> NullTrailers = new HashSet<(string, StringValues, StringValues)>()
