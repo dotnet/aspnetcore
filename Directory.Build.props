@@ -140,20 +140,6 @@
     <InternalInstallerBaseName>$(RuntimeInstallerBaseName)-internal</InternalInstallerBaseName>
   </PropertyGroup>
 
-  <ItemGroup
-    Condition="'$(DisablePubternalApiCheck)' != 'true'
-      AND '$(IsTestProject)' != 'true'
-      AND '$(IsBenchmarkProject)' != 'true'
-      AND '$(IsTestAssetProject)' != 'true'
-      AND '$(MSBuildProjectName)' != 'Internal.AspNetCore.Analyzers'
-      AND '$(MSBuildProjectExtension)' == '.csproj'">
-    <ProjectReference
-      Include="$(RepoRoot)src\Analyzers\Internal.AspNetCore.Analyzers\src\Internal.AspNetCore.Analyzers.csproj"
-      ReferenceOutputAssembly="false"
-      OutputItemType="Analyzer"
-      PrivateAssets="All" />
-  </ItemGroup>
-
   <!-- Compilation options which apply to all languages. Language-specific options should be set in eng/targets/$(lang).Common.props -->
   <PropertyGroup>
     <BuildArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
