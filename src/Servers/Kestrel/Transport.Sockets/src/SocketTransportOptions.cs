@@ -44,6 +44,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
 
+        /// <summary>
+        /// Inline application and transport continuations instead of dispatching to the threadpool.
+        /// </summary>
+        /// <remarks>
+        /// This will run application code on the IO thread which is why this is unsafe.
+        /// </remarks>
         public bool UnsafeInlineScheduling { get; set; }
 
         internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.SlabMemoryPoolFactory.Create;
