@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Antiforgery
         private MemoryStream? _stream;
         private BinaryReader? _reader;
         private BinaryWriter? _writer;
-        private SHA256? _sha256;
 
         public MemoryStream Stream
         {
@@ -79,23 +78,6 @@ namespace Microsoft.AspNetCore.Antiforgery
             private set
             {
                 _writer = value;
-            }
-        }
-
-        public SHA256 Sha256
-        {
-            get
-            {
-                if (_sha256 == null)
-                {
-                    _sha256 = CryptographyAlgorithms.CreateSHA256();
-                }
-
-                return _sha256;
-            }
-            private set
-            {
-                _sha256 = value;
             }
         }
 
