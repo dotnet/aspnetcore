@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -310,7 +311,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 IntProp = 43,
                 DoubleProp = 3.14159,
                 StringProp = "test",
-                DateTimeProp = DateTime.Parse("6/3/2019 10:00:00 PM")
+                DateTimeProp = DateTime.Parse("6/3/2019 10:00:00 PM", CultureInfo.InvariantCulture)
             }, streamItemMessage.Item);
         }
 
