@@ -11,6 +11,9 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
+    /// <summary>
+    /// A component that wraps the HTML file input element and exposes a <see cref="Stream"/> for each file's contents.
+    /// </summary>
     public class InputFile : ComponentBase, IInputFileJsCallbacks, IDisposable
     {
         private ElementReference _inputFileElement;
@@ -24,15 +27,29 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         [Inject]
         private IServiceProvider ServiceProvider { get; set; } = default!;
 
+        /// <summary>
+        /// Gets or sets the event callback that will be invoked when the collection of selected files changes.
+        /// </summary>
         [Parameter]
         public EventCallback<IFileListEntry[]> OnChange { get; set; }
 
+        /// <summary>
+        /// Gets or sets the maximum message size for file data sent over a circuit.
+        /// This only has an effect when using Blazor Server.
+        /// </summary>
         [Parameter]
         public int MaxMessageSize { get; set; } = 20 * 1024; // SignalR limit is 32K.
 
+        /// <summary>
+        /// Gets or sets the maximum internal buffer size for file data sent over a circuit.
+        /// This only has an effect when using Blazor Server.
+        /// </summary>
         [Parameter]
         public int MaxBufferSize { get; set; } = 1024 * 1024;
 
+        /// <summary>
+        /// Gets or sets a collection of additional attributes that will be applied to the input element.
+        /// </summary>
         [Parameter(CaptureUnmatchedValues = true)]
         public IDictionary<string, object>? AdditionalAttributes { get; set; }
 
@@ -64,6 +81,15 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             => _jsUnmarshalledRuntime != null ?
                 (Stream)new SharedMemoryFileListEntryStream(_jsRuntime, _jsUnmarshalledRuntime, _inputFileElement, file) :
                 new RemoteFileListEntryStream(_jsRuntime, _inputFileElement, MaxMessageSize, MaxBufferSize, file);
+
+        internal async Task<IFileListEntry> ConvertToImageFileAsync(FileListEntry file, string format, int maxWidth, int maxHeight)
+        {
+            var imageFile = await _jsRuntime.InvokeAsync<FileListEntry>(InputFileInterop.ToImageFile, _inputFileElement, file.Id, format, maxWidth, maxHeight);
+
+            imageFile.Owner = this;
+
+            return imageFile;
+        }
 
         Task IInputFileJsCallbacks.NotifyChange(FileListEntry[] files)
         {

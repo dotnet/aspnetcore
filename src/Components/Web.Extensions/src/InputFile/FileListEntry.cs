@@ -3,10 +3,11 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
-    public class FileListEntry : IFileListEntry
+    internal class FileListEntry : IFileListEntry
     {
         private Stream? _stream;
 
@@ -34,6 +35,11 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         }
 
         public event EventHandler? OnDataRead;
+
+        public Task<IFileListEntry> ToImageFileAsync(string format, int maxWidth, int maxHeight)
+        {
+            return Owner.ConvertToImageFileAsync(this, format, maxWidth, maxHeight);
+        }
 
         internal void InvokeOnDataRead()
             => OnDataRead?.Invoke(this, EventArgs.Empty);

@@ -14,5 +14,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         public const string ReadFileData = JsFunctionsPrefix + "readFileData";
 
         public const string ReadFileDataSharedMemory = JsFunctionsPrefix + "readFileDataSharedMemory";
+
+        public const string ToImageFile = JsFunctionsPrefix + "toImageFile";
     }
 }

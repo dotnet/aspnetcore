@@ -1423,11 +1423,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Compon
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sdk", "Sdk", "{FED4267E-E5E4-49C5-98DB-8B3F203596EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.BlazorWebAssembly", "src\Components\WebAssembly\Sdk\src\Microsoft.NET.Sdk.BlazorWebAssembly.csproj", "{6B2734BF-C61D-4889-ABBF-456A4075D59B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.BlazorWebAssembly", "src\Components\WebAssembly\Sdk\src\Microsoft.NET.Sdk.BlazorWebAssembly.csproj", "{6B2734BF-C61D-4889-ABBF-456A4075D59B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "src\Components\WebAssembly\Sdk\test\Microsoft.NET.Sdk.BlazorWebAssembly.Tests.csproj", "{83371889-9A3E-4D16-AE77-EB4F83BC6374}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.BlazorWebAssembly.Tests", "src\Components\WebAssembly\Sdk\test\Microsoft.NET.Sdk.BlazorWebAssembly.Tests.csproj", "{83371889-9A3E-4D16-AE77-EB4F83BC6374}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.BlazorWebAssembly.IntegrationTests", "src\Components\WebAssembly\Sdk\integrationtests\Microsoft.NET.Sdk.BlazorWebAssembly.IntegrationTests.csproj", "{525EBCB4-A870-470B-BC90-845306C337D1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.BlazorWebAssembly.IntegrationTests", "src\Components\WebAssembly\Sdk\integrationtests\Microsoft.NET.Sdk.BlazorWebAssembly.IntegrationTests.csproj", "{525EBCB4-A870-470B-BC90-845306C337D1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.BlazorWebAssembly.Tools", "src\Components\WebAssembly\Sdk\tools\Microsoft.NET.Sdk.BlazorWebAssembly.Tools.csproj", "{175E5CD8-92D4-46BB-882E-3A930D3302D4}"
 EndProject
