@@ -398,7 +398,7 @@ namespace System.Net.Quic.Implementations.MsQuic
         {
             ThrowIfDisposed();
 
-            return default!;
+            return Task.CompletedTask;
         }
 
         public override ValueTask DisposeAsync()
