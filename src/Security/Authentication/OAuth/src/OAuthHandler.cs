@@ -280,8 +280,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 // Store this for use during the code redemption.
                 properties.Items.Add(OAuthConstants.CodeVerifierKey, codeVerifier);
 
-                using var sha256 = SHA256.Create();
-                var challengeBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(codeVerifier));
+                var challengeBytes = SHA256.HashData(Encoding.UTF8.GetBytes(codeVerifier));
                 var codeChallenge = WebEncoders.Base64UrlEncode(challengeBytes);
 
                 parameters[OAuthConstants.CodeChallengeKey] = codeChallenge;
