@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>3.1.6</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>3.1.7</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: AspNetCoreRuntime.3.0.x64-->
   <PropertyGroup Condition=" '$(PackageId)' == 'AspNetCoreRuntime.3.0.x64' ">

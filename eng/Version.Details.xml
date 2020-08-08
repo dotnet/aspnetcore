@@ -381,6 +381,11 @@
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>2d163b87b605fd23ceebfb04484e5ec5f2bffc32</Sha>
     </Dependency>
+    <!-- !!! Pin this again once 3.1.8 is released. May need CoherentParentDependency="Microsoft.EntityFrameworkCore" after next extensions build. -->
+    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="3.1.0-rtm.19565.4">
+      <Uri>https://github.com/dotnet/Extensions</Uri>
+      <Sha>4e1be2fb546751c773968d7b40ff7f4b62887153</Sha>
+    </Dependency>
     <!--
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
          All Runtime.$rid packages should have the same version.
@@ -401,10 +406,6 @@
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.1.0" Pinned="true">
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>65f04fb6db7a5e198d05dbebd5c4ad21eb018f89</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="3.1.0-rtm.19565.4" Pinned="true">
-      <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>4e1be2fb546751c773968d7b40ff7f4b62887153</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>

@@ -4,7 +4,7 @@ This file contains a list of all the packages and their versions which were rele
 Update this list when preparing for a new patch.
 
 -->
-<Baseline Version="3.1.6">
+<Baseline Version="3.1.7">
   <Package Id="AspNetCoreRuntime.3.0.x64" Version="3.0.3" />
   <Package Id="AspNetCoreRuntime.3.0.x86" Version="3.0.3" />
   <Package Id="dotnet-sql-cache" Version="3.1.6" />
