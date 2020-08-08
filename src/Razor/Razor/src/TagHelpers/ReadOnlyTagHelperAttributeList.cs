@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         /// collection.
         /// </summary>
         protected ReadOnlyTagHelperAttributeList()
-            : base(Array.Empty<TagHelperAttribute>())
+            : base(new List<TagHelperAttribute>())
         {
         }
 
