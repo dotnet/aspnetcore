@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -16,6 +17,8 @@ namespace Microsoft.AspNetCore.Authentication
         private Task<AuthenticateResult>? _authenticateTask;
 
         public AuthenticationScheme Scheme { get; private set; } = default!;
+
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
         public TOptions Options { get; private set; } = default!;
         protected HttpContext Context { get; private set; } = default!;
 
