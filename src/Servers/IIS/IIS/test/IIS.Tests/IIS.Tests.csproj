@@ -5,6 +5,7 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <InProcessTestSite>true</InProcessTestSite>
+    <SkipTests>true</SkipTests>
   </PropertyGroup>
 
   <Import Project="../FunctionalTest.props" />

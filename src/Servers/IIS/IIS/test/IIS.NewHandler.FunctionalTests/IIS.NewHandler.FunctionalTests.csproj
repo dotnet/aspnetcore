@@ -5,6 +5,8 @@
     <TestGroupName>IISNewHandler.FunctionalTests</TestGroupName>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <SkipTests Condition=" '$(SkipIISNewHandlerTests)' == 'true' ">true</SkipTests>
+    <!-- Unskipping tracked via https://github.com/dotnet/aspnetcore/issues/24695 -->
+    <SkipTests>true</SkipTests>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
