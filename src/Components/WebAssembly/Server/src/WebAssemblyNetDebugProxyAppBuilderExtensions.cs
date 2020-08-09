@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Net;
+using Microsoft.AspNetCore.Components.WebAssembly.Server;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -27,11 +28,12 @@ namespace Microsoft.AspNetCore.Builder
                         requestPath = "/";
                     }
 
-                    // Although we could redirect for every URL we see here, we filter the allowed set
-                    // to ensure this doesn't get misused as some kind of more general redirector
                     switch (requestPath)
                     {
                         case "/":
+                            var targetPickerUi = new TargetPickerUi(debugProxyBaseUrl);
+                            await targetPickerUi.Display(context);
+                            break;
                         case "/ws-proxy":
                             context.Response.Redirect($"{debugProxyBaseUrl}{requestPath}{context.Request.QueryString}");
                             break;

@@ -12,7 +12,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
+namespace Microsoft.AspNetCore.Components.WebAssembly.Server
 {
     public class TargetPickerUi
     {
@@ -23,11 +23,12 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
             IgnoreNullValues = true
         };
 
-        private readonly DebugProxyOptions _options;
+        private readonly string BrowserHost = "http://localhost:9222";
+        private string _debugProxyUrl;
 
-        public TargetPickerUi(DebugProxyOptions options)
+        public TargetPickerUi(string debugProxyUrl)
         {
-            _options = options ?? throw new ArgumentNullException(nameof(options));
+            _debugProxyUrl = debugProxyUrl;
         }
 
         public async Task Display(HttpContext context)
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
             var request = context.Request;
             var targetApplicationUrl = request.Query["url"];
 
-            var debuggerTabsListUrl = $"{_options.BrowserHost}/json";
+            var debuggerTabsListUrl = $"{BrowserHost}/json";
             IEnumerable<BrowserTab> availableTabs;
 
             try
@@ -134,17 +135,17 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
 
         private string GetDevToolsUrlWithProxy(HttpRequest request, BrowserTab tabToDebug)
         {
-            var underlyingV8Endpoint = tabToDebug.WebSocketDebuggerUrl;
-            var proxyEndpoint = GetProxyEndpoint(request, underlyingV8Endpoint);
-            var devToolsUrlAbsolute = new Uri(_options.BrowserHost + tabToDebug.DevtoolsFrontendUrl);
-            var devToolsUrlWithProxy = $"{devToolsUrlAbsolute.Scheme}://{devToolsUrlAbsolute.Authority}{devToolsUrlAbsolute.AbsolutePath}?{proxyEndpoint.Scheme}={proxyEndpoint.Authority}{proxyEndpoint.PathAndQuery}";
+            var underlyingV8Endpoint = new Uri(tabToDebug.WebSocketDebuggerUrl);
+            var proxyEndpoint = new Uri(_debugProxyUrl);
+            var devToolsUrlAbsolute = new Uri(BrowserHost + tabToDebug.DevtoolsFrontendUrl);
+            var devToolsUrlWithProxy = $"{devToolsUrlAbsolute.Scheme}://{devToolsUrlAbsolute.Authority}{devToolsUrlAbsolute.AbsolutePath}?{underlyingV8Endpoint.Scheme}={proxyEndpoint.Authority}{underlyingV8Endpoint.PathAndQuery}";
             return devToolsUrlWithProxy;
         }
 
         private string GetLaunchChromeInstructions(string targetApplicationUrl)
         {
             var profilePath = Path.Combine(Path.GetTempPath(), "blazor-chrome-debug");
-            var debuggerPort = new Uri(_options.BrowserHost).Port;
+            var debuggerPort = new Uri(BrowserHost).Port;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -170,7 +171,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
         private string GetLaunchEdgeInstructions(string targetApplicationUrl)
         {
             var profilePath = Path.Combine(Path.GetTempPath(), "blazor-edge-debug");
-            var debuggerPort = new Uri(_options.BrowserHost).Port;
+            var debuggerPort = new Uri(BrowserHost).Port;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -209,7 +210,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.DebugProxy
         private async Task<IEnumerable<BrowserTab>> GetOpenedBrowserTabs()
         {
             using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
-            var jsonResponse = await httpClient.GetStringAsync($"{_options.BrowserHost}/json");
+            var jsonResponse = await httpClient.GetStringAsync($"{BrowserHost}/json");
             return JsonSerializer.Deserialize<BrowserTab[]>(jsonResponse, JsonOptions);
         }
 

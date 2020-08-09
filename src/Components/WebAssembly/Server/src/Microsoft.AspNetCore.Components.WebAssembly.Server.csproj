@@ -12,6 +12,9 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.NETCore.BrowserDebugHost.Transport" GeneratePathProperty="true"/>
+    <!-- Dependencies needed by DebugProxy. -->
+    <Reference Include= "Newtonsoft.Json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,27 +25,13 @@
     <Compile Include="$(ComponentsSharedSourceRoot)\src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
     <Compile Include="$(SharedSourceRoot)\CommandLineUtils\Utilities\DotNetMuxer.cs" Link="Shared\DotNetMuxer.cs" />
 
-    <!-- Ensure debug proxy is built first, but don't create an actual reference, since we don't want its transitive dependencies. -->
-    <ProjectReference
-      Include="..\..\DebugProxy\src\Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.csproj"
-      ReferenceOutputAssembly="false" />
-
     <Content Include="build\**" Pack="true" PackagePath="build\%(RecursiveDir)%(FileName)%(Extension)" />
   </ItemGroup>
 
   <!-- Emit debug proxy binaries to output directory. This lets us launch it as a separate process while keeping the build output self-contained.  -->
   <Target Name="IncludeDebugProxyBinariesAsContent" BeforeTargets="AssignTargetPaths">
     <ItemGroup>
-      <DebugProxyBinaries Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Components.WebAssembly.DebugProxy\$(Configuration)\$(DefaultNetCoreTargetFramework)\**" />
-
-      <!--
-        For when we're building a package, we use Pack and PackagePath to bundle the debug proxy binaries into 'tools'.
-        Then we have a custom build target that converts these items into content files in consuming projects. We *don't*
-        use PackageCopyToOutput because that creates entries that show up in Solution Explorer in consuming projects.
-
-        For when we're consuming this from source in this repo, we use Link and CopyToOutputDirectory to produce the
-        same effect without having the custom build target.
-      -->
+      <DebugProxyBinaries Include="$(PkgMicrosoft_NETCore_BrowserDebugHost_Transport)\tools\$(DefaultNetCoreTargetFramework)\**" />
       <Content
         Include="@(DebugProxyBinaries)"
         Pack="true"
@@ -50,10 +39,6 @@
         Link="BlazorDebugProxy\%(RecursiveDir)%(FileName)%(Extension)"
         CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
-
-    <Error
-      Text="Debugger proxy files were not found in $(ArtifactsBinDir)Microsoft.AspNetCore.Components.WebAssembly.DebugProxy\$(Configuration)\$(DefaultNetCoreTargetFramework)"
-      Condition="'@(DebugProxyBinaries->Count())' == '0'" />
   </Target>
 
 </Project>
