@@ -108,9 +108,9 @@ namespace Microsoft.AspNetCore.StaticFiles
 <body>
   <section id=""main"">");
             builder.AppendFormat(@"
-    <header><h1>{0} <a href=""/"">/</a>", HtmlEncode(Resources.HtmlDir_IndexOf));
+    <header><h1>{0} <a href=""./"">/</a>", HtmlEncode(Resources.HtmlDir_IndexOf));
 
-            string cumulativePath = "/";
+            string cumulativePath = "./";
             foreach (var segment in requestPath.Value.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 cumulativePath = cumulativePath + segment + "/";
