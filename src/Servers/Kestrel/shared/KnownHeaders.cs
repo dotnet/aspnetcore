@@ -42,6 +42,7 @@ namespace CodeGenerator
                 "Cache-Control",
                 "Connection",
                 "Date",
+                "Grpc-Encoding",
                 "Keep-Alive",
                 "Pragma",
                 "Trailer",
@@ -89,6 +90,8 @@ namespace CodeGenerator
                 "Cookie",
                 "Expect",
                 "From",
+                "Grpc-Accept-Encoding",
+                "Grpc-Timeout",
                 "Host",
                 "If-Match",
                 "If-Modified-Since",
@@ -185,6 +188,8 @@ namespace CodeGenerator
             ResponseTrailers = new[]
             {
                 "ETag",
+                "Grpc-Message",
+                "Grpc-Status"
             }
             .Select((header, index) => new KnownHeader
             {
