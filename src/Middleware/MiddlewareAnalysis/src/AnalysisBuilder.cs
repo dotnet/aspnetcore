@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
             set { InnerBuilder.ApplicationServices = value; }
         }
 
-        public IDictionary<string, object> Properties
+        public IDictionary<string, object?> Properties
         {
             get { return InnerBuilder.Properties; }
         }
@@ -50,9 +50,8 @@ namespace Microsoft.AspNetCore.MiddlewareAnalysis
 
         public IApplicationBuilder Use(Func<RequestDelegate, RequestDelegate> middleware)
         {
-            string middlewareName = string.Empty; // UseMiddleware doesn't work with null params.
-            object middlewareNameObj;
-            if (Properties.TryGetValue(NextMiddlewareName, out middlewareNameObj))
+            string? middlewareName = string.Empty; // UseMiddleware doesn't work with null params.
+            if (Properties.TryGetValue(NextMiddlewareName, out var middlewareNameObj))
             {
                 middlewareName = middlewareNameObj?.ToString();
                 Properties.Remove(NextMiddlewareName);

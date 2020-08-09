@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.HostFiltering
         /// <item><description>IPv6 addresses must include their bounding brackets and be in their normalized form.</description></item>
         /// </list>
         /// </remarks>
-        public IList<string> AllowedHosts { get; set; } = new List<string>();
+        public IList<string>? AllowedHosts { get; set; } = new List<string>();
 
         /// <summary>
         /// Indicates if requests without hosts are allowed. The default is true.
