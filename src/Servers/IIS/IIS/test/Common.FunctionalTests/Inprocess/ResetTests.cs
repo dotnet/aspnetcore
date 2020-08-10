@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class ResetTests : IISFunctionalTestBase
     {
+        private const string WindowsVersionForTrailers = "10.0.20180";
+
         public ResetTests(PublishedSitesFixture fixture) : base(fixture)
         {
         }
@@ -50,6 +52,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         };
 
         [ConditionalFact]
+        [RequiresNewHandler]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
         public async Task AppException_BeforeResponseHeaders_500()
         {
@@ -87,37 +90,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
-        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "This is last version without custom Reset support")]
-        public async Task AppException_AfterHeaders_PriorOSVersions_ResetCancel()
-        {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            await new HostBuilder()
-                .UseHttp2Cat(deploymentResult.ApplicationBaseUri + "AppException_AfterHeaders_PriorOSVersions_ResetCancel", async h2Connection =>
-                {
-                    await h2Connection.InitializeConnectionAsync();
-
-                    h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
-
-                    await h2Connection.StartStreamAsync(1, GetHeaders("/AppException_AfterHeaders_PriorOSVersions_ResetCancel"), endStream: true);
-
-                    await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
-                    {
-                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
-                    });
-
-                    var resetFrame = await h2Connection.ReceiveFrameAsync();
-                    Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, Http2ErrorCode.CANCEL);
-
-                    h2Connection.Logger.LogInformation("Connection stopped.");
-                })
-                .Build().RunAsync();
-        }
-
-        [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Custom Reset support was added in Win10_20H2.")]
+        [RequiresNewHandler]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Custom Reset support was added in Win10_20H2.")]
         public async Task AppException_AfterHeaders_ResetInternalError()
         {
             var deploymentParameters = GetHttpsDeploymentParameters();
@@ -154,6 +128,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresNewHandler]
         public async Task Reset_Http1_NotSupported()
         {
             var deploymentParameters = GetHttpsDeploymentParameters();
@@ -168,6 +143,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresNewHandler]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
         [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "This is last version without Reset support")]
         public async Task Reset_PriorOSVersions_NotSupported()
@@ -179,12 +155,13 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             using HttpClient client = new HttpClient(handler);
             client.DefaultRequestVersion = HttpVersion.Version20;
-            var response = await client.GetStringAsync(deploymentResult.ApplicationBaseUri);
+            var response = await client.GetStringAsync(deploymentResult.ApplicationBaseUri + "Reset_PriorOSVersions_NotSupported");
             Assert.Equal("Hello World", response);
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Reset support was added in Win10_20H2.")]
+        [RequiresNewHandler]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
         public async Task Reset_BeforeResponse_Resets()
         {
             var deploymentParameters = GetHttpsDeploymentParameters();
@@ -213,7 +190,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Reset support was added in Win10_20H2.")]
+        [RequiresNewHandler]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
         public async Task Reset_BeforeResponse_Zero_Resets()
         {
             var deploymentParameters = GetHttpsDeploymentParameters();
@@ -242,7 +220,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Reset support was added in Win10_20H2.")]
+        [RequiresNewHandler]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
         public async Task Reset_AfterResponseHeaders_Resets()
         {
             var deploymentParameters = GetHttpsDeploymentParameters();
@@ -279,7 +258,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Reset support was added in Win10_20H2.")]
+        [RequiresNewHandler]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
         public async Task Reset_DuringResponseBody_Resets()
         {
             var deploymentParameters = GetHttpsDeploymentParameters();
@@ -316,9 +296,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 .Build().RunAsync();
         }
 
-        
+
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Reset support was added in Win10_20H2.")]
+        [RequiresNewHandler]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
         public async Task Reset_BeforeRequestBody_Resets()
         {
             var deploymentParameters = GetHttpsDeploymentParameters();
@@ -345,7 +326,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Reset support was added in Win10_20H2.")]
+        [RequiresNewHandler]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
         public async Task Reset_DuringRequestBody_Resets()
         {
             var deploymentParameters = GetHttpsDeploymentParameters();
