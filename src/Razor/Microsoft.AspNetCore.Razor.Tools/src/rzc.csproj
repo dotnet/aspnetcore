@@ -9,7 +9,7 @@
       In addition, the SDK stamps an exact version of the shared fx to use in all runtimeconfig.json that are contained in the SDK.
       See the discussion here: https://github.com/dotnet/aspnetcore-internal/issues/3201#issuecomment-539631557
     -->
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <OutputType>Exe</OutputType>
     <AssemblyName>rzc</AssemblyName>
 
