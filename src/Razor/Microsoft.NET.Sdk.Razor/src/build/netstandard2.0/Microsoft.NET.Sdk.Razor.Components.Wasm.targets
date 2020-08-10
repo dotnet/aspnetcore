@@ -387,7 +387,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <TrimmerRootDescriptor Include="$(_BlazorTypeGranularTrimmerDescriptorFile)" />
-      <TrimmerRootDescriptor Include="$(MSBuildThisFileDirectory)LinkerWorkaround.xml" />
 
       <FileWrites Include="$(_BlazorTypeGranularTrimmerDescriptorFile)" />
     </ItemGroup>
