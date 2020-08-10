@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         };
 
         [ConditionalFact]
+        [RequiresNewHandler]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
         public async Task AppException_BeforeResponseHeaders_500()
         {
