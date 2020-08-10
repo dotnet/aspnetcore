@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.SignalR
     /// </summary>
     public class HubInvocationContext
     {
-        internal ObjectMethodExecutor ObjectMethodExecutor { get; }
+        internal ObjectMethodExecutor ObjectMethodExecutor { get; } = default!;
 
         /// <summary>
         /// Instantiates a new instance of the <see cref="HubInvocationContext"/> class.

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             _ = ExecuteTimerLoop();
         }
 
-        internal bool TryGetConnection(string id, out HttpConnectionContext connection)
+        internal bool TryGetConnection(string id, [NotNullWhen(true)] out HttpConnectionContext? connection)
         {
             connection = null;
 

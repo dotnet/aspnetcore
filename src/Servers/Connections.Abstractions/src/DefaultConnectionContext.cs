@@ -55,17 +55,17 @@ namespace Microsoft.AspNetCore.Connections
             Application = application;
         }
 
-        public override string? ConnectionId { get; set; }
+        public override string ConnectionId { get; set; }
 
         public override IFeatureCollection Features { get; }
 
         public ClaimsPrincipal? User { get; set; }
 
-        public override IDictionary<object, object?>? Items { get; set; } = new ConnectionItems();
+        public override IDictionary<object, object?> Items { get; set; } = new ConnectionItems();
 
         public IDuplexPipe? Application { get; set; }
 
-        public override IDuplexPipe? Transport { get; set; }
+        public override IDuplexPipe Transport { get; set; } = default!;
 
         public override CancellationToken ConnectionClosed { get; set; }
         public override EndPoint? LocalEndPoint { get; set; }
