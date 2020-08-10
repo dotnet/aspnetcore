@@ -88,7 +88,7 @@ namespace Microsoft.JSInterop
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
         {
             var taskId = Interlocked.Increment(ref _nextPendingTaskId);
-            var tcs = new TaskCompletionSource<TValue>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<TValue>(TaskCreationOptions.RunContinuationsAsynchronously);
             if (cancellationToken != default)
             {
                 _cancellationRegistrations[taskId] = cancellationToken.Register(() =>

@@ -896,7 +896,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 foreach (var xconstraint in x.InlineConstraints)
                 {
                     if (!y.InlineConstraints.Any<InlineConstraint>(
-                        c => string.Equals(c.Constraint, xconstraint.Constraint)))
+                        c => string.Equals(c.Constraint, xconstraint.Constraint, StringComparison.OrdinalIgnoreCase)))
                     {
                         return false;
                     }
