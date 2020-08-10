@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
         // TODO: Remove pInProcessHandler argument
-        public bool IsWebSocketAvailable(IntPtr pInProcessHandler)
+        public bool IsWebSocketAvailable(HandlerSafeHandle pInProcessHandler)
         {
             // Check if the Http upgrade feature is available in IIS.
             // To check this, we can look at the server variable WEBSOCKET_VERSION
@@ -147,7 +147,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
                 }
 
-                var context = server._iisContextFactory.CreateHttpContext(pInProcessHandler);
+                var safehandle = new HandlerSafeHandle(pInProcessHandler);
+                var context = server._iisContextFactory.CreateHttpContext(safehandle);
 
                 ThreadPool.UnsafeQueueUserWorkItem(context, preferLocal: false);
 
@@ -266,7 +267,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 AppContext.TryGetSwitch(Latin1Suppport, out _useLatin1);
             }
 
-            public IISHttpContext CreateHttpContext(IntPtr pInProcessHandler)
+            public IISHttpContext CreateHttpContext(HandlerSafeHandle pInProcessHandler)
             {
                 return new IISHttpContextOfT<T>(_memoryPool, _application, pInProcessHandler, _options, _server, _logger, _useLatin1);
             }
@@ -276,6 +277,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     // Over engineering to avoid allocations...
     internal interface IISContextFactory
     {
-        IISHttpContext CreateHttpContext(IntPtr pInProcessHandler);
+        IISHttpContext CreateHttpContext(HandlerSafeHandle pInProcessHandler);
     }
 }

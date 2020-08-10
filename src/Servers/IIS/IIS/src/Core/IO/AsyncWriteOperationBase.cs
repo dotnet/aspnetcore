@@ -11,11 +11,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
     {
         private const int HttpDataChunkStackLimit = 128; // 16 bytes per HTTP_DATA_CHUNK
 
-        private IntPtr _requestHandler;
+        private HandlerSafeHandle _requestHandler;
         private ReadOnlySequence<byte> _buffer;
         private MemoryHandle[] _handles;
 
-        public void Initialize(IntPtr requestHandler, ReadOnlySequence<byte> buffer)
+        public void Initialize(HandlerSafeHandle requestHandler, ReadOnlySequence<byte> buffer)
         {
             _requestHandler = requestHandler;
             _buffer = buffer;
@@ -114,6 +114,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             return WriteChunks(_requestHandler, nChunks, pDataChunks, out fCompletionExpected);
         }
 
-        protected abstract unsafe int WriteChunks(IntPtr requestHandler, int chunkCount, HttpApiTypes.HTTP_DATA_CHUNK* dataChunks, out bool completionExpected);
+        protected abstract unsafe int WriteChunks(HandlerSafeHandle requestHandler, int chunkCount, HttpApiTypes.HTTP_DATA_CHUNK* dataChunks, out bool completionExpected);
     }
 }

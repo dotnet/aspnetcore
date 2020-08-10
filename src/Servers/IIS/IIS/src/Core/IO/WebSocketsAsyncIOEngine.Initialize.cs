@@ -11,14 +11,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
         {
             private readonly WebSocketsAsyncIOEngine _engine;
 
-            private IntPtr _requestHandler;
+            private HandlerSafeHandle _requestHandler;
 
             public AsyncInitializeOperation(WebSocketsAsyncIOEngine engine)
             {
                 _engine = engine;
             }
 
-            public void Initialize(IntPtr requestHandler)
+            public void Initialize(HandlerSafeHandle requestHandler)
             {
                 _requestHandler = requestHandler;
             }

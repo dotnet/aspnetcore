@@ -1,3 +1,4 @@
+
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
     {
         private readonly object _contextLock;
 
-        private readonly IntPtr _handler;
+        private readonly HandlerSafeHandle _handler;
 
         private bool _isInitialized;
 
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
         private AsyncInitializeOperation _cachedAsyncInitializeOperation;
 
-        public WebSocketsAsyncIOEngine(object contextLock, IntPtr handler)
+        public WebSocketsAsyncIOEngine(object contextLock, HandlerSafeHandle handler)
         {
             _contextLock = contextLock;
             _handler = handler;

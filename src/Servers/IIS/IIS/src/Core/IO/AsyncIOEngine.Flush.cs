@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
         {
             private readonly AsyncIOEngine _engine;
 
-            private IntPtr _requestHandler;
+            private HandlerSafeHandle _requestHandler;
             private bool _moreData;
 
             public AsyncFlushOperation(AsyncIOEngine engine)
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
                 _engine = engine;
             }
 
-            public void Initialize(IntPtr requestHandler, bool moreData)
+            public void Initialize(HandlerSafeHandle requestHandler, bool moreData)
             {
                 _requestHandler = requestHandler;
                 _moreData = moreData;

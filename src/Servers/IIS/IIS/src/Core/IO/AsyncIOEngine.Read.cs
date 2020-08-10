@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
             private MemoryHandle _inputHandle;
 
-            private IntPtr _requestHandler;
+            private HandlerSafeHandle _requestHandler;
 
             private Memory<byte> _memory;
 
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
                 _engine = engine;
             }
 
-            public void Initialize(IntPtr requestHandler, Memory<byte> memory)
+            public void Initialize(HandlerSafeHandle requestHandler, Memory<byte> memory)
             {
                 _requestHandler = requestHandler;
                 _memory = memory;

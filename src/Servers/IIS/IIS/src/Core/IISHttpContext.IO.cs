@@ -272,7 +272,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             _bodyOutput.Abort(reason);
             _streams.Abort(reason);
-            NativeMethods.HttpCloseConnection(_pInProcessHandler);
+            NativeMethods.HttpCloseConnection(_requestNativeHandle);
 
             AbortIO(clientDisconnect: false);
         }
