@@ -50,11 +50,13 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [RequiresNewHandler]
         public async Task ResponseBodyTest_CompleteAsyncWorks()
         {
+            // The app func for CompleteAsync will not finish until CompleteAsync_Completed is sent.
+            // This verifies that the response is sent to the client with CompleteAsync
             var response = await _fixture.Client.GetAsync("/CompleteAsync");
             Assert.True(response.IsSuccessStatusCode);
+
             var response2 = await _fixture.Client.GetAsync("/CompleteAsync_Completed");
             Assert.True(response2.IsSuccessStatusCode);
-
         }
     }
 }

@@ -1324,7 +1324,7 @@ namespace TestSite
             return Task.CompletedTask;
         }
 
-        private TaskCompletionSource<object> _completeAsync = new TaskCompletionSource<object>();
+        private TaskCompletionSource _completeAsync = new TaskCompletionSource();
 
         public async Task CompleteAsync(HttpContext httpContext)
         {
@@ -1334,7 +1334,7 @@ namespace TestSite
 
         public Task CompleteAsync_Completed(HttpContext httpContext)
         {
-            _completeAsync.TrySetResult(null);
+            _completeAsync.TrySetResult();
             return Task.CompletedTask;
         }
 

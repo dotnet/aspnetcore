@@ -182,6 +182,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var deploymentParameters = GetHttpsDeploymentParameters();
             var deploymentResult = await DeployAsync(deploymentParameters);
 
+            // The app func for CompleteAsync will not finish until CompleteAsync_Completed is sent.
+            // This verifies that the response is sent to the client with CompleteAsync
             var response = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_CompleteAsyncNoBody_TrailersSent");
             response.EnsureSuccessStatusCode();
             Assert.Equal(HttpVersion.Version20, response.Version);
@@ -189,6 +191,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             Assert.Equal("TrailerValue", response.TrailingHeaders.GetValues("TrailerName").Single());
 
             var response2 = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_CompleteAsyncNoBody_TrailersSent_Completed");
+            Assert.True(response2.IsSuccessStatusCode);
         }
 
         [ConditionalFact]
@@ -198,6 +201,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var deploymentParameters = GetHttpsDeploymentParameters();
             var deploymentResult = await DeployAsync(deploymentParameters);
 
+            // The app func for CompleteAsync will not finish until CompleteAsync_Completed is sent.
+            // This verifies that the response is sent to the client with CompleteAsync
             var response = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_CompleteAsyncWithBody_TrailersSent");
             response.EnsureSuccessStatusCode();
             Assert.Equal(HttpVersion.Version20, response.Version);
@@ -206,6 +211,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             Assert.Equal("Trailer Value", response.TrailingHeaders.GetValues("TrailerName").Single());
 
             var response2 = await SendRequestAsync(deploymentResult.HttpClient.BaseAddress.ToString() + "ResponseTrailers_CompleteAsyncWithBody_TrailersSent_Completed");
+            Assert.True(response2.IsSuccessStatusCode);
         }
 
         private IISDeploymentParameters GetHttpsDeploymentParameters()

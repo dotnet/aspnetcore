@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             if (ResponsePipeWrapper != null)
             {
-                await ResponsePipeWrapper.CompleteAsync().AsTask();
+                await ResponsePipeWrapper.CompleteAsync();
             }
 
             if (!HasResponseStarted)
@@ -217,8 +217,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             // awaiting the writeBodyTask guarantees the response has finished the final flush.
             _bodyOutput.Complete();
             await _writeBodyTask;
-
-            return;
         }
 
         bool IHttpUpgradeFeature.IsUpgradableRequest => true;
