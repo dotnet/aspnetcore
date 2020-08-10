@@ -6,7 +6,6 @@
 
     <IsPackable>false</IsPackable>
     <IsShipping>false</IsShipping>
-    <DisablePubternalApiCheck>true</DisablePubternalApiCheck>
 
     <UseAppHost>false</UseAppHost>
     <RuntimeIdentifier />
