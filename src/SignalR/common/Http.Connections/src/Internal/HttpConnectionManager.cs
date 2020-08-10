@@ -23,8 +23,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         // TODO: Consider making this configurable? At least for testing?
         private static readonly TimeSpan _heartbeatTickRate = TimeSpan.FromSeconds(1);
 
-        private static readonly RNGCryptoServiceProvider _keyGenerator = new RNGCryptoServiceProvider();
-
         private readonly ConcurrentDictionary<string, (HttpConnectionContext Connection, ValueStopwatch Timer)> _connections =
             new ConcurrentDictionary<string, (HttpConnectionContext Connection, ValueStopwatch Timer)>(StringComparer.Ordinal);
         private readonly TimerAwaitable _nextHeartbeat;
@@ -113,7 +111,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             // 128 bit buffer / 8 bits per byte = 16 bytes
             Span<byte> buffer = stackalloc byte[16];
             // Generate the id with RNGCrypto because we want a cryptographically random id, which GUID is not
-            _keyGenerator.GetBytes(buffer);
+            RandomNumberGenerator.Fill(buffer);
             return WebEncoders.Base64UrlEncode(buffer);
         }
 

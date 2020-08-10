@@ -513,19 +513,7 @@ namespace Microsoft.DotNet.OpenApi.Commands
 
         private static byte[] GetHash(Stream stream)
         {
-            SHA256 algorithm;
-            try
-            {
-                algorithm = SHA256.Create();
-            }
-            catch (TargetInvocationException)
-            {
-                // SHA256.Create is documented to throw this exception on FIPS-compliant machines. See
-                // https://msdn.microsoft.com/en-us/library/z08hz7ad Fall back to a FIPS-compliant SHA256 algorithm.
-                algorithm = new SHA256CryptoServiceProvider();
-            }
-
-            using (algorithm)
+            using (var algorithm = SHA256.Create())
             {
                 return algorithm.ComputeHash(stream);
             }
