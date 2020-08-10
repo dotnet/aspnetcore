@@ -91,37 +91,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalFact]
         [RequiresNewHandler]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason = "Http2 requires Win10")]
-        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "This is last version without custom Reset support")]
-        public async Task AppException_AfterHeaders_PriorOSVersions_ResetCancel()
-        {
-            var deploymentParameters = GetHttpsDeploymentParameters();
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            await new HostBuilder()
-                .UseHttp2Cat(deploymentResult.ApplicationBaseUri + "AppException_AfterHeaders_PriorOSVersions_ResetCancel", async h2Connection =>
-                {
-                    await h2Connection.InitializeConnectionAsync();
-
-                    h2Connection.Logger.LogInformation("Initialized http2 connection. Starting stream 1.");
-
-                    await h2Connection.StartStreamAsync(1, GetHeaders("/AppException_AfterHeaders_PriorOSVersions_ResetCancel"), endStream: true);
-
-                    await h2Connection.ReceiveHeadersAsync(1, decodedHeaders =>
-                    {
-                        Assert.Equal("200", decodedHeaders[HeaderNames.Status]);
-                    });
-
-                    var resetFrame = await h2Connection.ReceiveFrameAsync();
-                    Http2Utilities.VerifyResetFrame(resetFrame, expectedStreamId: 1, Http2ErrorCode.CANCEL);
-
-                    h2Connection.Logger.LogInformation("Connection stopped.");
-                })
-                .Build().RunAsync();
-        }
-
-        [ConditionalFact]
-        [RequiresNewHandler]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Custom Reset support was added in Win10_20H2.")]
         public async Task AppException_AfterHeaders_ResetInternalError()
         {
@@ -186,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             using HttpClient client = new HttpClient(handler);
             client.DefaultRequestVersion = HttpVersion.Version20;
-            var response = await client.GetStringAsync(deploymentResult.ApplicationBaseUri);
+            var response = await client.GetStringAsync(deploymentResult.ApplicationBaseUri + "Reset_PriorOSVersions_NotSupported");
             Assert.Equal("Hello World", response);
         }
 
@@ -327,7 +296,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 .Build().RunAsync();
         }
 
-        
+
         [ConditionalFact]
         [RequiresNewHandler]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
