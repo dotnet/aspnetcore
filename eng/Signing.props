@@ -29,7 +29,7 @@
     <FileExtensionSignInfo Include=".msi" CertificateName="None" />
 
     <!--
-      Use the PublicKeyToken of .NET assemblies to determine with authenticode cert to use.
+      Use the PublicKeyToken of .NET assemblies to determine which authenticode cert to use.
       'None' is required to ensure code signing does not attempt to re-sign them or submit
       to ESPR for strong-naming signing. We don't delay sign, so we only need to authenticode sign.
       See https://github.com/dotnet/arcade/issues/1911 for context.
