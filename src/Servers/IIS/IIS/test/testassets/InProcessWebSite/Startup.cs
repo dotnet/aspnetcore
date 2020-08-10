@@ -1425,6 +1425,32 @@ namespace TestSite
             return Task.CompletedTask;
         }
 
+        public async Task Reset_AfterCompleteAsync_NoReset(HttpContext httpContext)
+        {
+            Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+            var feature = httpContext.Features.Get<IHttpResetFeature>();
+            Assert.NotNull(feature);
+            await httpContext.Response.WriteAsync("Hello World");
+            await httpContext.Response.CompleteAsync();
+            // The request and response are fully complete, the reset doesn't get sent.
+            feature.Reset(1111);
+        }
+
+        public async Task Reset_CompleteAsyncDuringRequestBody_Resets(HttpContext httpContext)
+        {
+            Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+            var feature = httpContext.Features.Get<IHttpResetFeature>();
+            Assert.NotNull(feature);
+
+            var read = await httpContext.Request.Body.ReadAsync(new byte[10], 0, 10);
+            Assert.Equal(10, read);
+
+            var readTask = httpContext.Request.Body.ReadAsync(new byte[10], 0, 10);
+            await httpContext.Response.CompleteAsync();
+            feature.Reset((int)0); // GRPC does this
+            await Assert.ThrowsAsync<IOException>(() => readTask);
+        }
+
         internal static readonly HashSet<(string, StringValues, StringValues)> NullTrailers = new HashSet<(string, StringValues, StringValues)>()
         {
             ("NullString", (string)null, (string)null),
