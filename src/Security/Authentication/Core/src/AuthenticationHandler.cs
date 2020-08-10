@@ -17,8 +17,6 @@ namespace Microsoft.AspNetCore.Authentication
         private Task<AuthenticateResult>? _authenticateTask;
 
         public AuthenticationScheme Scheme { get; private set; } = default!;
-
-        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
         public TOptions Options { get; private set; } = default!;
         protected HttpContext Context { get; private set; } = default!;
 
