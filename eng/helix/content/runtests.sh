@@ -28,6 +28,9 @@ RED="\033[0;31m"
 YELLOW="\033[0;33m"
 MAGENTA="\033[0;95m"
 
+echo "Ensure $DOTNET_ROOT exists: mkdir -p $DOTNET_ROOT"
+mkdir -p $DOTNET_ROOT
+
 echo "Symlink sdk: ln -s $HELIX_CORRELATION_PAYLOAD/dotnet $DOTNET_ROOT/dotnet"
 ln -s $HELIX_CORRELATION_PAYLOAD/dotnet $DOTNET_ROOT/dotnet
 
