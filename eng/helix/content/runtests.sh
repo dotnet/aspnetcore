@@ -75,6 +75,8 @@ fi
 # dontet-install.sh seems to affect the Linux filesystem and causes test flakiness unless we sync the filesystem before running tests
 sync
 
+-ls -la $DOTNET_ROOT
+
 $DOTNET_ROOT/dotnet --list-sdks
 $DOTNET_ROOT/dotnet --list-runtimes
 
