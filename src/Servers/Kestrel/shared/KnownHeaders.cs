@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Http.HPack;
 using System.Text;
 using Microsoft.Net.Http.Headers;
 
@@ -20,14 +21,10 @@ namespace CodeGenerator
         {
             var requestPrimaryHeaders = new[]
             {
-                ":authority",
-                ":method",
-                ":path",
-                ":scheme",
                 "Accept",
                 "Connection",
                 "Host",
-                "User-Agent"
+                "User-Agent",
             };
             var responsePrimaryHeaders = new[]
             {
@@ -218,6 +215,74 @@ namespace CodeGenerator
                 case {byLength.Key}:{AppendSwitchSection(byLength.Key, byLength.OrderBy(h => (h.PrimaryHeader ? "_" : "") + h.Name))}
                     break;")}
             }}";
+
+        static string AppendHPackSwitch(IEnumerable<HPackGroup> values) =>
+             $@"switch (index)
+            {{{Each(values, header => $@"{Each(header.HPackStaticTableIndexes, index => $@"
+                case {index}:")}
+                    {AppendHPackSwitchSection(header)}")}
+            }}";
+
+        static string AppendValue(bool returnTrue = false) =>
+             $@"// Matched a known header
+                if ((_previousBits & flag) != 0)
+                {{
+                    // Had a previous string for this header, mark it as used so we don't clear it OnHeadersComplete or consider it if we get a second header
+                    _previousBits ^= flag;
+
+                    // We will only reuse this header if there was only one previous header
+                    if (values.Count == 1)
+                    {{
+                        var previousValue = values.ToString();
+                        // Check lengths are the same, then if the bytes were converted to an ascii string if they would be the same.
+                        // We do not consider Utf8 headers for reuse.
+                        if (previousValue.Length == value.Length &&
+                            StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, value))
+                        {{
+                            // The previous string matches what the bytes would convert to, so we will just use that one.
+                            _bits |= flag;
+                            return{(returnTrue ? " true" : "")};
+                        }}
+                    }}
+                }}
+
+                // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
+                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
+                if ((_bits & flag) == 0)
+                {{
+                    // We didn't already have a header set, so add a new one.
+                    _bits |= flag;
+                    values = new StringValues(valueStr);
+                }}
+                else
+                {{
+                    // We already had a header set, so concatenate the new one.
+                    values = AppendValue(values, valueStr);
+                }}";
+
+        static string AppendHPackSwitchSection(HPackGroup group)
+        {
+            var header = group.Header;
+            if (header.Identifier == "ContentLength")
+            {
+                return $@"if (ReferenceEquals(EncodingSelector, KestrelServerOptions.DefaultRequestHeaderEncodingSelector))
+                    {{
+                        AppendContentLength(value);
+                    }}
+                    else
+                    {{
+                        AppendContentLengthCustomEncoding(value, EncodingSelector(HeaderNames.ContentLength));
+                    }}
+                    return true;";
+            }
+            else
+            {
+                return $@"flag = {header.FlagBit()};
+                    values = ref _headers._{header.Identifier};
+                    nameStr = HeaderNames.{header.Identifier};
+                    break;";
+            }
+        }
 
         static string AppendSwitchSection(int length, IOrderedEnumerable<KnownHeader> values)
         {
@@ -1012,46 +1077,12 @@ $@"        private void Clear(long bitsToClear)
             ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
             var flag = 0L;
 
-            // Does the name matched any ""known"" headers
+            // Does the name match any ""known"" headers
             {AppendSwitch(loop.Headers.GroupBy(x => x.Name.Length).OrderBy(x => x.Key))}
 
             if (flag != 0)
             {{
-                // Matched a known header
-                if ((_previousBits & flag) != 0)
-                {{
-                    // Had a previous string for this header, mark it as used so we don't clear it OnHeadersComplete or consider it if we get a second header
-                    _previousBits ^= flag;
-
-                    // We will only reuse this header if there was only one previous header
-                    if (values.Count == 1)
-                    {{
-                        var previousValue = values.ToString();
-                        // Check lengths are the same, then if the bytes were converted to an ascii string if they would be the same.
-                        // We do not consider Utf8 headers for reuse.
-                        if (previousValue.Length == value.Length &&
-                            StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, value))
-                        {{
-                            // The previous string matches what the bytes would convert to, so we will just use that one.
-                            _bits |= flag;
-                            return;
-                        }}
-                    }}
-                }}
-
-                // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
-                var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
-                if ((_bits & flag) == 0)
-                {{
-                    // We didn't already have a header set, so add a new one.
-                    _bits |= flag;
-                    values = new StringValues(valueStr);
-                }}
-                else
-                {{
-                    // We already had a header set, so concatenate the new one.
-                    values = AppendValue(values, valueStr);
-                }}
+                {AppendValue()}
             }}
             else
             {{
@@ -1061,6 +1092,27 @@ $@"        private void Clear(long bitsToClear)
                 nameStr = name.GetHeaderName();
                 var valueStr = value.GetRequestHeaderString(nameStr, EncodingSelector);
                 AppendUnknownHeaders(nameStr, valueStr);
+            }}
+        }}
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public unsafe bool TryHPackAppend(int index, ReadOnlySpan<byte> value)
+        {{
+            ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            var nameStr = string.Empty;
+            var flag = 0L;
+
+            // Does the HPack static index match any ""known"" headers
+            {AppendHPackSwitch(GroupHPack(loop.Headers))}
+
+            if (flag != 0)
+            {{
+                {AppendValue(returnTrue: true)}
+                return true;
+            }}
+            else
+            {{
+                return false;
             }}
         }}" : "")}
 
@@ -1116,6 +1168,34 @@ $@"        private void Clear(long bitsToClear)
         }}
     }}
 ")}}}";
+        }
+
+        private class HPackGroup
+        {
+            public int[] HPackStaticTableIndexes { get; set; }
+            public KnownHeader Header { get; set; }
+            public string Name { get; set; }
+        }
+
+        private static IEnumerable<HPackGroup> GroupHPack(KnownHeader[] headers)
+        {
+            var staticHeaders = new (int Index, HeaderField HeaderField)[H2StaticTable.Count];
+            for (var i = 0; i < H2StaticTable.Count; i++)
+            {
+                staticHeaders[i] = (i + 1, H2StaticTable.Get(i));
+            }
+
+            var groupedHeaders = staticHeaders.GroupBy(h => Encoding.ASCII.GetString(h.HeaderField.Name)).Select(g =>
+            {
+                return new HPackGroup
+                {
+                    Name = g.Key,
+                    Header = headers.SingleOrDefault(knownHeader => string.Equals(knownHeader.Name, g.Key, StringComparison.OrdinalIgnoreCase)),
+                    HPackStaticTableIndexes = g.Select(h => h.Index).ToArray()
+                };
+            }).Where(g => g.Header != null).ToList();
+
+            return groupedHeaders;
         }
     }
 }
