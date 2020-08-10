@@ -4,6 +4,7 @@
 package com.microsoft.signalr;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
@@ -68,5 +69,9 @@ class Utils {
         } while (length > 0);
         
         return header;
+    }
+    
+    public static <T> Type getType(Class<T> param) {
+    	return (new TypeReference<T>() {}).getType();
     }
 }

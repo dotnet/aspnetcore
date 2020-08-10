@@ -3,17 +3,18 @@
 
 package com.microsoft.signalr;
 
+import java.lang.reflect.Type;
 import java.util.concurrent.CancellationException;
 
 import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
 
 class InvocationRequest {
-    private final Class<?> returnType;
+    private final TypeAndClass returnType;
     private final Subject<Object> pendingCall = ReplaySubject.create();
     private final String invocationId;
 
-    InvocationRequest(Class<?> returnType, String invocationId) {
+    InvocationRequest(TypeAndClass returnType, String invocationId) {
         this.returnType = returnType;
         this.invocationId = invocationId;
     }
@@ -47,7 +48,7 @@ class InvocationRequest {
         return pendingCall;
     }
 
-    public Class<?> getReturnType() {
+    public TypeAndClass getReturnType() {
         return returnType;
     }
 

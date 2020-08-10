@@ -1,12 +1,13 @@
 package com.microsoft.signalr;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class TestBinder implements InvocationBinder {
-    private Class<?>[] paramTypes = null;
-    private Class<?> returnType = null;
+    private TypeAndClass[] paramTypes = null;
+    private TypeAndClass returnType = null;
 
     public TestBinder(HubMessage expectedMessage) {
         if (expectedMessage == null) {
@@ -15,39 +16,47 @@ public class TestBinder implements InvocationBinder {
 
         switch (expectedMessage.getMessageType()) {
             case STREAM_INVOCATION:
-                ArrayList<Class<?>> streamTypes = new ArrayList<>();
+                ArrayList<TypeAndClass> streamTypes = new ArrayList<>();
                 for (Object obj : ((StreamInvocationMessage) expectedMessage).getArguments()) {
-                    streamTypes.add(obj.getClass());
+                    Type type = getType(obj.getClass());
+                    streamTypes.add(new TypeAndClass(type, obj.getClass()));
                 }
-                paramTypes = streamTypes.toArray(new Class<?>[streamTypes.size()]);
+                paramTypes = streamTypes.toArray(new TypeAndClass[streamTypes.size()]);
                 break;
             case INVOCATION:
-                ArrayList<Class<?>> types = new ArrayList<>();
+                ArrayList<TypeAndClass> types = new ArrayList<>();
                 for (Object obj : ((InvocationMessage) expectedMessage).getArguments()) {
-                    types.add(obj.getClass());
+                    Type type = getType(obj.getClass());
+                    types.add(new TypeAndClass(type, obj.getClass()));
                 }
-                paramTypes = types.toArray(new Class<?>[types.size()]);
+                paramTypes = types.toArray(new TypeAndClass[types.size()]);
                 break;
             case STREAM_ITEM:
                 break;
             case COMPLETION:
-                returnType = ((CompletionMessage)expectedMessage).getResult().getClass();
+                Object obj = ((CompletionMessage)expectedMessage).getResult().getClass();
+                returnType = new TypeAndClass(getType(((CompletionMessage)expectedMessage).getResult().getClass()), 
+                    ((CompletionMessage)expectedMessage).getResult().getClass());
                 break;
             default:
                 break;
         }
     }
+    
+    private <T> Type getType(Class<T> param) {
+        return (new TypeReference<T>() {}).getType();
+    }
 
     @Override
-    public Class<?> getReturnType(String invocationId) {
+    public TypeAndClass getReturnType(String invocationId) {
         return returnType;
     }
 
     @Override
-    public List<Class<?>> getParameterTypes(String methodName) {
+    public List<TypeAndClass> getParameterTypes(String methodName) {
         if (paramTypes == null) {
             return new ArrayList<>();
         }
-        return new ArrayList<Class<?>>(Arrays.asList(paramTypes));
+        return new ArrayList<TypeAndClass>(Arrays.asList(paramTypes));
     }
 }

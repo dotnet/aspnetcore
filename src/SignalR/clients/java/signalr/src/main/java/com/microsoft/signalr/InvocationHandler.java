@@ -7,16 +7,16 @@ import java.util.Arrays;
 import java.util.List;
 
 class InvocationHandler {
-    private final List<Class<?>> classes;
+    private final List<TypeAndClass> types;
     private final ActionBase action;
 
-    InvocationHandler(ActionBase action, Class<?>... classes) {
+    InvocationHandler(ActionBase action, TypeAndClass... types) {
         this.action = action;
-        this.classes = Arrays.asList(classes);
+        this.types = Arrays.asList(types);
     }
 
-    public List<Class<?>> getClasses() {
-        return classes;
+    public List<TypeAndClass> getTypes() {
+        return types;
     }
 
     public ActionBase getAction() {
