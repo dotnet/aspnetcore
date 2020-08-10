@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     // Dispose
                 }
 
-                if (!success && HasResponseStarted && NativeMethods.HttpSupportTrailer(_pInProcessHandler))
+                if (!success && HasResponseStarted && NativeMethods.HttpHasResponse4(_pInProcessHandler))
                 {
                     // HTTP/2 INTERNAL_ERROR = 0x2 https://tools.ietf.org/html/rfc7540#section-7
                     // Otherwise the default is Cancel = 0x8.
