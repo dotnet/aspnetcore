@@ -6,21 +6,21 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
     internal class PreFetchingSequence
     {
-        private readonly Func<long, CancellationToken, Block> _fetchCallback;
+        private readonly Func<long, CancellationToken, EncodedFileChunk> _fetchCallback;
         private readonly long _totalFetchableItems;
         private readonly int _maxBufferCapacity;
-        private readonly Queue<Block> _buffer;
+        private readonly Queue<EncodedFileChunk> _buffer;
         private long _maxFetchedIndex;
 
-        public PreFetchingSequence(Func<long, CancellationToken, Block> fetchCallback, long totalFetchableItems, int maxBufferCapacity)
+        public PreFetchingSequence(Func<long, CancellationToken, EncodedFileChunk> fetchCallback, long totalFetchableItems, int maxBufferCapacity)
         {
             _fetchCallback = fetchCallback;
             _totalFetchableItems = totalFetchableItems;
             _maxBufferCapacity = maxBufferCapacity;
-            _buffer = new Queue<Block>();
+            _buffer = new Queue<EncodedFileChunk>();
         }
 
-        public Block ReadNext(CancellationToken cancellationToken)
+        public EncodedFileChunk ReadNext(CancellationToken cancellationToken)
         {
             EnqueueFetches(cancellationToken);
 
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             return next;
         }
 
-        public bool TryPeekNext(out Block result)
+        public bool TryPeekNext(out EncodedFileChunk result)
         {
             if (_buffer.Count > 0)
             {

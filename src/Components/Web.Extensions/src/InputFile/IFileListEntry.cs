@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// <summary>
         /// Gets the size of the file in bytes.
         /// </summary>
-        int Size { get; }
+        long Size { get; }
 
         /// <summary>
         /// Gets the MIME type of the file.
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// <param name="format">The new image format.</param>
         /// <param name="maxWith">The maximum image width.</param>
         /// <param name="maxHeight">The maximum image height</param>
-        /// <returns></returns>
+        /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
         Task<IFileListEntry> ToImageFileAsync(string format, int maxWith, int maxHeight);
     }
 }

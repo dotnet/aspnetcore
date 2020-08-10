@@ -18,9 +18,9 @@
     string status;
     string imageDataUri;
 
-    async Task HandleSelection(IFileListEntry[] files)
+    async Task HandleSelection(InputFileChangeEventArgs e)
     {
-        var rawFile = files.FirstOrDefault();
+        var rawFile = e.Files.FirstOrDefault();
         if (rawFile != null)
         {
             // Load as an image file in memory

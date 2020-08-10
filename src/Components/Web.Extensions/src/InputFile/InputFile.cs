@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
@@ -18,34 +17,32 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
     {
         private ElementReference _inputFileElement;
 
-        private IJSRuntime _jsRuntime = default!;
-
         private IJSUnmarshalledRuntime? _jsUnmarshalledRuntime;
 
         private InputFileJsCallbacksRelay? _jsCallbacksRelay;
 
         [Inject]
-        private IServiceProvider ServiceProvider { get; set; } = default!;
+        private IJSRuntime JSRuntime { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the event callback that will be invoked when the collection of selected files changes.
         /// </summary>
         [Parameter]
-        public EventCallback<IFileListEntry[]> OnChange { get; set; }
+        public EventCallback<InputFileChangeEventArgs> OnChange { get; set; }
 
         /// <summary>
-        /// Gets or sets the maximum message size for file data sent over a circuit.
+        /// Gets or sets the maximum chunk size for file data sent over a SignalR circuit.
         /// This only has an effect when using Blazor Server.
         /// </summary>
         [Parameter]
-        public int MaxMessageSize { get; set; } = 20 * 1024; // SignalR limit is 32K.
+        public int MaxSignalRChunkSize { get; set; } = 20 * 1024; // SignalR limit is 32K.
 
         /// <summary>
-        /// Gets or sets the maximum internal buffer size for file data sent over a circuit.
+        /// Gets or sets the maximum internal buffer size for unread data sent over a SignalR circuit.
         /// This only has an effect when using Blazor Server.
         /// </summary>
         [Parameter]
-        public int MaxBufferSize { get; set; } = 1024 * 1024;
+        public int MaxUnreadMemoryBufferSize { get; set; } = 1024 * 1024;
 
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be applied to the input element.
@@ -55,8 +52,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
         protected override void OnInitialized()
         {
-            _jsRuntime = ServiceProvider.GetRequiredService<IJSRuntime>();
-            _jsUnmarshalledRuntime = ServiceProvider.GetService<IJSUnmarshalledRuntime>();
+            _jsUnmarshalledRuntime = JSRuntime as IJSUnmarshalledRuntime;
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -64,7 +60,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             if (firstRender)
             {
                 _jsCallbacksRelay = new InputFileJsCallbacksRelay(this);
-                await _jsRuntime.InvokeVoidAsync(InputFileInterop.Init, _jsCallbacksRelay.DotNetReference, _inputFileElement);
+                await JSRuntime.InvokeVoidAsync(InputFileInterop.Init, _jsCallbacksRelay.DotNetReference, _inputFileElement);
             }
         }
 
@@ -79,12 +75,12 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
         internal Stream OpenFileStream(FileListEntry file)
             => _jsUnmarshalledRuntime != null ?
-                (Stream)new SharedMemoryFileListEntryStream(_jsRuntime, _jsUnmarshalledRuntime, _inputFileElement, file) :
-                new RemoteFileListEntryStream(_jsRuntime, _inputFileElement, MaxMessageSize, MaxBufferSize, file);
+                (Stream)new SharedMemoryFileListEntryStream(JSRuntime, _jsUnmarshalledRuntime, _inputFileElement, file) :
+                new RemoteFileListEntryStream(JSRuntime, _inputFileElement, MaxSignalRChunkSize, MaxUnreadMemoryBufferSize, file);
 
         internal async Task<IFileListEntry> ConvertToImageFileAsync(FileListEntry file, string format, int maxWidth, int maxHeight)
         {
-            var imageFile = await _jsRuntime.InvokeAsync<FileListEntry>(InputFileInterop.ToImageFile, _inputFileElement, file.Id, format, maxWidth, maxHeight);
+            var imageFile = await JSRuntime.InvokeAsync<FileListEntry>(InputFileInterop.ToImageFile, _inputFileElement, file.Id, format, maxWidth, maxHeight);
 
             imageFile.Owner = this;
 
@@ -98,7 +94,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
                 file.Owner = this;
             }
 
-            return OnChange.InvokeAsync(files);
+            return OnChange.InvokeAsync(new InputFileChangeEventArgs(files));
         }
 
         void IDisposable.Dispose()

@@ -15,11 +15,11 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
         public int Id { get; set; }
 
-        public string? Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         public DateTime? LastModified { get; set; }
 
-        public int Size { get; set; }
+        public long Size { get; set; }
 
         public string? Type { get; set; }
 
@@ -36,10 +36,11 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
         public event EventHandler? OnDataRead;
 
+        public Stream OpenFileStream()
+            => Owner.OpenFileStream(this);
+
         public Task<IFileListEntry> ToImageFileAsync(string format, int maxWidth, int maxHeight)
-        {
-            return Owner.ConvertToImageFileAsync(this, format, maxWidth, maxHeight);
-        }
+            => Owner.ConvertToImageFileAsync(this, format, maxWidth, maxHeight);
 
         internal void InvokeOnDataRead()
             => OnDataRead?.Invoke(this, EventArgs.Empty);

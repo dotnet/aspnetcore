@@ -51,15 +51,15 @@
 }
 
 @code {
-    IFileListEntry[] selectedFiles;
+    IReadOnlyList<IFileListEntry> selectedFiles;
 
     string fileName;
-    int? fileSize;
+    long? fileSize;
     string content;
 
-    async Task LoadFiles(IFileListEntry[] files)
+    async Task LoadFiles(InputFileChangeEventArgs e)
     {
-        var file = files.FirstOrDefault();
+        var file = e.Files.FirstOrDefault();
         fileName = null;
         fileSize = null;
 
@@ -75,9 +75,9 @@
         }
     }
 
-    void SetSelectedFiles(IFileListEntry[] files)
+    void SetSelectedFiles(InputFileChangeEventArgs e)
     {
-        selectedFiles = files;
+        selectedFiles = e.Files;
     }
 
     async Task LoadFile(IFileListEntry file)
@@ -87,7 +87,7 @@
 
         // Just load into .NET memory to show it can be done
         // Alternatively it could be saved to disk, or parsed in memory, or similar
-        var ms = new MemoryStream();
+        using var ms = new MemoryStream();
         await file.Data.CopyToAsync(ms);
     }
 }
