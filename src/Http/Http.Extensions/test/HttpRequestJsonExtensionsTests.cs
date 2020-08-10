@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
             var result = await context.Request.ReadFromJsonAsync<Dictionary<string, string>>();
 
             // Assert
-            Assert.Equal("激光這兩個字是甚麼意思", result["name"]);
+            Assert.Equal("激光這兩個字是甚麼意思", result!["name"]);
         }
 
         [Fact]
