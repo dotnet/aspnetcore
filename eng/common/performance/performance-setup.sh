@@ -24,6 +24,8 @@ run_from_perf_repo=false
 use_core_run=true
 use_baseline_core_run=true
 using_mono=false
+wasm_runtime_loc=
+using_wasm=false
 
 while (($# > 0)); do
   lowerI="$(echo $1 | awk '{print tolower($0)}')"
@@ -70,7 +72,7 @@ while (($# > 0)); do
       ;;
     --kind)
       kind=$2
-      configurations="CompliationMode=$compilation_mode RunKind=$kind"
+      configurations="CompilationMode=$compilation_mode RunKind=$kind"
       shift 2
       ;;
     --runcategories)
@@ -99,6 +101,10 @@ while (($# > 0)); do
       ;;
     --monodotnet)
       mono_dotnet=$2
+      shift 2
+      ;;
+    --wasm)
+      wasm_runtime_loc=$2
       shift 2
       ;;
     --compare)
@@ -130,6 +136,7 @@ while (($# > 0)); do
       echo "  --runcategories <value>        Related to csproj. Categories of benchmarks to run. Defaults to \"coreclr corefx\""
       echo "  --internal                     If the benchmarks are running as an official job."
       echo "  --monodotnet                   Pass the path to the mono dotnet for mono performance testing."
+      echo "  --wasm                         Path to the unpacked wasm runtime pack."
       echo ""
       exit 0
       ;;
@@ -141,7 +148,7 @@ if [ "$repository" == "dotnet/performance" ] || [ "$repository" == "dotnet-perfo
 fi
 
 if [ -z "$configurations" ]; then
-    configurations="CompliationMode=$compilation_mode"
+    configurations="CompilationMode=$compilation_mode"
 fi
 
 if [ -z "$core_root_directory" ]; then
@@ -191,11 +198,15 @@ if [[ "$mono_dotnet" != "" ]]; then
     configurations="$configurations LLVM=$llvm MonoInterpreter=$monointerpreter MonoAOT=$monoaot"
 fi
 
-if [[ "$monointerpreter" == "true" ]]; then
-    extra_benchmark_dotnet_arguments="--category-exclusion-filter NoInterpreter"
+if [[ "$wasm_runtime_loc" != "" ]]; then
+    configurations="CompilationMode=wasm;RunKind=micro"
 fi
 
-common_setup_arguments="--channel master --queue $queue --build-number $build_number --build-configs $configurations --architecture $architecture"
+if [[ "$monointerpreter" == "true" ]]; then
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoInterpreter"
+fi
+
+common_setup_arguments="--channel master --queue $queue --build-number $build_number --build-configs \"$configurations\" --architecture $architecture"
 setup_arguments="--repository https://github.com/$repository --branch $branch --get-perf-hash --commit-sha $commit_sha $common_setup_arguments"
 
 
@@ -215,6 +226,13 @@ else
     
     docs_directory=$performance_directory/docs
     mv $docs_directory $workitem_directory
+fi
+
+if [[ "$wasm_runtime_loc" != "" ]]; then
+    using_wasm=true
+    wasm_dotnet_path=$payload_directory/dotnet-wasm
+    mv $wasm_runtime_loc $wasm_dotnet_path
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --wasmMainJS \$HELIX_CORRELATION_PAYLOAD/dotnet-wasm/runtime-test.js --wasmEngine /home/helixbot/.jsvu/v8 --customRuntimePack \$HELIX_CORRELATION_PAYLOAD/dotnet-wasm"
 fi
 
 if [[ "$mono_dotnet" != "" ]]; then
@@ -259,3 +277,4 @@ Write-PipelineSetVariable -name "Kind" -value "$kind" -is_multi_job_variable fal
 Write-PipelineSetVariable -name "_BuildConfig" -value "$architecture.$kind.$framework" -is_multi_job_variable false
 Write-PipelineSetVariable -name "Compare" -value "$compare" -is_multi_job_variable false
 Write-PipelineSetVariable -name "MonoDotnet" -value "$using_mono" -is_multi_job_variable false
+Write-PipelineSetVariable -name "WasmDotnet" -value "$using_wasm" -is_multi_job_variable false
