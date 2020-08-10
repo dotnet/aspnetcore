@@ -16,12 +16,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private const string CertificatesKey = "Certificates";
         private const string CertificateKey = "Certificate";
         private const string SslProtocolsKey = "SslProtocols";
+        private const string EndpointDefaultsKey = "EndpointDefaults";
         private const string EndpointsKey = "Endpoints";
         private const string UrlKey = "Url";
         private const string ClientCertificateModeKey = "ClientCertificateMode";
         private const string SniKey = "Sni";
-
-        internal const string EndpointDefaultsKey = "EndpointDefaults";
 
         private readonly IConfiguration _configuration;
 
@@ -131,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             return endpoints;
         }
 
-        private Dictionary<string, SniConfig> ReadSni(IConfigurationSection sniConfig, string endpointName)
+        private static Dictionary<string, SniConfig> ReadSni(IConfigurationSection sniConfig, string endpointName)
         {
             var sniDictionary = new Dictionary<string, SniConfig>(0, StringComparer.OrdinalIgnoreCase);
 
@@ -177,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         }
 
 
-        private ClientCertificateMode? ParseClientCertificateMode(string clientCertificateMode)
+        private static ClientCertificateMode? ParseClientCertificateMode(string clientCertificateMode)
         {
             if (Enum.TryParse<ClientCertificateMode>(clientCertificateMode, ignoreCase: true, out var result))
             {
@@ -211,6 +210,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 return acc;
             });
         }
+
+        internal static void ThrowIfContainsHttpsOnlyConfiguration(EndpointConfig endpoint)
+        {
+            if (endpoint.Certificate.IsFileCert || endpoint.Certificate.IsStoreCert)
+            {
+                throw new InvalidOperationException(CoreStrings.FormatEndpointHasUnusedHttpsConfig(endpoint.Name, CertificateKey));
+            }
+
+            if (endpoint.ClientCertificateMode.HasValue)
+            {
+                throw new InvalidOperationException(CoreStrings.FormatEndpointHasUnusedHttpsConfig(endpoint.Name, ClientCertificateModeKey));
+            }
+
+            if (endpoint.SslProtocols.HasValue)
+            {
+                throw new InvalidOperationException(CoreStrings.FormatEndpointHasUnusedHttpsConfig(endpoint.Name, SslProtocolsKey));
+            }
+
+            if (endpoint.Sni.Count > 0)
+            {
+                throw new InvalidOperationException(CoreStrings.FormatEndpointHasUnusedHttpsConfig(endpoint.Name, SniKey));
+            }
+        }
     }
 
     // "EndpointDefaults": {
@@ -223,7 +245,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public HttpProtocols? Protocols { get; set; }
         public SslProtocols? SslProtocols { get; set; }
         public ClientCertificateMode? ClientCertificateMode { get; set; }
-        public Dictionary<string, SniConfig> Sni { get; set; }
     }
 
     // "EndpointName": {

@@ -629,4 +629,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="SniNameCannotBeEmpty" xml:space="preserve">
     <value>The endpoint {endpointName} is invalid because an SNI configuration section has an empty string as its key. Use a wildcard ('*') SNI section to match all server names.</value>
   </data>
+  <data name="EndpointHasUnusedHttpsConfig" xml:space="preserve">
+    <value>The non-HTTPS endpoint {endpointName} includes HTTPS-only configuration for {keyName}.</value>
+  </data>
 </root>

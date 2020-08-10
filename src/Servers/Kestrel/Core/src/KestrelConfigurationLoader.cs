@@ -295,6 +295,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             {
                 var listenOptions = AddressBinder.ParseAddress(endpoint.Url, out var https);
 
+                if (!https)
+                {
+                    ConfigurationReader.ThrowIfContainsHttpsOnlyConfiguration(endpoint);
+                }
+
                 Options.ApplyEndpointDefaults(listenOptions);
 
                 if (endpoint.Protocols.HasValue)
