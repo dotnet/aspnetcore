@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Security.Authentication.ExtendedProtection;
 using System.Security.Principal;
 using System.Threading;
@@ -339,10 +340,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _requestQueueCache.Value.TryAdd((queueName, uri), queue);
                 Server.RequestQueue.UrlGroup.SetDelegationProperty(queue);
             }
-            Transfer(queue);
+            Transfer(queue, uri);
         }
 
-        internal unsafe void Transfer(RequestQueue queue)
+        internal unsafe void Transfer(RequestQueue queue, string uri)
         {
             Response.Transfer();
             var source = Server.RequestQueue;
@@ -350,28 +351,28 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // Proposed new API to fix queue properties issue
             // will require the url to be passed to DelegateRequestEx
             //
-            //var url = "http://*:80/";
-            //var handle = GCHandle.Alloc(url, GCHandleType.Pinned);
-            //var property = new HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_INFO()
-            //{
-            //    ProperyId = HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_ID.DelegateRequestDelegateUrlProperty,
-            //    PropertyInfo = handle.AddrOfPinnedObject(),
-            //    PropertyInfoLength = (uint)System.Text.Encoding.Unicode.GetByteCount(url)
-            //};
-            //var statusCode = HttpApi.HttpDelegateRequestEx(source.Handle,
-            //                                               queue.Handle,
-            //                                               Request.RequestId,
-            //                                               queue.UrlGroup.Id,
-            //                                               1,
-            //                                               &property);
-            //handle.Free();
-
+            var handle = GCHandle.Alloc(uri, GCHandleType.Pinned);
+            var property = new HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_INFO()
+            {
+                ProperyId = HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_ID.DelegateRequestDelegateUrlProperty,
+                PropertyInfo = handle.AddrOfPinnedObject(),
+                PropertyInfoLength = (uint)System.Text.Encoding.Unicode.GetByteCount(uri)
+            };
             var statusCode = HttpApi.HttpDelegateRequestEx(source.Handle,
                                                            queue.Handle,
                                                            Request.RequestId,
                                                            queue.UrlGroup.Id,
-                                                           0,
-                                                           null);
+                                                           1,
+                                                           &property);
+            handle.Free();
+
+            //var statusCode = HttpApi.HttpDelegateRequestEx(source.Handle,
+            //                                               queue.Handle,
+            //                                               Request.RequestId,
+            //                                               queue.UrlGroup.Id,
+            //                                               0,
+            //                                               null);
+
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
                 throw new HttpSysException((int)statusCode);
