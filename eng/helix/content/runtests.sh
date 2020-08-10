@@ -28,8 +28,8 @@ RED="\033[0;31m"
 YELLOW="\033[0;33m"
 MAGENTA="\033[0;95m"
 
-echo "cp -R $HELIX_CORRELATION_PAYLOAD/dotnet $DOTNET_ROOT"
-cp -R $HELIX_CORRELATION_PAYLOAD/dotnet $DOTNET_ROOT
+echo "Symlink sdk: ln -s $HELIX_CORRELATION_PAYLOAD/dotnet $DOTNET_ROOT/dotnet"
+ln -s $HELIX_CORRELATION_PAYLOAD/dotnet $DOTNET_ROOT/dotnet
 
 curl -o dotnet-install.sh -sSL https://dot.net/v1/dotnet-install.sh
 if [ $? -ne 0 ]; then
