@@ -32,9 +32,8 @@
 
   <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
     <!-- See comments further up in the file when we import the Razor SDK-->
-    <ProjectReference Include="$(RepoRoot)src\Components\WebAssembly\Sdk\src\Microsoft.NET.Sdk.BlazorWebAssembly.csproj"
+    <Reference Include="Microsoft.NET.Sdk.BlazorWebAssembly"
       PrivateAssets="All"
-      IsImplicitlyDefined="true"
       ReferenceOutputAssembly="false"
       SkipGetTargetFrameworkProperties="true"
       UndefineProperties="TargetFramework;TargetFrameworks" />
