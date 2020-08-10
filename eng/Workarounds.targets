@@ -20,7 +20,7 @@
     The web sdk adds an implicit framework reference. This removes it until we can update our build to use framework references.
   -->
   <ItemGroup>
-    <FrameworkReference Remove="Microsoft.AspNetCore.App" />
+    <FrameworkReference Remove="Microsoft.AspNetCore.App" Condition="'$(DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp)' != 'true'" />
     <!-- Required because the Razor SDK will generate attributes -->
     <Reference Include="Microsoft.AspNetCore.Mvc" Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(GenerateRazorAssemblyInfo)' == 'true'" />
   </ItemGroup>

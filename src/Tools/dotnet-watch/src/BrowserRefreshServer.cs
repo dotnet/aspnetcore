@@ -84,7 +84,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
             catch (Exception ex)
             {
-                _reporter.Output($"Refresh server error: {ex}");
+                _reporter.Verbose($"Refresh server error: {ex}");
             }
         }
 
@@ -98,10 +98,9 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             if (_refreshServer != null)
             {
-                await _refreshServer.StopAsync();
                 _refreshServer.Dispose();
             }
-
+            
             _taskCompletionSource.TrySetResult();
         }
     }
