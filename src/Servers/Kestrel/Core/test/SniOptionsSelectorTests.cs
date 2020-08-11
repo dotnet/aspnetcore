@@ -606,7 +606,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new MockCertificateConfigLoader(),
                 new HttpsConnectionAdapterOptions
                 {
-                   ClientCertificateMode = ClientCertificateMode.AllowCertificate
+                    ClientCertificateMode = ClientCertificateMode.AllowCertificate
                 },
                 fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
@@ -640,7 +640,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new MockCertificateConfigLoader(),
                 new HttpsConnectionAdapterOptions
                 {
-                   ClientCertificateMode = ClientCertificateMode.AllowCertificate
+                    ClientCertificateMode = ClientCertificateMode.AllowCertificate
                 },
                 fallbackHttpProtocols: HttpProtocols.Http1AndHttp2,
                 logger: Mock.Of<ILogger<HttpsConnectionMiddleware>>());
@@ -664,8 +664,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // The CipherSuitesPolicy ctor throws a PlatformNotSupportedException on Windows.
-                cipherSuitesPolicy = new CipherSuitesPolicy(new[] { TlsCipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 });
+                try
+                {
+                    // The CipherSuitesPolicy ctor throws a PlatformNotSupportedException on Windows.
+                    cipherSuitesPolicy = new CipherSuitesPolicy(new[] { TlsCipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 });
+                }
+                catch (PlatformNotSupportedException)
+                {
+                    // The CipherSuitesPolicy ctor throws a PlatformNotSupportedException on Ubuntu 16.04.
+                    // I don't know exactly which other distros/versions throw PNEs, but it isn't super relevant to this test,
+                    // so let's just swallow this exception.
+                }
             }
 
             // Set options properties to non-default values to verify they're copied.
@@ -760,7 +769,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private class MockConnectionContext : ConnectionContext
         {
-            public override IDuplexPipe Transport { get => throw new System.NotImplementedException(); set => throw new System.NotImplementedException(); }
+            public override IDuplexPipe Transport { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
             public override string ConnectionId { get; set; } = "MockConnectionId";
             public override IFeatureCollection Features { get; } = new FeatureCollection();
             public override IDictionary<object, object> Items { get; set; } = new Dictionary<object, object>();
