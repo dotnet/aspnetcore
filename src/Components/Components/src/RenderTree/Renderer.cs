@@ -246,7 +246,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// </returns>
         public virtual Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo fieldInfo, EventArgs eventArgs)
         {
-            Console.WriteLine("1");
             Dispatcher.AssertAccess();
 
             if (!_eventBindings.TryGetValue(eventHandlerId, out var callback))
