@@ -147,6 +147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task PING_NoKeepAliveTimeout_DoesNotResetKeepAliveTimeout()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -156,13 +157,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             CreateConnection();
 
-            await InitializeConnectionAsync(_noopApplication);
+            await InitializeConnectionAsync(_echoApplication);
 
             // Connection starts and sets keep alive timeout
             _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Once);
             _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Never);
             _mockTimeoutControl.Verify(c => c.CancelTimeout(), Times.Never);
 
+            // Stream will stay open because it is waiting for request body to end
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
 
             // Starting a stream cancels the keep alive timeout
