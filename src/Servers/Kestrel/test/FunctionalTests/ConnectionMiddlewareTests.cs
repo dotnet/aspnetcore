@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     // Will throw because the exception in the connection adapter will close the connection.
-                    await Assert.ThrowsAsync<IOException>(async () =>
+                    await Assert.ThrowsAnyAsync<IOException>(async () =>
                     {
                         await connection.Send(
                            "POST / HTTP/1.0",
