@@ -73,21 +73,21 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             builder.CloseElement();
         }
 
-        internal Stream OpenFileStream(FileListEntry file)
+        internal Stream OpenReadStream(BrowserFile file)
             => _jsUnmarshalledRuntime != null ?
-                (Stream)new SharedMemoryFileListEntryStream(JSRuntime, _jsUnmarshalledRuntime, _inputFileElement, file) :
-                new RemoteFileListEntryStream(JSRuntime, _inputFileElement, MaxSignalRChunkSize, MaxUnreadMemoryBufferSize, file);
+                (Stream)new SharedBrowserFileStream(JSRuntime, _jsUnmarshalledRuntime, _inputFileElement, file) :
+                new RemoteBrowserFileStream(JSRuntime, _inputFileElement, MaxSignalRChunkSize, MaxUnreadMemoryBufferSize, file);
 
-        internal async Task<IFileListEntry> ConvertToImageFileAsync(FileListEntry file, string format, int maxWidth, int maxHeight)
+        internal async Task<IBrowserFile> ConvertToImageFileAsync(BrowserFile file, string format, int maxWidth, int maxHeight)
         {
-            var imageFile = await JSRuntime.InvokeAsync<FileListEntry>(InputFileInterop.ToImageFile, _inputFileElement, file.Id, format, maxWidth, maxHeight);
+            var imageFile = await JSRuntime.InvokeAsync<BrowserFile>(InputFileInterop.ToImageFile, _inputFileElement, file.Id, format, maxWidth, maxHeight);
 
             imageFile.Owner = this;
 
             return imageFile;
         }
 
-        Task IInputFileJsCallbacks.NotifyChange(FileListEntry[] files)
+        Task IInputFileJsCallbacks.NotifyChange(BrowserFile[] files)
         {
             foreach (var file in files)
             {

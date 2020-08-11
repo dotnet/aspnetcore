@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
-    internal abstract class FileListEntryStream : Stream
+    internal abstract class BrowserFileStream : Stream
     {
         private long _position;
 
-        protected FileListEntry File { get; }
+        protected BrowserFile File { get; }
 
-        protected FileListEntryStream(FileListEntry file)
+        protected BrowserFileStream(BrowserFile file)
         {
             File = file;
         }
@@ -50,9 +50,33 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
         public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            var maxBytesToRead = (int)Math.Min(count, Length - Position);
+            if (buffer == null)
+            {
+                throw new ArgumentNullException(nameof(buffer));
+            }
+            if (offset < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offset), "Expected non-negative value.");
+            }
+            if (count < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(count), "Expected non-negative value.");
+            }
+            if (buffer.Length - offset < count)
+            {
+                throw new ArgumentException(
+                    "Offset and length were out of bounds for the array, or count is greater than " +
+                    "the number of elements from offset to the end of the source collection.");
+            }
 
-            if (maxBytesToRead == 0)
+            int maxBytesToRead = (int)(Length - Position);
+
+            if (maxBytesToRead > count)
+            {
+                maxBytesToRead = count;
+            }
+
+            if (maxBytesToRead <= 0)
             {
                 return 0;
             }
@@ -61,11 +85,9 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
             _position += bytesRead;
 
-            File.InvokeOnDataRead();
-
             return bytesRead;
         }
 
-        protected abstract Task<int> CopyFileDataIntoBuffer(long sourceOffset, byte[] destination, int destinationOffset, int maxBytes, CancellationToken cancellationToken);
+        protected abstract ValueTask<int> CopyFileDataIntoBuffer(long sourceOffset, byte[] destination, int destinationOffset, int maxBytes, CancellationToken cancellationToken);
     }
 }

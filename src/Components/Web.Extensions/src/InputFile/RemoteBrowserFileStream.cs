@@ -8,32 +8,18 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
-    // This class streams data from JS within the existing API limits of IJSRuntime.
-    // To produce good throughput, it prefetches up to buffer_size data from JS
-    // even when the consumer isn't asking for that much data, and does so by making
-    // N parallel requests in parallel (N ~= buffer_size / max_message_size).
-    //
-    // This should be understood as a TEMPORARY way to achieve the desired API and
-    // reasonable performance. Longer term we can surely replace this with something
-    // simpler and cleaner, either:
-    //
-    //  - Extending JS interop to allow streaming responses via SignalR's built-in
-    //    binary streaming support. That should reduce all of this to triviality.
-    //  - Or, failing that, at least use something like System.IO.Pipelines to manage
-    //    the supply/consumption of byte data with less custom code.
-
-    internal class RemoteFileListEntryStream : FileListEntryStream
+    internal class RemoteBrowserFileStream : BrowserFileStream
     {
         private readonly IJSRuntime _jsRuntime;
         private readonly ElementReference _inputFileElement;
         private readonly int _maxChunkSize;
         private readonly PreFetchingSequence _chunkSequence;
+        private readonly byte[] _currentChunkDecodingBuffer;
 
         private EncodedFileChunk? _currentChunk;
-        private byte[] _currentChunkDecodingBuffer;
         private int _currentChunkDecodingBufferConsumedLength;
 
-        public RemoteFileListEntryStream(IJSRuntime jsRuntime, ElementReference inputFileElement, int maxChunkSize, int maxBufferSize, FileListEntry file)
+        public RemoteBrowserFileStream(IJSRuntime jsRuntime, ElementReference inputFileElement, int maxChunkSize, int maxBufferSize, BrowserFile file)
             : base(file)
         {
             _jsRuntime = jsRuntime;
@@ -46,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             _currentChunkDecodingBuffer = new byte[_maxChunkSize];
         }
 
-        protected override async Task<int> CopyFileDataIntoBuffer(long sourceOffset, byte[] destination, int destinationOffset, int maxBytes, CancellationToken cancellationToken)
+        protected override async ValueTask<int> CopyFileDataIntoBuffer(long sourceOffset, byte[] destination, int destinationOffset, int maxBytes, CancellationToken cancellationToken)
         {
             var totalBytesCopied = 0;
 

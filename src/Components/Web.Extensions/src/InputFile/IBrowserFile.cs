@@ -10,17 +10,17 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
     /// <summary>
     /// Represents the data of a file selected from an <see cref="InputFile"/> component.
     /// </summary>
-    public interface IFileListEntry
+    public interface IBrowserFile
     {
         /// <summary>
         /// Gets the name of the file.
         /// </summary>
-        string? Name { get; }
+        string Name { get; }
 
         /// <summary>
         /// Gets the last modified date.
         /// </summary>
-        DateTime? LastModified { get; }
+        DateTime LastModified { get; }
 
         /// <summary>
         /// Gets the size of the file in bytes.
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// <summary>
         /// Gets the MIME type of the file.
         /// </summary>
-        string? Type { get; }
+        string Type { get; }
 
         /// <summary>
         /// Gets the file's path relative to the base directory selected in a directory picker.
@@ -40,14 +40,9 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         string? RelativePath { get; }
 
         /// <summary>
-        /// Gets a stream of the file's data.
+        /// Opens the stream for reading the uploaded file.
         /// </summary>
-        Stream Data { get; }
-
-        /// <summary>
-        /// Called when a chunk of data is read from the file stream.
-        /// </summary>
-        event EventHandler OnDataRead;
+        Stream OpenReadStream();
 
         /// <summary>
         /// Converts the current image file to a new one of the specified file type and maximum file dimensions.
@@ -59,6 +54,6 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// <param name="maxWith">The maximum image width.</param>
         /// <param name="maxHeight">The maximum image height</param>
         /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
-        Task<IFileListEntry> ToImageFileAsync(string format, int maxWith, int maxHeight);
+        Task<IBrowserFile> ToImageFileAsync(string format, int maxWith, int maxHeight);
     }
 }

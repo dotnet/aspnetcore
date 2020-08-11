@@ -14,13 +14,13 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// <summary>
         /// The updated file entries list.
         /// </summary>
-        public IReadOnlyList<IFileListEntry> Files { get; }
+        public IReadOnlyList<IBrowserFile> Files { get; }
 
         /// <summary>
         /// Constructs a new <see cref="InputFileChangeEventArgs"/> instance.
         /// </summary>
         /// <param name="files">The updated file entries list.</param>
-        public InputFileChangeEventArgs(IReadOnlyList<IFileListEntry> files)
+        public InputFileChangeEventArgs(IReadOnlyList<IBrowserFile> files)
         {
             Files = files;
         }

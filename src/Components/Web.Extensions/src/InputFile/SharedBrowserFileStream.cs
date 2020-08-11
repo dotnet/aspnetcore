@@ -7,7 +7,7 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
-    internal class SharedMemoryFileListEntryStream : FileListEntryStream
+    internal class SharedBrowserFileStream : BrowserFileStream
     {
         private readonly IJSRuntime _jsRuntime;
 
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
         private readonly ElementReference _inputFileElement;
 
-        public SharedMemoryFileListEntryStream(IJSRuntime jsRuntime, IJSUnmarshalledRuntime jsUnmarshalledRuntime, ElementReference inputFileElement, FileListEntry file)
+        public SharedBrowserFileStream(IJSRuntime jsRuntime, IJSUnmarshalledRuntime jsUnmarshalledRuntime, ElementReference inputFileElement, BrowserFile file)
             : base(file)
         {
             _jsRuntime = jsRuntime;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             _inputFileElement = inputFileElement;
         }
 
-        protected override async Task<int> CopyFileDataIntoBuffer(long sourceOffset, byte[] destination, int destinationOffset, int maxBytes, CancellationToken cancellationToken)
+        protected override async ValueTask<int> CopyFileDataIntoBuffer(long sourceOffset, byte[] destination, int destinationOffset, int maxBytes, CancellationToken cancellationToken)
         {
             await _jsRuntime.InvokeVoidAsync(InputFileInterop.EnsureArrayBufferReadyForSharedMemoryInterop, cancellationToken, _inputFileElement, File.Id);
 

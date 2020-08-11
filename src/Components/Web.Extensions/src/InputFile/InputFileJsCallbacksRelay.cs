@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         }
 
         [JSInvokable]
-        public Task NotifyChange(FileListEntry[] files)
+        public Task NotifyChange(BrowserFile[] files)
             => _callbacks.NotifyChange(files);
 
         public void Dispose()

@@ -23,7 +23,7 @@
 {
     foreach (var file in selectedFiles)
     {
-        var isLoading = file.Data.Position > 0;
+        bool isLoading = openedFiles.TryGetValue(file, out var fileStream);
 
         <div class="file-row">-->
             <!-- File info -->
@@ -43,7 +43,7 @@
                 }
                 else
                 {
-                    <span>Loaded @((100.0 * file.Data.Position / file.Size).ToString("0"))%</span>
+                    <span>Loading...</span>
                 }
             </button>
         </div>
@@ -51,7 +51,9 @@
 }
 
 @code {
-    IReadOnlyList<IFileListEntry> selectedFiles;
+    IReadOnlyList<IBrowserFile> selectedFiles;
+
+    Dictionary<IBrowserFile, Stream> openedFiles = new Dictionary<IBrowserFile, Stream>();
 
     string fileName;
     long? fileSize;
@@ -67,7 +69,7 @@
         {
             content = "Loading...";
 
-            using var reader = new StreamReader(file.Data);
+            using var reader = new StreamReader(file.OpenReadStream());
 
             content = await reader.ReadToEndAsync();
             fileName = file.Name;
@@ -80,14 +82,17 @@
         selectedFiles = e.Files;
     }
 
-    async Task LoadFile(IFileListEntry file)
+    async Task LoadFile(IBrowserFile file)
     {
-        // So the UI updates to show progress
-        file.OnDataRead += (sender, eventArgs) => InvokeAsync(StateHasChanged);
-
         // Just load into .NET memory to show it can be done
         // Alternatively it could be saved to disk, or parsed in memory, or similar
         using var ms = new MemoryStream();
-        await file.Data.CopyToAsync(ms);
+        using var fileStream = file.OpenReadStream();
+
+        openedFiles[file] = fileStream;
+
+        await fileStream.CopyToAsync(ms);
+
+        openedFiles.Remove(file);
     }
 }
