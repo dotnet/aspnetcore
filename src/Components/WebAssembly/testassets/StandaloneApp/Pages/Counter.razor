@@ -1,4 +1,6 @@
 ﻿@page "/counter"
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Components.Forms
 
 <h1>Counter</h1>
 
@@ -6,11 +8,22 @@
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
+<p>Press enter within this input to trigger the exception:</p>
+
+<EditForm Model=this OnValidSubmit="NavigateToAnotherPage">
+    <input @onblur="@(() => {})" />
+</EditForm>
+
 @code {
     int currentCount = 0;
 
     void IncrementCount()
     {
         currentCount++;
+    }
+
+    void NavigateToAnotherPage()
+    {
+        NavigationManager.NavigateTo("/");
     }
 }

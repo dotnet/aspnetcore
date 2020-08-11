@@ -122,6 +122,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         /// <inheritdoc />
         public override Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo eventFieldInfo, EventArgs eventArgs)
         {
+            Console.WriteLine("3");
             // Be sure we only run one event handler at once. Although they couldn't run
             // simultaneously anyway (there's only one thread), they could run nested on
             // the stack if somehow one event handler triggers another event synchronously.
@@ -136,6 +137,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             // handler is still running (i.e., nested on the stack) -- this doesn't happen
             // in Firefox. Possibly a future version of Chrome may fix this, but even then,
             // it's conceivable that DOM mutation events could trigger this too.
+            Console.WriteLine($"isDispatchingEvent: {isDispatchingEvent}");
+            Console.WriteLine($"eventHandlerId: {eventHandlerId}");
 
             if (isDispatchingEvent)
             {
@@ -177,6 +180,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             }
             catch (Exception ex)
             {
+                Console.WriteLine("here");
                 taskCompletionSource.SetException(ex);
             }
         }
