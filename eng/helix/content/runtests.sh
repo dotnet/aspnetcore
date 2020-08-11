@@ -31,7 +31,7 @@ MAGENTA="\033[0;95m"
 echo "Ensure $DOTNET_ROOT/shared exists: mkdir -p $DOTNET_ROOT/dotnet/shared"
 mkdir -p $DOTNET_ROOT/dotnet/shared
 
-ls -la $HELIX_CORRELATION_PAYLOAD/dotnet
+ls -R $HELIX_CORRELATION_PAYLOAD/dotnet
 
 echo "Symlink sdk: ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/dotnet $DOTNET_ROOT/dotnet/dotnet"
 ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/dotnet $DOTNET_ROOT/dotnet/dotnet
@@ -45,6 +45,8 @@ echo "Symlink sdk: ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/templates $DOTNET_ROO
 ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/templates $DOTNET_ROOT/dotnet/templates
 echo "Symlink sdk/shared/*: cp -s $HELIX_CORRELATION_PAYLOAD/dotnet/shared/* $DOTNET_ROOT/dotnet/shared/"
 cp -s $HELIX_CORRELATION_PAYLOAD/dotnet/shared/* $DOTNET_ROOT/dotnet/shared/
+
+ls -R $DOTNET_ROOT
 
 curl -o dotnet-install.sh -sSL https://dot.net/v1/dotnet-install.sh
 if [ $? -ne 0 ]; then
@@ -87,7 +89,7 @@ fi
 # dontet-install.sh seems to affect the Linux filesystem and causes test flakiness unless we sync the filesystem before running tests
 sync
 
-ls -la $DOTNET_ROOT
+ls -R $DOTNET_ROOT
 
 $DOTNET_ROOT/dotnet --list-sdks
 $DOTNET_ROOT/dotnet --list-runtimes
