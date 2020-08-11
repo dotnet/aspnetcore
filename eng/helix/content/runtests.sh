@@ -31,7 +31,7 @@ MAGENTA="\033[0;95m"
 echo "Ensure $DOTNET_ROOT exists: mkdir -p $DOTNET_ROOT"
 mkdir -p $DOTNET_ROOT
 
-echo "Symlink sdk: ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/sdk $DOTNET_ROOT/dotnet/sdk"
+echo "Symlink sdk: ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/sdk $DOTNET_ROOT/sdk"
 ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/sdk $DOTNET_ROOT/sdk
 
 curl -o dotnet-install.sh -sSL https://dot.net/v1/dotnet-install.sh
