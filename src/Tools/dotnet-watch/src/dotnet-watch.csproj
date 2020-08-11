@@ -10,6 +10,8 @@
     <!-- This package is for internal use only. It contains a CLI which is bundled in the .NET Core SDK. -->
     <IsShippingPackage>false</IsShippingPackage>
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
+    <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
+    <DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>true</DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,8 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore" />
-    <Reference Include="Microsoft.AspNetCore.WebSockets" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
 
     <Reference
       Include="Microsoft.AspNetCore.Watch.BrowserRefresh"
@@ -50,21 +51,6 @@
   <Target Name="PopulateNuspec" BeforeTargets="InitializeStandardNuspecProperties">
     <ItemGroup>
       <None Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Watch.BrowserRefresh\$(Configuration)\netcoreapp3.1\Microsoft.AspNetCore.Watch.BrowserRefresh.dll" Pack="true" PackagePath="middleware"/>
-    </ItemGroup>
-  </Target>
-
-  <Target Name="_FixupRuntimeConfig" BeforeTargets="_GenerateRuntimeConfigurationFilesInputCache">
-    <ItemGroup>
-      <_RuntimeFramework Include="@(RuntimeFramework)" />
-      <RuntimeFramework Remove="@(RuntimeFramework)" />
-      <RuntimeFramework Include="Microsoft.AspNetCore.App" FrameworkName="Microsoft.AspNetCore.App" Version="5.0.0-preview" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="_UndoRuntimeConfigWorkarounds" AfterTargets="GenerateBuildRuntimeConfigurationFiles">
-    <ItemGroup>
-      <RuntimeFramework Remove="@(RuntimeFramework)" />
-      <RuntimeFramework Include="@(_RuntimeFramework)" />
     </ItemGroup>
   </Target>
 
