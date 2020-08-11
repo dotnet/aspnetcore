@@ -1,6 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
-
-  <Import Project="$(RepoRoot)src\Components\WebAssembly\Sdk\src\Sdk\Sdk.props" />
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -25,7 +23,5 @@
   <ItemGroup Condition="'$(BinariesRoot)'!=''">
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.ComponentShim.dll"/>
   </ItemGroup>
-
-  <Import Project="$(RepoRoot)src\Components\WebAssembly\Sdk\src\Sdk\Sdk.targets" />
 
 </Project>

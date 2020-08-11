@@ -1,5 +1,5 @@
 ﻿<Project>
-  <PropertyGroup Condition="'$(UseBlazorWebAssembly)' == 'true'">
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
     <BlazorWebAssemblyJSPath>$(RepoRoot)src\Components\Web.JS\dist\$(Configuration)\blazor.webassembly.js</BlazorWebAssemblyJSPath>
     <BlazorWebAssemblyJSMapPath>$(BlazorWebAssemblyJSPath).map</BlazorWebAssemblyJSMapPath>
 
@@ -12,7 +12,7 @@
     <!-- Add a project dependency without reference output assemblies to enforce build order -->
     <!-- Applying workaround for https://github.com/microsoft/msbuild/issues/2661 and https://github.com/dotnet/sdk/issues/952 -->
     <ProjectReference
-      Condition="'$(UseBlazorWebAssembly)' == 'true' and '$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'"
+      Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' and '$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'"
       Include="$(RepoRoot)src\Components\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
       ReferenceOutputAssemblies="false"
       SkipGetTargetFrameworkProperties="true"
