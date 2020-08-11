@@ -165,7 +165,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/40402")]
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/runtime/issues/40402")]
         public async Task ClientCertificateRequiredConfiguredInCallbackContinuesWhenNoCertificate()
         {
             void ConfigureListenOptions(ListenOptions listenOptions)

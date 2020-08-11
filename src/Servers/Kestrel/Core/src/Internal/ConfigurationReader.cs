@@ -53,18 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         // "EndpointDefaults": {
         //     "Protocols": "Http1AndHttp2",
         //     "SslProtocols": [ "Tls11", "Tls12", "Tls13"],
-        //     "ClientCertificateMode" : "NoCertificate",
-        //     "Sni": {
-        //         "a.example.org": {
-        //             "Certificate": {
-        //                 "Path": "testCertA.pfx",
-        //                 "Password": "testPassword"
-        //             }
-        //         },
-        //         "*.example.org": {
-        //             "Protocols": "Http1",
-        //         }
-        //     }
+        //     "ClientCertificateMode" : "NoCertificate"
         // }
         private EndpointDefaults ReadEndpointDefaults()
         {
