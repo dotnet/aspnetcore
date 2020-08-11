@@ -28,8 +28,8 @@ RED="\033[0;31m"
 YELLOW="\033[0;33m"
 MAGENTA="\033[0;95m"
 
-echo "Ensure $DOTNET_ROOT/shared exists: mkdir -p $DOTNET_ROOT/shared"
-mkdir -p $DOTNET_ROOT/shared
+echo "Ensure $DOTNET_ROOT/shared exists: mkdir -p $DOTNET_ROOT/dotnet/shared"
+mkdir -p $DOTNET_ROOT/dotnet/shared
 
 ls -la $HELIX_CORRELATION_PAYLOAD/dotnet
 
