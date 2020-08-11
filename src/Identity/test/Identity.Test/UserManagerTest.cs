@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var manager = services.BuildServiceProvider().GetRequiredService<UserManager<PocoUser>>();
             Assert.NotNull(manager.PasswordHasher);
             Assert.NotNull(manager.Options);
+            Assert.False(true);
         }
 
         [Fact]
