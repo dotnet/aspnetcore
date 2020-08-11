@@ -377,14 +377,14 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>0f7f38c4fd323b26da10cce95f857f77f0f09b48</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.1.3" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.1.6" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>2d163b87b605fd23ceebfb04484e5ec5f2bffc32</Sha>
     </Dependency>
     <!-- !!! Pin this again once 3.1.8 is released. May need CoherentParentDependency="Microsoft.EntityFrameworkCore" after next extensions build. -->
     <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="3.1.0-rtm.19565.4">
       <Uri>https://github.com/dotnet/Extensions</Uri>
-      <Sha>4e1be2fb546751c773968d7b40ff7f4b62887153</Sha>
+      <Sha>3acd9b0cd16596bad450c82be08780875a73c05c</Sha>
     </Dependency>
     <!--
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
