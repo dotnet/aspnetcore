@@ -43,15 +43,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             Debug.Assert(_context != null);
 
-            builder.OpenRegion(_context.GetHashCode());
-
             builder.OpenComponent<CascadingValue<InputRadioContext>>(0);
+            builder.SetKey(_context);
             builder.AddAttribute(1, "IsFixed", true);
             builder.AddAttribute(2, "Value", _context);
             builder.AddAttribute(3, "ChildContent", ChildContent);
             builder.CloseComponent();
-
-            builder.CloseRegion();
         }
 
         /// <inheritdoc />
