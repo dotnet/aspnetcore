@@ -43,6 +43,10 @@
     <Import Project="$(RepoRoot)src\Components\WebAssembly\Sdk\src\build\net5.0\Microsoft.NET.Sdk.BlazorWebAssembly.props" />
   </ImportGroup>
 
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
+    <BlazorWebAssemblySdkDirectoryRoot>$(ArtifactsBinDir)\Microsoft.NET.Sdk.BlazorWebAssembly\$(Configuration)\sdk-output\</BlazorWebAssemblySdkDirectoryRoot>
+  </PropertyGroup>
+
   <ItemGroup Condition=" '$(IsTestProject)' != 'true' AND '$(DotNetBuildFromSource)' != 'true' ">
     <Reference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" PrivateAssets="All" />
   </ItemGroup>
