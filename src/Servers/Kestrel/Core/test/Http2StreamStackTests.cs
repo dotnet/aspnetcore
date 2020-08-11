@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var streams = new Http2StreamStack(10);
             streams.Push(CreateStream(streamId: 1, expirationTicks: 200));
-            streams.Push(CreateStream(streamId: 2, expirationTicks: 300));
+            streams.Push(CreateStream(streamId: 2, expirationTicks: 250));
 
             streams.RemoveExpired(300);
 
@@ -83,6 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             streams.RemoveExpired(300);
 
             Assert.Equal(0, streams.Count);
+            Assert.Equal(5, streams._array.Length);
             Assert.Equal(default, streams._array[0]);
             Assert.Equal(default, streams._array[1]);
             Assert.Equal(default, streams._array[2]);
