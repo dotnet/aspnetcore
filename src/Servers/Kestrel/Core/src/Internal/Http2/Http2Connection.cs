@@ -72,6 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         internal const int InitialStreamPoolSize = 5;
         internal const int MaxStreamPoolSize = 100;
+        internal const long StreamPoolExpiryTicks = TimeSpan.TicksPerSecond * 5;
 
         public Http2Connection(HttpConnectionContext context)
         {
@@ -217,6 +218,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                     // Call UpdateCompletedStreams() prior to frame processing in order to remove any streams that have exceeded their drain timeouts.
                     UpdateCompletedStreams();
+
+                    if (result.IsCanceled)
+                    {
+                        // Heartbeat will cancel ReadAsync and trigger expiring unused streams from pool.
+                        StreamPool.RemoveExpired(SystemClock.UtcNowTicks);
+                    }
 
                     try
                     {
@@ -647,6 +654,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             if (StreamPool.Count < MaxStreamPoolSize)
             {
+                // This property is used to remove unused streams from the pool
+                stream.DrainExpirationTicks = SystemClock.UtcNowTicks + StreamPoolExpiryTicks;
+
                 StreamPool.Push(stream);
             }
         }
