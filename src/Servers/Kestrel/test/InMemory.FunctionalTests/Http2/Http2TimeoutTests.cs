@@ -178,6 +178,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // Server doesn't reset keep alive timeout because it isn't running
             _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Never);
+
+            // End stream
+            await SendDataAsync(1, _helloWorldBytes, endStream: true);
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 32,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: _helloWorldBytes.Length,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
         }
 
         [Fact]
