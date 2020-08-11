@@ -234,7 +234,7 @@ Furthermore, you can use flags on `build.cmd`/`.sh` to build subsets based on la
 Additional properties can be added as an argument in the form `/property:$name=$value`, or `/p:$name=$value` for short. For example:
 
 ```ps1
-.\build.cmd /p:Configuration=Release
+.\build.cmd -Configuration Release
 ```
 
 Common properties include:
