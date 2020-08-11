@@ -38,7 +38,7 @@
       C# or F# project. For now at least, C# and F# projects should not be referenced when using desktop msbuild.
     -->
     <MSBuild Projects="$(RepoRoot)src\SignalR\clients\ts\FunctionalTests\SignalR.Npm.FunctionalTests.npmproj"
-        Properties="DisableYarnCheck=true"
+        Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
         Targets="_GetPackageVersionInfo"
         SkipNonexistentProjects="false">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
