@@ -28,25 +28,11 @@ RED="\033[0;31m"
 YELLOW="\033[0;33m"
 MAGENTA="\033[0;95m"
 
-echo "Ensure $DOTNET_ROOT/shared exists: mkdir -p $DOTNET_ROOT/dotnet/shared"
-mkdir -p $DOTNET_ROOT/dotnet/shared
+echo "Ensure $DOTNET_ROOT exists: mkdir -p $DOTNET_ROOT"
+mkdir -p $DOTNET_ROOT
 
-ls -R $HELIX_CORRELATION_PAYLOAD/dotnet
-
-echo "Symlink sdk: ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/dotnet $DOTNET_ROOT/dotnet/dotnet"
-ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/dotnet $DOTNET_ROOT/dotnet/dotnet
-echo "Symlink sdk: ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/host $DOTNET_ROOT/dotnet/host"
-ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/host $DOTNET_ROOT/dotnet/host
-echo "Symlink sdk: ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/packs $DOTNET_ROOT/dotnet/packs"
-ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/packs $DOTNET_ROOT/dotnet/packs
 echo "Symlink sdk: ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/sdk $DOTNET_ROOT/dotnet/sdk"
-ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/sdk $DOTNET_ROOT/dotnet/sdk
-echo "Symlink sdk: ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/templates $DOTNET_ROOT/dotnet/templates"
-ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/templates $DOTNET_ROOT/dotnet/templates
-echo "Symlink sdk/shared/*: cp -s $HELIX_CORRELATION_PAYLOAD/dotnet/shared/* $DOTNET_ROOT/dotnet/shared/"
-cp -s $HELIX_CORRELATION_PAYLOAD/dotnet/shared/* $DOTNET_ROOT/dotnet/shared/
-
-ls -R $DOTNET_ROOT
+ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/sdk $DOTNET_ROOT/sdk
 
 curl -o dotnet-install.sh -sSL https://dot.net/v1/dotnet-install.sh
 if [ $? -ne 0 ]; then
@@ -89,7 +75,7 @@ fi
 # dontet-install.sh seems to affect the Linux filesystem and causes test flakiness unless we sync the filesystem before running tests
 sync
 
-ls -R $DOTNET_ROOT
+ls -la $DOTNET_ROOT
 
 $DOTNET_ROOT/dotnet --list-sdks
 $DOTNET_ROOT/dotnet --list-runtimes
