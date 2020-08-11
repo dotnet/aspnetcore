@@ -73,10 +73,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
         internal static extern unsafe uint HttpCloseRequestQueue(IntPtr pReqQueueHandle);
 
-        // TODO: Need to version light-up here
-        [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
-        internal static extern unsafe uint HttpDelegateRequest(SafeHandle pReqQueueHandle, SafeHandle pDelegateQueueHandle, ulong requestId, ulong urlGroupId);
-        // TODO: Need to version light-up here
+        [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, SetLastError = true)]
+        internal static extern bool HttpIsFeatureSupported(HTTP_FEATURE_ID feature);
+
         [DllImport(HTTPAPI, ExactSpelling = true, CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern unsafe uint HttpDelegateRequestEx(SafeHandle pReqQueueHandle, SafeHandle pDelegateQueueHandle, ulong requestId,
             ulong delegateUrlGroupId, ulong propertyInfoSetSize, HTTP_DELEGATE_REQUEST_PROPERTY_INFO* pRequestPropertyBuffer);

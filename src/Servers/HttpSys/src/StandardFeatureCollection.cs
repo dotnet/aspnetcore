@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -27,7 +28,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             { typeof(IHttpMaxRequestBodySizeFeature), _identityFunc },
             { typeof(IHttpBodyControlFeature), _identityFunc },
             { typeof(IHttpSysRequestInfoFeature), _identityFunc },
-            { typeof(IHttpSysRequestTransferFeature), _identityFunc },
             { typeof(IHttpResponseTrailersFeature), ctx => ctx.GetResponseTrailersFeature() },
             { typeof(IHttpResetFeature), ctx => ctx.GetResetFeature() },
         };
@@ -44,6 +44,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _featureFuncLookup[typeof(IHttpUpgradeFeature)] = _identityFunc;
                 // Win8+
                 _featureFuncLookup[typeof(ITlsHandshakeFeature)] = ctx => ctx.GetTlsHandshakeFeature();
+            }
+
+            if (HttpApi.HttpIsFeatureSupported(HttpApiTypes.HTTP_FEATURE_ID.HttpFeatureDelegateEx))
+            {
+                _featureFuncLookup[typeof(IHttpSysRequestTransferFeature)] = _identityFunc;
             }
         }
 

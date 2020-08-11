@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
     public class DelegateTests
     {
         [Fact]
+        [DelegateSupportedCondition]
         public async Task DelegateRequestTest()
         {
             var queueName = Guid.NewGuid().ToString();
@@ -41,6 +42,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [Fact]
+        [DelegateSupportedCondition]
         public async Task DelegateAfterWriteToBodyShouldThrowTest()
         {
             var queueName = Guid.NewGuid().ToString();
@@ -67,6 +69,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [Fact]
+        [DelegateSupportedCondition]
         public async Task WriteToBodyAfterDelegateShouldThrowTest()
         {
             var queueName = Guid.NewGuid().ToString();

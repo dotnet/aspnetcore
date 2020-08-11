@@ -78,6 +78,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             DelegateRequestDelegateUrlProperty
         }
 
+        internal enum HTTP_FEATURE_ID
+        {
+            HttpFeatureUnknown = 0,
+            HttpFeatureResponseTrailers = 1,
+            HttpFeatureApiTimings = 2,
+            HttpFeatureDelegateEx = 3,
+        }
+
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         internal struct HTTP_DELEGATE_REQUEST_PROPERTY_INFO
         {

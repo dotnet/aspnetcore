@@ -366,13 +366,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                                                            &property);
             handle.Free();
 
-            //var statusCode = HttpApi.HttpDelegateRequestEx(source.Handle,
-            //                                               queue.Handle,
-            //                                               Request.RequestId,
-            //                                               queue.UrlGroup.Id,
-            //                                               0,
-            //                                               null);
-
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
                 throw new HttpSysException((int)statusCode);
