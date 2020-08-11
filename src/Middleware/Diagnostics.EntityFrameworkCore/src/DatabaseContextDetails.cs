@@ -8,9 +8,17 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 {
     internal class DatabaseContextDetails
     {
-        public Type Type { get; set; }
-        public bool DatabaseExists { get; set; }
-        public bool PendingModelChanges { get; set; }
-        public IEnumerable<string> PendingMigrations { get; set; }
+        public Type Type { get; }
+        public bool DatabaseExists { get; }
+        public bool PendingModelChanges { get; }
+        public IEnumerable<string> PendingMigrations { get; }
+
+        public DatabaseContextDetails(Type type, bool databaseExists, bool pendingModelChanges, IEnumerable<string> pendingMigrations)
+        {
+            Type = type;
+            DatabaseExists = databaseExists;
+            PendingModelChanges = pendingModelChanges;
+            PendingMigrations = pendingMigrations;
+        }
     }
 }

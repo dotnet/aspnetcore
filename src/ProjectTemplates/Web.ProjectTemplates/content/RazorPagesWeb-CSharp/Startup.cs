@@ -21,8 +21,6 @@ using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 #endif
 using Microsoft.AspNetCore.Builder;
 #if (IndividualLocalAuth)
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 #endif
@@ -70,7 +68,7 @@ namespace Company.WebApplication1
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
 #endif
-            services.AddSingleton<IDeveloperPageExceptionFilter, DatabaseExceptionFilter>();
+            services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 #elif (OrganizationalAuth)

@@ -1,18 +1,19 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests.Helpers;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using System;
-using System.IO;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
+#nullable enable
 namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 {
     public class DatabaseErrorPageTest
@@ -26,13 +27,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 new Exception(),
                 new DatabaseContextDetails[]
                 {
-                    new DatabaseContextDetails
-                    {
-                        Type = typeof(BloggingContext),
-                        DatabaseExists = false,
-                        PendingModelChanges = false,
-                        PendingMigrations = new string[] { }
-                    }
+                    new DatabaseContextDetails(
+                        type: typeof(BloggingContext),
+                        databaseExists: false,
+                        pendingModelChanges: false,
+                        pendingMigrations: new string[] { })
                 },
                 options: options,
                 pathBase: PathString.Empty);
@@ -53,13 +52,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 new Exception(),
                 new DatabaseContextDetails[]
                 {
-                    new DatabaseContextDetails
-                    {
-                        Type = typeof(BloggingContext),
-                        DatabaseExists = false,
-                        PendingModelChanges = false,
-                        PendingMigrations = new string[] { "111_MigrationOne" }
-                    }
+                    new DatabaseContextDetails(
+                        type: typeof(BloggingContext),
+                        databaseExists: false,
+                        pendingModelChanges: false,
+                        pendingMigrations: new string[] { "111_MigrationOne" })
                 },
                 options: options,
                 pathBase: PathString.Empty);
@@ -80,13 +77,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 new Exception(),
                 new DatabaseContextDetails[]
                 {
-                    new DatabaseContextDetails
-                    {
-                        Type = typeof(BloggingContext),
-                        DatabaseExists = true,
-                        PendingModelChanges = false,
-                        PendingMigrations = new string[] { "111_MigrationOne" }
-                    }
+                    new DatabaseContextDetails(
+                        type: typeof(BloggingContext),
+                        databaseExists: true,
+                        pendingModelChanges: false,
+                        pendingMigrations: new string[] { "111_MigrationOne" })
                 },
                 options: options,
                 pathBase: PathString.Empty);
@@ -107,13 +102,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 new Exception(),
                 new DatabaseContextDetails[]
                 {
-                    new DatabaseContextDetails
-                    {
-                        Type = typeof(BloggingContext),
-                        DatabaseExists = true,
-                        PendingModelChanges = true,
-                        PendingMigrations = new string[] { "111_MigrationOne" }
-                    }
+                    new DatabaseContextDetails(
+                        type: typeof(BloggingContext),
+                        databaseExists: true,
+                        pendingModelChanges: true,
+                        pendingMigrations: new string[] { "111_MigrationOne" })
                 },
                 options: options,
                 pathBase: PathString.Empty);
@@ -134,13 +127,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 new Exception(),
                 new DatabaseContextDetails[]
                 {
-                    new DatabaseContextDetails
-                    {
-                        Type = typeof(BloggingContext),
-                        DatabaseExists = true,
-                        PendingModelChanges = true,
-                        PendingMigrations = new string[] { }
-                    }
+                    new DatabaseContextDetails(
+                        type: typeof(BloggingContext),
+                        databaseExists: true,
+                        pendingModelChanges: true,
+                        pendingMigrations: new string[] { })
                 },
                 options: options,
                 pathBase: PathString.Empty);
@@ -161,13 +152,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 new Exception("Something bad happened"),
                 new DatabaseContextDetails[]
                 {
-                    new DatabaseContextDetails
-                    {
-                        Type = typeof(BloggingContext),
-                        DatabaseExists = false,
-                        PendingModelChanges = false,
-                        PendingMigrations = new string[] { }
-                    }
+                    new DatabaseContextDetails(
+                        type: typeof(BloggingContext),
+                        databaseExists: false,
+                        pendingModelChanges: false,
+                        pendingMigrations: new string[] { })
                 },
                 options: options,
                 pathBase: PathString.Empty);
@@ -186,13 +175,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 new Exception("Something bad happened", new Exception("Because something more badder happened")),
                 new DatabaseContextDetails[]
                 {
-                    new DatabaseContextDetails
-                    {
-                        Type = typeof(BloggingContext),
-                        DatabaseExists = false,
-                        PendingModelChanges = false,
-                        PendingMigrations = new string[] { }
-                    }
+                    new DatabaseContextDetails(
+                        type: typeof(BloggingContext),
+                        databaseExists: false,
+                        pendingModelChanges: false,
+                        pendingMigrations: new string[] { })
                 },
                 options: options,
                 pathBase: PathString.Empty);
@@ -213,13 +200,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 new Exception(),
                 new DatabaseContextDetails[]
                 {
-                    new DatabaseContextDetails
-                    {
-                        Type = typeof(BloggingContext),
-                        DatabaseExists = true,
-                        PendingModelChanges = false,
-                        PendingMigrations = new string[] { "111_MigrationOne" }
-                    }
+                    new DatabaseContextDetails(
+                        type: typeof(BloggingContext),
+                        databaseExists: true,
+                        pendingModelChanges: false,
+                        pendingMigrations: new string[] { "111_MigrationOne" })
                 },
                 options: options,
                 pathBase: PathString.Empty);
@@ -239,13 +224,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 new Exception(),
                 new DatabaseContextDetails[]
                 {
-                    new DatabaseContextDetails
-                    {
-                        Type = typeof(BloggingContext),
-                        DatabaseExists = true,
-                        PendingModelChanges = false,
-                        PendingMigrations = new string[] { "111_MigrationOne" }
-                    }
+                    new DatabaseContextDetails(
+                        type: typeof(BloggingContext),
+                        databaseExists: true,
+                        pendingModelChanges: false,
+                        pendingMigrations: new string[] { "111_MigrationOne" })
                 },
                 options: options,
                 pathBase: "/PathBase");
@@ -276,5 +259,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
 
         }
-    }
 }
+}
+#nullable disable

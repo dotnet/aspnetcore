@@ -18,8 +18,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 #if (IndividualLocalAuth)
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 #endif
@@ -124,7 +122,7 @@ namespace BlazorServerWeb_CSharp
 #endif
 #if (IndividualLocalAuth)
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
-            services.AddSingleton<IDeveloperPageExceptionFilter, DatabaseExceptionFilter>();
+            services.AddDatabaseDeveloperPageExceptionFilter();
 #endif
             services.AddSingleton<WeatherForecastService>();
         }

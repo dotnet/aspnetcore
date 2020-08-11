@@ -1,8 +1,6 @@
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
@@ -122,7 +120,7 @@ namespace MusicStore
                 options.ClientSecret = "GaMQ2hCnqAC6EcDLnXsAeBVIJOLmeutL";
             });
 
-            services.AddSingleton<IDeveloperPageExceptionFilter, DatabaseExceptionFilter>();
+            services.AddDatabaseDeveloperPageExceptionFilter();
         }
 
         //This method is invoked when ASPNETCORE_ENVIRONMENT is 'Development' or is not defined

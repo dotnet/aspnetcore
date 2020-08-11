@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         ///     consumes them to detect database related exception.
         /// </param>
         /// <param name="options">The options to control what information is displayed on the error page.</param>
-        [Obsolete("This is obsolete and will be removed in a future version. Use DatabaseExceptionFilter instead.")]
+        [Obsolete("This is obsolete and will be removed in a future version. Use DatabaseDeveloperPageExceptionFilter instead, see documentation at https://aka.ms/DatabaseDeveloperPageExceptionFilter.")]
         public DatabaseErrorPageMiddleware(
             RequestDelegate next,
             ILoggerFactory loggerFactory,
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             {
                 // Because CallContext is cloned at each async operation we cannot
                 // lazily create the error object when an error is encountered, otherwise
-                // it will not be available to code outside of the current async context. 
+                // it will not be available to code outside of the current async context.
                 // We create it ahead of time so that any cloning just clones the reference
                 // to the object that will hold any errors.
 
