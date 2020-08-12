@@ -18,12 +18,33 @@ namespace Microsoft.AspNetCore.Mvc
     {
         /// <summary>
         /// Initializes a new instance of <see cref="SignInResult"/> with the
+        /// default authentication scheme.
+        /// </summary>
+        /// <param name="principal">The claims principal containing the user claims.</param>
+        public SignInResult(ClaimsPrincipal principal)
+            : this(authenticationScheme: null, principal, properties: null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="SignInResult"/> with the
         /// specified authentication scheme.
         /// </summary>
         /// <param name="authenticationScheme">The authentication scheme to use when signing in the user.</param>
         /// <param name="principal">The claims principal containing the user claims.</param>
         public SignInResult(string authenticationScheme, ClaimsPrincipal principal)
             : this(authenticationScheme, principal, properties: null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="SignInResult"/> with the
+        /// default authentication scheme and <paramref name="properties"/>.
+        /// </summary>
+        /// <param name="principal">The claims principal containing the user claims.</param>
+        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
+        public SignInResult(ClaimsPrincipal principal, AuthenticationProperties properties)
+            : this(authenticationScheme: null, principal, properties)
         {
         }
 
@@ -36,8 +57,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
         public SignInResult(string authenticationScheme, ClaimsPrincipal principal, AuthenticationProperties properties)
         {
-            AuthenticationScheme = authenticationScheme ?? throw new ArgumentNullException(nameof(authenticationScheme));
             Principal = principal ?? throw new ArgumentNullException(nameof(principal));
+            AuthenticationScheme = authenticationScheme;
             Properties = properties;
         }
 

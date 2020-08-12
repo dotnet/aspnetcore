@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,9 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly HubDispatcher<THub> _dispatcher;
         private readonly bool _enableDetailedErrors;
         private readonly long? _maximumMessageSize;
+
+        // Internal for testing
+        internal ISystemClock SystemClock { get; set; } = new SystemClock();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HubConnectionHandler{THub}"/> class.
@@ -60,22 +64,37 @@ namespace Microsoft.AspNetCore.SignalR
             _userIdProvider = userIdProvider;
 
             _enableDetailedErrors = false;
+
+            List<IHubFilter> hubFilters = null;
             if (_hubOptions.UserHasSetValues)
             {
                 _maximumMessageSize = _hubOptions.MaximumReceiveMessageSize;
                 _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
+
+                if (_hubOptions.HubFilters != null)
+                {
+                    hubFilters = new List<IHubFilter>();
+                    hubFilters.AddRange(_hubOptions.HubFilters);
+                }
             }
             else
             {
                 _maximumMessageSize = _globalHubOptions.MaximumReceiveMessageSize;
                 _enableDetailedErrors = _globalHubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
+
+                if (_globalHubOptions.HubFilters != null)
+                {
+                    hubFilters = new List<IHubFilter>();
+                    hubFilters.AddRange(_globalHubOptions.HubFilters);
+                }
             }
 
             _dispatcher = new DefaultHubDispatcher<THub>(
                 serviceScopeFactory,
                 new HubContext<THub>(lifetimeManager),
                 _enableDetailedErrors,
-                new Logger<DefaultHubDispatcher<THub>>(loggerFactory));
+                new Logger<DefaultHubDispatcher<THub>>(loggerFactory),
+                hubFilters);
         }
 
         /// <inheritdoc />
@@ -98,6 +117,7 @@ namespace Microsoft.AspNetCore.SignalR
                 ClientTimeoutInterval = _hubOptions.ClientTimeoutInterval ?? _globalHubOptions.ClientTimeoutInterval ?? HubOptionsSetup.DefaultClientTimeoutInterval,
                 StreamBufferCapacity = _hubOptions.StreamBufferCapacity ?? _globalHubOptions.StreamBufferCapacity ?? HubOptionsSetup.DefaultStreamBufferCapacity,
                 MaximumReceiveMessageSize = _maximumMessageSize,
+                SystemClock = SystemClock,
             };
 
             Log.ConnectedStarting(_logger);
@@ -119,6 +139,8 @@ namespace Microsoft.AspNetCore.SignalR
             }
             finally
             {
+                connectionContext.Cleanup();
+
                 Log.ConnectedEnding(_logger);
                 await _lifetimeManager.OnDisconnectedAsync(connectionContext);
             }
@@ -160,7 +182,7 @@ namespace Microsoft.AspNetCore.SignalR
                 return;
             }
 
-            await HubOnDisconnectedAsync(connection, null);
+            await HubOnDisconnectedAsync(connection, connection.CloseException);
         }
 
         private async Task HubOnDisconnectedAsync(HubConnectionContext connection, Exception exception)
@@ -222,8 +244,6 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 var result = await input.ReadAsync();
                 var buffer = result.Buffer;
-
-                connection.ResetClientTimeout();
 
                 try
                 {

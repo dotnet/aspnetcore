@@ -9,7 +9,6 @@
       We do need to pack it so it can be picked up by the Web SDK.
     -->
     <IsShippingPackage>false</IsShippingPackage>
-    <IsPackable>true</IsPackable>
 
     <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>

@@ -12,6 +12,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
+    using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
+
     internal class IISHttpContextOfT<TContext> : IISHttpContext
     {
         private readonly IHttpApplication<TContext> _application;
@@ -55,6 +57,13 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 {
                     await FireOnStarting();
                     // Dispose
+                }
+
+                if (!success && HasResponseStarted && NativeMethods.HttpSupportTrailer(_pInProcessHandler))
+                {
+                    // HTTP/2 INTERNAL_ERROR = 0x2 https://tools.ietf.org/html/rfc7540#section-7
+                    // Otherwise the default is Cancel = 0x8.
+                    SetResetCode(2);
                 }
 
                 if (_onCompleted != null)

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <returns>The <see cref="AuthenticateResult"/>.</returns>
-        public static Task<AuthenticateResult> AuthenticateAsync(this HttpContext context, string scheme) =>
+        public static Task<AuthenticateResult> AuthenticateAsync(this HttpContext context, string? scheme) =>
             context.RequestServices.GetRequiredService<IAuthenticationService>().AuthenticateAsync(context, scheme);
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <returns>The result.</returns>
-        public static Task ChallengeAsync(this HttpContext context, string scheme) =>
+        public static Task ChallengeAsync(this HttpContext context, string? scheme) =>
             context.ChallengeAsync(scheme, properties: null);
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
         /// <returns>The task.</returns>
-        public static Task ChallengeAsync(this HttpContext context, AuthenticationProperties properties) =>
+        public static Task ChallengeAsync(this HttpContext context, AuthenticationProperties? properties) =>
             context.ChallengeAsync(scheme: null, properties: properties);
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
         /// <returns>The task.</returns>
-        public static Task ChallengeAsync(this HttpContext context, string scheme, AuthenticationProperties properties) =>
+        public static Task ChallengeAsync(this HttpContext context, string? scheme, AuthenticationProperties? properties) =>
             context.RequestServices.GetRequiredService<IAuthenticationService>().ChallengeAsync(context, scheme, properties);
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <returns>The task.</returns>
-        public static Task ForbidAsync(this HttpContext context, string scheme) =>
+        public static Task ForbidAsync(this HttpContext context, string? scheme) =>
             context.ForbidAsync(scheme, properties: null);
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
         /// <returns>The task.</returns>
-        public static Task ForbidAsync(this HttpContext context, AuthenticationProperties properties) =>
+        public static Task ForbidAsync(this HttpContext context, AuthenticationProperties? properties) =>
             context.ForbidAsync(scheme: null, properties: properties);
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
         /// <returns>The task.</returns>
-        public static Task ForbidAsync(this HttpContext context, string scheme, AuthenticationProperties properties) =>
+        public static Task ForbidAsync(this HttpContext context, string? scheme, AuthenticationProperties? properties) =>
             context.RequestServices.GetRequiredService<IAuthenticationService>().ForbidAsync(context, scheme, properties);
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="principal">The user.</param>
         /// <returns>The task.</returns>
-        public static Task SignInAsync(this HttpContext context, string scheme, ClaimsPrincipal principal) =>
+        public static Task SignInAsync(this HttpContext context, string? scheme, ClaimsPrincipal principal) =>
             context.SignInAsync(scheme, principal, properties: null);
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="principal">The user.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
         /// <returns>The task.</returns>
-        public static Task SignInAsync(this HttpContext context, ClaimsPrincipal principal, AuthenticationProperties properties) =>
+        public static Task SignInAsync(this HttpContext context, ClaimsPrincipal principal, AuthenticationProperties? properties) =>
             context.SignInAsync(scheme: null, principal: principal, properties: properties);
 
         /// <summary>
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="principal">The user.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
         /// <returns>The task.</returns>
-        public static Task SignInAsync(this HttpContext context, string scheme, ClaimsPrincipal principal, AuthenticationProperties properties) =>
+        public static Task SignInAsync(this HttpContext context, string? scheme, ClaimsPrincipal principal, AuthenticationProperties? properties) =>
             context.RequestServices.GetRequiredService<IAuthenticationService>().SignInAsync(context, scheme, principal, properties);
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
         /// <returns>The task.</returns>
-        public static Task SignOutAsync(this HttpContext context, AuthenticationProperties properties) => context.SignOutAsync(scheme: null, properties: properties);
+        public static Task SignOutAsync(this HttpContext context, AuthenticationProperties? properties) => context.SignOutAsync(scheme: null, properties: properties);
 
         /// <summary>
         /// Extension method for SignOut.
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <returns>The task.</returns>
-        public static Task SignOutAsync(this HttpContext context, string scheme) => context.SignOutAsync(scheme, properties: null);
+        public static Task SignOutAsync(this HttpContext context, string? scheme) => context.SignOutAsync(scheme, properties: null);
 
         /// <summary>
         /// Extension method for SignOut.
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
         /// <returns>The task.</returns>
-        public static Task SignOutAsync(this HttpContext context, string scheme, AuthenticationProperties properties) =>
+        public static Task SignOutAsync(this HttpContext context, string? scheme, AuthenticationProperties? properties) =>
             context.RequestServices.GetRequiredService<IAuthenticationService>().SignOutAsync(context, scheme, properties);
 
         /// <summary>
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="scheme">The name of the authentication scheme.</param>
         /// <param name="tokenName">The name of the token.</param>
         /// <returns>The value of the token.</returns>
-        public static Task<string> GetTokenAsync(this HttpContext context, string scheme, string tokenName) =>
+        public static Task<string?> GetTokenAsync(this HttpContext context, string? scheme, string tokenName) =>
             context.RequestServices.GetRequiredService<IAuthenticationService>().GetTokenAsync(context, scheme, tokenName);
 
         /// <summary>
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <param name="tokenName">The name of the token.</param>
         /// <returns>The value of the token.</returns>
-        public static Task<string> GetTokenAsync(this HttpContext context, string tokenName) =>
+        public static Task<string?> GetTokenAsync(this HttpContext context, string tokenName) =>
             context.RequestServices.GetRequiredService<IAuthenticationService>().GetTokenAsync(context, tokenName);
     }
 }

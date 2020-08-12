@@ -5,6 +5,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
@@ -29,6 +30,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Theory]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23643")]
         [InlineData("capturing_lambda")]
         [InlineData("unbound_lambda")]
         [InlineData("unbound_lambda_nested")]

@@ -1,6 +1,6 @@
 import { DefaultReconnectDisplay } from "../src/Platform/Circuits/DefaultReconnectDisplay";
-import {JSDOM} from 'jsdom';
-import { NullLogger} from '../src/Platform/Logging/Loggers';
+import { JSDOM } from 'jsdom';
+import { NullLogger } from '../src/Platform/Logging/Loggers';
 
 describe('DefaultReconnectDisplay', () => {
 
@@ -14,9 +14,16 @@ describe('DefaultReconnectDisplay', () => {
         expect(element).toBeDefined();
         expect(element!.id).toBe('test-dialog-id');
         expect(element!.style.display).toBe('block');
+        expect(element!.style.visibility).toBe('hidden');
 
         expect(display.message.textContent).toBe('Attempting to reconnect to the server...');
         expect(display.button.style.display).toBe('none');
+
+        // Visibility changes asynchronously to allow animation
+        return new Promise(resolve => setTimeout(() => {
+            expect(element!.style.visibility).toBe('visible');
+            resolve();
+        }, 1));
     });
 
     it ('does not add element to the body multiple times', () => {

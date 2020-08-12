@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             MatcherAssert.AssertMatch(httpContext, endpoint2, ignoreValues: true);
         }
 
-        [Fact] // See https://github.com/aspnet/AspNetCore/issues/6415
+        [Fact] // See https://github.com/dotnet/aspnetcore/issues/6415
         public async Task NotMatch_HttpMethod_Returns405Endpoint_ReExecute()
         {
             // Arrange

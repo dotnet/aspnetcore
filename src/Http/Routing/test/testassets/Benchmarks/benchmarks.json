@@ -7,7 +7,7 @@
       "PipelineDepth": 16
     },
     "Source": {
-      "Repository": "https://github.com/aspnet/AspNetCore.git",
+      "Repository": "https://github.com/dotnet/aspnetcore.git",
       "BranchOrCommit": "master",
       "Project": "src/Routing/benchmarkapps/Benchmarks/Benchmarks.csproj"
     },

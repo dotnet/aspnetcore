@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.DataProtection;
 
 namespace Microsoft.AspNetCore.Authentication
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Authentication
             return Protect(data, purpose: null);
         }
 
-        public string Protect(TData data, string purpose)
+        public string Protect(TData data, string? purpose)
         {
             var userData = _serializer.Serialize(data);
 
@@ -35,12 +36,14 @@ namespace Microsoft.AspNetCore.Authentication
             return Base64UrlTextEncoder.Encode(protectedData);
         }
 
+        [return: MaybeNull]
         public TData Unprotect(string protectedText)
         {
             return Unprotect(protectedText, purpose: null);
         }
 
-        public TData Unprotect(string protectedText, string purpose)
+        [return: MaybeNull]
+        public TData Unprotect(string protectedText, string? purpose)
         {
             try
             {

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -25,6 +26,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 using HttpFeatures = Microsoft.AspNetCore.Http.Features;
 
@@ -67,6 +69,11 @@ namespace TestSite
         {
             var serverAddresses = ctx.RequestServices.GetService<IServer>().Features.Get<IServerAddressesFeature>();
             await ctx.Response.WriteAsync(string.Join(",", serverAddresses.Addresses));
+        }
+
+        private async Task CheckProtocol(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync(ctx.Request.Protocol);
         }
 
         private async Task ConsoleWrite(HttpContext ctx)
@@ -142,6 +149,12 @@ namespace TestSite
             }
 
             File.WriteAllText(System.IO.Path.Combine(hostingEnv.ContentRootPath, "Started.txt"), "");
+            return Task.CompletedTask;
+        }
+
+        public Task ConnectionClose(HttpContext context)
+        {
+            context.Response.Headers["connection"] = "close";
             return Task.CompletedTask;
         }
 
@@ -931,7 +944,7 @@ namespace TestSite
         public Task HttpsHelloWorld(HttpContext ctx) =>
            ctx.Response.WriteAsync("Scheme:" + ctx.Request.Scheme + "; Original:" + ctx.Request.Headers["x-original-proto"]);
 
-                   public Task Path(HttpContext ctx) => ctx.Response.WriteAsync(ctx.Request.Path.Value);
+        public Task Path(HttpContext ctx) => ctx.Response.WriteAsync(ctx.Request.Path.Value);
 
         public Task Query(HttpContext ctx) => ctx.Response.WriteAsync(ctx.Request.QueryString.Value);
 
@@ -967,7 +980,7 @@ namespace TestSite
         }
 
         public Task UpgradeFeatureDetection(HttpContext context) =>
-            context.Response.WriteAsync(context.Features.Get<IHttpUpgradeFeature>() != null? "Enabled": "Disabled");
+            context.Response.WriteAsync(context.Features.Get<IHttpUpgradeFeature>() != null ? "Enabled" : "Disabled");
 
         public Task CheckRequestHandlerVersion(HttpContext context)
         {
@@ -978,7 +991,7 @@ namespace TestSite
             {
                 File.Delete(context.Request.Headers["ANCMRHPath"]);
             }
-            catch(UnauthorizedAccessException)
+            catch (UnauthorizedAccessException)
             {
                 // TODO calling delete on the file will succeed when running with IIS
                 return context.Response.WriteAsync("Hello World");
@@ -1019,5 +1032,330 @@ namespace TestSite
             Assert.Equal("�", value);
             return Task.CompletedTask;
         }
+
+#if !FORWARDCOMPAT
+        public Task ResponseTrailers_HTTP2_TrailersAvailable(HttpContext context)
+        {
+            Assert.Equal("HTTP/2", context.Request.Protocol);
+            Assert.True(context.Response.SupportsTrailers());
+            return Task.FromResult(0);
+        }
+
+        public Task ResponseTrailers_HTTP1_TrailersNotAvailable(HttpContext context)
+        {
+            Assert.Equal("HTTP/1.1", context.Request.Protocol);
+            Assert.False(context.Response.SupportsTrailers());
+            return Task.FromResult(0);
+        }
+
+        public Task ResponseTrailers_ProhibitedTrailers_Blocked(HttpContext context)
+        {
+            Assert.True(context.Response.SupportsTrailers());
+            foreach (var header in DisallowedTrailers)
+            {
+                Assert.Throws<InvalidOperationException>(() => context.Response.AppendTrailer(header, "value"));
+            }
+            return Task.FromResult(0);
+        }
+
+        public Task ResponseTrailers_NoBody_TrailersSent(HttpContext context)
+        {
+            context.Response.DeclareTrailer("trailername");
+            context.Response.AppendTrailer("trailername", "TrailerValue");
+            return Task.FromResult(0);
+        }
+
+        public async Task ResponseTrailers_WithBody_TrailersSent(HttpContext context)
+        {
+            await context.Response.WriteAsync("Hello World");
+            context.Response.AppendTrailer("TrailerName", "Trailer Value");
+        }
+
+        public async Task ResponseTrailers_WithContentLengthBody_TrailersSent(HttpContext context)
+        {
+            var body = "Hello World";
+            context.Response.ContentLength = body.Length;
+            await context.Response.WriteAsync(body);
+            context.Response.AppendTrailer("TrailerName", "Trailer Value");
+        }
+
+        public async Task ResponseTrailers_WithTrailersBeforeContentLengthBody_TrailersSent(HttpContext context)
+        {
+            var body = "Hello World";
+            context.Response.ContentLength = body.Length * 2;
+            await context.Response.WriteAsync(body);
+            context.Response.AppendTrailer("TrailerName", "Trailer Value");
+            await context.Response.WriteAsync(body);
+        }
+
+        public async Task ResponseTrailers_WithContentLengthBodyAndDeclared_TrailersSent(HttpContext context)
+        {
+            var body = "Hello World";
+            context.Response.ContentLength = body.Length;
+            context.Response.DeclareTrailer("TrailerName");
+            await context.Response.WriteAsync(body);
+            context.Response.AppendTrailer("TrailerName", "Trailer Value");
+        }
+
+        public async Task ResponseTrailers_WithContentLengthBodyAndDeclaredButMissingTrailers_Completes(HttpContext context)
+        {
+            var body = "Hello World";
+            context.Response.ContentLength = body.Length;
+            context.Response.DeclareTrailer("TrailerName");
+            await context.Response.WriteAsync(body);
+        }
+
+        public Task ResponseTrailers_MultipleValues_SentAsSeparateHeaders(HttpContext context)
+        {
+            context.Response.AppendTrailer("trailername", new StringValues(new[] { "TrailerValue0", "TrailerValue1" }));
+            return Task.FromResult(0);
+        }
+
+        public Task ResponseTrailers_LargeTrailers_Success(HttpContext context)
+        {
+            var values = new[] {
+                new string('a', 1024),
+                new string('b', 1024 * 4),
+                new string('c', 1024 * 8),
+                new string('d', 1024 * 16),
+                new string('e', 1024 * 32),
+                new string('f', 1024 * 64 - 1) }; // Max header size
+
+            context.Response.AppendTrailer("ThisIsALongerHeaderNameThatStillWorksForReals", new StringValues(values));
+            return Task.FromResult(0);
+        }
+
+        public Task ResponseTrailers_NullValues_Ignored(HttpContext context)
+        {
+            foreach (var kvp in NullTrailers)
+            {
+                context.Response.AppendTrailer(kvp.Item1, kvp.Item2);
+            }
+
+            return Task.FromResult(0);
+        }
+
+        public Task AppException_BeforeResponseHeaders_500(HttpContext context)
+        {
+            throw new Exception("Application exception");
+        }
+
+        public async Task AppException_AfterHeaders_PriorOSVersions_ResetCancel(HttpContext httpContext)
+        {
+            await httpContext.Response.Body.FlushAsync();
+            throw new Exception("Application exception");
+        }
+
+        public async Task AppException_AfterHeaders_ResetInternalError(HttpContext httpContext)
+        {
+            await httpContext.Response.Body.FlushAsync();
+            throw new Exception("Application exception");
+        }
+
+        public Task Reset_PriorOSVersions_NotSupported(HttpContext httpContext)
+        {
+            Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+            var feature = httpContext.Features.Get<IHttpResetFeature>();
+            Assert.Null(feature);
+            return httpContext.Response.WriteAsync("Hello World");
+        }
+
+        public Task Reset_Http1_NotSupported(HttpContext httpContext)
+        {
+            Assert.Equal("HTTP/1.1", httpContext.Request.Protocol);
+            var feature = httpContext.Features.Get<IHttpResetFeature>();
+            Assert.Null(feature);
+            return httpContext.Response.WriteAsync("Hello World");
+        }
+
+        private TaskCompletionSource<object> _resetBeforeResponseResetsCts = new TaskCompletionSource<object>();
+        public Task Reset_BeforeResponse_Resets(HttpContext httpContext)
+        {
+            try
+            {
+                Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+                var feature = httpContext.Features.Get<IHttpResetFeature>();
+                Assert.NotNull(feature);
+                feature.Reset(1111); // Custom
+                _resetBeforeResponseResetsCts.SetResult(0);
+            }
+            catch (Exception ex)
+            {
+                _resetBeforeResponseResetsCts.SetException(ex);
+            }
+            return Task.FromResult(0);
+        }
+
+        public async Task Reset_BeforeResponse_Resets_Complete(HttpContext httpContext)
+        {
+            await _resetBeforeResponseResetsCts.Task;
+        }
+
+        private TaskCompletionSource<object> _resetBeforeResponseZeroResetsCts = new TaskCompletionSource<object>();
+        public Task Reset_BeforeResponse_Zero_Resets(HttpContext httpContext)
+        {
+            try
+            {
+                Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+                var feature = httpContext.Features.Get<IHttpResetFeature>();
+                Assert.NotNull(feature);
+                feature.Reset(0); // Zero should be an allowed errorCode
+                _resetBeforeResponseZeroResetsCts.SetResult(0);
+            }
+            catch (Exception ex)
+            {
+                _resetBeforeResponseZeroResetsCts.SetException(ex);
+            }
+            return Task.FromResult(0);
+        }
+
+        public async Task Reset_BeforeResponse_Resets_Zero_Complete(HttpContext httpContext)
+        {
+            await _resetBeforeResponseZeroResetsCts.Task;
+        }
+
+        private TaskCompletionSource<object> _resetAfterResponseHeadersResetsCts = new TaskCompletionSource<object>();
+
+        public async Task Reset_AfterResponseHeaders_Resets(HttpContext httpContext)
+        {
+            try
+            {
+                Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+                var feature = httpContext.Features.Get<IHttpResetFeature>();
+                Assert.NotNull(feature);
+                await httpContext.Response.Body.FlushAsync();
+                feature.Reset(1111); // Custom
+                _resetAfterResponseHeadersResetsCts.SetResult(0);
+            }
+            catch (Exception ex)
+            {
+                _resetAfterResponseHeadersResetsCts.SetException(ex);
+            }
+        }
+        public async Task Reset_AfterResponseHeaders_Resets_Complete(HttpContext httpContext)
+        {
+            await _resetAfterResponseHeadersResetsCts.Task;
+        }
+
+        private TaskCompletionSource<object> _resetDuringResponseBodyResetsCts = new TaskCompletionSource<object>();
+
+        public async Task Reset_DuringResponseBody_Resets(HttpContext httpContext)
+        {
+            try
+            {
+                Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+                var feature = httpContext.Features.Get<IHttpResetFeature>();
+                Assert.NotNull(feature);
+                await httpContext.Response.WriteAsync("Hello World");
+                await httpContext.Response.Body.FlushAsync();
+                feature.Reset(1111); // Custom
+                _resetDuringResponseBodyResetsCts.SetResult(0);
+            }
+            catch (Exception ex)
+            {
+                _resetDuringResponseBodyResetsCts.SetException(ex);
+            }
+        }
+
+        public async Task Reset_DuringResponseBody_Resets_Complete(HttpContext httpContext)
+        {
+            await _resetDuringResponseBodyResetsCts.Task;
+        }
+
+        private TaskCompletionSource<object> _resetBeforeRequestBodyResetsCts = new TaskCompletionSource<object>();
+
+        public async Task Reset_BeforeRequestBody_Resets(HttpContext httpContext)
+        {
+            try
+            {
+                Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+                var feature = httpContext.Features.Get<IHttpResetFeature>();
+                Assert.NotNull(feature);
+                var readTask = httpContext.Request.Body.ReadAsync(new byte[10], 0, 10);
+
+                feature.Reset(1111);
+
+                await Assert.ThrowsAsync<IOException>(() => readTask);
+
+                _resetBeforeRequestBodyResetsCts.SetResult(0);
+            }
+            catch (Exception ex)
+            {
+                _resetBeforeRequestBodyResetsCts.SetException(ex);
+            }
+        }
+
+        public async Task Reset_BeforeRequestBody_Resets_Complete(HttpContext httpContext)
+        {
+            await _resetBeforeRequestBodyResetsCts.Task;
+        }
+
+        private TaskCompletionSource<object> _resetDuringRequestBodyResetsCts = new TaskCompletionSource<object>();
+
+        public async Task Reset_DuringRequestBody_Resets(HttpContext httpContext)
+        {
+            try
+            {
+                Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+                var feature = httpContext.Features.Get<IHttpResetFeature>();
+                Assert.NotNull(feature);
+
+                var read = await httpContext.Request.Body.ReadAsync(new byte[10], 0, 10);
+                Assert.Equal(10, read);
+
+                var readTask = httpContext.Request.Body.ReadAsync(new byte[10], 0, 10);
+                feature.Reset(1111);
+                await Assert.ThrowsAsync<IOException>(() => readTask);
+
+                _resetDuringRequestBodyResetsCts.SetResult(0);
+            }
+            catch (Exception ex)
+            {
+                _resetDuringRequestBodyResetsCts.SetException(ex);
+            }
+        }
+
+        public async Task Reset_DuringRequestBody_Resets_Complete(HttpContext httpContext)
+        {
+            await _resetDuringRequestBodyResetsCts.Task;
+        }
+
+        internal static readonly HashSet<(string, StringValues, StringValues)> NullTrailers = new HashSet<(string, StringValues, StringValues)>()
+        {
+            ("NullString", (string)null, (string)null),
+            ("EmptyString", "", ""),
+            ("NullStringArray", new string[] { null }, ""),
+            ("EmptyStringArray", new string[] { "" }, ""),
+            ("MixedStringArray", new string[] { null, "" }, new string[] { "", "" }),
+            ("WithValidStrings", new string[] { null, "Value", "" }, new string[] { "", "Value", "" })
+        };
+
+        // https://tools.ietf.org/html/rfc7230#section-4.1.2
+        internal static readonly HashSet<string> DisallowedTrailers = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            // Message framing headers.
+            HeaderNames.TransferEncoding, HeaderNames.ContentLength,
+
+            // Routing headers.
+            HeaderNames.Host,
+
+            // Request modifiers: controls and conditionals.
+            // rfc7231#section-5.1: Controls.
+            HeaderNames.CacheControl, HeaderNames.Expect, HeaderNames.MaxForwards, HeaderNames.Pragma, HeaderNames.Range, HeaderNames.TE,
+
+            // rfc7231#section-5.2: Conditionals.
+            HeaderNames.IfMatch, HeaderNames.IfNoneMatch, HeaderNames.IfModifiedSince, HeaderNames.IfUnmodifiedSince, HeaderNames.IfRange,
+
+            // Authentication headers.
+            HeaderNames.WWWAuthenticate, HeaderNames.Authorization, HeaderNames.ProxyAuthenticate, HeaderNames.ProxyAuthorization, HeaderNames.SetCookie, HeaderNames.Cookie,
+
+            // Response control data.
+            // rfc7231#section-7.1: Control Data.
+            HeaderNames.Age, HeaderNames.Expires, HeaderNames.Date, HeaderNames.Location, HeaderNames.RetryAfter, HeaderNames.Vary, HeaderNames.Warning,
+
+            // Content-Encoding, Content-Type, Content-Range, and Trailer itself.
+            HeaderNames.ContentEncoding, HeaderNames.ContentType, HeaderNames.ContentRange, HeaderNames.Trailer
+        };
+#endif
     }
 }

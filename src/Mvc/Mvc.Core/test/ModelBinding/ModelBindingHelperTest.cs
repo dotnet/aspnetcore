@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -490,7 +490,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(
@@ -570,7 +570,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviders = new IModelBinderProvider[]
             {
                 new SimpleTypeModelBinderProvider(),
-                new ComplexTypeModelBinderProvider(),
+                new ComplexObjectModelBinderProvider(),
             };
 
             var validator = new DataAnnotationsModelValidatorProvider(

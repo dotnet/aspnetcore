@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
             var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
             {
                 [_action] = RemoteAuthenticationActions.LogInCallback,
-                [_onLogInSucceded] = new EventCallbackFactory().Create< RemoteAuthenticationState>(
+                [_onLogInSucceded] = new EventCallbackFactory().Create<RemoteAuthenticationState>(
                     remoteAuthenticator,
                     (state) => loggingSucceededCalled = true),
             });

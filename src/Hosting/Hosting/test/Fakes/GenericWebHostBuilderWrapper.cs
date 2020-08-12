@@ -73,5 +73,11 @@ namespace Microsoft.AspNetCore.Hosting.Tests.Fakes
             _builder.UseStartup(startupType);
             return this;
         }
+
+        public IWebHostBuilder UseStartup<TStartup>(Func<WebHostBuilderContext, TStartup> startupFactory)
+        {
+            _builder.UseStartup(startupFactory);
+            return this;
+        }
     }
 }

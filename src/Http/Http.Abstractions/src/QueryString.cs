@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.Extensions.Primitives;
@@ -19,37 +20,29 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         public static readonly QueryString Empty = new QueryString(string.Empty);
 
-        private readonly string _value;
-
         /// <summary>
         /// Initialize the query string with a given value. This value must be in escaped and delimited format with
         /// a leading '?' character. 
         /// </summary>
         /// <param name="value">The query string to be assigned to the Value property.</param>
-        public QueryString(string value)
+        public QueryString(string? value)
         {
             if (!string.IsNullOrEmpty(value) && value[0] != '?')
             {
                 throw new ArgumentException("The leading '?' must be included for a non-empty query.", nameof(value));
             }
-            _value = value;
+            Value = value;
         }
 
         /// <summary>
         /// The escaped query string with the leading '?' character
         /// </summary>
-        public string Value
-        {
-            get { return _value; }
-        }
+        public string? Value { get; }
 
         /// <summary>
         /// True if the query string is not empty
         /// </summary>
-        public bool HasValue
-        {
-            get { return !string.IsNullOrEmpty(_value); }
-        }
+        public bool HasValue => !string.IsNullOrEmpty(Value);
 
         /// <summary>
         /// Provides the query string escaped in a way which is correct for combining into the URI representation. 
@@ -71,7 +64,7 @@ namespace Microsoft.AspNetCore.Http
         public string ToUriComponent()
         {
             // Escape things properly so System.Uri doesn't mis-interpret the data.
-            return HasValue ? _value.Replace("#", "%23") : string.Empty;
+            return !string.IsNullOrEmpty(Value) ? Value!.Replace("#", "%23") : string.Empty;
         }
 
         /// <summary>
@@ -134,10 +127,10 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="parameters"></param>
         /// <returns>The resulting QueryString</returns>
-        public static QueryString Create(IEnumerable<KeyValuePair<string, string>> parameters)
+        public static QueryString Create(IEnumerable<KeyValuePair<string, string?>> parameters)
         {
             var builder = new StringBuilder();
-            bool first = true;
+            var first = true;
             foreach (var pair in parameters)
             {
                 AppendKeyValuePair(builder, pair.Key, pair.Value, first);
@@ -155,7 +148,7 @@ namespace Microsoft.AspNetCore.Http
         public static QueryString Create(IEnumerable<KeyValuePair<string, StringValues>> parameters)
         {
             var builder = new StringBuilder();
-            bool first = true;
+            var first = true;
 
             foreach (var pair in parameters)
             {
@@ -179,17 +172,17 @@ namespace Microsoft.AspNetCore.Http
 
         public QueryString Add(QueryString other)
         {
-            if (!HasValue || Value.Equals("?", StringComparison.Ordinal))
+            if (!HasValue || Value!.Equals("?", StringComparison.Ordinal))
             {
                 return other;
             }
-            if (!other.HasValue || other.Value.Equals("?", StringComparison.Ordinal))
+            if (!other.HasValue || other.Value!.Equals("?", StringComparison.Ordinal))
             {
                 return this;
             }
 
             // ?name1=value1 Add ?name2=value2 returns ?name1=value1&name2=value2
-            return new QueryString(_value + "&" + other.Value.Substring(1));
+            return new QueryString(Value + "&" + other.Value.Substring(1));
         }
 
         public QueryString Add(string name, string value)
@@ -199,7 +192,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(name));
             }
 
-            if (!HasValue || Value.Equals("?", StringComparison.Ordinal))
+            if (!HasValue || Value!.Equals("?", StringComparison.Ordinal))
             {
                 return Create(name, value);
             }
@@ -215,10 +208,10 @@ namespace Microsoft.AspNetCore.Http
             {
                 return true;
             }
-            return string.Equals(_value, other._value, StringComparison.Ordinal);
+            return string.Equals(Value, other.Value, StringComparison.Ordinal);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(null, obj))
             {
@@ -229,7 +222,7 @@ namespace Microsoft.AspNetCore.Http
 
         public override int GetHashCode()
         {
-            return (HasValue ? _value.GetHashCode() : 0);
+            return (HasValue ? Value!.GetHashCode() : 0);
         }
 
         public static bool operator ==(QueryString left, QueryString right)
@@ -247,7 +240,7 @@ namespace Microsoft.AspNetCore.Http
             return left.Add(right);
         }
 
-        private static void AppendKeyValuePair(StringBuilder builder, string key, string value, bool first)
+        private static void AppendKeyValuePair(StringBuilder builder, string key, string? value, bool first)
         {
             builder.Append(first ? "?" : "&");
             builder.Append(UrlEncoder.Default.Encode(key));

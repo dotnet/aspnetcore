@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Builder
     public static class WebAssemblyNetDebugProxyAppBuilderExtensions
     {
         /// <summary>
-        /// Adds middleware for needed for debugging Blazor WebAssembly applications
+        /// Adds middleware needed for debugging Blazor WebAssembly applications
         /// inside Chromium dev tools.
         /// </summary>
         public static void UseWebAssemblyDebugging(this IApplicationBuilder app)

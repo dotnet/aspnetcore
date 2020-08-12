@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <summary>
         /// The reason-phrase as defined in RFC 7230. Note this field is no longer supported by HTTP/2.
         /// </summary>
-        string ReasonPhrase { get; set; }
+        string? ReasonPhrase { get; set; }
 
         /// <summary>
         /// The response headers to send. Headers with multiple values will be emitted as multiple headers.

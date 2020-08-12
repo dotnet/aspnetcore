@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         private readonly SyncPoint _sync;
-        private readonly TaskCompletionSource<object> _accepted = new TaskCompletionSource<object>();
+        private readonly TaskCompletionSource _accepted = new TaskCompletionSource();
 
         public bool IsWebSocketRequest => true;
 
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             Client = clientSocket;
             SubProtocol = context.SubProtocol;
 
-            _accepted.TrySetResult(null);
+            _accepted.TrySetResult();
             return Task.FromResult<WebSocket>(serverSocket);
         }
 

@@ -13,22 +13,22 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class ValidationMessage<TValue> : ComponentBase, IDisposable
     {
-        private EditContext _previousEditContext;
-        private Expression<Func<TValue>> _previousFieldAccessor;
-        private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
+        private EditContext? _previousEditContext;
+        private Expression<Func<TValue>>? _previousFieldAccessor;
+        private readonly EventHandler<ValidationStateChangedEventArgs>? _validationStateChangedHandler;
         private FieldIdentifier _fieldIdentifier;
 
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be applied to the created <c>div</c> element.
         /// </summary>
-        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> AdditionalAttributes { get; set; }
+        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
-        [CascadingParameter] EditContext CurrentEditContext { get; set; }
+        [CascadingParameter] EditContext CurrentEditContext { get; set; } = default!;
 
         /// <summary>
         /// Specifies the field for which validation messages should be displayed.
         /// </summary>
-        [Parameter] public Expression<Func<TValue>> For { get; set; }
+        [Parameter] public Expression<Func<TValue>>? For { get; set; }
 
         /// <summary>`
         /// Constructs an instance of <see cref="ValidationMessage{TValue}"/>.
@@ -78,11 +78,6 @@ namespace Microsoft.AspNetCore.Components.Forms
                 builder.AddContent(3, message);
                 builder.CloseElement();
             }
-        }
-
-        private void HandleValidationStateChanged(object sender, ValidationStateChangedEventArgs eventArgs)
-        {
-            StateHasChanged();
         }
 
         protected virtual void Dispose(bool disposing)

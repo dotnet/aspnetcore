@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             // Assert
             Assert.False(result.Succeeded);
             Assert.True(result.IsLockedOut);
-            Assert.Contains($"User {user.Id} is currently locked out.", logger.LogMessages);
+            Assert.Contains($"User is currently locked out.", logger.LogMessages);
             manager.Verify();
         }
 
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             // Assert
             Assert.False(result.Succeeded);
             Assert.True(result.IsLockedOut);
-            Assert.Contains($"User {user.Id} is currently locked out.", logger.LogMessages);
+            Assert.Contains($"User is currently locked out.", logger.LogMessages);
             manager.Verify();
         }
 
@@ -771,7 +771,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             // Assert
             Assert.False(result.Succeeded);
             Assert.False(checkResult.Succeeded);
-            Assert.Contains($"User {user.Id} failed to provide the correct password.", logger.LogMessages);
+            Assert.Contains($"User failed to provide the correct password.", logger.LogMessages);
             manager.Verify();
             context.Verify();
         }
@@ -881,7 +881,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(confirmed, result.Succeeded);
             Assert.NotEqual(confirmed, result.IsNotAllowed);
 
-            var message = $"User {user.Id} cannot sign in without a confirmed email.";
+            var message = $"User cannot sign in without a confirmed email.";
             if (!confirmed)
             {
                 Assert.Contains(message, logger.LogMessages);
@@ -935,7 +935,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(confirmed, result.Succeeded);
             Assert.NotEqual(confirmed, result.IsNotAllowed);
 
-            var message = $"User {user.Id} cannot sign in without a confirmed phone number.";
+            var message = $"User cannot sign in without a confirmed phone number.";
             if (!confirmed)
             {
                 Assert.Contains(message, logger.LogMessages);

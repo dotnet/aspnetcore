@@ -6,6 +6,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
@@ -47,6 +48,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23366")]
         public void BubblingStandardEvent_FiredOnElementWithoutHandler()
         {
             Browser.FindElement(By.Id("button-without-onclick")).Click();
@@ -100,6 +102,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Theory]
+        [QuarantinedTest]
         [InlineData("target")]
         [InlineData("intermediate")]
         public void StopPropagation(string whereToStopPropagation)
@@ -162,6 +165,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23757")]
         public void PreventDefaultCanBlockKeystrokes()
         {
             // By default, the textbox accepts keystrokes

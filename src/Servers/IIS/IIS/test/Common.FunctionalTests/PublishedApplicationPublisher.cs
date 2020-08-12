@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         private string GetProjectReferencePublishLocation(DeploymentParameters deploymentParameters)
         {
 // Deployers do not work in distributed environments
-// see https://github.com/aspnet/AspNetCore/issues/10268 and https://github.com/aspnet/Extensions/issues/1697
+// see https://github.com/dotnet/aspnetcore/issues/10268 and https://github.com/dotnet/extensions/issues/1697
 #pragma warning disable 0618
             var testAssetsBasePath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("IISIntegration"), "IIS", "test", "testassets", _applicationName);
 #pragma warning restore 0618

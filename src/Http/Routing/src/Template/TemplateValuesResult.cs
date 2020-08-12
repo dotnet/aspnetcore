@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         /// <summary>
         /// The set of values that will appear in the URL.
         /// </summary>
-        public RouteValueDictionary AcceptedValues { get; set; }
+        public RouteValueDictionary AcceptedValues { get; set; } = default!;
 
         /// <summary>
         /// The set of values that that were supplied for URL generation.
@@ -24,6 +24,6 @@ namespace Microsoft.AspNetCore.Routing.Template
         /// Implicit (ambient) values which are invalidated due to changes in values lexically earlier in the
         /// route template are excluded from this set.
         /// </remarks>
-        public RouteValueDictionary CombinedValues { get; set; }
+        public RouteValueDictionary CombinedValues { get; set; } = default!;
     }
 }

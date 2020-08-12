@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Templates.Test.Helpers;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,18 +24,33 @@ namespace Templates.Test
 
         public Project Project { get; set; }
 
-        [Fact]
-        public async Task WebApiTemplateFSharp() => await WebApiTemplateCore(languageOverride: "F#");
+        [Theory]
+        [InlineData("IndividualB2C", null)]
+        [InlineData("IndividualB2C", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+        [InlineData("SingleOrg", null)]
+        [InlineData("SingleOrg", new string[] { "--called-api-url \"https://graph.microsoft.com\"", "--called-api-scopes user.readwrite" })]
+        [InlineData("SingleOrg", new string[] { "--calls-graph" })]
+        public Task WebApiTemplateCSharp_IdentityWeb_BuildsAndPublishes(string auth, string[] args) => PublishAndBuildWebApiTemplate(languageOverride: null, auth: auth, args: args);
 
         [Fact]
-        public async Task WebApiTemplateCSharp() => await WebApiTemplateCore(languageOverride: null);
+        public Task WebApiTemplateFSharp() => WebApiTemplateCore(languageOverride: "F#");
 
-        private async Task WebApiTemplateCore(string languageOverride)
+        [ConditionalFact]
+        [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        public Task WebApiTemplateCSharp() => WebApiTemplateCore(languageOverride: null);
+
+        private async Task PublishAndBuildWebApiTemplate(string languageOverride, string auth, string[] args)
         {
-            Project = await FactoryFixture.GetOrCreateProject("webapi" + (languageOverride == "F#" ? "fsharp" : "csharp"), Output);
+            Project = await FactoryFixture.GetOrCreateProject("webapi" + (languageOverride == "F#" ? "fsharp" : "csharp") + Guid.NewGuid().ToString().Substring(0, 10).ToLower(), Output);
 
-            var createResult = await Project.RunDotNetNewAsync("webapi", language: languageOverride);
+            var createResult = await Project.RunDotNetNewAsync("webapi", language: languageOverride, auth: auth, args: args);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
+
+            // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022
+            if (languageOverride != null)
+            {
+                return;
+            }
 
             var publishResult = await Project.RunDotNetPublishAsync();
             Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
@@ -44,6 +61,17 @@ namespace Templates.Test
 
             var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
+        }
+
+        private async Task WebApiTemplateCore(string languageOverride)
+        {
+            await PublishAndBuildWebApiTemplate(languageOverride, null, null);
+
+            // Avoid the F# compiler. See https://github.com/dotnet/aspnetcore/issues/14022
+            if (languageOverride != null)
+            {
+                return;
+            }
 
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
             {

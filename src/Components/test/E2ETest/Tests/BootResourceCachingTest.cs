@@ -9,6 +9,7 @@ using HostedInAspNet.Server;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -38,6 +39,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void CachesResourcesAfterFirstLoad()
         {
             // On the first load, we have to fetch everything
@@ -46,7 +48,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var initialResourcesRequested = GetAndClearRequestedPaths();
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json")));
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm")));
-            Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/dotnet.timezones.dat")));            
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".js")));
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith(".dll")));
 
@@ -58,12 +59,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var subsequentResourcesRequested = GetAndClearRequestedPaths();
             Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json")));
             Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith("/dotnet.wasm")));
-            Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith("/dotnet.timezones.dat")));
             Assert.NotEmpty(subsequentResourcesRequested.Where(path => path.EndsWith(".js")));
             Assert.Empty(subsequentResourcesRequested.Where(path => path.EndsWith(".dll")));
         }
 
         [Fact]
+        [QuarantinedTest]
         public void IncrementallyUpdatesCache()
         {
             // Perform a first load to populate the cache

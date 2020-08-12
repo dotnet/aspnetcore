@@ -1,9 +1,11 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace HotAddSample
@@ -96,15 +98,19 @@ namespace HotAddSample
             });
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseStartup<Startup>()
+                        .UseHttpSys();
+                })
                 .ConfigureLogging(factory => factory.AddConsole())
-                .UseStartup<Startup>()
-                .UseHttpSys()
                 .Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }

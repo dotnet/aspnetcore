@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     internal class ThreadPoolAwaitable : ICriticalNotifyCompletion
     {
-        public static ThreadPoolAwaitable Instance = new ThreadPoolAwaitable();
+        public static readonly ThreadPoolAwaitable Instance = new ThreadPoolAwaitable();
 
         private ThreadPoolAwaitable()
         {

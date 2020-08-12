@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http.HPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
@@ -47,8 +47,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private static readonly Action<ILogger, Exception> _notAllConnectionsAborted =
             LoggerMessage.Define(LogLevel.Debug, new EventId(21, nameof(NotAllConnectionsAborted)), "Some connections failed to abort during server shutdown.");
 
-        private static readonly Action<ILogger, TimeSpan, DateTimeOffset, Exception> _heartbeatSlow =
-            LoggerMessage.Define<TimeSpan, DateTimeOffset>(LogLevel.Warning, new EventId(22, nameof(HeartbeatSlow)), @"Heartbeat took longer than ""{interval}"" at ""{now}"". This could be caused by thread pool starvation.");
+        private static readonly Action<ILogger, TimeSpan, TimeSpan, DateTimeOffset, Exception> _heartbeatSlow =
+            LoggerMessage.Define<TimeSpan, TimeSpan, DateTimeOffset>(LogLevel.Warning, new EventId(22, nameof(HeartbeatSlow)), @"As of ""{now}"", the heartbeat has been running for ""{heartbeatDuration}"" which is longer than ""{interval}"". This could be caused by thread pool starvation.");
 
         private static readonly Action<ILogger, string, Exception> _applicationNeverCompleted =
             LoggerMessage.Define<string>(LogLevel.Critical, new EventId(23, nameof(ApplicationNeverCompleted)), @"Connection id ""{ConnectionId}"" application never completed");
@@ -113,6 +113,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private static readonly Action<ILogger, string, Exception> _connectionAccepted =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(39, nameof(ConnectionAccepted)), @"Connection id ""{ConnectionId}"" accepted.");
 
+        private static readonly Action<ILogger, string, Exception> _http2MaxConcurrentStreamsReached =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(40, nameof(Http2MaxConcurrentStreamsReached)),
+                @"Connection id ""{ConnectionId}"" reached the maximum number of concurrent HTTP/2 streams allowed.");
+
         protected readonly ILogger _logger;
 
         public KestrelTrace(ILogger logger)
@@ -175,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _notAllConnectionsClosedGracefully(_logger, null);
         }
 
-        public virtual void ConnectionBadRequest(string connectionId, BadHttpRequestException ex)
+        public virtual void ConnectionBadRequest(string connectionId, Microsoft.AspNetCore.Http.BadHttpRequestException ex)
         {
             _connectionBadRequest(_logger, connectionId, ex.Message, ex);
         }
@@ -190,9 +194,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _notAllConnectionsAborted(_logger, null);
         }
 
-        public virtual void HeartbeatSlow(TimeSpan interval, DateTimeOffset now)
+        public virtual void HeartbeatSlow(TimeSpan heartbeatDuration, TimeSpan interval, DateTimeOffset now)
         {
-            _heartbeatSlow(_logger, interval, now, null);
+            _heartbeatSlow(_logger, heartbeatDuration, interval, now, null);
         }
 
         public virtual void ApplicationNeverCompleted(string connectionId)
@@ -272,12 +276,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public void Http2FrameReceived(string connectionId, Http2Frame frame)
         {
-            _http2FrameReceived(_logger, connectionId, frame.Type, frame.StreamId, frame.PayloadLength, frame.ShowFlags(), null);
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                _http2FrameReceived(_logger, connectionId, frame.Type, frame.StreamId, frame.PayloadLength, frame.ShowFlags(), null);
+            }
         }
 
         public void Http2FrameSending(string connectionId, Http2Frame frame)
         {
-            _http2FrameSending(_logger, connectionId, frame.Type, frame.StreamId, frame.PayloadLength, frame.ShowFlags(), null);
+            if (_logger.IsEnabled(LogLevel.Trace))
+            {
+                _http2FrameSending(_logger, connectionId, frame.Type, frame.StreamId, frame.PayloadLength, frame.ShowFlags(), null);
+            }
+        }
+
+        public void Http2MaxConcurrentStreamsReached(string connectionId)
+        {
+            _http2MaxConcurrentStreamsReached(_logger, connectionId, null);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)

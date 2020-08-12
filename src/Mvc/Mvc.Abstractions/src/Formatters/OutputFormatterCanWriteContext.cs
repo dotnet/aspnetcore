@@ -53,11 +53,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <summary>
         /// Gets or sets the object to write to the response.
         /// </summary>
-        public virtual object Object { get; protected set; }
+        public virtual object? Object { get; protected set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Type"/> of the object to write to the response.
         /// </summary>
-        public virtual Type ObjectType { get; protected set; }
+        public virtual Type? ObjectType { get; protected set; }
     }
 }

@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
             var attributes = new object[]
             {
-                new ModelBinderAttribute { BinderType = typeof(ComplexTypeModelBinder), Name = "Test" },
+                new ModelBinderAttribute { BinderType = typeof(ComplexObjectModelBinder), Name = "Test" },
             };
             var modelType = typeof(Guid);
             var provider = new TestModelMetadataProvider();
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.NotNull(bindingInfo);
-            Assert.Same(typeof(ComplexTypeModelBinder), bindingInfo.BinderType);
+            Assert.Same(typeof(ComplexObjectModelBinder), bindingInfo.BinderType);
             Assert.Same("Test", bindingInfo.BinderModelName);
         }
 
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
             var attributes = new object[]
             {
-                new ModelBinderAttribute(typeof(ComplexTypeModelBinder)),
+                new ModelBinderAttribute(typeof(ComplexObjectModelBinder)),
                 new ControllerAttribute(),
                 new BindNeverAttribute(),
             };
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.NotNull(bindingInfo);
-            Assert.Same(typeof(ComplexTypeModelBinder), bindingInfo.BinderType);
+            Assert.Same(typeof(ComplexObjectModelBinder), bindingInfo.BinderType);
             Assert.Same("Different", bindingInfo.BinderModelName);
             Assert.Same(BindingSource.Custom, bindingInfo.BindingSource);
         }
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var provider = new TestModelMetadataProvider();
             provider.ForType(modelType).BindingDetails(metadata =>
             {
-                metadata.BinderType = typeof(ComplexTypeModelBinder);
+                metadata.BinderType = typeof(ComplexObjectModelBinder);
             });
             var modelMetadata = provider.GetMetadataForType(modelType);
 
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.NotNull(bindingInfo);
-            Assert.Same(typeof(ComplexTypeModelBinder), bindingInfo.BinderType);
+            Assert.Same(typeof(ComplexObjectModelBinder), bindingInfo.BinderType);
         }
 
         [Fact]
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             // Arrange
             var attributes = new object[]
             {
-                new ModelBinderAttribute(typeof(ComplexTypeModelBinder)),
+                new ModelBinderAttribute(typeof(ComplexObjectModelBinder)),
                 new ControllerAttribute(),
                 new BindNeverAttribute(),
             };

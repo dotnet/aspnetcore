@@ -18,6 +18,6 @@ namespace Microsoft.AspNetCore.Components
         /// <returns>
         /// A <see cref="Task"/> that completes once the component has processed the state change.
         /// </returns>
-        Task HandleEventAsync(EventCallbackWorkItem item, object arg);
+        Task HandleEventAsync(EventCallbackWorkItem item, object? arg);
     }
 }

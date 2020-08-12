@@ -30,14 +30,14 @@ namespace Microsoft.AspNetCore.Components
             var infos = GetReflectedCascadingParameterInfos(componentType);
 
             // For components known not to have any cascading parameters, bail out early
-            if (infos == null)
+            if (infos.Length == 0)
             {
-                return null;
+                return Array.Empty<CascadingParameterState>();
             }
 
             // Now try to find matches for each of the cascading parameters
             // Defer instantiation of the result list until we know there's at least one
-            List<CascadingParameterState> resultStates = null;
+            List<CascadingParameterState>? resultStates = null;
 
             var numInfos = infos.Length;
             for (var infoIndex = 0; infoIndex < numInfos; infoIndex++)
@@ -56,10 +56,10 @@ namespace Microsoft.AspNetCore.Components
                 }
             }
 
-            return resultStates;
+            return resultStates ?? (IReadOnlyList<CascadingParameterState>)Array.Empty<CascadingParameterState>();
         }
 
-        private static ICascadingValueComponent GetMatchingCascadingValueSupplier(in ReflectedCascadingParameterInfo info, ComponentState componentState)
+        private static ICascadingValueComponent? GetMatchingCascadingValueSupplier(in ReflectedCascadingParameterInfo info, ComponentState componentState)
         {
             do
             {
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Components
 
         private static ReflectedCascadingParameterInfo[] CreateReflectedCascadingParameterInfos(Type componentType)
         {
-            List<ReflectedCascadingParameterInfo> result = null;
+            List<ReflectedCascadingParameterInfo>? result = null;
             var candidateProps = ComponentProperties.GetCandidateBindableProperties(componentType);
             foreach (var prop in candidateProps)
             {
@@ -108,17 +108,17 @@ namespace Microsoft.AspNetCore.Components
                 }
             }
 
-            return result?.ToArray();
+            return result?.ToArray() ?? Array.Empty<ReflectedCascadingParameterInfo>();
         }
 
         readonly struct ReflectedCascadingParameterInfo
         {
             public string ConsumerValueName { get; }
-            public string SupplierValueName { get; }
+            public string? SupplierValueName { get; }
             public Type ValueType { get; }
 
             public ReflectedCascadingParameterInfo(
-                string consumerValueName, Type valueType, string supplierValueName)
+                string consumerValueName, Type valueType, string? supplierValueName)
             {
                 ConsumerValueName = consumerValueName;
                 SupplierValueName = supplierValueName;

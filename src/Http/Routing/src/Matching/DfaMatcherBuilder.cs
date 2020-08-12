@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -247,7 +249,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
                                 }
                             }
 
-                            AddLiteralNode(includeLabel, nextParents, parent, requiredValue.ToString());
+                            var literalValue = requiredValue?.ToString() ?? throw new InvalidOperationException($"Required value for literal '{parameterPart.Name}' must evaluate to a non-null string.");
+
+                            AddLiteralNode(includeLabel, nextParents, parent, literalValue);
                         }
                         else if (segment.IsSimple && parameterPart != null)
                         {
@@ -353,7 +357,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             if (segment is null)
             {
                 // Treat "no segment" as high priority. it won't effect the algorithm, but we need to define a sort-order.
-                return 0; 
+                return 0;
             }
 
             return RoutePrecedence.ComputeInboundPrecedenceDigit(endpoint.RoutePattern, segment);
@@ -741,7 +745,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 var nodeBuilder = _nodeBuilders[i];
 
-                // Build a list of each 
+                // Build a list of each
                 List<DfaNode> nextWork;
                 if (previousWork == null)
                 {

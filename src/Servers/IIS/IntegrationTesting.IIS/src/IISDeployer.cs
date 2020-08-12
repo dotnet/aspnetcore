@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
             if (DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86)
             {
-                pool.SetAttributeValue("enable32BitAppOnWin64", "true");;
+                pool.SetAttributeValue("enable32BitAppOnWin64", "true");
             }
 
             RunServerConfigActions(config, contentRoot);

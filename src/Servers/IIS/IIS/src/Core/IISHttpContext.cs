@@ -26,6 +26,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
+    using BadHttpRequestException = Microsoft.AspNetCore.Http.BadHttpRequestException;
+
     internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPoolWorkItem, IDisposable
     {
         private const int MinAllocBufferSize = 2048;
@@ -64,6 +66,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         protected Pipe _bodyInputPipe;
         protected OutputProducer _bodyOutput;
+
+        private HeaderCollection _trailers;
 
         private const string NtlmString = "NTLM";
         private const string NegotiateString = "Negotiate";
@@ -112,7 +116,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public IHeaderDictionary RequestHeaders { get; set; }
         public IHeaderDictionary ResponseHeaders { get; set; }
+        public IHeaderDictionary ResponseTrailers { get; set; }
         private HeaderCollection HttpResponseHeaders { get; set; }
+        private HeaderCollection HttpResponseTrailers => _trailers ??= new HeaderCollection(checkTrailers: true);
+        internal bool HasTrailers => _trailers?.Count > 0;
+
         internal HttpApiTypes.HTTP_VERB KnownMethod { get; private set; }
 
         private bool HasStartedConsumingRequestBody { get; set; }
@@ -300,7 +308,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             if (RequestHeaders.ContentLength > MaxRequestBodySize)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+                IISBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
 
             HasStartedConsumingRequestBody = true;
@@ -411,6 +419,42 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                         {
                             NativeMethods.HttpResponseSetKnownHeader(_pInProcessHandler, knownHeaderIndex, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: isFirst);
                         }
+                    }
+                }
+            }
+        }
+
+        public unsafe void SetResponseTrailers()
+        {
+            HttpResponseTrailers.IsReadOnly = true;
+            foreach (var headerPair in HttpResponseTrailers)
+            {
+                var headerValues = headerPair.Value;
+
+                if (headerValues.Count == 0)
+                {
+                    continue;
+                }
+
+                var headerNameBytes = Encoding.ASCII.GetBytes(headerPair.Key);
+                fixed (byte* pHeaderName = headerNameBytes)
+                {
+                    var isFirst = true;
+                    for (var i = 0; i < headerValues.Count; i++)
+                    {
+                        var headerValue = headerValues[i];
+                        if (string.IsNullOrEmpty(headerValue))
+                        {
+                            continue;
+                        }
+
+                        var headerValueBytes = Encoding.UTF8.GetBytes(headerValue);
+                        fixed (byte* pHeaderValue = headerValueBytes)
+                        {
+                            NativeMethods.HttpResponseSetTrailer(_pInProcessHandler, pHeaderName, pHeaderValue, (ushort)headerValueBytes.Length, replace: isFirst);
+                        }
+
+                        isFirst = false;
                     }
                 }
             }
@@ -613,7 +657,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             catch (Exception ex)
             {
-               _logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpContext)}.{nameof(HandleRequest)}.");
+                _logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpContext)}.{nameof(HandleRequest)}.");
             }
             finally
             {

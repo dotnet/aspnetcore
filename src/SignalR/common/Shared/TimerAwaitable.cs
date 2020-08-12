@@ -50,7 +50,20 @@ namespace Microsoft.AspNetCore.Internal
                                 restoreFlow = true;
                             }
 
-                            _timer = new Timer(state => ((TimerAwaitable)state).Tick(), this, _dueTime, _period);
+                            // This fixes the cycle by using a WeakReference to the state object. The object graph now looks like this:
+                            // Timer -> TimerHolder -> TimerQueueTimer -> WeakReference<TimerAwaitable> -> Timer -> ...
+                            // If TimerAwaitable falls out of scope, the timer should be released.
+                            _timer = new Timer(state =>
+                            {
+                                var weakRef = (WeakReference<TimerAwaitable>)state;
+                                if (weakRef.TryGetTarget(out var thisRef))
+                                {
+                                    thisRef.Tick();
+                                }
+                            },
+                            new WeakReference<TimerAwaitable>(this),
+                            _dueTime,
+                            _period);
                         }
                         finally
                         {

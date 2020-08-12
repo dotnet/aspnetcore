@@ -22,13 +22,14 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
       'right: 0',
       'bottom: 0',
       'left: 0',
-      'z-index: 1000',
+      'z-index: 1050',
       'display: none',
       'overflow: hidden',
       'background-color: #fff',
       'opacity: 0.8',
       'text-align: center',
       'font-weight: bold',
+      'transition: visibility 0s linear 500ms',
     ];
 
     this.modal.style.cssText = modalStyles.join(';');
@@ -67,6 +68,14 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     this.button.style.display = 'none';
     this.reloadParagraph.style.display = 'none';
     this.message.textContent = 'Attempting to reconnect to the server...';
+
+    // The visibility property has a transition so it takes effect after a delay.
+    // This is to prevent it appearing momentarily when navigating away. For the
+    // transition to take effect, we have to apply the visibility asynchronously.
+    this.modal.style.visibility = 'hidden';
+    setTimeout(() => {
+      this.modal.style.visibility = 'visible';
+    }, 0);
   }
 
   hide(): void {

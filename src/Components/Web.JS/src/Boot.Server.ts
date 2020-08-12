@@ -1,7 +1,7 @@
-import '@dotnet/jsinterop';
+import { DotNet } from '@microsoft/dotnet-js-interop';
 import './GlobalExports';
-import * as signalR from '@aspnet/signalr';
-import { MessagePackHubProtocol } from '@aspnet/signalr-protocol-msgpack';
+import * as signalR from '@microsoft/signalr';
+import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
 import { showErrorNotification } from './BootErrors';
 import { shouldAutoStart } from './BootCommon';
 import { RenderQueue } from './Platform/Circuits/RenderQueue';
@@ -56,16 +56,18 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
     return true;
   };
 
-  window.addEventListener(
-    'unload',
-    () => {
+  let disconnectSent = false;
+  const cleanup = () => {
+    if (!disconnectSent) {
       const data = new FormData();
       const circuitId = circuit.circuitId!;
       data.append('circuitId', circuitId);
-      navigator.sendBeacon('_blazor/disconnect', data);
-    },
-    false
-  );
+      disconnectSent = navigator.sendBeacon('_blazor/disconnect', data);
+    }
+  };
+
+  window.addEventListener('beforeunload', cleanup, { capture: false, once: true });
+  window.addEventListener('unload', cleanup, { capture: false, once: true });
 
   window['Blazor'].reconnect = reconnect;
 
@@ -85,7 +87,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
   const connection = connectionBuilder.build();
 
   setEventDispatcher((descriptor, args) => {
-    return connection.send('DispatchBrowserEvent', JSON.stringify(descriptor), JSON.stringify(args));
+    connection.send('DispatchBrowserEvent', JSON.stringify(descriptor), JSON.stringify(args));
   });
 
   // Configure navigation via SignalR

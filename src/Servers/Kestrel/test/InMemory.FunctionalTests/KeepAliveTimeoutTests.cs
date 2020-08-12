@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         private static readonly TimeSpan _longDelay = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan _shortDelay = TimeSpan.FromSeconds(_longDelay.TotalSeconds / 10);
 
-        private readonly TaskCompletionSource<object> _firstRequestReceived = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _firstRequestReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         [Fact]
         public async Task ConnectionClosedWhenKeepAliveTimeoutExpires()
@@ -240,7 +239,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var responseStream = httpContext.Response.Body;
             var responseBytes = Encoding.ASCII.GetBytes("hello, world");
 
-            _firstRequestReceived.TrySetResult(null);
+            _firstRequestReceived.TrySetResult();
 
             if (httpContext.Request.Path == "/longrunning")
             {
@@ -285,8 +284,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 return Task.CompletedTask;
             }
 
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            token.Register(() => tcs.SetResult(null));
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            token.Register(() => tcs.SetResult());
             return tcs.Task;
         }
     }

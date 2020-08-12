@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj" />
+    <Reference Include="Microsoft.Web.Xdt.Extensions" />
   </ItemGroup>
 
 </Project>

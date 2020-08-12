@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <Description>Web File Templates for Microsoft Template Engine.</Description>
-    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
 </Project>

@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         }
 
         [Fact]
-        public void Parse_ComplexSegment_ThreeParametersSeperatedByPeriod()
+        public void Parse_ComplexSegment_ThreeParametersSeparatedByPeriod()
         {
             // Arrange
             var template = "{p1}.{p2}.{p3}";
@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         [Theory]
         [InlineData(@"{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}}}$)}")] // extra }
         [InlineData(@"{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}}$)}}")] // extra } at the end
-        [InlineData(@"{{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}}$)}")] // extra { at the begining
+        [InlineData(@"{{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}}$)}")] // extra { at the beginning
         [InlineData(@"{p1:regex(([}])\w+}")] // Not escaped }
         [InlineData(@"{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}$)}")] // Not escaped }
         [InlineData(@"{p1:regex(abc)")]
@@ -400,7 +400,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         [InlineData("..{p2?}", "..")]
         [InlineData("{p1}.abc.{p2?}", ".abc.")]
         [InlineData("{p1}{p2?}", "{p1}")]
-        public void Parse_ComplexSegment_OptionalParametersSeperatedByPeriod_Invalid(string template, string parameter)
+        public void Parse_ComplexSegment_OptionalParametersSeparatedByPeriod_Invalid(string template, string parameter)
         {
             // Act and Assert
             ExceptionAssert.Throws<RoutePatternException>(

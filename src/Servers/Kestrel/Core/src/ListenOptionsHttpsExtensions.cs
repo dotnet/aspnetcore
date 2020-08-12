@@ -3,8 +3,10 @@
 
 using System;
 using System.IO;
+using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,7 +38,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="ListenOptions"/>.</returns>
         public static ListenOptions UseHttps(this ListenOptions listenOptions, string fileName)
         {
-            var env = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<IHostEnvironment>();
+            var env = listenOptions.ApplicationServices.GetRequiredService<IHostEnvironment>();
             return listenOptions.UseHttps(new X509Certificate2(Path.Combine(env.ContentRootPath, fileName)));
         }
 
@@ -50,7 +52,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="ListenOptions"/>.</returns>
         public static ListenOptions UseHttps(this ListenOptions listenOptions, string fileName, string password)
         {
-            var env = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<IHostEnvironment>();
+            var env = listenOptions.ApplicationServices.GetRequiredService<IHostEnvironment>();
             return listenOptions.UseHttps(new X509Certificate2(Path.Combine(env.ContentRootPath, fileName), password));
         }
 
@@ -65,7 +67,7 @@ namespace Microsoft.AspNetCore.Hosting
         public static ListenOptions UseHttps(this ListenOptions listenOptions, string fileName, string password,
             Action<HttpsConnectionAdapterOptions> configureOptions)
         {
-            var env = listenOptions.KestrelServerOptions.ApplicationServices.GetRequiredService<IHostEnvironment>();
+            var env = listenOptions.ApplicationServices.GetRequiredService<IHostEnvironment>();
             return listenOptions.UseHttps(new X509Certificate2(Path.Combine(env.ContentRootPath, fileName), password), configureOptions);
         }
 
@@ -222,6 +224,28 @@ namespace Microsoft.AspNetCore.Hosting
                 // Set the list of protocols from listen options
                 httpsOptions.HttpProtocols = listenOptions.Protocols;
                 var middleware = new HttpsConnectionMiddleware(next, httpsOptions, loggerFactory);
+                return middleware.OnConnectionAsync;
+            });
+
+            return listenOptions;
+        }
+
+        /// <summary>
+        /// Configure Kestrel to use HTTPS.
+        /// </summary>
+        /// <param name="listenOptions">The <see cref="ListenOptions"/> to configure.</param>
+        /// <param name="httpsOptionsCallback">Callback to configure HTTPS options.</param>
+        /// <param name="state">State for the <see cref="ServerOptionsSelectionCallback" />.</param>
+        /// <param name="handshakeTimeout">Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive and finite.</param>
+        /// <returns>The <see cref="ListenOptions"/>.</returns>
+        internal static ListenOptions UseHttps(this ListenOptions listenOptions, HttpsOptionsCallback httpsOptionsCallback, object state, TimeSpan handshakeTimeout)
+        {
+            var loggerFactory = listenOptions.KestrelServerOptions?.ApplicationServices.GetRequiredService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
+
+            listenOptions.IsTls = true;
+            listenOptions.Use(next =>
+            {
+                var middleware = new HttpsConnectionMiddleware(next, httpsOptionsCallback, state, handshakeTimeout, loggerFactory);
                 return middleware.OnConnectionAsync;
             });
 
