@@ -559,6 +559,18 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("", () => selectWithoutComponent.GetAttribute("value"));
         }
 
+        [Fact]
+        public void NavigateOnSubmitWorks()
+        {
+            var app = Browser.MountTestComponent<NavigateOnSubmit>();
+            var input = app.FindElement(By.Id("text-input"));
+
+            input.SendKeys("Enter");
+
+            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+            Assert.DoesNotContain(log, entry => entry.Level == LogLevel.Severe);
+        }
+
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
         {
             return () => appElement.FindElements(By.ClassName("validation-message"))

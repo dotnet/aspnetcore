@@ -2,7 +2,7 @@ import { DotNet } from '@microsoft/dotnet-js-interop';
 import './GlobalExports';
 import * as Environment from './Environment';
 import { monoPlatform } from './Platform/Mono/MonoPlatform';
-import { renderBatch } from './Rendering/Renderer';
+import { renderBatch, getRendererer } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
 import { shouldAutoStart } from './BootCommon';
 import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
@@ -26,7 +26,10 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     // renderbatch. For example, a renderbatch might mutate the DOM in such a way as to cause an <input> to lose
     // focus, in turn triggering a 'change' event. It may also be possible to listen to other DOM mutation events
     // that are themselves triggered by the application of a renderbatch.
-    monoPlatform.invokeWhenHeapUnlocked(() => DotNet.invokeMethodAsync('Microsoft.AspNetCore.Components.WebAssembly', 'DispatchEvent', eventDescriptor, JSON.stringify(eventArgs)));
+    const renderer = getRendererer(eventDescriptor.browserRendererId);
+    if (renderer.eventDelegator.getHandler(eventDescriptor.eventHandlerId)) {
+      monoPlatform.invokeWhenHeapUnlocked(() => DotNet.invokeMethodAsync('Microsoft.AspNetCore.Components.WebAssembly', 'DispatchEvent', eventDescriptor, JSON.stringify(eventArgs)));
+    }
   });
 
   // Configure environment for execution under Mono WebAssembly with shared-memory rendering
