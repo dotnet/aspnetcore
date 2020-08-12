@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -88,6 +88,22 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             await stream.SendFileAsync(path, 0, null, CancellationToken.None);
 
             Assert.Equal(File.ReadAllBytes(path), memoryStream.ToArray());
+        }
+
+        [Fact]
+        public async Task SendFileAsync_SkipsSilently_WhenRequestAborted()
+        {
+            var memoryStream = new MemoryStream();
+
+            var context = new DefaultHttpContext();
+            context.RequestAborted = new CancellationToken(canceled: true);
+            var stream = new BodyWrapperStream(context, memoryStream, new MockResponseCompressionProvider(true), null, null);
+
+            var path = "testfile1kb.txt";
+            await stream.SendFileAsync(path, 0, null, CancellationToken.None);
+            stream.Flush();
+
+            Assert.Equal(0, memoryStream.Length);
         }
 
         [Theory]

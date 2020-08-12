@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.1.20</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.1.21</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -477,13 +477,13 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Extensions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Extensions' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.21</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Extensions' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="System.Buffers" Version="[4.5.0, )" />
+    <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="System.Buffers" Version="[4.5.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Features-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Features' ">
@@ -859,7 +859,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.ResponseCompression-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ResponseCompression' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.21</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ResponseCompression' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.1.1, )" />

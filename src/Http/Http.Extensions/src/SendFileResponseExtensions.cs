@@ -107,40 +107,27 @@ namespace Microsoft.AspNetCore.Http
 
         private static async Task SendFileAsyncCore(HttpResponse response, IFileInfo file, long offset, long? count, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(file.PhysicalPath))
-            {
-                CheckRange(offset, count, file.Length);
-
-                using (var fileContent = file.CreateReadStream())
-                {
-                    if (offset > 0)
-                    {
-                        fileContent.Seek(offset, SeekOrigin.Begin);
-                    }
-                    await StreamCopyOperation.CopyToAsync(fileContent, response.Body, count, cancellationToken);
-                }
-            }
-            else
+            if (!string.IsNullOrEmpty(file.PhysicalPath))
             {
                 await response.SendFileAsync(file.PhysicalPath, offset, count, cancellationToken);
+                return;
+            }
+
+            CheckRange(offset, count, file.Length);
+            using (var fileContent = file.CreateReadStream())
+            {
+                await SendStreamAsync(fileContent, response, offset, count, cancellationToken);
             }
         }
 
-        private static Task SendFileAsyncCore(HttpResponse response, string fileName, long offset, long? count, CancellationToken cancellationToken = default)
+        private static async Task SendFileAsyncCore(HttpResponse response, string fileName, long offset, long? count, CancellationToken cancellationToken = default)
         {
             var sendFile = response.HttpContext.Features.Get<IHttpSendFileFeature>();
-            if (sendFile == null)
+            if (sendFile != null)
             {
-                return SendFileAsyncCore(response.Body, fileName, offset, count, cancellationToken);
+                await sendFile.SendFileAsync(fileName, offset, count, cancellationToken);
+                return;
             }
-
-            return sendFile.SendFileAsync(fileName, offset, count, cancellationToken);
-        }
-
-        // Not safe for overlapped writes.
-        private static async Task SendFileAsyncCore(Stream outputStream, string fileName, long offset, long? count, CancellationToken cancel = default)
-        {
-            cancel.ThrowIfCancellationRequested();
 
             var fileInfo = new FileInfo(fileName);
             CheckRange(offset, count, fileInfo.Length);
@@ -156,13 +143,43 @@ namespace Microsoft.AspNetCore.Http
 
             using (fileStream)
             {
+                await SendStreamAsync(fileStream, response, offset, count, cancellationToken);
+            }
+        }
+
+        private static Task SendStreamAsync(Stream source, HttpResponse response, long offset, long? count, CancellationToken cancellationToken)
+        {
+            if (!cancellationToken.CanBeCanceled)
+            {
+                return SendStreamQuietAsync(source, response, offset, count, response.HttpContext.RequestAborted);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            if (offset > 0)
+            {
+                source.Seek(offset, SeekOrigin.Begin);
+            }
+
+            return StreamCopyOperation.CopyToAsync(source, response.Body, count, cancellationToken);
+        }
+
+        private static async Task SendStreamQuietAsync(Stream source, HttpResponse response, long offset, long? count, CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            try
+            {
                 if (offset > 0)
                 {
-                    fileStream.Seek(offset, SeekOrigin.Begin);
+                    source.Seek(offset, SeekOrigin.Begin);
                 }
 
-                await StreamCopyOperation.CopyToAsync(fileStream, outputStream, count, cancel);
+                await StreamCopyOperation.CopyToAsync(source, response.Body, count, cancellationToken);
             }
+            catch (OperationCanceledException) { }
         }
 
         private static void CheckRange(long offset, long? count, long fileLength)

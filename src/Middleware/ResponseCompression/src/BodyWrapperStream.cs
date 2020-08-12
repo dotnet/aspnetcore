@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -286,10 +286,8 @@ namespace Microsoft.AspNetCore.ResponseCompression
             return _innerSendFileFeature.SendFileAsync(path, offset, count, cancellation);
         }
 
-        private async Task InnerSendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
+        private Task InnerSendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
         {
-            cancellation.ThrowIfCancellationRequested();
-
             var fileInfo = new FileInfo(path);
             if (offset < 0 || offset > fileInfo.Length)
             {
@@ -311,15 +309,57 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 bufferSize: bufferSize,
                 options: FileOptions.Asynchronous | FileOptions.SequentialScan);
 
+            if (cancellation.CanBeCanceled)
+            {
+                return InnerSendFileLoudAsync(fileStream, offset, count, cancellation);
+            }
+
+            return InnerSendFileQuietAsync(fileStream, offset, count, _context.RequestAborted);
+        }
+
+        private async Task InnerSendFileLoudAsync(Stream fileStream, long offset, long? count, CancellationToken cancellation)
+        {
             using (fileStream)
             {
-                fileStream.Seek(offset, SeekOrigin.Begin);
+                cancellation.ThrowIfCancellationRequested();
+
+                if (offset > 0)
+                {
+                    fileStream.Seek(offset, SeekOrigin.Begin);
+                }
+
                 await StreamCopyOperation.CopyToAsync(fileStream, _compressionStream, count, cancellation);
 
                 if (_autoFlush)
                 {
                     await _compressionStream.FlushAsync(cancellation);
                 }
+            }
+        }
+
+        private async Task InnerSendFileQuietAsync(Stream fileStream, long offset, long? count, CancellationToken cancellation)
+        {
+            try
+            {
+                if (!cancellation.IsCancellationRequested)
+                {
+                    if (offset > 0)
+                    {
+                        fileStream.Seek(offset, SeekOrigin.Begin);
+                    }
+
+                    await StreamCopyOperation.CopyToAsync(fileStream, _compressionStream, count, cancellation);
+
+                    if (_autoFlush)
+                    {
+                        await _compressionStream.FlushAsync(cancellation);
+                    }
+                }
+            }
+            catch (OperationCanceledException) { }
+            finally
+            {
+                fileStream.Dispose();
             }
         }
     }

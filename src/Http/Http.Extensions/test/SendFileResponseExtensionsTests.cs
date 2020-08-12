@@ -1,5 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -48,6 +49,47 @@ namespace Microsoft.AspNetCore.Http.Extensions.Tests
                 this.token = cancellation;
                 return Task.FromResult(0);
             }
+        }
+
+        [Fact]
+        public async Task SendFile_FallsBackToBodyStream()
+        {
+            var body = new MemoryStream();
+            var context = new DefaultHttpContext();
+            var response = context.Response;
+            response.Body = body;
+
+            await response.SendFileAsync("testfile1kb.txt", 1, 3, CancellationToken.None);
+
+            Assert.Equal(3, body.Length);
+        }
+
+        [Fact]
+        public async Task SendFile_ThrowsWhenCanceled()
+        {
+            var body = new MemoryStream();
+            var context = new DefaultHttpContext();
+            var response = context.Response;
+            response.Body = body;
+
+            await Assert.ThrowsAsync<OperationCanceledException>(
+                () => response.SendFileAsync("testfile1kb.txt", 1, 3, new CancellationToken(canceled: true)));
+
+            Assert.Equal(0, body.Length);
+        }
+
+        [Fact]
+        public async Task SendFile_AbortsSilentlyWhenRequestCanceled()
+        {
+            var body = new MemoryStream();
+            var context = new DefaultHttpContext();
+            context.RequestAborted = new CancellationToken(canceled: true);
+            var response = context.Response;
+            response.Body = body;
+
+            await response.SendFileAsync("testfile1kb.txt", 1, 3, CancellationToken.None);
+
+            Assert.Equal(0, body.Length);
         }
     }
 }
