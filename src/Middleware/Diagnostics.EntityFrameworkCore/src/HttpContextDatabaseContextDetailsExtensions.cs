@@ -81,4 +81,3 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         }
     }
 }
-#nullable disable

@@ -259,6 +259,5 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
         {
 
         }
+    }
 }
-}
-#nullable disable

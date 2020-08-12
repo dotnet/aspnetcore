@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
+#nullable enable
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
