@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 
 namespace InteropTestsWebsite
 {
@@ -37,7 +38,7 @@ namespace InteropTestsWebsite
             Host.CreateDefaultBuilder(args)
                 .ConfigureLogging(builder =>
                 {
-                    builder.AddSimpleConsole(o => o.DisableColors = true);
+                    builder.AddSimpleConsole(o => o.ColorBehavior = LoggerColorBehavior.Disabled);
                     builder.SetMinimumLevel(LogLevel.Trace);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>

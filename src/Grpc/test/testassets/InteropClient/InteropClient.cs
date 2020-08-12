@@ -34,6 +34,7 @@ using Grpc.Net.Client;
 using Grpc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Newtonsoft.Json.Linq;
 
 namespace InteropTestsClient
@@ -96,11 +97,11 @@ namespace InteropTestsClient
             var services = new ServiceCollection();
             services.AddLogging(configure =>
             {
-                configure.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
+                configure.SetMinimumLevel(LogLevel.Trace);
                 configure.AddSimpleConsole(loggerOptions =>
                 {
                     loggerOptions.IncludeScopes = true;
-                    loggerOptions.DisableColors = true;
+                    loggerOptions.ColorBehavior = LoggerColorBehavior.Disabled;
                 });
             });
 
