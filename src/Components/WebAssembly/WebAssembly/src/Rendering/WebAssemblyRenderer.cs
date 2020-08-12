@@ -20,6 +20,9 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         private readonly ILogger _logger;
         private readonly int _webAssemblyRendererId;
 
+        private bool isDispatchingEvent;
+        private Queue<IncomingEventInfo> deferredIncomingEvents = new Queue<IncomingEventInfo>();
+
         /// <summary>
         /// Constructs an instance of <see cref="WebAssemblyRenderer"/>.
         /// </summary>
@@ -116,6 +119,83 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
             }
         }
 
+        /// <inheritdoc />
+        public override Task DispatchEventAsync(ulong eventHandlerId, EventFieldInfo eventFieldInfo, EventArgs eventArgs)
+        {
+            // Be sure we only run one event handler at once. Although they couldn't run
+            // simultaneously anyway (there's only one thread), they could run nested on
+            // the stack if somehow one event handler triggers another event synchronously.
+            // We need event handlers not to overlap because (a) that's consistent with
+            // server-side Blazor which uses a sync context, and (b) the rendering logic
+            // relies completely on the idea that within a given scope it's only building
+            // or processing one batch at a time.
+            //
+            // The only currently known case where this makes a difference is in the E2E
+            // tests in ReorderingFocusComponent, where we hit what seems like a Chrome bug
+            // where mutating the DOM cause an element's "change" to fire while its "input"
+            // handler is still running (i.e., nested on the stack) -- this doesn't happen
+            // in Firefox. Possibly a future version of Chrome may fix this, but even then,
+            // it's conceivable that DOM mutation events could trigger this too.
+
+            if (isDispatchingEvent)
+            {
+                var info = new IncomingEventInfo(eventHandlerId, eventFieldInfo, eventArgs);
+                deferredIncomingEvents.Enqueue(info);
+                return info.TaskCompletionSource.Task;
+            }
+            else
+            {
+                try
+                {
+                    isDispatchingEvent = true;
+                    return base.DispatchEventAsync(eventHandlerId, eventFieldInfo, eventArgs);
+                }
+                finally
+                {
+                    isDispatchingEvent = false;
+
+                    if (deferredIncomingEvents.Count > 0)
+                    {
+                        // Fire-and-forget because the task we return from this method should only reflect the
+                        // completion of its own event dispatch, not that of any others that happen to be queued.
+                        // Also, ProcessNextDeferredEventAsync deals with its own async errors.
+                        _ = ProcessNextDeferredEventAsync();
+                    }
+                }
+            }
+        }
+
+        private async Task ProcessNextDeferredEventAsync()
+        {
+            var info = deferredIncomingEvents.Dequeue();
+            var taskCompletionSource = info.TaskCompletionSource;
+
+            try
+            {
+                await DispatchEventAsync(info.EventHandlerId, info.EventFieldInfo, info.EventArgs);
+                taskCompletionSource.SetResult(null);
+            }
+            catch (Exception ex)
+            {
+                taskCompletionSource.SetException(ex);
+            }
+        }
+
+        readonly struct IncomingEventInfo
+        {
+            public readonly ulong EventHandlerId;
+            public readonly EventFieldInfo EventFieldInfo;
+            public readonly EventArgs EventArgs;
+            public readonly TaskCompletionSource<object> TaskCompletionSource;
+
+            public IncomingEventInfo(ulong eventHandlerId, EventFieldInfo eventFieldInfo, EventArgs eventArgs)
+            {
+                EventHandlerId = eventHandlerId;
+                EventFieldInfo = eventFieldInfo;
+                EventArgs = eventArgs;
+                TaskCompletionSource = new TaskCompletionSource<object>();
+            }
+        }
 
         private static class Log
         {
