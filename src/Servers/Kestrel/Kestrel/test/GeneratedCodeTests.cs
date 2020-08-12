@@ -3,8 +3,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -52,12 +50,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 var testTransportMultiplxedConnectionGenerated = File.ReadAllText(testTransportMultiplexedConnectionGeneratedPath);
                 var testTransportConnectionGenerated = File.ReadAllText(testTransportConnectionGeneratedPath);
 
-                Assert.Equal(currentHttpHeadersGenerated, testHttpHeadersGenerated, ignoreLineEndingDifferences: true);
-                Assert.Equal(currentHttpProtocolGenerated, testHttpProtocolGenerated, ignoreLineEndingDifferences: true);
-                Assert.Equal(currentHttpUtilitiesGenerated, testHttpUtilitiesGenerated, ignoreLineEndingDifferences: true);
-                Assert.Equal(currentHttp2ConnectionGenerated, testHttp2ConnectionGenerated, ignoreLineEndingDifferences: true);
-                Assert.Equal(currentTransportConnectionBaseGenerated, testTransportMultiplxedConnectionGenerated, ignoreLineEndingDifferences: true);
-                Assert.Equal(currentTransportConnectionGenerated, testTransportConnectionGenerated, ignoreLineEndingDifferences: true);
+                AssertFileContentEqual(currentHttpHeadersGenerated, testHttpHeadersGenerated);
+                AssertFileContentEqual(currentHttpProtocolGenerated, testHttpProtocolGenerated);
+                AssertFileContentEqual(currentHttpUtilitiesGenerated, testHttpUtilitiesGenerated);
+                AssertFileContentEqual(currentHttp2ConnectionGenerated, testHttp2ConnectionGenerated);
+                AssertFileContentEqual(currentTransportConnectionBaseGenerated, testTransportMultiplxedConnectionGenerated);
+                AssertFileContentEqual(currentTransportConnectionGenerated, testTransportConnectionGenerated);
             }
             finally
             {
@@ -68,6 +66,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 File.Delete(testTransportMultiplexedConnectionGeneratedPath);
                 File.Delete(testTransportConnectionGeneratedPath);
             }
+        }
+
+        private void AssertFileContentEqual(string expected, string actual)
+        {
+            Assert.Equal(expected.Trim(), actual.Trim(), ignoreLineEndingDifferences: true);
         }
     }
 }
