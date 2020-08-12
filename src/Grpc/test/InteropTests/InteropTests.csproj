@@ -3,8 +3,6 @@
   <PropertyGroup>
     <ContainsFunctionalTestAssets>true</ContainsFunctionalTestAssets>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-
-    <BuildHelixPayload>true</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
