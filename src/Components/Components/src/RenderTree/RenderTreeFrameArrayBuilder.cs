@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             };
         }
 
-        public void AppendComponentReferenceCapture(int sequence, Action<object?> componentReferenceCaptureAction, int parentFrameIndexValue)
+        public void AppendComponentReferenceCapture(int sequence, Action<object> componentReferenceCaptureAction, int parentFrameIndexValue)
         {
             if (_itemsInUse == _items.Length)
             {
