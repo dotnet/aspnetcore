@@ -13,9 +13,11 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -493,8 +495,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(mockLoggerFactory.Object);
+            serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
             serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
+            serviceCollection.AddSingleton(Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
             var options = new KestrelServerOptions
             {
@@ -629,8 +632,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(mockLoggerFactory.Object);
+            serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
             serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
+            serviceCollection.AddSingleton(Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
             var options = new KestrelServerOptions
             {

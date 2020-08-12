@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
@@ -23,14 +24,27 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 {
+    internal delegate ValueTask<SslServerAuthenticationOptions> HttpsOptionsCallback(ConnectionContext connection, SslStream stream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken);
+
     internal class HttpsConnectionMiddleware
     {
         private const string EnableWindows81Http2 = "Microsoft.AspNetCore.Server.Kestrel.EnableWindows81Http2";
+
+        private static readonly bool _isWindowsVersionIncompatibleWithHttp2 = IsWindowsVersionIncompatibleWithHttp2();
+
         private readonly ConnectionDelegate _next;
+        private readonly TimeSpan _handshakeTimeout;
+        private readonly ILogger<HttpsConnectionMiddleware> _logger;
+        private readonly Func<Stream, SslStream> _sslStreamFactory;
+
+        // The following fields are only set by HttpsConnectionAdapterOptions ctor.
         private readonly HttpsConnectionAdapterOptions _options;
-        private readonly ILogger _logger;
         private readonly X509Certificate2 _serverCertificate;
         private readonly Func<ConnectionContext, string, X509Certificate2> _serverCertificateSelector;
+
+        // The following fields are only set by ServerOptionsSelectionCallback ctor.
+        private readonly HttpsOptionsCallback _httpsOptionsCallback;
+        private readonly object _httpsOptionsCallbackState;
 
         public HttpsConnectionMiddleware(ConnectionDelegate next, HttpsConnectionAdapterOptions options)
           : this(next, options, loggerFactory: NullLoggerFactory.Instance)
@@ -44,35 +58,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 throw new ArgumentNullException(nameof(options));
             }
 
-            _options = options;
-            _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
-
-            // This configuration will always fail per-request, preemptively fail it here. See HttpConnection.SelectProtocol().
-            if (options.HttpProtocols == HttpProtocols.Http2)
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                {
-                    throw new NotSupportedException(CoreStrings.Http2NoTlsOsx);
-                }
-                else if (IsWindowsVersionIncompatible())
-                {
-                    throw new NotSupportedException(CoreStrings.Http2NoTlsWin81);
-                }
-            }
-            else if (options.HttpProtocols == HttpProtocols.Http1AndHttp2 && IsWindowsVersionIncompatible())
-            {
-                _logger.Http2DefaultCiphersInsufficient();
-                options.HttpProtocols = HttpProtocols.Http1;
-            }
-
-            _next = next;
-            // capture the certificate now so it can't be switched after validation
-            _serverCertificate = options.ServerCertificate;
-            _serverCertificateSelector = options.ServerCertificateSelector;
-            if (_serverCertificate == null && _serverCertificateSelector == null)
+            if (options.ServerCertificate == null && options.ServerCertificateSelector == null)
             {
                 throw new ArgumentException(CoreStrings.ServerCertificateRequired, nameof(options));
             }
+
+            _next = next;
+            _handshakeTimeout = options.HandshakeTimeout;
+            _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
+
+            // Something similar to the following could allow us to remove more duplicate logic, but we need https://github.com/dotnet/runtime/issues/40402 to be fixed first.
+            //var sniOptionsSelector = new SniOptionsSelector("", new Dictionary<string, SniConfig> { { "*", new SniConfig() } }, new NoopCertificateConfigLoader(), options, options.HttpProtocols, _logger);
+            //_httpsOptionsCallback = SniOptionsSelector.OptionsCallback;
+            //_httpsOptionsCallbackState = sniOptionsSelector;
+            //_sslStreamFactory = s => new SslStream(s);
+
+            _options = options;
+            _options.HttpProtocols = ValidateAndNormalizeHttpProtocols(_options.HttpProtocols, _logger);
+
+            // capture the certificate now so it can't be switched after validation
+            _serverCertificate = options.ServerCertificate;
+            _serverCertificateSelector = options.ServerCertificateSelector;
 
             // If a selector is provided then ignore the cert, it may be a default cert.
             if (_serverCertificateSelector != null)
@@ -84,13 +90,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             {
                 EnsureCertificateIsAllowedForServerAuth(_serverCertificate);
             }
+
+            var remoteCertificateValidationCallback = _options.ClientCertificateMode == ClientCertificateMode.NoCertificate ?
+                (RemoteCertificateValidationCallback)null : RemoteCertificateValidationCallback;
+
+            _sslStreamFactory = s => new SslStream(s, leaveInnerStreamOpen: false, userCertificateValidationCallback: remoteCertificateValidationCallback);
+        }
+
+        internal HttpsConnectionMiddleware(
+            ConnectionDelegate next,
+            HttpsOptionsCallback httpsOptionsCallback,
+            object httpsOptionsCallbackState,
+            TimeSpan handshakeTimeout,
+            ILoggerFactory loggerFactory)
+        {
+            _next = next;
+            _handshakeTimeout = handshakeTimeout;
+            _logger = loggerFactory.CreateLogger<HttpsConnectionMiddleware>();
+
+            _httpsOptionsCallback = httpsOptionsCallback;
+            _httpsOptionsCallbackState = httpsOptionsCallbackState;
+            _sslStreamFactory = s => new SslStream(s);
         }
 
         public async Task OnConnectionAsync(ConnectionContext context)
         {
             await Task.Yield();
 
-            bool certificateRequired;
             if (context.Features.Get<ITlsConnectionFeature>() != null)
             {
                 await _next(context);
@@ -101,152 +127,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             context.Features.Set<ITlsConnectionFeature>(feature);
             context.Features.Set<ITlsHandshakeFeature>(feature);
 
-            var memoryPool = context.Features.Get<IMemoryPoolFeature>()?.MemoryPool;
-
-            var inputPipeOptions = new StreamPipeReaderOptions
-            (
-                pool: memoryPool,
-                bufferSize: memoryPool.GetMinimumSegmentSize(),
-                minimumReadSize: memoryPool.GetMinimumAllocSize(),
-                leaveOpen: true
-            );
-
-            var outputPipeOptions = new StreamPipeWriterOptions
-            (
-                pool: memoryPool,
-                leaveOpen: true
-            );
-
-            SslDuplexPipe sslDuplexPipe = null;
-
-            if (_options.ClientCertificateMode == ClientCertificateMode.NoCertificate)
-            {
-                sslDuplexPipe = new SslDuplexPipe(context.Transport, inputPipeOptions, outputPipeOptions);
-                certificateRequired = false;
-            }
-            else
-            {
-                sslDuplexPipe = new SslDuplexPipe(context.Transport, inputPipeOptions, outputPipeOptions, s => new SslStream(s,
-                    leaveInnerStreamOpen: false,
-                    userCertificateValidationCallback: (sender, certificate, chain, sslPolicyErrors) =>
-                    {
-                        if (certificate == null)
-                        {
-                            return _options.ClientCertificateMode != ClientCertificateMode.RequireCertificate;
-                        }
-
-                        if (_options.ClientCertificateValidation == null)
-                        {
-                            if (sslPolicyErrors != SslPolicyErrors.None)
-                            {
-                                return false;
-                            }
-                        }
-
-                        var certificate2 = ConvertToX509Certificate2(certificate);
-                        if (certificate2 == null)
-                        {
-                            return false;
-                        }
-
-                        if (_options.ClientCertificateValidation != null)
-                        {
-                            if (!_options.ClientCertificateValidation(certificate2, chain, sslPolicyErrors))
-                            {
-                                return false;
-                            }
-                        }
-
-                        return true;
-                    }));
-
-                certificateRequired = true;
-            }
-
+            var sslDuplexPipe = CreateSslDuplexPipe(context.Transport, context.Features.Get<IMemoryPoolFeature>()?.MemoryPool);
             var sslStream = sslDuplexPipe.Stream;
 
-            using (var cancellationTokeSource = new CancellationTokenSource(_options.HandshakeTimeout))
+            try
             {
-                try
+                using var cancellationTokenSource = new CancellationTokenSource(_handshakeTimeout);
+                if (_httpsOptionsCallback is null)
                 {
-                    // Adapt to the SslStream signature
-                    ServerCertificateSelectionCallback selector = null;
-                    if (_serverCertificateSelector != null)
-                    {
-                        selector = (sender, name) =>
-                        {
-                            feature.HostName = name;
-                            context.Features.Set(sslStream);
-                            var cert = _serverCertificateSelector(context, name);
-                            if (cert != null)
-                            {
-                                EnsureCertificateIsAllowedForServerAuth(cert);
-                            }
-                            return cert;
-                        };
-                    }
-
-                    var sslOptions = new SslServerAuthenticationOptions
-                    {
-                        ServerCertificate = _serverCertificate,
-                        ServerCertificateSelectionCallback = selector,
-                        ClientCertificateRequired = certificateRequired,
-                        EnabledSslProtocols = _options.SslProtocols,
-                        CertificateRevocationCheckMode = _options.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
-                        ApplicationProtocols = new List<SslApplicationProtocol>()
-                    };
-
-                    // This is order sensitive
-                    if ((_options.HttpProtocols & HttpProtocols.Http2) != 0)
-                    {
-                        sslOptions.ApplicationProtocols.Add(SslApplicationProtocol.Http2);
-                        // https://tools.ietf.org/html/rfc7540#section-9.2.1
-                        sslOptions.AllowRenegotiation = false;
-                    }
-
-                    if ((_options.HttpProtocols & HttpProtocols.Http1) != 0)
-                    {
-                        sslOptions.ApplicationProtocols.Add(SslApplicationProtocol.Http11);
-                    }
-
-                    _options.OnAuthenticate?.Invoke(context, sslOptions);
-
-                    KestrelEventSource.Log.TlsHandshakeStart(context, sslOptions);
-
-                    await sslStream.AuthenticateAsServerAsync(sslOptions, cancellationTokeSource.Token);
+                    await DoOptionsBasedHandshakeAsync(context, sslStream, feature, cancellationTokenSource.Token);
                 }
-                catch (OperationCanceledException)
+                else
                 {
-                    KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
-                    KestrelEventSource.Log.TlsHandshakeStop(context, null);
-
-                    _logger.AuthenticationTimedOut();
-                    await sslStream.DisposeAsync();
-                    return;
+                    var state = (this, context, feature);
+                    await sslStream.AuthenticateAsServerAsync(ServerOptionsCallback, state, cancellationTokenSource.Token);
                 }
-                catch (IOException ex)
-                {
-                    KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
-                    KestrelEventSource.Log.TlsHandshakeStop(context, null);
+            }
+            catch (OperationCanceledException)
+            {
+                KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
+                KestrelEventSource.Log.TlsHandshakeStop(context, null);
 
-                    _logger.AuthenticationFailed(ex);
-                    await sslStream.DisposeAsync();
-                    return;
-                }
-                catch (AuthenticationException ex)
-                {
-                    KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
-                    KestrelEventSource.Log.TlsHandshakeStop(context, null);
+                _logger.AuthenticationTimedOut();
+                await sslStream.DisposeAsync();
+                return;
+            }
+            catch (IOException ex)
+            {
+                KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
+                KestrelEventSource.Log.TlsHandshakeStop(context, null);
 
-                    _logger.AuthenticationFailed(ex);
+                _logger.AuthenticationFailed(ex);
+                await sslStream.DisposeAsync();
+                return;
+            }
+            catch (AuthenticationException ex)
+            {
+                KestrelEventSource.Log.TlsHandshakeFailed(context.ConnectionId);
+                KestrelEventSource.Log.TlsHandshakeStop(context, null);
 
-                    await sslStream.DisposeAsync();
-                    return;
-                }
+                _logger.AuthenticationFailed(ex);
+
+                await sslStream.DisposeAsync();
+                return;
             }
 
             feature.ApplicationProtocol = sslStream.NegotiatedApplicationProtocol.Protocol;
             context.Features.Set<ITlsApplicationProtocolFeature>(feature);
+
             feature.ClientCertificate = ConvertToX509Certificate2(sslStream.RemoteCertificate);
             feature.CipherAlgorithm = sslStream.CipherAlgorithm;
             feature.CipherStrength = sslStream.CipherStrength;
@@ -282,7 +210,135 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
         }
 
-        private static void EnsureCertificateIsAllowedForServerAuth(X509Certificate2 certificate)
+        private Task DoOptionsBasedHandshakeAsync(ConnectionContext context, SslStream sslStream, Core.Internal.TlsConnectionFeature feature, CancellationToken cancellationToken)
+        {
+            // Adapt to the SslStream signature
+            ServerCertificateSelectionCallback selector = null;
+            if (_serverCertificateSelector != null)
+            {
+                selector = (sender, name) =>
+                {
+                    feature.HostName = name;
+                    context.Features.Set(sslStream);
+                    var cert = _serverCertificateSelector(context, name);
+                    if (cert != null)
+                    {
+                        EnsureCertificateIsAllowedForServerAuth(cert);
+                    }
+                    return cert;
+                };
+            }
+
+            var sslOptions = new SslServerAuthenticationOptions
+            {
+                ServerCertificate = _serverCertificate,
+                ServerCertificateSelectionCallback = selector,
+                ClientCertificateRequired = _options.ClientCertificateMode != ClientCertificateMode.NoCertificate,
+                EnabledSslProtocols = _options.SslProtocols,
+                CertificateRevocationCheckMode = _options.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
+            };
+
+            ConfigureAlpn(sslOptions, _options.HttpProtocols);
+
+            _options.OnAuthenticate?.Invoke(context, sslOptions);
+
+            KestrelEventSource.Log.TlsHandshakeStart(context, sslOptions);
+
+            return sslStream.AuthenticateAsServerAsync(sslOptions, cancellationToken);
+        }
+
+        internal static void ConfigureAlpn(SslServerAuthenticationOptions serverOptions, HttpProtocols httpProtocols)
+        {
+            serverOptions.ApplicationProtocols = new List<SslApplicationProtocol>();
+
+            // This is order sensitive
+            if ((httpProtocols & HttpProtocols.Http2) != 0)
+            {
+                serverOptions.ApplicationProtocols.Add(SslApplicationProtocol.Http2);
+                // https://tools.ietf.org/html/rfc7540#section-9.2.1
+                serverOptions.AllowRenegotiation = false;
+            }
+
+            if ((httpProtocols & HttpProtocols.Http1) != 0)
+            {
+                serverOptions.ApplicationProtocols.Add(SslApplicationProtocol.Http11);
+            }
+        }
+
+        internal static bool RemoteCertificateValidationCallback(
+            ClientCertificateMode clientCertificateMode,
+            Func<X509Certificate2, X509Chain, SslPolicyErrors, bool> clientCertificateValidation,
+            X509Certificate certificate,
+            X509Chain chain,
+            SslPolicyErrors sslPolicyErrors)
+        {
+            if (certificate == null)
+            {
+                return clientCertificateMode != ClientCertificateMode.RequireCertificate;
+            }
+
+            if (clientCertificateValidation == null)
+            {
+                if (sslPolicyErrors != SslPolicyErrors.None)
+                {
+                    return false;
+                }
+            }
+
+            var certificate2 = ConvertToX509Certificate2(certificate);
+            if (certificate2 == null)
+            {
+                return false;
+            }
+
+            if (clientCertificateValidation != null)
+            {
+                if (!clientCertificateValidation(certificate2, chain, sslPolicyErrors))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool RemoteCertificateValidationCallback(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors) =>
+            RemoteCertificateValidationCallback(_options.ClientCertificateMode, _options.ClientCertificateValidation, certificate, chain, sslPolicyErrors);
+
+        private SslDuplexPipe CreateSslDuplexPipe(IDuplexPipe transport, MemoryPool<byte> memoryPool)
+        {
+            var inputPipeOptions = new StreamPipeReaderOptions
+            (
+                pool: memoryPool,
+                bufferSize: memoryPool.GetMinimumSegmentSize(),
+                minimumReadSize: memoryPool.GetMinimumAllocSize(),
+                leaveOpen: true
+            );
+
+            var outputPipeOptions = new StreamPipeWriterOptions
+            (
+                pool: memoryPool,
+                leaveOpen: true
+            );
+
+            return new SslDuplexPipe(transport, inputPipeOptions, outputPipeOptions, _sslStreamFactory);
+        }
+
+        private static async ValueTask<SslServerAuthenticationOptions> ServerOptionsCallback(SslStream sslStream, SslClientHelloInfo clientHelloInfo, object state, CancellationToken cancellationToken)
+        {
+            var (middleware, context, feature) = (ValueTuple<HttpsConnectionMiddleware, ConnectionContext, Core.Internal.TlsConnectionFeature>)state;
+
+            feature.HostName = clientHelloInfo.ServerName;
+            context.Features.Set(sslStream);
+
+            var sslOptions = await middleware._httpsOptionsCallback(context, sslStream, clientHelloInfo, middleware._httpsOptionsCallbackState, cancellationToken);
+
+            KestrelEventSource.Log.TlsHandshakeStart(context, sslOptions);
+
+            return sslOptions;
+        }
+
+        internal static void EnsureCertificateIsAllowedForServerAuth(X509Certificate2 certificate)
         {
             if (!CertificateLoader.IsCertificateAllowedForServerAuth(certificate))
             {
@@ -305,7 +361,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             return new X509Certificate2(certificate);
         }
 
-        private static bool IsWindowsVersionIncompatible()
+        internal static HttpProtocols ValidateAndNormalizeHttpProtocols(HttpProtocols httpProtocols, ILogger<HttpsConnectionMiddleware> logger)
+        {
+            // This configuration will always fail per-request, preemptively fail it here. See HttpConnection.SelectProtocol().
+            if (httpProtocols == HttpProtocols.Http2)
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    throw new NotSupportedException(CoreStrings.Http2NoTlsOsx);
+                }
+                else if (_isWindowsVersionIncompatibleWithHttp2)
+                {
+                    throw new NotSupportedException(CoreStrings.Http2NoTlsWin81);
+                }
+            }
+            else if (httpProtocols == HttpProtocols.Http1AndHttp2 && _isWindowsVersionIncompatibleWithHttp2)
+            {
+                logger.Http2DefaultCiphersInsufficient();
+                return HttpProtocols.Http1;
+            }
+
+            return httpProtocols;
+        }
+
+        private static bool IsWindowsVersionIncompatibleWithHttp2()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -349,12 +428,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 eventId: new EventId(4, "Http2DefaultCiphersInsufficient"),
                 formatString: CoreStrings.Http2DefaultCiphersInsufficient);
 
-        public static void AuthenticationFailed(this ILogger logger, Exception exception) => _authenticationFailed(logger, exception);
+        public static void AuthenticationFailed(this ILogger<HttpsConnectionMiddleware> logger, Exception exception) => _authenticationFailed(logger, exception);
 
-        public static void AuthenticationTimedOut(this ILogger logger) => _authenticationTimedOut(logger, null);
+        public static void AuthenticationTimedOut(this ILogger<HttpsConnectionMiddleware> logger) => _authenticationTimedOut(logger, null);
 
-        public static void HttpsConnectionEstablished(this ILogger logger, string connectionId, SslProtocols sslProtocol) => _httpsConnectionEstablished(logger, connectionId, sslProtocol, null);
+        public static void HttpsConnectionEstablished(this ILogger<HttpsConnectionMiddleware> logger, string connectionId, SslProtocols sslProtocol) => _httpsConnectionEstablished(logger, connectionId, sslProtocol, null);
 
-        public static void Http2DefaultCiphersInsufficient(this ILogger logger) => _http2DefaultCiphersInsufficient(logger, null);
+        public static void Http2DefaultCiphersInsufficient(this ILogger<HttpsConnectionMiddleware> logger) => _http2DefaultCiphersInsufficient(logger, null);
     }
 }

@@ -24,7 +24,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -69,9 +69,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var env = new Mock<IHostEnvironment>();
             env.SetupGet(e => e.ContentRootPath).Returns(Directory.GetCurrentDirectory());
 
-            options.ApplicationServices = new ServiceCollection().AddSingleton(env.Object).AddLogging().BuildServiceProvider();
-            var loader = new KestrelConfigurationLoader(options, configuration, reloadOnChange: false);
+            var serviceProvider =  new ServiceCollection().AddLogging().BuildServiceProvider();
+            options.ApplicationServices = serviceProvider;
+
+            var logger = serviceProvider.GetRequiredService<ILogger<KestrelServer>>();
+            var httpsLogger = serviceProvider.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
+            var loader = new KestrelConfigurationLoader(options, configuration, env.Object, reloadOnChange: false, logger, httpsLogger);
             loader.Load();
+
             void ConfigureListenOptions(ListenOptions listenOptions)
             {
                 listenOptions.KestrelServerOptions = options;
@@ -145,6 +150,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     ServerCertificate = _x509Certificate2,
                     ClientCertificateMode = ClientCertificateMode.AllowCertificate
                 });
+            }
+
+            await using (var server = new TestServer(context =>
+                {
+                    var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+                    Assert.NotNull(tlsFeature);
+                    Assert.Null(tlsFeature.ClientCertificate);
+                    return context.Response.WriteAsync("hello world");
+                }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+            {
+                var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
+                Assert.Equal("hello world", result);
+            }
+        }
+
+        [Fact]
+        [QuarantinedTest("https://github.com/dotnet/runtime/issues/40402")]
+        public async Task ClientCertificateRequiredConfiguredInCallbackContinuesWhenNoCertificate()
+        {
+            void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.UseHttps((connection, stream, clientHelloInfo, state, cancellationToken) =>
+                    new ValueTask<SslServerAuthenticationOptions>(new SslServerAuthenticationOptions
+                    {
+                        ServerCertificate = _x509Certificate2,
+                        // From the API Docs: "Note that this is only a request --
+                        // if no certificate is provided, the server still accepts the connection request."
+                        // Not to mention this is equivalent to the test above.
+                        ClientCertificateRequired = true,
+                        RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
+                        CertificateRevocationCheckMode = X509RevocationMode.NoCheck
+                    }), state: null, HttpsConnectionAdapterOptions.DefaultHandshakeTimeout);
             }
 
             await using (var server = new TestServer(context =>
