@@ -203,11 +203,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             if (ResponsePipeWrapper != null)
             {
-                var completeAsyncTask = ResponsePipeWrapper.CompleteAsync();
-                if (!completeAsyncTask.IsCompletedSuccessfully)
+                var completeAsyncValueTask = ResponsePipeWrapper.CompleteAsync();
+                if (!completeAsyncValueTask.IsCompletedSuccessfully)
                 {
-                    return CompleteResponseBodyAwaited(completeAsyncTask);
+                    return CompleteResponseBodyAwaited(completeAsyncValueTask);
                 }
+                completeAsyncValueTask.GetAwaiter().GetResult();
             }
 
             if (!HasResponseStarted)
