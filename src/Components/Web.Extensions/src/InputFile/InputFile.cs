@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
@@ -35,6 +36,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// This only has an effect when using Blazor Server.
         /// </summary>
         [Parameter]
+        [UnsupportedOSPlatform("browser")]
         public int MaxSignalRChunkSize { get; set; } = 20 * 1024; // SignalR limit is 32K.
 
         /// <summary>
@@ -42,6 +44,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// This only has an effect when using Blazor Server.
         /// </summary>
         [Parameter]
+        [UnsupportedOSPlatform("browser")]
         public int MaxUnreadMemoryBufferSize { get; set; } = 1024 * 1024;
 
         /// <summary>
