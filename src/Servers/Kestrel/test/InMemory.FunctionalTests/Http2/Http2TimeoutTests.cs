@@ -147,6 +147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public async Task PING_NoKeepAliveTimeout_DoesNotResetKeepAliveTimeout()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -156,13 +157,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             CreateConnection();
 
-            await InitializeConnectionAsync(_noopApplication);
+            await InitializeConnectionAsync(_echoApplication);
 
             // Connection starts and sets keep alive timeout
             _mockTimeoutControl.Verify(c => c.SetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Once);
             _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Never);
             _mockTimeoutControl.Verify(c => c.CancelTimeout(), Times.Never);
 
+            // Stream will stay open because it is waiting for request body to end
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
 
             // Starting a stream cancels the keep alive timeout
@@ -176,6 +178,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // Server doesn't reset keep alive timeout because it isn't running
             _mockTimeoutControl.Verify(c => c.ResetTimeout(It.IsAny<long>(), TimeoutReason.KeepAlive), Times.Never);
+
+            // End stream
+            await SendDataAsync(1, _helloWorldBytes, endStream: true);
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 32,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: _helloWorldBytes.Length,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
         }
 
         [Fact]
