@@ -28,11 +28,16 @@ RED="\033[0;31m"
 YELLOW="\033[0;33m"
 MAGENTA="\033[0;95m"
 
-echo "Ensure $DOTNET_ROOT exists: mkdir -p $DOTNET_ROOT"
-mkdir -p $DOTNET_ROOT
+echo "Ensure $DOTNET_ROOT/shared directories exist..."
+mkdir -p $DOTNET_ROOT/shared/Microsoft.AspNetCore.App
+mkdir -p $DOTNET_ROOT/shared/Microsoft.NETCore.App
 
 echo "Symlink sdk: ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/sdk $DOTNET_ROOT/sdk"
 ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/sdk $DOTNET_ROOT/sdk
+echo "Symlink : ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/shared/Microsoft.AspNetCore.App/*  $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/"
+ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/shared/Microsoft.AspNetCore.App/*  $DOTNET_ROOT/shared/Microsoft.AspNetCore.App/
+echo "Symlink : ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/shared/Microsoft.NETCore.App/*  $DOTNET_ROOT/shared/Microsoft.NETCore.App/"
+ln -s $HELIX_CORRELATION_PAYLOAD/dotnet/shared/Microsoft.NETCore.App/*  $DOTNET_ROOT/shared/Microsoft.NETCore.App/
 
 curl -o dotnet-install.sh -sSL https://dot.net/v1/dotnet-install.sh
 if [ $? -ne 0 ]; then
