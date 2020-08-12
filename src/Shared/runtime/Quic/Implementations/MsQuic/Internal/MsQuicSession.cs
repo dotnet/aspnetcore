@@ -56,7 +56,7 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
 
             QuicExceptionHelpers.ThrowIfFailed(MsQuicApi.Api.ListenerOpenDelegate(
                 _nativeObjPtr,
-                MsQuicListener.NativeCallbackHandler,
+                MsQuicListener.s_listenerDelegate,
                 IntPtr.Zero,
                 out IntPtr listenerPointer),
                 "Could not open listener.");

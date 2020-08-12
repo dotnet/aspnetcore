@@ -26,7 +26,7 @@ namespace System.Net.Quic.Implementations.MsQuic
         private GCHandle _handle;
 
         // Delegate that wraps the static function that will be called when receiving an event.
-        private static readonly ListenerCallbackDelegate s_listenerDelegate = new ListenerCallbackDelegate(NativeCallbackHandler);
+        internal static readonly ListenerCallbackDelegate s_listenerDelegate = new ListenerCallbackDelegate(NativeCallbackHandler);
 
         // Ssl listening options (ALPN, cert, etc)
         private readonly SslServerAuthenticationOptions _sslOptions;
@@ -189,7 +189,7 @@ namespace System.Net.Quic.Implementations.MsQuic
             _acceptConnectionQueue.Writer.TryComplete();
         }
 
-        internal static uint NativeCallbackHandler(
+        private static uint NativeCallbackHandler(
             IntPtr listener,
             IntPtr context,
             ref ListenerEvent connectionEventStruct)

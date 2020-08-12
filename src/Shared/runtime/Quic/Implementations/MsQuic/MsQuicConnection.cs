@@ -37,8 +37,8 @@ namespace System.Net.Quic.Implementations.MsQuic
         private SslApplicationProtocol _negotiatedAlpnProtocol;
 
         // TODO: only allocate these when there is an outstanding connect/shutdown.
-        private readonly TaskCompletionSource<uint> _connectTcs = new TaskCompletionSource<uint>();
-        private readonly TaskCompletionSource<uint> _shutdownTcs = new TaskCompletionSource<uint>();
+        private readonly TaskCompletionSource<uint> _connectTcs = new TaskCompletionSource<uint>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<uint> _shutdownTcs = new TaskCompletionSource<uint>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         private bool _disposed;
         private bool _connected;
@@ -291,6 +291,8 @@ namespace System.Net.Quic.Implementations.MsQuic
                 ErrorCode);
             QuicExceptionHelpers.ThrowIfFailed(status, "Failed to shutdown connection.");
 
+            Debug.Assert(_shutdownTcs.Task.IsCompleted == false);
+
             return new ValueTask(_shutdownTcs.Task);
         }
 
@@ -349,6 +351,8 @@ namespace System.Net.Quic.Implementations.MsQuic
             _disposed = true;
         }
 
+        // TODO: this appears abortive and will cause prior successfully shutdown and closed streams to drop data.
+        // It's unclear how to gracefully wait for a connection to be 100% done.
         internal override ValueTask CloseAsync(long errorCode, CancellationToken cancellationToken = default)
         {
             ThrowIfDisposed();
