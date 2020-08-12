@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
@@ -23,20 +24,24 @@ namespace Interop.FunctionalTests
         [MemberData(nameof(H2SpecTestCases))]
         public async Task RunIndividualTestCase(H2SpecTestCase testCase)
         {
-            var hostBuilder = new WebHostBuilder()
-                .UseKestrel(options =>
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.Listen(IPAddress.Loopback, 0, listenOptions =>
-                    {
-                        listenOptions.Protocols = HttpProtocols.Http2;
-                        if (testCase.Https)
+                    webHostBuilder
+                        .UseKestrel(options =>
                         {
-                            listenOptions.UseHttps(TestResources.GetTestCertificate());
-                        }
-                    });
+                            options.Listen(IPAddress.Loopback, 0, listenOptions =>
+                            {
+                                listenOptions.Protocols = HttpProtocols.Http2;
+                                if (testCase.Https)
+                                {
+                                    listenOptions.UseHttps(TestResources.GetTestCertificate());
+                                }
+                            });
+                        })
+                    .Configure(ConfigureHelloWorld);
                 })
-                .ConfigureServices(AddTestLogging)
-                .Configure(ConfigureHelloWorld);
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {

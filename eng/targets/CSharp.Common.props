@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
 
     <!-- Enables Strict mode for Roslyn compiler -->
     <Features>strict</Features>
@@ -12,7 +12,7 @@
     <PackageReference Include="MicroBuild.Core" Version="0.3.0" PrivateAssets="All" AllowExplicitReference="true" ExcludeAssets="All" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
     <!--
       Use the Razor SDK as a project reference. The version of the .NET Core SDK we build with often contains a version of the Razor SDK
       several versions older than latest. We reference the project to ensure it's built before the other projects that use it. Since this
@@ -25,10 +25,27 @@
       UndefineProperties="TargetFramework;TargetFrameworks" />
   </ItemGroup>
 
-  <ImportGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
+  <ImportGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
     <Import Project="$(RepoRoot)eng\targets\GetRazorSDKDirectory.props" />
     <Import Project="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Microsoft.NET.Sdk.Razor.props" />
   </ImportGroup>
+
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
+    <!-- See comments further up in the file when we import the Razor SDK-->
+    <Reference Include="Microsoft.NET.Sdk.BlazorWebAssembly"
+      PrivateAssets="All"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework;TargetFrameworks" />
+  </ItemGroup>
+
+  <ImportGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
+    <Import Project="$(RepoRoot)src\Components\WebAssembly\Sdk\src\build\net5.0\Microsoft.NET.Sdk.BlazorWebAssembly.props" />
+  </ImportGroup>
+
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">
+    <BlazorWebAssemblySdkDirectoryRoot>$(ArtifactsBinDir)\Microsoft.NET.Sdk.BlazorWebAssembly\$(Configuration)\sdk-output\</BlazorWebAssemblySdkDirectoryRoot>
+  </PropertyGroup>
 
   <ItemGroup Condition=" '$(IsTestProject)' != 'true' AND '$(DotNetBuildFromSource)' != 'true' ">
     <Reference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" PrivateAssets="All" />

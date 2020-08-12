@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void EventDuringBatchRendering_CanTriggerDOMEvents()
+        public virtual void EventDuringBatchRendering_CanTriggerDOMEvents()
         {
             Browser.MountTestComponent<EventDuringBatchRendering>();
 

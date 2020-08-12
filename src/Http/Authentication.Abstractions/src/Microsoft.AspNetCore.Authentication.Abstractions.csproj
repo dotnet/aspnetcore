@@ -8,7 +8,6 @@
     <PackageTags>aspnetcore;authentication;security</PackageTags>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
-    <LangVersion>Preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

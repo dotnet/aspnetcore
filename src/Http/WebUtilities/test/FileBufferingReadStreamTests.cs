@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Moq;
 using Xunit;
@@ -353,39 +352,49 @@ namespace Microsoft.AspNetCore.WebUtilities
         [Fact]
         public async Task CopyToAsyncWorks()
         {
-            var data = Enumerable.Range(0, 1024).Select(b => (byte)b).Reverse().ToArray();
+            // 4K is the lower bound on buffer sizes
+            var bufferSize = 4096;
+            var mostExpectedWrites = 8;
+            var data = Enumerable.Range(0, bufferSize * mostExpectedWrites).Select(b => (byte)b).ToArray();
             var inner = new MemoryStream(data);
 
             using var stream = new FileBufferingReadStream(inner, 1024 * 1024, bufferLimit: null, GetCurrentDirectory());
 
-            var withoutBufferMs = new MemoryStream();
+            var withoutBufferMs = new NumberOfWritesMemoryStream();
             await stream.CopyToAsync(withoutBufferMs);
 
-            var withBufferMs = new MemoryStream();
+            var withBufferMs = new NumberOfWritesMemoryStream();
             stream.Position = 0;
             await stream.CopyToAsync(withBufferMs);
 
             Assert.Equal(data, withoutBufferMs.ToArray());
+            Assert.Equal(mostExpectedWrites, withoutBufferMs.NumberOfWrites);
             Assert.Equal(data, withBufferMs.ToArray());
+            Assert.InRange(withBufferMs.NumberOfWrites, 1, mostExpectedWrites);
         }
 
         [Fact]
         public async Task CopyToAsyncWorksWithFileThreshold()
         {
-            var data = Enumerable.Range(0, 1024).Select(b => (byte)b).Reverse().ToArray();
+            // 4K is the lower bound on buffer sizes
+            var bufferSize = 4096;
+            var mostExpectedWrites = 8;
+            var data = Enumerable.Range(0, bufferSize * mostExpectedWrites).Select(b => (byte)b).Reverse().ToArray();
             var inner = new MemoryStream(data);
 
             using var stream = new FileBufferingReadStream(inner, 100, bufferLimit: null, GetCurrentDirectory());
 
-            var withoutBufferMs = new MemoryStream();
+            var withoutBufferMs = new NumberOfWritesMemoryStream();
             await stream.CopyToAsync(withoutBufferMs);
 
-            var withBufferMs = new MemoryStream();
+            var withBufferMs = new NumberOfWritesMemoryStream();
             stream.Position = 0;
             await stream.CopyToAsync(withBufferMs);
 
             Assert.Equal(data, withoutBufferMs.ToArray());
+            Assert.Equal(mostExpectedWrites, withoutBufferMs.NumberOfWrites);
             Assert.Equal(data, withBufferMs.ToArray());
+            Assert.InRange(withBufferMs.NumberOfWrites, 1, mostExpectedWrites);
         }
 
         [Fact]
@@ -485,6 +494,23 @@ namespace Microsoft.AspNetCore.WebUtilities
         private static string GetCurrentDirectory()
         {
             return AppContext.BaseDirectory;
+        }
+
+        private class NumberOfWritesMemoryStream : MemoryStream
+        {
+            public int NumberOfWrites { get; set; }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                NumberOfWrites++;
+                base.Write(buffer, offset, count);
+            }
+
+            public override void Write(ReadOnlySpan<byte> source)
+            {
+                NumberOfWrites++;
+                base.Write(source);
+            }
         }
     }
 }

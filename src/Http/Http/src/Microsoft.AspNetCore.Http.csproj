@@ -10,7 +10,6 @@
     <PackageTags>aspnetcore</PackageTags>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
-    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

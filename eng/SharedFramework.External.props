@@ -40,7 +40,6 @@
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options.DataAnnotations"                 Version="$(MicrosoftExtensionsOptionsDataAnnotationsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Options"                                 Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Primitives"                              Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
 
     <!--

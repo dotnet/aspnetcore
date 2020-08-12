@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
     /// </summary>
     public class HttpsConnectionAdapterOptions
     {
+        internal static TimeSpan DefaultHandshakeTimeout = TimeSpan.FromSeconds(10);
+
         private TimeSpan _handshakeTimeout;
 
         /// <summary>
@@ -24,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public HttpsConnectionAdapterOptions()
         {
             ClientCertificateMode = ClientCertificateMode.NoCertificate;
-            HandshakeTimeout = TimeSpan.FromSeconds(10);
+            HandshakeTimeout = DefaultHandshakeTimeout;
         }
 
         /// <summary>
@@ -91,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public Action<ConnectionContext, SslServerAuthenticationOptions> OnAuthenticate { get; set; }
 
         /// <summary>
-        /// Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive and finite.
+        /// Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive and finite. Defaults to 10 seconds.
         /// </summary>
         public TimeSpan HandshakeTimeout
         {

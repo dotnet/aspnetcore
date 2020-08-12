@@ -32,7 +32,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                                             IServerVariablesFeature,
                                             ITlsConnectionFeature,
                                             IHttpBodyControlFeature,
-                                            IHttpMaxRequestBodySizeFeature
+                                            IHttpMaxRequestBodySizeFeature,
+                                            IHttpResponseTrailersFeature,
+                                            IHttpResetFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -374,6 +376,50 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                 MaxRequestBodySize = value;
             }
+        }
+
+        internal IHttpResponseTrailersFeature GetResponseTrailersFeature()
+        {
+            // Check version is above 2.
+            if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpSupportTrailer(_pInProcessHandler))
+            {
+                return this;
+            }
+
+            return null;
+        }
+
+        IHeaderDictionary IHttpResponseTrailersFeature.Trailers
+        {
+            get => ResponseTrailers ??= HttpResponseTrailers;
+            set => ResponseTrailers = value;
+        }
+
+        internal IHttpResetFeature GetResetFeature()
+        {
+            // Check version is above 2.
+            if (HttpVersion >= System.Net.HttpVersion.Version20 && NativeMethods.HttpSupportTrailer(_pInProcessHandler))
+            {
+                return this;
+            }
+
+            return null;
+        }
+
+        void IHttpResetFeature.Reset(int errorCode)
+        {
+            if (errorCode < 0)
+            {
+                throw new ArgumentOutOfRangeException("'errorCode' cannot be negative");
+            }
+
+            SetResetCode(errorCode);
+            AbortIO(clientDisconnect: false);
+        }
+
+        internal unsafe void SetResetCode(int errorCode)
+        {
+            NativeMethods.HttpResetStream(_pInProcessHandler, (ulong)errorCode);
         }
 
         void IHttpResponseBodyFeature.DisableBuffering()

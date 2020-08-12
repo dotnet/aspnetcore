@@ -15,7 +15,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnableDefaultContentItems Condition=" '$(EnableDefaultContentItems)' == '' ">true</EnableDefaultContentItems>
   </PropertyGroup>
 
-  <Import Sdk="Microsoft.NET.Sdk.Razor" Project="Sdk.targets" Condition="'$(_RazorSdkImportsMicrosoftNetSdkRazor)' == 'true'" />
+  <Import Sdk="Microsoft.NET.Sdk.Razor" Project="Sdk.targets" />
   <Import Sdk="Microsoft.NET.Sdk.Web.ProjectSystem" Project="Sdk.targets" />
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" />
 
@@ -405,7 +405,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <TrimmerRootDescriptor Include="$(_BlazorTypeGranularTrimmerDescriptorFile)" />
-      <TrimmerRootDescriptor Include="$(MSBuildThisFileDirectory)LinkerWorkaround.xml" />
 
       <FileWrites Include="$(_BlazorTypeGranularTrimmerDescriptorFile)" />
     </ItemGroup>

@@ -58,7 +58,7 @@ Integration with static web assets:
   <_ScopedCssExtension>.rz.scp.css</_ScopedCssExtension>
   <ResolveStaticWebAssetsInputsDependsOn>$(ResolveStaticWebAssetsInputsDependsOn);_CollectAllScopedCssAssets;AddScopedCssBundle</ResolveStaticWebAssetsInputsDependsOn>
   <ResolveCurrentProjectStaticWebAssetsInputsDependsOn>$(ResolveCurrentProjectStaticWebAssetsInputsDependsOn);_AddGeneratedScopedCssFiles</ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
-  <GetCurrentProjectStaticWebAssetsDependsOn Condition="'$(UseBlazorWebAssembly)' == 'true'">$(GetCurrentProjectStaticWebAssetsDependsOn);IncludeScopedCssBundle;</GetCurrentProjectStaticWebAssetsDependsOn>
+  <GetCurrentProjectStaticWebAssetsDependsOn Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">$(GetCurrentProjectStaticWebAssetsDependsOn);IncludeScopedCssBundle;</GetCurrentProjectStaticWebAssetsDependsOn>
 </PropertyGroup>
 
 <Target Name="ResolveScopedCssInputs">

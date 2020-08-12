@@ -161,7 +161,7 @@ fetch_tizen_pkgs aarch64 gcc glibc glibc-devel libicu libicu-devel libatomic lin
 Inform "fetch coreclr packages"
 fetch_tizen_pkgs aarch64 lldb lldb-devel libgcc libstdc++ libstdc++-devel libunwind libunwind-devel lttng-ust-devel lttng-ust userspace-rcu-devel userspace-rcu
 Inform "fetch corefx packages"
-fetch_tizen_pkgs aarch64 libcom_err libcom_err-devel zlib zlib-devel libopenssl libopenssl1.1-devel krb5 krb5-devel
+fetch_tizen_pkgs aarch64 libcom_err libcom_err-devel zlib zlib-devel libopenssl11 libopenssl1.1-devel krb5 krb5-devel
 
 Inform "Initialize standard unified"
 fetch_tizen_pkgs_init standard unified

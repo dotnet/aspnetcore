@@ -362,8 +362,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="Microsoft.NET.Sdk.Razor.MvcApplicationPartsDiscovery.targets" Condition="'$(_TargetingNETCoreApp30OrLater)' == 'true'" />
 
-  <Import Project="Microsoft.NET.Sdk.Razor.Components.Wasm.targets" Condition="'$(_TargetingNET50OrLater)' == 'true' AND '$(UseBlazorWebAssembly)' == 'true'" />
-
   <!--
     These are the targets that actually do compilation using CSC, separated from the main file for ease of maintenance.
 

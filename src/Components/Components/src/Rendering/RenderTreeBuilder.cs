@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Rendering
@@ -686,6 +685,17 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public ArrayRange<RenderTreeFrame> GetFrames() =>
             _entries.ToRange();
 
+        internal void AssertTreeIsValid(IComponent component)
+        {
+            if (_openElementIndices.Count > 0)
+            {
+                // It's never valid to leave an element/component/region unclosed. Doing so
+                // could cause undefined behavior in diffing.
+                ref var invalidFrame = ref _entries.Buffer[_openElementIndices.Peek()];
+                throw new InvalidOperationException($"Render output is invalid for component of type '{component.GetType().FullName}'. A frame of type '{invalidFrame.FrameType}' was left unclosed. Do not use try/catch inside rendering logic, because partial output cannot be undone.");
+            }
+        }
+
         // Internal for testing
         internal void ProcessDuplicateAttributes(int first)
         {
@@ -707,41 +717,40 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             // Now that we've found the last attribute, we can iterate backwards and process duplicates.
-            var seenAttributeNames = (_seenAttributeNames ??= new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase));
+            var seenAttributeNames = (_seenAttributeNames ??= new Dictionary<string, int>(SimplifiedStringHashComparer.Instance));
             for (var i = last; i >= first; i--)
             {
                 ref var frame = ref buffer[i];
                 Debug.Assert(frame.FrameTypeField == RenderTreeFrameType.Attribute, $"Frame type is {frame.FrameTypeField} at {i}");
 
-                if (!seenAttributeNames.TryGetValue(frame.AttributeNameField, out var index))
+                if (!seenAttributeNames.TryAdd(frame.AttributeNameField, i))
                 {
-                    // This is the first time seeing this attribute name. Add to the dictionary and move on.
-                    seenAttributeNames.Add(frame.AttributeNameField, i);
-                }
-                else if (index < i)
-                {
-                    // This attribute is overriding a "silent frame" where we didn't create a frame for an AddAttribute call.
-                    // This is the case for a null event handler, or bool false value.
-                    //
-                    // We need to update our tracking, in case the attribute appeared 3 or more times.
-                    seenAttributeNames[frame.AttributeNameField] = i;
-                }
-                else if (index > i)
-                {
-                    // This attribute has been overridden. For now, blank out its name to *mark* it. We'll do a pass
-                    // later to wipe it out.
-                    frame = default;
-                }
-                else
-                {
-                    // OK so index == i. How is that possible? Well it's possible for a "silent frame" immediately
-                    // followed by setting the same attribute. Think of it this way, when we create a "silent frame"
-                    // we have to track that attribute name with *some* index.
-                    //
-                    // The only index value we can safely use is _entries.Count (next available). This is fine because
-                    // we never use these indexes to look stuff up, only for comparison.
-                    //
-                    // That gets you here, and there's no action to take.
+                    var index = seenAttributeNames[frame.AttributeNameField];
+                    if (index < i)
+                    {
+                        // This attribute is overriding a "silent frame" where we didn't create a frame for an AddAttribute call.
+                        // This is the case for a null event handler, or bool false value.
+                        //
+                        // We need to update our tracking, in case the attribute appeared 3 or more times.
+                        seenAttributeNames[frame.AttributeNameField] = i;
+                    }
+                    else if (index > i)
+                    {
+                        // This attribute has been overridden. For now, blank out its name to *mark* it. We'll do a pass
+                        // later to wipe it out.
+                        frame = default;
+                    }
+                    else
+                    {
+                        // OK so index == i. How is that possible? Well it's possible for a "silent frame" immediately
+                        // followed by setting the same attribute. Think of it this way, when we create a "silent frame"
+                        // we have to track that attribute name with *some* index.
+                        //
+                        // The only index value we can safely use is _entries.Count (next available). This is fine because
+                        // we never use these indexes to look stuff up, only for comparison.
+                        //
+                        // That gets you here, and there's no action to take.
+                    }
                 }
             }
 
@@ -780,7 +789,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 return;
             }
 
-            var seenAttributeNames = (_seenAttributeNames ??= new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase));
+            var seenAttributeNames = (_seenAttributeNames ??= new Dictionary<string, int>(SimplifiedStringHashComparer.Instance));
             seenAttributeNames[name] = _entries.Count; // See comment in ProcessAttributes for why this is OK.
         }
 

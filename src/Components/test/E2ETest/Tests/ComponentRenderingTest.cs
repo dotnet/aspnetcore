@@ -668,5 +668,20 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                     && completeLIs[0].FindElement(By.CssSelector(".item-isdone")).Selected;
             });
         }
+
+        [Fact]
+        public void CanHandleClearedChild()
+        {
+            var appElement = Browser.MountTestComponent<ContentEditable>();
+            var input = appElement.FindElement(By.Id("editable-div"));
+            var clickable = appElement.FindElement(By.Id("clickable"));
+
+            input.Clear();
+            clickable.Click();
+
+            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+            Assert.DoesNotContain(log, entry => entry.Level == LogLevel.Severe);
+            Browser.Equal("", () => input.Text);
+        } 
     }
 }

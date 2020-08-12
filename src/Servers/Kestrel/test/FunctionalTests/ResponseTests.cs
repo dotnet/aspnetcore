@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Tests;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
@@ -42,28 +43,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task LargeDownload()
         {
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
-                .UseKestrel()
-                .UseUrls("http://127.0.0.1:0/")
-                .ConfigureServices(AddTestLogging)
-                .Configure(app =>
+            var hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.Run(async context =>
-                    {
-                        var bytes = new byte[1024];
-                        for (int i = 0; i < bytes.Length; i++)
+                    webHostBuilder
+                        .UseKestrel()
+                        .UseUrls("http://127.0.0.1:0/")
+                        .Configure(app =>
                         {
-                            bytes[i] = (byte)i;
-                        }
+                            app.Run(async context =>
+                            {
+                                var bytes = new byte[1024];
+                                for (int i = 0; i < bytes.Length; i++)
+                                {
+                                    bytes[i] = (byte)i;
+                                }
 
-                        context.Response.ContentLength = bytes.Length * 1024;
+                                context.Response.ContentLength = bytes.Length * 1024;
 
-                        for (int i = 0; i < 1024; i++)
-                        {
-                            await context.Response.BodyWriter.WriteAsync(new Memory<byte>(bytes, 0, bytes.Length));
-                        }
-                    });
-                });
+                                for (int i = 0; i < 1024; i++)
+                                {
+                                    await context.Response.BodyWriter.WriteAsync(new Memory<byte>(bytes, 0, bytes.Length));
+                                }
+                            });
+                        });
+                })
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {
@@ -96,19 +101,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Theory, MemberData(nameof(NullHeaderData))]
         public async Task IgnoreNullHeaderValues(string headerName, StringValues headerValue, string expectedValue)
         {
-            var hostBuilder = TransportSelector.GetWebHostBuilder()
-                .UseKestrel()
-                .UseUrls("http://127.0.0.1:0/")
-                .ConfigureServices(AddTestLogging)
-                .Configure(app =>
+            var hostBuilder = TransportSelector.GetHostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.Run(async context =>
-                    {
-                        context.Response.Headers.Add(headerName, headerValue);
+                    webHostBuilder
+                        .UseKestrel()
+                        .UseUrls("http://127.0.0.1:0/")
+                        .Configure(app =>
+                        {
+                            app.Run(async context =>
+                            {
+                                context.Response.Headers.Add(headerName, headerValue);
 
-                        await context.Response.WriteAsync("");
-                    });
-                });
+                                await context.Response.WriteAsync("");
+                            });
+                        });
+                })
+                .ConfigureServices(AddTestLogging);
 
             using (var host = hostBuilder.Build())
             {
@@ -143,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var requestStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var appCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            using (var server = new TestServer(async httpContext =>
+            await using (var server = new TestServer(async httpContext =>
             {
                 try
                 {
@@ -175,7 +184,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 connectionClosed.SetResult();
 
                 await appCompleted.Task.DefaultTimeout();
-                await server.StopAsync();
             }
         }
 
@@ -193,7 +201,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var requestAbortedWh = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var requestStartWh = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            using (var server = new TestServer(async httpContext =>
+            await using (var server = new TestServer(async httpContext =>
             {
                 requestStartWh.SetResult();
 
@@ -239,7 +247,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 // RequestAborted tripped
                 await requestAbortedWh.Task.DefaultTimeout();
-                await server.StopAsync();
             }
         }
 
@@ -286,7 +293,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var scratchBuffer = new byte[maxRequestBufferSize * 8];
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 context.RequestAborted.Register(() => requestAborted.SetResult());
 
@@ -331,7 +338,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 clientClosedConnection.SetResult();
 
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() => writeTcs.Task).DefaultTimeout();
-                await server.StopAsync();
             }
 
             mockKestrelTrace.Verify(t => t.ConnectionStop(It.IsAny<string>()), Times.Once());
@@ -354,7 +360,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var scratchBuffer = new byte[responseBodySegmentSize];
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 context.RequestAborted.Register(() => requestAborted.SetResult());
 
@@ -398,7 +404,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 // On macOS, the default 5 shutdown timeout is insufficient for the write loop to complete, so give it extra time.
                 await appCompletedTcs.Task.DefaultTimeout();
-                await server.StopAsync();
             }
 
             var coreLogs = TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel");
@@ -421,7 +426,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             // There's not guarantee that the app even gets invoked in this test. The connection reset can be observed
             // as early as accept.
             var testServiceContext = new TestServiceContext(LoggerFactory);
-            using (var server = new TestServer(context => Task.CompletedTask, testServiceContext, listenOptions))
+            await using (var server = new TestServer(context => Task.CompletedTask, testServiceContext, listenOptions))
             {
                 for (var i = 0; i < numConnections; i++)
                 {
@@ -436,7 +441,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         connection.Reset();
                     }
                 }
-                await server.StopAsync();
             }
 
             var transportLogs = TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" ||
@@ -521,7 +525,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
 
-            using (var server = new TestServer(App, testContext))
+            await using (var server = new TestServer(App, testContext))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -546,7 +550,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     sw.Stop();
                     logger.LogInformation("Connection was aborted after {totalMilliseconds}ms.", sw.ElapsedMilliseconds);
                 }
-                await server.StopAsync();
             }
         }
 
@@ -590,7 +593,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = certificate });
             }
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 context.RequestAborted.Register(() =>
                 {
@@ -634,7 +637,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         await AssertStreamAborted(connection.Stream, chunkSize * chunks);
                     }
                 }
-                await server.StopAsync();
             }
         }
 
@@ -699,7 +701,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 copyToAsyncCts.SetException(new Exception("This shouldn't be reached."));
             }
 
-            using (var server = new TestServer(App, testContext, listenOptions))
+            await using (var server = new TestServer(App, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -728,7 +730,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await Assert.ThrowsAnyAsync<OperationCanceledException>(() => copyToAsyncCts.Task).DefaultTimeout();
                     await AssertStreamAborted(connection.Stream, responseSize);
                 }
-                await server.StopAsync();
             }
         }
 
@@ -776,7 +777,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 appFuncCompleted.SetResult();
             }
 
-            using (var server = new TestServer(App, testContext, listenOptions))
+            await using (var server = new TestServer(App, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -802,7 +803,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     connection.ShutdownSend();
                     await connection.WaitForConnectionClose();
                 }
-                await server.StopAsync();
             }
 
             mockKestrelTrace.Verify(t => t.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
@@ -854,7 +854,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await context.Response.BodyWriter.FlushAsync();
             }
 
-            using (var server = new TestServer(App, testContext, listenOptions))
+            await using (var server = new TestServer(App, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -889,8 +889,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     connection.ShutdownSend();
                     await connection.WaitForConnectionClose();
                 }
-
-                await server.StopAsync();
             }
 
             mockKestrelTrace.Verify(t => t.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
@@ -942,7 +940,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 appFuncCompleted.SetResult();
             }
 
-            using (var server = new TestServer(App, testContext, listenOptions))
+            await using (var server = new TestServer(App, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -967,7 +965,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await AssertStreamCompletedAtTargetRate(connection.Stream, expectedBytes: 33_553_556, targetBytesPerSecond);
                     await appFuncCompleted.Task.DefaultTimeout();
                 }
-                await server.StopAsync();
             }
 
             mockKestrelTrace.Verify(t => t.ResponseMinimumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()), Times.Never());

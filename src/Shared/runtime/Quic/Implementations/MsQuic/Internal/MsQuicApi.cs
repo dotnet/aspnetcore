@@ -23,7 +23,7 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
 
             try
             {
-                uint status = Interop.MsQuic.MsQuicOpen(version: 1, out registration);
+                uint status = Interop.MsQuic.MsQuicOpen(out registration);
                 if (!MsQuicStatusHelper.SuccessfulStatusCode(status))
                 {
                     throw new NotSupportedException(SR.net_quic_notsupported);
@@ -123,7 +123,13 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
                 Marshal.GetDelegateForFunctionPointer<MsQuicNativeMethods.GetParamDelegate>(
                     nativeRegistration.GetParam);
 
-            RegistrationOpenDelegate(Encoding.UTF8.GetBytes("SystemNetQuic"), out IntPtr ctx);
+            var registrationConfig = new MsQuicNativeMethods.RegistrationConfig
+            {
+                AppName = "SystemNetQuic",
+                ExecutionProfile = QUIC_EXECUTION_PROFILE.QUIC_EXECUTION_PROFILE_LOW_LATENCY
+            };
+
+            RegistrationOpenDelegate(ref registrationConfig, out IntPtr ctx);
             _registrationContext = ctx;
         }
 
@@ -312,15 +318,26 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
             return secConfig;
         }
 
-        public IntPtr SessionOpen(byte[] alpn)
+        public unsafe IntPtr SessionOpen(byte[] alpn)
         {
             IntPtr sessionPtr = IntPtr.Zero;
+            uint status;
 
-            uint status = SessionOpenDelegate(
-                _registrationContext,
-                alpn,
-                IntPtr.Zero,
-                ref sessionPtr);
+            fixed (byte* pAlpn = alpn)
+            {
+                var alpnBuffer = new MsQuicNativeMethods.QuicBuffer
+                {
+                    Length = (uint)alpn.Length,
+                    Buffer = pAlpn
+                };
+
+                status = SessionOpenDelegate(
+                    _registrationContext,
+                    &alpnBuffer,
+                    1,
+                    IntPtr.Zero,
+                    ref sessionPtr);
+            }
 
             QuicExceptionHelpers.ThrowIfFailed(status, "Could not open session.");
 

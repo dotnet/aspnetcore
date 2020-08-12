@@ -61,3 +61,7 @@ Issues, which we will think are candidates for the upcoming release, will be mov
 ## Process Visualization
 The following diagram summarizes the processes detailed above:
 ![image](https://user-images.githubusercontent.com/34246760/84076162-23d58c00-a98a-11ea-909d-6d17b91d4f84.png)
+
+
+## References
+We rely on some automation to help us with this process. You can learn more about some of these by reading our [Issue Management Policies](https://github.com/dotnet/aspnetcore/blob/master/docs/IssueManagementPolicies.md) document.

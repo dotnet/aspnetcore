@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace QuicSampleApp
@@ -22,60 +23,64 @@ namespace QuicSampleApp
 
         public static void Main(string[] args)
         {
-            var hostBuilder = new WebHostBuilder()
-                 .ConfigureLogging((_, factory) =>
-                 {
-                     factory.SetMinimumLevel(LogLevel.Debug);
-                     factory.AddConsole();
-                 })
-                 .UseKestrel()
-                 .UseQuic(options =>
-                 {
-                     options.Certificate = null;
-                     options.Alpn = "QuicTest";
-                     options.IdleTimeout = TimeSpan.FromHours(1);
-                 })
-                 .ConfigureKestrel((context, options) =>
-                 {
-                     var basePort = 5555;
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseKestrel()
+                        .UseQuic(options =>
+                        {
+                            options.Certificate = null;
+                            options.Alpn = "QuicTest";
+                            options.IdleTimeout = TimeSpan.FromHours(1);
+                        })
+                        .ConfigureKestrel((context, options) =>
+                        {
+                            var basePort = 5555;
 
-                     options.Listen(IPAddress.Any, basePort, listenOptions =>
-                     {
-                         listenOptions.Protocols = HttpProtocols.Http3;
+                            options.Listen(IPAddress.Any, basePort, listenOptions =>
+                            {
+                                listenOptions.Protocols = HttpProtocols.Http3;
 
-                         async Task EchoServer(MultiplexedConnectionContext connection)
-                         {
-                             // For graceful shutdown
+                                async Task EchoServer(MultiplexedConnectionContext connection)
+                                {
+                                    // For graceful shutdown
 
-                             while (true)
-                             {
-                                 var stream = await connection.AcceptAsync();
-                                 while (true)
-                                 {
-                                     var result = await stream.Transport.Input.ReadAsync();
+                                    while (true)
+                                    {
+                                        var stream = await connection.AcceptAsync();
+                                        while (true)
+                                        {
+                                            var result = await stream.Transport.Input.ReadAsync();
 
-                                     if (result.IsCompleted)
-                                     {
-                                         break;
-                                     }
+                                            if (result.IsCompleted)
+                                            {
+                                                break;
+                                            }
 
-                                     await stream.Transport.Output.WriteAsync(result.Buffer.ToArray());
+                                            await stream.Transport.Output.WriteAsync(result.Buffer.ToArray());
 
-                                     stream.Transport.Input.AdvanceTo(result.Buffer.End);
-                                 }
-                             }
-                         }
+                                            stream.Transport.Input.AdvanceTo(result.Buffer.End);
+                                        }
+                                    }
+                                }
 
-                         ((IMultiplexedConnectionBuilder)listenOptions).Use(next =>
-                         {
-                             return context =>
-                             {
-                                 return EchoServer(context);
-                             };
-                         });
-                     });
-                 })
-                 .UseStartup<Startup>();
+                                ((IMultiplexedConnectionBuilder)listenOptions).Use(next =>
+                                {
+                                    return context =>
+                                    {
+                                        return EchoServer(context);
+                                    };
+                                });
+                            });
+                        })
+                        .UseStartup<Startup>();
+                })
+                .ConfigureLogging((_, factory) =>
+                {
+                    factory.SetMinimumLevel(LogLevel.Debug);
+                    factory.AddConsole();
+                });
 
             hostBuilder.Build().Run();
         }

@@ -16,7 +16,7 @@ const eventPreventDefaultAttributeNamePrefix = 'preventDefault_';
 const eventStopPropagationAttributeNamePrefix = 'stopPropagation_';
 
 export class BrowserRenderer {
-  private eventDelegator: EventDelegator;
+  public eventDelegator: EventDelegator;
 
   private childComponentLocations: { [componentId: number]: LogicalElement } = {};
 
@@ -58,7 +58,7 @@ export class BrowserRenderer {
       }
     }
 
-    const ownerDocument = getClosestDomElement(element).ownerDocument;
+    const ownerDocument = getClosestDomElement(element)?.ownerDocument;
     const activeElementBefore = ownerDocument && ownerDocument.activeElement;
 
     this.applyEdits(batch, componentId, element, 0, edits, referenceFrames);
@@ -244,7 +244,7 @@ export class BrowserRenderer {
         this.applyAttribute(batch, componentId, newDomElementRaw, descendantFrame);
       } else {
         insertLogicalChild(newDomElementRaw, parent, childIndex);
-        inserted = true;        
+        inserted = true;
         // As soon as we see a non-attribute child, all the subsequent child frames are
         // not attributes, so bail out and insert the remnants recursively
         this.insertFrameRange(batch, componentId, newElement, 0, frames, descendantIndex, descendantsEndIndexExcl);
@@ -254,7 +254,7 @@ export class BrowserRenderer {
 
     // this element did not have any children, so it's not inserted yet.
     if (!inserted) {
-        insertLogicalChild(newDomElementRaw, parent, childIndex);
+      insertLogicalChild(newDomElementRaw, parent, childIndex);
     }
 
     // We handle setting 'value' on a <select> in three different ways:
@@ -263,10 +263,9 @@ export class BrowserRenderer {
     // [2] After we finish inserting the <select>, in case the descendant options are being
     //     added as an opaque markup block rather than individually. This is the other case below.
     // [3] In case the the value of the select and the option value is changed in the same batch.
-    //     We just receive an attribute frame and have to set the select value afterwards.     
+    //     We just receive an attribute frame and have to set the select value afterwards.
 
-    if (newDomElementRaw instanceof HTMLOptionElement)
-    {
+    if (newDomElementRaw instanceof HTMLOptionElement) {
       // Situation 1
       this.trySetSelectValueFromOptionElement(newDomElementRaw);
     } else if (newDomElementRaw instanceof HTMLSelectElement && selectValuePropname in newDomElementRaw) {
@@ -406,7 +405,7 @@ export class BrowserRenderer {
         } else {
           element.removeAttribute('value');
         }
-        
+
         // See above for why we have this special handling for <select>/<option>
         // Situation 3
         this.trySetSelectValueFromOptionElement(<HTMLOptionElement>element);

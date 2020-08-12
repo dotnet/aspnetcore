@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Authentication
 {
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="name">The name for the authentication scheme.</param>
         /// <param name="displayName">The display name for the authentication scheme.</param>
         /// <param name="handlerType">The <see cref="IAuthenticationHandler"/> type that handles this scheme.</param>
-        public AuthenticationScheme(string name, string? displayName, Type handlerType)
+        public AuthenticationScheme(string name, string? displayName, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type handlerType)
         {
             if (name == null)
             {
@@ -50,6 +51,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// The <see cref="IAuthenticationHandler"/> type that handles this scheme.
         /// </summary>
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
         public Type HandlerType { get; }
     }
 }

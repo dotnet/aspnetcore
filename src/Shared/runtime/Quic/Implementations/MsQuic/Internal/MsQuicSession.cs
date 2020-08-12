@@ -28,7 +28,7 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
 
             QuicExceptionHelpers.ThrowIfFailed(MsQuicApi.Api.ConnectionOpenDelegate(
                 _nativeObjPtr,
-                MsQuicConnection.NativeCallbackHandler,
+                MsQuicConnection.s_connectionDelegate,
                 IntPtr.Zero,
                 out IntPtr connectionPtr),
                 "Could not open the connection.");
@@ -83,15 +83,15 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
 
         public void SetPeerBiDirectionalStreamCount(ushort count)
         {
-            SetUshortParamter(QUIC_PARAM_SESSION.PEER_BIDI_STREAM_COUNT, count);
+            SetUshortParameter(QUIC_PARAM_SESSION.PEER_BIDI_STREAM_COUNT, count);
         }
 
         public void SetPeerUnidirectionalStreamCount(ushort count)
         {
-            SetUshortParamter(QUIC_PARAM_SESSION.PEER_UNIDI_STREAM_COUNT, count);
+            SetUshortParameter(QUIC_PARAM_SESSION.PEER_UNIDI_STREAM_COUNT, count);
         }
 
-        private unsafe void SetUshortParamter(QUIC_PARAM_SESSION param, ushort count)
+        private unsafe void SetUshortParameter(QUIC_PARAM_SESSION param, ushort count)
         {
             var buffer = new MsQuicNativeMethods.QuicBuffer()
             {

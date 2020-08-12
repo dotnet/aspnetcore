@@ -13,8 +13,6 @@
     <NoWarn>$(NoWarn);NU5100</NoWarn>
     <!-- It is intentional to not include build/netstandard2.0/Microsoft.NET.Sdk.Razor.targets -->
     <NoWarn>$(NoWarn);NU5129</NoWarn>
-    <!-- Cannot run pubternal check on net46 -->
-    <DisablePubternalApiCheck>true</DisablePubternalApiCheck>
     <!-- Need to build this project in source build -->
     <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
   </PropertyGroup>

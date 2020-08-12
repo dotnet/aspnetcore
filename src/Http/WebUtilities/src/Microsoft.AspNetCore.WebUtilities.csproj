@@ -10,7 +10,6 @@
     <PackageTags>aspnetcore</PackageTags>
     <IsPackable>false</IsPackable>
     <Nullable>enable</Nullable>
-    <LangVersion>Preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +19,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Net.Http.Headers" />
-    <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
 </Project>

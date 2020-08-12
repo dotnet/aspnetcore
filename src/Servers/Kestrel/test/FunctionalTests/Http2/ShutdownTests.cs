@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
             testContext.InitializeHeartbeat();
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 requestStarted.SetResult();
                 await requestUnblocked.Task.DefaultTimeout();
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
             TestApplicationErrorLogger.ThrowOnUngracefulShutdown = false;
 
             // Abortive shutdown leaves one request hanging
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 requestStarted.SetResult();
                 await requestUnblocked.Task.DefaultTimeout();
@@ -145,7 +145,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
                 await closingMessageTask;
                 cts.Cancel();
-                await stopServerTask;
+                try
+                {
+                    await stopServerTask;
+                }
+                // Remove when https://github.com/dotnet/runtime/issues/40290 is fixed
+                catch (OperationCanceledException)
+                {
+
+                }
             }
 
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closing."));

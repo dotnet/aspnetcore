@@ -23,7 +23,7 @@ namespace System.Net.Quic.Implementations.MsQuic
         private GCHandle _handle;
 
         // Delegate that wraps the static function that will be called when receiving an event.
-        private StreamCallbackDelegate? _callback;
+        internal static readonly StreamCallbackDelegate s_streamDelegate = new StreamCallbackDelegate(NativeCallbackHandler);
 
         // Backing for StreamId
         private long _streamId = -1;
@@ -62,10 +62,10 @@ namespace System.Net.Quic.Implementations.MsQuic
 
         private volatile bool _disposed;
 
-        private List<QuicBuffer> _receiveQuicBuffers = new List<QuicBuffer>();
+        private readonly List<QuicBuffer> _receiveQuicBuffers = new List<QuicBuffer>();
 
         // TODO consider using Interlocked.Exchange instead of a sync if we can avoid it.
-        private object _sync = new object();
+        private readonly object _sync = new object();
 
         // Creates a new MsQuicStream
         internal MsQuicStream(MsQuicConnection connection, QUIC_STREAM_OPEN_FLAG flags, IntPtr nativeObjPtr, bool inbound)
@@ -79,17 +79,19 @@ namespace System.Net.Quic.Implementations.MsQuic
             _shutdownWriteResettableCompletionSource = new ResettableCompletionSource<uint>();
             SetCallbackHandler();
 
+            bool isBidirectional = !flags.HasFlag(QUIC_STREAM_OPEN_FLAG.UNIDIRECTIONAL);
+
             if (inbound)
             {
-                _started = true;
-                _canWrite = !flags.HasFlag(QUIC_STREAM_OPEN_FLAG.UNIDIRECTIONAL);
                 _canRead = true;
+                _canWrite = isBidirectional;
+                _started = true;
             }
             else
             {
+                _canRead = isBidirectional;
                 _canWrite = true;
-                _canRead = !flags.HasFlag(QUIC_STREAM_OPEN_FLAG.UNIDIRECTIONAL);
-                StartWrites();
+                StartLocalStream();
             }
         }
 
@@ -396,7 +398,7 @@ namespace System.Net.Quic.Implementations.MsQuic
         {
             ThrowIfDisposed();
 
-            return default!;
+            return Task.CompletedTask;
         }
 
         public override ValueTask DisposeAsync()
@@ -715,7 +717,6 @@ namespace System.Net.Quic.Implementations.MsQuic
             CleanupSendState();
 
             // TODO throw if a write was canceled.
-            uint errorCode = evt.Data.SendComplete.Canceled;
 
             bool shouldComplete = false;
             lock (_sync)
@@ -753,10 +754,9 @@ namespace System.Net.Quic.Implementations.MsQuic
         {
             _handle = GCHandle.Alloc(this);
 
-            _callback = new StreamCallbackDelegate(NativeCallbackHandler);
             MsQuicApi.Api.SetCallbackHandlerDelegate(
                 _ptr,
-                _callback,
+                s_streamDelegate,
                 GCHandle.ToIntPtr(_handle));
         }
 
@@ -921,7 +921,10 @@ namespace System.Net.Quic.Implementations.MsQuic
             return _sendResettableCompletionSource.GetTypelessValueTask();
         }
 
-        private void StartWrites()
+        /// <summary>
+        /// Assigns a stream ID and begins process the stream.
+        /// </summary>
+        private void StartLocalStream()
         {
             Debug.Assert(!_started);
             uint status = MsQuicApi.Api.StreamStartDelegate(

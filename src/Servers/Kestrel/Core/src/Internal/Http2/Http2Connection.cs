@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         internal Http2StreamStack StreamPool;
 
         internal const int InitialStreamPoolSize = 5;
-        internal const int MaxStreamPoolSize = 40;
+        internal const int MaxStreamPoolSize = 100;
 
         public Http2Connection(HttpConnectionContext context)
         {
@@ -806,6 +806,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             if (_incomingFrame.PayloadLength != 8)
             {
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(_incomingFrame.Type, 8), Http2ErrorCode.FRAME_SIZE_ERROR);
+            }
+
+            // Incoming ping resets connection keep alive timeout
+            if (TimeoutControl.TimerReason == TimeoutReason.KeepAlive)
+            {
+                TimeoutControl.ResetTimeout(Limits.KeepAliveTimeout.Ticks, TimeoutReason.KeepAlive);
             }
 
             if (_incomingFrame.PingAck)

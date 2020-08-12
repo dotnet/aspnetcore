@@ -13,13 +13,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     {
         private readonly ServiceContext _serviceContext;
         private readonly IHttpApplication<TContext> _application;
-        private readonly HttpProtocols _protocols;
+        private readonly HttpProtocols _endpointDefaultProtocols;
 
         public HttpConnectionMiddleware(ServiceContext serviceContext, IHttpApplication<TContext> application, HttpProtocols protocols)
         {
             _serviceContext = serviceContext;
             _application = application;
-            _protocols = protocols;
+            _endpointDefaultProtocols = protocols;
         }
 
         public Task OnConnectionAsync(ConnectionContext connectionContext)
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 ConnectionId = connectionContext.ConnectionId,
                 ConnectionContext = connectionContext,
-                Protocols = _protocols,
+                Protocols = connectionContext.Features.Get<HttpProtocolsFeature>()?.HttpProtocols ?? _endpointDefaultProtocols,
                 ServiceContext = _serviceContext,
                 ConnectionFeatures = connectionContext.Features,
                 MemoryPool = memoryPoolFeature?.MemoryPool ?? System.Buffers.MemoryPool<byte>.Shared,

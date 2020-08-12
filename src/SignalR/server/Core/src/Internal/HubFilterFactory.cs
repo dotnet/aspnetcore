@@ -4,6 +4,7 @@
 #nullable enable
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,9 +13,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
     internal class HubFilterFactory : IHubFilter
     {
         private readonly ObjectFactory _objectFactory;
+
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
         private readonly Type _filterType;
 
-        public HubFilterFactory(Type filterType)
+        public HubFilterFactory([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type filterType)
         {
             _objectFactory = ActivatorUtilities.CreateFactory(filterType, Array.Empty<Type>());
             _filterType = filterType;
