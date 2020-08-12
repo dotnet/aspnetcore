@@ -86,14 +86,14 @@ public class JsonHubProtocol implements HubProtocol {
                             if (invocationId == null || binder.getReturnType(invocationId) == null) {
                                 resultToken = jsonParser.parse(reader);
                             } else {
-                                result = gson.fromJson(reader, binder.getReturnType(invocationId).getClazz());
+                                result = gson.fromJson(reader, binder.getReturnType(invocationId));
                             }
                             break;
                         case "arguments":
                             if (target != null) {
                                 boolean startedArray = false;
                                 try {
-                                    List<TypeAndClass> types = binder.getParameterTypes(target);
+                                    List<Type> types = binder.getParameterTypes(target);
                                     startedArray = true;
                                     arguments = bindArguments(reader, types);
                                 } catch (Exception ex) {
@@ -131,7 +131,7 @@ public class JsonHubProtocol implements HubProtocol {
                     case INVOCATION:
                         if (argumentsToken != null) {
                             try {
-                                List<TypeAndClass> types = binder.getParameterTypes(target);
+                                List<Type> types = binder.getParameterTypes(target);
                                 arguments = bindArguments(argumentsToken, types);
                             } catch (Exception ex) {
                                 argumentBindingException = ex;
@@ -149,10 +149,10 @@ public class JsonHubProtocol implements HubProtocol {
                         break;
                     case COMPLETION:
                         if (resultToken != null) {
-                            TypeAndClass returnType = binder.getReturnType(invocationId);
-                            Class<?> completionReturnType = Object.class;
-                            if (returnType != null && returnType.getClazz() != null) {
-                                completionReturnType = returnType.getClazz();
+                            Type returnType = binder.getReturnType(invocationId);
+                            Type completionReturnType = Object.class;
+                            if (returnType != null) {
+                                completionReturnType = returnType;
                             }
                             result = gson.fromJson(resultToken, completionReturnType);
                         }
@@ -160,10 +160,10 @@ public class JsonHubProtocol implements HubProtocol {
                         break;
                     case STREAM_ITEM:
                         if (resultToken != null) {
-                            TypeAndClass returnType = binder.getReturnType(invocationId);
-                            Class<?> streamReturnType = Object.class;
-                            if (returnType != null && returnType.getClazz() != null) {
-                                streamReturnType = returnType.getClazz();
+                            Type returnType = binder.getReturnType(invocationId);
+                            Type streamReturnType = Object.class;
+                            if (returnType != null) {
+                                streamReturnType = returnType;
                             }
                             result = gson.fromJson(resultToken, streamReturnType);
                         }
@@ -198,7 +198,7 @@ public class JsonHubProtocol implements HubProtocol {
         return ByteBuffer.wrap((gson.toJson(hubMessage) + RECORD_SEPARATOR).getBytes(StandardCharsets.UTF_8));
     }
 
-    private ArrayList<Object> bindArguments(JsonArray argumentsToken, List<TypeAndClass> paramTypes) {
+    private ArrayList<Object> bindArguments(JsonArray argumentsToken, List<Type> paramTypes) {
         if (argumentsToken.size() != paramTypes.size()) {
             throw new RuntimeException(String.format("Invocation provides %d argument(s) but target expects %d.", argumentsToken.size(), paramTypes.size()));
         }
@@ -207,21 +207,21 @@ public class JsonHubProtocol implements HubProtocol {
         if (paramTypes.size() >= 1) {
             arguments = new ArrayList<>();
             for (int i = 0; i < paramTypes.size(); i++) {
-                arguments.add(gson.fromJson(argumentsToken.get(i), paramTypes.get(i).getClazz()));
+                arguments.add(gson.fromJson(argumentsToken.get(i), paramTypes.get(i)));
             }
         }
 
         return arguments;
     }
 
-    private ArrayList<Object> bindArguments(JsonReader reader, List<TypeAndClass> paramTypes) throws IOException {
+    private ArrayList<Object> bindArguments(JsonReader reader, List<Type> paramTypes) throws IOException {
         reader.beginArray();
         int paramCount = paramTypes.size();
         int argCount = 0;
         ArrayList<Object> arguments = new ArrayList<>();
         while (reader.peek() != JsonToken.END_ARRAY) {
             if (argCount < paramCount) {
-                Object o = gson.fromJson(reader, paramTypes.get(argCount).getClazz());
+                Object o = gson.fromJson(reader, paramTypes.get(argCount));
                 arguments.add(o);
             } else {
                 reader.skipValue();

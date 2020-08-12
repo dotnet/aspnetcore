@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 class TestUtils {
+
     static HubConnection createHubConnection(String url) {
         return createHubConnection(url, new MockTransport(true), true, new TestHttpClient());
     }

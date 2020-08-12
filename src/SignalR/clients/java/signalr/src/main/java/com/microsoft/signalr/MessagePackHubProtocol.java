@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +31,6 @@ public class MessagePackHubProtocol implements HubProtocol {
     private static final int VOID_RESULT = 2;
     private static final int NON_VOID_RESULT = 3;
     
-    private TypeAndClass emptyTac = new TypeAndClass(Object.class, Object.class);
     private ObjectMapper objectMapper = new ObjectMapper(new MessagePackFactory());
     private TypeFactory typeFactory = objectMapper.getTypeFactory();
 
@@ -72,16 +72,16 @@ public class MessagePackHubProtocol implements HubProtocol {
                 
                 switch (messageType) {
                     case INVOCATION:
-                        hubMessages.add(createInvocationMessage(unpacker, binder, itemCount));
+                        hubMessages.add(createInvocationMessage(unpacker, binder, itemCount, payload));
                         break;
                     case STREAM_ITEM:
-                        hubMessages.add(createStreamItemMessage(unpacker, binder));
+                        hubMessages.add(createStreamItemMessage(unpacker, binder, payload));
                         break;
                     case COMPLETION:
-                        hubMessages.add(createCompletionMessage(unpacker, binder));
+                        hubMessages.add(createCompletionMessage(unpacker, binder, payload));
                         break;
                     case STREAM_INVOCATION:
-                        hubMessages.add(createStreamInvocationMessage(unpacker, binder, itemCount));
+                        hubMessages.add(createStreamInvocationMessage(unpacker, binder, itemCount, payload));
                         break;
                     case CANCEL_INVOCATION:
                         hubMessages.add(createCancelInvocationMessage(unpacker));
@@ -166,7 +166,7 @@ public class MessagePackHubProtocol implements HubProtocol {
         }
     }
         
-    private HubMessage createInvocationMessage(MessageUnpacker unpacker, InvocationBinder binder, int itemCount) throws IOException {
+    private HubMessage createInvocationMessage(MessageUnpacker unpacker, InvocationBinder binder, int itemCount, ByteBuffer payload) throws IOException {
         Map<String, String> headers = readHeaders(unpacker);
         
         // invocationId may be nil
@@ -185,8 +185,8 @@ public class MessagePackHubProtocol implements HubProtocol {
         
         Object[] arguments = null;
         try {
-            List<TypeAndClass> types = binder.getParameterTypes(target);
-            arguments = bindArguments(unpacker, types);
+            List<Type> types = binder.getParameterTypes(target);
+            arguments = bindArguments(unpacker, types, payload);
         } catch (Exception ex) {
             return new InvocationBindingFailureMessage(invocationId, target, ex);
         }
@@ -200,13 +200,13 @@ public class MessagePackHubProtocol implements HubProtocol {
         return new InvocationMessage(headers, invocationId, target, arguments, streams);
     }
     
-    private HubMessage createStreamItemMessage(MessageUnpacker unpacker, InvocationBinder binder) throws IOException {
+    private HubMessage createStreamItemMessage(MessageUnpacker unpacker, InvocationBinder binder, ByteBuffer payload) throws IOException {
         Map<String, String> headers = readHeaders(unpacker);
         String invocationId = unpacker.unpackString();
         Object value;
         try {
-            TypeAndClass itemType = binder.getReturnType(invocationId);
-            value = readValue(unpacker, itemType);
+            Type itemType = binder.getReturnType(invocationId);
+            value = readValue(unpacker, itemType, payload, true);
         } catch (Exception ex) {
             return new StreamBindingFailureMessage(invocationId, ex);
         }
@@ -214,7 +214,7 @@ public class MessagePackHubProtocol implements HubProtocol {
         return new StreamItem(headers, invocationId, value);
     }
     
-    private HubMessage createCompletionMessage(MessageUnpacker unpacker, InvocationBinder binder) throws IOException {
+    private HubMessage createCompletionMessage(MessageUnpacker unpacker, InvocationBinder binder, ByteBuffer payload) throws IOException {
         Map<String, String> headers = readHeaders(unpacker);
         String invocationId = unpacker.unpackString();
         int resultKind = unpacker.unpackInt();
@@ -229,8 +229,8 @@ public class MessagePackHubProtocol implements HubProtocol {
             case VOID_RESULT:
                 break;
             case NON_VOID_RESULT:
-                TypeAndClass itemType = binder.getReturnType(invocationId);
-                result = readValue(unpacker, itemType);
+                Type itemType = binder.getReturnType(invocationId);
+                result = readValue(unpacker, itemType, payload, true);
                 break;
             default:
                 throw new RuntimeException("Invalid invocation result kind.");
@@ -239,15 +239,15 @@ public class MessagePackHubProtocol implements HubProtocol {
         return new CompletionMessage(headers, invocationId, result, error);
     }
     
-    private HubMessage createStreamInvocationMessage(MessageUnpacker unpacker, InvocationBinder binder, int itemCount) throws IOException {
+    private HubMessage createStreamInvocationMessage(MessageUnpacker unpacker, InvocationBinder binder, int itemCount, ByteBuffer payload) throws IOException {
         Map<String, String> headers = readHeaders(unpacker);
         String invocationId = unpacker.unpackString();
         String target = unpacker.unpackString();
         
         Object[] arguments = null;
         try {
-            List<TypeAndClass> types = binder.getParameterTypes(target);
-            arguments = bindArguments(unpacker, types);
+            List<Type> types = binder.getParameterTypes(target);
+            arguments = bindArguments(unpacker, types, payload);
         } catch (Exception ex) {
             return new InvocationBindingFailureMessage(invocationId, target, ex);
         }
@@ -484,7 +484,7 @@ public class MessagePackHubProtocol implements HubProtocol {
         }
     }
     
-    private Object[] bindArguments(MessageUnpacker unpacker, List<TypeAndClass> paramTypes) throws IOException {
+    private Object[] bindArguments(MessageUnpacker unpacker, List<Type> paramTypes, ByteBuffer payload) throws IOException {
         int argumentCount = unpacker.unpackArrayHeader();
         
         if (paramTypes.size() != argumentCount) {
@@ -494,20 +494,22 @@ public class MessagePackHubProtocol implements HubProtocol {
         Object[] arguments = new Object[argumentCount];
         
         for (int i = 0; i < argumentCount; i++) {
-            arguments[i] = readValue(unpacker, paramTypes.get(i));
+            arguments[i] = readValue(unpacker, paramTypes.get(i), payload, true);
         }
         
         return arguments;
     }
     
-    private Object readValue(MessageUnpacker unpacker, TypeAndClass itemType) throws IOException {
+    private Object readValue(MessageUnpacker unpacker, Type itemType, ByteBuffer payload, boolean outermostCall) throws IOException {
         // This shouldn't ever get called with itemType == null, but we return anyways to avoid NullPointerExceptions
         if (itemType == null) {
             return null;
         }
+        Class<?> itemClass = Utils.typeToClass(itemType);
         MessageFormat messageFormat = unpacker.getNextFormat();
         ValueType valueType = messageFormat.getValueType();
         int length;
+        long readBytesStart;
         Object item = null;
          
         switch(valueType) {
@@ -529,11 +531,11 @@ public class MessagePackHubProtocol implements HubProtocol {
                 default:
                     item = unpacker.unpackInt();
                     // unpackInt could correspond to an int, short, char, or byte - cast those literally here
-                    if (itemType.getClazz().equals(Short.class)) {
+                    if (itemClass.equals(Short.class) || itemClass.equals(short.class)) {
                         item = ((Integer) item).shortValue();
-                    } else if (itemType.getClazz().equals(Character.class)) {
+                    } else if (itemClass.equals(Character.class) || itemClass.equals(char.class)) {
                         item = (char) ((Integer) item).shortValue();
-                    } else if (itemType.getClazz().equals(Byte.class)) {
+                    } else if (itemClass.equals(Byte.class) || itemClass.equals(byte.class)) {
                         item = ((Integer) item).byteValue();
                     }
                     break;
@@ -545,7 +547,7 @@ public class MessagePackHubProtocol implements HubProtocol {
             case STRING:
                 item = unpacker.unpackString();
                 // ObjectMapper packs chars as Strings - correct back to char while unpacking if necessary
-                if (itemType.getClazz().equals(char.class) || itemType.getClazz().equals(Character.class)) {
+                if (itemClass.equals(char.class) || itemClass.equals(Character.class)) {
                     item = ((String) item).charAt(0);
                 }
                 break;
@@ -556,26 +558,40 @@ public class MessagePackHubProtocol implements HubProtocol {
                 item = binaryValue;
                 break;
             case ARRAY:
+                readBytesStart = unpacker.getTotalReadBytes();
                 length = unpacker.unpackArrayHeader();
-                Object[] arrayValue = new Object[length];
                 for (int i = 0; i < length; i++) {
-                    arrayValue[i] = readValue(unpacker, emptyTac);
+                    readValue(unpacker, Object.class, payload, false);
                 }
-                // Round trip the array through ObjectMapper, in case it needs to be converted to another collection,
-                // Or have the type of its contained elements corrected
-                byte[] arrayBytes = objectMapper.writeValueAsBytes(arrayValue);
-                return objectMapper.readValue(arrayBytes, typeFactory.constructType(itemType.getType()));
+                if (outermostCall) {
+                    // Check how many bytes we've read, grab that from the payload, and deserialize with objectMapper
+                    byte[] payloadBytes = payload.array();
+                    byte[] arrayBytes = Arrays.copyOfRange(payloadBytes, payload.position() + (int) readBytesStart, 
+                        payload.position() + (int) unpacker.getTotalReadBytes());
+                    return objectMapper.readValue(arrayBytes, typeFactory.constructType(itemType));
+                } else {
+                    // This is an inner call to readValue - we just need to read the right number of bytes
+                    // We can return null, and the outermost call will know how many bytes to give to objectMapper.
+                    return null;
+                }
             case MAP:
+                readBytesStart = unpacker.getTotalReadBytes();
                 length = unpacker.unpackMapHeader();
-                Map<Object, Object> mapValue = new HashMap<Object, Object>();
                 for (int i = 0; i < length; i++) {
-                    Object key = readValue(unpacker, emptyTac);
-                    Object value = readValue(unpacker, emptyTac);
-                    mapValue.put(key, value);
+                    readValue(unpacker, Object.class, payload, false);
+                    readValue(unpacker, Object.class, payload, false);
                 }
-                // Round trip the map through ObjectMapper - it could be a POJO, or it could need its contained elements to be corrected
-                byte[] mapBytes = objectMapper.writeValueAsBytes(mapValue);
-                return objectMapper.readValue(mapBytes, typeFactory.constructType(itemType.getType()));
+                if (outermostCall) {
+                    // Check how many bytes we've read, grab that from the payload, and deserialize with objectMapper
+                    byte[] payloadBytes = payload.array();
+                    byte[] mapBytes = Arrays.copyOfRange(payloadBytes, payload.position() + (int) readBytesStart, 
+                        payload.position() + (int) unpacker.getTotalReadBytes());
+                    return objectMapper.readValue(mapBytes, typeFactory.constructType(itemType));
+                } else {
+                    // This is an inner call to readValue - we just need to read the right number of bytes
+                    // We can return null, and the outermost call will know how many bytes to give to objectMapper.
+                    return null;
+                }
             case EXTENSION:
                 /*
                 ExtensionTypeHeader extension = unpacker.unpackExtensionTypeHeader();
@@ -589,11 +605,13 @@ public class MessagePackHubProtocol implements HubProtocol {
                 return null;
         }
         // If we get here, the item isn't a map or a collection/array, so we use the Class to cast it
-        return itemType.getClazz().cast(item);
+        if (itemClass.isPrimitive()) {
+            return Utils.toPrimitive(itemClass, item);
+        }
+        return itemClass.cast(item);
     }
 
     private void writeValue(Object o, MessagePacker packer) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper(new MessagePackFactory());
         packer.addPayload(objectMapper.writeValueAsBytes(o));
     }
 }

@@ -4,7 +4,12 @@
 package com.microsoft.signalr;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
@@ -71,7 +76,34 @@ class Utils {
         return header;
     }
     
-    public static <T> Type getType(Class<T> param) {
-    	return (new TypeReference<T>() {}).getType();
+    public static Object toPrimitive(Class<?> c, Object value) {
+        if (boolean.class == c) return ((Boolean) value).booleanValue();
+        if (byte.class == c) return ((Byte) value).byteValue();
+        if (short.class == c) return ((Short) value).shortValue();
+        if (int.class == c) return ((Integer) value).intValue();
+        if (long.class == c) return ((Long) value).longValue();
+        if (float.class == c) return ((Float) value).floatValue();
+        if (double.class == c) return ((Double) value).doubleValue();
+        if (char.class == c) return ((Character) value).charValue();
+        return value;
     }
+    
+    public static Class<?> typeToClass(Type type) {
+        if (type instanceof Class) {
+            return (Class<?>) type;
+        } else if (type instanceof GenericArrayType) {
+            // Instantiate an array of the same type as this type, then return its class
+            return Array.newInstance(typeToClass(((GenericArrayType)type).getGenericComponentType()), 0).getClass();
+        } else if (type instanceof ParameterizedType) {
+            return typeToClass(((ParameterizedType) type).getRawType());
+        } else if (type instanceof TypeVariable) {
+            Type[] bounds = ((TypeVariable<?>) type).getBounds();
+            return bounds.length == 0 ? Object.class : typeToClass(bounds[0]);
+        } else if (type instanceof WildcardType) {
+            Type[] bounds = ((WildcardType) type).getUpperBounds();
+            return bounds.length == 0 ? Object.class : typeToClass(bounds[0]);
+        } else { 
+            throw new UnsupportedOperationException("Cannot handle type class: " + type.getClass());
+        }
+    } 
 }

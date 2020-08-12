@@ -3,9 +3,10 @@
 
 package com.microsoft.signalr;
 
+import java.lang.reflect.Type;
 import java.util.List;
 
 public interface InvocationBinder {
-    TypeAndClass getReturnType(String invocationId);
-    List<TypeAndClass> getParameterTypes(String methodName);
+    Type getReturnType(String invocationId);
+    List<Type> getParameterTypes(String methodName);
 }

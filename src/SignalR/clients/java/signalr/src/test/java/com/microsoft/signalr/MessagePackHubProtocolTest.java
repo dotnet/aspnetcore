@@ -3,8 +3,8 @@ package com.microsoft.signalr;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -145,7 +145,7 @@ class MessagePackHubProtocolTest {
     public void parsePingMessage() {
         byte[] messageBytes = {0x02, (byte) 0x91, 0x06};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
-        TestBinder binder = new TestBinder(PingMessage.getInstance());
+        TestBinder binder = new TestBinder(null, null);
 
         List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
 
@@ -159,7 +159,7 @@ class MessagePackHubProtocolTest {
     public void parseCloseMessage() {
         byte[] messageBytes = {0x04, (byte) 0x93, 0x07, (byte) 0xC0, (byte) 0xC2};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
-        TestBinder binder = new TestBinder(new CloseMessage());
+        TestBinder binder = new TestBinder(null, null);
 
         List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
 
@@ -179,7 +179,7 @@ class MessagePackHubProtocolTest {
     public void parseCloseMessageWithError() {
         byte[] messageBytes = {0x09, (byte) 0x93, 0x07, (byte) 0xA5, 0x45, 0x72, 0x72, 0x6F, 0x72, (byte) 0xC2};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
-        TestBinder binder = new TestBinder(new CloseMessage("Error"));
+        TestBinder binder = new TestBinder(null, null);
 
         List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
 
@@ -200,7 +200,7 @@ class MessagePackHubProtocolTest {
         byte[] messageBytes = {0x0C, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 
             0x74, (byte) 0x91, 0x2A, (byte) 0x90};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
-        TestBinder binder = new TestBinder(new InvocationMessage(null, "1", "test", new Object[] { 42 }, null));
+        TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
         List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
 
@@ -227,7 +227,7 @@ class MessagePackHubProtocolTest {
         byte[] messageBytes = {0x14, (byte) 0x96, 0x01, (byte) 0x82, (byte) 0xA1, 0x61, (byte) 0xA1, 0x62, (byte) 0xA1, 0x63, 
                 (byte) 0xA1, 0x64, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, 0x2A, (byte) 0x90};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
-        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
+        TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
         List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
 
@@ -259,7 +259,7 @@ class MessagePackHubProtocolTest {
         byte[] messageBytes = {0x12, (byte) 0x96, 0x04, (byte) 0x80, (byte) 0xA6, 0x6D, 0x65, 0x74, 0x68, 0x6F, 0x64, 
             (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, 0x2A, (byte) 0x90};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
-        TestBinder binder = new TestBinder(new StreamInvocationMessage(null, "method", "test", new Object[] { 42 }, null));
+        TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
         List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
 
@@ -285,7 +285,7 @@ class MessagePackHubProtocolTest {
     public void parseSingleCancelInvocationMessage() {
         byte[] messageBytes = {0x0A, (byte) 0x93, 0x05, (byte) 0x80, (byte) 0xA6, 0x6D, 0x65, 0x74, 0x68, 0x6F, 0x64};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
-        TestBinder binder = new TestBinder(new CancelInvocationMessage(null, "method"));
+        TestBinder binder = new TestBinder(null, null);
 
         List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
 
@@ -307,7 +307,7 @@ class MessagePackHubProtocolTest {
         byte[] messageBytes = {0x0B, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x6F, 0x6E, 0x65, (byte) 0x91, 0x2A, 
             (byte) 0x90, 0x0B, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x74, 0x77, 0x6F, (byte) 0x91, 0x2B, (byte) 0x90};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
-        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "one", new Object[] { 42 }, null));
+        TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
         List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
         
@@ -348,7 +348,7 @@ class MessagePackHubProtocolTest {
         byte[] messageBytes = {0x0F, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x92, 
             0x2A, (byte) 0xA2, 0x34, 0x32, (byte) 0x90};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
-        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42, "42" }, null));
+        TestBinder binder = new TestBinder(new Type[] { int.class, String.class }, null);
 
         List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
         
@@ -372,7 +372,7 @@ class MessagePackHubProtocolTest {
         byte[] messageBytes = {0x0F, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x92, 
             0x2A, (byte) 0xA2, 0x34, 0x32, (byte) 0x90};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
-        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
+        TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
         List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
         
@@ -389,7 +389,7 @@ class MessagePackHubProtocolTest {
         byte[] messageBytes = {0x0C, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, 0x2A, 
             (byte) 0x90};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
-        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42, 24 }, null));
+        TestBinder binder = new TestBinder(new Type[] { int.class, int.class }, null);
 
         List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
         
@@ -406,7 +406,7 @@ class MessagePackHubProtocolTest {
         byte[] messageBytes = {0x0C, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, 
             (byte) 0xC3, (byte) 0x90};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
-        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
+        TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
         List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
         
@@ -415,8 +415,9 @@ class MessagePackHubProtocolTest {
         
         assertEquals(HubMessageType.INVOCATION_BINDING_FAILURE, messages.get(0).getMessageType());
         InvocationBindingFailureMessage invocationBindingFailureMessage = (InvocationBindingFailureMessage) messages.get(0);
-        assertTrue(invocationBindingFailureMessage.getException().getMessage().startsWith
-                ("Cannot deserialize instance of `java.lang.Integer` out of VALUE_TRUE token"));
+        assertEquals(invocationBindingFailureMessage.getException().getMessage(), 
+                "class java.lang.Boolean cannot be cast to class java.lang.Integer (java.lang.Boolean and java.lang.Integer "
+                + "are in module java.base of loader 'bootstrap')");
     }
 
     @Test
@@ -425,7 +426,7 @@ class MessagePackHubProtocolTest {
             0x2A, (byte) 0xA2, 0x34, 0x32, (byte) 0x90, 0x0B, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x74, 
             0x77, 0x6F, (byte) 0x91, 0x2B, (byte) 0x90};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
-        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
+        TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
         List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
         
@@ -456,7 +457,7 @@ class MessagePackHubProtocolTest {
         byte[] messageBytes = {0x0C, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, 0x2A, 
             (byte) 0x90, 0x0C, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA3, 0x74, 0x77, 0x6F, (byte) 0x92, 0x2A, 0x2B, (byte) 0x90};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
-        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42, 24 }, null));
+        TestBinder binder = new TestBinder(new Type[] { int.class, int.class }, null);
 
         List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
         
@@ -490,7 +491,7 @@ class MessagePackHubProtocolTest {
             (byte) 0xC3, (byte) 0x90, 0x0C, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, 
             (byte) 0x91, 0x2A, (byte) 0x90};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
-        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
+        TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
         List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
         
@@ -499,8 +500,9 @@ class MessagePackHubProtocolTest {
         
         assertEquals(HubMessageType.INVOCATION_BINDING_FAILURE, messages.get(0).getMessageType());
         InvocationBindingFailureMessage invocationBindingFailureMessage = (InvocationBindingFailureMessage) messages.get(0);
-        assertTrue(invocationBindingFailureMessage.getException().getMessage().startsWith
-            ("Cannot deserialize instance of `java.lang.Integer` out of VALUE_TRUE token"));
+        assertEquals(invocationBindingFailureMessage.getException().getMessage(), 
+                "class java.lang.Boolean cannot be cast to class java.lang.Integer (java.lang.Boolean and java.lang.Integer "
+                + "are in module java.base of loader 'bootstrap')");
         
         // Check the second message
         assertEquals(HubMessageType.INVOCATION, messages.get(1).getMessageType());
@@ -522,7 +524,7 @@ class MessagePackHubProtocolTest {
         byte[] messageBytes = {0x0D, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, 
             0x2A, (byte) 0x90};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
-        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
+        TestBinder binder = new TestBinder(new Type[] { int.class }, null);
         
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> messagePackHubProtocol.parseMessages(message, binder));
@@ -534,7 +536,7 @@ class MessagePackHubProtocolTest {
         byte[] messageBytes = {0x0B, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, 
             0x2A, (byte) 0x90};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
-        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { 42 }, null));
+        TestBinder binder = new TestBinder(new Type[] { int.class }, null);
         
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> messagePackHubProtocol.parseMessages(message, binder));
@@ -553,7 +555,7 @@ class MessagePackHubProtocolTest {
             0x6E, 0x65, 0x65, 0x64, 0x20, 0x61, 0x20, 0x66, 0x65, 0x77, 0x20, 0x6D, 0x6F, 0x72, 0x65, 0x20, 0x63, 0x68, 0x61, 0x72, 
             0x61, 0x63, 0x74, 0x65, 0x72, 0x73, 0x2E, (byte) 0x90};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
-        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { "arg" }, null));
+        TestBinder binder = new TestBinder(new Type[] { String.class }, null);
 
         List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
 
@@ -605,8 +607,7 @@ class MessagePackHubProtocolTest {
         byte bite = 0x11;
         char c = 'c';
         long l = 3333333333l;
-        
-        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { i, d, bool, bite, c, l }, null));
+        TestBinder binder = new TestBinder(new Type[] { int.class, double.class, boolean.class, byte.class, char.class, long.class }, null);
 
         List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
 
@@ -658,8 +659,8 @@ class MessagePackHubProtocolTest {
             0x02, 0x03, 0x04, (byte) 0x90};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
         
-        TestBinder arrayBinder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { new int[] {} }, null));
-        TestBinder listBinder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { new ArrayList<Integer>() }, null));
+        TestBinder arrayBinder = new TestBinder(new Type[] { int[].class }, null);
+        TestBinder listBinder = new TestBinder(new Type[] { (new TypeReference<ArrayList<Integer>>() { }).getType() }, null);
         
         List<HubMessage> arrayMessages = messagePackHubProtocol.parseMessages(message, arrayBinder);
         message.flip();
@@ -718,7 +719,7 @@ class MessagePackHubProtocolTest {
             0x65, (byte) 0x90};
         ByteBuffer message = ByteBuffer.wrap(messageBytes);
         
-        TestBinder binder = new TestBinder(new InvocationMessage(null, null, "test", new Object[] { new HashMap<String, String>() }, null));
+        TestBinder binder = new TestBinder(new Type[] { (new TypeReference<HashMap<String, String>>() { }).getType() }, null);
 
         List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
 

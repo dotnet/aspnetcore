@@ -3,19 +3,20 @@
 
 package com.microsoft.signalr;
 
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 
 class InvocationHandler {
-    private final List<TypeAndClass> types;
+    private final List<Type> types;
     private final ActionBase action;
 
-    InvocationHandler(ActionBase action, TypeAndClass... types) {
+    InvocationHandler(ActionBase action, Type... types) {
         this.action = action;
         this.types = Arrays.asList(types);
     }
 
-    public List<TypeAndClass> getTypes() {
+    public List<Type> getTypes() {
         return types;
     }
 

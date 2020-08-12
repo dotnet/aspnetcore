@@ -10,11 +10,11 @@ import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.Subject;
 
 class InvocationRequest {
-    private final TypeAndClass returnType;
+    private final Type returnType;
     private final Subject<Object> pendingCall = ReplaySubject.create();
     private final String invocationId;
 
-    InvocationRequest(TypeAndClass returnType, String invocationId) {
+    InvocationRequest(Type returnType, String invocationId) {
         this.returnType = returnType;
         this.invocationId = invocationId;
     }
@@ -48,7 +48,7 @@ class InvocationRequest {
         return pendingCall;
     }
 
-    public TypeAndClass getReturnType() {
+    public Type getReturnType() {
         return returnType;
     }
 

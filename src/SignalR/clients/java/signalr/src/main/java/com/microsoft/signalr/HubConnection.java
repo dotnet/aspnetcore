@@ -31,7 +31,7 @@ import okhttp3.OkHttpClient;
  */
 public class HubConnection implements AutoCloseable {
     private static final byte RECORD_SEPARATOR = 0x1e;
-    private static final List<TypeAndClass> emptyArray = new ArrayList<>();
+    private static final List<Type> emptyArray = new ArrayList<>();
     private static final int MAX_NEGOTIATE_ATTEMPTS = 100;
 
     private String baseUrl;
@@ -707,10 +707,9 @@ public class HubConnection implements AutoCloseable {
             if (hubConnectionState != HubConnectionState.CONNECTED) {
                 throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
             }
-
-            TypeAndClass returnTac = new TypeAndClass(Utils.getType(returnType), returnType);
+            
             String id = connectionState.getNextInvocationId();
-            InvocationRequest irq = new InvocationRequest(returnTac, id);
+            InvocationRequest irq = new InvocationRequest(returnType, id);
             connectionState.addInvocation(irq);
 
             SingleSubject<T> subject = SingleSubject.create();
@@ -724,6 +723,52 @@ public class HubConnection implements AutoCloseable {
                     subject.onSuccess((T)result);
                 } else {
                     subject.onSuccess(returnType.cast(result));
+                }
+            }, error -> subject.onError(error));
+
+            // Make sure the actual send is after setting up the callbacks otherwise there is a race
+            // where the map doesn't have the callbacks yet when the response is returned
+            sendInvocationMessage(method, args, id, false);
+            return subject;
+        } finally {
+            hubConnectionStateLock.unlock();
+        }
+    }
+    
+
+    /**
+     * Invokes a hub method on the server using the specified method name and arguments.
+     *
+     * @param returnType The expected return type.
+     * @param method The name of the server method to invoke.
+     * @param args The arguments used to invoke the server method.
+     * @param <T> The expected return type.
+     * @return A Single that yields the return value when the invocation has completed.
+     */
+    @SuppressWarnings("unchecked")
+    public <T> Single<T> invoke(Type returnType, String method, Object... args) {
+        hubConnectionStateLock.lock();
+        try {
+            if (hubConnectionState != HubConnectionState.CONNECTED) {
+                throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
+            }
+
+            Class<?> returnClass = Utils.typeToClass(returnType);
+            String id = connectionState.getNextInvocationId();
+            InvocationRequest irq = new InvocationRequest(returnType, id);
+            connectionState.addInvocation(irq);
+
+            SingleSubject<T> subject = SingleSubject.create();
+
+            // forward the invocation result or error to the user
+            // run continuations on a separate thread
+            Subject<Object> pendingCall = irq.getPendingCall();
+            pendingCall.subscribe(result -> {
+                // Primitive types can't be cast with the Class cast function
+                if (returnClass.isPrimitive()) {
+                    subject.onSuccess((T)result);
+                } else {
+                    subject.onSuccess((T)returnClass.cast(result));
                 }
             }, error -> subject.onError(error));
 
@@ -755,9 +800,8 @@ public class HubConnection implements AutoCloseable {
                 throw new RuntimeException("The 'stream' method cannot be called if the connection is not active.");
             }
 
-            TypeAndClass returnTac = new TypeAndClass(Utils.getType(returnType), returnType);
             invocationId = connectionState.getNextInvocationId();
-            irq = new InvocationRequest(returnTac, invocationId);
+            irq = new InvocationRequest(returnType, invocationId);
             connectionState.addInvocation(irq);
 
             AtomicInteger subscriptionCount = new AtomicInteger();
@@ -769,6 +813,60 @@ public class HubConnection implements AutoCloseable {
                             subject.onNext((T)result);
                         } else {
                             subject.onNext(returnType.cast(result));
+                        }
+                    }, error -> subject.onError(error),
+                    () -> subject.onComplete());
+
+            Observable<T> observable = subject.doOnSubscribe((subscriber) -> subscriptionCount.incrementAndGet());
+            sendInvocationMessage(method, args, invocationId, true);
+            return observable.doOnDispose(() -> {
+                if (subscriptionCount.decrementAndGet() == 0) {
+                    CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(null, invocationId);
+                    sendHubMessage(cancelInvocationMessage);
+                    if (connectionState != null) {
+                        connectionState.tryRemoveInvocation(invocationId);
+                    }
+                    subject.onComplete();
+                }
+            });
+        } finally {
+            hubConnectionStateLock.unlock();
+        }
+    }
+    
+    /**
+     * Invokes a streaming hub method on the server using the specified name and arguments.
+     *
+     * @param returnType The expected return type of the stream items.
+     * @param method The name of the server method to invoke.
+     * @param args The arguments used to invoke the server method.
+     * @param <T> The expected return type.
+     * @return An observable that yields the streaming results from the server.
+     */
+    @SuppressWarnings("unchecked")
+    public <T> Observable<T> stream(Type returnType, String method, Object ... args) {
+        String invocationId;
+        InvocationRequest irq;
+        hubConnectionStateLock.lock();
+        try {
+            if (hubConnectionState != HubConnectionState.CONNECTED) {
+                throw new RuntimeException("The 'stream' method cannot be called if the connection is not active.");
+            }
+
+            Class<?> returnClass = Utils.typeToClass(returnType);
+            invocationId = connectionState.getNextInvocationId();
+            irq = new InvocationRequest(returnType, invocationId);
+            connectionState.addInvocation(irq);
+
+            AtomicInteger subscriptionCount = new AtomicInteger();
+            ReplaySubject<T> subject = ReplaySubject.create();
+            Subject<Object> pendingCall = irq.getPendingCall();
+            pendingCall.subscribe(result -> {
+                        // Primitive types can't be cast with the Class cast function
+                        if (returnClass.isPrimitive()) {
+                            subject.onNext((T)result);
+                        } else {
+                            subject.onNext((T)returnClass.cast(result));
                         }
                     }, error -> subject.onError(error),
                     () -> subject.onComplete());
@@ -846,7 +944,7 @@ public class HubConnection implements AutoCloseable {
         ActionBase action = args -> callback.invoke();
         return registerHandler(target, action);
     }
-
+    
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
      *
@@ -857,12 +955,9 @@ public class HubConnection implements AutoCloseable {
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
     public <T1> Subscription on(String target, Action1<T1> callback, Class<T1> param1) {
-    	TypeVariable<?> type1 = (TypeVariable<?>) (new TypeReference<T1>() {}).getType();
-    	
-    	TypeAndClass tac1 = new TypeAndClass(type1, param1);
-        
-    	ActionBase action = params -> callback.invoke(param1.cast(params[0]));
-        return registerHandler(target, action, tac1);
+        ActionBase action = params -> callback.invoke(param1.cast(params[0]));
+        return registerHandler(target, action, param1);
+
     }
 
     /**
@@ -877,16 +972,10 @@ public class HubConnection implements AutoCloseable {
      * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
      */
     public <T1, T2> Subscription on(String target, Action2<T1, T2> callback, Class<T1> param1, Class<T2> param2) {
-    	Type type1 = Utils.getType(param1);
-    	Type type2 = Utils.getType(param2);
-    	
-    	TypeAndClass tac1 = new TypeAndClass(type1, param1);
-    	TypeAndClass tac2 = new TypeAndClass(type2, param2);
-    	
         ActionBase action = params -> {
             callback.invoke(param1.cast(params[0]), param2.cast(params[1]));
         };
-        return registerHandler(target, action, tac1, tac2);
+        return registerHandler(target, action, param1, param2);
     }
 
     /**
@@ -904,18 +993,10 @@ public class HubConnection implements AutoCloseable {
      */
     public <T1, T2, T3> Subscription on(String target, Action3<T1, T2, T3> callback,
                                         Class<T1> param1, Class<T2> param2, Class<T3> param3) {
-    	Type type1 = Utils.getType(param1);
-    	Type type2 = Utils.getType(param2);
-    	Type type3 = Utils.getType(param3);
-    	
-    	TypeAndClass tac1 = new TypeAndClass(type1, param1);
-    	TypeAndClass tac2 = new TypeAndClass(type2, param2);
-    	TypeAndClass tac3 = new TypeAndClass(type3, param3);
-    	
         ActionBase action = params -> {
             callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]));
         };
-        return registerHandler(target, action, tac1, tac2, tac3);
+        return registerHandler(target, action, param1, param2, param3);
     }
 
     /**
@@ -935,20 +1016,10 @@ public class HubConnection implements AutoCloseable {
      */
     public <T1, T2, T3, T4> Subscription on(String target, Action4<T1, T2, T3, T4> callback,
                                             Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4) {
-    	Type type1 = Utils.getType(param1);
-    	Type type2 = Utils.getType(param2);
-    	Type type3 = Utils.getType(param3);
-    	Type type4 = Utils.getType(param4);
-    	
-    	TypeAndClass tac1 = new TypeAndClass(type1, param1);
-    	TypeAndClass tac2 = new TypeAndClass(type2, param2);
-    	TypeAndClass tac3 = new TypeAndClass(type3, param3);
-    	TypeAndClass tac4 = new TypeAndClass(type4, param4);
-    	
         ActionBase action = params -> {
             callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]));
         };
-        return registerHandler(target, action, tac1, tac2, tac3, tac4);
+        return registerHandler(target, action, param1, param2, param3, param4);
     }
 
     /**
@@ -970,23 +1041,11 @@ public class HubConnection implements AutoCloseable {
      */
     public <T1, T2, T3, T4, T5> Subscription on(String target, Action5<T1, T2, T3, T4, T5> callback,
                                                 Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5) {
-    	Type type1 = Utils.getType(param1);
-    	Type type2 = Utils.getType(param2);
-    	Type type3 = Utils.getType(param3);
-    	Type type4 = Utils.getType(param4);
-    	Type type5 = Utils.getType(param5);
-    	
-    	TypeAndClass tac1 = new TypeAndClass(type1, param1);
-    	TypeAndClass tac2 = new TypeAndClass(type2, param2);
-    	TypeAndClass tac3 = new TypeAndClass(type3, param3);
-    	TypeAndClass tac4 = new TypeAndClass(type4, param4);
-    	TypeAndClass tac5 = new TypeAndClass(type5, param5);
-    	
         ActionBase action = params -> {
             callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]),
                     param5.cast(params[4]));
         };
-        return registerHandler(target, action, tac1, tac2, tac3, tac4, tac5);
+        return registerHandler(target, action, param1, param2, param3, param4, param5);
     }
 
     /**
@@ -1010,25 +1069,11 @@ public class HubConnection implements AutoCloseable {
      */
     public <T1, T2, T3, T4, T5, T6> Subscription on(String target, Action6<T1, T2, T3, T4, T5, T6> callback,
                                                     Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5, Class<T6> param6) {
-    	Type type1 = Utils.getType(param1);
-    	Type type2 = Utils.getType(param2);
-    	Type type3 = Utils.getType(param3);
-    	Type type4 = Utils.getType(param4);
-    	Type type5 = Utils.getType(param5);
-    	Type type6 = Utils.getType(param6);
-    	
-    	TypeAndClass tac1 = new TypeAndClass(type1, param1);
-    	TypeAndClass tac2 = new TypeAndClass(type2, param2);
-    	TypeAndClass tac3 = new TypeAndClass(type3, param3);
-    	TypeAndClass tac4 = new TypeAndClass(type4, param4);
-    	TypeAndClass tac5 = new TypeAndClass(type5, param5);
-    	TypeAndClass tac6 = new TypeAndClass(type6, param6);
-    	
-    	ActionBase action = params -> {
+        ActionBase action = params -> {
             callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]),
                     param5.cast(params[4]), param6.cast(params[5]));
         };
-        return registerHandler(target, action, tac1, tac2, tac3, tac4, tac5, tac6);
+        return registerHandler(target, action, param1, param2, param3, param4, param5, param6);
     }
 
     /**
@@ -1054,27 +1099,11 @@ public class HubConnection implements AutoCloseable {
      */
     public <T1, T2, T3, T4, T5, T6, T7> Subscription on(String target, Action7<T1, T2, T3, T4, T5, T6, T7> callback,
                                                         Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5, Class<T6> param6, Class<T7> param7) {
-    	Type type1 = Utils.getType(param1);
-    	Type type2 = Utils.getType(param2);
-    	Type type3 = Utils.getType(param3);
-    	Type type4 = Utils.getType(param4);
-    	Type type5 = Utils.getType(param5);
-    	Type type6 = Utils.getType(param6);
-    	Type type7 = Utils.getType(param7);
-    	
-    	TypeAndClass tac1 = new TypeAndClass(type1, param1);
-    	TypeAndClass tac2 = new TypeAndClass(type2, param2);
-    	TypeAndClass tac3 = new TypeAndClass(type3, param3);
-    	TypeAndClass tac4 = new TypeAndClass(type4, param4);
-    	TypeAndClass tac5 = new TypeAndClass(type5, param5);
-    	TypeAndClass tac6 = new TypeAndClass(type6, param6);
-    	TypeAndClass tac7 = new TypeAndClass(type7, param7);
-    	
-    	ActionBase action = params -> {
+        ActionBase action = params -> {
             callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]),
                     param5.cast(params[4]), param6.cast(params[5]), param7.cast(params[6]));
         };
-        return registerHandler(target, action, tac1, tac2, tac3, tac4, tac5, tac6, tac7);
+        return registerHandler(target, action, param1, param2, param3, param4, param5, param6, param7);
     }
 
     /**
@@ -1102,32 +1131,224 @@ public class HubConnection implements AutoCloseable {
      */
     public <T1, T2, T3, T4, T5, T6, T7, T8> Subscription on(String target, Action8<T1, T2, T3, T4, T5, T6, T7, T8> callback,
                                                             Class<T1> param1, Class<T2> param2, Class<T3> param3, Class<T4> param4, Class<T5> param5, Class<T6> param6, Class<T7> param7, Class<T8> param8) {
-    	Type type1 = Utils.getType(param1);
-    	Type type2 = Utils.getType(param2);
-    	Type type3 = Utils.getType(param3);
-    	Type type4 = Utils.getType(param4);
-    	Type type5 = Utils.getType(param5);
-    	Type type6 = Utils.getType(param6);
-    	Type type7 = Utils.getType(param7);
-    	Type type8 = Utils.getType(param8);
-    	
-    	TypeAndClass tac1 = new TypeAndClass(type1, param1);
-    	TypeAndClass tac2 = new TypeAndClass(type2, param2);
-    	TypeAndClass tac3 = new TypeAndClass(type3, param3);
-    	TypeAndClass tac4 = new TypeAndClass(type4, param4);
-    	TypeAndClass tac5 = new TypeAndClass(type5, param5);
-    	TypeAndClass tac6 = new TypeAndClass(type6, param6);
-    	TypeAndClass tac7 = new TypeAndClass(type7, param7);
-    	TypeAndClass tac8 = new TypeAndClass(type8, param8);
-    	
-    	ActionBase action = params -> {
+        ActionBase action = params -> {
             callback.invoke(param1.cast(params[0]), param2.cast(params[1]), param3.cast(params[2]), param4.cast(params[3]),
                     param5.cast(params[4]), param6.cast(params[5]), param7.cast(params[6]), param8.cast(params[7]));
         };
-        return registerHandler(target, action, tac1, tac2, tac3, tac4, tac5, tac6, tac7, tac8);
+        return registerHandler(target, action, param1, param2, param3, param4, param5, param6, param7, param8);
     }
 
-    private Subscription registerHandler(String target, ActionBase action, TypeAndClass... types) {
+    /**
+     * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     *
+     * @param target   The name of the hub method to define.
+     * @param callback The handler that will be raised when the hub method is invoked.
+     * @param param1   The first parameter.
+     * @param <T1>     The first argument type.
+     * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
+     */
+    @SuppressWarnings("unchecked")
+    public <T1> Subscription on(String target, Action1<T1> callback, Type param1) {
+        Class<?> class1 = Utils.typeToClass(param1);
+        ActionBase action = params -> callback.invoke((T1)Utils.typeToClass(param1).cast(params[0]));
+        return registerHandler(target, action, param1);
+    }
+
+    /**
+     * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     *
+     * @param target   The name of the hub method to define.
+     * @param callback The handler that will be raised when the hub method is invoked.
+     * @param param1   The first parameter.
+     * @param param2   The second parameter.
+     * @param <T1>     The first parameter type.
+     * @param <T2>     The second parameter type.
+     * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
+     */
+    @SuppressWarnings("unchecked")
+    public <T1, T2> Subscription on(String target, Action2<T1, T2> callback, Type param1, Type param2) {        
+        ActionBase action = params -> {
+            callback.invoke((T1)Utils.typeToClass(param1).cast(params[0]), (T2)Utils.typeToClass(param2).cast(params[1]));
+        };
+        return registerHandler(target, action, param1, param2);
+    }
+
+    /**
+     * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     *
+     * @param target   The name of the hub method to define.
+     * @param callback The handler that will be raised when the hub method is invoked.
+     * @param param1   The first parameter.
+     * @param param2   The second parameter.
+     * @param param3   The third parameter.
+     * @param <T1>     The first parameter type.
+     * @param <T2>     The second parameter type.
+     * @param <T3>     The third parameter type.
+     * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
+     */
+    @SuppressWarnings("unchecked")
+    public <T1, T2, T3> Subscription on(String target, Action3<T1, T2, T3> callback,
+                                        Type param1, Type param2, Type param3) {
+        ActionBase action = params -> {
+            callback.invoke((T1)Utils.typeToClass(param1).cast(params[0]), (T2)Utils.typeToClass(param2).cast(params[1]), 
+                    (T3)Utils.typeToClass(param3).cast(params[2]));
+        };
+        return registerHandler(target, action, param1, param2, param3);
+    }
+
+    /**
+     * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     *
+     * @param target   The name of the hub method to define.
+     * @param callback The handler that will be raised when the hub method is invoked.
+     * @param param1   The first parameter.
+     * @param param2   The second parameter.
+     * @param param3   The third parameter.
+     * @param param4   The fourth parameter.
+     * @param <T1>     The first parameter type.
+     * @param <T2>     The second parameter type.
+     * @param <T3>     The third parameter type.
+     * @param <T4>     The fourth parameter type.
+     * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
+     */
+    @SuppressWarnings("unchecked")
+    public <T1, T2, T3, T4> Subscription on(String target, Action4<T1, T2, T3, T4> callback,
+                                            Type param1, Type param2, Type param3, Type param4) {
+        ActionBase action = params -> {
+            callback.invoke((T1)Utils.typeToClass(param1).cast(params[0]), (T2)Utils.typeToClass(param2).cast(params[1]), 
+                    (T3)Utils.typeToClass(param3).cast(params[2]), (T4)Utils.typeToClass(param4).cast(params[3]));
+        };
+        return registerHandler(target, action, param1, param2, param3, param4);
+    }
+
+    /**
+     * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     *
+     * @param target   The name of the hub method to define.
+     * @param callback The handler that will be raised when the hub method is invoked.
+     * @param param1   The first parameter.
+     * @param param2   The second parameter.
+     * @param param3   The third parameter.
+     * @param param4   The fourth parameter.
+     * @param param5   The fifth parameter.
+     * @param <T1>     The first parameter type.
+     * @param <T2>     The second parameter type.
+     * @param <T3>     The third parameter type.
+     * @param <T4>     The fourth parameter type.
+     * @param <T5>     The fifth parameter type.
+     * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
+     */
+    @SuppressWarnings("unchecked")
+    public <T1, T2, T3, T4, T5> Subscription on(String target, Action5<T1, T2, T3, T4, T5> callback,
+                                                Type param1, Type param2, Type param3, Type param4, Type param5) {
+        ActionBase action = params -> {
+            callback.invoke((T1)Utils.typeToClass(param1).cast(params[0]), (T2)Utils.typeToClass(param2).cast(params[1]), 
+                    (T3)Utils.typeToClass(param3).cast(params[2]), (T4)Utils.typeToClass(param4).cast(params[3]),
+                    (T5)Utils.typeToClass(param5).cast(params[4]));
+        };
+        return registerHandler(target, action, param1, param2, param3, param4, param5);
+    }
+
+    /**
+     * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     *
+     * @param target   The name of the hub method to define.
+     * @param callback The handler that will be raised when the hub method is invoked.
+     * @param param1   The first parameter.
+     * @param param2   The second parameter.
+     * @param param3   The third parameter.
+     * @param param4   The fourth parameter.
+     * @param param5   The fifth parameter.
+     * @param param6   The sixth parameter.
+     * @param <T1>     The first parameter type.
+     * @param <T2>     The second parameter type.
+     * @param <T3>     The third parameter type.
+     * @param <T4>     The fourth parameter type.
+     * @param <T5>     The fifth parameter type.
+     * @param <T6>     The sixth parameter type.
+     * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
+     */
+    @SuppressWarnings("unchecked")
+    public <T1, T2, T3, T4, T5, T6> Subscription on(String target, Action6<T1, T2, T3, T4, T5, T6> callback,
+                                                    Type param1, Type param2, Type param3, Type param4, Type param5, Type param6) {
+        ActionBase action = params -> {
+            callback.invoke((T1)Utils.typeToClass(param1).cast(params[0]), (T2)Utils.typeToClass(param2).cast(params[1]), 
+                    (T3)Utils.typeToClass(param3).cast(params[2]), (T4)Utils.typeToClass(param4).cast(params[3]),
+                    (T5)Utils.typeToClass(param5).cast(params[4]), (T6)Utils.typeToClass(param6).cast(params[5]));
+        };
+        return registerHandler(target, action, param1, param2, param3, param4, param5, param6);
+    }
+
+    /**
+     * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     *
+     * @param target   The name of the hub method to define.
+     * @param callback The handler that will be raised when the hub method is invoked.
+     * @param param1   The first parameter.
+     * @param param2   The second parameter.
+     * @param param3   The third parameter.
+     * @param param4   The fourth parameter.
+     * @param param5   The fifth parameter.
+     * @param param6   The sixth parameter.
+     * @param param7   The seventh parameter.
+     * @param <T1>     The first parameter type.
+     * @param <T2>     The second parameter type.
+     * @param <T3>     The third parameter type.
+     * @param <T4>     The fourth parameter type.
+     * @param <T5>     The fifth parameter type.
+     * @param <T6>     The sixth parameter type.
+     * @param <T7>     The seventh parameter type.
+     * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
+     */
+    @SuppressWarnings("unchecked")
+    public <T1, T2, T3, T4, T5, T6, T7> Subscription on(String target, Action7<T1, T2, T3, T4, T5, T6, T7> callback,
+                                                        Type param1, Type param2, Type param3, Type param4, Type param5, Type param6, Type param7) {
+        ActionBase action = params -> {
+            callback.invoke((T1)Utils.typeToClass(param1).cast(params[0]), (T2)Utils.typeToClass(param2).cast(params[1]), 
+                    (T3)Utils.typeToClass(param3).cast(params[2]), (T4)Utils.typeToClass(param4).cast(params[3]),
+                    (T5)Utils.typeToClass(param5).cast(params[4]), (T6)Utils.typeToClass(param6).cast(params[5]),
+                    (T7)Utils.typeToClass(param7).cast(params[6]));
+        };
+        return registerHandler(target, action, param1, param2, param3, param4, param5, param6, param7);
+    }
+
+    /**
+     * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     *
+     * @param target   The name of the hub method to define.
+     * @param callback The handler that will be raised when the hub method is invoked.
+     * @param param1   The first parameter.
+     * @param param2   The second parameter.
+     * @param param3   The third parameter.
+     * @param param4   The fourth parameter.
+     * @param param5   The fifth parameter.
+     * @param param6   The sixth parameter.
+     * @param param7   The seventh parameter.
+     * @param param8   The eighth parameter
+     * @param <T1>     The first parameter type.
+     * @param <T2>     The second parameter type.
+     * @param <T3>     The third parameter type.
+     * @param <T4>     The fourth parameter type.
+     * @param <T5>     The fifth parameter type.
+     * @param <T6>     The sixth parameter type.
+     * @param <T7>     The seventh parameter type.
+     * @param <T8>     The eighth parameter type.
+     * @return A {@link Subscription} that can be disposed to unsubscribe from the hub method.
+     */
+    @SuppressWarnings("unchecked")
+    public <T1, T2, T3, T4, T5, T6, T7, T8> Subscription on(String target, Action8<T1, T2, T3, T4, T5, T6, T7, T8> callback,
+                                                            Type param1, Type param2, Type param3, Type param4, Type param5, Type param6, Type param7, 
+                                                            Type param8) {
+        ActionBase action = params -> {
+            callback.invoke((T1)Utils.typeToClass(param1).cast(params[0]), (T2)Utils.typeToClass(param2).cast(params[1]), 
+                    (T3)Utils.typeToClass(param3).cast(params[2]), (T4)Utils.typeToClass(param4).cast(params[3]),
+                    (T5)Utils.typeToClass(param5).cast(params[4]), (T6)Utils.typeToClass(param6).cast(params[5]),
+                    (T7)Utils.typeToClass(param7).cast(params[6]), (T8)Utils.typeToClass(param8).cast(params[7]));
+        };
+        return registerHandler(target, action, param1, param2, param3, param4, param5, param6, param7, param8);
+    }
+
+    private Subscription registerHandler(String target, ActionBase action, Type... types) {
         InvocationHandler handler = handlers.put(target, action, types);
         logger.debug("Registering handler for client method: '{}'.", target);
         return new Subscription(handlers, handler, target);
@@ -1198,7 +1419,7 @@ public class HubConnection implements AutoCloseable {
         }
 
         @Override
-        public TypeAndClass getReturnType(String invocationId) {
+        public Type getReturnType(String invocationId) {
             InvocationRequest irq = getInvocation(invocationId);
             if (irq == null) {
                 return null;
@@ -1208,7 +1429,7 @@ public class HubConnection implements AutoCloseable {
         }
 
         @Override
-        public List<TypeAndClass> getParameterTypes(String methodName) {
+        public List<Type> getParameterTypes(String methodName) {
             List<InvocationHandler> handlers = connection.handlers.get(methodName);
             if (handlers == null) {
                 logger.warn("Failed to find handler for '{}' method.", methodName);
