@@ -34,7 +34,6 @@
 
   <ItemGroup>
     <NuspecProperty Include="publishDir=$(PublishDir)" />
-    <NuspecProperty Include="componentsrootdir=..\..\..\" />
     <NuspecProperty Include="PackageThirdPartyNoticesFile=$(PackageThirdPartyNoticesFile)" />
   </ItemGroup>
 
