@@ -6,7 +6,6 @@ import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { EventFieldInfo } from './EventFieldInfo';
 import { dispatchEvent } from './RendererEventDispatcher';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
-import { profileEnd, profileStart } from '../Platform/Profiling';
 const selectValuePropname = '_blazorSelectValue';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -41,8 +40,6 @@ export class BrowserRenderer {
   }
 
   public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {
-    profileStart('updateComponent');
-
     const element = this.childComponentLocations[componentId];
     if (!element) {
       throw new Error(`No element is currently associated with component ${componentId}`);
@@ -70,8 +67,6 @@ export class BrowserRenderer {
     if ((activeElementBefore instanceof HTMLElement) && ownerDocument && ownerDocument.activeElement !== activeElementBefore) {
       activeElementBefore.focus();
     }
-
-    profileEnd('updateComponent');
   }
 
   public disposeComponent(componentId: number) {

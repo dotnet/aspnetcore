@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.Components.Profiling;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Rendering
@@ -45,7 +44,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="elementName">A value representing the type of the element.</param>
         public void OpenElement(int sequence, string elementName)
         {
-            ProfilingStart();
             // We are entering a new scope, since we track the "duplicate attributes" per
             // element/component we might need to clean them up now.
             if (_hasSeenAddMultipleAttributes)
@@ -56,7 +54,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             _openElementIndices.Push(_entries.Count);
             Append(RenderTreeFrame.Element(sequence, elementName));
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -65,7 +62,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         public void CloseElement()
         {
-            ProfilingStart();
             var indexOfEntryBeingClosed = _openElementIndices.Pop();
 
             // We might be closing an element with only attributes, run the duplicate cleanup pass
@@ -77,7 +73,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];
             entry = entry.WithElementSubtreeLength(_entries.Count - indexOfEntryBeingClosed);
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -87,9 +82,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="markupContent">Content for the new markup frame.</param>
         public void AddMarkupContent(int sequence, string? markupContent)
         {
-            ProfilingStart();
             Append(RenderTreeFrame.Markup(sequence, markupContent ?? string.Empty));
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -99,9 +92,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="textContent">Content for the new text frame.</param>
         public void AddContent(int sequence, string? textContent)
         {
-            ProfilingStart();
             Append(RenderTreeFrame.Text(sequence, textContent ?? string.Empty));
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -111,7 +102,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="fragment">Content to append.</param>
         public void AddContent(int sequence, RenderFragment? fragment)
         {
-            ProfilingStart();
             if (fragment != null)
             {
                 // We surround the fragment with a region delimiter to indicate that the
@@ -122,7 +112,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 fragment(this);
                 CloseRegion();
             }
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -133,12 +122,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="value">The value used by <paramref name="fragment"/>.</param>
         public void AddContent<TValue>(int sequence, RenderFragment<TValue>? fragment, TValue value)
         {
-            ProfilingStart();
             if (fragment != null)
             {
                 AddContent(sequence, fragment(value));
             }
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -169,15 +156,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="name">The name of the attribute.</param>
         public void AddAttribute(int sequence, string name)
         {
-            ProfilingStart();
-
             if (_lastNonAttributeFrameType != RenderTreeFrameType.Element)
             {
                 throw new InvalidOperationException($"Valueless attributes may only be added immediately after frames of type {RenderTreeFrameType.Element}");
             }
 
             Append(RenderTreeFrame.Attribute(sequence, name, BoxedTrue));
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -194,7 +178,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="value">The value of the attribute.</param>
         public void AddAttribute(int sequence, string name, bool value)
         {
-            ProfilingStart();
             AssertCanAddAttribute();
             if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
             {
@@ -210,7 +193,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             {
                 TrackAttributeName(name);
             }
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -227,7 +209,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="value">The value of the attribute.</param>
         public void AddAttribute(int sequence, string name, string? value)
         {
-            ProfilingStart();
             AssertCanAddAttribute();
             if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
             {
@@ -237,7 +218,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             {
                 TrackAttributeName(name);
             }
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -254,7 +234,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="value">The value of the attribute.</param>
         public void AddAttribute(int sequence, string name, MulticastDelegate? value)
         {
-            ProfilingStart();
             AssertCanAddAttribute();
             if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
             {
@@ -264,7 +243,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             {
                 TrackAttributeName(name);
             }
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -285,7 +263,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </remarks>
         public void AddAttribute(int sequence, string name, EventCallback value)
         {
-            ProfilingStart();
             AssertCanAddAttribute();
             if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
             {
@@ -310,7 +287,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 // Track the attribute name if needed since we elided the frame.
                 TrackAttributeName(name);
             }
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -331,7 +307,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </remarks>
         public void AddAttribute<TArgument>(int sequence, string name, EventCallback<TArgument> value)
         {
-            ProfilingStart();
             AssertCanAddAttribute();
             if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
             {
@@ -356,7 +331,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 // Track the attribute name if needed since we elided the frame.
                 TrackAttributeName(name);
             }
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -370,7 +344,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="value">The value of the attribute.</param>
         public void AddAttribute(int sequence, string name, object? value)
         {
-            ProfilingStart();
             // This looks a bit daunting because we need to handle the boxed/object version of all of the
             // types that AddAttribute special cases.
             if (_lastNonAttributeFrameType == RenderTreeFrameType.Element)
@@ -423,7 +396,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 // This is going to throw. Calling it just to get a consistent exception message.
                 AssertCanAddAttribute();
             }
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -438,7 +410,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="frame">A <see cref="RenderTreeFrame"/> holding the name and value of the attribute.</param>
         public void AddAttribute(int sequence, in RenderTreeFrame frame)
         {
-            ProfilingStart();
             if (frame.FrameType != RenderTreeFrameType.Attribute)
             {
                 throw new ArgumentException($"The {nameof(frame.FrameType)} must be {RenderTreeFrameType.Attribute}.");
@@ -446,7 +417,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             AssertCanAddAttribute();
             Append(frame.WithAttributeSequence(sequence));
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -456,7 +426,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="attributes">A collection of key-value pairs representing attributes.</param>
         public void AddMultipleAttributes(int sequence, IEnumerable<KeyValuePair<string, object>>? attributes)
         {
-            ProfilingStart();
             // Calling this up-front just to make sure we validate before mutating anything.
             AssertCanAddAttribute();
 
@@ -473,7 +442,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
                     AddAttribute(sequence, attribute.Key, attribute.Value);
                 }
             }
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -490,7 +458,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="updatesAttributeName">The name of another attribute whose value can be updated when the event handler is executed.</param>
         public void SetUpdatesAttributeName(string updatesAttributeName)
         {
-            ProfilingStart();
             if (_entries.Count == 0)
             {
                 throw new InvalidOperationException("No preceding attribute frame exists.");
@@ -503,7 +470,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             prevFrame = prevFrame.WithAttributeEventUpdatesAttributeName(updatesAttributeName);
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -535,12 +501,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="value">The value for the key.</param>
         public void SetKey(object? value)
         {
-            ProfilingStart();
             if (value == null)
             {
                 // Null is equivalent to not having set a key, which is valuable because Razor syntax doesn't have an
                 // easy way to have conditional directive attributes
-                ProfilingEnd();
                 return;
             }
 
@@ -563,12 +527,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 default:
                     throw new InvalidOperationException($"Cannot set a key on a frame of type {parentFrame.FrameType}.");
             }
-            ProfilingEnd();
         }
 
         private void OpenComponentUnchecked(int sequence, Type componentType)
         {
-            ProfilingStart();
             // We are entering a new scope, since we track the "duplicate attributes" per
             // element/component we might need to clean them up now.
             if (_hasSeenAddMultipleAttributes)
@@ -579,7 +541,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             _openElementIndices.Push(_entries.Count);
             Append(RenderTreeFrame.ChildComponent(sequence, componentType));
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -588,7 +549,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         public void CloseComponent()
         {
-            ProfilingStart();
             var indexOfEntryBeingClosed = _openElementIndices.Pop();
 
             // We might be closing a component with only attributes. Run the attribute cleanup pass
@@ -600,7 +560,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];
             entry = entry.WithComponentSubtreeLength(_entries.Count - indexOfEntryBeingClosed);
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -610,14 +569,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="elementReferenceCaptureAction">An action to be invoked whenever the reference value changes.</param>
         public void AddElementReferenceCapture(int sequence, Action<ElementReference> elementReferenceCaptureAction)
         {
-            ProfilingStart();
             if (GetCurrentParentFrameType() != RenderTreeFrameType.Element)
             {
                 throw new InvalidOperationException($"Element reference captures may only be added as children of frames of type {RenderTreeFrameType.Element}");
             }
 
             Append(RenderTreeFrame.ElementReferenceCapture(sequence, elementReferenceCaptureAction));
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -627,7 +584,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="componentReferenceCaptureAction">An action to be invoked whenever the reference value changes.</param>
         public void AddComponentReferenceCapture(int sequence, Action<object?> componentReferenceCaptureAction)
         {
-            ProfilingStart();
             var parentFrameIndex = GetCurrentParentFrameIndex();
             if (!parentFrameIndex.HasValue)
             {
@@ -641,7 +597,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             Append(RenderTreeFrame.ComponentReferenceCapture(sequence, componentReferenceCaptureAction, parentFrameIndexValue));
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -650,7 +605,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         public void OpenRegion(int sequence)
         {
-            ProfilingStart();
             // We are entering a new scope, since we track the "duplicate attributes" per
             // element/component we might need to clean them up now.
             if (_hasSeenAddMultipleAttributes)
@@ -661,7 +615,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             _openElementIndices.Push(_entries.Count);
             Append(RenderTreeFrame.Region(sequence));
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -670,11 +623,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         public void CloseRegion()
         {
-            ProfilingStart();
             var indexOfEntryBeingClosed = _openElementIndices.Pop();
             ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];
             entry = entry.WithRegionSubtreeLength(_entries.Count - indexOfEntryBeingClosed);
-            ProfilingEnd();
         }
 
         private void AssertCanAddAttribute()
@@ -702,29 +653,24 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         public void Clear()
         {
-            ProfilingStart();
             _entries.Clear();
             _openElementIndices.Clear();
             _lastNonAttributeFrameType = null;
             _hasSeenAddMultipleAttributes = false;
             _seenAttributeNames?.Clear();
-            ProfilingEnd();
         }
 
         // internal because this should only be used during the post-event tree patching logic
         // It's expensive because it involves copying all the subsequent memory in the array
         internal void InsertAttributeExpensive(int insertAtIndex, int sequence, string attributeName, object? attributeValue)
         {
-            ProfilingStart();
             // Replicate the same attribute omission logic as used elsewhere
             if ((attributeValue == null) || (attributeValue is bool boolValue && !boolValue))
             {
-                ProfilingEnd();
                 return;
             }
 
             _entries.InsertExpensive(insertAtIndex, RenderTreeFrame.Attribute(sequence, attributeName, attributeValue));
-            ProfilingEnd();
         }
 
         /// <summary>
@@ -748,7 +694,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         // Internal for testing
         internal void ProcessDuplicateAttributes(int first)
         {
-            ProfilingStart();
             Debug.Assert(_hasSeenAddMultipleAttributes);
 
             // When AddMultipleAttributes method has been called, we need to postprocess attributes while closing
@@ -830,7 +775,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             seenAttributeNames.Clear();
             _hasSeenAddMultipleAttributes = false;
-            ProfilingEnd();
         }
 
         // Internal for testing
@@ -847,22 +791,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         void IDisposable.Dispose()
         {
-            ProfilingStart();
             _entries.Dispose();
-            ProfilingEnd();
         }
-
-        // Having too many calls to ComponentsProfiling.Instance.Start/End has a measurable perf impact
-        // even when capturing is disabled. So, to enable detailed profiling for this class, define the
-        // Profile_RenderTreeBuilder compiler symbol, otherwise the calls are compiled out entirely.
-        // Enabling detailed profiling adds about 5% to rendering benchmark times.
-
-        [Conditional("Profile_RenderTreeBuilder")]
-        private static void ProfilingStart([CallerMemberName] string? name = null)
-            => ComponentsProfiling.Instance.Start(name);
-
-        [Conditional("Profile_RenderTreeBuilder")]
-        private static void ProfilingEnd([CallerMemberName] string? name = null)
-            => ComponentsProfiling.Instance.End(name);
     }
 }

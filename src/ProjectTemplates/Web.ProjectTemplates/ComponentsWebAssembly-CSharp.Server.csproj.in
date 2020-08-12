@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
@@ -38,6 +38,8 @@
   <!--#endif -->
   <!--#if (OrganizationalAuth || IndividualB2CAuth) -->
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="${MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion}" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="${MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion}" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebPackageVersion}" />
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="${MicrosoftIdentityWebUIPackageVersion}" />
     <PackageReference Include="Microsoft.Graph" Version="${MicrosoftGraphPackageVersion}" Condition=" '$(GenerateGraph)' == 'True' "/>
