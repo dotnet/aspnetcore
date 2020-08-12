@@ -51,8 +51,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     success = false;
                 }
 
-                await CompleteResponseBodyAsync();
-                _streams.Stop();
+                if (ResponsePipeWrapper != null)
+                {
+                    await ResponsePipeWrapper.CompleteAsync();
+                }
+
+                _streams.Stop(); // check what this does.
 
                 if (!HasResponseStarted && _applicationException == null && _onStarting != null)
                 {

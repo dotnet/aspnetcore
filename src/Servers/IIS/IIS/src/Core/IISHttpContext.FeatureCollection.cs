@@ -195,11 +195,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         Task IHttpResponseBodyFeature.SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
             => SendFileFallback.SendFileAsync(ResponseBody, path, offset, count, cancellation);
 
-        Task IHttpResponseBodyFeature.CompleteAsync() => CompleteResponseBodyAsync();
-
         // TODO: In the future this could complete the body all the way down to the server. For now it just ensures
         // any unflushed data gets flushed.
-        protected Task CompleteResponseBodyAsync()
+        Task IHttpResponseBodyFeature.CompleteAsync()
         {
             if (ResponsePipeWrapper != null)
             {
