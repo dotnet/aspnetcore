@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             builder =>
             {
                 builder.AddBooleanToken(ComponentResources.PreserveWhitespaceDirective_BooleanToken_Name, ComponentResources.PreserveWhitespaceDirective_BooleanToken_Description);
-                builder.Usage = DirectiveUsage.FileScopedMultipleOccurring;
+                builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
                 builder.Description = ComponentResources.PreserveWhitespaceDirective_Description;
             });
 
