@@ -4,7 +4,7 @@ This file contains a list of all the packages and their versions which were rele
 build of ASP.NET Core 2.1.x. Update this list when preparing for a new patch.
 
 -->
-<Baseline Version="2.1.20">
+<Baseline Version="2.1.21">
   <Package Id="dotnet-dev-certs" Version="2.1.1" />
   <Package Id="dotnet-sql-cache" Version="2.1.1" />
   <Package Id="dotnet-user-secrets" Version="2.1.1" />
@@ -54,7 +54,7 @@ build of ASP.NET Core 2.1.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Http.Connections.Client" Version="1.0.4" />
   <Package Id="Microsoft.AspNetCore.Http.Connections.Common" Version="1.0.4" />
   <Package Id="Microsoft.AspNetCore.Http.Connections" Version="1.0.15" />
-  <Package Id="Microsoft.AspNetCore.Http.Extensions" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.Http.Extensions" Version="2.1.21" />
   <Package Id="Microsoft.AspNetCore.Http.Features" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Http" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.HttpOverrides" Version="2.1.1" />
@@ -93,7 +93,7 @@ build of ASP.NET Core 2.1.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Razor" Version="2.1.2" />
   <Package Id="Microsoft.AspNetCore.ResponseCaching.Abstractions" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.ResponseCaching" Version="2.1.1" />
-  <Package Id="Microsoft.AspNetCore.ResponseCompression" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.ResponseCompression" Version="2.1.21" />
   <Package Id="Microsoft.AspNetCore.Rewrite" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Routing.Abstractions" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Routing" Version="2.1.1" />
