@@ -29,12 +29,10 @@ using Google.Apis.Auth.OAuth2;
 using Google.Protobuf;
 using Grpc.Auth;
 using Grpc.Core;
-using Grpc.Core.Utils;
 using Grpc.Net.Client;
 using Grpc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 using Newtonsoft.Json.Linq;
 
 namespace InteropTestsClient
@@ -101,7 +99,6 @@ namespace InteropTestsClient
                 configure.AddSimpleConsole(loggerOptions =>
                 {
                     loggerOptions.IncludeScopes = true;
-                    loggerOptions.ColorBehavior = LoggerColorBehavior.Disabled;
                 });
             });
 
