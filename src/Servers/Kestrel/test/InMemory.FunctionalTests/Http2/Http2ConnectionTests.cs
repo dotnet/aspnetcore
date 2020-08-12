@@ -478,7 +478,58 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(0, _connection.StreamPool.Count);
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+        }
 
+        [Fact]
+        public async Task StreamPool_UnusedExpiredStream_RemovedFromPool()
+        {
+            DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
+
+            // Heartbeat
+            TriggerTick(now);
+
+            var serverTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await InitializeConnectionAsync(async context =>
+            {
+                await _echoApplication(context);
+            });
+
+            Assert.Equal(0, _connection.StreamPool.Count);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 36,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 1);
+
+            // Ping will trigger the stream to be returned to the pool so we can assert it
+            await SendPingAsync(Http2PingFrameFlags.NONE);
+            await ExpectAsync(Http2FrameType.PING,
+                withLength: 8,
+                withFlags: (byte)Http2PingFrameFlags.ACK,
+                withStreamId: 0);
+
+            // Stream has been returned to the pool
+            Assert.Equal(1, _connection.StreamPool.Count);
+
+            _connection.StreamPool.TryPeek(out var pooledStream);
+
+            TriggerTick(now + TimeSpan.FromSeconds(1));
+
+            // Stream has not expired and is still in pool
+            Assert.Equal(1, _connection.StreamPool.Count);
+
+            TriggerTick(now + TimeSpan.FromSeconds(6));
+
+            // Stream has expired and has been removed from pool
+            Assert.Equal(0, _connection.StreamPool.Count);
+
+            // Removed stream should have been disposed
+            Assert.True(((Http2OutputProducer)pooledStream.Output)._disposed);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
