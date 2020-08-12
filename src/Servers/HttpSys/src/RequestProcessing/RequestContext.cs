@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Dispose();
         }
 
-        internal unsafe void Transfer(RequestQueueWrapper wrapper)
+        internal unsafe void Transfer(DelegationRule wrapper)
         {
             if (Response.HasStarted)
             {

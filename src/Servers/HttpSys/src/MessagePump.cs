@@ -31,7 +31,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private int _shutdownSignalCompleted;
 
         private readonly ServerAddressesFeature _serverAddresses;
-        private readonly ServerDelegationPropertyFeature _delegationProperty;
 
         public MessagePump(IOptions<HttpSysOptions> options, ILoggerFactory loggerFactory, IAuthenticationSchemeProvider authentication)
         {
@@ -55,8 +54,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Features = new FeatureCollection();
             _serverAddresses = new ServerAddressesFeature();
             Features.Set<IServerAddressesFeature>(_serverAddresses);
-            _delegationProperty = new ServerDelegationPropertyFeature(Listener.RequestQueue, _logger);
-            Features.Set<IServerDelegationPropertyFeature>(_delegationProperty);
+
+            var delegationProperty = new ServerDelegationPropertyFeature(Listener.RequestQueue, _logger);
+            Features.Set<IServerDelegationPropertyFeature>(delegationProperty);
+
             _maxAccepts = _options.MaxAccepts;
         }
 

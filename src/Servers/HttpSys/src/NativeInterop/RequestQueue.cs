@@ -19,6 +19,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private readonly ILogger _logger;
         private bool _disposed;
 
+        internal RequestQueue(UrlGroup urlGroup, string requestQueueName, RequestQueueMode mode, string Uri, ILogger logger)
+            : this(urlGroup, requestQueueName, mode, logger)
+        {
+            UrlGroup = new UrlGroup(this, UrlPrefix.Create(Uri));
+        }
+
         internal RequestQueue(UrlGroup urlGroup, string requestQueueName, RequestQueueMode mode, ILogger logger)
         {
             _mode = mode;
@@ -100,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal SafeHandle Handle { get; }
         internal ThreadPoolBoundHandle BoundHandle { get; }
 
-        internal UrlGroup UrlGroup { get; set; }
+        internal UrlGroup UrlGroup { get; }
 
         internal unsafe void AttachToUrlGroup()
         {

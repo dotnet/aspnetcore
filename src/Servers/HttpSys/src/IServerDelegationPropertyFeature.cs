@@ -9,6 +9,6 @@ namespace Microsoft.AspNetCore.Hosting.Server.Features
 {
     public interface IServerDelegationPropertyFeature
     {
-        RequestQueueWrapper SetDelegationProperty(string queueName, string uri);
+        DelegationRule CreateDelegationRule(string queueName, string uri);
     }
 }

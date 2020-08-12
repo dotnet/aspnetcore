@@ -17,9 +17,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _queue = queue;
             _logger = logger;
         }
-        public RequestQueueWrapper SetDelegationProperty(string queueName, string uri)
+        public DelegationRule CreateDelegationRule(string queueName, string uri)
         {
-            var wrapper = new RequestQueueWrapper(queueName, uri, _logger);
+            var wrapper = new DelegationRule(queueName, uri, _logger);
             _queue.UrlGroup.SetDelegationProperty(wrapper.Queue);
             return wrapper;
         }

@@ -714,7 +714,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 await actionPair.Item1(actionPair.Item2);
             }
         }
-        public void TransferRequest(RequestQueueWrapper wrapper)
+        public void TransferRequest(DelegationRule wrapper)
         {
             _responseStarted = true;
             _requestContext.Transfer(wrapper);

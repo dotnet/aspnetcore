@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 options.RequestQueueName = queueName;
             });
 
-            RequestQueueWrapper wrapper = default;
+            DelegationRule wrapper = default;
 
             using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, httpContext =>
             {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             });
 
             var delegationProperty = delegator.Features.Get<IServerDelegationPropertyFeature>();
-            wrapper = delegationProperty.SetDelegationProperty(queueName, receiverAddress);
+            wrapper = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
 
             var responseString = await SendRequestAsync(delegatorAddress);
             Assert.Equal(expectedResponseString, responseString);
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 options.RequestQueueName = queueName;
             });
 
-            RequestQueueWrapper wrapper = default;
+            DelegationRule wrapper = default;
 
             using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, async httpContext =>
             {
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             });
 
             var delegationProperty = delegator.Features.Get<IServerDelegationPropertyFeature>();
-            wrapper = delegationProperty.SetDelegationProperty(queueName, receiverAddress);
+            wrapper = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
 
             var responseString = await SendRequestAsync(delegatorAddress);
             Assert.Equal(expectedResponseString, responseString);
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 options.RequestQueueName = queueName;
             });
 
-            RequestQueueWrapper wrapper = default;
+            DelegationRule wrapper = default;
 
             using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, async httpContext =>
             {
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             });
 
             var delegationProperty = delegator.Features.Get<IServerDelegationPropertyFeature>();
-            wrapper = delegationProperty.SetDelegationProperty(queueName, receiverAddress);
+            wrapper = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
 
             var responseString = await SendRequestAsync(delegatorAddress);
             Assert.Equal(expectedResponseString, responseString);
