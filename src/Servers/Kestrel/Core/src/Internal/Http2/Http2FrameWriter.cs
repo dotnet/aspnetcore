@@ -286,6 +286,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
+        public ValueTask<FlushResult> WriteDataAndTrailersAsync(Http2Stream stream, StreamOutputFlowControl flowControl, in ReadOnlySequence<byte> data, bool firstWrite)
+        {
+            // The Length property of a ReadOnlySequence can be expensive, so we cache the value.
+            var dataLength = data.Length;
+
+            lock (_writeLock)
+            {
+                if (_completed || flowControl.IsAborted)
+                {
+                    return default;
+                }
+
+                // Zero-length data frames are allowed to be sent immediately even if there is no space available in the flow control window.
+                // https://httpwg.org/specs/rfc7540.html#rfc.section.6.9.1
+                if (dataLength != 0 && dataLength > flowControl.Available)
+                {
+                    return WriteDataAndTrailersAsyncCore(this, stream, flowControl, data, dataLength, firstWrite);
+                }
+
+                // This cast is safe since if dataLength would overflow an int, it's guaranteed to be greater than the available flow control window.
+                flowControl.Advance((int)dataLength);
+                WriteDataUnsynchronized(stream.StreamId, data, dataLength, endStream: false);
+
+                stream.ResponseTrailers.SetReadOnly();
+                stream.DecrementActiveClientStreamCount();
+                return WriteResponseTrailers(stream.StreamId, stream.ResponseTrailers);
+            }
+
+            static async ValueTask<FlushResult> WriteDataAndTrailersAsyncCore(Http2FrameWriter writer, Http2Stream stream, StreamOutputFlowControl flowControl, ReadOnlySequence<byte> data, long dataLength, bool firstWrite)
+            {
+                await writer.WriteDataAsync(stream.StreamId, flowControl, data, dataLength, endStream: false, firstWrite);
+
+                stream.ResponseTrailers.SetReadOnly();
+                stream.DecrementActiveClientStreamCount();
+                return await writer.WriteResponseTrailers(stream.StreamId, stream.ResponseTrailers);
+            }
+        }
+
         /*  Padding is not implemented
             +---------------+
             |Pad Length? (8)|

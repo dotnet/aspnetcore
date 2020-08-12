@@ -423,16 +423,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         {
                             // Output is ending and there are trailers to write
                             // Write any remaining content then write trailers
+
                             if (readResult.Buffer.Length > 0)
                             {
-                                // Only flush if required (i.e. content length exceeds flow control availability)
-                                // Writing remaining content without flushing allows content and trailers to be sent in the same packet
-                                await _frameWriter.WriteDataAsync(StreamId, _flowControl, readResult.Buffer, endStream: false, firstWrite, forceFlush: false);
+                                flushResult = await _frameWriter.WriteDataAndTrailersAsync(_stream, _flowControl, readResult.Buffer, firstWrite);
                             }
-
-                            _stream.ResponseTrailers.SetReadOnly();
-                            _stream.DecrementActiveClientStreamCount();
-                            flushResult = await _frameWriter.WriteResponseTrailers(StreamId, _stream.ResponseTrailers);
+                            else
+                            {
+                                _stream.ResponseTrailers.SetReadOnly();
+                                _stream.DecrementActiveClientStreamCount();
+                                flushResult = await _frameWriter.WriteResponseTrailers(StreamId, _stream.ResponseTrailers);
+                            }
                         }
                         else if (readResult.IsCompleted && _streamEnded)
                         {
