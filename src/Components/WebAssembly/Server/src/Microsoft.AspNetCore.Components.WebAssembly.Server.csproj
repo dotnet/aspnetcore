@@ -33,7 +33,7 @@
   <!-- Emit debug proxy binaries to output directory. This lets us launch it as a separate process while keeping the build output self-contained.  -->
   <Target Name="IncludeDebugProxyBinariesAsContent" BeforeTargets="AssignTargetPaths">
     <ItemGroup>
-      <DebugProxyBinaries Include="..\..\DebugProxy\src\bin\$(Configuration)\$(DefaultNetCoreTargetFramework)\**" />
+      <DebugProxyBinaries Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Components.WebAssembly.DebugProxy\$(Configuration)\$(DefaultNetCoreTargetFramework)\**" />
 
       <!--
         For when we're building a package, we use Pack and PackagePath to bundle the debug proxy binaries into 'tools'.
@@ -50,6 +50,10 @@
         Link="BlazorDebugProxy\%(RecursiveDir)%(FileName)%(Extension)"
         CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
+
+    <Error
+      Text="Debugger proxy files were not found in $(ArtifactsBinDir)Microsoft.AspNetCore.Components.WebAssembly.DebugProxy\$(Configuration)\$(DefaultNetCoreTargetFramework)"
+      Condition="'@(DebugProxyBinaries->Count())' == '0'" />
   </Target>
 
 </Project>
