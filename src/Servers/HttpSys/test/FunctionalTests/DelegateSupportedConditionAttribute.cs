@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             {
                 return HttpApi.HttpIsFeatureSupported(HTTP_FEATURE_ID.HttpFeatureDelegateEx);
             }
-            catch (Exception)
+            catch (EntryPointNotFoundException)
             {
                 return false;
             }

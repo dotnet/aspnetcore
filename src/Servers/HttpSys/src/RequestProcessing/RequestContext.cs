@@ -23,8 +23,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private CancellationTokenSource _requestAbortSource;
         private CancellationToken? _disconnectToken;
         private bool _disposed;
-        private static readonly Lazy<ConcurrentDictionary<(string, string), RequestQueue>> _requestQueueCache =
-            new Lazy<ConcurrentDictionary<(string, string), RequestQueue>>(() => new ConcurrentDictionary<(string, string), RequestQueue>());
 
         internal RequestContext(HttpSysListener server, NativeRequestContext memoryBlob)
         {
@@ -326,42 +324,27 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Dispose();
         }
 
-        internal void Transfer(string queueName, string uri)
+        internal unsafe void Transfer(RequestQueueWrapper wrapper)
         {
             if (Response.HasStarted)
             {
                 throw new InvalidOperationException("This request cannot be transfered, the response has already started.");
             }
-            _requestQueueCache.Value.TryGetValue((queueName, uri), out var queue);
-            if (queue is null)
-            {
-                queue = new RequestQueue(null, queueName, RequestQueueMode.Receiver, Logger);
-                queue.UrlGroup = new UrlGroup(queue, UrlPrefix.Create(uri));
-                _requestQueueCache.Value.TryAdd((queueName, uri), queue);
-                Server.RequestQueue.UrlGroup.SetDelegationProperty(queue);
-            }
-            Transfer(queue, uri);
-        }
 
-        internal unsafe void Transfer(RequestQueue queue, string uri)
-        {
             Response.Transfer();
             var source = Server.RequestQueue;
 
-            // Proposed new API to fix queue properties issue
-            // will require the url to be passed to DelegateRequestEx
-            //
-            var handle = GCHandle.Alloc(uri, GCHandleType.Pinned);
+            var handle = GCHandle.Alloc(wrapper.Uri, GCHandleType.Pinned);
             var property = new HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_INFO()
             {
                 ProperyId = HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_ID.DelegateRequestDelegateUrlProperty,
                 PropertyInfo = handle.AddrOfPinnedObject(),
-                PropertyInfoLength = (uint)System.Text.Encoding.Unicode.GetByteCount(uri)
+                PropertyInfoLength = (uint)System.Text.Encoding.Unicode.GetByteCount(wrapper.Uri)
             };
             var statusCode = HttpApi.HttpDelegateRequestEx(source.Handle,
-                                                           queue.Handle,
+                                                           wrapper.Queue.Handle,
                                                            Request.RequestId,
-                                                           queue.UrlGroup.Id,
+                                                           wrapper.Queue.UrlGroup.Id,
                                                            1,
                                                            &property);
             handle.Free();

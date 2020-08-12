@@ -714,10 +714,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 await actionPair.Item1(actionPair.Item2);
             }
         }
-        public void TransferRequest(string queueName, string uri)
+        public void TransferRequest(RequestQueueWrapper wrapper)
         {
             _responseStarted = true;
-            _requestContext.Transfer(queueName, uri);
+            _requestContext.Transfer(wrapper);
         }
     }
 }

@@ -18,7 +18,6 @@ namespace Microsoft.AspNetCore.Http.Features
         /// before invoking.
         /// </summary>
         /// <returns></returns>
-        //void TransferRequest(RequestQueue queue);
-        void TransferRequest(string queueName, string uri);
+        void TransferRequest(RequestQueueWrapper wrapper);
     }
 }

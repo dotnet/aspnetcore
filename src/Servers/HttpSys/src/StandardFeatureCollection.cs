@@ -46,10 +46,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _featureFuncLookup[typeof(ITlsHandshakeFeature)] = ctx => ctx.GetTlsHandshakeFeature();
             }
 
-            if (HttpApi.HttpIsFeatureSupported(HttpApiTypes.HTTP_FEATURE_ID.HttpFeatureDelegateEx))
+            try
             {
-                _featureFuncLookup[typeof(IHttpSysRequestTransferFeature)] = _identityFunc;
+                if (HttpApi.HttpIsFeatureSupported(HttpApiTypes.HTTP_FEATURE_ID.HttpFeatureDelegateEx))
+                {
+                    _featureFuncLookup[typeof(IHttpSysRequestTransferFeature)] = _identityFunc;
+                }
             }
+            catch (EntryPointNotFoundException) { }
         }
 
         public StandardFeatureCollection(FeatureContext featureContext)
