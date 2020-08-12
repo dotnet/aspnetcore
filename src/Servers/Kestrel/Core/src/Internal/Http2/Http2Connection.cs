@@ -59,6 +59,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private int _clientActiveStreamCount = 0;
         private int _serverActiveStreamCount = 0;
 
+        // Default MaxConcurrentStreams is 100. If a small MaxConcurrentStreams is configured still track up
+        // to 100 streams to support clients that send a burst of streams while the connection was being established.
+        private uint MaxTrackedStreams => Math.Max(_serverSettings.MaxConcurrentStreams * 2, 100);
+
         // The following are the only fields that can be modified outside of the ProcessRequestsAsync loop.
         private readonly ConcurrentQueue<Http2Stream> _completedStreams = new ConcurrentQueue<Http2Stream>();
         private readonly StreamCloseAwaitable _streamCompletionAwaitable = new StreamCloseAwaitable();
@@ -1032,7 +1036,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // We don't use the _serverActiveRequestCount here as during shutdown, it and the dictionary counts get out of sync.
                 // The streams still exist in the dictionary until the client responds with a RST or END_STREAM.
                 // Also, we care about the dictionary size for too much memory consumption.
-                if (_streams.Count > _serverSettings.MaxConcurrentStreams * 2)
+                if (_streams.Count > MaxTrackedStreams)
                 {
                     // Server is getting hit hard with connection resets.
                     // Tell client to calm down.
@@ -1166,7 +1170,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         // Compare to UpdateCompletedStreams, but only removes streams if over the max stream drain limit.
         private void MakeSpaceInDrainQueue()
         {
-            var maxStreams = _serverSettings.MaxConcurrentStreams * 2;
+            var maxStreams = MaxTrackedStreams;
             // If we're tracking too many streams, discard the oldest.
             while (_streams.Count >= maxStreams && _completedStreams.TryDequeue(out var stream))
             {
