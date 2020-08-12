@@ -1286,7 +1286,7 @@ class HubConnectionTest {
         assertEquals(Integer.valueOf(1), value.get());
     }
 
-    /*@Test
+    @Test
     public void sendWithParamTriggersOnHandler() {
         AtomicReference<String> value = new AtomicReference<>();
         MockTransport mockTransport = new MockTransport();
@@ -1303,7 +1303,7 @@ class HubConnectionTest {
 
         // Confirming that our handler was called and the correct message was passed in.
         assertEquals("Hello World", value.get());
-    } */
+    }
 
     @Test
     public void sendWithTwoParamsTriggersOnHandler() {
@@ -1558,7 +1558,7 @@ class HubConnectionTest {
         assertEquals("F", value8.get());
     }
 
-    private class Custom<T> {
+    private class Custom {
         public int number;
         public String str;
         public boolean[] bools;

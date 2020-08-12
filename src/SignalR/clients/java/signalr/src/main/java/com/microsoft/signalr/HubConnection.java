@@ -700,39 +700,8 @@ public class HubConnection implements AutoCloseable {
      * @param <T> The expected return type.
      * @return A Single that yields the return value when the invocation has completed.
      */
-    @SuppressWarnings("unchecked")
     public <T> Single<T> invoke(Class<T> returnType, String method, Object... args) {
-        hubConnectionStateLock.lock();
-        try {
-            if (hubConnectionState != HubConnectionState.CONNECTED) {
-                throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
-            }
-            
-            String id = connectionState.getNextInvocationId();
-            InvocationRequest irq = new InvocationRequest(returnType, id);
-            connectionState.addInvocation(irq);
-
-            SingleSubject<T> subject = SingleSubject.create();
-
-            // forward the invocation result or error to the user
-            // run continuations on a separate thread
-            Subject<Object> pendingCall = irq.getPendingCall();
-            pendingCall.subscribe(result -> {
-                // Primitive types can't be cast with the Class cast function
-                if (returnType.isPrimitive()) {
-                    subject.onSuccess((T)result);
-                } else {
-                    subject.onSuccess(returnType.cast(result));
-                }
-            }, error -> subject.onError(error));
-
-            // Make sure the actual send is after setting up the callbacks otherwise there is a race
-            // where the map doesn't have the callbacks yet when the response is returned
-            sendInvocationMessage(method, args, id, false);
-            return subject;
-        } finally {
-            hubConnectionStateLock.unlock();
-        }
+        return this.<T>invoke(returnType, returnType, method, args);
     }
     
 
@@ -745,15 +714,19 @@ public class HubConnection implements AutoCloseable {
      * @param <T> The expected return type.
      * @return A Single that yields the return value when the invocation has completed.
      */
-    @SuppressWarnings("unchecked")
     public <T> Single<T> invoke(Type returnType, String method, Object... args) {
+        Class<?> returnClass = Utils.typeToClass(returnType);
+        return this.<T>invoke(returnType, returnClass, method, args);
+    }
+    
+    @SuppressWarnings("unchecked")
+    private <T> Single<T> invoke(Type returnType, Class<?> returnClass, String method, Object... args) {
         hubConnectionStateLock.lock();
         try {
             if (hubConnectionState != HubConnectionState.CONNECTED) {
                 throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
             }
 
-            Class<?> returnClass = Utils.typeToClass(returnType);
             String id = connectionState.getNextInvocationId();
             InvocationRequest irq = new InvocationRequest(returnType, id);
             connectionState.addInvocation(irq);
@@ -790,48 +763,8 @@ public class HubConnection implements AutoCloseable {
      * @param <T> The expected return type.
      * @return An observable that yields the streaming results from the server.
      */
-    @SuppressWarnings("unchecked")
     public <T> Observable<T> stream(Class<T> returnType, String method, Object ... args) {
-        String invocationId;
-        InvocationRequest irq;
-        hubConnectionStateLock.lock();
-        try {
-            if (hubConnectionState != HubConnectionState.CONNECTED) {
-                throw new RuntimeException("The 'stream' method cannot be called if the connection is not active.");
-            }
-
-            invocationId = connectionState.getNextInvocationId();
-            irq = new InvocationRequest(returnType, invocationId);
-            connectionState.addInvocation(irq);
-
-            AtomicInteger subscriptionCount = new AtomicInteger();
-            ReplaySubject<T> subject = ReplaySubject.create();
-            Subject<Object> pendingCall = irq.getPendingCall();
-            pendingCall.subscribe(result -> {
-                        // Primitive types can't be cast with the Class cast function
-                        if (returnType.isPrimitive()) {
-                            subject.onNext((T)result);
-                        } else {
-                            subject.onNext(returnType.cast(result));
-                        }
-                    }, error -> subject.onError(error),
-                    () -> subject.onComplete());
-
-            Observable<T> observable = subject.doOnSubscribe((subscriber) -> subscriptionCount.incrementAndGet());
-            sendInvocationMessage(method, args, invocationId, true);
-            return observable.doOnDispose(() -> {
-                if (subscriptionCount.decrementAndGet() == 0) {
-                    CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(null, invocationId);
-                    sendHubMessage(cancelInvocationMessage);
-                    if (connectionState != null) {
-                        connectionState.tryRemoveInvocation(invocationId);
-                    }
-                    subject.onComplete();
-                }
-            });
-        } finally {
-            hubConnectionStateLock.unlock();
-        }
+        return this.<T>stream(returnType, returnType, method, args);
     }
     
     /**
@@ -843,8 +776,13 @@ public class HubConnection implements AutoCloseable {
      * @param <T> The expected return type.
      * @return An observable that yields the streaming results from the server.
      */
-    @SuppressWarnings("unchecked")
     public <T> Observable<T> stream(Type returnType, String method, Object ... args) {
+        Class<?> returnClass = Utils.typeToClass(returnType);
+        return this.<T>stream(returnType, returnClass, method, args);
+    }
+    
+    @SuppressWarnings("unchecked")
+    private <T> Observable<T> stream(Type returnType, Class<?> returnClass, String method, Object ... args) {
         String invocationId;
         InvocationRequest irq;
         hubConnectionStateLock.lock();
@@ -853,7 +791,6 @@ public class HubConnection implements AutoCloseable {
                 throw new RuntimeException("The 'stream' method cannot be called if the connection is not active.");
             }
 
-            Class<?> returnClass = Utils.typeToClass(returnType);
             invocationId = connectionState.getNextInvocationId();
             irq = new InvocationRequest(returnType, invocationId);
             connectionState.addInvocation(irq);
@@ -1149,7 +1086,6 @@ public class HubConnection implements AutoCloseable {
      */
     @SuppressWarnings("unchecked")
     public <T1> Subscription on(String target, Action1<T1> callback, Type param1) {
-        Class<?> class1 = Utils.typeToClass(param1);
         ActionBase action = params -> callback.invoke((T1)Utils.typeToClass(param1).cast(params[0]));
         return registerHandler(target, action, param1);
     }

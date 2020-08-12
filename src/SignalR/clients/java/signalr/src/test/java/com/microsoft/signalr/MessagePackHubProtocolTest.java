@@ -752,8 +752,111 @@ class MessagePackHubProtocolTest {
         InvocationMessage invocationMessage = new InvocationMessage(null, null, "test", new Object[] { argument }, null);
         ByteBuffer result = messagePackHubProtocol.writeMessage(invocationMessage);
         byte[] expectedBytes = {0x23, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, (byte) 0x82, (byte) 0xA5, 
-                0x61, 0x70, 0x70, 0x6C, 0x65, (byte) 0xA6, 0x62, 0x61, 0x6E, 0x61, 0x6E, 0x61, (byte) 0xA3, 0x6B, 0x65, 0x79, (byte) 0xA5, 0x76, 0x61, 0x6C, 0x75, 
-                0x65, (byte) 0x90};
+            0x61, 0x70, 0x70, 0x6C, 0x65, (byte) 0xA6, 0x62, 0x61, 0x6E, 0x61, 0x6E, 0x61, (byte) 0xA3, 0x6B, 0x65, 0x79, (byte) 0xA5, 0x76, 0x61, 0x6C, 0x75, 
+            0x65, (byte) 0x90};
+        ByteString expectedResult = ByteString.of(expectedBytes);
+        assertEquals(expectedResult, ByteString.of(result));
+    }
+    
+    @Test
+    public void parseInvocationMessageWithNestedCollection() {
+        byte[] messageBytes = {0x39, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, (byte) 0x92, 
+            (byte) 0x82, (byte) 0xA3, 0x6F, 0x6E, 0x65, (byte) 0x92, (byte) 0xA1, 0x61, (byte) 0xA1, 0x62, (byte) 0xA3, 0x74, 0x77, 0x6F, (byte) 0x92, 
+            (byte) 0xA3, (byte) 0xEB, (byte) 0xBB, (byte) 0xAF, (byte) 0xA3, (byte) 0xEA, (byte) 0xAF, (byte) 0x8D, (byte) 0x82, (byte) 0xA4, 0x66, 
+            0x6F, 0x75, 0x72, (byte) 0x92, (byte) 0xA1, 0x5E, (byte) 0xA1, 0x2A, (byte) 0xA5, 0x74, 0x68, 0x72, 0x65, 0x65, (byte) 0x92, (byte) 0xA1, 
+            0x35, (byte) 0xA1, 0x39, (byte) 0x90};
+        ByteBuffer message = ByteBuffer.wrap(messageBytes);
+        
+        TestBinder binder = new TestBinder(new Type[] { (new TypeReference<ArrayList<HashMap<String, ArrayList<Character>>>>() { }).getType() }, null);
+
+        List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
+
+        //We know it's only one message
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+
+        assertEquals(HubMessageType.INVOCATION, messages.get(0).getMessageType());
+
+        //We can safely cast here because we know that it's an invocation message.
+        InvocationMessage invocationMessage = (InvocationMessage) messages.get(0);
+
+        assertEquals("test", invocationMessage.getTarget());
+        assertEquals(null, invocationMessage.getInvocationId());
+        assertEquals(null, invocationMessage.getHeaders());
+        assertEquals(null, invocationMessage.getStreamIds());
+        
+        @SuppressWarnings("unchecked")
+        ArrayList<HashMap<String, ArrayList<Character>>> result = (ArrayList<HashMap<String, ArrayList<Character>>>)invocationMessage.getArguments()[0];
+        assertEquals(2, result.size());
+        
+        HashMap<String, ArrayList<Character>> firstMap = result.get(0);
+        HashMap<String, ArrayList<Character>> secondMap = result.get(1);
+        
+        assertEquals(2, firstMap.keySet().size());
+        assertEquals(2, secondMap.keySet().size());
+        
+        ArrayList<Character> firstList = firstMap.get("one");
+        ArrayList<Character> secondList = firstMap.get("two");
+        
+        ArrayList<Character> thirdList = secondMap.get("three");
+        ArrayList<Character> fourthList = secondMap.get("four");
+        
+        assertEquals(2, firstList.size());
+        assertEquals(2, secondList.size());
+        assertEquals(2, thirdList.size());
+        assertEquals(2, fourthList.size());
+        
+        assertEquals('a', (char) firstList.get(0));
+        assertEquals('b', (char) firstList.get(1));
+        
+        assertEquals('\ubeef', (char) secondList.get(0));
+        assertEquals('\uabcd', (char) secondList.get(1));
+        
+        assertEquals('5', (char) thirdList.get(0));
+        assertEquals('9', (char) thirdList.get(1));
+        
+        assertEquals('^', (char) fourthList.get(0));
+        assertEquals('*', (char) fourthList.get(1));
+    }
+    
+    @Test
+    public void verifyWriteInvocationMessageWithNestedCollection() {
+        ArrayList<Character> clist1 = new ArrayList<Character>();
+        ArrayList<Character> clist2 = new ArrayList<Character>();
+        ArrayList<Character> clist3 = new ArrayList<Character>();
+        ArrayList<Character> clist4 = new ArrayList<Character>();
+        
+        clist1.add('a');
+        clist1.add('b');
+        
+        clist2.add('\ubeef');
+        clist2.add('\uabcd');
+        
+        clist3.add('5');
+        clist3.add('9');
+        
+        clist4.add('^');
+        clist4.add('*');
+        
+        TreeMap<String, ArrayList<Character>> map1 = new TreeMap<String, ArrayList<Character>>();
+        TreeMap<String, ArrayList<Character>> map2 = new TreeMap<String, ArrayList<Character>>();
+        
+        map1.put("one", clist1);
+        map1.put("two", clist2);
+        
+        map2.put("three", clist3);
+        map2.put("four", clist4);
+        
+        ArrayList<TreeMap<String, ArrayList<Character>>> argument = new ArrayList<TreeMap<String, ArrayList<Character>>>();
+        argument.add(map1);
+        argument.add(map2);
+        InvocationMessage invocationMessage = new InvocationMessage(null, null, "test", new Object[] { argument }, null);
+        ByteBuffer result = messagePackHubProtocol.writeMessage(invocationMessage);
+        byte[] expectedBytes = {0x39, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, (byte) 0x92, 
+            (byte) 0x82, (byte) 0xA3, 0x6F, 0x6E, 0x65, (byte) 0x92, (byte) 0xA1, 0x61, (byte) 0xA1, 0x62, (byte) 0xA3, 0x74, 0x77, 0x6F, (byte) 0x92, 
+            (byte) 0xA3, (byte) 0xEB, (byte) 0xBB, (byte) 0xAF, (byte) 0xA3, (byte) 0xEA, (byte) 0xAF, (byte) 0x8D, (byte) 0x82, (byte) 0xA4, 0x66, 
+            0x6F, 0x75, 0x72, (byte) 0x92, (byte) 0xA1, 0x5E, (byte) 0xA1, 0x2A, (byte) 0xA5, 0x74, 0x68, 0x72, 0x65, 0x65, (byte) 0x92, (byte) 0xA1, 
+            0x35, (byte) 0xA1, 0x39, (byte) 0x90};
         ByteString expectedResult = ByteString.of(expectedBytes);
         assertEquals(expectedResult, ByteString.of(result));
     }

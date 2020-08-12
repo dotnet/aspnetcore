@@ -566,9 +566,8 @@ public class MessagePackHubProtocol implements HubProtocol {
                 if (outermostCall) {
                     // Check how many bytes we've read, grab that from the payload, and deserialize with objectMapper
                     byte[] payloadBytes = payload.array();
-                    byte[] arrayBytes = Arrays.copyOfRange(payloadBytes, payload.position() + (int) readBytesStart, 
-                        payload.position() + (int) unpacker.getTotalReadBytes());
-                    return objectMapper.readValue(arrayBytes, typeFactory.constructType(itemType));
+                    return objectMapper.readValue(payloadBytes, payload.position() + (int) readBytesStart, (int) (unpacker.getTotalReadBytes() - readBytesStart),
+                            typeFactory.constructType(itemType));
                 } else {
                     // This is an inner call to readValue - we just need to read the right number of bytes
                     // We can return null, and the outermost call will know how many bytes to give to objectMapper.
@@ -586,7 +585,8 @@ public class MessagePackHubProtocol implements HubProtocol {
                     byte[] payloadBytes = payload.array();
                     byte[] mapBytes = Arrays.copyOfRange(payloadBytes, payload.position() + (int) readBytesStart, 
                         payload.position() + (int) unpacker.getTotalReadBytes());
-                    return objectMapper.readValue(mapBytes, typeFactory.constructType(itemType));
+                    return objectMapper.readValue(payloadBytes, payload.position() + (int) readBytesStart, (int) (unpacker.getTotalReadBytes() - readBytesStart),
+                            typeFactory.constructType(itemType));
                 } else {
                     // This is an inner call to readValue - we just need to read the right number of bytes
                     // We can return null, and the outermost call will know how many bytes to give to objectMapper.
