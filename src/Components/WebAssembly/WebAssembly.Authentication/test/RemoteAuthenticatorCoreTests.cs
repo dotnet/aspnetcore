@@ -719,8 +719,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                 };
             }
 
-            public TestRemoteAuthenticatorView(RemoteAuthenticationApplicationPathsOptions applicationPaths,
-                                               IJSRuntime jsRuntime = default)
+            public TestRemoteAuthenticatorView(RemoteAuthenticationApplicationPathsOptions applicationPaths, IJSRuntime jsRuntime = default)
             {
                 ApplicationPaths = applicationPaths;
                 JS = jsRuntime;
