@@ -92,6 +92,7 @@ namespace System.Net.Http.HPack
 
         private State _state = State.Ready;
         private byte[]? _headerName;
+        private int _headerStaticIndex;
         private int _stringIndex;
         private int _stringLength;
         private int _headerNameLength;
@@ -492,23 +493,36 @@ namespace System.Net.Http.HPack
 
         private void ProcessHeaderValue(ReadOnlySpan<byte> data, IHttpHeadersHandler handler)
         {
-            ReadOnlySpan<byte> headerNameSpan = _headerNameRange == null
-                ? new Span<byte>(_headerName, 0, _headerNameLength)
-                : data.Slice(_headerNameRange.GetValueOrDefault().start, _headerNameRange.GetValueOrDefault().length);
-
             ReadOnlySpan<byte> headerValueSpan = _headerValueRange == null
-                ? new Span<byte>(_headerValueOctets, 0, _headerValueLength)
+                ? _headerValueOctets.AsSpan(0, _headerValueLength)
                 : data.Slice(_headerValueRange.GetValueOrDefault().start, _headerValueRange.GetValueOrDefault().length);
 
-            handler.OnHeader(headerNameSpan, headerValueSpan);
+            if (_headerStaticIndex > 0)
+            {
+                handler.OnStaticIndexedHeader(_headerStaticIndex, headerValueSpan);
 
+                if (_index)
+                {
+                    _dynamicTable.Insert(H2StaticTable.Get(_headerStaticIndex - 1).Name, headerValueSpan);
+                }
+            }
+            else
+            {
+                ReadOnlySpan<byte> headerNameSpan = _headerNameRange == null
+                    ? _headerName.AsSpan(0, _headerNameLength)
+                    : data.Slice(_headerNameRange.GetValueOrDefault().start, _headerNameRange.GetValueOrDefault().length);
+
+                handler.OnHeader(headerNameSpan, headerValueSpan);
+
+                if (_index)
+                {
+                    _dynamicTable.Insert(headerNameSpan, headerValueSpan);
+                }
+            }
+
+            _headerStaticIndex = 0;
             _headerNameRange = null;
             _headerValueRange = null;
-
-            if (_index)
-            {
-                _dynamicTable.Insert(headerNameSpan, headerValueSpan);
-            }
         }
 
         public void CompleteDecode()
@@ -522,15 +536,30 @@ namespace System.Net.Http.HPack
 
         private void OnIndexedHeaderField(int index, IHttpHeadersHandler handler)
         {
-            ref readonly HeaderField header = ref GetHeader(index);
-            handler.OnHeader(header.Name, header.Value);
+            if (index <= H2StaticTable.Count)
+            {
+                handler.OnStaticIndexedHeader(index);
+            }
+            else
+            {
+                ref readonly HeaderField header = ref GetDynamicHeader(index);
+                handler.OnHeader(header.Name, header.Value);
+            }
+
             _state = State.Ready;
         }
 
         private void OnIndexedHeaderName(int index)
         {
-            _headerName = GetHeader(index).Name;
-            _headerNameLength = _headerName.Length;
+            if (index <= H2StaticTable.Count)
+            {
+                _headerStaticIndex = index;
+            }
+            else
+            {
+                _headerName = GetDynamicHeader(index).Name;
+                _headerNameLength = _headerName.Length;
+            }
             _state = State.HeaderValueLength;
         }
 
@@ -615,13 +644,11 @@ namespace System.Net.Http.HPack
             return (b & HuffmanMask) != 0;
         }
 
-        private ref readonly HeaderField GetHeader(int index)
+        private ref readonly HeaderField GetDynamicHeader(int index)
         {
             try
             {
-                return ref index <= H2StaticTable.Count
-                    ? ref H2StaticTable.Get(index - 1)
-                    : ref _dynamicTable[index - H2StaticTable.Count - 1];
+                return ref _dynamicTable[index - H2StaticTable.Count - 1];
             }
             catch (IndexOutOfRangeException)
             {
