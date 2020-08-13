@@ -5,10 +5,8 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -20,33 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     {
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly IModelBinderFactory _modelBinderFactory;
-        private readonly MvcOptions _mvcOptions;
         private readonly IObjectModelValidator _objectModelValidator;
-
-        /// <summary>
-        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that also takes a <see cref="MvcOptions"/> accessor and an <see cref="ILoggerFactory"/>.
-        /// </para>
-        /// <para>Initializes a new instance of <see cref="ParameterBinder"/>.</para>
-        /// </summary>
-        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
-        /// <param name="modelBinderFactory">The <see cref="IModelBinderFactory"/>.</param>
-        /// <param name="validator">The <see cref="IObjectModelValidator"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that also takes a " + nameof(MvcOptions) + " accessor and an "
-            + nameof(ILoggerFactory) + " .")]
-        public ParameterBinder(
-            IModelMetadataProvider modelMetadataProvider,
-            IModelBinderFactory modelBinderFactory,
-            IObjectModelValidator validator)
-            : this(
-                  modelMetadataProvider,
-                  modelBinderFactory,
-                  validator,
-                  Options.Create(new MvcOptions()),
-                  NullLoggerFactory.Instance)
-        {
-        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="ParameterBinder"/>.
@@ -56,6 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="validator">The <see cref="IObjectModelValidator"/>.</param>
         /// <param name="mvcOptions">The <see cref="MvcOptions"/> accessor.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <remarks>The <paramref name="mvcOptions"/> parameter is currently ignored.</remarks>
         public ParameterBinder(
             IModelMetadataProvider modelMetadataProvider,
             IModelBinderFactory modelBinderFactory,
@@ -91,7 +64,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             _modelMetadataProvider = modelMetadataProvider;
             _modelBinderFactory = modelBinderFactory;
             _objectModelValidator = validator;
-            _mvcOptions = mvcOptions.Value;
             Logger = loggerFactory.CreateLogger(GetType());
         }
 
@@ -99,67 +71,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// The <see cref="ILogger"/> used for logging in this binder.
         /// </summary>
         protected ILogger Logger { get; }
-
-        /// <summary>
-        /// Initializes and binds a model specified by <paramref name="parameter"/>.
-        /// </summary>
-        /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
-        /// <param name="valueProvider">The <see cref="IValueProvider"/>.</param>
-        /// <param name="parameter">The <see cref="ParameterDescriptor"/></param>
-        /// <returns>The result of model binding.</returns>
-        public Task<ModelBindingResult> BindModelAsync(
-            ActionContext actionContext,
-            IValueProvider valueProvider,
-            ParameterDescriptor parameter)
-        {
-            return BindModelAsync(actionContext, valueProvider, parameter, value: null);
-        }
-
-        /// <summary>
-        /// Binds a model specified by <paramref name="parameter"/> using <paramref name="value"/> as the initial value.
-        /// </summary>
-        /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
-        /// <param name="valueProvider">The <see cref="IValueProvider"/>.</param>
-        /// <param name="parameter">The <see cref="ParameterDescriptor"/></param>
-        /// <param name="value">The initial model value.</param>
-        /// <returns>The result of model binding.</returns>
-        public virtual Task<ModelBindingResult> BindModelAsync(
-            ActionContext actionContext,
-            IValueProvider valueProvider,
-            ParameterDescriptor parameter,
-            object value)
-        {
-            if (actionContext == null)
-            {
-                throw new ArgumentNullException(nameof(actionContext));
-            }
-
-            if (valueProvider == null)
-            {
-                throw new ArgumentNullException(nameof(valueProvider));
-            }
-
-            if (parameter == null)
-            {
-                throw new ArgumentNullException(nameof(parameter));
-            }
-
-            var metadata = _modelMetadataProvider.GetMetadataForType(parameter.ParameterType);
-            var binder = _modelBinderFactory.CreateBinder(new ModelBinderFactoryContext
-            {
-                BindingInfo = parameter.BindingInfo,
-                Metadata = metadata,
-                CacheToken = parameter,
-            });
-
-            return BindModelAsync(
-                actionContext,
-                binder,
-                valueProvider,
-                parameter,
-                metadata,
-                value);
-        }
 
         /// <summary>
         /// Binds a model specified by <paramref name="parameter"/> using <paramref name="value"/> as the initial value.
@@ -204,8 +115,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(metadata));
             }
 
+            Logger.AttemptingToBindParameterOrProperty(parameter, metadata);
+
             if (parameter.BindingInfo?.RequestPredicate?.Invoke(actionContext) == false)
             {
+                Logger.ParameterBinderRequestPredicateShortCircuit(parameter, metadata);
                 return ModelBindingResult.Failed();
             }
 
@@ -216,8 +130,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 parameter.BindingInfo,
                 parameter.Name);
             modelBindingContext.Model = value;
-
-            Logger.AttemptingToBindParameterOrProperty(parameter, modelBindingContext);
 
             var parameterModelName = parameter.BindingInfo?.BinderModelName ?? metadata.BinderModelName;
             if (parameterModelName != null)
@@ -238,14 +150,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             await modelBinder.BindModelAsync(modelBindingContext);
 
-            Logger.DoneAttemptingToBindParameterOrProperty(parameter, modelBindingContext);
+            Logger.DoneAttemptingToBindParameterOrProperty(parameter, metadata);
 
             var modelBindingResult = modelBindingContext.Result;
 
-            if (_mvcOptions.AllowValidatingTopLevelNodes &&
-                _objectModelValidator is ObjectModelValidator baseObjectValidator)
+            if (_objectModelValidator is ObjectModelValidator baseObjectValidator)
             {
-                Logger.AttemptingToValidateParameterOrProperty(parameter, modelBindingContext);
+                Logger.AttemptingToValidateParameterOrProperty(parameter, metadata);
 
                 EnforceBindRequiredAndValidate(
                     baseObjectValidator,
@@ -255,7 +166,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     modelBindingContext,
                     modelBindingResult);
 
-                Logger.DoneAttemptingToValidateParameterOrProperty(parameter, modelBindingContext);
+                Logger.DoneAttemptingToValidateParameterOrProperty(parameter, metadata);
             }
             else
             {
@@ -322,7 +233,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     // and we ended up with an empty prefix.
                     modelName = modelBindingContext.FieldName;
                 }
-                
+
                 // Run validation, we expect this to validate [Required].
                 baseObjectValidator.Validate(
                     actionContext,
@@ -344,7 +255,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             if (!modelBindingResult.IsModelSet ||
                 modelBindingResult.Model == null ||
-                !(_modelMetadataProvider is IModelMetadataProvider2 modelMetadataProvider))
+                !(_modelMetadataProvider is ModelMetadataProvider modelMetadataProvider))
             {
                 return;
             }

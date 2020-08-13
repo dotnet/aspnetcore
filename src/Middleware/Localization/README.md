@@ -1,13 +1,15 @@
 Localization
 ============
 
+Localization abstractions and implementations for ASP.NET Core applications.
+
 ### Localization Samples
 
 Here are a few samples that demonstrate different localization features including: localized views, localized strings in data annotations, creating custom localization resources ... etc.
 
- * [Localization.StarterWeb](https://github.com/aspnet/Entropy/tree/dev/samples/Localization.StarterWeb) - comprehensive localization sample demonstrates almost all of the localization features
- * [Localization.EntityFramework](https://github.com/aspnet/Entropy/tree/dev/samples/Localization.EntityFramework) - localization sample that uses an EntityFramework based localization provider for resources
- * [Localization.CustomResourceManager](https://github.com/aspnet/Entropy/tree/dev/samples/Localization.CustomResourceManager) - localization sample that uses a custom `ResourceManagerStringLocalizer`
+ * [Localization.StarterWeb](https://github.com/aspnet/Entropy/tree/master/samples/Localization.StarterWeb) - comprehensive localization sample demonstrates almost all of the localization features
+ * [Localization.EntityFramework](https://github.com/aspnet/Entropy/tree/master/samples/Localization.EntityFramework) - localization sample that uses an EntityFramework based localization provider for resources
+ * [Localization.CustomResourceManager](https://github.com/aspnet/Entropy/tree/master/samples/Localization.CustomResourceManager) - localization sample that uses a custom `ResourceManagerStringLocalizer`
 
 ### Localization Providers
 

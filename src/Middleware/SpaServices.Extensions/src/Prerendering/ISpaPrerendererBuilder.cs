@@ -1,7 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Builder;
+using System;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SpaServices.Prerendering
@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
     /// so that it can be prerendered. This is only intended to be used at development
     /// time. In production, a SPA should already have been built during publishing.
     /// </summary>
+    [Obsolete("Prerendering is no longer supported out of box")]
     public interface ISpaPrerendererBuilder
     {
         /// <summary>

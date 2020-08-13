@@ -53,6 +53,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
         private readonly IEnumerable<IAuthenticatedEncryptorFactory> _encryptorFactories;
+        private readonly IDefaultKeyStorageDirectories _keyStorageDirectories;
 
         private CancellationTokenSource _cacheExpirationTokenSource;
 
@@ -61,8 +62,10 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// </summary>
         /// <param name="keyManagementOptions">The <see cref="IOptions{KeyManagementOptions}"/> instance that provides the configuration.</param>
         /// <param name="activator">The <see cref="IActivator"/>.</param>
+#pragma warning disable PUB0001 // Pubternal type IActivator in public API
         public XmlKeyManager(IOptions<KeyManagementOptions> keyManagementOptions, IActivator activator)
-            : this (keyManagementOptions, activator, NullLoggerFactory.Instance)
+#pragma warning restore PUB0001 // Pubternal type IActivator in public API
+            : this(keyManagementOptions, activator, NullLoggerFactory.Instance)
         { }
 
         /// <summary>
@@ -71,10 +74,21 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// <param name="keyManagementOptions">The <see cref="IOptions{KeyManagementOptions}"/> instance that provides the configuration.</param>
         /// <param name="activator">The <see cref="IActivator"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+#pragma warning disable PUB0001 // Pubternal type IActivator in public API
         public XmlKeyManager(IOptions<KeyManagementOptions> keyManagementOptions, IActivator activator, ILoggerFactory loggerFactory)
+#pragma warning restore PUB0001 // Pubternal type IActivator in public API
+            : this(keyManagementOptions, activator, loggerFactory, DefaultKeyStorageDirectories.Instance)
+        { }
+
+        internal XmlKeyManager(
+            IOptions<KeyManagementOptions> keyManagementOptions,
+            IActivator activator,
+            ILoggerFactory loggerFactory,
+            IDefaultKeyStorageDirectories keyStorageDirectories)
         {
             _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
             _logger = _loggerFactory.CreateLogger<XmlKeyManager>();
+            _keyStorageDirectories = keyStorageDirectories ?? throw new ArgumentNullException(nameof(keyStorageDirectories));
 
             KeyRepository = keyManagementOptions.Value.XmlRepository;
             KeyEncryptor = keyManagementOptions.Value.XmlEncryptor;
@@ -469,7 +483,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             IXmlEncryptor encryptor = null;
 
             // If we're running in Azure Web Sites, the key repository goes in the %HOME% directory.
-            var azureWebSitesKeysFolder = FileSystemXmlRepository.GetKeyStorageDirectoryForAzureWebSites();
+            var azureWebSitesKeysFolder = _keyStorageDirectories.GetKeyStorageDirectoryForAzureWebSites();
             if (azureWebSitesKeysFolder != null)
             {
                 _logger.UsingAzureAsKeyRepository(azureWebSitesKeysFolder.FullName);
@@ -481,7 +495,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             else
             {
                 // If the user profile is available, store keys in the user profile directory.
-                var localAppDataKeysFolder = FileSystemXmlRepository.DefaultKeyStorageDirectory;
+                var localAppDataKeysFolder = _keyStorageDirectories.GetKeyStorageDirectory();
                 if (localAppDataKeysFolder != null)
                 {
                     if (OSVersionUtil.IsWindows())

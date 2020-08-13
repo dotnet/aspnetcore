@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "React.js",
+    "description": "用於建立具有 React.js 的 ASP.NET Core 應用程式之專案範本。"
+  }
+}

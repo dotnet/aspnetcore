@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 using Microsoft.AspNetCore.Http.Features;
@@ -10,19 +11,25 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public partial class HttpProtocol
+    internal partial class HttpProtocol : IFeatureCollection
     {
         private static readonly Type IHttpRequestFeatureType = typeof(IHttpRequestFeature);
         private static readonly Type IHttpResponseFeatureType = typeof(IHttpResponseFeature);
+        private static readonly Type IHttpResponseBodyFeatureType = typeof(IHttpResponseBodyFeature);
+        private static readonly Type IRequestBodyPipeFeatureType = typeof(IRequestBodyPipeFeature);
         private static readonly Type IHttpRequestIdentifierFeatureType = typeof(IHttpRequestIdentifierFeature);
         private static readonly Type IServiceProvidersFeatureType = typeof(IServiceProvidersFeature);
         private static readonly Type IHttpRequestLifetimeFeatureType = typeof(IHttpRequestLifetimeFeature);
         private static readonly Type IHttpConnectionFeatureType = typeof(IHttpConnectionFeature);
+        private static readonly Type IRouteValuesFeatureType = typeof(IRouteValuesFeature);
+        private static readonly Type IEndpointFeatureType = typeof(IEndpointFeature);
         private static readonly Type IHttpAuthenticationFeatureType = typeof(IHttpAuthenticationFeature);
+        private static readonly Type IHttpRequestTrailersFeatureType = typeof(IHttpRequestTrailersFeature);
         private static readonly Type IQueryFeatureType = typeof(IQueryFeature);
         private static readonly Type IFormFeatureType = typeof(IFormFeature);
         private static readonly Type IHttpUpgradeFeatureType = typeof(IHttpUpgradeFeature);
         private static readonly Type IHttp2StreamIdFeatureType = typeof(IHttp2StreamIdFeature);
+        private static readonly Type IHttpResponseTrailersFeatureType = typeof(IHttpResponseTrailersFeature);
         private static readonly Type IResponseCookiesFeatureType = typeof(IResponseCookiesFeature);
         private static readonly Type IItemsFeatureType = typeof(IItemsFeature);
         private static readonly Type ITlsConnectionFeatureType = typeof(ITlsConnectionFeature);
@@ -32,19 +39,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly Type IHttpMinRequestBodyDataRateFeatureType = typeof(IHttpMinRequestBodyDataRateFeature);
         private static readonly Type IHttpMinResponseDataRateFeatureType = typeof(IHttpMinResponseDataRateFeature);
         private static readonly Type IHttpBodyControlFeatureType = typeof(IHttpBodyControlFeature);
-        private static readonly Type IHttpSendFileFeatureType = typeof(IHttpSendFileFeature);
+        private static readonly Type IHttpResetFeatureType = typeof(IHttpResetFeature);
 
         private object _currentIHttpRequestFeature;
         private object _currentIHttpResponseFeature;
+        private object _currentIHttpResponseBodyFeature;
+        private object _currentIRequestBodyPipeFeature;
         private object _currentIHttpRequestIdentifierFeature;
         private object _currentIServiceProvidersFeature;
         private object _currentIHttpRequestLifetimeFeature;
         private object _currentIHttpConnectionFeature;
+        private object _currentIRouteValuesFeature;
+        private object _currentIEndpointFeature;
         private object _currentIHttpAuthenticationFeature;
+        private object _currentIHttpRequestTrailersFeature;
         private object _currentIQueryFeature;
         private object _currentIFormFeature;
         private object _currentIHttpUpgradeFeature;
         private object _currentIHttp2StreamIdFeature;
+        private object _currentIHttpResponseTrailersFeature;
         private object _currentIResponseCookiesFeature;
         private object _currentIItemsFeature;
         private object _currentITlsConnectionFeature;
@@ -54,33 +67,90 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private object _currentIHttpMinRequestBodyDataRateFeature;
         private object _currentIHttpMinResponseDataRateFeature;
         private object _currentIHttpBodyControlFeature;
-        private object _currentIHttpSendFileFeature;
+        private object _currentIHttpResetFeature;
+
+        private int _featureRevision;
+
+        private List<KeyValuePair<Type, object>> MaybeExtra;
 
         private void FastReset()
         {
             _currentIHttpRequestFeature = this;
             _currentIHttpResponseFeature = this;
+            _currentIHttpResponseBodyFeature = this;
+            _currentIRequestBodyPipeFeature = this;
+            _currentIHttpUpgradeFeature = this;
             _currentIHttpRequestIdentifierFeature = this;
             _currentIHttpRequestLifetimeFeature = this;
+            _currentIHttpRequestTrailersFeature = this;
             _currentIHttpConnectionFeature = this;
             _currentIHttpMaxRequestBodySizeFeature = this;
             _currentIHttpMinRequestBodyDataRateFeature = this;
-            _currentIHttpMinResponseDataRateFeature = this;
             _currentIHttpBodyControlFeature = this;
-            
+            _currentIRouteValuesFeature = this;
+            _currentIEndpointFeature = this;
+
             _currentIServiceProvidersFeature = null;
             _currentIHttpAuthenticationFeature = null;
             _currentIQueryFeature = null;
             _currentIFormFeature = null;
-            _currentIHttpUpgradeFeature = null;
             _currentIHttp2StreamIdFeature = null;
+            _currentIHttpResponseTrailersFeature = null;
             _currentIResponseCookiesFeature = null;
             _currentIItemsFeature = null;
             _currentITlsConnectionFeature = null;
             _currentIHttpWebSocketFeature = null;
             _currentISessionFeature = null;
-            _currentIHttpSendFileFeature = null;
+            _currentIHttpMinResponseDataRateFeature = null;
+            _currentIHttpResetFeature = null;
         }
+
+        // Internal for testing
+        internal void ResetFeatureCollection()
+        {
+            FastReset();
+            MaybeExtra?.Clear();
+            _featureRevision++;
+        }
+
+        private object ExtraFeatureGet(Type key)
+        {
+            if (MaybeExtra == null)
+            {
+                return null;
+            }
+            for (var i = 0; i < MaybeExtra.Count; i++)
+            {
+                var kv = MaybeExtra[i];
+                if (kv.Key == key)
+                {
+                    return kv.Value;
+                }
+            }
+            return null;
+        }
+
+        private void ExtraFeatureSet(Type key, object value)
+        {
+            if (MaybeExtra == null)
+            {
+                MaybeExtra = new List<KeyValuePair<Type, object>>(2);
+            }
+
+            for (var i = 0; i < MaybeExtra.Count; i++)
+            {
+                if (MaybeExtra[i].Key == key)
+                {
+                    MaybeExtra[i] = new KeyValuePair<Type, object>(key, value);
+                    return;
+                }
+            }
+            MaybeExtra.Add(new KeyValuePair<Type, object>(key, value));
+        }
+
+        bool IFeatureCollection.IsReadOnly => false;
+
+        int IFeatureCollection.Revision => _featureRevision;
 
         object IFeatureCollection.this[Type key]
         {
@@ -94,6 +164,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == IHttpResponseFeatureType)
                 {
                     feature = _currentIHttpResponseFeature;
+                }
+                else if (key == IHttpResponseBodyFeatureType)
+                {
+                    feature = _currentIHttpResponseBodyFeature;
+                }
+                else if (key == IRequestBodyPipeFeatureType)
+                {
+                    feature = _currentIRequestBodyPipeFeature;
                 }
                 else if (key == IHttpRequestIdentifierFeatureType)
                 {
@@ -111,9 +189,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     feature = _currentIHttpConnectionFeature;
                 }
+                else if (key == IRouteValuesFeatureType)
+                {
+                    feature = _currentIRouteValuesFeature;
+                }
+                else if (key == IEndpointFeatureType)
+                {
+                    feature = _currentIEndpointFeature;
+                }
                 else if (key == IHttpAuthenticationFeatureType)
                 {
                     feature = _currentIHttpAuthenticationFeature;
+                }
+                else if (key == IHttpRequestTrailersFeatureType)
+                {
+                    feature = _currentIHttpRequestTrailersFeature;
                 }
                 else if (key == IQueryFeatureType)
                 {
@@ -130,6 +220,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == IHttp2StreamIdFeatureType)
                 {
                     feature = _currentIHttp2StreamIdFeature;
+                }
+                else if (key == IHttpResponseTrailersFeatureType)
+                {
+                    feature = _currentIHttpResponseTrailersFeature;
                 }
                 else if (key == IResponseCookiesFeatureType)
                 {
@@ -167,9 +261,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     feature = _currentIHttpBodyControlFeature;
                 }
-                else if (key == IHttpSendFileFeatureType)
+                else if (key == IHttpResetFeatureType)
                 {
-                    feature = _currentIHttpSendFileFeature;
+                    feature = _currentIHttpResetFeature;
                 }
                 else if (MaybeExtra != null)
                 {
@@ -182,7 +276,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 _featureRevision++;
-                
+
                 if (key == IHttpRequestFeatureType)
                 {
                     _currentIHttpRequestFeature = value;
@@ -190,6 +284,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == IHttpResponseFeatureType)
                 {
                     _currentIHttpResponseFeature = value;
+                }
+                else if (key == IHttpResponseBodyFeatureType)
+                {
+                    _currentIHttpResponseBodyFeature = value;
+                }
+                else if (key == IRequestBodyPipeFeatureType)
+                {
+                    _currentIRequestBodyPipeFeature = value;
                 }
                 else if (key == IHttpRequestIdentifierFeatureType)
                 {
@@ -207,9 +309,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _currentIHttpConnectionFeature = value;
                 }
+                else if (key == IRouteValuesFeatureType)
+                {
+                    _currentIRouteValuesFeature = value;
+                }
+                else if (key == IEndpointFeatureType)
+                {
+                    _currentIEndpointFeature = value;
+                }
                 else if (key == IHttpAuthenticationFeatureType)
                 {
                     _currentIHttpAuthenticationFeature = value;
+                }
+                else if (key == IHttpRequestTrailersFeatureType)
+                {
+                    _currentIHttpRequestTrailersFeature = value;
                 }
                 else if (key == IQueryFeatureType)
                 {
@@ -226,6 +340,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == IHttp2StreamIdFeatureType)
                 {
                     _currentIHttp2StreamIdFeature = value;
+                }
+                else if (key == IHttpResponseTrailersFeatureType)
+                {
+                    _currentIHttpResponseTrailersFeature = value;
                 }
                 else if (key == IResponseCookiesFeatureType)
                 {
@@ -263,107 +381,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _currentIHttpBodyControlFeature = value;
                 }
-                else if (key == IHttpSendFileFeatureType)
+                else if (key == IHttpResetFeatureType)
                 {
-                    _currentIHttpSendFileFeature = value;
+                    _currentIHttpResetFeature = value;
                 }
                 else
                 {
                     ExtraFeatureSet(key, value);
                 }
-            }
-        }
-
-        void IFeatureCollection.Set<TFeature>(TFeature feature) 
-        {
-            _featureRevision++;
-            if (typeof(TFeature) == typeof(IHttpRequestFeature))
-            {
-                _currentIHttpRequestFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IHttpResponseFeature))
-            {
-                _currentIHttpResponseFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IHttpRequestIdentifierFeature))
-            {
-                _currentIHttpRequestIdentifierFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IServiceProvidersFeature))
-            {
-                _currentIServiceProvidersFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IHttpRequestLifetimeFeature))
-            {
-                _currentIHttpRequestLifetimeFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IHttpConnectionFeature))
-            {
-                _currentIHttpConnectionFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IHttpAuthenticationFeature))
-            {
-                _currentIHttpAuthenticationFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IQueryFeature))
-            {
-                _currentIQueryFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IFormFeature))
-            {
-                _currentIFormFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IHttpUpgradeFeature))
-            {
-                _currentIHttpUpgradeFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IHttp2StreamIdFeature))
-            {
-                _currentIHttp2StreamIdFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IResponseCookiesFeature))
-            {
-                _currentIResponseCookiesFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IItemsFeature))
-            {
-                _currentIItemsFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(ITlsConnectionFeature))
-            {
-                _currentITlsConnectionFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IHttpWebSocketFeature))
-            {
-                _currentIHttpWebSocketFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(ISessionFeature))
-            {
-                _currentISessionFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IHttpMaxRequestBodySizeFeature))
-            {
-                _currentIHttpMaxRequestBodySizeFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IHttpMinRequestBodyDataRateFeature))
-            {
-                _currentIHttpMinRequestBodyDataRateFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IHttpMinResponseDataRateFeature))
-            {
-                _currentIHttpMinResponseDataRateFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IHttpBodyControlFeature))
-            {
-                _currentIHttpBodyControlFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IHttpSendFileFeature))
-            {
-                _currentIHttpSendFileFeature = feature;
-            }
-            else
-            {
-                ExtraFeatureSet(typeof(TFeature), feature);
             }
         }
 
@@ -377,6 +402,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IHttpResponseFeature))
             {
                 feature = (TFeature)_currentIHttpResponseFeature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpResponseBodyFeature))
+            {
+                feature = (TFeature)_currentIHttpResponseBodyFeature;
+            }
+            else if (typeof(TFeature) == typeof(IRequestBodyPipeFeature))
+            {
+                feature = (TFeature)_currentIRequestBodyPipeFeature;
             }
             else if (typeof(TFeature) == typeof(IHttpRequestIdentifierFeature))
             {
@@ -394,9 +427,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 feature = (TFeature)_currentIHttpConnectionFeature;
             }
+            else if (typeof(TFeature) == typeof(IRouteValuesFeature))
+            {
+                feature = (TFeature)_currentIRouteValuesFeature;
+            }
+            else if (typeof(TFeature) == typeof(IEndpointFeature))
+            {
+                feature = (TFeature)_currentIEndpointFeature;
+            }
             else if (typeof(TFeature) == typeof(IHttpAuthenticationFeature))
             {
                 feature = (TFeature)_currentIHttpAuthenticationFeature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpRequestTrailersFeature))
+            {
+                feature = (TFeature)_currentIHttpRequestTrailersFeature;
             }
             else if (typeof(TFeature) == typeof(IQueryFeature))
             {
@@ -413,6 +458,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IHttp2StreamIdFeature))
             {
                 feature = (TFeature)_currentIHttp2StreamIdFeature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpResponseTrailersFeature))
+            {
+                feature = (TFeature)_currentIHttpResponseTrailersFeature;
             }
             else if (typeof(TFeature) == typeof(IResponseCookiesFeature))
             {
@@ -450,15 +499,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 feature = (TFeature)_currentIHttpBodyControlFeature;
             }
-            else if (typeof(TFeature) == typeof(IHttpSendFileFeature))
+            else if (typeof(TFeature) == typeof(IHttpResetFeature))
             {
-                feature = (TFeature)_currentIHttpSendFileFeature;
+                feature = (TFeature)_currentIHttpResetFeature;
             }
             else if (MaybeExtra != null)
             {
                 feature = (TFeature)(ExtraFeatureGet(typeof(TFeature)));
             }
-            
+
             if (feature == null)
             {
                 feature = ConnectionFeatures.Get<TFeature>();
@@ -467,100 +516,245 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return feature;
         }
 
+        void IFeatureCollection.Set<TFeature>(TFeature feature)
+        {
+            _featureRevision++;
+            if (typeof(TFeature) == typeof(IHttpRequestFeature))
+            {
+                _currentIHttpRequestFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpResponseFeature))
+            {
+                _currentIHttpResponseFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpResponseBodyFeature))
+            {
+                _currentIHttpResponseBodyFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IRequestBodyPipeFeature))
+            {
+                _currentIRequestBodyPipeFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpRequestIdentifierFeature))
+            {
+                _currentIHttpRequestIdentifierFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IServiceProvidersFeature))
+            {
+                _currentIServiceProvidersFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpRequestLifetimeFeature))
+            {
+                _currentIHttpRequestLifetimeFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpConnectionFeature))
+            {
+                _currentIHttpConnectionFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IRouteValuesFeature))
+            {
+                _currentIRouteValuesFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IEndpointFeature))
+            {
+                _currentIEndpointFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpAuthenticationFeature))
+            {
+                _currentIHttpAuthenticationFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpRequestTrailersFeature))
+            {
+                _currentIHttpRequestTrailersFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IQueryFeature))
+            {
+                _currentIQueryFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IFormFeature))
+            {
+                _currentIFormFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpUpgradeFeature))
+            {
+                _currentIHttpUpgradeFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IHttp2StreamIdFeature))
+            {
+                _currentIHttp2StreamIdFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpResponseTrailersFeature))
+            {
+                _currentIHttpResponseTrailersFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IResponseCookiesFeature))
+            {
+                _currentIResponseCookiesFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IItemsFeature))
+            {
+                _currentIItemsFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(ITlsConnectionFeature))
+            {
+                _currentITlsConnectionFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpWebSocketFeature))
+            {
+                _currentIHttpWebSocketFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(ISessionFeature))
+            {
+                _currentISessionFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpMaxRequestBodySizeFeature))
+            {
+                _currentIHttpMaxRequestBodySizeFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpMinRequestBodyDataRateFeature))
+            {
+                _currentIHttpMinRequestBodyDataRateFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpMinResponseDataRateFeature))
+            {
+                _currentIHttpMinResponseDataRateFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpBodyControlFeature))
+            {
+                _currentIHttpBodyControlFeature = feature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpResetFeature))
+            {
+                _currentIHttpResetFeature = feature;
+            }
+            else
+            {
+                ExtraFeatureSet(typeof(TFeature), feature);
+            }
+        }
+
         private IEnumerable<KeyValuePair<Type, object>> FastEnumerable()
         {
             if (_currentIHttpRequestFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpRequestFeatureType, _currentIHttpRequestFeature as IHttpRequestFeature);
+                yield return new KeyValuePair<Type, object>(IHttpRequestFeatureType, _currentIHttpRequestFeature);
             }
             if (_currentIHttpResponseFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpResponseFeatureType, _currentIHttpResponseFeature as IHttpResponseFeature);
+                yield return new KeyValuePair<Type, object>(IHttpResponseFeatureType, _currentIHttpResponseFeature);
+            }
+            if (_currentIHttpResponseBodyFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IHttpResponseBodyFeatureType, _currentIHttpResponseBodyFeature);
+            }
+            if (_currentIRequestBodyPipeFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IRequestBodyPipeFeatureType, _currentIRequestBodyPipeFeature);
             }
             if (_currentIHttpRequestIdentifierFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpRequestIdentifierFeatureType, _currentIHttpRequestIdentifierFeature as IHttpRequestIdentifierFeature);
+                yield return new KeyValuePair<Type, object>(IHttpRequestIdentifierFeatureType, _currentIHttpRequestIdentifierFeature);
             }
             if (_currentIServiceProvidersFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IServiceProvidersFeatureType, _currentIServiceProvidersFeature as IServiceProvidersFeature);
+                yield return new KeyValuePair<Type, object>(IServiceProvidersFeatureType, _currentIServiceProvidersFeature);
             }
             if (_currentIHttpRequestLifetimeFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpRequestLifetimeFeatureType, _currentIHttpRequestLifetimeFeature as IHttpRequestLifetimeFeature);
+                yield return new KeyValuePair<Type, object>(IHttpRequestLifetimeFeatureType, _currentIHttpRequestLifetimeFeature);
             }
             if (_currentIHttpConnectionFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpConnectionFeatureType, _currentIHttpConnectionFeature as IHttpConnectionFeature);
+                yield return new KeyValuePair<Type, object>(IHttpConnectionFeatureType, _currentIHttpConnectionFeature);
+            }
+            if (_currentIRouteValuesFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IRouteValuesFeatureType, _currentIRouteValuesFeature);
+            }
+            if (_currentIEndpointFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IEndpointFeatureType, _currentIEndpointFeature);
             }
             if (_currentIHttpAuthenticationFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpAuthenticationFeatureType, _currentIHttpAuthenticationFeature as IHttpAuthenticationFeature);
+                yield return new KeyValuePair<Type, object>(IHttpAuthenticationFeatureType, _currentIHttpAuthenticationFeature);
+            }
+            if (_currentIHttpRequestTrailersFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IHttpRequestTrailersFeatureType, _currentIHttpRequestTrailersFeature);
             }
             if (_currentIQueryFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IQueryFeatureType, _currentIQueryFeature as IQueryFeature);
+                yield return new KeyValuePair<Type, object>(IQueryFeatureType, _currentIQueryFeature);
             }
             if (_currentIFormFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IFormFeatureType, _currentIFormFeature as IFormFeature);
+                yield return new KeyValuePair<Type, object>(IFormFeatureType, _currentIFormFeature);
             }
             if (_currentIHttpUpgradeFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpUpgradeFeatureType, _currentIHttpUpgradeFeature as IHttpUpgradeFeature);
+                yield return new KeyValuePair<Type, object>(IHttpUpgradeFeatureType, _currentIHttpUpgradeFeature);
             }
             if (_currentIHttp2StreamIdFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttp2StreamIdFeatureType, _currentIHttp2StreamIdFeature as IHttp2StreamIdFeature);
+                yield return new KeyValuePair<Type, object>(IHttp2StreamIdFeatureType, _currentIHttp2StreamIdFeature);
+            }
+            if (_currentIHttpResponseTrailersFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IHttpResponseTrailersFeatureType, _currentIHttpResponseTrailersFeature);
             }
             if (_currentIResponseCookiesFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IResponseCookiesFeatureType, _currentIResponseCookiesFeature as IResponseCookiesFeature);
+                yield return new KeyValuePair<Type, object>(IResponseCookiesFeatureType, _currentIResponseCookiesFeature);
             }
             if (_currentIItemsFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IItemsFeatureType, _currentIItemsFeature as IItemsFeature);
+                yield return new KeyValuePair<Type, object>(IItemsFeatureType, _currentIItemsFeature);
             }
             if (_currentITlsConnectionFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(ITlsConnectionFeatureType, _currentITlsConnectionFeature as ITlsConnectionFeature);
+                yield return new KeyValuePair<Type, object>(ITlsConnectionFeatureType, _currentITlsConnectionFeature);
             }
             if (_currentIHttpWebSocketFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpWebSocketFeatureType, _currentIHttpWebSocketFeature as IHttpWebSocketFeature);
+                yield return new KeyValuePair<Type, object>(IHttpWebSocketFeatureType, _currentIHttpWebSocketFeature);
             }
             if (_currentISessionFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(ISessionFeatureType, _currentISessionFeature as ISessionFeature);
+                yield return new KeyValuePair<Type, object>(ISessionFeatureType, _currentISessionFeature);
             }
             if (_currentIHttpMaxRequestBodySizeFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpMaxRequestBodySizeFeatureType, _currentIHttpMaxRequestBodySizeFeature as IHttpMaxRequestBodySizeFeature);
+                yield return new KeyValuePair<Type, object>(IHttpMaxRequestBodySizeFeatureType, _currentIHttpMaxRequestBodySizeFeature);
             }
             if (_currentIHttpMinRequestBodyDataRateFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpMinRequestBodyDataRateFeatureType, _currentIHttpMinRequestBodyDataRateFeature as IHttpMinRequestBodyDataRateFeature);
+                yield return new KeyValuePair<Type, object>(IHttpMinRequestBodyDataRateFeatureType, _currentIHttpMinRequestBodyDataRateFeature);
             }
             if (_currentIHttpMinResponseDataRateFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpMinResponseDataRateFeatureType, _currentIHttpMinResponseDataRateFeature as IHttpMinResponseDataRateFeature);
+                yield return new KeyValuePair<Type, object>(IHttpMinResponseDataRateFeatureType, _currentIHttpMinResponseDataRateFeature);
             }
             if (_currentIHttpBodyControlFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpBodyControlFeatureType, _currentIHttpBodyControlFeature as IHttpBodyControlFeature);
+                yield return new KeyValuePair<Type, object>(IHttpBodyControlFeatureType, _currentIHttpBodyControlFeature);
             }
-            if (_currentIHttpSendFileFeature != null)
+            if (_currentIHttpResetFeature != null)
             {
-                yield return new KeyValuePair<Type, object>(IHttpSendFileFeatureType, _currentIHttpSendFileFeature as IHttpSendFileFeature);
+                yield return new KeyValuePair<Type, object>(IHttpResetFeatureType, _currentIHttpResetFeature);
             }
 
             if (MaybeExtra != null)
             {
-                foreach(var item in MaybeExtra)
+                foreach (var item in MaybeExtra)
                 {
                     yield return item;
                 }
             }
         }
+
+        IEnumerator<KeyValuePair<Type, object>> IEnumerable<KeyValuePair<Type, object>>.GetEnumerator() => FastEnumerable().GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => FastEnumerable().GetEnumerator();
     }
 }

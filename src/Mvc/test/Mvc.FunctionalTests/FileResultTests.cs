@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -97,6 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.Equal(0, response.Content.Headers.ContentLength);
             var body = await response.Content.ReadAsStringAsync();
             Assert.Empty(body);
         }
@@ -160,6 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.Equal(0, response.Content.Headers.ContentLength);
             var body = await response.Content.ReadAsStringAsync();
             Assert.Empty(body);
         }
@@ -246,17 +248,21 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("This is a sample text file", body);
         }
 
+        // Use int for HttpStatusCode data because xUnit cannot serialize a GAC'd enum when running on .NET Framework.
         [Theory]
-        [InlineData("", HttpStatusCode.OK, 26)]
-        [InlineData("bytes = 0-6", HttpStatusCode.PartialContent, 7)]
-        [InlineData("bytes = 17-25", HttpStatusCode.PartialContent, 9)]
-        [InlineData("bytes = 0-50", HttpStatusCode.PartialContent, 26)]
-        [InlineData("0-6", HttpStatusCode.OK, 26)]
-        [InlineData("bytes = ", HttpStatusCode.OK, 26)]
-        [InlineData("bytes = 1-4, 5-11", HttpStatusCode.OK, 26)]
-        [InlineData("bytes = 35-36", HttpStatusCode.RequestedRangeNotSatisfiable, 26)]
-        [InlineData("bytes = -0", HttpStatusCode.RequestedRangeNotSatisfiable, 26)]
-        public async Task FileFromDisk_ReturnsFileWithFileName_DoesNotServeBody_ForHeadRequest_WithLastModifiedAndEtag(string rangeString, HttpStatusCode httpStatusCode, int expectedContentLength)
+        [InlineData("", (int)HttpStatusCode.OK, 26)]
+        [InlineData("bytes = 0-6", (int)HttpStatusCode.PartialContent, 7)]
+        [InlineData("bytes = 17-25", (int)HttpStatusCode.PartialContent, 9)]
+        [InlineData("bytes = 0-50", (int)HttpStatusCode.PartialContent, 26)]
+        [InlineData("0-6", (int)HttpStatusCode.OK, 26)]
+        [InlineData("bytes = ", (int)HttpStatusCode.OK, 26)]
+        [InlineData("bytes = 1-4, 5-11", (int)HttpStatusCode.OK, 26)]
+        [InlineData("bytes = 35-36", (int)HttpStatusCode.RequestedRangeNotSatisfiable, 0)]
+        [InlineData("bytes = -0", (int)HttpStatusCode.RequestedRangeNotSatisfiable, 0)]
+        public async Task FileFromDisk_ReturnsFileWithFileName_DoesNotServeBody_ForHeadRequest_WithLastModifiedAndEtag(
+            string rangeString,
+            int httpStatusCode,
+            int expectedContentLength)
         {
             // Arrange
             var httpRequestMessage = new HttpRequestMessage(HttpMethod.Head, "http://localhost/DownloadFiles/DownloadFromDiskWithFileName_WithLastModifiedAndEtag");
@@ -267,7 +273,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(httpRequestMessage);
 
             // Assert
-            Assert.Equal(httpStatusCode, response.StatusCode);
+            Assert.Equal(httpStatusCode, (int)response.StatusCode);
 
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
@@ -361,6 +367,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.Equal(0, response.Content.Headers.ContentLength);
             Assert.Empty(body);
         }
 
@@ -442,17 +449,21 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("This is sample text from a stream", body);
         }
 
+        // Use int for HttpStatusCode data because xUnit cannot serialize a GAC'd enum when running on .NET Framework.
         [Theory]
-        [InlineData("", HttpStatusCode.OK, 33)]
-        [InlineData("bytes = 0-6", HttpStatusCode.PartialContent, 7)]
-        [InlineData("bytes = 17-25", HttpStatusCode.PartialContent, 9)]
-        [InlineData("bytes = 0-50", HttpStatusCode.PartialContent, 33)]
-        [InlineData("0-6", HttpStatusCode.OK, 33)]
-        [InlineData("bytes = ", HttpStatusCode.OK, 33)]
-        [InlineData("bytes = 1-4, 5-11", HttpStatusCode.OK, 33)]
-        [InlineData("bytes = 35-36", HttpStatusCode.RequestedRangeNotSatisfiable, 33)]
-        [InlineData("bytes = -0", HttpStatusCode.RequestedRangeNotSatisfiable, 33)]
-        public async Task FileFromStream_ReturnsFileWithFileName_DoesNotServeBody_ForHeadRequest(string rangeString, HttpStatusCode httpStatusCode, int expectedContentLength)
+        [InlineData("", (int)HttpStatusCode.OK, 33)]
+        [InlineData("bytes = 0-6", (int)HttpStatusCode.PartialContent, 7)]
+        [InlineData("bytes = 17-25", (int)HttpStatusCode.PartialContent, 9)]
+        [InlineData("bytes = 0-50", (int)HttpStatusCode.PartialContent, 33)]
+        [InlineData("0-6", (int)HttpStatusCode.OK, 33)]
+        [InlineData("bytes = ", (int)HttpStatusCode.OK, 33)]
+        [InlineData("bytes = 1-4, 5-11", (int)HttpStatusCode.OK, 33)]
+        [InlineData("bytes = 35-36", (int)HttpStatusCode.RequestedRangeNotSatisfiable, 0)]
+        [InlineData("bytes = -0", (int)HttpStatusCode.RequestedRangeNotSatisfiable, 0)]
+        public async Task FileFromStream_ReturnsFileWithFileName_DoesNotServeBody_ForHeadRequest(
+            string rangeString,
+            int httpStatusCode,
+            int expectedContentLength)
         {
             // Arrange
             var httpRequestMessage = new HttpRequestMessage(HttpMethod.Head, "http://localhost/DownloadFiles/DownloadFromStreamWithFileName_WithEtag");
@@ -463,7 +474,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(httpRequestMessage);
 
             // Assert
-            Assert.Equal(httpStatusCode, response.StatusCode);
+            Assert.Equal(httpStatusCode, (int)response.StatusCode);
 
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
@@ -560,6 +571,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.Equal(0, response.Content.Headers.ContentLength);
             Assert.Empty(body);
         }
 
@@ -616,7 +628,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(httpRequestMessage);
             var body = await response.Content.ReadAsStringAsync();
 
-            // Assert           
+            // Assert
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.NotNull(body);
@@ -643,17 +655,21 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("This is a sample text from a binary array", body);
         }
 
+        // Use int for HttpStatusCode data because xUnit cannot serialize a GAC'd enum when running on .NET Framework.
         [Theory]
-        [InlineData("", HttpStatusCode.OK, 41)]
-        [InlineData("bytes = 0-6", HttpStatusCode.PartialContent, 7)]
-        [InlineData("bytes = 17-25", HttpStatusCode.PartialContent, 9)]
-        [InlineData("bytes = 0-50", HttpStatusCode.PartialContent, 41)]
-        [InlineData("0-6", HttpStatusCode.OK, 41)]
-        [InlineData("bytes = ", HttpStatusCode.OK, 41)]
-        [InlineData("bytes = 1-4, 5-11", HttpStatusCode.OK, 41)]
-        [InlineData("bytes = 45-46", HttpStatusCode.RequestedRangeNotSatisfiable, 41)]
-        [InlineData("bytes = -0", HttpStatusCode.RequestedRangeNotSatisfiable, 41)]
-        public async Task FileFromBinaryData_ReturnsFileWithFileName_DoesNotServeBody_ForHeadRequest(string rangeString, HttpStatusCode httpStatusCode, int expectedContentLength)
+        [InlineData("", (int)HttpStatusCode.OK, 41)]
+        [InlineData("bytes = 0-6", (int)HttpStatusCode.PartialContent, 7)]
+        [InlineData("bytes = 17-25", (int)HttpStatusCode.PartialContent, 9)]
+        [InlineData("bytes = 0-50", (int)HttpStatusCode.PartialContent, 41)]
+        [InlineData("0-6", (int)HttpStatusCode.OK, 41)]
+        [InlineData("bytes = ", (int)HttpStatusCode.OK, 41)]
+        [InlineData("bytes = 1-4, 5-11", (int)HttpStatusCode.OK, 41)]
+        [InlineData("bytes = 45-46", (int)HttpStatusCode.RequestedRangeNotSatisfiable, 0)]
+        [InlineData("bytes = -0", (int)HttpStatusCode.RequestedRangeNotSatisfiable, 0)]
+        public async Task FileFromBinaryData_ReturnsFileWithFileName_DoesNotServeBody_ForHeadRequest(
+            string rangeString,
+            int httpStatusCode,
+            int expectedContentLength)
         {
             // Arrange
             var httpRequestMessage = new HttpRequestMessage(HttpMethod.Head, "http://localhost/DownloadFiles/DownloadFromBinaryDataWithFileName_WithEtag");
@@ -664,7 +680,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(httpRequestMessage);
 
             // Assert
-            Assert.Equal(httpStatusCode, response.StatusCode);
+            Assert.Equal(httpStatusCode, (int)response.StatusCode);
 
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
@@ -835,6 +851,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.Equal(0, response.Content.Headers.ContentLength);
             var body = await response.Content.ReadAsStringAsync();
             Assert.Empty(body);
             var contentDisposition = response.Content.Headers.ContentDisposition.ToString();
@@ -842,17 +859,21 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("attachment; filename=downloadName.txt; filename*=UTF-8''downloadName.txt", contentDisposition);
         }
 
+        // Use int for HttpStatusCode data because xUnit cannot serialize a GAC'd enum when running on .NET Framework.
         [Theory]
-        [InlineData("", HttpStatusCode.OK, 38)]
-        [InlineData("bytes = 0-6", HttpStatusCode.PartialContent, 7)]
-        [InlineData("bytes = 17-25", HttpStatusCode.PartialContent, 9)]
-        [InlineData("bytes = 0-50", HttpStatusCode.PartialContent, 38)]
-        [InlineData("0-6", HttpStatusCode.OK, 38)]
-        [InlineData("bytes = ", HttpStatusCode.OK, 38)]
-        [InlineData("bytes = 1-4, 5-11", HttpStatusCode.OK, 38)]
-        [InlineData("bytes = 45-46", HttpStatusCode.RequestedRangeNotSatisfiable, 38)]
-        [InlineData("bytes = -0", HttpStatusCode.RequestedRangeNotSatisfiable, 38)]
-        public async Task FileFromEmbeddedResources_ReturnsFileWithFileName_DoesNotServeBody_ForHeadRequest(string rangeString, HttpStatusCode httpStatusCode, int expectedContentLength)
+        [InlineData("", (int)HttpStatusCode.OK, 38)]
+        [InlineData("bytes = 0-6", (int)HttpStatusCode.PartialContent, 7)]
+        [InlineData("bytes = 17-25", (int)HttpStatusCode.PartialContent, 9)]
+        [InlineData("bytes = 0-50", (int)HttpStatusCode.PartialContent, 38)]
+        [InlineData("0-6", (int)HttpStatusCode.OK, 38)]
+        [InlineData("bytes = ", (int)HttpStatusCode.OK, 38)]
+        [InlineData("bytes = 1-4, 5-11", (int)HttpStatusCode.OK, 38)]
+        [InlineData("bytes = 45-46", (int)HttpStatusCode.RequestedRangeNotSatisfiable, 0)]
+        [InlineData("bytes = -0", (int)HttpStatusCode.RequestedRangeNotSatisfiable, 0)]
+        public async Task FileFromEmbeddedResources_ReturnsFileWithFileName_DoesNotServeBody_ForHeadRequest(
+            string rangeString,
+            int httpStatusCode,
+            int expectedContentLength)
         {
             // Arrange
             var httpRequestMessage = new HttpRequestMessage(HttpMethod.Head, "http://localhost/EmbeddedFiles/DownloadFileWithFileName");
@@ -863,7 +884,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(httpRequestMessage);
 
             // Assert
-            Assert.Equal(httpStatusCode, response.StatusCode);
+            Assert.Equal(httpStatusCode, (int)response.StatusCode);
 
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());

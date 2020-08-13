@@ -34,9 +34,9 @@ namespace Microsoft.AspNetCore.WebUtilities
                 {
                     // Not all streams support cancellation directly.
                     cancellationToken.ThrowIfCancellationRequested();
-                    if (limit.HasValue && limit.Value - total < read)
+                    if (limit.HasValue && limit.GetValueOrDefault() - total < read)
                     {
-                        throw new InvalidDataException($"The stream exceeded the data limit {limit.Value}.");
+                        throw new InvalidDataException($"The stream exceeded the data limit {limit.GetValueOrDefault()}.");
                     }
                     total += read;
                     read = await stream.ReadAsync(buffer, 0, buffer.Length, cancellationToken);

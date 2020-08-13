@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,9 +9,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal class ConfigurationReader
     {
+        private const string ProtocolsKey = "Protocols";
+        private const string CertificatesKey = "Certificates";
+        private const string CertificateKey = "Certificate";
+        private const string EndpointDefaultsKey = "EndpointDefaults";
+        private const string EndpointsKey = "Endpoints";
+        private const string UrlKey = "Url";
+        private const string Latin1RequestHeadersKey = "Latin1RequestHeaders";
+
         private IConfiguration _configuration;
         private IDictionary<string, CertificateConfig> _certificates;
         private IList<EndpointConfig> _endpoints;
+        private EndpointDefaults _endpointDefaults;
+        private bool? _latin1RequestHeaders;
 
         public ConfigurationReader(IConfiguration configuration)
         {
@@ -31,6 +41,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
+        public EndpointDefaults EndpointDefaults
+        {
+            get
+            {
+                if (_endpointDefaults == null)
+                {
+                    ReadEndpointDefaults();
+                }
+
+                return _endpointDefaults;
+            }
+        }
+
         public IEnumerable<EndpointConfig> Endpoints
         {
             get
@@ -44,52 +67,99 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
+        public bool Latin1RequestHeaders
+        {
+            get
+            {
+                if (_latin1RequestHeaders is null)
+                {
+                    _latin1RequestHeaders = _configuration.GetValue<bool>(Latin1RequestHeadersKey);
+                }
+
+                return _latin1RequestHeaders.Value;
+            }
+        }
+
         private void ReadCertificates()
         {
             _certificates = new Dictionary<string, CertificateConfig>(0);
 
-            var certificatesConfig = _configuration.GetSection("Certificates").GetChildren();
+            var certificatesConfig = _configuration.GetSection(CertificatesKey).GetChildren();
             foreach (var certificateConfig in certificatesConfig)
             {
                 _certificates.Add(certificateConfig.Key, new CertificateConfig(certificateConfig));
             }
         }
 
+        // "EndpointDefaults": {
+        //    "Protocols": "Http1AndHttp2",
+        // }
+        private void ReadEndpointDefaults()
+        {
+            var configSection = _configuration.GetSection(EndpointDefaultsKey);
+            _endpointDefaults = new EndpointDefaults
+            {
+                Protocols = ParseProtocols(configSection[ProtocolsKey])
+            };
+        }
+
         private void ReadEndpoints()
         {
             _endpoints = new List<EndpointConfig>();
 
-            var endpointsConfig = _configuration.GetSection("Endpoints").GetChildren();
+            var endpointsConfig = _configuration.GetSection(EndpointsKey).GetChildren();
             foreach (var endpointConfig in endpointsConfig)
             {
                 // "EndpointName": {
-                //    "Url": "https://*:5463",
-                //    "Certificate": {
-                //        "Path": "testCert.pfx",
-                //        "Password": "testPassword"
-                //    }
+                //    "Url": "https://*:5463",
+                //    "Protocols": "Http1AndHttp2",
+                //    "Certificate": {
+                //        "Path": "testCert.pfx",
+                //        "Password": "testPassword"
+                //    }
                 // }
-                
-                var url = endpointConfig["Url"];
+
+                var url = endpointConfig[UrlKey];
                 if (string.IsNullOrEmpty(url))
                 {
                     throw new InvalidOperationException(CoreStrings.FormatEndpointMissingUrl(endpointConfig.Key));
                 }
 
-                var endpoint = new EndpointConfig()
+                var endpoint = new EndpointConfig
                 {
                     Name = endpointConfig.Key,
                     Url = url,
+                    Protocols = ParseProtocols(endpointConfig[ProtocolsKey]),
                     ConfigSection = endpointConfig,
-                    Certificate = new CertificateConfig(endpointConfig.GetSection("Certificate")),
+                    Certificate = new CertificateConfig(endpointConfig.GetSection(CertificateKey)),
                 };
                 _endpoints.Add(endpoint);
             }
         }
+
+        private static HttpProtocols? ParseProtocols(string protocols)
+        {
+            if (Enum.TryParse<HttpProtocols>(protocols, ignoreCase: true, out var result))
+            {
+                return result;
+            }
+
+            return null;
+        }
+    }
+
+    // "EndpointDefaults": {
+    //    "Protocols": "Http1AndHttp2",
+    // }
+    internal class EndpointDefaults
+    {
+        public HttpProtocols? Protocols { get; set; }
+        public IConfigurationSection ConfigSection { get; set; }
     }
 
     // "EndpointName": {
     //    "Url": "https://*:5463",
+    //    "Protocols": "Http1AndHttp2",
     //    "Certificate": {
     //        "Path": "testCert.pfx",
     //        "Password": "testPassword"
@@ -99,6 +169,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     {
         public string Name { get; set; }
         public string Url { get; set; }
+        public HttpProtocols? Protocols { get; set; }
         public IConfigurationSection ConfigSection { get; set; }
         public CertificateConfig Certificate { get; set; }
     }

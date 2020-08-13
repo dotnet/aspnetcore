@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
-    public class Huffman
+    internal class Huffman
     {
         // TODO: this can be constructed from _decodingTable
         private static readonly (uint code, int bitLength)[] _encodingTable = new (uint code, int bitLength)[]
@@ -303,24 +303,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         /// Decodes a Huffman encoded string from a byte array.
         /// </summary>
         /// <param name="src">The source byte array containing the encoded data.</param>
-        /// <param name="offset">The offset in the byte array where the coded data starts.</param>
-        /// <param name="count">The number of bytes to decode.</param>
         /// <param name="dst">The destination byte array to store the decoded data.</param>
         /// <returns>The number of decoded symbols.</returns>
-        public static int Decode(byte[] src, int offset, int count, byte[] dst)
+        public static int Decode(ReadOnlySpan<byte> src, Span<byte> dst)
         {
-            var i = offset;
+            var i = 0;
             var j = 0;
             var lastDecodedBits = 0;
-            while (i < count)
+            while (i < src.Length)
             {
+                // Note that if lastDecodeBits is 3 or more, then we will only get 5 bits (or less)
+                // from src[i]. Thus we need to read 5 bytes here to ensure that we always have
+                // at least 30 bits available for decoding.
                 var next = (uint)(src[i] << 24 + lastDecodedBits);
                 next |= (i + 1 < src.Length ? (uint)(src[i + 1] << 16 + lastDecodedBits) : 0);
                 next |= (i + 2 < src.Length ? (uint)(src[i + 2] << 8 + lastDecodedBits) : 0);
                 next |= (i + 3 < src.Length ? (uint)(src[i + 3] << lastDecodedBits) : 0);
+                next |= (i + 4 < src.Length ? (uint)(src[i + 4] >> (8 - lastDecodedBits)) : 0);
 
                 var ones = (uint)(int.MinValue >> (8 - lastDecodedBits - 1));
-                if (i == count - 1 && lastDecodedBits > 0 && (next & ones) == ones)
+                if (i == src.Length - 1 && lastDecodedBits > 0 && (next & ones) == ones)
                 {
                     // The remaining 7 or less bits are all 1, which is padding.
                     // We specifically check that lastDecodedBits > 0 because padding
@@ -332,8 +334,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                 // The longest possible symbol size is 30 bits. If we're at the last 4 bytes
                 // of the input, we need to make sure we pass the correct number of valid bits
                 // left, otherwise the trailing 0s in next may form a valid symbol.
-                var validBits = Math.Min(30, (8 - lastDecodedBits) + (count - i - 1) * 8);
-                var ch = Decode(next, validBits, out var decodedBits);
+                var validBits = Math.Min(30, (8 - lastDecodedBits) + (src.Length - i - 1) * 8);
+                var ch = DecodeValue(next, validBits, out var decodedBits);
 
                 if (ch == -1)
                 {
@@ -377,7 +379,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         /// </param>
         /// <param name="decodedBits">The number of bits decoded from <paramref name="data"/>.</param>
         /// <returns>The decoded symbol.</returns>
-        public static int Decode(uint data, int validBits, out int decodedBits)
+        internal static int DecodeValue(uint data, int validBits, out int decodedBits)
         {
             // The code below implements the decoding logic for a canonical Huffman code.
             //

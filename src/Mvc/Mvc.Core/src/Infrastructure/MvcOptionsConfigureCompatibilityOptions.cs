@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -21,18 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         {
             get
             {
-                var values = new Dictionary<string, object>();
-
-                if (Version >= CompatibilityVersion.Version_2_1)
-                {
-                    values[nameof(MvcOptions.AllowCombiningAuthorizeFilters)] = true;
-                    values[nameof(MvcOptions.AllowBindingHeaderValuesToNonStringModelTypes)] = true;
-                    values[nameof(MvcOptions.AllowValidatingTopLevelNodes)] = true;
-                    values[nameof(MvcOptions.InputFormatterExceptionPolicy)] = InputFormatterExceptionPolicy.MalformedInputExceptions;
-                    values[nameof(MvcOptions.SuppressBindingUndefinedValueToEnumType)] = true;
-                }
-
-                return values;
+                return new Dictionary<string, object>();
             }
         }
     }

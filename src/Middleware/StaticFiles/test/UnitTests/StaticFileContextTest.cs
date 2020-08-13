@@ -4,8 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
@@ -20,14 +23,18 @@ namespace Microsoft.AspNetCore.StaticFiles
         {
             // Arrange
             var options = new StaticFileOptions();
-            var context = new StaticFileContext(new DefaultHttpContext(), options, PathString.Empty, NullLogger.Instance, new TestFileProvider(), new FileExtensionContentTypeProvider());
+            var httpContext = new DefaultHttpContext();
+            var pathString = PathString.Empty;
+            var validateResult = StaticFileMiddleware.ValidatePath(httpContext, pathString, out var subPath);
+            var contentTypeResult = StaticFileMiddleware.LookupContentType(new FileExtensionContentTypeProvider(), options, subPath, out var contentType);
+            var context = new StaticFileContext(httpContext, options, NullLogger.Instance, new TestFileProvider(), contentType, subPath);
 
             // Act
-            var validateResult = context.ValidatePath();
             var lookupResult = context.LookupFileInfo();
 
             // Assert
             Assert.True(validateResult);
+            Assert.False(contentTypeResult);
             Assert.False(lookupResult);
         }
 
@@ -44,14 +51,104 @@ namespace Microsoft.AspNetCore.StaticFiles
             var pathString = new PathString("/test");
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Path = new PathString("/test/foo.txt");
-            var context = new StaticFileContext(httpContext, options, pathString, NullLogger.Instance, fileProvider, new FileExtensionContentTypeProvider());
+            var validateResult = StaticFileMiddleware.ValidatePath(httpContext, pathString, out var subPath);
+            var contentTypeResult = StaticFileMiddleware.LookupContentType(new FileExtensionContentTypeProvider(), options, subPath, out var contentType);
+
+            var context = new StaticFileContext(httpContext, options, NullLogger.Instance, fileProvider, contentType, subPath);
 
             // Act
-            context.ValidatePath();
             var result = context.LookupFileInfo();
 
             // Assert
+            Assert.True(validateResult);
+            Assert.True(contentTypeResult);
             Assert.True(result);
+        }
+
+        [Fact]
+        public async Task EnablesHttpsCompression_IfMatched()
+        {
+            var options = new StaticFileOptions();
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile("/foo.txt", new TestFileInfo
+            {
+                LastModified = new DateTimeOffset(2014, 1, 2, 3, 4, 5, TimeSpan.Zero)
+            });
+            var pathString = new PathString("/test");
+            var httpContext = new DefaultHttpContext();
+            var httpsCompressionFeature = new TestHttpsCompressionFeature();
+            httpContext.Features.Set<IHttpsCompressionFeature>(httpsCompressionFeature);
+            httpContext.Request.Path = new PathString("/test/foo.txt");
+            var validateResult = StaticFileMiddleware.ValidatePath(httpContext, pathString, out var subPath);
+            var contentTypeResult = StaticFileMiddleware.LookupContentType(new FileExtensionContentTypeProvider(), options, subPath, out var contentType);
+
+            var context = new StaticFileContext(httpContext, options, NullLogger.Instance, fileProvider, contentType, subPath);
+
+            var result = context.LookupFileInfo();
+            Assert.True(validateResult);
+            Assert.True(contentTypeResult);
+            Assert.True(result);
+
+            await context.SendAsync();
+
+            Assert.Equal(HttpsCompressionMode.Compress, httpsCompressionFeature.Mode);
+        }
+
+        [Fact]
+        public void SkipsHttpsCompression_IfNotMatched()
+        {
+            var options = new StaticFileOptions();
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile("/foo.txt", new TestFileInfo
+            {
+                LastModified = new DateTimeOffset(2014, 1, 2, 3, 4, 5, TimeSpan.Zero)
+            });
+            var pathString = new PathString("/test");
+            var httpContext = new DefaultHttpContext();
+            var httpsCompressionFeature = new TestHttpsCompressionFeature();
+            httpContext.Features.Set<IHttpsCompressionFeature>(httpsCompressionFeature);
+            httpContext.Request.Path = new PathString("/test/bar.txt");
+            var validateResult = StaticFileMiddleware.ValidatePath(httpContext, pathString, out var subPath);
+            var contentTypeResult = StaticFileMiddleware.LookupContentType(new FileExtensionContentTypeProvider(), options, subPath, out var contentType);
+
+            var context = new StaticFileContext(httpContext, options, NullLogger.Instance, fileProvider, contentType, subPath);
+
+            var result = context.LookupFileInfo();
+            Assert.True(validateResult);
+            Assert.True(contentTypeResult);
+            Assert.False(result);
+
+            Assert.Equal(HttpsCompressionMode.Default, httpsCompressionFeature.Mode);
+        }
+
+        [Fact]
+        public async Task RequestAborted_DoesntThrow()
+        {
+            var options = new StaticFileOptions();
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile("/foo.txt", new TestFileInfo
+            {
+                LastModified = new DateTimeOffset(2014, 1, 2, 3, 4, 5, TimeSpan.Zero)
+            });
+            var pathString = new PathString("/test");
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Path = new PathString("/test/foo.txt");
+            httpContext.RequestAborted = new CancellationToken(canceled: true);
+            var body = new MemoryStream();
+            httpContext.Response.Body = body;
+            var validateResult = StaticFileMiddleware.ValidatePath(httpContext, pathString, out var subPath);
+            var contentTypeResult = StaticFileMiddleware.LookupContentType(new FileExtensionContentTypeProvider(), options, subPath, out var contentType);
+
+            var context = new StaticFileContext(httpContext, options, NullLogger.Instance, fileProvider, contentType, subPath);
+
+            var result = context.LookupFileInfo();
+            Assert.True(validateResult);
+            Assert.True(contentTypeResult);
+            Assert.True(result);
+
+            await context.SendAsync();
+
+            Assert.Equal(0, body.Length);
         }
 
         private sealed class TestFileProvider : IFileProvider
@@ -70,8 +167,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             public IFileInfo GetFileInfo(string subpath)
             {
-                IFileInfo result;
-                if (_files.TryGetValue(subpath, out result))
+                if (_files.TryGetValue(subpath, out var result))
                 {
                     return result;
                 }
@@ -163,8 +259,13 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             public Stream CreateReadStream()
             {
-                throw new NotImplementedException();
+                return new MemoryStream();
             }
+        }
+
+        private class TestHttpsCompressionFeature : IHttpsCompressionFeature
+        {
+            public HttpsCompressionMode Mode { get; set; }
         }
     }
 }

@@ -23,8 +23,7 @@ namespace MusicStore.Mocks.MicrosoftAccount
                 Helpers.ThrowIfConditionFailed(() => context.Identity.FindFirst(ClaimTypes.NameIdentifier)?.Value == "fccf9a24999f4f4f", "Id is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.Identity.FindFirst(ClaimTypes.Name)?.Value == "AspnetvnextTest AspnetvnextTest", "Name is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.ExpiresIn.Value == TimeSpan.FromSeconds(3600), "ExpiresIn is not valid");
-                Helpers.ThrowIfConditionFailed(() => context.User != null, "User object is not valid");
-                Helpers.ThrowIfConditionFailed(() => context.Identity.FindFirst(ClaimTypes.NameIdentifier)?.Value == context.User.SelectToken("id").ToString(), "User id is not valid");
+                Helpers.ThrowIfConditionFailed(() => context.Identity.FindFirst(ClaimTypes.NameIdentifier)?.Value == context.User.GetString("id"), "User id is not valid");
                 context.Principal.Identities.First().AddClaim(new Claim("ManageStore", "false"));
             }
 

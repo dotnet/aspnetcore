@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests
 {
@@ -24,10 +26,28 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         public DefaultUIContext WithConfirmedEmail() =>
             new DefaultUIContext(this) { EmailConfirmed = true };
 
+        internal DefaultUIContext WithSocialLoginProvider() =>
+            new DefaultUIContext(this) { SocialLoginProvider = "contoso" };
+
+        internal DefaultUIContext WithPasswordLogin() =>
+            new DefaultUIContext(this) { PasswordLoginEnabled = true };
+
+        internal DefaultUIContext WithCookieConsent() =>
+            new DefaultUIContext(this) { CookiePolicyAccepted = true };
+
+        internal DefaultUIContext WithRealEmailSender() =>
+            new DefaultUIContext(this) { HasRealEmailSender = true };
+
         public string AuthenticatorKey
         {
             get => GetValue<string>(nameof(AuthenticatorKey));
             set => SetValue(nameof(AuthenticatorKey), value);
+        }
+
+        public string SocialLoginProvider
+        {
+            get => GetValue<string>(nameof(SocialLoginProvider));
+            set => SetValue(nameof(SocialLoginProvider), value);
         }
 
         public string[] RecoveryCodes
@@ -63,6 +83,24 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         {
             get => GetValue<bool>(nameof(ExistingUser));
             set => SetValue(nameof(ExistingUser), value);
+        }
+
+        public bool PasswordLoginEnabled
+        {
+            get => GetValue<bool>(nameof(PasswordLoginEnabled));
+            set => SetValue(nameof(PasswordLoginEnabled), value);
+        }
+
+        public bool CookiePolicyAccepted
+        {
+            get => GetValue<bool>(nameof(CookiePolicyAccepted));
+            set => SetValue(nameof(CookiePolicyAccepted), value);
+        }
+
+        public bool HasRealEmailSender
+        {
+            get => GetValue<bool>(nameof(HasRealEmailSender));
+            set => SetValue(nameof(HasRealEmailSender), value);
         }
     }
 }

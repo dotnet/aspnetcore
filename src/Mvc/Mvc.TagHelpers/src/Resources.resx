@@ -159,4 +159,10 @@
   <data name="PartialTagHelper_InvalidModelAttributes" xml:space="preserve">
     <value>Cannot use '{0}' with both '{1}' and '{2}' attributes.</value>
   </data>
+  <data name="ViewEngine_FallbackViewNotFound" xml:space="preserve">
+    <value>The fallback partial view '{0}' was not found. The following locations were searched:{1}</value>
+  </data>
+  <data name="AttributeIsRequired" xml:space="preserve">
+    <value>A value for the '{0}' attribute must be supplied to the '{1}' tag helper.</value>
+  </data>
 </root>

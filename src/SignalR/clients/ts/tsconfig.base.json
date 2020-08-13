@@ -14,14 +14,16 @@
         "noUnusedParameters": true,
         "suppressImplicitAnyIndexErrors": true,
         "noEmitOnError": true,
+        "skipLibCheck": true,
         "stripInternal": true,
+        "strict": true,
         "lib": [ "es5", "es2015.promise", "es2015.iterable", "dom" ],
         "baseUrl": ".",
         "paths": {
-            "@aspnet/signalr": [
+            "@microsoft/signalr": [
                 "./signalr"
             ],
-            "@aspnet/signalr-protocol-msgpack": [
+            "@microsoft/signalr-protocol-msgpack": [
                 "./signalr-protocol-msgpack"
             ]
         }

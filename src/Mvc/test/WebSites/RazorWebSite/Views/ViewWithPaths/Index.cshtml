@@ -2,5 +2,5 @@
     @ViewContext.ExecutingFilePath
     @ViewContext.View.Path
     @await Component.InvokeAsync("ComponentForViewWithPaths")
-    @Html.Partial("_Partial")
+    @(await Html.PartialAsync("_Partial"))
 </Index>

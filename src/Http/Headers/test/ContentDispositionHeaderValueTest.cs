@@ -142,6 +142,21 @@ namespace Microsoft.Net.Http.Headers
         }
 
         [Fact]
+        public void FileName_NeedsEncodingBecauseOfNewLine_EncodedAndDecodedCorrectly()
+        {
+            var contentDisposition = new ContentDispositionHeaderValue("inline");
+
+            contentDisposition.FileName = "File\nName.bat";
+            Assert.Equal("File\nName.bat", contentDisposition.FileName);
+            Assert.Equal(1, contentDisposition.Parameters.Count);
+            Assert.Equal("filename", contentDisposition.Parameters.First().Name);
+            Assert.Equal("\"=?utf-8?B?RmlsZQpOYW1lLmJhdA==?=\"", contentDisposition.Parameters.First().Value);
+
+            contentDisposition.Parameters.Remove(contentDisposition.Parameters.First());
+            Assert.Null(contentDisposition.FileName.Value);
+        }
+
+        [Fact]
         public void FileName_UnknownOrBadEncoding_PropertyFails()
         {
             var contentDisposition = new ContentDispositionHeaderValue("inline");
@@ -220,6 +235,17 @@ namespace Microsoft.Net.Http.Headers
 
             contentDisposition.Parameters.Remove(fileNameStar);
             Assert.Null(contentDisposition.FileNameStar.Value);
+        }
+
+        [Theory]
+        [InlineData("FileName.bat", "FileName.bat")]
+        [InlineData("FileÃName.bat", "File_Name.bat")]
+        [InlineData("File\nName.bat", "File_Name.bat")]
+        public void SetHttpFileName_ShouldSanitizeFileNameWhereNeeded(string httpFileName, string expectedFileName)
+        {
+            var contentDisposition = new ContentDispositionHeaderValue("inline");
+            contentDisposition.SetHttpFileName(httpFileName);
+            Assert.Equal(expectedFileName, contentDisposition.FileName);
         }
 
         [Fact]
@@ -465,7 +491,7 @@ namespace Microsoft.Net.Http.Headers
         {
             { "inline", new ContentDispositionHeaderValue("inline") }, // @"This should be equivalent to not including the header at all."
             { "inline;", new ContentDispositionHeaderValue("inline") },
-            { "inline;name=", new ContentDispositionHeaderValue("inline") { Parameters = { new NameValueHeaderValue("name", "") } } }, // TODO: passing in a null value causes a strange assert on CoreCLR before the test even starts. Not reproducable in the body of a test.
+            { "inline;name=", new ContentDispositionHeaderValue("inline") { Parameters = { new NameValueHeaderValue("name", "") } } }, // TODO: passing in a null value causes a strange assert on CoreCLR before the test even starts. Not reproducible in the body of a test.
             { "inline;name=value", new ContentDispositionHeaderValue("inline") { Name  = "value" } },
             { "inline;name=value;", new ContentDispositionHeaderValue("inline") { Name  = "value" } },
             { "inline;name=value;", new ContentDispositionHeaderValue("inline") { Name  = "value" } },

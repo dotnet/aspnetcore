@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
@@ -36,14 +35,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var response = context.HttpContext.Response;
 
-            string resolvedContentType;
-            Encoding resolvedContentTypeEncoding;
             ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
                 result.ContentType,
                 response.ContentType,
                 DefaultContentType,
-                out resolvedContentType,
-                out resolvedContentTypeEncoding);
+                out var resolvedContentType,
+                out var resolvedContentTypeEncoding);
 
             response.ContentType = resolvedContentType;
 
@@ -58,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 response.ContentLength = resolvedContentTypeEncoding.GetByteCount(result.Content);
 
-                using (var textWriter = _httpResponseStreamWriterFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
+                await using (var textWriter = _httpResponseStreamWriterFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
                 {
                     await textWriter.WriteAsync(result.Content);
 

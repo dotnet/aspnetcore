@@ -1,0 +1,28 @@
+{
+  "Default": {
+    "Client": "Wrk",
+    "PresetHeaders": "Plaintext",
+    "ClientProperties": {
+      "ScriptName": "pipeline",
+      "PipelineDepth": 16
+    },
+    "Source": {
+      "Repository": "https://github.com/aspnet/AspNetCore.git",
+      "BranchOrCommit": "master",
+      "Project": "src/Routing/benchmarkapps/Benchmarks/Benchmarks.csproj"
+    },
+    "Port": 8080
+  },
+  "PlaintextRouting": {
+    "Path": "/plaintext"
+  },
+  "PlaintextRouter": {
+    "Path": "/plaintext"
+  },
+  "PlaintextDispatcher": {
+    "Path": "/plaintext"
+  },
+  "PlaintextEndpointRouting": {
+    "Path": "/plaintext"
+  }
+}

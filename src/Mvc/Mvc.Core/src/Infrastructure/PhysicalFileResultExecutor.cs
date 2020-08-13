@@ -5,9 +5,9 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -87,28 +87,19 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 Logger.WritingRangeToBody();
             }
 
-            var sendFile = response.HttpContext.Features.Get<IHttpSendFileFeature>();
-            if (sendFile != null)
+            if (range != null)
             {
-                if (range != null)
-                {
-                    return sendFile.SendFileAsync(
-                        result.FileName,
-                        offset: range.From ?? 0L,
-                        count: rangeLength,
-                        cancellation: default(CancellationToken));
-                }
-
-                return sendFile.SendFileAsync(
-                    result.FileName,
-                    offset: 0,
-                    count: null,
-                    cancellation: default(CancellationToken));
+                return response.SendFileAsync(result.FileName,
+                    offset: range.From ?? 0L,
+                    count: rangeLength);
             }
 
-            return WriteFileAsync(context.HttpContext, GetFileStream(result.FileName), range, rangeLength);
+            return response.SendFileAsync(result.FileName,
+                offset: 0,
+                count: null);
         }
 
+        [Obsolete("This API is no longer called.")]
         protected virtual Stream GetFileStream(string path)
         {
             if (path == null)

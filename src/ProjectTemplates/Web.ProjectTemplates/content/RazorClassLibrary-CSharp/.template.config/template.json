@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Web",
+    "Razor",
+    "Library",
+    "Razor Class Library"
+  ],
+  "name": "Razor Class Library",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A project for creating a Razor class library that targets .NET Standard",
+  "groupIdentity": "Microsoft.Web.Razor",
+  "precedence": "6000",
+  "identity": "Microsoft.Web.Razor.Library.CSharp.3.1",
+  "shortName": "razorclasslib",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "Company.RazorClassLibrary1",
+  "preferNameDirectory": true,
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "condition": "(!SupportPagesAndViews)",
+          "exclude": [
+            "Areas/**"
+          ]
+        },
+        {
+          "condition": "(SupportPagesAndViews)",
+          "exclude": [
+            "_Imports.razor",
+            "Component1.razor",
+            "ExampleJsInterop.cs",
+            "wwwroot/**"
+          ]
+        }
+      ]
+    }
+  ],
+  "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "netcoreapp3.1",
+          "description": "Target netcoreapp3.1"
+        }
+      ],
+      "defaultValue": "netcoreapp3.1"
+    },
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    },
+    "SupportPagesAndViews": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to support adding traditional Razor pages and Views in addition to components to this library."
+    }
+  },
+  "primaryOutputs": [
+    {
+      "path": "Company.RazorClassLibrary1.csproj"
+    },
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "Areas/MyFeature/Pages/Page1.cshtml"
+    }
+  ],
+  "defaultName": "RazorClassLibrary",
+  "postActions": [
+    {
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    },
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "description": "Opens Areas/MyFeature/Pages/Page1.cshtml in the editor",
+      "manualInstructions": [],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "1"
+      },
+      "continueOnError": true
+    }
+  ]
+}

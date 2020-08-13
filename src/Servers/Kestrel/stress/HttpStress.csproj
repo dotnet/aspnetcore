@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+    <IsTestAssetProject>true</IsTestAssetProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System.CommandLine.Experimental" />
+    <Reference Include="System.Net.Http.WinHttpHandler" />
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!--Imitate IIS Express so we can use it's cert bindings-->
+    <PackageTags>214124cd-d05b-4309-9af9-9caa44b2b74a</PackageTags>
+  </PropertyGroup>
+
+</Project>

@@ -130,11 +130,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         }
 
         [Fact]
-        public void TryReplace_ReplacesPropertyValue()
+        public void TryReplace_RemovesExistingValue_BeforeAddingNewValue()
         {
             // Arrange
             var adapter = new DynamicObjectAdapter();
-            dynamic target = new DynamicTestObject();
+            dynamic target = new WriteOnceDynamicTestObject();
             target.NewProperty = new object();
             var segment = "NewProperty";
             var resolver = new DefaultContractResolver();

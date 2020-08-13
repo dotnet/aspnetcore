@@ -80,14 +80,14 @@ namespace Microsoft.AspNetCore.HostFiltering
                 {
                     app.Use((ctx, next) =>
                     {
-                        ctx.Request.Headers[HeaderNames.Host] = " ";
+                        ctx.Request.Headers[HeaderNames.Host] = "";
                         return next();
                     });
                     app.UseHostFiltering();
                     app.Run(c =>
                     {
                         Assert.True(c.Request.Headers.TryGetValue(HeaderNames.Host, out var host));
-                        Assert.True(StringValues.Equals(" ", host));
+                        Assert.True(StringValues.Equals("", host));
                         return Task.CompletedTask;
                     });
                     app.Run(c => Task.CompletedTask);

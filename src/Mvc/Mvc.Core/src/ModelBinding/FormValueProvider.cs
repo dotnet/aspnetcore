@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -14,7 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// </summary>
     public class FormValueProvider : BindingSourceValueProvider, IEnumerableValueProvider
     {
-        private readonly CultureInfo _culture;
         private readonly IFormCollection _values;
         private PrefixContainer _prefixContainer;
 
@@ -41,10 +39,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             _values = values;
-            _culture = culture;
+            Culture = culture;
         }
 
-        public CultureInfo Culture => _culture;
+        public CultureInfo Culture { get; }
 
         protected PrefixContainer PrefixContainer
         {
@@ -84,6 +82,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(key));
             }
 
+            if (key.Length == 0)
+            {
+                // Top level parameters will fall back to an empty prefix when the parameter name does not
+                // appear in any value provider. This would result in the parameter binding to a form parameter
+                // with a empty key (e.g. Request body looks like "=test") which isn't a scenario we want to support.
+                // Return a "None" result in this event.
+                return ValueProviderResult.None;
+            }
+
             var values = _values[key];
             if (values.Count == 0)
             {
@@ -91,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
             else
             {
-                return new ValueProviderResult(values, _culture);
+                return new ValueProviderResult(values, Culture);
             }
         }
     }

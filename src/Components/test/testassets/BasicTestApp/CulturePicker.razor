@@ -1,0 +1,18 @@
+@inject NavigationManager NavigationManager
+
+<h3>Select your language</h3>
+<select @onchange="@OnSelected" id="culture-selector">
+    <option>Select...</option>
+    <option value="en-US">English</option>
+    <option value="fr-FR">Français</option>
+</select>
+
+@code {
+    void OnSelected(ChangeEventArgs e)
+    {
+        // Included fragment to preserve choice of Blazor client or server.
+        var redirect = new Uri(NavigationManager.Uri).GetComponents(UriComponents.PathAndQuery | UriComponents.Fragment, UriFormat.UriEscaped);
+        var query = $"?culture={Uri.EscapeDataString((string)e.Value)}&redirectUri={Uri.EscapeDataString(redirect)}";
+        NavigationManager.NavigateTo("/subdir/Culture/SetCulture" + query, forceLoad: true);
+    }
+}

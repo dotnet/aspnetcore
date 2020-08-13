@@ -17,6 +17,11 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         public Func<AuthenticationFailedContext, Task> OnAuthenticationFailed { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
+        /// Invoked if Authorization fails and results in a Forbidden response  
+        /// </summary>
+        public Func<ForbiddenContext, Task> OnForbidden { get; set; } = context => Task.CompletedTask;
+
+        /// <summary>
         /// Invoked when a protocol message is first received.
         /// </summary>
         public Func<MessageReceivedContext, Task> OnMessageReceived { get; set; } = context => Task.CompletedTask;
@@ -32,6 +37,8 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         public Func<JwtBearerChallengeContext, Task> OnChallenge { get; set; } = context => Task.CompletedTask;
 
         public virtual Task AuthenticationFailed(AuthenticationFailedContext context) => OnAuthenticationFailed(context);
+
+        public virtual Task Forbidden(ForbiddenContext context) => OnForbidden(context);
 
         public virtual Task MessageReceived(MessageReceivedContext context) => OnMessageReceived(context);
 

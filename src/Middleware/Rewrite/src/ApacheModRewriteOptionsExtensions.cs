@@ -3,7 +3,7 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite;
+using Microsoft.AspNetCore.Rewrite.ApacheModRewrite;
 using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Rewrite

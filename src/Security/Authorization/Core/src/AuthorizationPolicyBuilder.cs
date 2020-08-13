@@ -96,16 +96,16 @@ namespace Microsoft.AspNetCore.Authorization
         /// to the current instance.
         /// </summary>
         /// <param name="claimType">The claim type required.</param>
-        /// <param name="requiredValues">Values the claim must process one or more of for evaluation to succeed.</param>
+        /// <param name="allowedValues">Values the claim must process one or more of for evaluation to succeed.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
-        public AuthorizationPolicyBuilder RequireClaim(string claimType, params string[] requiredValues)
+        public AuthorizationPolicyBuilder RequireClaim(string claimType, params string[] allowedValues)
         {
             if (claimType == null)
             {
                 throw new ArgumentNullException(nameof(claimType));
             }
 
-            return RequireClaim(claimType, (IEnumerable<string>)requiredValues);
+            return RequireClaim(claimType, (IEnumerable<string>)allowedValues);
         }
 
         /// <summary>
@@ -113,16 +113,16 @@ namespace Microsoft.AspNetCore.Authorization
         /// to the current instance.
         /// </summary>
         /// <param name="claimType">The claim type required.</param>
-        /// <param name="requiredValues">Values the claim must process one or more of for evaluation to succeed.</param>
+        /// <param name="allowedValues">Values the claim must process one or more of for evaluation to succeed.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
-        public AuthorizationPolicyBuilder RequireClaim(string claimType, IEnumerable<string> requiredValues)
+        public AuthorizationPolicyBuilder RequireClaim(string claimType, IEnumerable<string> allowedValues)
         {
             if (claimType == null)
             {
                 throw new ArgumentNullException(nameof(claimType));
             }
 
-            Requirements.Add(new ClaimsAuthorizationRequirement(claimType, requiredValues));
+            Requirements.Add(new ClaimsAuthorizationRequirement(claimType, allowedValues));
             return this;
         }
 
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// Adds a <see cref="RolesAuthorizationRequirement"/>
         /// to the current instance.
         /// </summary>
-        /// <param name="roles">The roles required.</param>
+        /// <param name="roles">The allowed roles.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         public AuthorizationPolicyBuilder RequireRole(params string[] roles)
         {
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// Adds a <see cref="RolesAuthorizationRequirement"/>
         /// to the current instance.
         /// </summary>
-        /// <param name="roles">The roles required.</param>
+        /// <param name="roles">The allowed roles.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
         public AuthorizationPolicyBuilder RequireRole(IEnumerable<string> roles)
         {

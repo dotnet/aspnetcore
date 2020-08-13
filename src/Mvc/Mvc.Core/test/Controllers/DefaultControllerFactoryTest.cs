@@ -4,7 +4,7 @@
 using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Moq;
@@ -215,7 +215,8 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                 .Setup(s => s.GetService(typeof(IObjectModelValidator)))
                 .Returns(new DefaultObjectValidator(
                     metadataProvider,
-                    TestModelValidatorProvider.CreateDefaultProvider().ValidatorProviders));
+                    TestModelValidatorProvider.CreateDefaultProvider().ValidatorProviders,
+                    new MvcOptions()));
             return services.Object;
         }
 

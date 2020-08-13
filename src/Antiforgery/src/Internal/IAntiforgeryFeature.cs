@@ -1,6 +1,6 @@
-﻿namespace Microsoft.AspNetCore.Antiforgery.Internal
+namespace Microsoft.AspNetCore.Antiforgery
 {
-    public interface IAntiforgeryFeature
+    internal interface IAntiforgeryFeature
     {
         AntiforgeryToken CookieToken { get; set; }
 

@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.SignalR
                 // group might be modified inbetween checking and sending
                 List<Task> tasks = null;
                 SerializedHubMessage message = null;
-                SendToGroupConnections(methodName, args, group, include: null, ref tasks, ref message, cancellationToken);
+                SendToGroupConnections(methodName, args, group, null, ref tasks, ref message, cancellationToken);
 
                 if (tasks != null)
                 {
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.SignalR
                 var group = _groups[groupName];
                 if (group != null)
                 {
-                    SendToGroupConnections(methodName, args, group, include: null, ref tasks, ref message, cancellationToken);
+                    SendToGroupConnections(methodName, args, group, null, ref tasks, ref message, cancellationToken);
                 }
             }
 

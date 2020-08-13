@@ -1,0 +1,43 @@
+@page "/prerendered-interop"
+@using Microsoft.AspNetCore.Components
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<p>
+    This component shows it's possible to use JSInterop as part of the initialization
+    logic of a component, and have that be compatible with prerendering. It also shows
+    that it's possible to trigger a rendering update from inside OnAfterRenderAsync,
+    though it's the developer's own responsibility to avoid an infinite loop when
+    doing that.
+</p>
+
+<p>
+    Value get via JS interop call:
+    <strong id="val-get-by-interop">@(infoFromJs ?? "No value yet")</strong>
+</p>
+
+<p>
+    Value set via JS interop call:
+    <input id="val-set-by-interop" @ref="@myElem" />
+</p>
+
+@code {
+    string infoFromJs;
+    ElementReference myElem;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // We can only use the ElementRef in OnAfterRenderAsync (and not any
+            // earlier lifecycle method), because there is no JS element until
+            // the component has been rendered.
+            infoFromJs = await JSRuntime.InvokeAsync<string>(
+                "setElementValue", myElem, "Hello from interop call");
+
+            // Now we can re-render with the new state obtained from the interop call.
+            // Not an infinite loop, because we only call this when "infoFromJs == null"
+            StateHasChanged();
+        }
+    }
+}

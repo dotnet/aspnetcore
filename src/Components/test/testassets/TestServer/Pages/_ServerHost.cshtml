@@ -1,0 +1,46 @@
+@page ""
+@addTagHelper "*, Microsoft.AspNetCore.Mvc.TagHelpers"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Basic test app</title>
+    <base href="~/" />
+    <link href="style.css" rel="stylesheet" />
+
+    <!-- Used by ExternalContentPackage -->
+    <link href="_content/TestContentPackage/styles.css" rel="stylesheet" />
+</head>
+<body>
+    <root><component type="typeof(BasicTestApp.Index)" render-mode="Server" /></root>
+
+    <!-- Used for testing interop scenarios between JS and .NET -->
+    <script src="js/jsinteroptests.js"></script>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href class='reload'>Reload</a>
+        <a class='dismiss' style="cursor: pointer;">🗙</a>
+    </div>
+
+    <script>
+        // Used by ElementRefComponent
+        function setElementValue(element, newValue) {
+            element.value = newValue;
+            return element.value;
+        }
+
+        function navigationManagerNavigate() {
+            Blazor.navigateTo('/subdir/some-path');
+        }
+    </script>
+
+    <script src="_framework/blazor.server.js"></script>
+
+    <!-- Used by ExternalContentPackage -->
+    <script src="_content/TestContentPackage/prompt.js"></script>
+    <script>
+        console.log('Blazor server-side');
+    </script>
+</body>
+</html>

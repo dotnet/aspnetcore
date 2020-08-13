@@ -5,9 +5,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
+    public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
     {
-        public AsyncActionsTests(MvcTestFixture<BasicWebSite.Startup> fixture)
+        public AsyncActionsTests(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             Client = fixture.CreateDefaultClient();
         }
@@ -277,6 +277,38 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal("Action exception message: This is a custom exception.", responseBody);
+        }
+
+        [Fact]
+        public async Task AsyncSuffixIsIgnored()
+        {
+            // Act
+            var response = await Client.GetAsync("AsyncActions/ActionWithSuffix");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+        }
+
+        [Fact]
+        public async Task ActionIsNotRoutedWithAsyncSuffix()
+        {
+            // Act
+            var response = await Client.GetAsync("AsyncActions/ActionWithSuffixAsync");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
+        }
+
+        [Fact]
+        public async Task ViewLookupWithAsyncSuffix()
+        {
+            // Act
+            var response = await Client.GetAsync("AsyncActions/ActionReturningView");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Hello world!", content.Trim());
         }
     }
 }

@@ -29,7 +29,7 @@ namespace CorsWebSite
             return "exclusive";
         }
 
-        [EnableCors("WithCredentialsAnyOrigin")]
+        [EnableCors("WithCredentialsAndOtherSettings")]
         public string EditUserComment(int id, string userComment)
         {
             return userComment;

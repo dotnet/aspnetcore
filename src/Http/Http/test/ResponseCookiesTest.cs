@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -15,13 +14,13 @@ namespace Microsoft.AspNetCore.Http.Tests
         {
             var headers = new HeaderDictionary();
             var cookies = new ResponseCookies(headers, null);
-            var testcookie = "TestCookie";
+            var testCookie = "TestCookie";
 
-            cookies.Delete(testcookie);
+            cookies.Delete(testCookie);
 
             var cookieHeaderValues = headers[HeaderNames.SetCookie];
             Assert.Single(cookieHeaderValues);
-            Assert.StartsWith(testcookie, cookieHeaderValues[0]);
+            Assert.StartsWith(testCookie, cookieHeaderValues[0]);
             Assert.Contains("path=/", cookieHeaderValues[0]);
             Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookieHeaderValues[0]);
         }
@@ -31,7 +30,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         {
             var headers = new HeaderDictionary();
             var cookies = new ResponseCookies(headers, null);
-            var testcookie = "TestCookie";
+            var testCookie = "TestCookie";
             var time = new DateTimeOffset(2000, 1, 1, 1, 1, 1, 1, TimeSpan.Zero);
             var options = new CookieOptions
             {
@@ -43,11 +42,11 @@ namespace Microsoft.AspNetCore.Http.Tests
                 SameSite = SameSiteMode.Lax
             };
 
-            cookies.Delete(testcookie, options);
+            cookies.Delete(testCookie, options);
 
             var cookieHeaderValues = headers[HeaderNames.SetCookie];
             Assert.Single(cookieHeaderValues);
-            Assert.StartsWith(testcookie, cookieHeaderValues[0]);
+            Assert.StartsWith(testCookie, cookieHeaderValues[0]);
             Assert.Contains("path=/", cookieHeaderValues[0]);
             Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookieHeaderValues[0]);
             Assert.Contains("secure", cookieHeaderValues[0]);
@@ -60,14 +59,14 @@ namespace Microsoft.AspNetCore.Http.Tests
         {
             var headers = new HeaderDictionary();
             var cookies = new ResponseCookies(headers, null);
-            var testcookie = "TestCookie";
+            var testCookie = "TestCookie";
 
-            cookies.Append(testcookie, testcookie);
-            cookies.Delete(testcookie);
+            cookies.Append(testCookie, testCookie);
+            cookies.Delete(testCookie);
 
             var cookieHeaderValues = headers[HeaderNames.SetCookie];
             Assert.Single(cookieHeaderValues);
-            Assert.StartsWith(testcookie, cookieHeaderValues[0]);
+            Assert.StartsWith(testCookie, cookieHeaderValues[0]);
             Assert.Contains("path=/", cookieHeaderValues[0]);
             Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookieHeaderValues[0]);
         }
@@ -80,9 +79,9 @@ namespace Microsoft.AspNetCore.Http.Tests
             var cookieOptions = new CookieOptions();
             var maxAgeTime = TimeSpan.FromHours(1);
             cookieOptions.MaxAge = TimeSpan.FromHours(1);
-            var testcookie = "TestCookie";
+            var testCookie = "TestCookie";
 
-            cookies.Append(testcookie, testcookie, cookieOptions);
+            cookies.Append(testCookie, testCookie, cookieOptions);
 
             var cookieHeaderValues = headers[HeaderNames.SetCookie];
             Assert.Single(cookieHeaderValues);

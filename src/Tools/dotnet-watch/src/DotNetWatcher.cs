@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Watcher.Internal;
@@ -32,8 +33,13 @@ namespace Microsoft.DotNet.Watcher
             cancellationToken.Register(state => ((TaskCompletionSource<object>) state).TrySetResult(null),
                 cancelledTaskSource);
 
+            var iteration = 1;
+
             while (true)
             {
+                processSpec.EnvironmentVariables["DOTNET_WATCH_ITERATION"] = iteration.ToString(CultureInfo.InvariantCulture);
+                iteration++;
+
                 var fileSet = await fileSetFactory.CreateAsync(cancellationToken);
 
                 if (fileSet == null)
@@ -69,13 +75,15 @@ namespace Microsoft.DotNet.Watcher
 
                     await Task.WhenAll(processTask, fileSetTask);
 
-                    if (processTask.Result == 0)
+                    if (processTask.Result != 0 && finishedTask == processTask && !cancellationToken.IsCancellationRequested)
                     {
-                        _reporter.Output("Exited");
+                        // Only show this error message if the process exited non-zero due to a normal process exit.
+                        // Don't show this if dotnet-watch killed the inner process due to file change or CTRL+C by the user
+                        _reporter.Error($"Exited with error code {processTask.Result}");
                     }
                     else
                     {
-                        _reporter.Error($"Exited with error code {processTask.Result}");
+                        _reporter.Output("Exited");
                     }
 
                     if (finishedTask == cancelledTaskSource.Task || cancellationToken.IsCancellationRequested)
@@ -85,10 +93,8 @@ namespace Microsoft.DotNet.Watcher
 
                     if (finishedTask == processTask)
                     {
-                        _reporter.Warn("Waiting for a file to change before restarting dotnet...");
-
                         // Now wait for a file to change before restarting process
-                        await fileSetWatcher.GetChangedFileAsync(cancellationToken);
+                        await fileSetWatcher.GetChangedFileAsync(cancellationToken, () => _reporter.Warn("Waiting for a file to change before restarting dotnet..."));
                     }
 
                     if (!string.IsNullOrEmpty(fileSetTask.Result))

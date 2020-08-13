@@ -11,14 +11,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     internal class SystemClock : ISystemClock
     {
         /// <summary>
-        /// Retrieves the current system time in UTC.
+        /// Retrieves the current UTC system time.
         /// </summary>
-        public DateTimeOffset UtcNow
-        {
-            get
-            {
-                return DateTimeOffset.UtcNow;
-            }
-        }
+        public DateTimeOffset UtcNow => DateTimeOffset.UtcNow;
+        
+        /// <summary>
+        /// Retrieves ticks for the current UTC system time.
+        /// </summary>
+        public long UtcNowTicks => DateTimeOffset.UtcNow.Ticks;
+
+        /// <summary>
+        /// Retrieves the current UTC system time.
+        /// </summary>
+        public DateTimeOffset UtcNowUnsynchronized => DateTimeOffset.UtcNow;
     }
 }

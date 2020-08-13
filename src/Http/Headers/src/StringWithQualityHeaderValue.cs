@@ -58,7 +58,7 @@ namespace Microsoft.Net.Http.Headers
         {
             if (_quality.HasValue)
             {
-                return _value + "; q=" + _quality.Value.ToString("0.0##", NumberFormatInfo.InvariantInfo);
+                return _value + "; q=" + _quality.GetValueOrDefault().ToString("0.0##", NumberFormatInfo.InvariantInfo);
             }
 
             return _value.ToString();
@@ -83,7 +83,7 @@ namespace Microsoft.Net.Http.Headers
                 // Note that we don't consider double.Epsilon here. We really consider two values equal if they're
                 // actually equal. This makes sure that we also get the same hashcode for two values considered equal
                 // by Equals().
-                return other._quality.HasValue && (_quality.Value == other._quality.Value);
+                return other._quality.HasValue && (_quality.GetValueOrDefault() == other._quality.Value);
             }
 
             // If we don't have a quality value, then 'other' must also have no quality assigned in order to be
@@ -97,7 +97,7 @@ namespace Microsoft.Net.Http.Headers
 
             if (_quality.HasValue)
             {
-                result = result ^ _quality.Value.GetHashCode();
+                result = result ^ _quality.GetValueOrDefault().GetHashCode();
             }
 
             return result;

@@ -5,9 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Template.Tests
@@ -505,33 +502,35 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData(@"{p1:regex(([}])\w+}")] // Not escaped }
         [InlineData(@"{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}$)}")] // Not escaped }
         [InlineData(@"{p1:regex(abc)")]
+        [ReplaceCulture]
         public void Parse_RegularExpressions_Invalid(string template)
         {
             // Act and Assert
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse(template),
                 "There is an incomplete parameter in the route template. Check that each '{' character has a matching " +
-                "'}' character." + Environment.NewLine + "Parameter name: routeTemplate");
+                "'}' character. (Parameter 'routeTemplate')");
         }
 
         [Theory]
         [InlineData(@"{p1:regex(^\d{{3}}-\d{{3}}-\d{{{4}}$)}")] // extra {
         [InlineData(@"{p1:regex(^\d{{3}}-\d{{3}}-\d{4}}$)}")] // Not escaped {
+        [ReplaceCulture]
         public void Parse_RegularExpressions_Unescaped(string template)
         {
             // Act and Assert
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse(template),
-                "In a route parameter, '{' and '}' must be escaped with '{{' and '}}'." + Environment.NewLine +
-                "Parameter name: routeTemplate");
+                "In a route parameter, '{' and '}' must be escaped with '{{' and '}}'. (Parameter 'routeTemplate')");
         }
 
         [Theory]
         [InlineData("{p1}.{p2?}.{p3}", "p2", ".")]
-        [InlineData("{p1?}{p2}", "p1", "p2")]
-        [InlineData("{p1?}{p2?}", "p1", "p2")]
+        [InlineData("{p1?}{p2}", "p1", "{p2}")]
+        [InlineData("{p1?}{p2?}", "p1", "{p2?}")]
         [InlineData("{p1}.{p2?})", "p2", ")")]
         [InlineData("{foorb?}-bar-{z}", "foorb", "-bar-")]
+        [ReplaceCulture]
         public void Parse_ComplexSegment_OptionalParameter_NotTheLastPart(
             string template,
             string parameter,
@@ -541,8 +540,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse(template),
                 "An optional parameter must be at the end of the segment. In the segment '" + template +
-                "', optional parameter '" + parameter + "' is followed by '" + invalid + "'."
-                 + Environment.NewLine + "Parameter name: routeTemplate");
+                "', optional parameter '" + parameter + "' is followed by '" + invalid + "'. (Parameter 'routeTemplate')");
         }
 
         [Theory]
@@ -551,23 +549,23 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData("..{p2?}", "..")]
         [InlineData("{p1}.abc.{p2?}", ".abc.")]
         [InlineData("{p1}{p2?}", "{p1}")]
+        [ReplaceCulture]
         public void Parse_ComplexSegment_OptionalParametersSeperatedByPeriod_Invalid(string template, string parameter)
         {
             // Act and Assert
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse(template),
-                "In the segment '"+ template +"', the optional parameter 'p2' is preceded by an invalid " +
-                "segment '" + parameter +"'. Only a period (.) can precede an optional parameter." +
-                Environment.NewLine + "Parameter name: routeTemplate");
+                "In the segment '" + template + "', the optional parameter 'p2' is preceded by an invalid " +
+                "segment '" + parameter + "'. Only a period (.) can precede an optional parameter. (Parameter 'routeTemplate')");
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_WithRepeatedParameter()
         {
             var ex = ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{Controller}.mvc/{id}/{controller}"),
-                "The route parameter name 'controller' appears more than one time in the route template." +
-                Environment.NewLine + "Parameter name: routeTemplate");
+                "The route parameter name 'controller' appears more than one time in the route template. (Parameter 'routeTemplate')");
         }
 
         [Theory]
@@ -577,46 +575,46 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData("{{p1}")]
         [InlineData("{p1}}")]
         [InlineData("p1}}p2{")]
+        [ReplaceCulture]
         public void InvalidTemplate_WithMismatchedBraces(string template)
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse(template),
                 @"There is an incomplete parameter in the route template. Check that each '{' character has a " +
-                "matching '}' character." + Environment.NewLine +
-                "Parameter name: routeTemplate");
+                "matching '}' character. (Parameter 'routeTemplate')");
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_CannotHaveCatchAllInMultiSegment()
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("123{a}abc{*moo}"),
                 "A path segment that contains more than one section, such as a literal section or a parameter, " +
-                "cannot contain a catch-all parameter." + Environment.NewLine +
-                "Parameter name: routeTemplate");
+                "cannot contain a catch-all parameter. (Parameter 'routeTemplate')");
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_CannotHaveMoreThanOneCatchAll()
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{*p1}/{*p2}"),
-                "A catch-all parameter can only appear as the last segment of the route template." +
-                Environment.NewLine +
-                "Parameter name: routeTemplate");
+                "A catch-all parameter can only appear as the last segment of the route template. (Parameter 'routeTemplate')");
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_CannotHaveMoreThanOneCatchAllInMultiSegment()
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{*p1}abc{*p2}"),
                 "A path segment that contains more than one section, such as a literal section or a parameter, " +
-                "cannot contain a catch-all parameter." + Environment.NewLine +
-                "Parameter name: routeTemplate");
+                "cannot contain a catch-all parameter. (Parameter 'routeTemplate')");
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_CannotHaveCatchAllWithNoName()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -624,12 +622,10 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 "The route parameter name '' is invalid. Route parameter names must be non-empty and cannot" +
                 " contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional," +
                 " and can occur only at the end of the parameter. The '*' character marks a parameter as catch-all," +
-                " and can occur only at the start of the parameter." + Environment.NewLine +
-                "Parameter name: routeTemplate");
+                " and can occur only at the start of the parameter. (Parameter 'routeTemplate')");
         }
 
         [Theory]
-        [InlineData("{**}", "*")]
         [InlineData("{a*}", "a*")]
         [InlineData("{*a*}", "a*")]
         [InlineData("{*a*:int}", "a*")]
@@ -639,6 +635,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData("{p{{}", "p{")]
         [InlineData("{p}}}", "p}")]
         [InlineData("{p/}", "p/")]
+        [ReplaceCulture]
         public void ParseRouteParameter_ThrowsIf_ParameterContainsSpecialCharacters(
             string template,
             string parameterName)
@@ -651,8 +648,117 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
 
             // Act & Assert
             ExceptionAssert.Throws<ArgumentException>(
-                () => TemplateParser.Parse(template), expectedMessage + Environment.NewLine +
-                "Parameter name: routeTemplate");
+                () => TemplateParser.Parse(template), expectedMessage + " (Parameter 'routeTemplate')");
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void InvalidTemplate_CannotHaveConsecutiveOpenBrace()
+        {
+            ExceptionAssert.Throws<ArgumentException>(
+                () => TemplateParser.Parse("foo/{{p1}"),
+                "There is an incomplete parameter in the route template. Check that each '{' character has a " +
+                "matching '}' character. (Parameter 'routeTemplate')");
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void InvalidTemplate_CannotHaveConsecutiveCloseBrace()
+        {
+            ExceptionAssert.Throws<ArgumentException>(
+                () => TemplateParser.Parse("foo/{p1}}"),
+                "There is an incomplete parameter in the route template. Check that each '{' character has a " +
+                "matching '}' character. (Parameter 'routeTemplate')");
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void InvalidTemplate_SameParameterTwiceThrows()
+        {
+            ExceptionAssert.Throws<ArgumentException>(
+                () => TemplateParser.Parse("{aaa}/{AAA}"),
+                "The route parameter name 'AAA' appears more than one time in the route template. (Parameter 'routeTemplate')");
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void InvalidTemplate_SameParameterTwiceAndOneCatchAllThrows()
+        {
+            ExceptionAssert.Throws<ArgumentException>(
+                () => TemplateParser.Parse("{aaa}/{*AAA}"),
+                "The route parameter name 'AAA' appears more than one time in the route template. (Parameter 'routeTemplate')");
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void InvalidTemplate_InvalidParameterNameWithCloseBracketThrows()
+        {
+            ExceptionAssert.Throws<ArgumentException>(
+                () => TemplateParser.Parse("{a}/{aa}a}/{z}"),
+                "There is an incomplete parameter in the route template. Check that each '{' character has a " +
+                "matching '}' character. (Parameter 'routeTemplate')");
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void InvalidTemplate_InvalidParameterNameWithOpenBracketThrows()
+        {
+            ExceptionAssert.Throws<ArgumentException>(
+                () => TemplateParser.Parse("{a}/{a{aa}/{z}"),
+                "In a route parameter, '{' and '}' must be escaped with '{{' and '}}'. (Parameter 'routeTemplate')");
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void InvalidTemplate_InvalidParameterNameWithEmptyNameThrows()
+        {
+            ExceptionAssert.Throws<ArgumentException>(
+                () => TemplateParser.Parse("{a}/{}/{z}"),
+                "The route parameter name '' is invalid. Route parameter names must be non-empty and cannot" +
+                " contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and" +
+                " can occur only at the end of the parameter. The '*' character marks a parameter as catch-all," +
+                " and can occur only at the start of the parameter. (Parameter 'routeTemplate')");
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void InvalidTemplate_InvalidParameterNameWithQuestionThrows()
+        {
+            ExceptionAssert.Throws<ArgumentException>(
+                () => TemplateParser.Parse("{Controller}.mvc/{?}"),
+                "The route parameter name '' is invalid. Route parameter names must be non-empty and cannot" +
+                " contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and" +
+                " can occur only at the end of the parameter. The '*' character marks a parameter as catch-all," +
+                " and can occur only at the start of the parameter. (Parameter 'routeTemplate')");
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void InvalidTemplate_ConsecutiveSeparatorsSlashSlashThrows()
+        {
+            ExceptionAssert.Throws<ArgumentException>(
+                () => TemplateParser.Parse("{a}//{z}"),
+                "The route template separator character '/' cannot appear consecutively. It must be separated by " +
+                "either a parameter or a literal value. (Parameter 'routeTemplate')");
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void InvalidTemplate_WithCatchAllNotAtTheEndThrows()
+        {
+            ExceptionAssert.Throws<ArgumentException>(
+                () => TemplateParser.Parse("foo/{p1}/{*p2}/{p3}"),
+                "A catch-all parameter can only appear as the last segment of the route template. (Parameter 'routeTemplate')");
+        }
+
+        [Fact]
+        [ReplaceCulture]
+        public void InvalidTemplate_RepeatedParametersThrows()
+        {
+            ExceptionAssert.Throws<ArgumentException>(
+                () => TemplateParser.Parse("foo/aa{p1}{p2}"),
+                "A path segment cannot contain two consecutive parameters. They must be separated by a '/' or by " +
+                "a literal string. (Parameter 'routeTemplate')");
         }
 
         [Theory]
@@ -661,145 +767,32 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         public void ValidTemplate_CanStartWithSlashOrTildeSlash(string routeTemplate)
         {
             // Arrange & Act
-            var template = TemplateParser.Parse(routeTemplate);
+            var pattern = TemplateParser.Parse(routeTemplate);
 
             // Assert
-            Assert.Equal(routeTemplate, template.TemplateText);
+            Assert.Equal(routeTemplate, pattern.TemplateText);
         }
 
         [Fact]
-        public void InvalidTemplate_CannotHaveConsecutiveOpenBrace()
-        {
-            ExceptionAssert.Throws<ArgumentException>(
-                () => TemplateParser.Parse("foo/{{p1}"),
-                "There is an incomplete parameter in the route template. Check that each '{' character has a " +
-                "matching '}' character." + Environment.NewLine +
-                "Parameter name: routeTemplate");
-        }
-
-        [Fact]
-        public void InvalidTemplate_CannotHaveConsecutiveCloseBrace()
-        {
-            ExceptionAssert.Throws<ArgumentException>(
-                () => TemplateParser.Parse("foo/{p1}}"),
-                "There is an incomplete parameter in the route template. Check that each '{' character has a " +
-                "matching '}' character." + Environment.NewLine +
-                "Parameter name: routeTemplate");
-        }
-
-        [Fact]
-        public void InvalidTemplate_SameParameterTwiceThrows()
-        {
-            ExceptionAssert.Throws<ArgumentException>(
-                () => TemplateParser.Parse("{aaa}/{AAA}"),
-                "The route parameter name 'AAA' appears more than one time in the route template." +
-                Environment.NewLine +
-                "Parameter name: routeTemplate");
-        }
-
-        [Fact]
-        public void InvalidTemplate_SameParameterTwiceAndOneCatchAllThrows()
-        {
-            ExceptionAssert.Throws<ArgumentException>(
-                () => TemplateParser.Parse("{aaa}/{*AAA}"),
-                "The route parameter name 'AAA' appears more than one time in the route template." +
-                Environment.NewLine +
-                "Parameter name: routeTemplate");
-        }
-
-        [Fact]
-        public void InvalidTemplate_InvalidParameterNameWithCloseBracketThrows()
-        {
-            ExceptionAssert.Throws<ArgumentException>(
-                () => TemplateParser.Parse("{a}/{aa}a}/{z}"),
-                "There is an incomplete parameter in the route template. Check that each '{' character has a " +
-                "matching '}' character." + Environment.NewLine +
-                "Parameter name: routeTemplate");
-        }
-
-        [Fact]
-        public void InvalidTemplate_InvalidParameterNameWithOpenBracketThrows()
-        {
-            ExceptionAssert.Throws<ArgumentException>(
-                () => TemplateParser.Parse("{a}/{a{aa}/{z}"),
-                "In a route parameter, '{' and '}' must be escaped with '{{' and '}}'." + Environment.NewLine +
-                "Parameter name: routeTemplate");
-        }
-
-        [Fact]
-        public void InvalidTemplate_InvalidParameterNameWithEmptyNameThrows()
-        {
-            ExceptionAssert.Throws<ArgumentException>(
-                () => TemplateParser.Parse("{a}/{}/{z}"),
-                "The route parameter name '' is invalid. Route parameter names must be non-empty and cannot" +
-                " contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and" +
-                " can occur only at the end of the parameter. The '*' character marks a parameter as catch-all," +
-                " and can occur only at the start of the parameter." + Environment.NewLine +
-                "Parameter name: routeTemplate");
-        }
-
-        [Fact]
-        public void InvalidTemplate_InvalidParameterNameWithQuestionThrows()
-        {
-            ExceptionAssert.Throws<ArgumentException>(
-                () => TemplateParser.Parse("{Controller}.mvc/{?}"),
-                "The route parameter name '' is invalid. Route parameter names must be non-empty and cannot" +
-                " contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and" +
-                " can occur only at the end of the parameter. The '*' character marks a parameter as catch-all," +
-                " and can occur only at the start of the parameter." + Environment.NewLine +
-                "Parameter name: routeTemplate");
-        }
-
-        [Fact]
-        public void InvalidTemplate_ConsecutiveSeparatorsSlashSlashThrows()
-        {
-            ExceptionAssert.Throws<ArgumentException>(
-                () => TemplateParser.Parse("{a}//{z}"),
-                "The route template separator character '/' cannot appear consecutively. It must be separated by " +
-                "either a parameter or a literal value." + Environment.NewLine +
-                "Parameter name: routeTemplate");
-        }
-
-        [Fact]
-        public void InvalidTemplate_WithCatchAllNotAtTheEndThrows()
-        {
-            ExceptionAssert.Throws<ArgumentException>(
-                () => TemplateParser.Parse("foo/{p1}/{*p2}/{p3}"),
-                "A catch-all parameter can only appear as the last segment of the route template." +
-                Environment.NewLine +
-                "Parameter name: routeTemplate");
-        }
-
-        [Fact]
-        public void InvalidTemplate_RepeatedParametersThrows()
-        {
-            ExceptionAssert.Throws<ArgumentException>(
-                () => TemplateParser.Parse("foo/aa{p1}{p2}"),
-                "A path segment cannot contain two consecutive parameters. They must be separated by a '/' or by " +
-                "a literal string." + Environment.NewLine +
-                "Parameter name: routeTemplate");
-        }
-
-        [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_CannotStartWithTilde()
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("~foo"),
-                "The route template cannot start with a '~' character unless followed by a '/'." + Environment.NewLine +
-                "Parameter name: routeTemplate");
+                "The route template cannot start with a '~' character unless followed by a '/'. (Parameter 'routeTemplate')");
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_CannotContainQuestionMark()
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("foor?bar"),
-                "The literal section 'foor?bar' is invalid. Literal sections cannot contain the '?' character." +
-                Environment.NewLine +
-                "Parameter name: routeTemplate");
+                "The literal section 'foor?bar' is invalid. Literal sections cannot contain the '?' character. (Parameter 'routeTemplate')");
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_ParameterCannotContainQuestionMark_UnlessAtEnd()
         {
             ExceptionAssert.Throws<ArgumentException>(
@@ -807,17 +800,16 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 "The route parameter name 'foor?b' is invalid. Route parameter names must be non-empty and cannot" +
                 " contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and" +
                 " can occur only at the end of the parameter. The '*' character marks a parameter as catch-all," +
-                " and can occur only at the start of the parameter." + Environment.NewLine +
-                "Parameter name: routeTemplate");
+                " and can occur only at the start of the parameter. (Parameter 'routeTemplate')");
         }
 
         [Fact]
+        [ReplaceCulture]
         public void InvalidTemplate_CatchAllMarkedOptional()
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{a}/{*b?}"),
-                "A catch-all parameter cannot be marked optional." + Environment.NewLine +
-                "Parameter name: routeTemplate");
+                "A catch-all parameter cannot be marked optional. (Parameter 'routeTemplate')");
         }
 
         private class TemplateEqualityComparer : IEqualityComparer<RouteTemplate>
@@ -844,7 +836,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                         return false;
                     }
 
-                    for (int i = 0; i < x.Segments.Count; i++)
+                    for (var i = 0; i < x.Segments.Count; i++)
                     {
                         if (x.Segments[i].Parts.Count != y.Segments[i].Parts.Count)
                         {
@@ -865,7 +857,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                         return false;
                     }
 
-                    for (int i = 0; i < x.Parameters.Count; i++)
+                    for (var i = 0; i < x.Parameters.Count; i++)
                     {
                         if (!Equals(x.Parameters[i], y.Parameters[i]))
                         {

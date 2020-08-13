@@ -1,24 +1,25 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <OutputType>exe</OutputType>
     <Description>Command line tool to watch for source file changes during development and restart the dotnet command.</Description>
     <RootNamespace>Microsoft.DotNet.Watcher.Tools</RootNamespace>
     <PackageTags>dotnet;watch</PackageTags>
     <PackAsTool>true</PackAsTool>
-    <!-- This is a requirement for Microsoft tool packages only. -->
-    <PackAsToolShimRuntimeIdentifiers>win-x64;win-x86</PackAsToolShimRuntimeIdentifiers>
+    <!-- This package is for internal use only. It contains a CLI which is bundled in the .NET Core SDK. -->
+    <IsShippingPackage>false</IsShippingPackage>
+    <ExcludeFromSourceBuild>false</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)Process\*.cs" />
+    <Compile Include="$(SharedSourceRoot)Process\ProcessExtensions.cs" />
     <Compile Include="$(ToolSharedSourceRoot)CommandLine\**\*.cs" />
     <None Include="assets\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
   </ItemGroup>
 
 </Project>

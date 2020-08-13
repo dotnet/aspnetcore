@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Služba gRPC",
+    "description": "Šablona projektu pro vytvoření služby gRPC ASP.NET Core"
+  }
+}

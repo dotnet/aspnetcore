@@ -165,7 +165,7 @@ namespace Microsoft.Net.Http.Headers
 
                 var header8 = new SetCookieHeaderValue("name8", "value8")
                 {
-                    SameSite = (SameSiteMode)(-1) // Unspecified
+                    SameSite = SameSiteMode.Unspecified
                 };
                 var string8a = "name8=value8; samesite";
                 var string8b = "name8=value8; samesite=invalid";
@@ -475,6 +475,18 @@ namespace Microsoft.Net.Http.Headers
             Assert.Equal(cookies, results);
         }
 
+        [Fact]
+        public void SetCookieHeaderValue_TryParse_SkipExtensionValues()
+        {
+            string cookieHeaderValue = "cookiename=value; extensionname=value;";
+
+            SetCookieHeaderValue setCookieHeaderValue;
+
+            SetCookieHeaderValue.TryParse(cookieHeaderValue, out setCookieHeaderValue);
+
+            Assert.Equal("value", setCookieHeaderValue.Value);
+        }
+
         [Theory]
         [MemberData(nameof(ListOfSetCookieHeaderDataSet))]
         public void SetCookieHeaderValue_ParseStrictList_AcceptsValidValues(IList<SetCookieHeaderValue> cookies, string[] input)
@@ -499,7 +511,7 @@ namespace Microsoft.Net.Http.Headers
         public void SetCookieHeaderValue_ParseList_ExcludesInvalidValues(IList<SetCookieHeaderValue> cookies, string[] input)
         {
             var results = SetCookieHeaderValue.ParseList(input);
-            // ParseList aways returns a list, even if empty. TryParseList may return null (via out).
+            // ParseList always returns a list, even if empty. TryParseList may return null (via out).
             Assert.Equal(cookies ?? new List<SetCookieHeaderValue>(), results);
         }
 

@@ -1,0 +1,23 @@
+﻿@using BasicViews
+@model Person
+
+@Html.ValidationSummary()
+
+@using (Html.BeginForm())
+{
+    <div>
+        @Html.LabelFor(p => p.Name)
+        @Html.EditorFor(p => p.Name)
+    </div>
+    <div>
+        @Html.LabelFor(p => p.Age)
+        @Html.EditorFor(p => p.Age)
+    </div>
+    <div>
+        @Html.LabelFor(p => p.BirthDate)
+        @Html.EditorFor(p => p.BirthDate)
+    </div>
+    <input type="submit" />
+
+    @Html.AntiForgeryToken()
+}

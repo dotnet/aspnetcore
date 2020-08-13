@@ -98,6 +98,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [ViewContext]
         public ViewContext ViewContext { get; set; }
 
+        /// <summary>
+        /// Gets the <see cref="IUrlHelperFactory"/> used to create an <see cref="IUrlHelper"/> to generate links.
+        /// </summary>
         protected IUrlHelperFactory UrlHelperFactory { get; }
 
         /// <summary>
@@ -167,9 +170,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <inheritdoc />
-        /// <remarks>Does nothing if user provides an <c>formaction</c> attribute.</remarks>
+        /// <remarks>Does nothing if user provides an <c>FormAction</c> attribute.</remarks>
         /// <exception cref="InvalidOperationException">
-        /// Thrown if <c>formaction</c> attribute is provided and <see cref="Action"/>, <see cref="Controller"/>,
+        /// Thrown if <c>FormAction</c> attribute is provided and <see cref="Action"/>, <see cref="Controller"/>,
         /// <see cref="Fragment"/> or <see cref="Route"/> are non-<c>null</c> or if the user provided <c>asp-route-*</c> attributes.
         /// Also thrown if <see cref="Route"/> and one or both of <see cref="Action"/> and <see cref="Controller"/>
         /// are non-<c>null</c>
@@ -186,7 +189,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 throw new ArgumentNullException(nameof(output));
             }
 
-            // If "formaction" is already set, it means the user is attempting to use a normal button or input element.
+            // If "FormAction" is already set, it means the user is attempting to use a normal button or input element.
             if (output.Attributes.ContainsName(FormAction))
             {
                 if (Action != null ||
@@ -198,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     Route != null ||
                     (_routeValues != null && _routeValues.Count > 0))
                 {
-                    // User specified a formaction and one of the bound attributes; can't override that formaction
+                    // User specified a FormAction and one of the bound attributes; can't override that FormAction
                     // attribute.
                     throw new InvalidOperationException(
                         Resources.FormatFormActionTagHelper_CannotOverrideFormAction(

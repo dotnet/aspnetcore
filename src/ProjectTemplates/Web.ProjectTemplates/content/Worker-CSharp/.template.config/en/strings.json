@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Worker Service",
+    "description": "An empty project template for creating a worker service."
+  }
+}

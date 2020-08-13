@@ -1,0 +1,48 @@
+<Project>
+  <Target Name="GenerateTestProps"
+      BeforeTargets="CoreCompile"
+      DependsOnTargets="PrepareForTest"
+      Condition="$(DesignTimeBuild) != true">
+    <!-- The version of the shared framework. This is used in tests to ensure they run against the shared framework version we just built. -->
+    <!-- If we aren't building the targeting pack, use the baseline version -->
+    <MSBuild Projects="$(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.csproj"
+        Targets="_GetPackageVersionInfo"
+        SkipNonexistentProjects="false"
+        Condition="'$(IsTargetingPackBuilding)' != 'false'">
+      <Output TaskParameter="TargetOutputs" ItemName="_TargetingPackVersionInfo" />
+    </MSBuild>
+
+    <!-- Targeting pack version should be the one we just built, if we're building it. Otherwise we use the baseline version -->
+    <PropertyGroup>
+      <MicrosoftAspNetCoreAppRefPackageVersion Condition="'$(IsTargetingPackBuilding)' != 'false'">%(_TargetingPackVersionInfo.PackageVersion)</MicrosoftAspNetCoreAppRefPackageVersion>
+      <MicrosoftAspNetCoreAppRefPackageVersion Condition="'$(IsTargetingPackBuilding)' == 'false'">$(TargetingPackVersionPrefix)</MicrosoftAspNetCoreAppRefPackageVersion>
+    </PropertyGroup>
+
+    <!-- Runtime and Ref packs may have separate versions. -->
+    <MSBuild Projects="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+        Targets="_GetPackageVersionInfo"
+        SkipNonexistentProjects="false">
+      <Output TaskParameter="TargetOutputs" ItemName="_RuntimePackageVersionInfo" />
+    </MSBuild>
+
+    <PropertyGroup>
+      <PropsProperties>
+        RestoreAdditionalProjectSources=$([MSBuild]::Escape("$(RestoreAdditionalProjectSources);$(ArtifactsShippingPackagesDir);$(ArtifactsNonShippingPackagesDir)"));
+        MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);
+        MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
+        MicrosoftNETCoreAppRefPackageVersion=$(MicrosoftNETCoreAppRefPackageVersion);
+        MicrosoftNETCorePlatformsPackageVersion=$(MicrosoftNETCorePlatformsPackageVersion);
+        MicrosoftNETSdkRazorPackageVersion=$(MicrosoftNETSdkRazorPackageVersion);
+        MicrosoftAspNetCoreAppRefPackageVersion=$(MicrosoftAspNetCoreAppRefPackageVersion);
+        MicrosoftAspNetCoreAppRuntimePackageVersion=@(_RuntimePackageVersionInfo->'%(PackageVersion)');
+        SupportedRuntimeIdentifiers=$(SupportedRuntimeIdentifiers);
+        DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
+      </PropsProperties>
+    </PropertyGroup>
+
+    <GenerateFileFromTemplate
+      TemplateFile="$(MSBuildThisFileDirectory)\TemplateTests.props.in"
+      Properties="$(PropsProperties)"
+      OutputPath="$(TestTemplateTestsProps)" />
+  </Target>
+</Project>

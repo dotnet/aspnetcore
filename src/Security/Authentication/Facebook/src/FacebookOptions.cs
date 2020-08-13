@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             AuthorizationEndpoint = FacebookDefaults.AuthorizationEndpoint;
             TokenEndpoint = FacebookDefaults.TokenEndpoint;
             UserInformationEndpoint = FacebookDefaults.UserInformationEndpoint;
-            Scope.Add("public_profile");
             Scope.Add("email");
             Fields.Add("name");
             Fields.Add("email");

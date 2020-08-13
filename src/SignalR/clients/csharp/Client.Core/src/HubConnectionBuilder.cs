@@ -3,7 +3,11 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
+using System.Net;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
@@ -42,11 +46,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
             // The service provider is disposed by the HubConnection
             var serviceProvider = Services.BuildServiceProvider();
 
-            var connectionFactory = serviceProvider.GetService<IConnectionFactory>();
-            if (connectionFactory == null)
-            {
+            var connectionFactory = serviceProvider.GetService<IConnectionFactory>() ??
                 throw new InvalidOperationException($"Cannot create {nameof(HubConnection)} instance. An {nameof(IConnectionFactory)} was not configured.");
-            }
+
+            var endPoint = serviceProvider.GetService<EndPoint>() ??
+                throw new InvalidOperationException($"Cannot create {nameof(HubConnection)} instance. An {nameof(EndPoint)} was not configured.");
 
             return serviceProvider.GetService<HubConnection>();
         }

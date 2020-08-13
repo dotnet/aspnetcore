@@ -3,20 +3,19 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Logging;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing
 {
     public abstract class RouteBase : IRouter, INamedRouter
     {
+        private readonly object _loggersLock = new object();
+
         private TemplateMatcher _matcher;
         private TemplateBinder _binder;
         private ILogger _logger;
@@ -107,7 +106,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 return Task.CompletedTask;
             }
-            _logger.MatchedRoute(Name, ParsedTemplate.TemplateText);
+            _logger.RequestMatchedRoute(Name, ParsedTemplate.TemplateText);
 
             return OnRouteMatched(context);
         }
@@ -208,6 +207,14 @@ namespace Microsoft.AspNetCore.Routing
             {
                 if (parameter.DefaultValue != null)
                 {
+#if RVD_TryAdd
+                    if (!result.TryAdd(parameter.Name, parameter.DefaultValue))
+                    {
+                        throw new InvalidOperationException(
+                          Resources.FormatTemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly(
+                              parameter.Name));
+                    }
+#else
                     if (result.ContainsKey(parameter.Name))
                     {
                         throw new InvalidOperationException(
@@ -218,6 +225,7 @@ namespace Microsoft.AspNetCore.Routing
                     {
                         result.Add(parameter.Name, parameter.DefaultValue);
                     }
+#endif
                 }
             }
 
@@ -241,18 +249,32 @@ namespace Microsoft.AspNetCore.Routing
         {
             if (_binder == null)
             {
-                var pool = context.RequestServices.GetRequiredService<ObjectPool<UriBuildingContext>>();
-                _binder = new TemplateBinder(UrlEncoder.Default, pool, ParsedTemplate, Defaults);
+                var binderFactory = context.RequestServices.GetRequiredService<TemplateBinderFactory>();
+                _binder = binderFactory.Create(ParsedTemplate, Defaults);
             }
         }
 
         private void EnsureLoggers(HttpContext context)
         {
+            // We check first using the _logger to see if the loggers have been initialized to avoid taking
+            // the lock on the most common case.
             if (_logger == null)
             {
-                var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
-                _logger = factory.CreateLogger(typeof(RouteBase).FullName);
-                _constraintLogger = factory.CreateLogger(typeof(RouteConstraintMatcher).FullName);
+                // We need to lock here to ensure that _constraintLogger and _logger get initialized atomically.
+                lock (_loggersLock)
+                {
+                    if (_logger != null)
+                    {
+                        // Multiple threads might have tried to accquire the lock at the same time. Technically
+                        // there is nothing wrong if things get reinitialized by a second thread, but its easy
+                        // to prevent by just rechecking and returning here.
+                        return;
+                    }
+
+                    var factory = context.RequestServices.GetRequiredService<ILoggerFactory>();
+                    _constraintLogger = factory.CreateLogger(typeof(RouteConstraintMatcher).FullName);
+                    _logger = factory.CreateLogger(typeof(RouteBase).FullName);
+                }
             }
         }
 

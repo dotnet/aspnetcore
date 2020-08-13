@@ -3,11 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Extensions.Primitives;
 using Xunit;
+using static CodeGenerator.KnownHeaders;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
@@ -307,8 +309,431 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var encoding = Encoding.GetEncoding("iso-8859-1");
             var exception = Assert.Throws<BadHttpRequestException>(
-                () => headers.Append(encoding.GetBytes(key), "value"));
+                () => headers.Append(encoding.GetBytes(key), Encoding.ASCII.GetBytes("value")));
             Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
+
+        [Theory]
+        [MemberData(nameof(KnownRequestHeaders))]
+        public void ValueReuseOnlyWhenAllowed(bool reuseValue, KnownHeader header)
+        {
+            const string HeaderValue = "Hello";
+
+            var headers = new HttpRequestHeaders(reuseHeaderValues: reuseValue);
+
+            for (var i = 0; i < 6; i++)
+            {
+                var prevName = ChangeNameCase(header.Name, variant: i);
+                var nextName = ChangeNameCase(header.Name, variant: i + 1);
+
+                var values = GetHeaderValues(headers, prevName, nextName, HeaderValue, HeaderValue);
+
+                Assert.Equal(HeaderValue, values.PrevHeaderValue);
+                Assert.NotSame(HeaderValue, values.PrevHeaderValue);
+
+                Assert.Equal(HeaderValue, values.NextHeaderValue);
+                Assert.NotSame(HeaderValue, values.NextHeaderValue);
+
+                Assert.Equal(values.PrevHeaderValue, values.NextHeaderValue);
+                if (reuseValue)
+                {
+                    // When materialized string is reused previous and new should be the same object
+                    Assert.Same(values.PrevHeaderValue, values.NextHeaderValue);
+                }
+                else
+                {
+                    // When materialized string is not reused previous and new should be the different objects
+                    Assert.NotSame(values.PrevHeaderValue, values.NextHeaderValue);
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(KnownRequestHeaders))]
+        public void ValueReuseChangedValuesOverwrite(bool reuseValue, KnownHeader header)
+        {
+            const string HeaderValue1 = "Hello1";
+            const string HeaderValue2 = "Hello2";
+            var headers = new HttpRequestHeaders(reuseHeaderValues: reuseValue);
+
+            for (var i = 0; i < 6; i++)
+            {
+                var prevName = ChangeNameCase(header.Name, variant: i);
+                var nextName = ChangeNameCase(header.Name, variant: i + 1);
+
+                var values = GetHeaderValues(headers, prevName, nextName, HeaderValue1, HeaderValue2);
+
+                Assert.Equal(HeaderValue1, values.PrevHeaderValue);
+                Assert.NotSame(HeaderValue1, values.PrevHeaderValue);
+
+                Assert.Equal(HeaderValue2, values.NextHeaderValue);
+                Assert.NotSame(HeaderValue2, values.NextHeaderValue);
+
+                Assert.NotEqual(values.PrevHeaderValue, values.NextHeaderValue);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(KnownRequestHeaders))]
+        public void ValueReuseMissingValuesClear(bool reuseValue, KnownHeader header)
+        {
+            const string HeaderValue1 = "Hello1";
+            var headers = new HttpRequestHeaders(reuseHeaderValues: reuseValue);
+
+            for (var i = 0; i < 6; i++)
+            {
+                var prevName = ChangeNameCase(header.Name, variant: i);
+                var nextName = ChangeNameCase(header.Name, variant: i + 1);
+
+                var values = GetHeaderValues(headers, prevName, nextName, HeaderValue1, nextValue: null);
+
+                Assert.Equal(HeaderValue1, values.PrevHeaderValue);
+                Assert.NotSame(HeaderValue1, values.PrevHeaderValue);
+
+                Assert.Equal(string.Empty, values.NextHeaderValue);
+
+                Assert.NotEqual(values.PrevHeaderValue, values.NextHeaderValue);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(KnownRequestHeaders))]
+        public void ValueReuseNeverWhenNotAscii(bool reuseValue, KnownHeader header)
+        {
+            const string HeaderValue = "Hello \u03a0";
+
+            var headers = new HttpRequestHeaders(reuseHeaderValues: reuseValue);
+
+            for (var i = 0; i < 6; i++)
+            {
+                var prevName = ChangeNameCase(header.Name, variant: i);
+                var nextName = ChangeNameCase(header.Name, variant: i + 1);
+
+                var values = GetHeaderValues(headers, prevName, nextName, HeaderValue, HeaderValue);
+
+                Assert.Equal(HeaderValue, values.PrevHeaderValue);
+                Assert.NotSame(HeaderValue, values.PrevHeaderValue);
+
+                Assert.Equal(HeaderValue, values.NextHeaderValue);
+                Assert.NotSame(HeaderValue, values.NextHeaderValue);
+
+                Assert.Equal(values.PrevHeaderValue, values.NextHeaderValue);
+
+                Assert.NotSame(values.PrevHeaderValue, values.NextHeaderValue);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(KnownRequestHeaders))]
+        public void ValueReuseLatin1NotConfusedForUtf16AndStillRejected(bool reuseValue, KnownHeader header)
+        {
+            var headers = new HttpRequestHeaders(reuseHeaderValues: reuseValue);
+
+            var headerValue = new char[127]; // 64 + 32 + 16 + 8 + 4 + 2 + 1
+            for (var i = 0; i < headerValue.Length; i++)
+            {
+                headerValue[i] = 'a';
+            }
+
+            for (var i = 0; i < headerValue.Length; i++)
+            {
+                // Set non-ascii Latin char that is valid Utf16 when widened; but not a valid utf8 -> utf16 conversion.
+                headerValue[i] = '\u00a3';
+
+                for (var mode = 0; mode <= 1; mode++)
+                {
+                    string headerValueUtf16Latin1CrossOver;
+                    if (mode == 0)
+                    {
+                        // Full length
+                        headerValueUtf16Latin1CrossOver = new string(headerValue);
+                    }
+                    else
+                    {
+                        // Truncated length (to ensure different paths from changing lengths in matching)
+                        headerValueUtf16Latin1CrossOver = new string(headerValue.AsSpan().Slice(0, i + 1));
+                    }
+
+                    headers.Reset();
+
+                    var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
+                    var prevSpan = Encoding.UTF8.GetBytes(headerValueUtf16Latin1CrossOver).AsSpan();
+
+                    headers.Append(headerName, prevSpan);
+                    headers.OnHeadersComplete();
+                    var prevHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
+
+                    Assert.Equal(headerValueUtf16Latin1CrossOver, prevHeaderValue);
+                    Assert.NotSame(headerValueUtf16Latin1CrossOver, prevHeaderValue);
+
+                    headers.Reset();
+
+                    Assert.Throws<InvalidOperationException>(() =>
+                    {
+                        var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
+                        var nextSpan = Encoding.GetEncoding("iso-8859-1").GetBytes(headerValueUtf16Latin1CrossOver).AsSpan();
+
+                        Assert.False(nextSpan.SequenceEqual(Encoding.ASCII.GetBytes(headerValueUtf16Latin1CrossOver)));
+
+                        headers.Append(headerName, nextSpan);
+                    });
+                }
+
+                // Reset back to Ascii
+                headerValue[i] = 'a';
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(KnownRequestHeaders))]
+        public void Latin1ValuesAcceptedInLatin1ModeButNotReused(bool reuseValue, KnownHeader header)
+        {
+            var headers = new HttpRequestHeaders(reuseHeaderValues: reuseValue, useLatin1: true);
+
+            var headerValue = new char[127]; // 64 + 32 + 16 + 8 + 4 + 2 + 1
+            for (var i = 0; i < headerValue.Length; i++)
+            {
+                headerValue[i] = 'a';
+            }
+
+            for (var i = 0; i < headerValue.Length; i++)
+            {
+                // Set non-ascii Latin char that is valid Utf16 when widened; but not a valid utf8 -> utf16 conversion.
+                headerValue[i] = '\u00a3';
+
+                for (var mode = 0; mode <= 1; mode++)
+                {
+                    string headerValueUtf16Latin1CrossOver;
+                    if (mode == 0)
+                    {
+                        // Full length
+                        headerValueUtf16Latin1CrossOver = new string(headerValue);
+                    }
+                    else
+                    {
+                        // Truncated length (to ensure different paths from changing lengths in matching)
+                        headerValueUtf16Latin1CrossOver = new string(headerValue.AsSpan().Slice(0, i + 1));
+                    }
+
+                    headers.Reset();
+
+                    var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
+                    var latinValueSpan = Encoding.GetEncoding("iso-8859-1").GetBytes(headerValueUtf16Latin1CrossOver).AsSpan();
+
+                    Assert.False(latinValueSpan.SequenceEqual(Encoding.ASCII.GetBytes(headerValueUtf16Latin1CrossOver)));
+
+                    headers.Append(headerName, latinValueSpan);
+                    headers.OnHeadersComplete();
+                    var parsedHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
+
+                    Assert.Equal(headerValueUtf16Latin1CrossOver, parsedHeaderValue);
+                    Assert.NotSame(headerValueUtf16Latin1CrossOver, parsedHeaderValue);
+                }
+
+                // Reset back to Ascii
+                headerValue[i] = 'a';
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(KnownRequestHeaders))]
+        public void NullCharactersRejectedInUTF8AndLatin1Mode(bool useLatin1, KnownHeader header)
+        {
+            var headers = new HttpRequestHeaders(useLatin1: useLatin1);
+
+            var valueArray = new char[127]; // 64 + 32 + 16 + 8 + 4 + 2 + 1
+            for (var i = 0; i < valueArray.Length; i++)
+            {
+                valueArray[i] = 'a';
+            }
+
+            for (var i = 1; i < valueArray.Length; i++)
+            {
+                // Set non-ascii Latin char that is valid Utf16 when widened; but not a valid utf8 -> utf16 conversion.
+                valueArray[i] = '\0';
+                string valueString = new string(valueArray);
+
+                headers.Reset();
+
+                Assert.Throws<InvalidOperationException>(() =>
+                {
+                    var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
+                    var valueSpan = Encoding.ASCII.GetBytes(valueString).AsSpan();
+
+                    headers.Append(headerName, valueSpan);
+                });
+
+                valueArray[i] = 'a';
+            }
+        }
+
+        [Fact]
+        public void ValueReuseNeverWhenUnknownHeader()
+        {
+            const string HeaderName = "An-Unknown-Header";
+            const string HeaderValue = "Hello";
+
+            var headers = new HttpRequestHeaders(reuseHeaderValues: true);
+
+            for (var i = 0; i < 6; i++)
+            {
+                var prevName = ChangeNameCase(HeaderName, variant: i);
+                var nextName = ChangeNameCase(HeaderName, variant: i + 1);
+
+                var values = GetHeaderValues(headers, prevName, nextName, HeaderValue, HeaderValue);
+
+                Assert.Equal(HeaderValue, values.PrevHeaderValue);
+                Assert.NotSame(HeaderValue, values.PrevHeaderValue);
+
+                Assert.Equal(HeaderValue, values.NextHeaderValue);
+                Assert.NotSame(HeaderValue, values.NextHeaderValue);
+
+                Assert.Equal(values.PrevHeaderValue, values.NextHeaderValue);
+
+                Assert.NotSame(values.PrevHeaderValue, values.NextHeaderValue);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(KnownRequestHeaders))]
+        public void ValueReuseEmptyAfterReset(bool reuseValue, KnownHeader header)
+        {
+            const string HeaderValue = "Hello";
+
+            var headers = new HttpRequestHeaders(reuseHeaderValues: reuseValue);
+            var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
+            var prevSpan = Encoding.UTF8.GetBytes(HeaderValue).AsSpan();
+
+            headers.Append(headerName, prevSpan);
+            headers.OnHeadersComplete();
+            var prevHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
+
+            Assert.NotNull(prevHeaderValue);
+            Assert.NotEqual(string.Empty, prevHeaderValue);
+            Assert.Equal(HeaderValue, prevHeaderValue);
+            Assert.NotSame(HeaderValue, prevHeaderValue);
+            Assert.Single(headers);
+            var count = headers.Count;
+            Assert.Equal(1, count);
+
+            headers.Reset();
+
+            // Empty after reset
+            var nextHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
+
+            Assert.NotNull(nextHeaderValue);
+            Assert.Equal(string.Empty, nextHeaderValue);
+            Assert.NotEqual(HeaderValue, nextHeaderValue);
+            Assert.Empty(headers);
+            count = headers.Count;
+            Assert.Equal(0, count);
+
+            headers.OnHeadersComplete();
+
+            // Still empty after complete
+            nextHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
+
+            Assert.NotNull(nextHeaderValue);
+            Assert.Equal(string.Empty, nextHeaderValue);
+            Assert.NotEqual(HeaderValue, nextHeaderValue);
+            Assert.Empty(headers);
+            count = headers.Count;
+            Assert.Equal(0, count);
+        }
+
+        [Theory]
+        [MemberData(nameof(KnownRequestHeaders))]
+        public void MultiValueReuseEmptyAfterReset(bool reuseValue, KnownHeader header)
+        {
+            const string HeaderValue1 = "Hello1";
+            const string HeaderValue2 = "Hello2";
+
+            var headers = new HttpRequestHeaders(reuseHeaderValues: reuseValue);
+            var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
+            var prevSpan1 = Encoding.UTF8.GetBytes(HeaderValue1).AsSpan();
+            var prevSpan2 = Encoding.UTF8.GetBytes(HeaderValue2).AsSpan();
+
+            headers.Append(headerName, prevSpan1);
+            headers.Append(headerName, prevSpan2);
+            headers.OnHeadersComplete();
+            var prevHeaderValue = ((IHeaderDictionary)headers)[header.Name];
+
+            Assert.Equal(2, prevHeaderValue.Count);
+
+            Assert.NotEqual(string.Empty, prevHeaderValue.ToString());
+            Assert.Single(headers);
+            var count = headers.Count;
+            Assert.Equal(1, count);
+
+            headers.Reset();
+
+            // Empty after reset
+            var nextHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
+
+            Assert.NotNull(nextHeaderValue);
+            Assert.Equal(string.Empty, nextHeaderValue);
+            Assert.Empty(headers);
+            count = headers.Count;
+            Assert.Equal(0, count);
+
+            headers.OnHeadersComplete();
+
+            // Still empty after complete
+            nextHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
+
+            Assert.NotNull(nextHeaderValue);
+            Assert.Equal(string.Empty, nextHeaderValue);
+            Assert.Empty(headers);
+            count = headers.Count;
+            Assert.Equal(0, count);
+        }
+
+        private static (string PrevHeaderValue, string NextHeaderValue) GetHeaderValues(HttpRequestHeaders headers, string prevName, string nextName, string prevValue, string nextValue)
+        {
+            headers.Reset();
+            var headerName = Encoding.ASCII.GetBytes(prevName).AsSpan();
+            var prevSpan = Encoding.UTF8.GetBytes(prevValue).AsSpan();
+
+            headers.Append(headerName, prevSpan);
+            headers.OnHeadersComplete();
+            var prevHeaderValue = ((IHeaderDictionary)headers)[prevName].ToString();
+
+            headers.Reset();
+
+            if (nextValue != null)
+            {
+                headerName = Encoding.ASCII.GetBytes(prevName).AsSpan();
+                var nextSpan = Encoding.UTF8.GetBytes(nextValue).AsSpan();
+                headers.Append(headerName, nextSpan);
+            }
+
+            headers.OnHeadersComplete();
+
+            var newHeaderValue = ((IHeaderDictionary)headers)[nextName].ToString();
+
+            return (prevHeaderValue, newHeaderValue);
+        }
+
+        private static string ChangeNameCase(string name, int variant)
+        {
+            switch ((variant / 2) % 3)
+            {
+                case 0:
+                    return name;
+                case 1:
+                    return name.ToLowerInvariant();
+                case 2:
+                    return name.ToUpperInvariant();
+            }
+
+            // Never reached
+            Assert.False(true);
+            return name;
+        }
+
+        // Content-Length is numeric not a string, so we exclude it from the string reuse tests
+        public static IEnumerable<object[]> KnownRequestHeaders =>
+            RequestHeaders.Where(h => h.Name != "Content-Length").Select(h => new object[] { true, h }).Concat(
+            RequestHeaders.Where(h => h.Name != "Content-Length").Select(h => new object[] { false, h }));
     }
 }

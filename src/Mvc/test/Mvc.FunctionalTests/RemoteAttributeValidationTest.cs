@@ -10,12 +10,12 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class RemoteAttributeValidationTest : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
+    public class RemoteAttributeValidationTest : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
     {
         private static readonly Assembly _resourcesAssembly =
             typeof(RemoteAttributeValidationTest).GetTypeInfo().Assembly;
 
-        public RemoteAttributeValidationTest(MvcTestFixture<BasicWebSite.Startup> fixture)
+        public RemoteAttributeValidationTest(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             Client = fixture.CreateDefaultClient();
         }
@@ -45,9 +45,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 #if GENERATE_BASELINES
             ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
-            // Mono issue - https://github.com/aspnet/External/issues/19
             Assert.Equal(
-                PlatformNormalizer.NormalizeContent(expectedContent),
+                expectedContent,
                 responseContent,
                 ignoreLineEndingDifferences: true);
 #endif

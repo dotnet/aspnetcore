@@ -11,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.AspNetCore.WebUtilities.Test
+namespace Microsoft.AspNetCore.WebUtilities
 {
     public class HttpResponseStreamWriterTest
     {

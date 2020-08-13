@@ -91,8 +91,8 @@ namespace Microsoft.AspNetCore.Routing
             if (!string.IsNullOrEmpty(context.RouteName))
             {
                 VirtualPathData namedRoutePathData = null;
-                INamedRouter matchedNamedRoute;
-                if (_namedRoutes.TryGetValue(context.RouteName, out matchedNamedRoute))
+
+                if (_namedRoutes.TryGetValue(context.RouteName, out var matchedNamedRoute))
                 {
                     namedRoutePathData = matchedNamedRoute.GetVirtualPath(context);
                 }
@@ -156,7 +156,12 @@ namespace Microsoft.AspNetCore.Routing
                     urlWithoutQueryString = urlWithoutQueryString.ToLowerInvariant();
                 }
 
-                if (_options.AppendTrailingSlash && !urlWithoutQueryString.EndsWith("/"))
+                if (_options.LowercaseUrls && _options.LowercaseQueryStrings)
+                {
+                    queryString = queryString.ToLowerInvariant();
+                }
+
+                if (_options.AppendTrailingSlash && !urlWithoutQueryString.EndsWith("/", StringComparison.Ordinal))
                 {
                     urlWithoutQueryString += "/";
                 }

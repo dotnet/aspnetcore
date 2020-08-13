@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Prázdné",
+    "description": "Prázdná šablona projektu pro vytvoření aplikace ASP.NET Core. V této šabloně není žádný obsah."
+  }
+}

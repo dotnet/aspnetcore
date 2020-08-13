@@ -9,8 +9,9 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Xunit;
@@ -83,6 +84,46 @@ namespace Microsoft.AspNetCore.StaticFiles
                     services => services.AddDirectoryBrowser());
                 var response = await server.CreateRequest(requestUrl).GetAsync();
                 Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task Endpoint_PassesThrough()
+        {
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, ".")))
+            {
+                var server = StaticFilesTestServer.Create(
+                    app =>
+                    {
+                        app.UseRouting();
+
+                        app.Use(next => context =>
+                        {
+                            // Assign an endpoint, this will make the directory browser noop
+                            context.SetEndpoint(new Endpoint((c) =>
+                            {
+                                c.Response.StatusCode = (int)HttpStatusCode.NotAcceptable;
+                                return c.Response.WriteAsync("Hi from endpoint.");
+                            },
+                            new EndpointMetadataCollection(),
+                            "test"));
+
+                            return next(context);
+                        });
+
+                        app.UseDirectoryBrowser(new DirectoryBrowserOptions
+                        {
+                            RequestPath = new PathString(""),
+                            FileProvider = fileProvider
+                        });
+
+                        app.UseEndpoints(endpoints => {});
+                    },
+                    services => { services.AddDirectoryBrowser(); services.AddRouting(); });
+
+                var response = await server.CreateRequest("/").GetAsync();
+                Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
+                Assert.Equal("Hi from endpoint.", await response.Content.ReadAsStringAsync());
             }
         }
 
@@ -164,7 +205,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 var response = await server.CreateRequest(requestUrl + queryString).GetAsync();
 
                 Assert.Equal(HttpStatusCode.Moved, response.StatusCode);
-                Assert.Equal(requestUrl + "/" + queryString, response.Headers.GetValues("Location").FirstOrDefault());
+                Assert.Equal("http://localhost" + requestUrl + "/" + queryString, response.Headers.GetValues("Location").FirstOrDefault());
                 Assert.Empty((await response.Content.ReadAsByteArrayAsync()));
             }
         }
@@ -240,7 +281,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Equal("text/html; charset=utf-8", response.Content.Headers.ContentType.ToString());
-                Assert.True(response.Content.Headers.ContentLength == 0);
+                Assert.Null(response.Content.Headers.ContentLength);
                 Assert.Empty((await response.Content.ReadAsByteArrayAsync()));
             }
         }

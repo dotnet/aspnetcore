@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             public string Name { get; set; }
             public IList<string> States { get; set; } = new List<string>();
-            public IDictionary<string, string> Countries = new Dictionary<string, string>();
+            public IDictionary<string, string> CountriesAndRegions = new Dictionary<string, string>();
             public dynamic Items { get; set; } = new ExpandoObject();
         }
 
@@ -62,14 +62,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             get
             {
                 var model = new Class1();
-                yield return new object[] { model, "/Countries/USA", model.Countries };
-                yield return new object[] { model.Countries, "/USA", model.Countries };
+                yield return new object[] { model, "/CountriesAndRegions/USA", model.CountriesAndRegions };
+                yield return new object[] { model.CountriesAndRegions, "/USA", model.CountriesAndRegions };
 
                 var nestedModel = new Class1Nested();
                 nestedModel.Customers.Add(new Class1());
-                yield return new object[] { nestedModel, "/Customers/0/Countries/USA", nestedModel.Customers[0].Countries };
-                yield return new object[] { nestedModel.Customers, "/0/Countries/USA", nestedModel.Customers[0].Countries };
-                yield return new object[] { nestedModel.Customers[0], "/Countries/USA", nestedModel.Customers[0].Countries };
+                yield return new object[] { nestedModel, "/Customers/0/CountriesAndRegions/USA", nestedModel.Customers[0].CountriesAndRegions };
+                yield return new object[] { nestedModel.Customers, "/0/CountriesAndRegions/USA", nestedModel.Customers[0].CountriesAndRegions };
+                yield return new object[] { nestedModel.Customers[0], "/CountriesAndRegions/USA", nestedModel.Customers[0].CountriesAndRegions };
             }
         }
 
@@ -203,6 +203,22 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.True(visitStatus);
             Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
             Assert.IsType<PocoAdapter>(adapter);
+        }
+
+        [Fact]
+        public void Visit_NullInteriorTarget_ReturnsFalse()
+        {
+            // Arrange
+            var visitor = new ObjectVisitor(new ParsedPath("/States/0"), new DefaultContractResolver());
+
+            // Act
+            object target = new Class1() { States = null, };
+            var visitStatus = visitor.TryVisit(ref target, out var adapter, out var message);
+
+            // Assert
+            Assert.False(visitStatus);
+            Assert.Null(adapter);
+            Assert.Null(message);
         }
 
         [Fact]

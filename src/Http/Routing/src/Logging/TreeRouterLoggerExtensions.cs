@@ -8,22 +8,22 @@ namespace Microsoft.AspNetCore.Routing.Logging
 {
     internal static class TreeRouterLoggerExtensions
     {
-        private static readonly Action<ILogger, string, string, Exception> _matchedRoute;
+        private static readonly Action<ILogger, string, string, Exception> _requestMatchedRoute;
 
         static TreeRouterLoggerExtensions()
         {
-            _matchedRoute = LoggerMessage.Define<string, string>(
+            _requestMatchedRoute = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
-                1,
-                "Request successfully matched the route with name '{RouteName}' and template '{RouteTemplate}'.");
+                new EventId(1, "RequestMatchedRoute"),
+                "Request successfully matched the route with name '{RouteName}' and template '{RouteTemplate}'");
         }
 
-        public static void MatchedRoute(
+        public static void RequestMatchedRoute(
             this ILogger logger,
             string routeName,
             string routeTemplate)
         {
-            _matchedRoute(logger, routeName, routeTemplate, null);
+            _requestMatchedRoute(logger, routeName, routeTemplate, null);
         }
     }
 }

@@ -13,6 +13,34 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
     /// </summary>
     public class DeploymentParameters
     {
+        public DeploymentParameters()
+        {
+            EnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "true";
+
+            var configAttribute = Assembly.GetCallingAssembly().GetCustomAttribute<AssemblyConfigurationAttribute>();
+            if (configAttribute != null && !string.IsNullOrEmpty(configAttribute.Configuration))
+            {
+                Configuration = configAttribute.Configuration;
+            }
+        }
+
+        public DeploymentParameters(TestVariant variant)
+        {
+            EnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "true";
+
+            var configAttribute = Assembly.GetCallingAssembly().GetCustomAttribute<AssemblyConfigurationAttribute>();
+            if (configAttribute != null && !string.IsNullOrEmpty(configAttribute.Configuration))
+            {
+                Configuration = configAttribute.Configuration;
+            }
+
+            ServerType = variant.Server;
+            TargetFramework = variant.Tfm;
+            ApplicationType = variant.ApplicationType;
+            RuntimeArchitecture = variant.Architecture;
+            HostingModel = variant.HostingModel;
+        }
+
         /// <summary>
         /// Creates an instance of <see cref="DeploymentParameters"/>.
         /// </summary>
@@ -36,11 +64,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 throw new DirectoryNotFoundException(string.Format("Application path {0} does not exist.", applicationPath));
             }
 
-            if (runtimeArchitecture == RuntimeArchitecture.x86 && runtimeFlavor == RuntimeFlavor.CoreClr)
-            {
-                throw new NotSupportedException("32 bit deployment is not yet supported for CoreCLR. Don't remove the tests, just disable them for now.");
-            }
-
             ApplicationPath = applicationPath;
             ApplicationName = new DirectoryInfo(ApplicationPath).Name;
             ServerType = serverType;
@@ -54,11 +77,34 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
         }
 
-        public ServerType ServerType { get; }
+        public DeploymentParameters(DeploymentParameters parameters)
+        {
+            foreach (var propertyInfo in typeof(DeploymentParameters).GetProperties())
+            {
+                if (propertyInfo.CanWrite)
+                {
+                    propertyInfo.SetValue(this, propertyInfo.GetValue(parameters));
+                }
+            }
 
-        public RuntimeFlavor RuntimeFlavor { get; }
+            foreach (var kvp in parameters.EnvironmentVariables)
+            {
+                EnvironmentVariables.Add(kvp);
+            }
 
-        public RuntimeArchitecture RuntimeArchitecture { get; } = RuntimeArchitecture.x64;
+            foreach (var kvp in parameters.PublishEnvironmentVariables)
+            {
+                PublishEnvironmentVariables.Add(kvp);
+            }
+        }
+
+        public ApplicationPublisher ApplicationPublisher { get; set; }
+
+        public ServerType ServerType { get; set;  }
+
+        public RuntimeFlavor RuntimeFlavor { get; set;  }
+
+        public RuntimeArchitecture RuntimeArchitecture { get; set; } = RuntimeArchitecture.x64;
 
         /// <summary>
         /// Suggested base url for the deployed application. The final deployed url could be
@@ -67,15 +113,20 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         /// </summary>
         public string ApplicationBaseUriHint { get; set; }
 
+        /// <summary>
+        /// Scheme used by the deployed application if <see cref="ApplicationBaseUriHint"/> is empty.
+        /// </summary>
+        public string Scheme { get; set; } = Uri.UriSchemeHttp;
+
         public string EnvironmentName { get; set; }
 
         public string ServerConfigTemplateContent { get; set; }
 
         public string ServerConfigLocation { get; set; }
 
-        public string SiteName { get; set; }
+        public string SiteName { get; set; } = "HttpTestSite";
 
-        public string ApplicationPath { get; }
+        public string ApplicationPath { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the application. This is used to execute the application when deployed.
@@ -94,11 +145,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         /// Space separated command line arguments to be passed to dotnet-publish
         /// </summary>
         public string AdditionalPublishParameters { get; set; }
-
-        /// <summary>
-        /// Publish restores by default, this property opts out by default.
-        /// </summary>
-        public bool RestoreOnPublish { get; set; }
 
         /// <summary>
         /// To publish the application before deployment.

@@ -5,6 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 {
+    [Obsolete("This attribute has been superseded by RazorCompiledItem and will not be used by the runtime.")]
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
     public class RazorViewAttribute : Attribute
     {

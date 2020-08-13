@@ -1,69 +1,48 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.IO.Pipelines;
 using System.Linq;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
-    public class HttpProtocolFeatureCollectionTests : IDisposable
+    public class HttpProtocolFeatureCollectionTests
     {
-        private readonly IDuplexPipe _transport;
-        private readonly IDuplexPipe _application;
         private readonly TestHttp1Connection _http1Connection;
-        private readonly ServiceContext _serviceContext;
-        private readonly Http1ConnectionContext _http1ConnectionContext;
-        private readonly MemoryPool<byte> _memoryPool;
-        private Mock<ITimeoutControl> _timeoutControl;
-
+        private readonly HttpConnectionContext _httpConnectionContext;
         private readonly IFeatureCollection _collection;
+        private readonly IFeatureCollection _http2Collection;
 
         public HttpProtocolFeatureCollectionTests()
         {
-            _memoryPool = KestrelMemoryPool.Create();
-            var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
-            var pair = DuplexPipe.CreateConnectionPair(options, options);
-
-            _transport = pair.Transport;
-            _application = pair.Application;
-
-            _serviceContext = new TestServiceContext();
-            _timeoutControl = new Mock<ITimeoutControl>();
-            _http1ConnectionContext = new Http1ConnectionContext
+            var context = new Http2StreamContext
             {
-                ServiceContext = _serviceContext,
+                ServiceContext = new TestServiceContext(),
                 ConnectionFeatures = new FeatureCollection(),
-                MemoryPool = _memoryPool,
-                TimeoutControl = _timeoutControl.Object,
-                Application = pair.Application,
-                Transport = pair.Transport
+                TimeoutControl = Mock.Of<ITimeoutControl>(),
+                Transport = Mock.Of<IDuplexPipe>(),
+                ServerPeerSettings = new Http2PeerSettings(),
+                ClientPeerSettings = new Http2PeerSettings(),
             };
 
-            _http1Connection = new TestHttp1Connection(_http1ConnectionContext);
+            _httpConnectionContext = context;
+            _http1Connection = new TestHttp1Connection(context);
             _http1Connection.Reset();
             _collection = _http1Connection;
-        }
 
-        public void Dispose()
-        {
-            _transport.Input.Complete();
-            _transport.Output.Complete();
-
-            _application.Input.Complete();
-            _application.Output.Complete();
-
-            _memoryPool.Dispose();
+            var http2Stream = new TestHttp2Stream(context);
+            http2Stream.Reset();
+            _http2Collection = http2Stream;
         }
 
         [Fact]
@@ -138,13 +117,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _collection[typeof(IHttpRequestFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpResponseFeature)] = CreateHttp1Connection();
+            _collection[typeof(IHttpResponseBodyFeature)] = CreateHttp1Connection();
+            _collection[typeof(IRequestBodyPipeFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpRequestIdentifierFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpRequestLifetimeFeature)] = CreateHttp1Connection();
+            _collection[typeof(IHttpRequestTrailersFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpConnectionFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpMaxRequestBodySizeFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpMinRequestBodyDataRateFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpMinResponseDataRateFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpBodyControlFeature)] = CreateHttp1Connection();
+            _collection[typeof(IRouteValuesFeature)] = CreateHttp1Connection();
+            _collection[typeof(IEndpointFeature)] = CreateHttp1Connection();
 
             CompareGenericGetterToIndexer();
 
@@ -156,23 +140,63 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _collection.Set<IHttpRequestFeature>(CreateHttp1Connection());
             _collection.Set<IHttpResponseFeature>(CreateHttp1Connection());
+            _collection.Set<IHttpResponseBodyFeature>(CreateHttp1Connection());
+            _collection.Set<IRequestBodyPipeFeature>(CreateHttp1Connection());
             _collection.Set<IHttpRequestIdentifierFeature>(CreateHttp1Connection());
             _collection.Set<IHttpRequestLifetimeFeature>(CreateHttp1Connection());
+            _collection.Set<IHttpRequestTrailersFeature>(CreateHttp1Connection());
             _collection.Set<IHttpConnectionFeature>(CreateHttp1Connection());
             _collection.Set<IHttpMaxRequestBodySizeFeature>(CreateHttp1Connection());
             _collection.Set<IHttpMinRequestBodyDataRateFeature>(CreateHttp1Connection());
             _collection.Set<IHttpMinResponseDataRateFeature>(CreateHttp1Connection());
             _collection.Set<IHttpBodyControlFeature>(CreateHttp1Connection());
+            _collection.Set<IRouteValuesFeature>(CreateHttp1Connection());
+            _collection.Set<IEndpointFeature>(CreateHttp1Connection());
 
             CompareGenericGetterToIndexer();
 
             EachHttpProtocolFeatureSetAndUnique();
         }
 
+        [Fact]
+        public void Http2StreamFeatureCollectionDoesNotIncludeIHttpMinResponseDataRateFeature()
+        {
+            Assert.Null(_http2Collection.Get<IHttpMinResponseDataRateFeature>());
+            Assert.NotNull(_collection.Get<IHttpMinResponseDataRateFeature>());
+        }
+
+        [Fact]
+        public void Http2StreamFeatureCollectionDoesIncludeUpgradeFeature()
+        {
+            var upgradeFeature = _http2Collection.Get<IHttpUpgradeFeature>();
+
+            Assert.NotNull(upgradeFeature);
+            Assert.False(upgradeFeature.IsUpgradableRequest);
+        }
+
+        [Fact]
+        public void Http2StreamFeatureCollectionDoesIncludeIHttpMinRequestBodyDataRateFeature()
+        {
+            var minRateFeature = _http2Collection.Get<IHttpMinRequestBodyDataRateFeature>();
+
+            Assert.NotNull(minRateFeature);
+
+            Assert.Throws<NotSupportedException>(() => minRateFeature.MinDataRate);
+            Assert.Throws<NotSupportedException>(() => minRateFeature.MinDataRate = new MinDataRate(1, TimeSpan.FromSeconds(2)));
+
+            // You can set the MinDataRate to null though.
+            minRateFeature.MinDataRate = null;
+
+            // But you still cannot read the property;
+            Assert.Throws<NotSupportedException>(() => minRateFeature.MinDataRate);
+        }
+
         private void CompareGenericGetterToIndexer()
         {
             Assert.Same(_collection.Get<IHttpRequestFeature>(), _collection[typeof(IHttpRequestFeature)]);
             Assert.Same(_collection.Get<IHttpResponseFeature>(), _collection[typeof(IHttpResponseFeature)]);
+            Assert.Same(_collection.Get<IHttpResponseBodyFeature>(), _collection[typeof(IHttpResponseBodyFeature)]);
+            Assert.Same(_collection.Get<IRequestBodyPipeFeature>(), _collection[typeof(IRequestBodyPipeFeature)]);
             Assert.Same(_collection.Get<IHttpRequestIdentifierFeature>(), _collection[typeof(IHttpRequestIdentifierFeature)]);
             Assert.Same(_collection.Get<IHttpRequestLifetimeFeature>(), _collection[typeof(IHttpRequestLifetimeFeature)]);
             Assert.Same(_collection.Get<IHttpConnectionFeature>(), _collection[typeof(IHttpConnectionFeature)]);
@@ -221,6 +245,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return featureCount;
         }
 
-        private HttpProtocol CreateHttp1Connection() => new TestHttp1Connection(_http1ConnectionContext);
+        private Http1Connection CreateHttp1Connection() => new TestHttp1Connection(_httpConnectionContext);
+
+        private class TestHttp2Stream : Http2Stream
+        {
+            public TestHttp2Stream(Http2StreamContext context) : base(context)
+            {
+            }
+
+            public override void Execute()
+            {
+            }
+        }
     }
 }

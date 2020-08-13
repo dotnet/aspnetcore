@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
                             {
                                 // WebListener occasionally gives a non-strict response on 3.2. IIS Express seems to have the same behavior. Wonder if it's related to HttpSys?
                                 // For now, just allow the non-strict response, it's not a failure.
-                                await tester.DeployTestAndAddToSpec(ServerType.WebListener, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token);
+                                await tester.DeployTestAndAddToSpec(ServerType.HttpSys, ssl: false, environment: "ManagedSockets", cancellationToken: cts.Token);
                             }
                         }
 

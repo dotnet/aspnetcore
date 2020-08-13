@@ -175,7 +175,7 @@
     <value>The context type '{0}' could not be loaded. Ensure this is the correct type name for the context you are trying to apply migrations for.</value>
   </data>
   <data name="MigrationsEndPointMiddleware_NoContextType" xml:space="preserve">
-    <value>No context type was specified. Ensure the form data from the request includes a contextTypeName value, specifying the context to apply migrations for.</value>
+    <value>No context type was specified. Ensure the form data from the request includes a 'context' value, specifying the context type name to apply migrations for.</value>
   </data>
   <data name="DatabaseErrorPage_Title" xml:space="preserve">
     <value>A database operation failed while processing the request.</value>

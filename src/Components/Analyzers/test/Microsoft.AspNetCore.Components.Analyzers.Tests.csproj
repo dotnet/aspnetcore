@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+
+    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
+    <!-- https://github.com/aspnet/AspNetCore/issues/10422 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
+    <BaseOutputPath />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- This is set to a ProjectReference because analyzers cannot be referenced via Reference.  -->
+    <ProjectReference Include="..\src\Microsoft.AspNetCore.Components.Analyzers.csproj" />
+
+    <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+    <Reference Include="Microsoft.AspNetCore.Analyzer.Testing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
+    <Content Include="TestFiles\**\*.*" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

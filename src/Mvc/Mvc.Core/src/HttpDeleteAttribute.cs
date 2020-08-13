@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// Identifies an action that only supports the HTTP DELETE method.
+    /// Identifies an action that supports the HTTP DELETE method.
     /// </summary>
     public class HttpDeleteAttribute : HttpMethodAttribute
     {

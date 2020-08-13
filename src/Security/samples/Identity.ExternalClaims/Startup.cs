@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Identity.ExternalClaims.Data;
 using Identity.ExternalClaims.Services;
 using System.Security.Claims;
@@ -40,12 +41,12 @@ namespace Identity.ExternalClaims
                 // Configure your auth keys, usually stored in Config or User Secrets
                 o.ClientId = "<yourid>";
                 o.ClientSecret = "<yoursecret>";
-                o.Scope.Add("https://www.googleapis.com/auth/plus.me");
+                o.Scope.Add("https://www.googleapis.com/auth/plus.login");
                 o.ClaimActions.MapJsonKey(ClaimTypes.Gender, "gender");
                 o.SaveTokens = true;
                 o.Events.OnCreatingTicket = ctx =>
                 {
-                    List<AuthenticationToken> tokens = ctx.Properties.GetTokens() as List<AuthenticationToken>;
+                    List<AuthenticationToken> tokens = ctx.Properties.GetTokens().ToList();
                     tokens.Add(new AuthenticationToken() { Name = "TicketCreated", Value = DateTime.UtcNow.ToString() });
                     ctx.Properties.StoreTokens(tokens);
                     return Task.CompletedTask;
@@ -66,7 +67,7 @@ namespace Identity.ExternalClaims
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -80,13 +81,15 @@ namespace Identity.ExternalClaims
 
             app.UseStaticFiles();
 
-            app.UseAuthentication();
+            app.UseRouting();
 
-            app.UseMvc(routes =>
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller}/{action=Index}/{id?}");
+                endpoints.MapDefaultControllerRoute();
+                endpoints.MapRazorPages();
             });
         }
     }

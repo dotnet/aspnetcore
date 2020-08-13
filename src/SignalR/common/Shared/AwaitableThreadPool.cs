@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Internal
 {
-    public static class AwaitableThreadPool
+    internal static class AwaitableThreadPool
     {
         public static Awaitable Yield()
         {

@@ -8,7 +8,6 @@ using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.Test;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -24,9 +23,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             _fixture = fixture;
         }
 
-        public ContextWithGenerics CreateContext()
+        private ContextWithGenerics CreateContext()
         {
-            var db = DbUtil.Create<ContextWithGenerics>(_fixture.ConnectionString);
+            var db = DbUtil.Create<ContextWithGenerics>(_fixture.Connection);
             db.Database.EnsureCreated();
             return db;
         }
@@ -34,11 +33,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         protected override object CreateTestContext()
         {
             return CreateContext();
-        }
-
-        protected override bool ShouldSkipDbTests()
-        {
-            return TestPlatformHelper.IsMono || !TestPlatformHelper.IsWindows;
         }
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
@@ -104,10 +98,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         [Fact]
         public async Task CanAddRemoveUserClaimWithIssuer()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
@@ -136,10 +126,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         [Fact]
         public async Task RemoveClaimWithIssuerOnlyAffectsUser()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             var user2 = CreateTestUser();
@@ -169,10 +155,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         [Fact]
         public async Task CanReplaceUserClaimWithIssuer()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));

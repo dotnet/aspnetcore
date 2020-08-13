@@ -1,0 +1,44 @@
+@using Microsoft.AspNetCore.Components.Rendering
+<h1>Markup blocks</h1>
+
+<p>
+    This component contains blocks of <em>static</em> HTML markup that will be
+    represented in the render instructions as single frames.
+
+    This includes nested elements with <span id="attribute-example">attributes</span>.
+</p>
+
+<h2>Dynamic markup</h2>
+
+<p>It's also possible to emit markup blocks from render fragments:</p>
+
+<div id="dynamic-markup-block">
+    [@((RenderFragment)EmitMarkupBlock)]
+</div>
+
+<button @onclick=@(() => { changeOutput = true; })>Change output</button>
+
+<h2>Markup string</h2>
+
+<p>It's also possible to declare a value of a special type that renders as markup:</p>
+
+@((MarkupString)myMarkup)
+
+@code {
+    bool changeOutput;
+
+    string myMarkup = "<p class='markup-string-value'>This is a <em>markup string</em>.</p>";
+
+    void EmitMarkupBlock(RenderTreeBuilder builder)
+    {
+        // To show we detect and apply changes to markup blocks
+        if (!changeOutput)
+        {
+            builder.AddMarkupContent(0, "Here is <strong id='dynamic-element'>an <em>example</em>.</strong> We support multiple-top-level nodes.");
+        }
+        else
+        {
+            builder.AddMarkupContent(0, "<span>The output was <em>changed</em></span> completely.");
+        }
+    }
+}

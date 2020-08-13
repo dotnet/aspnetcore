@@ -4,7 +4,8 @@ using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -13,68 +14,29 @@ using Xunit.Abstractions;
 namespace E2ETests
 {
     [Trait("E2Etests", "E2Etests")]
-    [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     public class NtlmAuthenticationTests : LoggedTest
     {
-        public NtlmAuthenticationTests(ITestOutputHelper output) : base(output)
-        {
-        }
+        public static TestMatrix TestVariants
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys)
+                .WithTfms(Tfm.NetCoreApp31)
+                .WithAllApplicationTypes()
+                .WithAllArchitectures();
 
-        [ConditionalFact]
-        public Task NtlmAuthenticationTest_WebListener_CoreCLR_Portable()
+        [ConditionalTheory]
+        [MemberData(nameof(TestVariants))]
+        private async Task NtlmAuthenticationTest(TestVariant variant)
         {
-            return NtlmAuthenticationTest(ServerType.WebListener, RuntimeFlavor.CoreClr, ApplicationType.Portable);
-        }
-
-        [ConditionalFact]
-        public Task NtlmAuthenticationTest_WebListener_CoreCLR_Standalone()
-        {
-            return NtlmAuthenticationTest(ServerType.WebListener, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
-        }
-
-        [ConditionalFact]
-        public Task NtlmAuthenticationTest_IISExpress_CoreCLR_Portable()
-        {
-            return NtlmAuthenticationTest(ServerType.IISExpress, RuntimeFlavor.CoreClr, ApplicationType.Portable);
-        }
-
-        [ConditionalFact]
-        public Task NtlmAuthenticationTest_IISExpress_CoreCLR_Standalone()
-        {
-            return NtlmAuthenticationTest(ServerType.IISExpress, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
-        }
-
-        [ConditionalFact]
-        public Task NtlmAuthenticationTest_WebListener_CLR()
-        {
-            return NtlmAuthenticationTest(ServerType.WebListener, RuntimeFlavor.Clr, ApplicationType.Portable);
-        }
-
-        [ConditionalFact]
-        public Task NtlmAuthenticationTest_IISExpress_CLR()
-        {
-            return NtlmAuthenticationTest(ServerType.IISExpress, RuntimeFlavor.Clr, ApplicationType.Standalone);
-        }
-
-        private async Task NtlmAuthenticationTest(ServerType serverType, RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
-        {
-            var architecture = RuntimeArchitecture.x64;
-            var testName = $"NtlmAuthentication_{serverType}_{runtimeFlavor}_{applicationType}";
+            var testName = $"NtlmAuthentication_{variant}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("NtlmAuthenticationTest");
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(variant)
                 {
-                    PublishApplicationBeforeDeployment = true,
+                    ApplicationPath = Helpers.GetApplicationPath(),
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                    TargetFramework = Helpers.GetTargetFramework(runtimeFlavor),
-                    Configuration = Helpers.GetCurrentBuildConfiguration(),
-                    ApplicationType = applicationType,
                     EnvironmentName = "NtlmAuthentication", //Will pick the Start class named 'StartupNtlmAuthentication'
-                    ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "NtlmAuthentation.config")) : null,
-                    SiteName = "MusicStoreNtlmAuthentication", //This is configured in the NtlmAuthentication.config
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, logger);
@@ -87,7 +49,26 @@ namespace E2ETests
                         MusicStoreConfig.ConnectionStringKey,
                         DbUtils.CreateConnectionString(musicStoreDbName)));
 
-                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
+                if (variant.Server == ServerType.IISExpress)
+                {
+                    var iisDeploymentParameters = new IISDeploymentParameters(deploymentParameters);
+                    iisDeploymentParameters.ServerConfigActionList.Add(
+                        (element, _) => {
+                            var authentication = element
+                                .RequiredElement("system.webServer")
+                                .GetOrAdd("security")
+                                .GetOrAdd("authentication");
+
+                            authentication.GetOrAdd("anonymousAuthentication")
+                                .SetAttributeValue("enabled", "false");
+
+                            authentication.GetOrAdd("windowsAuthentication")
+                                .SetAttributeValue("enabled", "true");
+                        });
+                    deploymentParameters = iisDeploymentParameters;
+                }
+
+                using (var deployer = IISApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
                     var deploymentResult = await deployer.DeployAsync();
                     var httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
@@ -106,6 +87,9 @@ namespace E2ETests
 
                     logger.LogInformation("Verifying home page");
                     await validator.VerifyNtlmHomePage(response);
+
+                    logger.LogInformation("Verifying architecture");
+                    validator.VerifyArchitecture(response, deploymentResult.DeploymentParameters.RuntimeArchitecture);
 
                     logger.LogInformation("Verifying access to store with permissions");
                     await validator.AccessStoreWithPermissions();

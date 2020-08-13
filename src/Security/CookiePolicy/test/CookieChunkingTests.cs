@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Internal
             new ChunkingCookieManager() { ChunkSize = null }.AppendResponseCookie(context, "TestCookie", testString, new CookieOptions());
             var values = context.Response.Headers["Set-Cookie"];
             Assert.Single(values);
-            Assert.Equal("TestCookie=" + testString + "; path=/; samesite=lax", values[0]);
+            Assert.Equal("TestCookie=" + testString + "; path=/", values[0]);
         }
 
         [Fact]
@@ -52,18 +52,13 @@ namespace Microsoft.AspNetCore.Internal
             string testString = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             new ChunkingCookieManager() { ChunkSize = 44 }.AppendResponseCookie(context, "TestCookie", testString, new CookieOptions());
             var values = context.Response.Headers["Set-Cookie"];
-            Assert.Equal(9, values.Count);
+            Assert.Equal(4, values.Count);
             Assert.Equal<string[]>(new[]
             {
-                "TestCookie=chunks-8; path=/; samesite=lax",
-                "TestCookieC1=abcdefgh; path=/; samesite=lax",
-                "TestCookieC2=ijklmnop; path=/; samesite=lax",
-                "TestCookieC3=qrstuvwx; path=/; samesite=lax",
-                "TestCookieC4=yz012345; path=/; samesite=lax",
-                "TestCookieC5=6789ABCD; path=/; samesite=lax",
-                "TestCookieC6=EFGHIJKL; path=/; samesite=lax",
-                "TestCookieC7=MNOPQRST; path=/; samesite=lax",
-                "TestCookieC8=UVWXYZ; path=/; samesite=lax",
+                "TestCookie=chunks-3; path=/",
+                "TestCookieC1=abcdefghijklmnopqrstuv; path=/",
+                "TestCookieC2=wxyz0123456789ABCDEFGH; path=/",
+                "TestCookieC3=IJKLMNOPQRSTUVWXYZ; path=/",
             }, values);
         }
 
@@ -140,14 +135,14 @@ namespace Microsoft.AspNetCore.Internal
             Assert.Equal(8, cookies.Count);
             Assert.Equal(new[]
             {
-                "TestCookie=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure; samesite=lax",
-                "TestCookieC1=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure; samesite=lax",
-                "TestCookieC2=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure; samesite=lax",
-                "TestCookieC3=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure; samesite=lax",
-                "TestCookieC4=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure; samesite=lax",
-                "TestCookieC5=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure; samesite=lax",
-                "TestCookieC6=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure; samesite=lax",
-                "TestCookieC7=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure; samesite=lax",
+                "TestCookie=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+                "TestCookieC1=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+                "TestCookieC2=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+                "TestCookieC3=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+                "TestCookieC4=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+                "TestCookieC5=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+                "TestCookieC6=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
+                "TestCookieC7=; expires=Thu, 01 Jan 1970 00:00:00 GMT; domain=foo.com; path=/; secure",
             }, cookies);
         }
     }

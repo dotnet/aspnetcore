@@ -147,7 +147,7 @@ namespace Microsoft.Extensions.Localization
         }
 
         [Fact]
-        public async Task RequestLocalizationMiddleware_LogsWarningsForUnsupportedCultures()
+        public async Task RequestLocalizationMiddleware_LogsDebugForUnsupportedCultures()
         {
             var sink = new TestSink(
                 TestSink.EnableWithTypeName<RequestLocalizationMiddleware>,
@@ -195,12 +195,12 @@ namespace Microsoft.Extensions.Localization
             var expectedMessage = $"{nameof(CookieRequestCultureProvider)} returned the following unsupported cultures '??'.";
 
             var write = Assert.Single(sink.Writes);
-            Assert.Equal(LogLevel.Warning, write.LogLevel);
+            Assert.Equal(LogLevel.Debug, write.LogLevel);
             Assert.Equal(expectedMessage, write.State.ToString());
         }
 
         [Fact]
-        public async Task RequestLocalizationMiddleware_LogsWarningsForUnsupportedUICultures()
+        public async Task RequestLocalizationMiddleware_LogsDebugForUnsupportedUICultures()
         {
             var sink = new TestSink(
                 TestSink.EnableWithTypeName<RequestLocalizationMiddleware>,
@@ -247,7 +247,7 @@ namespace Microsoft.Extensions.Localization
 
             var expectedMessage = $"{nameof(CookieRequestCultureProvider)} returned the following unsupported UI Cultures '??'.";
             var write = Assert.Single(sink.Writes);
-            Assert.Equal(LogLevel.Warning, write.LogLevel);
+            Assert.Equal(LogLevel.Debug, write.LogLevel);
             Assert.Equal(expectedMessage, write.State.ToString());
         }
     }

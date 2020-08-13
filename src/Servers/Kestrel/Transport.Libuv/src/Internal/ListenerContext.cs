@@ -2,16 +2,28 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.IO.Pipelines;
 using System.Net;
+using System.Net.Sockets;
+using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public class ListenerContext
+    internal class ListenerContext
     {
+        // Single reader, single writer queue since all writes happen from the uv thread and reads happen sequentially
+        private readonly Channel<LibuvConnection> _acceptQueue = Channel.CreateUnbounded<LibuvConnection>(new UnboundedChannelOptions
+        {
+            SingleReader = true,
+            SingleWriter = true
+        });
+
         public ListenerContext(LibuvTransportContext transportContext)
         {
             TransportContext = transportContext;
@@ -19,29 +31,62 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public LibuvTransportContext TransportContext { get; set; }
 
-        public IEndPointInformation EndPointInformation { get; set; }
+        public EndPoint EndPoint { get; set; }
 
         public LibuvThread Thread { get; set; }
+
+        public PipeOptions InputOptions { get; set; }
+
+        public PipeOptions OutputOptions { get; set; }
+
+        public async ValueTask<LibuvConnection> AcceptAsync(CancellationToken cancellationToken = default)
+        {
+            while (await _acceptQueue.Reader.WaitToReadAsync())
+            {
+                while (_acceptQueue.Reader.TryRead(out var connection))
+                {
+                    return connection;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Aborts all unaccepted connections in the queue
+        /// </summary>
+        /// <returns></returns>
+        public async Task AbortQueuedConnectionAsync()
+        {
+            while (await _acceptQueue.Reader.WaitToReadAsync())
+            {
+                while (_acceptQueue.Reader.TryRead(out var connection))
+                {
+                    // REVIEW: Pass an abort reason?
+                    connection.Abort();
+                }
+            }
+        }
 
         /// <summary>
         /// Creates a socket which can be used to accept an incoming connection.
         /// </summary>
         protected UvStreamHandle CreateAcceptSocket()
         {
-            switch (EndPointInformation.Type)
+            switch (EndPoint)
             {
-                case ListenType.IPEndPoint:
+                case IPEndPoint _:
                     return AcceptTcp();
-                case ListenType.SocketPath:
+                case UnixDomainSocketEndPoint _:
                     return AcceptPipe();
-                case ListenType.FileHandle:
+                case FileHandleEndPoint _:
                     return AcceptHandle();
                 default:
                     throw new InvalidOperationException();
             }
         }
 
-        protected void HandleConnectionAsync(UvStreamHandle socket)
+        protected internal void HandleConnection(UvStreamHandle socket)
         {
             try
             {
@@ -63,13 +108,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     }
                 }
 
-                var connection = new LibuvConnection(socket, TransportContext.Log, Thread, remoteEndPoint, localEndPoint);
-                TransportContext.ConnectionDispatcher.OnConnection(connection);
-                _ = connection.Start();
+                var options = TransportContext.Options;
+                var connection = new LibuvConnection(socket, TransportContext.Log, Thread, remoteEndPoint, localEndPoint, InputOptions, OutputOptions, options.MaxReadBufferSize, options.MaxWriteBufferSize);
+                connection.Start();
+
+                bool accepted = _acceptQueue.Writer.TryWrite(connection);
+                Debug.Assert(accepted, "The connection was not written to the channel!");
             }
             catch (Exception ex)
             {
-                TransportContext.Log.LogCritical(ex, $"Unexpected exception in {nameof(ListenerContext)}.{nameof(HandleConnectionAsync)}.");
+                TransportContext.Log.LogCritical(ex, $"Unexpected exception in {nameof(ListenerContext)}.{nameof(HandleConnection)}.");
             }
         }
 
@@ -80,7 +128,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             try
             {
                 socket.Init(Thread.Loop, Thread.QueueCloseHandle);
-                socket.NoDelay(EndPointInformation.NoDelay);
+                socket.NoDelay(TransportContext.Options.NoDelay);
             }
             catch
             {
@@ -108,9 +156,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             return pipe;
         }
 
+        protected void StopAcceptingConnections()
+        {
+            _acceptQueue.Writer.TryComplete();
+        }
+
         private UvStreamHandle AcceptHandle()
         {
-            switch (EndPointInformation.HandleType)
+            var fileHandleEndPoint = (FileHandleEndPoint)EndPoint;
+
+            switch (fileHandleEndPoint.FileHandleType)
             {
                 case FileHandleType.Auto:
                     throw new InvalidOperationException("Cannot accept on a non-specific file handle, listen should be performed first.");

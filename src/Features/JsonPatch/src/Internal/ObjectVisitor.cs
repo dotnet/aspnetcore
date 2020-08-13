@@ -2,20 +2,42 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
+using Microsoft.AspNetCore.JsonPatch.Adapters;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
+    /// <summary>
+    /// This API supports infrastructure and is not intended to be used
+    /// directly from your code. This API may change or be removed in future releases.
+    /// </summary>
     public class ObjectVisitor
     {
+        private readonly IAdapterFactory _adapterFactory;
         private readonly IContractResolver _contractResolver;
         private readonly ParsedPath _path;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="ObjectVisitor"/>.
+        /// </summary>
+        /// <param name="path">The path of the JsonPatch operation</param>
+        /// <param name="contractResolver">The <see cref="IContractResolver"/>.</param>
         public ObjectVisitor(ParsedPath path, IContractResolver contractResolver)
+            :this(path, contractResolver, new AdapterFactory())
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="ObjectVisitor"/>.
+        /// </summary>
+        /// <param name="path">The path of the JsonPatch operation</param>
+        /// <param name="contractResolver">The <see cref="IContractResolver"/>.</param>
+        /// <param name="adapterFactory">The <see cref="IAdapterFactory"/> to use when creating adaptors.</param>
+        public ObjectVisitor(ParsedPath path, IContractResolver contractResolver, IAdapterFactory adapterFactory)
         {
             _path = path;
             _contractResolver = contractResolver ?? throw new ArgumentNullException(nameof(contractResolver));
+            _adapterFactory = adapterFactory ?? throw new ArgumentNullException(nameof(adapterFactory));
         }
 
         public bool TryVisit(ref object target, out IAdapter adapter, out string errorMessage)
@@ -38,6 +60,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                     return false;
                 }
 
+                // If we hit a null on an interior segment then we need to stop traversing.
+                if (next == null)
+                {
+                    adapter = null;
+                    return false;
+                }
+
                 target = next;
                 adapter = SelectAdapter(target);
             }
@@ -48,25 +77,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
         private IAdapter SelectAdapter(object targetObject)
         {
-            var jsonContract = _contractResolver.ResolveContract(targetObject.GetType());
-
-            if (targetObject is IList)
-            {
-                return new ListAdapter();
-            }
-            else if (jsonContract is JsonDictionaryContract jsonDictionaryContract)
-            {
-                var type = typeof(DictionaryAdapter<,>).MakeGenericType(jsonDictionaryContract.DictionaryKeyType, jsonDictionaryContract.DictionaryValueType);
-                return (IAdapter)Activator.CreateInstance(type);
-            }
-            else if (jsonContract is JsonDynamicContract)
-            {
-                return new DynamicObjectAdapter();
-            }
-            else
-            {
-                return new PocoAdapter();
-            }
+            return _adapterFactory.Create(targetObject, _contractResolver);
         }
     }
 }

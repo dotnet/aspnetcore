@@ -8,9 +8,9 @@ namespace ControllersFromServicesClassLibrary
     public class Inventory : ResourcesController
     {
         [HttpGet]
-        public int Get()
+        public IActionResult Get()
         {
-            return 4;
+            return new ContentResult { Content = "4" };
         }
     }
 }
