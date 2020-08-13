@@ -31,32 +31,32 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             Assert.Equal(20, (await _fixture.Client.GetByteArrayAsync($"/FlushedPipeAndThenUnflushedPipe")).Length);
         }
 
-        [ConditionalFact]
-        [RequiresNewHandler]
-        public async Task ResponseBodyTest_BodyCompletionNotBlockedByOnCompleted()
-        {
-            Assert.Equal("SlowOnCompleted", await _fixture.Client.GetStringAsync($"/SlowOnCompleted"));
-        }
+        //[ConditionalFact]
+        //[RequiresNewHandler]
+        //public async Task ResponseBodyTest_BodyCompletionNotBlockedByOnCompleted()
+        //{
+        //    Assert.Equal("SlowOnCompleted", await _fixture.Client.GetStringAsync($"/SlowOnCompleted"));
+        //}
 
-        [ConditionalFact]
-        [RequiresNewHandler]
-        public async Task ResponseBodyTest_GettingHttpContextFieldsWork()
-        {
-            Assert.Equal("SlowOnCompleted", await _fixture.Client.GetStringAsync($"/OnCompletedHttpContext"));
-            Assert.Equal("", await _fixture.Client.GetStringAsync($"/OnCompletedHttpContext_Completed"));
-        }
+        //[ConditionalFact]
+        //[RequiresNewHandler]
+        //public async Task ResponseBodyTest_GettingHttpContextFieldsWork()
+        //{
+        //    Assert.Equal("SlowOnCompleted", await _fixture.Client.GetStringAsync($"/OnCompletedHttpContext"));
+        //    Assert.Equal("", await _fixture.Client.GetStringAsync($"/OnCompletedHttpContext_Completed"));
+        //}
 
-        [ConditionalFact]
-        [RequiresNewHandler]
-        public async Task ResponseBodyTest_CompleteAsyncWorks()
-        {
-            // The app func for CompleteAsync will not finish until CompleteAsync_Completed is sent.
-            // This verifies that the response is sent to the client with CompleteAsync
-            var response = await _fixture.Client.GetAsync("/CompleteAsync");
-            Assert.True(response.IsSuccessStatusCode);
+        //[ConditionalFact]
+        //[RequiresNewHandler]
+        //public async Task ResponseBodyTest_CompleteAsyncWorks()
+        //{
+        //    // The app func for CompleteAsync will not finish until CompleteAsync_Completed is sent.
+        //    // This verifies that the response is sent to the client with CompleteAsync
+        //    var response = await _fixture.Client.GetAsync("/CompleteAsync");
+        //    Assert.True(response.IsSuccessStatusCode);
 
-            var response2 = await _fixture.Client.GetAsync("/CompleteAsync_Completed");
-            Assert.True(response2.IsSuccessStatusCode);
-        }
+        //    var response2 = await _fixture.Client.GetAsync("/CompleteAsync_Completed");
+        //    Assert.True(response2.IsSuccessStatusCode);
+        //}
     }
 }

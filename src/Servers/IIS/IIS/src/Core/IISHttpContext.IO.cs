@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                             }
 
                             // Done with response, say there is no more data after writing trailers.
-                            await AsyncIO.FlushAsync(moreData: false);
+                            //await AsyncIO.FlushAsync(moreData: false);
 
                             break;
                         }
