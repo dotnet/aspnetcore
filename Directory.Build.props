@@ -84,10 +84,10 @@
     <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
 
-    <!-- Produce targeting pack installers/packages once per major.minor except in extraordinary cases i.e. 3.1.3. -->
+    <!-- Produce targeting pack installers/packages once per major.minor except in extraordinary cases i.e. 3.1.8. -->
     <IsTargetingPackBuilding Condition=" '$(DotNetBuildFromSource)' == 'true' ">false</IsTargetingPackBuilding>
     <IsTargetingPackBuilding
-        Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(AspNetCorePatchVersion)' != '0' ">false</IsTargetingPackBuilding>
+        Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(AspNetCorePatchVersion)' != '8' ">false</IsTargetingPackBuilding>
     <IsTargetingPackBuilding Condition=" '$(IsTargetingPackBuilding)' == '' ">true</IsTargetingPackBuilding>
 
     <!--

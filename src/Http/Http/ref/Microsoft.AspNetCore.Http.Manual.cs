@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.Http
         public bool ContainsKey(string key) { throw null; }
         public Microsoft.AspNetCore.Http.RequestCookieCollection.Enumerator GetEnumerator() { throw null; }
         public static Microsoft.AspNetCore.Http.RequestCookieCollection Parse(System.Collections.Generic.IList<string> values) { throw null; }
+        internal static RequestCookieCollection ParseInternal(System.Collections.Generic.IList<string> values, bool enableCookieNameDecoding) { throw null; }
         System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, string>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.String,System.String>>.GetEnumerator() { throw null; }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
         public bool TryGetValue(string key, out string value) { throw null; }

@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -2772,6 +2773,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/3651", FlakyOn.Helix.All)]
         public async Task ReceivingMessagesPreventsConnectionTimeoutFromOccuring()
         {
             using (StartVerifiableLog())
