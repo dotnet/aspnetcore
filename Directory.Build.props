@@ -100,9 +100,6 @@
 
     <!-- xUnit1004 = warns about skipped tests. Make this a non-fatal build warning. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
-
-    <!-- Ignore specific Roslyn warnings for now, https://github.com/dotnet/aspnetcore/issues/22090 -->
-    <NoWarn Condition="'$(IsAnalyzersProject)' == 'true'">$(NoWarn);RS1024;RS1025;RS1026</NoWarn>
   </PropertyGroup>
 
   <!-- Source code settings -->

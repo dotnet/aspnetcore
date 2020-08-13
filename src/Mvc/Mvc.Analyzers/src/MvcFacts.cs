@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             }
 
             var implementedMethod = method.ContainingType.FindImplementationForInterfaceMember(disposableDispose);
-            return implementedMethod == method;
+            return SymbolEqualityComparer.Default.Equals(implementedMethod, method);
         }
     }
 }

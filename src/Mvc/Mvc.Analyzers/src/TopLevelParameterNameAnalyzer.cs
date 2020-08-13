@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             foreach (var attribute in symbol.GetAttributes(symbolCache.IModelNameProvider))
             {
                 // BindAttribute uses the Prefix property as an alias for IModelNameProvider.Name
-                var nameProperty = attribute.AttributeClass == symbolCache.BindAttribute ? "Prefix" : "Name";
+                var nameProperty = SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, symbolCache.BindAttribute) ? "Prefix" : "Name";
 
                 // All of the built-in attributes (FromQueryAttribute, ModelBinderAttribute etc) only support setting the name via
                 // a property. We'll ignore constructor values.

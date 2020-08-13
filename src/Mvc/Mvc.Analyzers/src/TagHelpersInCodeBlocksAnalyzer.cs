@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
         public override void Initialize(AnalysisContext context)
         {
+            context.EnableConcurrentExecution();
             // Generated Razor code is considered auto generated. By default analyzers skip over auto-generated code unless we say otherwise.
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
             context.RegisterCompilationStartAction(context =>
@@ -105,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
         private bool IsTagHelperRunnerRunAsync(IMethodSymbol method, SymbolCache symbolCache)
         {
-            if (method != symbolCache.TagHelperRunnerRunAsyncMethodSymbol)
+            if (!SymbolEqualityComparer.Default.Equals(method, symbolCache.TagHelperRunnerRunAsyncMethodSymbol))
             {
                 return false;
             }
