@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 _options.MaxReadBufferSize,
                 _options.MaxWriteBufferSize,
                 _options.WaitForDataBeforeAllocatingBuffer,
-                _options.UnsafeInlineScheduling);
+                _options.UnsafePreferInlineScheduling);
 
             socketConnection.Start();
             return socketConnection;
