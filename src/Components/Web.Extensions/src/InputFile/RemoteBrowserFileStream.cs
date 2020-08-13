@@ -32,11 +32,11 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             _currentChunkDecodingBuffer = new byte[_maxChunkSize];
         }
 
-        protected override async ValueTask<int> CopyFileDataIntoBuffer(long sourceOffset, byte[] destination, int destinationOffset, int maxBytes, CancellationToken cancellationToken)
+        protected override async ValueTask<int> CopyFileDataIntoBuffer(long sourceOffset, Memory<byte> destination, CancellationToken cancellationToken)
         {
             var totalBytesCopied = 0;
 
-            while (maxBytes > 0)
+            while (destination.Length > 0)
             {
                 // If we don't yet have a chunk, or it's fully consumed, get the next one.
                 if (!_currentChunk.HasValue || _currentChunkDecodingBufferConsumedLength == _currentChunk.Value.LengthBytes)
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
                 // How much of the current chunk can we fit into the destination?
                 var numUnconsumedBytesInChunk = _currentChunk.Value.LengthBytes - _currentChunkDecodingBufferConsumedLength;
-                var numBytesToTransfer = Math.Min(numUnconsumedBytesInChunk, maxBytes);
+                var numBytesToTransfer = Math.Min(numUnconsumedBytesInChunk, destination.Length);
 
                 if (numBytesToTransfer == 0)
                 {
@@ -67,9 +67,8 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
                 }
 
                 // Perform the copy.
-                Array.Copy(_currentChunkDecodingBuffer, _currentChunkDecodingBufferConsumedLength, destination, destinationOffset, numBytesToTransfer);
-                maxBytes -= numBytesToTransfer;
-                destinationOffset += numBytesToTransfer;
+                new Memory<byte>(_currentChunkDecodingBuffer, _currentChunkDecodingBufferConsumedLength, numBytesToTransfer).CopyTo(destination);
+                destination = destination.Slice(numBytesToTransfer);
                 _currentChunkDecodingBufferConsumedLength += numBytesToTransfer;
                 totalBytesCopied += numBytesToTransfer;
             }

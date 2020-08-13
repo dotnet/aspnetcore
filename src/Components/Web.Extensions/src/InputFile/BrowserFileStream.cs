@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         public override void Write(byte[] buffer, int offset, int count)
             => throw new NotSupportedException();
 
-        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             if (buffer == null)
             {
@@ -69,11 +69,16 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
                     "the number of elements from offset to the end of the source collection.");
             }
 
+            return ReadAsync(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
+        }
+
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
             int maxBytesToRead = (int)(Length - Position);
 
-            if (maxBytesToRead > count)
+            if (maxBytesToRead > buffer.Length)
             {
-                maxBytesToRead = count;
+                maxBytesToRead = buffer.Length;
             }
 
             if (maxBytesToRead <= 0)
@@ -81,13 +86,13 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
                 return 0;
             }
 
-            var bytesRead = await CopyFileDataIntoBuffer(_position, buffer, offset, maxBytesToRead, cancellationToken);
+            var bytesRead = await CopyFileDataIntoBuffer(_position, buffer.Slice(0, maxBytesToRead), cancellationToken);
 
             _position += bytesRead;
 
             return bytesRead;
         }
 
-        protected abstract ValueTask<int> CopyFileDataIntoBuffer(long sourceOffset, byte[] destination, int destinationOffset, int maxBytes, CancellationToken cancellationToken);
+        protected abstract ValueTask<int> CopyFileDataIntoBuffer(long sourceOffset, Memory<byte> destination, CancellationToken cancellationToken);
     }
 }
