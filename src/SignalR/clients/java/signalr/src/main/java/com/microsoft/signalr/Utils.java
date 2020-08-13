@@ -89,6 +89,9 @@ class Utils {
     }
     
     public static Class<?> typeToClass(Type type) {
+    	if (type == null) {
+    		return null;
+    	}
         if (type instanceof Class) {
             return (Class<?>) type;
         } else if (type instanceof GenericArrayType) {

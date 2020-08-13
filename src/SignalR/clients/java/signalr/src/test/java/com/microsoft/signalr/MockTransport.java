@@ -52,7 +52,7 @@ class MockTransport implements Transport {
 
     @Override
     public Completable send(ByteBuffer message) {
-        if (!(ignorePings && TestUtils.ByteBufferToString(message).equals("{\"type\":6}" + RECORD_SEPARATOR))) {
+        if (!(ignorePings && isPing(message))) {
             sentMessages.add(message);
             sendSubject.onSuccess(message);
             sendSubject = SingleSubject.create();
@@ -89,6 +89,10 @@ class MockTransport implements Transport {
     public void receiveMessage(String message) {
         this.onReceive(TestUtils.StringToByteBuffer(message));
     }
+    
+    public void receiveMessage(ByteBuffer message) {
+        this.onReceive(message);
+    }
 
     public ByteBuffer[] getSentMessages() {
         return sentMessages.toArray(new ByteBuffer[sentMessages.size()]);
@@ -108,5 +112,10 @@ class MockTransport implements Transport {
 
     public Completable getStopTask() {
         return stopSubject;
+    }
+    
+    private boolean isPing(ByteBuffer message) {
+    	return (TestUtils.ByteBufferToString(message).equals("{\"type\":6}" + RECORD_SEPARATOR) ||
+    	       (message.array()[0] == 2 && message.array()[1] == -111 && message.array()[2] == 6));
     }
 }

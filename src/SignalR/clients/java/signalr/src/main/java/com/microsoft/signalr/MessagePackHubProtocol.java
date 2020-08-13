@@ -501,10 +501,6 @@ public class MessagePackHubProtocol implements HubProtocol {
     }
     
     private Object readValue(MessageUnpacker unpacker, Type itemType, ByteBuffer payload, boolean outermostCall) throws IOException {
-        // This shouldn't ever get called with itemType == null, but we return anyways to avoid NullPointerExceptions
-        if (itemType == null) {
-            return null;
-        }
         Class<?> itemClass = Utils.typeToClass(itemType);
         MessageFormat messageFormat = unpacker.getNextFormat();
         ValueType valueType = messageFormat.getValueType();
@@ -531,12 +527,14 @@ public class MessagePackHubProtocol implements HubProtocol {
                 default:
                     item = unpacker.unpackInt();
                     // unpackInt could correspond to an int, short, char, or byte - cast those literally here
-                    if (itemClass.equals(Short.class) || itemClass.equals(short.class)) {
-                        item = ((Integer) item).shortValue();
-                    } else if (itemClass.equals(Character.class) || itemClass.equals(char.class)) {
-                        item = (char) ((Integer) item).shortValue();
-                    } else if (itemClass.equals(Byte.class) || itemClass.equals(byte.class)) {
-                        item = ((Integer) item).byteValue();
+                    if (itemClass != null) {
+                        if (itemClass.equals(Short.class) || itemClass.equals(short.class)) {
+                            item = ((Integer) item).shortValue();
+                        } else if (itemClass.equals(Character.class) || itemClass.equals(char.class)) {
+                            item = (char) ((Integer) item).shortValue();
+                        } else if (itemClass.equals(Byte.class) || itemClass.equals(byte.class)) {
+                            item = ((Integer) item).byteValue();
+                        }
                     }
                     break;
                 }
@@ -547,7 +545,7 @@ public class MessagePackHubProtocol implements HubProtocol {
             case STRING:
                 item = unpacker.unpackString();
                 // ObjectMapper packs chars as Strings - correct back to char while unpacking if necessary
-                if (itemClass.equals(char.class) || itemClass.equals(Character.class)) {
+                if (itemClass != null && (itemClass.equals(char.class) || itemClass.equals(Character.class))) {
                     item = ((String) item).charAt(0);
                 }
                 break;
@@ -566,6 +564,10 @@ public class MessagePackHubProtocol implements HubProtocol {
                 if (outermostCall) {
                     // Check how many bytes we've read, grab that from the payload, and deserialize with objectMapper
                     byte[] payloadBytes = payload.array();
+                    // If itemType was null, we were just in this method to advance the buffer. return null.
+                    if (itemType == null) {
+                        return null;
+                    }
                     return objectMapper.readValue(payloadBytes, payload.position() + (int) readBytesStart, (int) (unpacker.getTotalReadBytes() - readBytesStart),
                             typeFactory.constructType(itemType));
                 } else {
@@ -585,6 +587,10 @@ public class MessagePackHubProtocol implements HubProtocol {
                     byte[] payloadBytes = payload.array();
                     byte[] mapBytes = Arrays.copyOfRange(payloadBytes, payload.position() + (int) readBytesStart, 
                         payload.position() + (int) unpacker.getTotalReadBytes());
+                    // If itemType was null, we were just in this method to advance the buffer. return null.
+                    if (itemType == null) {
+                        return null;
+                    }
                     return objectMapper.readValue(payloadBytes, payload.position() + (int) readBytesStart, (int) (unpacker.getTotalReadBytes() - readBytesStart),
                             typeFactory.constructType(itemType));
                 } else {
@@ -603,6 +609,10 @@ public class MessagePackHubProtocol implements HubProtocol {
                 throw new RuntimeException("Extension types are not supported yet");
             default:
                 return null;
+        }
+        // If itemType was null, we were just in this method to advance the buffer. return null.
+        if (itemType == null) {
+            return null;
         }
         // If we get here, the item isn't a map or a collection/array, so we use the Class to cast it
         if (itemClass.isPrimitive()) {

@@ -416,6 +416,7 @@ class MessagePackHubProtocolTest {
         
         assertEquals(HubMessageType.INVOCATION_BINDING_FAILURE, messages.get(0).getMessageType());
         InvocationBindingFailureMessage invocationBindingFailureMessage = (InvocationBindingFailureMessage) messages.get(0);
+        // We get different exception messages on different platforms, so use a regex
         assertTrue(invocationBindingFailureMessage.getException().getMessage().matches("^.*Boolean.*cannot be cast to.*Integer.*"));
     }
 
@@ -499,6 +500,7 @@ class MessagePackHubProtocolTest {
         
         assertEquals(HubMessageType.INVOCATION_BINDING_FAILURE, messages.get(0).getMessageType());
         InvocationBindingFailureMessage invocationBindingFailureMessage = (InvocationBindingFailureMessage) messages.get(0);
+        // We get different exception messages on different platforms, so use a regex
         assertTrue(invocationBindingFailureMessage.getException().getMessage().matches("^.*Boolean.*cannot be cast to.*Integer.*"));
         
         // Check the second message
