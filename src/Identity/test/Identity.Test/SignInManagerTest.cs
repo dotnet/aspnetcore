@@ -267,9 +267,10 @@ namespace Microsoft.AspNetCore.Identity.Test
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task CheckPasswordOnlyResetLockoutWhenTfaNotEnabled(bool tfaEnabled)
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        [InlineData(false, false)]
+        public async Task CheckPasswordOnlyResetLockoutWhenTfaNotEnabledOrRemembered(bool tfaEnabled, bool tfaRemembered)
         {
             // Setup
             var user = new PocoUser { UserName = "Foo" };
@@ -279,20 +280,30 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.Setup(m => m.SupportsUserTwoFactor).Returns(tfaEnabled).Verifiable();
             manager.Setup(m => m.CheckPasswordAsync(user, "password")).ReturnsAsync(true).Verifiable();
 
+            var context = new DefaultHttpContext();
+            var auth = MockAuth(context);
+
             if (tfaEnabled)
             {
                 manager.Setup(m => m.GetTwoFactorEnabledAsync(user)).ReturnsAsync(true).Verifiable();
                 manager.Setup(m => m.GetValidTwoFactorProvidersAsync(user)).ReturnsAsync(new string[1] {"Fake"}).Verifiable();
             }
-            else
+
+            if (tfaRemembered)
+            {
+                var id = new ClaimsIdentity(IdentityConstants.TwoFactorRememberMeScheme);
+                id.AddClaim(new Claim(ClaimTypes.Name, user.Id));
+                auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorRememberMeScheme))
+                    .ReturnsAsync(AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(id), null, IdentityConstants.TwoFactorRememberMeScheme))).Verifiable();
+            }
+
+            if (!tfaEnabled || tfaRemembered)
             {
                 manager.Setup(m => m.ResetAccessFailedCountAsync(user)).ReturnsAsync(IdentityResult.Success).Verifiable();
             }
 
-            var context = new DefaultHttpContext();
-            var helper = SetupSignInManager(manager.Object, context);
-
             // Act
+            var helper = SetupSignInManager(manager.Object, context);
             var result = await helper.CheckPasswordSignInAsync(user, "password", false);
 
             // Assert
