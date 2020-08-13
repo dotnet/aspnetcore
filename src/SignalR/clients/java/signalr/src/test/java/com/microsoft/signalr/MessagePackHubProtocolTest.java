@@ -3,6 +3,7 @@ package com.microsoft.signalr;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
@@ -415,9 +416,10 @@ class MessagePackHubProtocolTest {
         
         assertEquals(HubMessageType.INVOCATION_BINDING_FAILURE, messages.get(0).getMessageType());
         InvocationBindingFailureMessage invocationBindingFailureMessage = (InvocationBindingFailureMessage) messages.get(0);
-        assertEquals(invocationBindingFailureMessage.getException().getMessage(), 
+        assertTrue(invocationBindingFailureMessage.getException().getMessage().equals(
                 "class java.lang.Boolean cannot be cast to class java.lang.Integer (java.lang.Boolean and java.lang.Integer "
-                + "are in module java.base of loader 'bootstrap')");
+                + "are in module java.base of loader 'bootstrap')") || invocationBindingFailureMessage.getException().getMessage().equals(
+                "java.base/java.lang.Boolean cannot be cast to java.base/java.lang.Integer"));
     }
 
     @Test
@@ -500,9 +502,10 @@ class MessagePackHubProtocolTest {
         
         assertEquals(HubMessageType.INVOCATION_BINDING_FAILURE, messages.get(0).getMessageType());
         InvocationBindingFailureMessage invocationBindingFailureMessage = (InvocationBindingFailureMessage) messages.get(0);
-        assertEquals(invocationBindingFailureMessage.getException().getMessage(), 
+        assertTrue(invocationBindingFailureMessage.getException().getMessage().equals(
                 "class java.lang.Boolean cannot be cast to class java.lang.Integer (java.lang.Boolean and java.lang.Integer "
-                + "are in module java.base of loader 'bootstrap')");
+                + "are in module java.base of loader 'bootstrap')") || invocationBindingFailureMessage.getException().getMessage().equals(
+                "java.base/java.lang.Boolean cannot be cast to java.base/java.lang.Integer"));
         
         // Check the second message
         assertEquals(HubMessageType.INVOCATION, messages.get(1).getMessageType());
@@ -857,6 +860,60 @@ class MessagePackHubProtocolTest {
             (byte) 0xA3, (byte) 0xEB, (byte) 0xBB, (byte) 0xAF, (byte) 0xA3, (byte) 0xEA, (byte) 0xAF, (byte) 0x8D, (byte) 0x82, (byte) 0xA4, 0x66, 
             0x6F, 0x75, 0x72, (byte) 0x92, (byte) 0xA1, 0x5E, (byte) 0xA1, 0x2A, (byte) 0xA5, 0x74, 0x68, 0x72, 0x65, 0x65, (byte) 0x92, (byte) 0xA1, 
             0x35, (byte) 0xA1, 0x39, (byte) 0x90};
+        ByteString expectedResult = ByteString.of(expectedBytes);
+        assertEquals(expectedResult, ByteString.of(result));
+    }
+    
+    @Test
+    public void parseInvocationMessageWithCustomPojoArg() {
+        byte[] messageBytes = {0x32, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, (byte) 0x84, (byte) 0xA9, 
+            0x66, 0x69, 0x72, 0x73, 0x74, 0x4E, 0x61, 0x6D, 0x65, (byte) 0xA4, 0x4A, 0x6F, 0x68, 0x6E, (byte) 0xA8, 0x6C, 0x61, 0x73, 0x74, 0x4E, 0x61, 
+            0x6D, 0x65, (byte) 0xA3, 0x44, 0x6F, 0x65, (byte) 0xA3, 0x61, 0x67, 0x65, 0x1E, (byte) 0xA1, 0x74, (byte) 0x92, 0x05, 0x08, (byte) 0x90};
+        ByteBuffer message = ByteBuffer.wrap(messageBytes);
+        
+        TestBinder binder = new TestBinder(new Type[] { (new TypeReference<PersonPojo<ArrayList<Short>>>() { }).getType() }, null);
+
+        List<HubMessage> messages = messagePackHubProtocol.parseMessages(message, binder);
+
+        //We know it's only one message
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+
+        assertEquals(HubMessageType.INVOCATION, messages.get(0).getMessageType());
+
+        //We can safely cast here because we know that it's an invocation message.
+        InvocationMessage invocationMessage = (InvocationMessage) messages.get(0);
+
+        assertEquals("test", invocationMessage.getTarget());
+        assertEquals(null, invocationMessage.getInvocationId());
+        assertEquals(null, invocationMessage.getHeaders());
+        assertEquals(null, invocationMessage.getStreamIds());
+        
+        @SuppressWarnings("unchecked")
+        PersonPojo<ArrayList<Short>> result = (PersonPojo<ArrayList<Short>>)invocationMessage.getArguments()[0];
+        assertEquals("John", result.getFirstName());
+        assertEquals("Doe", result.getLastName());
+        assertEquals(30, result.getAge());
+        
+        ArrayList<Short> generic = result.getT();
+        assertEquals(2, generic.size());
+        assertEquals((short)5, (short)generic.get(0));
+        assertEquals((short)8, (short)generic.get(1));
+    }
+    
+    @Test
+    public void verifyWriteInvocationMessageWithCustomPojoArg() {
+        ArrayList<Short> shorts = new ArrayList<Short>();
+        shorts.add((short) 5);
+        shorts.add((short) 8);
+        
+        PersonPojo<ArrayList<Short>> person = new PersonPojo<ArrayList<Short>>("John", "Doe", 30, shorts);
+        
+        InvocationMessage invocationMessage = new InvocationMessage(null, null, "test", new Object[] { person }, null);
+        ByteBuffer result = messagePackHubProtocol.writeMessage(invocationMessage);
+        byte[] expectedBytes = {0x32, (byte) 0x96, 0x01, (byte) 0x80, (byte) 0xC0, (byte) 0xA4, 0x74, 0x65, 0x73, 0x74, (byte) 0x91, (byte) 0x84, (byte) 0xA9, 
+            0x66, 0x69, 0x72, 0x73, 0x74, 0x4E, 0x61, 0x6D, 0x65, (byte) 0xA4, 0x4A, 0x6F, 0x68, 0x6E, (byte) 0xA8, 0x6C, 0x61, 0x73, 0x74, 0x4E, 0x61, 
+            0x6D, 0x65, (byte) 0xA3, 0x44, 0x6F, 0x65, (byte) 0xA3, 0x61, 0x67, 0x65, 0x1E, (byte) 0xA1, 0x74, (byte) 0x92, 0x05, 0x08, (byte) 0x90};
         ByteString expectedResult = ByteString.of(expectedBytes);
         assertEquals(expectedResult, ByteString.of(result));
     }
