@@ -24,7 +24,11 @@ namespace Microsoft.AspNetCore.Http
         {
             await using FileStream fileStream = GetFileStream(filePath, offset, count, cancellationToken);
 
-            fileStream.Seek(offset, SeekOrigin.Begin);
+            if (offset > 0)
+            {
+                fileStream.Seek(offset, SeekOrigin.Begin);
+            }
+
             await StreamCopyOperationInternal.CopyToAsync(fileStream, destination, count, cancellationToken);
         }
 
@@ -41,7 +45,11 @@ namespace Microsoft.AspNetCore.Http
         {
             await using FileStream fileStream = GetFileStream(filePath, offset, count, cancellationToken);
 
-            fileStream.Seek(offset, SeekOrigin.Begin);
+            if (offset > 0)
+            {
+                fileStream.Seek(offset, SeekOrigin.Begin);
+            }
+
             await StreamCopyOperationInternal.CopyToAsync(fileStream, writer, count, cancellationToken);
         }
 
