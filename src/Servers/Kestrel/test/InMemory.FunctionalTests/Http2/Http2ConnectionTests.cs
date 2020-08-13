@@ -1484,6 +1484,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task MaxTrackedStreams_LargeMaxConcurrentStreams_DoubleLimit()
+        {
+            _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = int.MaxValue;
+
+            await InitializeConnectionAsync(_noopApplication);
+
+            Assert.Equal((uint)int.MaxValue * 2, _connection.MaxTrackedStreams);
+
+            await StopConnectionAsync(0, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
         public Task Frame_MultipleStreams_RequestsNotFinished_LowMaxStreamsPerConnection_EnhanceYourCalmAfter100()
         {
             // Kestrel always tracks at least 100 streams
