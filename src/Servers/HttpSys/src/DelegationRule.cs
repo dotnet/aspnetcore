@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _logger = logger;
             QueueName = queueName;
             Uri = uri;
-            Queue = new RequestQueue(null, queueName, RequestQueueMode.Receiver, _logger);
+            Queue = new RequestQueue(null, queueName, RequestQueueMode.Receiver, Uri, _logger);
         }
     }
 }
