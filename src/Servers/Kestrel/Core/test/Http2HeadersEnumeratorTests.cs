@@ -50,18 +50,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void CanIterateOverResponseTrailers()
         {
-            var responseHeaders = new HttpResponseTrailers
+            var responseTrailers = new HttpResponseTrailers
             {
                 ContentLength = 9,
                 HeaderETag = "ETag!"
             };
-            responseHeaders.Append("Name1", "Value1");
-            responseHeaders.Append("Name2", "Value2-1");
-            responseHeaders.Append("Name2", "Value2-2");
-            responseHeaders.Append("Name3", "Value3");
+            responseTrailers.Append("Name1", "Value1");
+            responseTrailers.Append("Name2", "Value2-1");
+            responseTrailers.Append("Name2", "Value2-2");
+            responseTrailers.Append("Name3", "Value3");
 
             var e = new Http2HeadersEnumerator();
-            e.Initialize(responseHeaders);
+            e.Initialize(responseTrailers);
 
             var headers = GetNormalizedHeaders(e);
 
@@ -73,6 +73,58 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>("Name2", "Value2-2"),
                 new KeyValuePair<string, string>("Name3", "Value3"),
             }, headers);
+        }
+
+        [Fact]
+        public void Initialize_ChangeHeadersSource_EnumeratorUsesNewSource()
+        {
+            var responseHeaders = new HttpResponseHeaders();
+            responseHeaders.Append("Name1", "Value1");
+            responseHeaders.Append("Name2", "Value2-1");
+            responseHeaders.Append("Name2", "Value2-2");
+
+            var e = new Http2HeadersEnumerator();
+            e.Initialize(responseHeaders);
+
+            Assert.True(e.MoveNext());
+            Assert.Equal("Name1", e.Current.Key);
+            Assert.Equal("Value1", e.Current.Value);
+
+            Assert.True(e.MoveNext());
+            Assert.Equal("Name2", e.Current.Key);
+            Assert.Equal("Value2-1", e.Current.Value);
+
+            Assert.True(e.MoveNext());
+            Assert.Equal("Name2", e.Current.Key);
+            Assert.Equal("Value2-2", e.Current.Value);
+
+            var responseTrailers = new HttpResponseTrailers
+            {
+                HeaderGrpcStatus = "1"
+            };
+            responseTrailers.Append("Name1", "Value1");
+            responseTrailers.Append("Name2", "Value2-1");
+            responseTrailers.Append("Name2", "Value2-2");
+
+            e.Initialize(responseTrailers);
+
+            Assert.True(e.MoveNext());
+            Assert.Equal("Grpc-Status", e.Current.Key);
+            Assert.Equal("1", e.Current.Value);
+
+            Assert.True(e.MoveNext());
+            Assert.Equal("Name1", e.Current.Key);
+            Assert.Equal("Value1", e.Current.Value);
+
+            Assert.True(e.MoveNext());
+            Assert.Equal("Name2", e.Current.Key);
+            Assert.Equal("Value2-1", e.Current.Value);
+
+            Assert.True(e.MoveNext());
+            Assert.Equal("Name2", e.Current.Key);
+            Assert.Equal("Value2-2", e.Current.Value);
+
+            Assert.False(e.MoveNext());
         }
 
         private KeyValuePair<string, string>[] GetNormalizedHeaders(Http2HeadersEnumerator enumerator)
