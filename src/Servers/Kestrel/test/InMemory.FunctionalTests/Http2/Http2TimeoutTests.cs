@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // End stream
             await SendDataAsync(1, _helloWorldBytes, endStream: true);
             await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 32,
+                withLength: 37,
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 1);
             await ExpectAsync(Http2FrameType.DATA,
