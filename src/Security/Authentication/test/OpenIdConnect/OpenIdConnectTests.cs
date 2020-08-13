@@ -366,6 +366,27 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.Contains(remoteSignOutTransaction.Response.Headers, h => h.Key == "Set-Cookie");
         }
 
+        [Fact]
+        public void MapInboundClaimsDefaultsToTrue()
+        {
+            var options = new OpenIdConnectOptions();
+            Assert.True(options.MapInboundClaims);
+            var jwtHandler = options.SecurityTokenValidator as JwtSecurityTokenHandler;
+            Assert.NotNull(jwtHandler);
+            Assert.True(jwtHandler.MapInboundClaims);
+        }
+
+        [Fact]
+        public void MapInboundClaimsCanBeSetToFalse()
+        {
+            var options = new OpenIdConnectOptions();
+            options.MapInboundClaims = false;
+            Assert.False(options.MapInboundClaims);
+            var jwtHandler = options.SecurityTokenValidator as JwtSecurityTokenHandler;
+            Assert.NotNull(jwtHandler);
+            Assert.False(jwtHandler.MapInboundClaims);
+        }
+        
         // Test Cases for calculating the expiration time of cookie from cookie name
         [Fact]
         public void NonceCookieExpirationTime()
