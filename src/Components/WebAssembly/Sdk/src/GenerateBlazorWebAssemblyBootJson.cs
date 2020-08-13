@@ -88,7 +88,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     var assetType = resource.GetMetadata("AssetType");
                     var resourceName = $"{fileName}{extension}";
 
-                    if (IsLazyLoadedAssembly(fileName))
+                    if (IsLazyLoadedAssembly(resourceName))
                     {
                         resourceData.lazyAssembly ??= new ResourceHashesByNameDictionary();
                         resourceList = resourceData.lazyAssembly;
@@ -149,7 +149,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
 
         private bool IsLazyLoadedAssembly(string fileName)
         {
-            return LazyLoadedAssemblies != null && LazyLoadedAssemblies.Any(a => Path.GetFileNameWithoutExtension(a.ItemSpec) == fileName);
+            return LazyLoadedAssemblies != null && LazyLoadedAssemblies.Any(a => a.ItemSpec == fileName);
         }
     }
 }
