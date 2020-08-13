@@ -416,10 +416,7 @@ class MessagePackHubProtocolTest {
         
         assertEquals(HubMessageType.INVOCATION_BINDING_FAILURE, messages.get(0).getMessageType());
         InvocationBindingFailureMessage invocationBindingFailureMessage = (InvocationBindingFailureMessage) messages.get(0);
-        assertTrue(invocationBindingFailureMessage.getException().getMessage().equals(
-                "class java.lang.Boolean cannot be cast to class java.lang.Integer (java.lang.Boolean and java.lang.Integer "
-                + "are in module java.base of loader 'bootstrap')") || invocationBindingFailureMessage.getException().getMessage().equals(
-                "java.base/java.lang.Boolean cannot be cast to java.base/java.lang.Integer"));
+        assertTrue(invocationBindingFailureMessage.getException().getMessage().matches("^.*Boolean.*cannot be cast to.*Integer.*"));
     }
 
     @Test
@@ -502,10 +499,7 @@ class MessagePackHubProtocolTest {
         
         assertEquals(HubMessageType.INVOCATION_BINDING_FAILURE, messages.get(0).getMessageType());
         InvocationBindingFailureMessage invocationBindingFailureMessage = (InvocationBindingFailureMessage) messages.get(0);
-        assertTrue(invocationBindingFailureMessage.getException().getMessage().equals(
-                "class java.lang.Boolean cannot be cast to class java.lang.Integer (java.lang.Boolean and java.lang.Integer "
-                + "are in module java.base of loader 'bootstrap')") || invocationBindingFailureMessage.getException().getMessage().equals(
-                "java.base/java.lang.Boolean cannot be cast to java.base/java.lang.Integer"));
+        assertTrue(invocationBindingFailureMessage.getException().getMessage().matches("^.*Boolean.*cannot be cast to.*Integer.*"));
         
         // Check the second message
         assertEquals(HubMessageType.INVOCATION, messages.get(1).getMessageType());
