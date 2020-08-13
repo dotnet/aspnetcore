@@ -88,7 +88,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
                     var assetType = resource.GetMetadata("AssetType");
                     var resourceName = $"{fileName}{extension}";
 
-                    if (IsLazyLoadedAssembly(fileName))
+                    if (IsLazyLoadedAssembly(resourceName))
                     {
                         resourceData.lazyAssembly ??= new ResourceHashesByNameDictionary();
                         resourceList = resourceData.lazyAssembly;
