@@ -1460,29 +1460,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task Frame_MultipleStreams_RequestsNotFinished_EnhanceYourCalm()
+        public Task Frame_MultipleStreams_RequestsNotFinished_LowMaxStreamsPerConnection_EnhanceYourCalmAfter100()
         {
-            _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = 1;
+            // Kestrel always tracks at least 100 streams
+            return RequestUntilEnhanceYourCalm(1, 101);
+        }
+
+        [Fact]
+        public Task Frame_MultipleStreams_RequestsNotFinished_DefaultMaxStreamsPerConnection_EnhanceYourCalmAfterDoubleMaxStreams()
+        {
+            // Kestrel tracks max streams per connection * 2
+            return RequestUntilEnhanceYourCalm(100, 201);
+        }
+
+        private async Task RequestUntilEnhanceYourCalm(int maxStreamsPerConnection, int sentStreams)
+        {
+            _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = maxStreamsPerConnection;
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             await InitializeConnectionAsync(async context =>
             {
                 await tcs.Task.DefaultTimeout();
             });
 
-            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
-            await SendRstStreamAsync(1);
-            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
-            await SendRstStreamAsync(3);
-            await StartStreamAsync(5, _browserRequestHeaders, endStream: true);
+            var streamId = 1;
+            for (var i = 0; i < sentStreams - 1; i++)
+            {
+                await StartStreamAsync(streamId, _browserRequestHeaders, endStream: true);
+                await SendRstStreamAsync(streamId);
 
+                streamId += 2;
+            }
+
+            await StartStreamAsync(streamId, _browserRequestHeaders, endStream: true);
             await WaitForStreamErrorAsync(
-                expectedStreamId: 5,
+                expectedStreamId: streamId,
                 expectedErrorCode: Http2ErrorCode.ENHANCE_YOUR_CALM,
                 expectedErrorMessage: CoreStrings.Http2TellClientToCalmDown);
 
             tcs.SetResult();
 
-            await StopConnectionAsync(5, ignoreNonGoAwayFrames: false);
+            await StopConnectionAsync(streamId, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
