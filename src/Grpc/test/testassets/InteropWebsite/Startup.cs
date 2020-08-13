@@ -17,6 +17,7 @@
 #endregion
 
 using System;
+using System.Reflection;
 using Grpc.Testing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,7 +38,13 @@ namespace InteropTestsWebsite
         public void Configure(IApplicationBuilder app, IHostApplicationLifetime applicationLifetime)
         {
             // Required to notify test infrastructure that it can begin tests
-            applicationLifetime.ApplicationStarted.Register(() => Console.WriteLine("Application started."));
+            applicationLifetime.ApplicationStarted.Register(() =>
+            {
+                Console.WriteLine("Application started.");
+
+                var runtimeVersion = typeof(object).GetTypeInfo().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "Unknown";
+                Console.WriteLine($"NetCoreAppVersion: {runtimeVersion}");
+            });
 
             app.UseRouting();
             app.UseEndpoints(endpoints =>

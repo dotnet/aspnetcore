@@ -29,7 +29,6 @@ using Google.Apis.Auth.OAuth2;
 using Google.Protobuf;
 using Grpc.Auth;
 using Grpc.Core;
-using Grpc.Core.Utils;
 using Grpc.Net.Client;
 using Grpc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -96,11 +95,12 @@ namespace InteropTestsClient
             var services = new ServiceCollection();
             services.AddLogging(configure =>
             {
-                configure.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
-                configure.AddSimpleConsole(loggerOptions =>
+                configure.SetMinimumLevel(LogLevel.Trace);
+                configure.AddConsole(loggerOptions =>
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     loggerOptions.IncludeScopes = true;
-                    loggerOptions.DisableColors = true;
+#pragma warning restore CS0618 // Type or member is obsolete
                 });
             });
 
