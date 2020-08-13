@@ -51,6 +51,7 @@ namespace Microsoft.AspNetCore.Analyzers
                 var services = new ServicesAnalyzer(builder);
                 var options = new OptionsAnalyzer(builder);
                 var middleware = new MiddlewareAnalyzer(builder);
+                var configureReturnType = new ConfigureReturnTypeAnalyzer(builder);
 
                 context.RegisterOperationBlockStartAction(context =>
                 {
@@ -73,6 +74,7 @@ namespace Microsoft.AspNetCore.Analyzers
                         OnConfigureMethodFound(method);
 
                         middleware.AnalyzeConfigureMethod(context);
+                        configureReturnType.AnalyzeConfigureMethod(context);
                     }
                 });
 
