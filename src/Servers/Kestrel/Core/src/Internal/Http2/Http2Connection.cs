@@ -69,6 +69,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         internal readonly Http2KeepAlive _keepAlive;
         internal readonly Dictionary<int, Http2Stream> _streams = new Dictionary<int, Http2Stream>();
         internal Http2StreamStack StreamPool;
+        // Max tracked streams is double max concurrent streams.
+        // If a small MaxConcurrentStreams value is configured then still track at least to 100 streams
+        // to support clients that send a burst of streams while the connection is being established.
+        internal uint MaxTrackedStreams => Math.Max(_serverSettings.MaxConcurrentStreams * 2, 100);
 
         internal const int InitialStreamPoolSize = 5;
         internal const int MaxStreamPoolSize = 100;
@@ -1032,7 +1036,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // We don't use the _serverActiveRequestCount here as during shutdown, it and the dictionary counts get out of sync.
                 // The streams still exist in the dictionary until the client responds with a RST or END_STREAM.
                 // Also, we care about the dictionary size for too much memory consumption.
-                if (_streams.Count > _serverSettings.MaxConcurrentStreams * 2)
+                if (_streams.Count > MaxTrackedStreams)
                 {
                     // Server is getting hit hard with connection resets.
                     // Tell client to calm down.
@@ -1166,7 +1170,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         // Compare to UpdateCompletedStreams, but only removes streams if over the max stream drain limit.
         private void MakeSpaceInDrainQueue()
         {
-            var maxStreams = _serverSettings.MaxConcurrentStreams * 2;
+            var maxStreams = MaxTrackedStreams;
             // If we're tracking too many streams, discard the oldest.
             while (_streams.Count >= maxStreams && _completedStreams.TryDequeue(out var stream))
             {
