@@ -378,8 +378,8 @@ namespace Microsoft.AspNetCore.Identity
             if (await UserManager.CheckPasswordAsync(user, password))
             {
                 var alwaysLockout = AppContext.TryGetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", out var enabled) && enabled;
-                // Only reset the lockout when TFA is not enabled when not in quirks mode
-                if (alwaysLockout || !await IsTfaEnabled(user))
+                // Only reset the lockout when not in quirks mode if either TFA is not enabled or the client is remembered for TFA.
+                if (alwaysLockout || !await IsTfaEnabled(user) || await IsTwoFactorClientRememberedAsync(user))
                 {
                     await ResetLockout(user);
                 }
