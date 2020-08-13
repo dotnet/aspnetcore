@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// </summary>
         public TimeSpan RefreshInterval { get; set; } = ConfigurationManager<OpenIdConnectConfiguration>.DefaultRefreshInterval;
         
-	    /// <summary>
+        /// <summary>
         /// Gets or sets the <see cref="MapInboundClaims"/> property on the default instance of <see cref="JwtSecurityTokenHandler"/> in SecurityTokenValidator, which is used when determining 
         /// whether or not to map claim types that are extracted when validating a <see cref="JwtSecurityToken"/>. 
         /// <para>If this is set to true, the Claim Type is set to the JSON claim 'name' after translating using this mapping. Otherwise, no mapping occurs.</para>
