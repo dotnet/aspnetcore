@@ -173,7 +173,7 @@ namespace SocialSample
                 // https://demo.identityserver.io/
                 .AddOAuth("IdentityServer", "Identity Server", o =>
                 {
-                    o.ClientId = "server.code";
+                    o.ClientId = "interactive.confidential";
                     o.ClientSecret = "secret";
                     o.CallbackPath = new PathString("/signin-identityserver");
                     o.AuthorizationEndpoint = "https://demo.identityserver.io/connect/authorize";
