@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             project.AddProjectFileContent(
 @"
 <ItemGroup>
-    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary' />
+    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary.dll' />
 </ItemGroup>
 ");
 
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             project.AddProjectFileContent(
 @"
 <ItemGroup>
-    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary' />
+    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary.dll' />
 </ItemGroup>
 ");
 
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             project.AddProjectFileContent(
 @"
 <ItemGroup>
-    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary' />
+    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary.dll' />
 </ItemGroup>
 ");
 
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             project.AddProjectFileContent(
 @"
 <ItemGroup>
-    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary' />
+    <BlazorWebAssemblyLazyLoad Include='RazorClassLibrary.dll' />
 </ItemGroup>
 ");
 

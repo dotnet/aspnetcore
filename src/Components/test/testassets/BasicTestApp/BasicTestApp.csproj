@@ -30,8 +30,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json" />
-    <BlazorWebAssemblyLazyLoad Include="LazyTestContentPackage" />
+    <BlazorWebAssemblyLazyLoad Include="Newtonsoft.Json.dll" />
+    <BlazorWebAssemblyLazyLoad Include="LazyTestContentPackage.dll" />
   </ItemGroup>
 
 </Project>
