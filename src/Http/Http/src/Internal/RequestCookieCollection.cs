@@ -10,6 +10,9 @@ namespace Microsoft.AspNetCore.Http.Internal
 {
     public class RequestCookieCollection : IRequestCookieCollection
     {
+        private const string EnableCookieNameDecoding = "Microsoft.AspNetCore.Http.EnableCookieNameDecoding";
+        private bool _enableCookieNameDecoding;
+
         public static readonly RequestCookieCollection Empty = new RequestCookieCollection();
         private static readonly string[] EmptyKeys = Array.Empty<string>();
         private static readonly Enumerator EmptyEnumerator = new Enumerator();
@@ -21,14 +24,15 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         public RequestCookieCollection()
         {
+            _enableCookieNameDecoding = AppContext.TryGetSwitch(EnableCookieNameDecoding, out var enabled) && enabled;
         }
 
-        public RequestCookieCollection(Dictionary<string, string> store)
+        public RequestCookieCollection(Dictionary<string, string> store) : this()
         {
             Store = store;
         }
 
-        public RequestCookieCollection(int capacity)
+        public RequestCookieCollection(int capacity) : this()
         {
             Store = new Dictionary<string, string>(capacity, StringComparer.OrdinalIgnoreCase);
         }
@@ -57,6 +61,9 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
         public static RequestCookieCollection Parse(IList<string> values)
+            => ParseInternal(values, AppContext.TryGetSwitch(EnableCookieNameDecoding, out var enabled) && enabled);
+
+        internal static RequestCookieCollection ParseInternal(IList<string> values, bool enableCookieNameDecoding)
         {
             if (values.Count == 0)
             {
@@ -76,7 +83,11 @@ namespace Microsoft.AspNetCore.Http.Internal
                 for (var i = 0; i < cookies.Count; i++)
                 {
                     var cookie = cookies[i];
-                    var name = Uri.UnescapeDataString(cookie.Name.Value);
+                    var name = cookie.Name.Value;
+                    if (enableCookieNameDecoding)
+                    {
+                        name = Uri.UnescapeDataString(name);
+                    }
                     var value = Uri.UnescapeDataString(cookie.Value.Value);
                     store[name] = value;
                 }
@@ -116,7 +127,8 @@ namespace Microsoft.AspNetCore.Http.Internal
             {
                 return false;
             }
-            return Store.ContainsKey(key);
+            return Store.ContainsKey(key)
+                || !_enableCookieNameDecoding && Store.ContainsKey(Uri.EscapeDataString(key));
         }
 
         public bool TryGetValue(string key, out string value)
@@ -126,7 +138,9 @@ namespace Microsoft.AspNetCore.Http.Internal
                 value = null;
                 return false;
             }
-            return Store.TryGetValue(key, out value);
+
+            return Store.TryGetValue(key, out value)
+                || !_enableCookieNameDecoding && Store.TryGetValue(Uri.EscapeDataString(key), out value);
         }
 
         /// <summary>
