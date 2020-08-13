@@ -113,8 +113,8 @@ namespace OpenIdConnectSample
                 o.ClientId = "interactive.public";
                 o.ClientSecret = "secret";
                 o.Authority = "https://demo.identityserver.io/";
-                o.NonceCookie.SameSite = SameSiteMode.Unspecified;
-                o.CorrelationCookie.SameSite = SameSiteMode.Unspecified;
+                // o.NonceCookie.SameSite = SameSiteMode.Unspecified;
+                // o.CorrelationCookie.SameSite = SameSiteMode.Unspecified;
                 /*
                 o.ClientId = "hybrid";
                 o.ResponseType = OpenIdConnectResponseType.CodeIdToken;

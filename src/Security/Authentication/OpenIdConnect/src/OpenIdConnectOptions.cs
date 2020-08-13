@@ -212,12 +212,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public string Resource { get; set; }
 
         /// <summary>
-        /// Gets or sets the 'response_mode'.
+        /// Gets or sets the 'response_mode'. The default is 'query'.
         /// </summary>
         public string ResponseMode { get; set; } = OpenIdConnectResponseMode.Query;
 
         /// <summary>
-        /// Gets or sets the 'response_type'.
+        /// Gets or sets the 'response_type'. The default is 'code'.
         /// </summary>
         public string ResponseType { get; set; } = OpenIdConnectResponseType.Code;
 
