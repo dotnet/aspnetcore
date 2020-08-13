@@ -1227,36 +1227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         // rework the flow so that the remaining headers are drained and the decompression state is maintained.
         public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            // https://tools.ietf.org/html/rfc7540#section-6.5.2
-            // "The value is based on the uncompressed size of header fields, including the length of the name and value in octets plus an overhead of 32 octets for each header field.";
-            _totalParsedHeaderSize += HeaderField.RfcOverhead + name.Length + value.Length;
-            if (_totalParsedHeaderSize > _context.ServiceContext.ServerOptions.Limits.MaxRequestHeadersTotalSize)
-            {
-                throw new Http2ConnectionErrorException(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, Http2ErrorCode.PROTOCOL_ERROR);
-            }
-
-            ValidateHeader(name, value);
-            try
-            {
-                if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
-                {
-                    _currentHeadersStream.OnTrailer(name, value);
-                }
-                else
-                {
-                    // Throws BadRequest for header count limit breaches.
-                    // Throws InvalidOperation for bad encoding.
-                    _currentHeadersStream.OnHeader(name, value);
-                }
-            }
-            catch (Microsoft.AspNetCore.Http.BadHttpRequestException bre)
-            {
-                throw new Http2ConnectionErrorException(bre.Message, Http2ErrorCode.PROTOCOL_ERROR);
-            }
-            catch (InvalidOperationException)
-            {
-                throw new Http2ConnectionErrorException(CoreStrings.BadRequest_MalformedRequestInvalidHeaders, Http2ErrorCode.PROTOCOL_ERROR);
-            }
+            OnHeaderCore(index: null, name, value);
         }
 
         public void OnStaticIndexedHeader(int index)
@@ -1264,20 +1235,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Debug.Assert(index <= H2StaticTable.Count);
 
             ref readonly var entry = ref H2StaticTable.Get(index - 1);
-            OnStaticIndexedHeaderCore(index, entry.Name, entry.Value);
+            OnHeaderCore(index, entry.Name, entry.Value);
         }
 
         public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
         {
             Debug.Assert(index <= H2StaticTable.Count);
 
-            OnStaticIndexedHeaderCore(index, H2StaticTable.Get(index - 1).Name, value);
+            OnHeaderCore(index, H2StaticTable.Get(index - 1).Name, value);
         }
 
         // We can't throw a Http2StreamErrorException here, it interrupts the header decompression state and may corrupt subsequent header frames on other streams.
         // For now these either need to be connection errors or BadRequests. If we want to downgrade any of them to stream errors later then we need to
         // rework the flow so that the remaining headers are drained and the decompression state is maintained.
-        public void OnStaticIndexedHeaderCore(int index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        private void OnHeaderCore(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             // https://tools.ietf.org/html/rfc7540#section-6.5.2
             // "The value is based on the uncompressed size of header fields, including the length of the name and value in octets plus an overhead of 32 octets for each header field.";
@@ -1287,7 +1258,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            ValidateHeader(index, value);
+            if (index != null)
+            {
+                ValidateStaticHeader(index.Value, value);
+            }
+            else
+            {
+                ValidateHeader(name, value);
+            }
+
             try
             {
                 if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
@@ -1298,7 +1277,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     // Throws BadRequest for header count limit breaches.
                     // Throws InvalidOperation for bad encoding.
-                    _currentHeadersStream.OnHeader(index, name, value);
+                    if (index != null)
+                    {
+                        _currentHeadersStream.OnHeader(index.Value, name, value);
+                    }
+                    else
+                    {
+                        _currentHeadersStream.OnHeader(name, value);
+                    }
                 }
             }
             catch (Microsoft.AspNetCore.Http.BadHttpRequestException bre)
@@ -1316,6 +1302,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private void ValidateHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
+            // Clients will normally send pseudo headers as an indexed header.
+            // Because pseudo headers can still be sent by name we need to check for them.
             UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
 
             if (IsConnectionSpecificHeaderField(name, value))
@@ -1341,7 +1329,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        private void ValidateHeader(int index, ReadOnlySpan<byte> value)
+        private void ValidateStaticHeader(int index, ReadOnlySpan<byte> value)
         {
             var headerField = index switch
             {
