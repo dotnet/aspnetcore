@@ -82,8 +82,7 @@ class LongPollingTransport implements Transport {
                     }, e -> {
                         this.stop().onErrorComplete().subscribe();
                     });
-                    poll(url)
-                    .subscribeWith(receiveLoop);
+                    poll(url).subscribeWith(receiveLoop);
                 });
 
                 return Completable.complete();
@@ -162,10 +161,10 @@ class LongPollingTransport implements Transport {
                 HttpRequest request = new HttpRequest();
                 request.addHeaders(headers);
                 return this.pollingClient.delete(this.url, request).ignoreElement()
-                .andThen(receiveLoop)
-                .doOnComplete(() -> {
-                    cleanup(this.closeError);
-                });
+                    .andThen(receiveLoop)
+                    .doOnComplete(() -> {
+                        cleanup(this.closeError);
+                    });
             })).doOnError(e -> {
                 cleanup(e.getMessage());
             });
