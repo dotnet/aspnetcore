@@ -154,7 +154,7 @@ class MsalAuthorizeService implements AuthorizeService {
                     // when the app asks for it.
                     const account = this.getAccount();
                     if (!account) {
-                        return this.error("No account to get tokens with.");
+                        return this.error("No account to get tokens for.");
                     }
                     const silentRequest = {
                         redirectUri: request.redirectUri,
@@ -357,15 +357,15 @@ class MsalAuthorizeService implements AuthorizeService {
 export class AuthenticationService {
 
     static _infrastructureKey = 'Microsoft.Authentication.WebAssembly.Msal';
-    static _initialized = false;
+    static _initialized: Promise<void>;
     static instance: MsalAuthorizeService;
 
     public static async init(settings: AuthorizeServiceConfiguration) {
         if (!AuthenticationService._initialized) {
-            AuthenticationService._initialized = true;
             AuthenticationService.instance = new MsalAuthorizeService(settings);
-            await AuthenticationService.instance.initializeMsalHandler();
+            AuthenticationService._initialized = AuthenticationService.instance.initializeMsalHandler();
         }
+        return AuthenticationService._initialized;
     }
 
     public static getUser() {
