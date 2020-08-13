@@ -59,10 +59,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private int _clientActiveStreamCount = 0;
         private int _serverActiveStreamCount = 0;
 
-        // Default MaxConcurrentStreams is 100. If a small MaxConcurrentStreams is configured still track up
-        // to 100 streams to support clients that send a burst of streams while the connection was being established.
-        private uint MaxTrackedStreams => Math.Max(_serverSettings.MaxConcurrentStreams * 2, 100);
-
         // The following are the only fields that can be modified outside of the ProcessRequestsAsync loop.
         private readonly ConcurrentQueue<Http2Stream> _completedStreams = new ConcurrentQueue<Http2Stream>();
         private readonly StreamCloseAwaitable _streamCompletionAwaitable = new StreamCloseAwaitable();
@@ -73,6 +69,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         internal readonly Http2KeepAlive _keepAlive;
         internal readonly Dictionary<int, Http2Stream> _streams = new Dictionary<int, Http2Stream>();
         internal Http2StreamStack StreamPool;
+        // Max tracked streams is double max concurrent streams.
+        // If a small MaxConcurrentStreams value is configured then still track at least to 100 streams
+        // to support clients that send a burst of streams while the connection is being established.
+        internal uint MaxTrackedStreams => Math.Max(_serverSettings.MaxConcurrentStreams * 2, 100);
 
         internal const int InitialStreamPoolSize = 5;
         internal const int MaxStreamPoolSize = 100;

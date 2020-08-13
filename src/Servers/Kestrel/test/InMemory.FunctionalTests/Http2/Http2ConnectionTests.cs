@@ -1460,17 +1460,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task MaxTrackedStreams_SmallMaxConcurrentStreams_LowerLimitOf100Async()
+        {
+            _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = 1;
+
+            await InitializeConnectionAsync(_noopApplication);
+
+            Assert.Equal((uint)100, _connection.MaxTrackedStreams);
+
+            await StopConnectionAsync(0, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task MaxTrackedStreams_DefaultMaxConcurrentStreams_DoubleLimit()
+        {
+            _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = 100;
+
+            await InitializeConnectionAsync(_noopApplication);
+
+            Assert.Equal((uint)200, _connection.MaxTrackedStreams);
+
+            await StopConnectionAsync(0, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
         public Task Frame_MultipleStreams_RequestsNotFinished_LowMaxStreamsPerConnection_EnhanceYourCalmAfter100()
         {
             // Kestrel always tracks at least 100 streams
-            return RequestUntilEnhanceYourCalm(1, 101);
+            return RequestUntilEnhanceYourCalm(maxStreamsPerConnection: 1, sentStreams: 101);
         }
 
         [Fact]
         public Task Frame_MultipleStreams_RequestsNotFinished_DefaultMaxStreamsPerConnection_EnhanceYourCalmAfterDoubleMaxStreams()
         {
             // Kestrel tracks max streams per connection * 2
-            return RequestUntilEnhanceYourCalm(100, 201);
+            return RequestUntilEnhanceYourCalm(maxStreamsPerConnection: 100, sentStreams: 201);
         }
 
         private async Task RequestUntilEnhanceYourCalm(int maxStreamsPerConnection, int sentStreams)
