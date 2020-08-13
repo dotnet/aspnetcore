@@ -142,6 +142,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 // Unwrap the server so we can create an http context and process the request
                 server = (IISHttpServer)GCHandle.FromIntPtr(pvRequestContext).Target;
 
+                // server can be null if ungraceful shutdown.
                 if (server == null)
                 {
                     return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
@@ -168,6 +169,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             try
             {
                 server = (IISHttpServer)GCHandle.FromIntPtr(pvRequestContext).Target;
+
+                // server can be null if ungraceful shutdown.
                 if (server ==  null)
                 {
                     // return value isn't checked.
@@ -189,6 +192,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             try
             {
                 context = (IISHttpContext)GCHandle.FromIntPtr(pvManagedHttpContext).Target;
+
+                // Context can be null if ungraceful shutdown.
                 if (context == null)
                 {
                     return;
@@ -208,6 +213,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             try
             {
                 context = (IISHttpContext)GCHandle.FromIntPtr(pvManagedHttpContext).Target;
+
+                // Context can be null if ungraceful shutdown.
                 if (context == null)
                 {
                     return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
@@ -231,6 +238,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 server = (IISHttpServer)GCHandle.FromIntPtr(serverContext).Target;
 
+                // server can be null if ungraceful shutdown.
                 if (server == null)
                 {
                     return;

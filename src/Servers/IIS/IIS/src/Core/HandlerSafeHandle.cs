@@ -3,10 +3,11 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks.Sources;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
-    internal class HandlerSafeHandle : SafeHandle
+    internal class HandlerSafeHandle : SafeHandle, IValueTaskSource
     {
         public override bool IsInvalid => handle == IntPtr.Zero;
 
