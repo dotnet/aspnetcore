@@ -20,13 +20,43 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         private static readonly string ChallengeEndpoint = TestServerBuilder.TestHost + TestServerBuilder.Challenge;
 
         [Fact]
-        public async Task ChallengeRedirectIsIssuedCorrectly()
+        public async Task ChallengeRedirectIsIssuedCorrectlyCode()
         {
             var settings = new TestSettings(
                 opt =>
                 {
                     opt.Authority = TestServerBuilder.DefaultAuthority;
                     opt.AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet;
+                    opt.ClientId = "Test Id";
+                });
+
+            var server = settings.CreateTestServer();
+            var transaction = await server.SendAsync(ChallengeEndpoint);
+
+            var res = transaction.Response;
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.NotNull(res.Headers.Location);
+
+            settings.ValidateChallengeRedirect(
+                res.Headers.Location,
+                OpenIdConnectParameterNames.ClientId,
+                OpenIdConnectParameterNames.ResponseType,
+                OpenIdConnectParameterNames.Scope,
+                OpenIdConnectParameterNames.RedirectUri,
+                OpenIdConnectParameterNames.SkuTelemetry,
+                OpenIdConnectParameterNames.VersionTelemetry);
+        }
+
+        [Fact]
+        public async Task ChallengeRedirectIsIssuedCorrectlyToken()
+        {
+            var settings = new TestSettings(
+                opt =>
+                {
+                    opt.Authority = TestServerBuilder.DefaultAuthority;
+                    opt.AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet;
+                    opt.ResponseType = OpenIdConnectResponseType.Token;
+                    opt.ResponseMode = OpenIdConnectResponseMode.FormPost;
                     opt.ClientId = "Test Id";
                 });
 
@@ -148,13 +178,42 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         </body>
         */
         [Fact]
-        public async Task ChallengeFormPostIssuedCorrectly()
+        public async Task ChallengeFormPostIssuedCorrectlyCode()
         {
             var settings = new TestSettings(
                 opt =>
                 {
                     opt.Authority = TestServerBuilder.DefaultAuthority;
                     opt.AuthenticationMethod = OpenIdConnectRedirectBehavior.FormPost;
+                    opt.ClientId = "Test Id";
+                });
+
+            var server = settings.CreateTestServer();
+            var transaction = await server.SendAsync(ChallengeEndpoint);
+
+            var res = transaction.Response;
+            Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+            Assert.Equal("text/html", transaction.Response.Content.Headers.ContentType.MediaType);
+
+            var body = await res.Content.ReadAsStringAsync();
+            settings.ValidateChallengeFormPost(
+                body,
+                OpenIdConnectParameterNames.ClientId,
+                OpenIdConnectParameterNames.ResponseType,
+                OpenIdConnectParameterNames.Scope,
+                OpenIdConnectParameterNames.RedirectUri);
+        }
+
+        [Fact]
+        public async Task ChallengeFormPostIssuedCorrectlyToken()
+        {
+            var settings = new TestSettings(
+                opt =>
+                {
+                    opt.Authority = TestServerBuilder.DefaultAuthority;
+                    opt.AuthenticationMethod = OpenIdConnectRedirectBehavior.FormPost;
+                    opt.ResponseType = OpenIdConnectResponseType.Token;
+                    opt.ResponseMode = OpenIdConnectResponseMode.FormPost;
                     opt.ClientId = "Test Id";
                 });
 
@@ -280,7 +339,6 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 res.Headers.Location,
                 OpenIdConnectParameterNames.ClientId,
                 OpenIdConnectParameterNames.ResponseType,
-                OpenIdConnectParameterNames.ResponseMode,
                 OpenIdConnectParameterNames.Scope,
                 OpenIdConnectParameterNames.RedirectUri);
         }
@@ -317,7 +375,6 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             settings.ValidateChallengeRedirect(
                 res.Headers.Location,
                 OpenIdConnectParameterNames.ResponseType,
-                OpenIdConnectParameterNames.ResponseMode,
                 OpenIdConnectParameterNames.Scope,
                 OpenIdConnectParameterNames.RedirectUri);
 

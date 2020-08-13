@@ -110,11 +110,21 @@ namespace OpenIdConnectSample
                 o.Authority = Configuration["oidc:authority"];
                 */
                 // https://github.com/IdentityServer/IdentityServer4.Demo/blob/master/src/IdentityServer4Demo/Config.cs
-                o.ClientId = "hybrid";
+                o.ClientId = "interactive.public";
                 o.ClientSecret = "secret";
                 o.Authority = "https://demo.identityserver.io/";
-
+                o.NonceCookie.SameSite = SameSiteMode.Unspecified;
+                o.CorrelationCookie.SameSite = SameSiteMode.Unspecified;
+                /*
+                o.ClientId = "hybrid";
                 o.ResponseType = OpenIdConnectResponseType.CodeIdToken;
+                o.ResponseMode = OpenIdConnectResponseMode.FormPost;
+                o.NonceCookie.SameSite = SameSiteMode.None;
+                o.CorrelationCookie.SameSite = SameSiteMode.None;
+                */
+                // o.NonceCookie.SameSite = SameSiteMode.Unspecified;
+                // o.CorrelationCookie.SameSite = SameSiteMode.Unspecified;
+
                 o.SaveTokens = true;
                 o.GetClaimsFromUserInfoEndpoint = true;
                 o.AccessDeniedPath = "/access-denied-from-remote";
@@ -329,7 +339,7 @@ namespace OpenIdConnectSample
 
         private static async Task WriteHtmlAsync(HttpResponse response, Func<HttpResponse, Task> writeContent)
         {
-            var bootstrap = "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css\" integrity=\"sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu\" crossorigin=\"anonymous\">";
+            var bootstrap = "<link rel=\"stylesheet\" href=\"https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css\" integrity=\"sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu\" crossorigin=\"anonymous\"><link rel=\"icon\" href=\"data:; base64,iVBORw0KGgo = \">";
 
             response.ContentType = "text/html";
             await response.WriteAsync($"<html><head>{bootstrap}</head><body><div class=\"container\">");
