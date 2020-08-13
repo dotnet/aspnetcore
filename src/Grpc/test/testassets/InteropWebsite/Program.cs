@@ -37,7 +37,7 @@ namespace InteropTestsWebsite
             Host.CreateDefaultBuilder(args)
                 .ConfigureLogging(builder =>
                 {
-                    builder.AddSimpleConsole();
+                    builder.AddConsole();
                     builder.SetMinimumLevel(LogLevel.Trace);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>

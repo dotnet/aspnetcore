@@ -96,7 +96,7 @@ namespace InteropTestsClient
             services.AddLogging(configure =>
             {
                 configure.SetMinimumLevel(LogLevel.Trace);
-                configure.AddSimpleConsole(loggerOptions =>
+                configure.AddConsole(loggerOptions =>
                 {
                     loggerOptions.IncludeScopes = true;
                 });
