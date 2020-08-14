@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     await ResponsePipeWrapper.CompleteAsync();
                 }
 
-                _streams.Stop(); // check what this does.
+                _streams.Stop();
 
                 if (!HasResponseStarted && _applicationException == null && _onStarting != null)
                 {
