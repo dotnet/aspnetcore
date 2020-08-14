@@ -1231,6 +1231,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         // rework the flow so that the remaining headers are drained and the decompression state is maintained.
         public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
+            OnHeaderCore(index: null, name, value);
+        }
+
+        public void OnStaticIndexedHeader(int index)
+        {
+            Debug.Assert(index <= H2StaticTable.Count);
+
+            ref readonly var entry = ref H2StaticTable.Get(index - 1);
+            OnHeaderCore(index, entry.Name, entry.Value);
+        }
+
+        public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
+        {
+            Debug.Assert(index <= H2StaticTable.Count);
+
+            OnHeaderCore(index, H2StaticTable.Get(index - 1).Name, value);
+        }
+
+        // We can't throw a Http2StreamErrorException here, it interrupts the header decompression state and may corrupt subsequent header frames on other streams.
+        // For now these either need to be connection errors or BadRequests. If we want to downgrade any of them to stream errors later then we need to
+        // rework the flow so that the remaining headers are drained and the decompression state is maintained.
+        private void OnHeaderCore(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        {
             // https://tools.ietf.org/html/rfc7540#section-6.5.2
             // "The value is based on the uncompressed size of header fields, including the length of the name and value in octets plus an overhead of 32 octets for each header field.";
             _totalParsedHeaderSize += HeaderField.RfcOverhead + name.Length + value.Length;
@@ -1239,7 +1262,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(CoreStrings.BadRequest_HeadersExceedMaxTotalSize, Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            ValidateHeader(name, value);
+            if (index != null)
+            {
+                ValidateStaticHeader(index.Value, value);
+            }
+            else
+            {
+                ValidateHeader(name, value);
+            }
+
             try
             {
                 if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
@@ -1250,7 +1281,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     // Throws BadRequest for header count limit breaches.
                     // Throws InvalidOperation for bad encoding.
-                    _currentHeadersStream.OnHeader(name, value);
+                    if (index != null)
+                    {
+                        _currentHeadersStream.OnHeader(index.Value, name, value);
+                    }
+                    else
+                    {
+                        _currentHeadersStream.OnHeader(name, value);
+                    }
                 }
             }
             catch (Microsoft.AspNetCore.Http.BadHttpRequestException bre)
@@ -1268,6 +1306,62 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private void ValidateHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
+            // Clients will normally send pseudo headers as an indexed header.
+            // Because pseudo headers can still be sent by name we need to check for them.
+            UpdateHeaderParsingState(value, GetPseudoHeaderField(name));
+
+            if (IsConnectionSpecificHeaderField(name, value))
+            {
+                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorConnectionSpecificHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
+            }
+
+            // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2
+            // A request or response containing uppercase header field names MUST be treated as malformed (Section 8.1.2.6).
+            for (var i = 0; i < name.Length; i++)
+            {
+                if (((uint)name[i] - 65) <= (90 - 65))
+                {
+                    if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
+                    {
+                        throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorTrailerNameUppercase, Http2ErrorCode.PROTOCOL_ERROR);
+                    }
+                    else
+                    {
+                        throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorHeaderNameUppercase, Http2ErrorCode.PROTOCOL_ERROR);
+                    }
+                }
+            }
+        }
+
+        private void ValidateStaticHeader(int index, ReadOnlySpan<byte> value)
+        {
+            var headerField = index switch
+            {
+                1 => PseudoHeaderFields.Authority,
+                2 => PseudoHeaderFields.Method,
+                3 => PseudoHeaderFields.Method,
+                4 => PseudoHeaderFields.Path,
+                5 => PseudoHeaderFields.Path,
+                6 => PseudoHeaderFields.Scheme,
+                7 => PseudoHeaderFields.Scheme,
+                8 => PseudoHeaderFields.Status,
+                9 => PseudoHeaderFields.Status,
+                10 => PseudoHeaderFields.Status,
+                11 => PseudoHeaderFields.Status,
+                12 => PseudoHeaderFields.Status,
+                13 => PseudoHeaderFields.Status,
+                14 => PseudoHeaderFields.Status,
+                _ => PseudoHeaderFields.None
+            };
+
+            UpdateHeaderParsingState(value, headerField);
+
+            // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2
+            // No need to validate if header name if it is specified using a static index.
+        }
+
+        private void UpdateHeaderParsingState(ReadOnlySpan<byte> value, PseudoHeaderFields headerField)
+        {
             // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2.1
             /*
                Intermediaries that process HTTP requests or responses (i.e., any
@@ -1282,7 +1376,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                against several types of common attacks against HTTP; they are
                deliberately strict because being permissive can expose
                implementations to these vulnerabilities.*/
-            if (IsPseudoHeaderField(name, out var headerField))
+            if (headerField != PseudoHeaderFields.None)
             {
                 if (_requestHeaderParsingState == RequestHeaderParsingState.Headers)
                 {
@@ -1332,65 +1426,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 _requestHeaderParsingState = RequestHeaderParsingState.Headers;
             }
-
-            if (IsConnectionSpecificHeaderField(name, value))
-            {
-                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorConnectionSpecificHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
-            }
-
-            // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2
-            // A request or response containing uppercase header field names MUST be treated as malformed (Section 8.1.2.6).
-            for (var i = 0; i < name.Length; i++)
-            {
-                if (name[i] >= 65 && name[i] <= 90)
-                {
-                    if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
-                    {
-                        throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorTrailerNameUppercase, Http2ErrorCode.PROTOCOL_ERROR);
-                    }
-                    else
-                    {
-                        throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorHeaderNameUppercase, Http2ErrorCode.PROTOCOL_ERROR);
-                    }
-                }
-            }
         }
 
-        private bool IsPseudoHeaderField(ReadOnlySpan<byte> name, out PseudoHeaderFields headerField)
+        private PseudoHeaderFields GetPseudoHeaderField(ReadOnlySpan<byte> name)
         {
-            headerField = PseudoHeaderFields.None;
-
             if (name.IsEmpty || name[0] != (byte)':')
             {
-                return false;
+                return PseudoHeaderFields.None;
             }
-
-            if (name.SequenceEqual(PathBytes))
+            else if (name.SequenceEqual(PathBytes))
             {
-                headerField = PseudoHeaderFields.Path;
+                return PseudoHeaderFields.Path;
             }
             else if (name.SequenceEqual(MethodBytes))
             {
-                headerField = PseudoHeaderFields.Method;
+                return PseudoHeaderFields.Method;
             }
             else if (name.SequenceEqual(SchemeBytes))
             {
-                headerField = PseudoHeaderFields.Scheme;
+                return PseudoHeaderFields.Scheme;
             }
             else if (name.SequenceEqual(StatusBytes))
             {
-                headerField = PseudoHeaderFields.Status;
+                return PseudoHeaderFields.Status;
             }
             else if (name.SequenceEqual(AuthorityBytes))
             {
-                headerField = PseudoHeaderFields.Authority;
+                return PseudoHeaderFields.Authority;
             }
             else
             {
-                headerField = PseudoHeaderFields.Unknown;
+                return PseudoHeaderFields.Unknown;
             }
-
-            return true;
         }
 
         private static bool IsConnectionSpecificHeaderField(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
@@ -1466,16 +1533,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 await _context.Transport.Input.CompleteAsync();
                 _input.Writer.Complete(error);
             }
-        }
-
-        public void OnStaticIndexedHeader(int index)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
-        {
-            throw new NotImplementedException();
         }
 
         private class StreamCloseAwaitable : ICriticalNotifyCompletion

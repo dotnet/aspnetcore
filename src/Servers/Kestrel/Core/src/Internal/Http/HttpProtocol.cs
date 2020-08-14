@@ -513,27 +513,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public virtual void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            _requestHeadersParsed++;
-            if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
-            {
-                KestrelBadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
-            }
+            IncrementRequestHeadersCount();
 
             HttpRequestHeaders.Append(name, value);
         }
 
+        public virtual void OnHeader(int index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        {
+            IncrementRequestHeadersCount();
+
+            // This method should be overriden in specific implementations and the base should be
+            // called to validate the header count.
+        }
+
         public void OnTrailer(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            // Trailers still count towards the limit.
+            IncrementRequestHeadersCount();
+
+            string key = name.GetHeaderName();
+            var valueStr = value.GetRequestHeaderString(key, HttpRequestHeaders.EncodingSelector);
+            RequestTrailers.Append(key, valueStr);
+        }
+
+        private void IncrementRequestHeadersCount()
+        {
             _requestHeadersParsed++;
             if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
             {
                 KestrelBadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
             }
-
-            string key = name.GetHeaderName();
-            var valueStr = value.GetRequestHeaderString(key, HttpRequestHeaders.EncodingSelector);
-            RequestTrailers.Append(key, valueStr);
         }
 
         public void OnHeadersComplete()
