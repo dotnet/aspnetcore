@@ -49,6 +49,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
             var responseString = await SendRequestAsync(delegatorAddress);
             Assert.Equal(_expectedResponseString, responseString);
+            wrapper?.Dispose();
         }
 
         [ConditionalFact]
@@ -79,6 +80,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
             var responseString = await SendRequestAsync(delegatorAddress);
             Assert.Equal(_expectedResponseString, responseString);
+            wrapper?.Dispose();
         }
 
         [ConditionalFact]
@@ -112,6 +114,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
             var responseString = await SendRequestAsync(delegatorAddress);
             Assert.Equal(_expectedResponseString, responseString);
+            wrapper?.Dispose();
         }
 
         [ConditionalFact]
@@ -142,6 +145,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             wrapper = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
 
             _ = await SendRequestWithBodyAsync(delegatorAddress);
+            wrapper?.Dispose();
         }
 
         [ConditionalFact]

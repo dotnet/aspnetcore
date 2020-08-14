@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -11,7 +8,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <summary>
         /// Create a delegation rule on request queue owned by the server.
         /// </summary>
-        /// <returns>Creates a <see cref="DelegationRule"/> can used to transfer individual requests</returns>
+        /// <returns>
+        /// Creates a <see cref="DelegationRule"/> that can used to transfer individual requests.
+        /// </returns>
         DelegationRule CreateDelegationRule(string queueName, string urlPrefix);
     }
 }
