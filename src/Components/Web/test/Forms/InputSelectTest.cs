@@ -194,6 +194,24 @@ namespace Microsoft.AspNetCore.Components.Forms
             Assert.Contains("The Some number field is not valid.", validationMessages);
         }
 
+        [Fact]
+        public async Task InputElementIsAssignedSuccessfully()
+        {
+            // Arrange
+            var model = new TestModel();
+            var rootComponent = new TestInputHostComponent<int, TestInputSelect<int>>
+            {
+                EditContext = new EditContext(model),
+                ValueExpression = () => model.NotNullableInt,
+            };
+
+            // Act
+            var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+
+            // Assert
+            Assert.NotNull(inputSelectComponent.InputElement);
+        }
+
         enum TestEnum
         {
             One,
