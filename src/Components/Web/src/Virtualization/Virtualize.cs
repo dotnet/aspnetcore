@@ -214,40 +214,38 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         }
 
         private string GetSpacerStyle(int itemsInSpacer)
-            => $"height: {itemsInSpacer * ItemSize}px;";
+            => $"height: {itemsInSpacer * _itemSize}px;";
 
         void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
         {
-            CalculateItemSize(spacerSeparation);
-            CalcualteItemDistribution(spacerSize, containerSize, out var itemsBefore, out var visibleItemCapacity);
+            CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity);
+
             UpdateItemDistribution(itemsBefore, visibleItemCapacity);
         }
 
         void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
         {
-            CalculateItemSize(spacerSeparation);
-            CalcualteItemDistribution(spacerSize, containerSize, out var itemsAfter, out var visibleItemCapacity);
+            CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity);
 
             var itemsBefore = Math.Max(0, _itemCount - itemsAfter - visibleItemCapacity);
 
             UpdateItemDistribution(itemsBefore, visibleItemCapacity);
         }
 
-        private void CalculateItemSize(float spacerSeparation)
+        private void CalcualteItemDistribution(
+            float spacerSize,
+            float spacerSeparation,
+            float containerSize,
+            out int itemsInSpacer,
+            out int visibleItemCapacity)
         {
-            if (_lastRenderedItemCount <= 0)
+            if (_lastRenderedItemCount > 0)
             {
-                return;
+                _itemSize = (spacerSeparation - (_lastRenderedPlaceholderCount * _itemSize)) / _lastRenderedItemCount;
             }
 
-            var totalItemsSize = spacerSeparation - (_lastRenderedPlaceholderCount * _itemSize);
-            _itemSize = totalItemsSize / _lastRenderedItemCount;
-        }
-
-        private void CalcualteItemDistribution(float spacerSize, float containerSize, out int itemsInSpacer, out int visibleItemCapacity)
-        {
-            itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / ItemSize) - 1);
-            visibleItemCapacity = (int)Math.Ceiling(containerSize / ItemSize) + 2;
+            itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / _itemSize) - 1);
+            visibleItemCapacity = (int)Math.Ceiling(containerSize / _itemSize) + 2;
         }
 
         private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity)
@@ -314,7 +312,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         private RenderFragment DefaultPlaceholder(PlaceholderContext context) => (builder) =>
         {
             builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "style", $"height: {ItemSize}px;");
+            builder.AddAttribute(1, "style", $"height: {_itemSize}px;");
             builder.CloseElement();
         };
 
