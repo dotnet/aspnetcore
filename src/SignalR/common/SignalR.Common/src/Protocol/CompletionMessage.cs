@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.SignalR.Protocol
 {
@@ -12,7 +11,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         public object? Result { get; }
         public bool HasResult { get; }
 
-        public CompletionMessage(string? invocationId, string? error, object? result, bool hasResult)
+        public CompletionMessage(string invocationId, string? error, object? result, bool hasResult)
             : base(invocationId)
         {
             if (error != null && result != null)
@@ -34,13 +33,13 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         // Static factory methods. Don't want to use constructor overloading because it will break down
         // if you need to send a payload statically-typed as a string. And because a static factory is clearer here
-        public static CompletionMessage WithError(string? invocationId, string error)
+        public static CompletionMessage WithError(string invocationId, string error)
             => new CompletionMessage(invocationId, error, result: null, hasResult: false);
 
-        public static CompletionMessage WithResult(string? invocationId, object payload)
+        public static CompletionMessage WithResult(string invocationId, object payload)
             => new CompletionMessage(invocationId, error: null, result: payload, hasResult: true);
 
-        public static CompletionMessage Empty(string? invocationId)
+        public static CompletionMessage Empty(string invocationId)
             => new CompletionMessage(invocationId, error: null, result: null, hasResult: false);
     }
 }
