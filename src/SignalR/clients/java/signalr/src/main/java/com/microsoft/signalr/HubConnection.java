@@ -206,13 +206,6 @@ public class HubConnection implements AutoCloseable {
                     return;
                 }
             }
-
-            // MessagePack library can't handle read-only ByteBuffer - copy into an array-backed ByteBuffer if this is the case
-            if (payload.isReadOnly()) {
-                byte[] payloadBytes = new byte[payload.remaining()];
-                payload.get(payloadBytes, 0, payloadBytes.length);
-                payload = ByteBuffer.wrap(payloadBytes);
-            }
             
             List<HubMessage> messages = protocol.parseMessages(payload, connectionState);
 
