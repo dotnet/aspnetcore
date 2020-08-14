@@ -37,11 +37,8 @@ namespace Interop.FunctionalTests
         {
             get
             {
-                var list = new List<object[]>()
-                {
-                    new[] { "http" }
-                };
-
+                // Re-add "http" when https://github.com/dotnet/aspnetcore/issues/24902 is resolved.
+                var list = new List<object[]>();
                 if (Utilities.CurrentPlatformSupportsHTTP2OverTls())
                 {
                     list.Add(new[] { "https" });
