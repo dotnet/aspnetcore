@@ -1343,13 +1343,6 @@ namespace TestSite
             await _resetDuringRequestBodyResetsCts.Task;
         }
 
-        public async Task SlowOnCompleted(HttpContext context)
-        {
-            // This shouldn't block the response or the server from shutting down.
-            context.Response.OnCompleted(() => Task.Delay(TimeSpan.FromMinutes(5)));
-            await context.Response.WriteAsync("SlowOnCompleted");
-        }
-
         private TaskCompletionSource<object> _onCompletedHttpContext = new TaskCompletionSource<object>();
         public async Task OnCompletedHttpContext(HttpContext context)
         {
