@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -19,6 +20,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
     public class DelegateTests
     {
         private static readonly string _expectedResponseString = "Hello from delegatee";
+
         [ConditionalFact]
         [DelegateSupportedCondition(true)]
         public async Task DelegateRequestTest()
@@ -51,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
         [ConditionalFact]
         [DelegateSupportedCondition(true)]
-        public async Task DelegateAfterWriteToBodyShouldThrowTest()
+        public async Task DelegateAfterWriteToResponseBodyShouldThrowTest()
         {
             var queueName = Guid.NewGuid().ToString();
             using var receiver = Utilities.CreateHttpServer(out var receiverAddress, async httpContext =>
@@ -113,6 +115,36 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
+        [DelegateSupportedCondition(true)]
+        public async Task DelegateAfterRequestBodyReadShouldThrow()
+        {
+            var queueName = Guid.NewGuid().ToString();
+            using var receiver = Utilities.CreateHttpServer(out var receiverAddress, async httpContext =>
+            {
+                await httpContext.Response.WriteAsync(_expectedResponseString);
+            },
+           options =>
+           {
+               options.RequestQueueName = queueName;
+           });
+
+            DelegationRule wrapper = default;
+
+            using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, async httpContext =>
+            {
+                var memoryStream = new MemoryStream();
+                await httpContext.Request.Body.CopyToAsync(memoryStream);
+                var transferFeature = httpContext.Features.Get<IHttpSysRequestTransferFeature>();
+                Assert.Throws<InvalidOperationException>(() => transferFeature.TransferRequest(wrapper));
+            });
+
+            var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
+            wrapper = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
+
+            _ = await SendRequestWithBodyAsync(delegatorAddress);
+        }
+
+        [ConditionalFact]
         [DelegateSupportedCondition(false)]
         public async Task DelegationFeaturesAreNull()
         {
@@ -143,6 +175,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         {
             using var client = new HttpClient();
             return await client.GetStringAsync(uri);
+        }
+
+        private async Task<string> SendRequestWithBodyAsync(string uri)
+        {
+            using var client = new HttpClient();
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, uri);
+            requestMessage.Content = new StringContent("Sample request body");
+            var response = await client.SendAsync(requestMessage);
+            return await response.Content.ReadAsStringAsync();
         }
     }
 }

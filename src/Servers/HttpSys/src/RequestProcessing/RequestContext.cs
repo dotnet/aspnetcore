@@ -326,6 +326,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal unsafe void Transfer(DelegationRule destination)
         {
+            if (Request.HasRequestBodyStarted)
+            {
+                throw new InvalidOperationException("This request cannot be transfered, the request body has already started.");
+            }
             if (Response.HasStarted)
             {
                 throw new InvalidOperationException("This request cannot be transfered, the response has already started.");
