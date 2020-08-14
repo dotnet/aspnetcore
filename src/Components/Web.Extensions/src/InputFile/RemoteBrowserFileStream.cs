@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         private readonly IJSRuntime _jsRuntime;
         private readonly ElementReference _inputFileElement;
         private readonly int _maxChunkSize;
-        private readonly Memory<byte> _chunkBuffer;
         private readonly PipeReader _pipeReader;
         private readonly CancellationTokenSource _fillBufferCts;
 
@@ -28,7 +27,6 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             _jsRuntime = jsRuntime;
             _inputFileElement = inputFileElement;
             _maxChunkSize = maxChunkSize;
-            _chunkBuffer = new Memory<byte>(ArrayPool<byte>.Shared.Rent(_maxChunkSize));
 
             var pipe = new Pipe(new PipeOptions(pauseWriterThreshold: maxBufferSize, resumeWriterThreshold: maxBufferSize));
             _pipeReader = pipe.Reader;
@@ -56,7 +54,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
                         offset,
                         chunkSize);
 
-                    if (!Convert.TryFromBase64String(base64, _chunkBuffer.Span, out var bytesWritten))
+                    if (!Convert.TryFromBase64String(base64, pipeBuffer.Span, out var bytesWritten))
                     {
                         throw new FormatException("A chunk with an invalid format was received.");
                     }
@@ -66,8 +64,6 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
                         throw new InvalidOperationException(
                             $"A chunk with size {bytesWritten} bytes was received, but {chunkSize} bytes were expected.");
                     }
-
-                    _chunkBuffer.CopyTo(pipeBuffer);
 
                     writer.Advance(chunkSize);
                     offset += chunkSize;
