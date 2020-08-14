@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// </summary>
         public string QueueName { get; }
         /// <summary>
-        /// The URL 
+        /// The URL of the Http.Sys Url Prefix
         /// </summary>
         public string UrlPrefix { get; }
         internal RequestQueue Queue { get; }
