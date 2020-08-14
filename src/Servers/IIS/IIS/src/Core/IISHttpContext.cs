@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private const int PauseWriterThreshold = 65536;
         private const int ResumeWriterTheshold = PauseWriterThreshold / 2;
 
-        protected readonly HandlerSafeHandle _requestNativeHandle;
+        protected readonly NativeSafeHandle _requestNativeHandle;
 
         private readonly IISServerOptions _options;
 
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         internal unsafe IISHttpContext(
             MemoryPool<byte> memoryPool,
-            HandlerSafeHandle pInProcessHandler,
+            NativeSafeHandle pInProcessHandler,
             IISServerOptions options,
             IISHttpServer server,
             ILogger logger,
@@ -664,7 +664,16 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 // Post completion after completing the request to resume the state machine
                 PostCompletion(ConvertRequestCompletionResults(successfulRequest));
 
+                // After disposing this handle, Dispose will not block waiting for the pinvokes to finish.
+                // Instead SafeHandle.Dispose() won't call release handle inline. Instead Safehandle will call ReleaseHandle
+                // on the pinvoke thread when teh pinvoke completes and the reference count goes to zero.
+
+                // What this means is we need to wait until ReleaseHandle is called to finish disposal.
+                // The handle implements IValueTaskSource
                 _requestNativeHandle.Dispose();
+
+                await new ValueTask<object>(_requestNativeHandle, _requestNativeHandle.Version);
+
                 // Dispose the context
                 Dispose();
             }

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
     internal partial class AsyncIOEngine : IAsyncIOEngine
     {
         private readonly object _contextSync;
-        private readonly HandlerSafeHandle _handler;
+        private readonly NativeSafeHandle _handler;
 
         private bool _stopped;
 
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
         private AsyncWriteOperation _cachedAsyncWriteOperation;
         private AsyncFlushOperation _cachedAsyncFlushOperation;
 
-        public AsyncIOEngine(object contextSync, HandlerSafeHandle handler)
+        public AsyncIOEngine(object contextSync, NativeSafeHandle handler)
         {
             _contextSync = contextSync;
             _handler = handler;

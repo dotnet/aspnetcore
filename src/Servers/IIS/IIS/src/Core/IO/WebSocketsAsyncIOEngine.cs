@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
     {
         private readonly object _contextLock;
 
-        private readonly HandlerSafeHandle _handler;
+        private readonly NativeSafeHandle _handler;
 
         private bool _isInitialized;
 
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
         private AsyncInitializeOperation _cachedAsyncInitializeOperation;
 
-        public WebSocketsAsyncIOEngine(object contextLock, HandlerSafeHandle handler)
+        public WebSocketsAsyncIOEngine(object contextLock, NativeSafeHandle handler)
         {
             _contextLock = contextLock;
             _handler = handler;

@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Hosting
                 hostBuilder.UseContentRoot(contentRoot);
                 return hostBuilder.ConfigureServices(
                     services => {
-                        services.AddSingleton(new IISNativeApplication(iisConfigData.pNativeApplication));
+                        services.AddSingleton(new IISNativeApplication(new NativeSafeHandle(iisConfigData.pNativeApplication)));
                         services.AddSingleton<IServer, IISHttpServer>();
                         services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(iisConfigData.pwzVirtualApplicationPath));
                         services.AddAuthenticationCore();

@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
                 _engine = engine;
             }
 
-            protected override unsafe int WriteChunks(HandlerSafeHandle requestHandler, int chunkCount, HttpApiTypes.HTTP_DATA_CHUNK* dataChunks, out bool completionExpected)
+            protected override unsafe int WriteChunks(NativeSafeHandle requestHandler, int chunkCount, HttpApiTypes.HTTP_DATA_CHUNK* dataChunks, out bool completionExpected)
             {
                 _thisHandle = GCHandle.Alloc(this);
                 return NativeMethods.HttpWebsocketsWriteBytes(requestHandler, dataChunks, chunkCount, WriteCallback, (IntPtr)_thisHandle, out completionExpected);

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             private readonly WebSocketsAsyncIOEngine _engine;
             private GCHandle _thisHandle;
             private MemoryHandle _inputHandle;
-            private HandlerSafeHandle _requestHandler;
+            private NativeSafeHandle _requestHandler;
             private Memory<byte> _memory;
 
             public WebSocketReadOperation(WebSocketsAsyncIOEngine engine)
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
                 return !completionExpected;
             }
 
-            public void Initialize(HandlerSafeHandle requestHandler, Memory<byte> memory)
+            public void Initialize(NativeSafeHandle requestHandler, Memory<byte> memory)
             {
                 _requestHandler = requestHandler;
                 _memory = memory;
