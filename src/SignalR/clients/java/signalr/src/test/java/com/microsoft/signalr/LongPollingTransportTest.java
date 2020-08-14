@@ -23,7 +23,7 @@ public class LongPollingTransportTest {
     @Test
     public void LongPollingFailsToConnectWith404Response() {
         TestHttpClient client = new TestHttpClient()
-                .on("GET", (req) -> Single.just(new HttpResponse(404, "", "")));
+                .on("GET", (req) -> Single.just(new HttpResponse(404, "", TestUtils.emptyByteBuffer)));
 
         Map<String, String> headers = new HashMap<>();
         LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
@@ -36,7 +36,7 @@ public class LongPollingTransportTest {
     @Test
     public void LongPollingTransportCantSendBeforeStart() {
         TestHttpClient client = new TestHttpClient()
-                .on("GET", (req) -> Single.just(new HttpResponse(404, "", "")));
+                .on("GET", (req) -> Single.just(new HttpResponse(404, "", TestUtils.emptyByteBuffer)));
 
         Map<String, String> headers = new HashMap<>();
         LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
@@ -55,9 +55,9 @@ public class LongPollingTransportTest {
                 .on("GET", (req) -> {
                     if (firstPoll.get()) {
                         firstPoll.set(false);
-                        return Single.just(new HttpResponse(200, "", ""));
+                        return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                     }
-                    return Single.just(new HttpResponse(204, "", ""));
+                    return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
                 });
 
         Map<String, String> headers = new HashMap<>();
@@ -83,9 +83,9 @@ public class LongPollingTransportTest {
                 .on("GET", (req) -> {
                     if (firstPoll.get()) {
                         firstPoll.set(false);
-                        return Single.just(new HttpResponse(200, "", ""));
+                        return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                     }
-                    return Single.just(new HttpResponse(999, "", ""));
+                    return Single.just(new HttpResponse(999, "", TestUtils.emptyByteBuffer));
                 });
 
         Map<String, String> headers = new HashMap<>();
@@ -106,7 +106,7 @@ public class LongPollingTransportTest {
     @Test
     public void CanSetAndTriggerOnReceive() {
         TestHttpClient client = new TestHttpClient()
-                .on("GET", (req) -> Single.just(new HttpResponse(200, "", "")));
+                .on("GET", (req) -> Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer)));
 
         Map<String, String> headers = new HashMap<>();
         LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
@@ -132,13 +132,13 @@ public class LongPollingTransportTest {
                 .on("GET", (req) -> {
                     if (requestCount.get() == 0) {
                         requestCount.incrementAndGet();
-                        return Single.just(new HttpResponse(200, "", ""));
+                        return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                     } else if (requestCount.get() == 1) {
                         requestCount.incrementAndGet();
-                        return Single.just(new HttpResponse(200, "", "TEST"));
+                        return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("TEST")));
                     }
 
-                    return Single.just(new HttpResponse(204, "", ""));
+                    return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
                 });
 
         Map<String, String> headers = new HashMap<>();
@@ -168,19 +168,19 @@ public class LongPollingTransportTest {
                 .on("GET", (req) -> {
                     if (requestCount.get() == 0) {
                         requestCount.incrementAndGet();
-                        return Single.just(new HttpResponse(200, "", ""));
+                        return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                     } else if (requestCount.get() == 1) {
                         requestCount.incrementAndGet();
-                        return Single.just(new HttpResponse(200, "", "FIRST"));
+                        return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("FIRST")));
                     } else if (requestCount.get() == 2) {
                         requestCount.incrementAndGet();
-                        return Single.just(new HttpResponse(200, "", "SECOND"));
+                        return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("SECOND")));
                     } else if (requestCount.get() == 3) {
                         requestCount.incrementAndGet();
-                        return Single.just(new HttpResponse(200, "", "THIRD"));
+                        return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("THIRD")));
                     }
 
-                    return Single.just(new HttpResponse(204, "", ""));
+                    return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
                 });
 
         Map<String, String> headers = new HashMap<>();
@@ -214,14 +214,14 @@ public class LongPollingTransportTest {
                 .on("GET", (req) -> {
                     if (requestCount.get() == 0) {
                         requestCount.incrementAndGet();
-                        return Single.just(new HttpResponse(200, "", ""));
+                        return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                     }
                     assertTrue(close.blockingAwait(1, TimeUnit.SECONDS));
-                    return Single.just(new HttpResponse(204, "", ""));
+                    return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
                 }).on("POST", (req) -> {
                     assertFalse(req.getHeaders().isEmpty());
                     headerValue.set(req.getHeaders().get("KEY"));
-                    return Single.just(new HttpResponse(200, "", ""));
+                    return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                 });
 
         Map<String, String> headers = new HashMap<>();
@@ -245,15 +245,15 @@ public class LongPollingTransportTest {
                 .on("GET", (req) -> {
                     if (requestCount.get() == 0) {
                         requestCount.incrementAndGet();
-                        return Single.just(new HttpResponse(200, "", ""));
+                        return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                     }
                     assertTrue(close.blockingAwait(1, TimeUnit.SECONDS));
-                    return Single.just(new HttpResponse(204, "", ""));
+                    return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
                 })
                 .on("POST", (req) -> {
                     assertFalse(req.getHeaders().isEmpty());
                     headerValue.set(req.getHeaders().get("Authorization"));
-                    return Single.just(new HttpResponse(200, "", ""));
+                    return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                 });
 
         Map<String, String> headers = new HashMap<>();
@@ -278,17 +278,17 @@ public class LongPollingTransportTest {
                 .on("GET", (req) -> {
                     if (requestCount.get() == 0) {
                         requestCount.incrementAndGet();
-                        return Single.just(new HttpResponse(200, "", ""));
+                        return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                     }
                     assertEquals("Bearer TOKEN1", req.getHeaders().get("Authorization"));
                     secondGet.onComplete();
                     assertTrue(close.blockingAwait(1, TimeUnit.SECONDS));
-                    return Single.just(new HttpResponse(204, "", ""));
+                    return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
                 })
                 .on("POST", (req) -> {
                     assertFalse(req.getHeaders().isEmpty());
                     headerValue.set(req.getHeaders().get("Authorization"));
-                    return Single.just(new HttpResponse(200, "", ""));
+                    return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                 });
 
         AtomicInteger i = new AtomicInteger(0);
@@ -313,9 +313,9 @@ public class LongPollingTransportTest {
                 .on("GET", (req) -> {
                     if (firstPoll.get()) {
                         firstPoll.set(false);
-                        return Single.just(new HttpResponse(200, "", ""));
+                        return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                     }
-                    return Single.just(new HttpResponse(204, "", ""));
+                    return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
                 });
 
         Map<String, String> headers = new HashMap<>();
@@ -347,16 +347,16 @@ public class LongPollingTransportTest {
                 .on("GET", (req) -> {
                     if (firstPoll.get()) {
                         firstPoll.set(false);
-                        return Single.just(new HttpResponse(200, "", ""));
+                        return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                     } else {
                         assertTrue(block.blockingAwait(1, TimeUnit.SECONDS));
-                        return Single.just(new HttpResponse(204, "", ""));
+                        return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
                     }
                 })
                 .on("DELETE", (req) ->{
                     //Unblock the last poll when we sent the DELETE request.
                    block.onComplete();
-                    return Single.just(new HttpResponse(200, "", ""));
+                    return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                 });
 
         Map<String, String> headers = new HashMap<>();

@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -2704,7 +2703,7 @@ class HubConnectionTest {
     @Test
     public void negotiateSentOnStart() {
         TestHttpClient client = new TestHttpClient()
-        .on("POST", (req) -> Single.just(new HttpResponse(404, "", "")));
+        .on("POST", (req) -> Single.just(new HttpResponse(404, "", TestUtils.emptyByteBuffer)));
 
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
@@ -2722,7 +2721,7 @@ class HubConnectionTest {
     @Test
     public void negotiateThatRedirectsForeverFailsAfter100Tries() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
-                (req) -> Single.just(new HttpResponse(200, "", "{\"url\":\"http://example.com\"}")));
+                (req) -> Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"url\":\"http://example.com\"}"))));
 
         HubConnection hubConnection = HubConnectionBuilder
             .create("http://example.com")
@@ -2756,8 +2755,8 @@ class HubConnectionTest {
     public void connectionIdIsAvailableAfterStart() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
-                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
@@ -2781,10 +2780,10 @@ class HubConnectionTest {
     public void connectionTokenAppearsInQSConnectionIdIsOnConnectionInstance() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
-                                "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
+                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
                                 "\"negotiateVersion\": 1," +
                                 "\"connectionToken\":\"connection-token-value\"," +
-                                "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                                "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
@@ -2808,9 +2807,9 @@ class HubConnectionTest {
     public void connectionTokenIsIgnoredIfNegotiateVersionIsNotPresentInNegotiateResponse() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
-                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
+                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
                         "\"connectionToken\":\"connection-token-value\"," +
-                        "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                        "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
@@ -2834,9 +2833,9 @@ class HubConnectionTest {
     public void negotiateVersionIsNotAddedIfAlreadyPresent() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=42",
                 (req) -> Single.just(new HttpResponse(200, "",
-                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
+                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
                         "\"connectionToken\":\"connection-token-value\"," +
-                        "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                        "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
@@ -2860,8 +2859,8 @@ class HubConnectionTest {
     public void afterSuccessfulNegotiateConnectsWithWebsocketsTransport() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
-                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
@@ -2881,8 +2880,8 @@ class HubConnectionTest {
     public void afterSuccessfulNegotiateConnectsWithLongPollingTransport() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
-                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
@@ -2905,15 +2904,15 @@ class HubConnectionTest {
         TestHttpClient client = new TestHttpClient()
                 .on("POST",
                         (req) -> Single.just(new HttpResponse(200, "",
-                                "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                        + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")))
+                        		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                        + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))))
                 .on("GET", (req) -> {
                     if (requestCount.get() < 2) {
                         requestCount.incrementAndGet();
-                        return Single.just(new HttpResponse(200, "", "{}" + RECORD_SEPARATOR));
+                        return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{}" + RECORD_SEPARATOR)));
                     }
                     assertTrue(close.blockingAwait(5, TimeUnit.SECONDS));
-                    return Single.just(new HttpResponse(204, "", ""));
+                    return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
                 });
 
         HubConnection hubConnection = HubConnectionBuilder
@@ -2932,10 +2931,10 @@ class HubConnectionTest {
     public void ClientThatSelectsWebsocketsThrowsWhenWebsocketsAreNotAvailable() {
         TestHttpClient client = new TestHttpClient().on("POST",
                 (req) -> Single.just(new HttpResponse(200, "",
-                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")))
+                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))))
                 .on("GET", (req) -> {
-                    return Single.just(new HttpResponse(204, "", ""));
+                    return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
                 });
 
         HubConnection hubConnection = HubConnectionBuilder
@@ -2954,8 +2953,8 @@ class HubConnectionTest {
     @Test
     public void ClientThatSelectsLongPollingThrowsWhenLongPollingIsNotAvailable() {
         TestHttpClient client = new TestHttpClient().on("POST",
-                (req) -> Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                        + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                (req) -> Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                        + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
@@ -2974,8 +2973,8 @@ class HubConnectionTest {
     public void receivingServerSentEventsTransportFromNegotiateFails() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
-                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                + "availableTransports\":[{\"transport\":\"ServerSentEvents\",\"transferFormats\":[\"Text\"]}]}")));
+                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"ServerSentEvents\",\"transferFormats\":[\"Text\"]}]}"))));
 
         MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
@@ -2993,7 +2992,7 @@ class HubConnectionTest {
     @Test
     public void negotiateThatReturnsErrorThrowsFromStart() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
-                (req) -> Single.just(new HttpResponse(200, "", "{\"error\":\"Test error.\"}")));
+                (req) -> Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"error\":\"Test error.\"}"))));
 
         MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
@@ -3010,7 +3009,7 @@ class HubConnectionTest {
     @Test
     public void DetectWhenTryingToConnectToClassicSignalRServer() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
-                (req) -> Single.just(new HttpResponse(200, "", "{\"Url\":\"/signalr\"," +
+                (req) -> Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"Url\":\"/signalr\"," +
                         "\"ConnectionToken\":\"X97dw3uxW4NPPggQsYVcNcyQcuz4w2\"," +
                         "\"ConnectionId\":\"05265228-1e2c-46c5-82a1-6a5bcc3f0143\"," +
                         "\"KeepAliveTimeout\":10.0," +
@@ -3018,7 +3017,7 @@ class HubConnectionTest {
                         "\"TryWebSockets\":true," +
                         "\"ProtocolVersion\":\"1.5\"," +
                         "\"TransportConnectTimeout\":30.0," +
-                        "\"LongPollDelay\":0.0}")));
+                        "\"LongPollDelay\":0.0}"))));
 
         MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
@@ -3036,10 +3035,10 @@ class HubConnectionTest {
     @Test
     public void negotiateRedirectIsFollowed()  {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
-                (req) -> Single.just(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\"}")))
+                (req) -> Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"url\":\"http://testexample.com/\"}"))))
                 .on("POST", "http://testexample.com/negotiate?negotiateVersion=1",
-                (req) -> Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                (req) -> Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
@@ -3061,12 +3060,12 @@ class HubConnectionTest {
         TestHttpClient client = new TestHttpClient()
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> {
                     beforeRedirectToken.set(req.getHeaders().get("Authorization"));
-                    return Single.just(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\",\"accessToken\":\"newToken\"}"));
+                    return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"newToken\"}")));
                 })
                 .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> {
                     token.set(req.getHeaders().get("Authorization"));
-                    return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                            + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                    return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                            + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                 });
 
         MockTransport transport = new MockTransport(true);
@@ -3102,8 +3101,8 @@ class HubConnectionTest {
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             token.set(req.getHeaders().get("Authorization"));
-                            return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                         });
 
         MockTransport transport = new MockTransport(true);
@@ -3127,8 +3126,8 @@ class HubConnectionTest {
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             token.set(req.getHeaders().get("Authorization"));
-                            return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                         });
 
         AtomicInteger i = new AtomicInteger(0);
@@ -3156,13 +3155,13 @@ class HubConnectionTest {
         AtomicReference<String> token = new AtomicReference<>();
         TestHttpClient client = new TestHttpClient()
             .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", 
-                    "{\"url\":\"http://testexample.com/\",\"accessToken\":\"newToken\"}")))
+            		TestUtils.StringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"newToken\"}"))))
             .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> {
                 token.set(req.getHeaders().get("Authorization"));
-                return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\","
+                return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\","
                         + "\"connectionToken\":\"connection-token-value\","
                         + "\"negotiateVersion\":1,"
-                        + "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                        + "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
             });
 
         MockTransport transport = new MockTransport(true);
@@ -3188,12 +3187,12 @@ class HubConnectionTest {
         TestHttpClient client = new TestHttpClient()
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> {
                     beforeRedirectToken.set(req.getHeaders().get("Authorization"));
-                    return Single.just(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\",\"accessToken\":\"newToken\"}"));
+                    return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"newToken\"}")));
                 })
                 .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> {
                     token.set(req.getHeaders().get("Authorization"));
-                    return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\","
-                            + "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                    return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\","
+                            + "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                 });
 
         MockTransport transport = new MockTransport(true);
@@ -3231,16 +3230,16 @@ class HubConnectionTest {
                     if (redirectCount.get() == 0) {
                         redirectCount.incrementAndGet();
                         redirectToken.set(req.getHeaders().get("Authorization"));
-                        return Single.just(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\",\"accessToken\":\"firstRedirectToken\"}"));
+                        return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"firstRedirectToken\"}")));
                     } else {
                         redirectToken.set(req.getHeaders().get("Authorization"));
-                        return Single.just(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\",\"accessToken\":\"secondRedirectToken\"}"));
+                        return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"secondRedirectToken\"}")));
                     }
                 })
                 .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> {
                     token.set(req.getHeaders().get("Authorization"));
-                    return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                            + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                    return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                            + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                 });
 
         MockTransport transport = new MockTransport(true);
@@ -3305,8 +3304,8 @@ class HubConnectionTest {
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             header.set(req.getHeaders().get("User-Agent"));
-                            return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                         });
 
         MockTransport transport = new MockTransport();
@@ -3329,8 +3328,8 @@ class HubConnectionTest {
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             header.set(req.getHeaders().get("User-Agent"));
-                            return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                         });
 
         MockTransport transport = new MockTransport();
@@ -3353,8 +3352,8 @@ class HubConnectionTest {
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             header.set(req.getHeaders().get("User-Agent"));
-                            return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                         });
 
         MockTransport transport = new MockTransport();
@@ -3376,8 +3375,8 @@ class HubConnectionTest {
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             header.set(req.getHeaders().get("ExampleHeader"));
-                            return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                            + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                            + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                         });
 
 
@@ -3401,8 +3400,8 @@ class HubConnectionTest {
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             header.set(req.getHeaders().get("Authorization"));
-                            return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                         });
 
         MockTransport transport = new MockTransport();
@@ -3431,13 +3430,13 @@ class HubConnectionTest {
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             beforeRedirectHeader.set(req.getHeaders().get("Authorization"));
-                            return Single.just(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\",\"accessToken\":\"redirectToken\"}\"}"));
+                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"redirectToken\"}\"}")));
                         })
                 .on("POST", "http://testexample.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             afterRedirectHeader.set(req.getHeaders().get("Authorization"));
-                            return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                         });
 
         MockTransport transport = new MockTransport();
@@ -3474,8 +3473,8 @@ class HubConnectionTest {
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             header.set(req.getHeaders().get("ExampleHeader"));
-                            return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                            + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                            + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                         });
 
 
@@ -3516,9 +3515,9 @@ class HubConnectionTest {
     public void hubConnectionCanBeStartedAfterBeingStoppedAndRedirected() {
         MockTransport mockTransport = new MockTransport();
         TestHttpClient client = new TestHttpClient()
-                .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\"}")))
-                .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                        + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"url\":\"http://testexample.com/\"}"))))
+                .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", 
+                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
@@ -3540,7 +3539,7 @@ class HubConnectionTest {
     public void non200FromNegotiateThrowsError() {
         TestHttpClient client = new TestHttpClient()
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
-                        (req) -> Single.just(new HttpResponse(500, "Internal server error", "")));
+                        (req) -> Single.just(new HttpResponse(500, "Internal server error", TestUtils.emptyByteBuffer)));
 
         MockTransport transport = new MockTransport();
         HubConnection hubConnection = HubConnectionBuilder
@@ -3558,9 +3557,9 @@ class HubConnectionTest {
     public void hubConnectionCloseCallsStop() throws Exception {
         MockTransport mockTransport = new MockTransport();
         TestHttpClient client = new TestHttpClient()
-                .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\"}")))
-                .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                        + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+                .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"url\":\"http://testexample.com/\"}"))))
+                .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", 
+                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         CompletableSubject close = CompletableSubject.create();
 

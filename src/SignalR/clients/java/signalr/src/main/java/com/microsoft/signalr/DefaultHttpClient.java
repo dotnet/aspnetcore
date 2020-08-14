@@ -152,7 +152,7 @@ final class DefaultHttpClient extends HttpClient {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 try (ResponseBody body = response.body()) {
-                    HttpResponse httpResponse = new HttpResponse(response.code(), response.message(), body.string());
+                    HttpResponse httpResponse = new HttpResponse(response.code(), response.message(), ByteBuffer.wrap(body.bytes()));
                     responseSubject.onSuccess(httpResponse);
                 }
             }

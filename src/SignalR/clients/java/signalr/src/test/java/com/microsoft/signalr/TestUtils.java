@@ -7,6 +7,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 class TestUtils {
+	
+	static ByteBuffer emptyByteBuffer = StringToByteBuffer("");
 
     static HubConnection createHubConnection(String url) {
         return createHubConnection(url, new MockTransport(true), true, new TestHttpClient(), new JsonHubProtocol());

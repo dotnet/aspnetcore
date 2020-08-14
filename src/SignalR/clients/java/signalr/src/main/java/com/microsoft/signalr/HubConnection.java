@@ -293,7 +293,7 @@ public class HubConnection implements AutoCloseable {
                 throw new RuntimeException(String.format("Unexpected status code returned from negotiate: %d %s.",
                         response.getStatusCode(), response.getStatusText()));
             }
-            JsonReader reader = new JsonReader(new StringReader(response.getContent()));
+            JsonReader reader = new JsonReader(new StringReader(new String(response.getContent().array(), StandardCharsets.UTF_8)));
             NegotiateResponse negotiateResponse = new NegotiateResponse(reader);
 
             if (negotiateResponse.getError() != null) {

@@ -46,23 +46,23 @@ class HttpRequest {
 class HttpResponse {
     private final int statusCode;
     private final String statusText;
-    private final String content;
+    private final ByteBuffer content;
 
     public HttpResponse(int statusCode) {
         this(statusCode, "");
     }
 
     public HttpResponse(int statusCode, String statusText) {
-        this(statusCode, statusText, "");
+        this(statusCode, statusText, ByteBuffer.wrap(new byte[] {}));
     }
 
-    public HttpResponse(int statusCode, String statusText, String content) {
+    public HttpResponse(int statusCode, String statusText, ByteBuffer content) {
         this.statusCode = statusCode;
         this.statusText = statusText;
         this.content = content;
     }
 
-    public String getContent() {
+    public ByteBuffer getContent() {
         return content;
     }
 
