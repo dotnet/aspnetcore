@@ -23,9 +23,9 @@ namespace Microsoft.AspNetCore.SignalR
     /// <summary>
     /// Encapsulates all information about an individual connection to a SignalR Hub.
     /// </summary>
-    public class HubConnectionContext
+    public partial class HubConnectionContext
     {
-        private static readonly Action<object> _cancelReader = state => ((PipeReader)state).CancelPendingRead();
+        private static readonly Action<object?> _cancelReader = state => ((PipeReader)state!).CancelPendingRead();
         private static readonly WaitCallback _abortedCallback = AbortConnection;
 
         private readonly ConnectionContext _connectionContext;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly ISystemClock _systemClock;
         private readonly CancellationTokenRegistration _closedRegistration;
 
-        private StreamTracker _streamTracker;
+        private StreamTracker? _streamTracker;
         private long _lastSendTimeStamp;
         private ReadOnlyMemory<byte> _cachedPingMessage;
         private bool _clientTimeoutActive;
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.SignalR
             _connectionContext = connectionContext;
             _logger = loggerFactory.CreateLogger<HubConnectionContext>();
             ConnectionAborted = _connectionAbortedTokenSource.Token;
-            _closedRegistration = connectionContext.ConnectionClosed.Register((state) => ((HubConnectionContext)state).Abort(), this);
+            _closedRegistration = connectionContext.ConnectionClosed.Register((state) => ((HubConnectionContext)state!).Abort(), this);
 
             HubCallerContext = new DefaultHubCallerContext(this);
 
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         internal HubCallerContext HubCallerContext { get; }
 
-        internal Exception CloseException { get; private set; }
+        internal Exception? CloseException { get; private set; }
 
         /// <summary>
         /// Gets a <see cref="CancellationToken"/> that notifies when the connection is aborted.
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets the user for this connection.
         /// </summary>
-        public virtual ClaimsPrincipal User => Features.Get<IConnectionUserFeature>()?.User;
+        public virtual ClaimsPrincipal? User => Features.Get<IConnectionUserFeature>()?.User;
 
         /// <summary>
         /// Gets the collection of features available on this connection.
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets a key/value collection that can be used to share data within the scope of this connection.
         /// </summary>
-        public virtual IDictionary<object, object> Items => _connectionContext.Items;
+        public virtual IDictionary<object, object?> Items => _connectionContext.Items;
 
         // Used by HubConnectionHandler to determine whether to set CloseMessage.AllowReconnect.
         internal bool AllowReconnect => _allowReconnect;
@@ -127,12 +127,12 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets or sets the user identifier for this connection.
         /// </summary>
-        public string UserIdentifier { get; set; }
+        public string? UserIdentifier { get; set; }
 
         /// <summary>
         /// Gets the protocol used by this connection.
         /// </summary>
-        public virtual IHubProtocol Protocol { get; set; }
+        public virtual IHubProtocol Protocol { get; set; } = default!;
 
         // Currently used only for streaming methods
         internal ConcurrentDictionary<string, CancellationTokenSource> ActiveRequestCancellationSources { get; } = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.SignalR
             ThreadPool.QueueUserWorkItem(_abortedCallback, this);
         }
 
-        internal async Task<bool> HandshakeAsync(TimeSpan timeout, IReadOnlyList<string> supportedProtocols, IHubProtocolResolver protocolResolver,
+        internal async Task<bool> HandshakeAsync(TimeSpan timeout, IReadOnlyList<string>? supportedProtocols, IHubProtocolResolver protocolResolver,
             IUserIdProvider userIdProvider, bool enableDetailedErrors)
         {
             try
@@ -455,7 +455,7 @@ namespace Microsoft.AspNetCore.SignalR
                                     consumed = segment.Start;
                                     examined = consumed;
 
-                                    Protocol = protocolResolver.GetProtocol(handshakeRequestMessage.Protocol, supportedProtocols);
+                                    Protocol = protocolResolver.GetProtocol(handshakeRequestMessage.Protocol, supportedProtocols)!;
                                     if (Protocol == null)
                                     {
                                         Log.HandshakeFailed(_logger, null);
@@ -506,7 +506,7 @@ namespace Microsoft.AspNetCore.SignalR
                                 }
                                 else if (overLength)
                                 {
-                                    Log.HandshakeSizeLimitExceeded(_logger, _maxMessageSize.Value);
+                                    Log.HandshakeSizeLimitExceeded(_logger, _maxMessageSize!.Value);
                                     await WriteHandshakeResponseAsync(new HandshakeResponseMessage("Handshake was canceled."));
                                     return false;
                                 }
@@ -619,9 +619,9 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private static void AbortConnection(object state)
+        private static void AbortConnection(object? state)
         {
-            var connection = (HubConnectionContext)state;
+            var connection = (HubConnectionContext)state!;
 
             try
             {
@@ -682,90 +682,6 @@ namespace Microsoft.AspNetCore.SignalR
             if (_streamTracker != null)
             {
                 _streamTracker.CompleteAll(new OperationCanceledException("The underlying connection was closed."));
-            }
-        }
-
-        private static class Log
-        {
-            // Category: HubConnectionContext
-            private static readonly Action<ILogger, string, Exception> _handshakeComplete =
-                LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, "HandshakeComplete"), "Completed connection handshake. Using HubProtocol '{Protocol}'.");
-
-            private static readonly Action<ILogger, Exception> _handshakeCanceled =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(2, "HandshakeCanceled"), "Handshake was canceled.");
-
-            private static readonly Action<ILogger, Exception> _sentPing =
-                LoggerMessage.Define(LogLevel.Trace, new EventId(3, "SentPing"), "Sent a ping message to the client.");
-
-            private static readonly Action<ILogger, Exception> _transportBufferFull =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(4, "TransportBufferFull"), "Unable to send Ping message to client, the transport buffer is full.");
-
-            private static readonly Action<ILogger, Exception> _handshakeFailed =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(5, "HandshakeFailed"), "Failed connection handshake.");
-
-            private static readonly Action<ILogger, Exception> _failedWritingMessage =
-                LoggerMessage.Define(LogLevel.Error, new EventId(6, "FailedWritingMessage"), "Failed writing message. Aborting connection.");
-
-            private static readonly Action<ILogger, string, int, Exception> _protocolVersionFailed =
-                LoggerMessage.Define<string, int>(LogLevel.Debug, new EventId(7, "ProtocolVersionFailed"), "Server does not support version {Version} of the {Protocol} protocol.");
-
-            private static readonly Action<ILogger, Exception> _abortFailed =
-                LoggerMessage.Define(LogLevel.Trace, new EventId(8, "AbortFailed"), "Abort callback failed.");
-
-            private static readonly Action<ILogger, int, Exception> _clientTimeout =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(9, "ClientTimeout"), "Client timeout ({ClientTimeout}ms) elapsed without receiving a message from the client. Closing connection.");
-
-            private static readonly Action<ILogger, long, Exception> _handshakeSizeLimitExceeded =
-                LoggerMessage.Define<long>(LogLevel.Debug, new EventId(10, "HandshakeSizeLimitExceeded"), "The maximum message size of {MaxMessageSize}B was exceeded while parsing the Handshake. The message size can be configured in AddHubOptions.");
-
-            public static void HandshakeComplete(ILogger logger, string hubProtocol)
-            {
-                _handshakeComplete(logger, hubProtocol, null);
-            }
-
-            public static void HandshakeCanceled(ILogger logger)
-            {
-                _handshakeCanceled(logger, null);
-            }
-
-            public static void SentPing(ILogger logger)
-            {
-                _sentPing(logger, null);
-            }
-
-            public static void TransportBufferFull(ILogger logger)
-            {
-                _transportBufferFull(logger, null);
-            }
-
-            public static void HandshakeFailed(ILogger logger, Exception exception)
-            {
-                _handshakeFailed(logger, exception);
-            }
-
-            public static void FailedWritingMessage(ILogger logger, Exception exception)
-            {
-                _failedWritingMessage(logger, exception);
-            }
-
-            public static void ProtocolVersionFailed(ILogger logger, string protocolName, int version)
-            {
-                _protocolVersionFailed(logger, protocolName, version, null);
-            }
-
-            public static void AbortFailed(ILogger logger, Exception exception)
-            {
-                _abortFailed(logger, exception);
-            }
-
-            public static void ClientTimeout(ILogger logger, TimeSpan timeout)
-            {
-                _clientTimeout(logger, (int)timeout.TotalMilliseconds, null);
-            }
-
-            public static void HandshakeSizeLimitExceeded(ILogger logger, long maxMessageSize)
-            {
-                _handshakeSizeLimitExceeded(logger, maxMessageSize, null);
             }
         }
     }

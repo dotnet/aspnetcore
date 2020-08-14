@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
@@ -23,7 +21,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _filterType = filterType;
         }
 
-        public async ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next)
+        public async ValueTask<object?> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object?>> next)
         {
             var (filter, owned) = GetFilter(invocationContext.ServiceProvider);
 
@@ -57,7 +55,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        public async Task OnDisconnectedAsync(HubLifetimeContext context, Exception exception, Func<HubLifetimeContext, Exception, Task> next)
+        public async Task OnDisconnectedAsync(HubLifetimeContext context, Exception? exception, Func<HubLifetimeContext, Exception?, Task> next)
         {
             var (filter, owned) = GetFilter(context.ServiceProvider);
 

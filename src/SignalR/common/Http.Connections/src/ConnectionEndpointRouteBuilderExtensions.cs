@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="pattern">The route pattern.</param>
         /// <param name="configureOptions">A callback to configure dispatcher options.</param>
         /// <returns>An <see cref="ConnectionEndpointRouteBuilder"/> for endpoints associated with the connections.</returns>
-        public static ConnectionEndpointRouteBuilder MapConnectionHandler<TConnectionHandler>(this IEndpointRouteBuilder endpoints, string pattern, Action<HttpConnectionDispatcherOptions> configureOptions) where TConnectionHandler : ConnectionHandler
+        public static ConnectionEndpointRouteBuilder MapConnectionHandler<TConnectionHandler>(this IEndpointRouteBuilder endpoints, string pattern, Action<HttpConnectionDispatcherOptions>? configureOptions) where TConnectionHandler : ConnectionHandler
         {
             var options = new HttpConnectionDispatcherOptions();
             configureOptions?.Invoke(options);

@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.SignalR
 
             _enableDetailedErrors = false;
 
-            List<IHubFilter> hubFilters = null;
+            List<IHubFilter>? hubFilters = null;
             if (_hubOptions.UserHasSetValues)
             {
                 _maximumMessageSize = _hubOptions.MaximumReceiveMessageSize;
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.SignalR
             await HubOnDisconnectedAsync(connection, connection.CloseException);
         }
 
-        private async Task HubOnDisconnectedAsync(HubConnectionContext connection, Exception exception)
+        private async Task HubOnDisconnectedAsync(HubConnectionContext connection, Exception? exception)
         {
             // send close message before aborting the connection
             await SendCloseAsync(connection, exception, connection.AllowReconnect);
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task SendCloseAsync(HubConnectionContext connection, Exception exception, bool allowReconnect)
+        private async Task SendCloseAsync(HubConnectionContext connection, Exception? exception, bool allowReconnect)
         {
             var closeMessage = CloseMessage.Empty;
 
@@ -335,22 +335,22 @@ namespace Microsoft.AspNetCore.SignalR
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, Exception> _errorDispatchingHubEvent =
+            private static readonly Action<ILogger, string, Exception?> _errorDispatchingHubEvent =
                 LoggerMessage.Define<string>(LogLevel.Error, new EventId(1, "ErrorDispatchingHubEvent"), "Error when dispatching '{HubMethod}' on hub.");
 
-            private static readonly Action<ILogger, Exception> _errorProcessingRequest =
+            private static readonly Action<ILogger, Exception?> _errorProcessingRequest =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(2, "ErrorProcessingRequest"), "Error when processing requests.");
 
-            private static readonly Action<ILogger, Exception> _abortFailed =
+            private static readonly Action<ILogger, Exception?> _abortFailed =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(3, "AbortFailed"), "Abort callback failed.");
 
-            private static readonly Action<ILogger, Exception> _errorSendingClose =
+            private static readonly Action<ILogger, Exception?> _errorSendingClose =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(4, "ErrorSendingClose"), "Error when sending Close message.");
 
-            private static readonly Action<ILogger, Exception> _connectedStarting =
+            private static readonly Action<ILogger, Exception?> _connectedStarting =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(5, "ConnectedStarting"), "OnConnectedAsync started.");
 
-            private static readonly Action<ILogger, Exception> _connectedEnding =
+            private static readonly Action<ILogger, Exception?> _connectedEnding =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(6, "ConnectedEnding"), "OnConnectedAsync ending.");
 
             public static void ErrorDispatchingHubEvent(ILogger logger, string hubMethod, Exception exception)
