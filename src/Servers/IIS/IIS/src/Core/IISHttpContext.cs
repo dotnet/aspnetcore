@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             if (!canHaveNonEmptyBody)
             {
-                _bodyOutput.Dispose();
+                _bodyOutput.Complete();
             }
             else
             {
@@ -663,7 +663,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 // Post completion after completing the request to resume the state machine
                 PostCompletion(ConvertRequestCompletionResults(successfulRequest));
-
 
                 // Dispose the context
                 Dispose();

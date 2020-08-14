@@ -195,18 +195,56 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         Task IHttpResponseBodyFeature.SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
             => SendFileFallback.SendFileAsync(ResponseBody, path, offset, count, cancellation);
 
-        Task IHttpResponseBodyFeature.CompleteAsync() => CompleteResponseBodyAsync();
-
         // TODO: In the future this could complete the body all the way down to the server. For now it just ensures
         // any unflushed data gets flushed.
-        protected Task CompleteResponseBodyAsync()
+        Task IHttpResponseBodyFeature.CompleteAsync()
         {
             if (ResponsePipeWrapper != null)
             {
-                return ResponsePipeWrapper.CompleteAsync().AsTask();
+                var completeAsyncValueTask = ResponsePipeWrapper.CompleteAsync();
+                if (!completeAsyncValueTask.IsCompletedSuccessfully)
+                {
+                    return CompleteResponseBodyAwaited(completeAsyncValueTask);
+                }
+                completeAsyncValueTask.GetAwaiter().GetResult();
             }
 
-            return Task.CompletedTask;
+            if (!HasResponseStarted)
+            {
+                var initializeTask = InitializeResponse(flushHeaders: false);
+                if (!initializeTask.IsCompletedSuccessfully)
+                {
+                    return CompleteInitializeResponseAwaited(initializeTask);
+                }
+            }
+
+            // Completing the body output will trigger a final flush to IIS.
+            // We'd rather not bypass the bodyoutput to flush, to guarantee we avoid
+            // calling flush twice at the same time.
+            // awaiting the writeBodyTask guarantees the response has finished the final flush.
+            _bodyOutput.Complete();
+            return _writeBodyTask;
+        }
+
+        private async Task CompleteResponseBodyAwaited(ValueTask completeAsyncTask)
+        {
+            await completeAsyncTask;
+
+            if (!HasResponseStarted)
+            {
+                await InitializeResponse(flushHeaders: false);
+            }
+
+            _bodyOutput.Complete();
+            await _writeBodyTask;
+        }
+
+        private async Task CompleteInitializeResponseAwaited(Task initializeTask)
+        {
+            await initializeTask;
+
+            _bodyOutput.Complete();
+            await _writeBodyTask;
         }
 
         bool IHttpUpgradeFeature.IsUpgradableRequest => true;

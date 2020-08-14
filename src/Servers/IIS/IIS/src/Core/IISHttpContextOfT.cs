@@ -26,31 +26,36 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public override async Task<bool> ProcessRequestAsync()
         {
-            InitializeContext();
-
             var context = default(TContext);
             var success = true;
 
             try
             {
-                context = _application.CreateContext(this);
+                InitializeContext();
 
-                await _application.ProcessRequestAsync(context);
-            }
-            catch (BadHttpRequestException ex)
-            {
-                SetBadRequestState(ex);
-                ReportApplicationError(ex);
-                success = false;
-            }
-            catch (Exception ex)
-            {
-                ReportApplicationError(ex);
-                success = false;
-            }
-            finally
-            {
-                await CompleteResponseBodyAsync();
+                try
+                {
+                    context = _application.CreateContext(this);
+
+                    await _application.ProcessRequestAsync(context);
+                }
+                catch (BadHttpRequestException ex)
+                {
+                    SetBadRequestState(ex);
+                    ReportApplicationError(ex);
+                    success = false;
+                }
+                catch (Exception ex)
+                {
+                    ReportApplicationError(ex);
+                    success = false;
+                }
+
+                if (ResponsePipeWrapper != null)
+                {
+                    await ResponsePipeWrapper.CompleteAsync();
+                }
+
                 _streams.Stop();
 
                 if (!HasResponseStarted && _applicationException == null && _onStarting != null)
@@ -66,38 +71,20 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     SetResetCode(2);
                 }
 
-                if (_onCompleted != null)
+                if (!_requestAborted)
                 {
-                    await FireOnCompleted();
+                    await ProduceEnd();
                 }
-            }
+                else if (!HasResponseStarted && _requestRejectedException == null)
+                {
+                    // If the request was aborted and no response was sent, there's no
+                    // meaningful status code to log.
+                    StatusCode = 0;
+                    success = false;
+                }
 
-            if (!_requestAborted)
-            {
-                await ProduceEnd();
-            }
-            else if (!HasResponseStarted && _requestRejectedException == null)
-            {
-                // If the request was aborted and no response was sent, there's no
-                // meaningful status code to log.
-                StatusCode = 0;
-                success = false;
-            }
-
-            try
-            {
-                _application.DisposeContext(context, _applicationException);
-            }
-            catch (Exception ex)
-            {
-                // TODO Log this
-                _applicationException = _applicationException ?? ex;
-                success = false;
-            }
-            finally
-            {
                 // Complete response writer and request reader pipe sides
-                _bodyOutput.Dispose();
+                _bodyOutput.Complete();
                 _bodyInputPipe?.Reader.Complete();
 
                 // Allow writes to drain
@@ -107,11 +94,32 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
 
                 // Cancel all remaining IO, there might be reads pending if not entire request body was sent by client
-                AsyncIO?.Dispose();
+                AsyncIO?.Complete();
 
                 if (_readBodyTask != null)
                 {
                     await _readBodyTask;
+                }
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                ReportApplicationError(ex);
+            }
+            finally
+            {
+                if (_onCompleted != null)
+                {
+                    await FireOnCompleted();
+                }
+
+                try
+                {
+                    _application.DisposeContext(context, _applicationException);
+                }
+                catch (Exception ex)
+                {
+                    ReportApplicationError(ex);
                 }
             }
             return success;
