@@ -90,19 +90,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private bool SetCurrent(string name, StringValues value, KnownHeaderType knownHeaderType)
         {
+            _knownHeaderType = knownHeaderType;
+
             if (value.Count == 1)
             {
                 Current = new KeyValuePair<string, string>(name, value.ToString());
-                _knownHeaderType = knownHeaderType;
                 _hasMultipleValues = false;
                 return true;
             }
             else
             {
                 _stringValuesEnumerator = value.GetEnumerator();
-                _knownHeaderType = knownHeaderType;
                 _hasMultipleValues = true;
-
                 return MoveNextOnStringEnumerator(name);
             }
         }
