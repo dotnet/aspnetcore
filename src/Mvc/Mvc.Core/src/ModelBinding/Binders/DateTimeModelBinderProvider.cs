@@ -24,9 +24,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
 
             var modelType = context.Metadata.UnderlyingOrModelType;
-            var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
             if (modelType == typeof(DateTime))
             {
+                var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
                 return new DateTimeModelBinder(SupportedStyles, loggerFactory);
             }
 

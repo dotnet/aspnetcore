@@ -33,11 +33,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task BindModel_CreatesError_IfAttemptedValueCannotBeParsed()
         {
             // Arrange
-            var message = "The value 'not a number' is not valid.";
+            var message = "The value 'not a date' is not valid.";
             var bindingContext = GetBindingContext();
             bindingContext.ValueProvider = new SimpleValueProvider
             {
-                { "theModelName", "not a number" },
+                { "theModelName", "not a date" },
             };
             var binder = GetBinder();
 
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var bindingContext = GetBindingContext(type);
             bindingContext.ValueProvider = new SimpleValueProvider(new CultureInfo("fr-FR"))
             {
-                { "theModelName", "2019-06-14T02:30:04.0Z" }
+                { "theModelName", "2019-06-14T02:30:04.0000000Z" }
             };
             var binder = GetBinder();
 
@@ -184,10 +184,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             // Arrange
             var bindingContext = GetBindingContext();
-            var expected = DateTime.Parse("2019-06-14T02:30:04.0Z");
+            var expected = DateTime.Parse("2019-06-14T02:30:04.0000000Z");
             bindingContext.ValueProvider = new SimpleValueProvider(new CultureInfo("fr-FR"))
             {
-                { "theModelName", "2019-06-14T02:30:04.0Z" }
+                { "theModelName", "2019-06-14T02:30:04.0000000Z" }
             };
             var binder = GetBinder(DateTimeStyles.AssumeLocal);
 
@@ -217,10 +217,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 ModelState = new ModelStateDictionary(),
                 ValueProvider = new SimpleValueProvider() // empty
             };
-        }
-
-        private sealed class TestClass
-        {
         }
     }
 }
