@@ -155,5 +155,19 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 return supported;
             }
         }
+
+        internal static bool IsFeatureSupported(HTTP_FEATURE_ID feature)
+        {
+            try
+            {
+                if (HttpIsFeatureSupported(feature))
+                {
+                    return true;
+                }
+            }
+            catch (EntryPointNotFoundException) { }
+
+            return false;
+        }
     }
 }

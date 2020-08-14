@@ -55,8 +55,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _serverAddresses = new ServerAddressesFeature();
             Features.Set<IServerAddressesFeature>(_serverAddresses);
 
-            var delegationProperty = new ServerDelegationPropertyFeature(Listener.RequestQueue, _logger);
-            Features.Set<IServerDelegationPropertyFeature>(delegationProperty);
+            if (HttpApi.IsFeatureSupported(HttpApiTypes.HTTP_FEATURE_ID.HttpFeatureDelegateEx))
+            {
+                var delegationProperty = new ServerDelegationPropertyFeature(Listener.RequestQueue, _logger);
+                Features.Set<IServerDelegationPropertyFeature>(delegationProperty);
+            }
 
             _maxAccepts = _options.MaxAccepts;
         }
