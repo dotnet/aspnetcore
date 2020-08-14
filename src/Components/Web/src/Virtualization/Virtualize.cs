@@ -31,6 +31,12 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
 
         private int _loadedItemsStartIndex;
 
+        private int _lastRenderedItemCount;
+
+        private int _lastRenderedPlaceholderCount;
+
+        private float _itemSize;
+
         private IEnumerable<TItem>? _loadedItems;
 
         private CancellationTokenSource? _refreshCts;
@@ -68,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         /// Gets the size of each item in pixels.
         /// </summary>
         [Parameter]
-        public float ItemSize { get; set; }
+        public float ItemSize { get; set; } = 50f;
 
         /// <summary>
         /// Gets or sets the function providing items to the list.
@@ -85,10 +91,15 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
-            if (ItemSize <= 0)
+            if (ItemSize < 0)
             {
                 throw new InvalidOperationException(
-                    $"{GetType()} requires a positive value for parameter '{nameof(ItemSize)}' to perform virtualization.");
+                    $"{GetType()} requires a non-negative value for parameter '{nameof(ItemSize)}'.");
+            }
+
+            if (_itemSize <= 0)
+            {
+                _itemSize = ItemSize;
             }
 
             if (ItemsProvider != null)
@@ -159,6 +170,8 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
 
             builder.CloseRegion();
 
+            _lastRenderedItemCount = 0;
+
             // Render the loaded items.
             if (_loadedItems != null && _itemTemplate != null)
             {
@@ -171,11 +184,15 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
                 foreach (var item in itemsToShow)
                 {
                     _itemTemplate(item)(builder);
-                    renderIndex++;
+                    _lastRenderedItemCount++;
                 }
+
+                renderIndex += _lastRenderedItemCount;
 
                 builder.CloseRegion();
             }
+
+            _lastRenderedPlaceholderCount = lastItemIndex - _itemsBefore - _lastRenderedItemCount;
 
             builder.OpenRegion(5);
 
@@ -199,20 +216,32 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         private string GetSpacerStyle(int itemsInSpacer)
             => $"height: {itemsInSpacer * ItemSize}px;";
 
-        void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float containerSize)
+        void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
         {
+            CalculateItemSize(spacerSeparation);
             CalcualteItemDistribution(spacerSize, containerSize, out var itemsBefore, out var visibleItemCapacity);
-
             UpdateItemDistribution(itemsBefore, visibleItemCapacity);
         }
 
-        void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float containerSize)
+        void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
         {
+            CalculateItemSize(spacerSeparation);
             CalcualteItemDistribution(spacerSize, containerSize, out var itemsAfter, out var visibleItemCapacity);
 
             var itemsBefore = Math.Max(0, _itemCount - itemsAfter - visibleItemCapacity);
 
             UpdateItemDistribution(itemsBefore, visibleItemCapacity);
+        }
+
+        private void CalculateItemSize(float spacerSeparation)
+        {
+            if (_lastRenderedItemCount <= 0)
+            {
+                return;
+            }
+
+            var totalItemsSize = spacerSeparation - (_lastRenderedPlaceholderCount * _itemSize);
+            _itemSize = totalItemsSize / _lastRenderedItemCount;
         }
 
         private void CalcualteItemDistribution(float spacerSize, float containerSize, out int itemsInSpacer, out int visibleItemCapacity)
