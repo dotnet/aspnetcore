@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.reactivex.Completable;
-import okio.ByteString;
 
 class WebSocketTransport implements Transport {
     private WebSocketWrapper webSocketClient;

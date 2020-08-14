@@ -881,9 +881,10 @@ public class HubConnection implements AutoCloseable {
         ActionBase action = args -> callback.invoke();
         return registerHandler(target, action);
     }
-    
+
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     * Takes a Class<T>. Should be used for primitives and non-generic classes.
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -899,6 +900,7 @@ public class HubConnection implements AutoCloseable {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     * Takes a Class<T>. Should be used for primitives and non-generic classes.
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -917,6 +919,7 @@ public class HubConnection implements AutoCloseable {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     * Takes a Class<T>. Should be used for primitives and non-generic classes.
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -938,6 +941,7 @@ public class HubConnection implements AutoCloseable {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     * Takes a Class<T>. Should be used for primitives and non-generic classes.
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -961,6 +965,7 @@ public class HubConnection implements AutoCloseable {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     * Takes a Class<T>. Should be used for primitives and non-generic classes.
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -987,6 +992,7 @@ public class HubConnection implements AutoCloseable {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     * Takes a Class<T>. Should be used for primitives and non-generic classes.
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -1015,6 +1021,7 @@ public class HubConnection implements AutoCloseable {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     * Takes a Class<T>. Should be used for primitives and non-generic classes.
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -1045,6 +1052,7 @@ public class HubConnection implements AutoCloseable {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     * Takes a Class<T>. Should be used for primitives and non-generic classes.
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -1077,6 +1085,10 @@ public class HubConnection implements AutoCloseable {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     * Takes a Type, which is more descriptive than a Class<?>. Should be used for generic classes and Parameterized Collections,
+     * like List<T> or Map<T1, T2>.
+     * 
+     * Should be invoked with the syntax
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -1092,6 +1104,8 @@ public class HubConnection implements AutoCloseable {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     * Takes a Type, which is more descriptive than a Class<?>. Should be used for generic classes and Parameterized Collections,
+     * like List<T> or Map<T1, T2>.
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -1111,6 +1125,8 @@ public class HubConnection implements AutoCloseable {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     * Takes a Type, which is more descriptive than a Class<?>. Should be used for generic classes and Parameterized Collections,
+     * like List<T> or Map<T1, T2>.
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -1134,6 +1150,8 @@ public class HubConnection implements AutoCloseable {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     * Takes a Type, which is more descriptive than a Class<?>. Should be used for generic classes and Parameterized Collections,
+     * like List<T> or Map<T1, T2>.
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -1159,6 +1177,8 @@ public class HubConnection implements AutoCloseable {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     * Takes a Type, which is more descriptive than a Class<?>. Should be used for generic classes and Parameterized Collections,
+     * like List<T> or Map<T1, T2>.
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -1187,6 +1207,8 @@ public class HubConnection implements AutoCloseable {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     * Takes a Type, which is more descriptive than a Class<?>. Should be used for generic classes and Parameterized Collections,
+     * like List<T> or Map<T1, T2>.
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -1217,6 +1239,8 @@ public class HubConnection implements AutoCloseable {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     * Takes a Type, which is more descriptive than a Class<?>. Should be used for generic classes and Parameterized Collections,
+     * like List<T> or Map<T1, T2>.
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -1250,6 +1274,8 @@ public class HubConnection implements AutoCloseable {
 
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     * Takes a Type, which is more descriptive than a Class<?>. Should be used for generic classes and Parameterized Collections,
+     * like List<T> or Map<T1, T2>.
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.

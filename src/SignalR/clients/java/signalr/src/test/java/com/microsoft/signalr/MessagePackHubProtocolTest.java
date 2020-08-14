@@ -693,7 +693,7 @@ class MessagePackHubProtocolTest {
         @SuppressWarnings("unchecked")
         List<Integer> listArg = (ArrayList<Integer>)listInvocationMessage.getArguments()[0];
         
-        //assertEquals(4, arrayArg.length);
+        assertEquals(4, arrayArg.length);
         assertEquals(4, listArg.size());
         for (int i = 0; i < arrayArg.length; i++) {
             assertEquals(i + 1, arrayArg[i]);

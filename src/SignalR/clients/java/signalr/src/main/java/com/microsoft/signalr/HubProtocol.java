@@ -16,7 +16,7 @@ public interface HubProtocol {
 
     /**
      * Creates a new list of {@link HubMessage}s.
-     * @param message A string representation of one or more {@link HubMessage}s.
+     * @param message A ByteBuffer representation of one or more {@link HubMessage}s.
      * @return A list of {@link HubMessage}s.
      */
     List<HubMessage> parseMessages(ByteBuffer message, InvocationBinder binder);
@@ -24,7 +24,7 @@ public interface HubProtocol {
     /**
      * Writes the specified {@link HubMessage} to a String.
      * @param message The message to write.
-     * @return A string representation of the message.
+     * @return A ByteBuffer representation of the message.
      */
     ByteBuffer writeMessage(HubMessage message);
 }

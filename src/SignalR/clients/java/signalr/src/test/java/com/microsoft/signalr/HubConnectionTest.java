@@ -36,7 +36,7 @@ class HubConnectionTest {
     private static final Type integerType = (new TypeReference<Integer>() { }).getType();
     private static final Type stringType = (new TypeReference<String>() { }).getType();
     private static final MessagePackHubProtocol messagePackHubProtocol = new MessagePackHubProtocol();
-    
+
     @Test
     public void checkHubConnectionState() {
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
@@ -1538,7 +1538,7 @@ class HubConnectionTest {
         assertNull(result.timeout(1000, TimeUnit.MILLISECONDS).blockingGet());
         assertTrue(done.get());
     }
-    
+
     @Test
     public void invokeCompletedByCompletionMessageWithResultWithMessagePack() {
         MockTransport mockTransport = new MockTransport();

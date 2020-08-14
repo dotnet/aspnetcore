@@ -150,22 +150,14 @@ public class JsonHubProtocol implements HubProtocol {
                     case COMPLETION:
                         if (resultToken != null) {
                             Type returnType = binder.getReturnType(invocationId);
-                            Type completionReturnType = Object.class;
-                            if (returnType != null) {
-                                completionReturnType = returnType;
-                            }
-                            result = gson.fromJson(resultToken, completionReturnType);
+                            result = gson.fromJson(resultToken, returnType != null ? returnType : Object.class);
                         }
                         hubMessages.add(new CompletionMessage(null, invocationId, result, error));
                         break;
                     case STREAM_ITEM:
                         if (resultToken != null) {
                             Type returnType = binder.getReturnType(invocationId);
-                            Type streamReturnType = Object.class;
-                            if (returnType != null) {
-                                streamReturnType = returnType;
-                            }
-                            result = gson.fromJson(resultToken, streamReturnType);
+                            result = gson.fromJson(resultToken, returnType != null ? returnType : Object.class);
                         }
                         hubMessages.add(new StreamItem(null, invocationId, result));
                         break;
@@ -221,8 +213,7 @@ public class JsonHubProtocol implements HubProtocol {
         ArrayList<Object> arguments = new ArrayList<>();
         while (reader.peek() != JsonToken.END_ARRAY) {
             if (argCount < paramCount) {
-                Object o = gson.fromJson(reader, paramTypes.get(argCount));
-                arguments.add(o);
+                arguments.add(gson.fromJson(reader, paramTypes.get(argCount)));
             } else {
                 reader.skipValue();
             }

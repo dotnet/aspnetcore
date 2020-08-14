@@ -15,7 +15,7 @@ final class CloseMessage extends HubMessage {
     public CloseMessage() {
         this(null, false);
     }
-    
+
     public CloseMessage(String error) {
         this (error, false);
     }

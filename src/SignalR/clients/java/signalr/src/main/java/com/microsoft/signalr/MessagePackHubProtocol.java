@@ -57,19 +57,23 @@ public class MessagePackHubProtocol implements HubProtocol {
 
         List<HubMessage> hubMessages = new ArrayList<>();
         
-        try {
-            while (payload.hasRemaining()) {
-                int length = Utils.readLengthHeader(payload);
+        while (payload.hasRemaining()) {
+            int length;
+            try {
+                length = Utils.readLengthHeader(payload);
                 // Throw if remaining buffer is shorter than length header
                 if (payload.remaining() < length) {
                     throw new RuntimeException(String.format("MessagePack message was length %d but claimed to be length %d.", payload.remaining(), length));
                 }
-                // Instantiate MessageUnpacker
-                MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(payload);
-                
+            } catch (IOException ex) {
+                throw new RuntimeException("Error reading length header.", ex);
+            }
+            // Instantiate MessageUnpacker
+            try(MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(payload)) {
+
                 int itemCount = unpacker.unpackArrayHeader();
                 HubMessageType messageType = HubMessageType.values()[unpacker.unpackInt() - 1];
-                
+
                 switch (messageType) {
                     case INVOCATION:
                         hubMessages.add(createInvocationMessage(unpacker, binder, itemCount, payload));
@@ -108,11 +112,10 @@ public class MessagePackHubProtocol implements HubProtocol {
                 }
                 unpacker.close();
                 payload.position(payload.position() + readBytes);
+            } catch (MessagePackException | IOException ex) {
+                throw new RuntimeException("Error reading MessagePack data.", ex);
             }
-        } catch (MessagePackException | IOException ex) {
-            throw new RuntimeException("Error reading MessagePack data.", ex);
         }
-
         return hubMessages;
     }
     

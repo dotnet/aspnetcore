@@ -102,7 +102,7 @@ class LongPollingTransport implements Transport {
                     } else {
                         if (response.getContent() != null) {
                             logger.debug("Message received.");
-                            onReceiveThread.submit(() ->this.onReceive(ByteBuffer.wrap(response.getContent().getBytes(StandardCharsets.UTF_8))));
+                            onReceiveThread.submit(() -> this.onReceive(ByteBuffer.wrap(response.getContent().getBytes(StandardCharsets.UTF_8))));
                         } else {
                             logger.debug("Poll timed out, reissuing.");
                         }
