@@ -1,12 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+
 namespace Microsoft.AspNetCore.Components.Forms
 {
     /// <summary>
     /// Describes context for an <see cref="InputRadio{TValue}"/> component.
     /// </summary>
-    internal class InputRadioContext
+    internal class InputRadioContext : IEquatable<InputRadioContext?>
     {
         private readonly InputRadioContext? _parentContext;
 
@@ -60,5 +63,33 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <returns>The <see cref="InputRadioContext"/>, or <c>null</c> if none was found.</returns>
         public InputRadioContext? FindContextInAncestors(string groupName)
             => string.Equals(GroupName, groupName) ? this : _parentContext?.FindContextInAncestors(groupName);
+
+        public override bool Equals(object? obj)
+        {
+            return Equals(obj as InputRadioContext);
+        }
+
+        public bool Equals(InputRadioContext? other)
+        {
+            return other != null &&
+                   EqualityComparer<InputRadioContext?>.Default.Equals(_parentContext, other._parentContext) &&
+                   GroupName == other.GroupName &&
+                   FieldClass == other.FieldClass;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(_parentContext, GroupName, CurrentValue, FieldClass, ChangeEventCallback);
+        }
+
+        public static bool operator ==(InputRadioContext? left, InputRadioContext? right)
+        {
+            return EqualityComparer<InputRadioContext>.Default.Equals(left, right);
+        }
+
+        public static bool operator !=(InputRadioContext? left, InputRadioContext? right)
+        {
+            return !(left == right);
+        }
     }
 }
