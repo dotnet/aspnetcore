@@ -21,7 +21,6 @@
                     name: file.name,
                     size: file.size,
                     type: file.type,
-                    relativePath: file.webkitRelativePath,
                 };
 
                 elem._blazorFilesById[result.id] = result;

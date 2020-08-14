@@ -33,13 +33,6 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         string Type { get; }
 
         /// <summary>
-        /// Gets the file's path relative to the base directory selected in a directory picker.
-        /// This is not supported on all browsers: see
-        /// https://developer.mozilla.org/en-US/docs/Web/API/File/webkitRelativePath.
-        /// </summary>
-        string? RelativePath { get; }
-
-        /// <summary>
         /// Opens the stream for reading the uploaded file.
         /// </summary>
         Stream OpenReadStream();

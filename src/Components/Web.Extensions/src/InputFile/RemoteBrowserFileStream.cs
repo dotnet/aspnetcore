@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
@@ -13,11 +15,12 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         private readonly IJSRuntime _jsRuntime;
         private readonly ElementReference _inputFileElement;
         private readonly int _maxChunkSize;
-        private readonly PreFetchingSequence _chunkSequence;
-        private readonly byte[] _currentChunkDecodingBuffer;
+        private readonly Memory<byte> _chunkBuffer;
+        private readonly PipeReader _pipeReader;
+        private readonly CancellationTokenSource _fillBufferCts;
 
-        private EncodedFileChunk? _currentChunk;
-        private int _currentChunkDecodingBufferConsumedLength;
+        private bool _isReadingCompleted;
+        private bool _isDisposed;
 
         public RemoteBrowserFileStream(IJSRuntime jsRuntime, ElementReference inputFileElement, int maxChunkSize, int maxBufferSize, BrowserFile file)
             : base(file)
@@ -25,84 +28,130 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             _jsRuntime = jsRuntime;
             _inputFileElement = inputFileElement;
             _maxChunkSize = maxChunkSize;
-            _chunkSequence = new PreFetchingSequence(
-                FetchEncodedChunk,
-                (File.Size + _maxChunkSize - 1) / _maxChunkSize,
-                Math.Max(1, maxBufferSize / _maxChunkSize)); // Degree of parallelism on fetch.
-            _currentChunkDecodingBuffer = new byte[_maxChunkSize];
+            _chunkBuffer = new Memory<byte>(ArrayPool<byte>.Shared.Rent(_maxChunkSize));
+
+            var pipe = new Pipe(new PipeOptions(pauseWriterThreshold: maxBufferSize, resumeWriterThreshold: maxBufferSize));
+            _pipeReader = pipe.Reader;
+            _fillBufferCts = new CancellationTokenSource();
+
+            _ = FillBuffer(pipe.Writer, _fillBufferCts.Token);
+        }
+
+        private async Task FillBuffer(PipeWriter writer, CancellationToken cancellationToken)
+        {
+            long offset = 0;
+
+            while (offset < File.Size)
+            {
+                var pipeBuffer = writer.GetMemory(_maxChunkSize);
+                var chunkSize = (int)Math.Min(_maxChunkSize, File.Size - offset);
+
+                try
+                {
+                    var base64 = await _jsRuntime.InvokeAsync<string>(
+                        InputFileInterop.ReadFileData,
+                        cancellationToken,
+                        _inputFileElement,
+                        File.Id,
+                        offset,
+                        chunkSize);
+
+                    if (!Convert.TryFromBase64String(base64, _chunkBuffer.Span, out var bytesWritten))
+                    {
+                        throw new FormatException("A chunk with an invalid format was received.");
+                    }
+
+                    if (bytesWritten != chunkSize)
+                    {
+                        throw new InvalidOperationException(
+                            $"A chunk with size {bytesWritten} bytes was received, but {chunkSize} bytes were expected.");
+                    }
+
+                    _chunkBuffer.CopyTo(pipeBuffer);
+
+                    writer.Advance(chunkSize);
+                    offset += chunkSize;
+                }
+                catch (Exception e)
+                {
+                    await writer.CompleteAsync(e);
+                    throw;
+                }
+
+                var result = await writer.FlushAsync();
+
+                if (result.IsCompleted)
+                {
+                    break;
+                }
+            }
+
+            await writer.CompleteAsync();
         }
 
         protected override async ValueTask<int> CopyFileDataIntoBuffer(long sourceOffset, Memory<byte> destination, CancellationToken cancellationToken)
         {
-            var totalBytesCopied = 0;
+            if (_isReadingCompleted)
+            {
+                return 0;
+            }
+
+            int totalBytesCopied = 0;
 
             while (destination.Length > 0)
             {
-                // If we don't yet have a chunk, or it's fully consumed, get the next one.
-                if (!_currentChunk.HasValue || _currentChunkDecodingBufferConsumedLength == _currentChunk.Value.LengthBytes)
+                var result = await _pipeReader.ReadAsync(cancellationToken);
+
+                if (result.IsCanceled)
                 {
-                    // If we've already read some data, and the next chunk is still pending,
-                    // then just return now rather than awaiting.
-                    if (totalBytesCopied > 0 && _chunkSequence.TryPeekNext(out var nextChunk) && !nextChunk.Base64.IsCompleted)
-                    {
-                        break;
-                    }
+                    _isReadingCompleted = true;
 
-                    _currentChunk = _chunkSequence.ReadNext(cancellationToken);
+                    var exception = new OperationCanceledException(cancellationToken);
+                    await _pipeReader.CompleteAsync(exception);
 
-                    var currentEncodedChunk = await _currentChunk.Value.Base64;
-
-                    DecodeChunkToBuffer(currentEncodedChunk, _currentChunkDecodingBuffer, 0, _currentChunk.Value.LengthBytes);
-
-                    _currentChunkDecodingBufferConsumedLength = 0;
+                    throw exception;
                 }
 
-                // How much of the current chunk can we fit into the destination?
-                var numUnconsumedBytesInChunk = _currentChunk.Value.LengthBytes - _currentChunkDecodingBufferConsumedLength;
-                var numBytesToTransfer = Math.Min(numUnconsumedBytesInChunk, destination.Length);
+                var bytesToCopy = (int)Math.Min(result.Buffer.Length, destination.Length);
+                var slice = result.Buffer.Slice(0, bytesToCopy);
 
-                if (numBytesToTransfer == 0)
+                slice.CopyTo(destination.Span);
+                _pipeReader.AdvanceTo(slice.End);
+
+                totalBytesCopied += bytesToCopy;
+
+                destination = destination.Slice(bytesToCopy);
+
+                if (result.IsCompleted && slice.Length == 0)
                 {
+                    _isReadingCompleted = true;
+
+                    await _pipeReader.CompleteAsync();
+
                     break;
                 }
-
-                // Perform the copy.
-                new Memory<byte>(_currentChunkDecodingBuffer, _currentChunkDecodingBufferConsumedLength, numBytesToTransfer).CopyTo(destination);
-                destination = destination.Slice(numBytesToTransfer);
-                _currentChunkDecodingBufferConsumedLength += numBytesToTransfer;
-                totalBytesCopied += numBytesToTransfer;
             }
 
             return totalBytesCopied;
         }
 
-        private EncodedFileChunk FetchEncodedChunk(long index, CancellationToken cancellationToken)
+        protected override void Dispose(bool disposing)
         {
-            var sourceOffset = index * _maxChunkSize;
-            var chunkLength = (int)Math.Min(_maxChunkSize, File.Size - sourceOffset);
-            var task = _jsRuntime.InvokeAsync<string>(
-                InputFileInterop.ReadFileData,
-                cancellationToken,
-                _inputFileElement,
-                File.Id,
-                index * _maxChunkSize,
-                chunkLength).AsTask();
-
-            return new EncodedFileChunk(task, chunkLength);
-        }
-
-        private int DecodeChunkToBuffer(string base64, byte[] buffer, int offset, int maxBytesToRead)
-        {
-            var bytes = Convert.FromBase64String(base64);
-
-            if (bytes.Length > maxBytesToRead)
+            if (_isDisposed)
             {
-                throw new InvalidOperationException($"Requested a maximum of {maxBytesToRead} bytes, but received {bytes.Length}.");
+                return;
             }
 
-            Array.Copy(bytes, 0, buffer, offset, bytes.Length);
+            _fillBufferCts.Cancel();
 
-            return bytes.Length;
+            if (disposing)
+            {
+                _fillBufferCts.Dispose();
+            }
+
+            _isDisposed = true;
+
+            base.Dispose(disposing);
         }
     }
 }

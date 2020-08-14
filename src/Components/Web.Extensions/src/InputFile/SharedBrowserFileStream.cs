@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,8 +41,6 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
                 readRequest.Destination = destinationArraySegment.Array!;
                 readRequest.DestinationOffset = destinationArraySegment.Offset;
                 readRequest.MaxBytes = destinationArraySegment.Count;
-
-                Console.WriteLine("Happy path!");
             }
             else
             {
@@ -53,8 +50,6 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
                 readRequest.MaxBytes = destination.Length;
 
                 destination.CopyTo(new Memory<byte>(readRequest.Destination));
-
-                Console.WriteLine("Sad path :(");
             }
 
             return _jsUnmarshalledRuntime.InvokeUnmarshalled<ReadRequest, int>(InputFileInterop.ReadFileDataSharedMemory, readRequest);
