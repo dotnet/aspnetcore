@@ -29,6 +29,12 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
 
+   <ProjectReference
+      Include="$(RepoRoot)src\Framework\App.Runtime\src\Microsoft.AspNetCore.App.Runtime.csproj"
+      PrivateAssets="All"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true" />
+
     <Reference
       Include="Microsoft.AspNetCore.Watch.BrowserRefresh"
       PrivateAssets="All"
