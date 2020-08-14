@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Net.Http.HPack;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
@@ -21,7 +24,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ContentLength = 9,
                 HeaderAcceptRanges = "AcceptRanges!",
                 HeaderAge = new StringValues(new[] { "1", "2" }),
-                HeaderDate = "Date!"
+                HeaderDate = "Date!",
+                HeaderGrpcEncoding = "Identity!"
             };
             responseHeaders.Append("Name1", "Value1");
             responseHeaders.Append("Name2", "Value2-1");
@@ -35,15 +39,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(new[]
             {
-                new KeyValuePair<string, string>("Date", "Date!"),
-                new KeyValuePair<string, string>("Accept-Ranges", "AcceptRanges!"),
-                new KeyValuePair<string, string>("Age", "1"),
-                new KeyValuePair<string, string>("Age", "2"),
-                new KeyValuePair<string, string>("Content-Length", "9"),
-                new KeyValuePair<string, string>("Name1", "Value1"),
-                new KeyValuePair<string, string>("Name2", "Value2-1"),
-                new KeyValuePair<string, string>("Name2", "Value2-2"),
-                new KeyValuePair<string, string>("Name3", "Value3"),
+                CreateHeaderResult(H2StaticTable.Date, "Date", "Date!"),
+                CreateHeaderResult(-1, "Grpc-Encoding", "Identity!"),
+                CreateHeaderResult(H2StaticTable.AcceptRanges, "Accept-Ranges", "AcceptRanges!"),
+                CreateHeaderResult(H2StaticTable.Age, "Age", "1"),
+                CreateHeaderResult(H2StaticTable.Age, "Age", "2"),
+                CreateHeaderResult(H2StaticTable.ContentLength, "Content-Length", "9"),
+                CreateHeaderResult(-1, "Name1", "Value1"),
+                CreateHeaderResult(-1, "Name2", "Value2-1"),
+                CreateHeaderResult(-1, "Name2", "Value2-2"),
+                CreateHeaderResult(-1, "Name3", "Value3"),
             }, headers);
         }
 
@@ -67,11 +72,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(new[]
             {
-                new KeyValuePair<string, string>("ETag", "ETag!"),
-                new KeyValuePair<string, string>("Name1", "Value1"),
-                new KeyValuePair<string, string>("Name2", "Value2-1"),
-                new KeyValuePair<string, string>("Name2", "Value2-2"),
-                new KeyValuePair<string, string>("Name3", "Value3"),
+                CreateHeaderResult(H2StaticTable.ETag, "ETag", "ETag!"),
+                CreateHeaderResult(-1, "Name1", "Value1"),
+                CreateHeaderResult(-1, "Name2", "Value2-1"),
+                CreateHeaderResult(-1, "Name2", "Value2-2"),
+                CreateHeaderResult(-1, "Name3", "Value3"),
             }, headers);
         }
 
@@ -89,14 +94,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(e.MoveNext());
             Assert.Equal("Name1", e.Current.Key);
             Assert.Equal("Value1", e.Current.Value);
+            Assert.Equal(-1, e.HPackStaticTableId);
 
             Assert.True(e.MoveNext());
             Assert.Equal("Name2", e.Current.Key);
             Assert.Equal("Value2-1", e.Current.Value);
+            Assert.Equal(-1, e.HPackStaticTableId);
 
             Assert.True(e.MoveNext());
             Assert.Equal("Name2", e.Current.Key);
             Assert.Equal("Value2-2", e.Current.Value);
+            Assert.Equal(-1, e.HPackStaticTableId);
 
             var responseTrailers = new HttpResponseTrailers
             {
@@ -111,30 +119,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(e.MoveNext());
             Assert.Equal("Grpc-Status", e.Current.Key);
             Assert.Equal("1", e.Current.Value);
+            Assert.Equal(-1, e.HPackStaticTableId);
 
             Assert.True(e.MoveNext());
             Assert.Equal("Name1", e.Current.Key);
             Assert.Equal("Value1", e.Current.Value);
+            Assert.Equal(-1, e.HPackStaticTableId);
 
             Assert.True(e.MoveNext());
             Assert.Equal("Name2", e.Current.Key);
             Assert.Equal("Value2-1", e.Current.Value);
+            Assert.Equal(-1, e.HPackStaticTableId);
 
             Assert.True(e.MoveNext());
             Assert.Equal("Name2", e.Current.Key);
             Assert.Equal("Value2-2", e.Current.Value);
+            Assert.Equal(-1, e.HPackStaticTableId);
 
             Assert.False(e.MoveNext());
         }
 
-        private KeyValuePair<string, string>[] GetNormalizedHeaders(Http2HeadersEnumerator enumerator)
+        private (int HPackStaticTableId, string name, string value)[] GetNormalizedHeaders(Http2HeadersEnumerator enumerator)
         {
-            var headers = new List<KeyValuePair<string, string>>();
+            var headers = new List<(int HPackStaticTableId, string name, string value)>();
             while (enumerator.MoveNext())
             {
-                headers.Add(enumerator.Current);
+                headers.Add(CreateHeaderResult(enumerator.HPackStaticTableId, enumerator.Current.Key, enumerator.Current.Value));
             }
             return headers.ToArray();
+        }
+
+        private static (int HPackStaticTableId, string Key, string Value) CreateHeaderResult(int hPackStaticTableId, string key, string value)
+        {
+            return (hPackStaticTableId, key, value);
         }
     }
 }

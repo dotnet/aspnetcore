@@ -100,6 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             else
             {
                 _stringValuesEnumerator = value.GetEnumerator();
+                _knownHeaderType = knownHeaderType;
                 _hasMultipleValues = true;
 
                 return MoveNextOnStringEnumerator(name);
