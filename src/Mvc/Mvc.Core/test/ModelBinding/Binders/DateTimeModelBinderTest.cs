@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             // Arrange
             var bindingContext = GetBindingContext();
-            var expected = new DateTime(2019, 06, 13, 19, 30, 4, 0, DateTimeKind.Local);
+            var expected = DateTime.Parse("2019-06-14T02:30:04.0Z");
             bindingContext.ValueProvider = new SimpleValueProvider(new CultureInfo("fr-FR"))
             {
                 { "theModelName", "2019-06-14T02:30:04.0Z" }
