@@ -137,9 +137,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.False(e.MoveNext());
         }
 
-        private (int HPackStaticTableId, string name, string value)[] GetNormalizedHeaders(Http2HeadersEnumerator enumerator)
+        private (int HPackStaticTableId, string Name, string Value)[] GetNormalizedHeaders(Http2HeadersEnumerator enumerator)
         {
-            var headers = new List<(int HPackStaticTableId, string name, string value)>();
+            var headers = new List<(int HPackStaticTableId, string Name, string Value)>();
             while (enumerator.MoveNext())
             {
                 headers.Add(CreateHeaderResult(enumerator.HPackStaticTableId, enumerator.Current.Key, enumerator.Current.Value));
