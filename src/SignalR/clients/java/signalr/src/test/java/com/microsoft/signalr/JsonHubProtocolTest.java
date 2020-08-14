@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.lang.reflect.Type;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -190,6 +192,96 @@ class JsonHubProtocolTest {
         int messageResult2 = (int) invocationMessage.getArguments()[1];
         assertEquals(42, messageResult);
         assertEquals(24, messageResult2);
+    }
+    
+    @Test
+    public void parseSingleMessageNestedCollection() {
+        String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[[{\"one\":[\"a\",\"b\"],\"two\":[\"\uBEEF\",\"\uABCD\"]},{\"four\":[\"^\",\"*\"],\"three\":[\"5\",\"9\"]}]]}\u001E";
+        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        TestBinder binder = new TestBinder(new Type[] { (new TypeReference<ArrayList<HashMap<String, ArrayList<Character>>>>() { }).getType() }, null);
+
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
+        
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+
+        //We know it's only one message
+        assertEquals(HubMessageType.INVOCATION, messages.get(0).getMessageType());
+
+        InvocationMessage invocationMessage = (InvocationMessage)messages.get(0);
+		
+        assertEquals("test", invocationMessage.getTarget());
+        assertEquals(null, invocationMessage.getInvocationId());
+        assertEquals(null, invocationMessage.getHeaders());
+        assertEquals(null, invocationMessage.getStreamIds());
+        
+        @SuppressWarnings("unchecked")
+        ArrayList<HashMap<String, ArrayList<Character>>> result = (ArrayList<HashMap<String, ArrayList<Character>>>)invocationMessage.getArguments()[0];
+        assertEquals(2, result.size());
+        
+        HashMap<String, ArrayList<Character>> firstMap = result.get(0);
+        HashMap<String, ArrayList<Character>> secondMap = result.get(1);
+        
+        assertEquals(2, firstMap.keySet().size());
+        assertEquals(2, secondMap.keySet().size());
+        
+        ArrayList<Character> firstList = firstMap.get("one");
+        ArrayList<Character> secondList = firstMap.get("two");
+        
+        ArrayList<Character> thirdList = secondMap.get("three");
+        ArrayList<Character> fourthList = secondMap.get("four");
+        
+        assertEquals(2, firstList.size());
+        assertEquals(2, secondList.size());
+        assertEquals(2, thirdList.size());
+        assertEquals(2, fourthList.size());
+        
+        assertEquals('a', (char) firstList.get(0));
+        assertEquals('b', (char) firstList.get(1));
+        
+        assertEquals('\ubeef', (char) secondList.get(0));
+        assertEquals('\uabcd', (char) secondList.get(1));
+        
+        assertEquals('5', (char) thirdList.get(0));
+        assertEquals('9', (char) thirdList.get(1));
+        
+        assertEquals('^', (char) fourthList.get(0));
+        assertEquals('*', (char) fourthList.get(1));
+    }
+    
+    @Test
+    public void parseSingleMessageCustomPojoArg() {
+        String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[{\"firstName\":\"John\",\"lastName\":\"Doe\",\"age\":30,\"t\":[5,8]}]}\u001E";
+        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        
+        TestBinder binder = new TestBinder(new Type[] { (new TypeReference<PersonPojo<ArrayList<Short>>>() { }).getType() }, null);
+
+        List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
+
+        //We know it's only one message
+        assertNotNull(messages);
+        assertEquals(1, messages.size());
+
+        assertEquals(HubMessageType.INVOCATION, messages.get(0).getMessageType());
+
+        //We can safely cast here because we know that it's an invocation message.
+        InvocationMessage invocationMessage = (InvocationMessage) messages.get(0);
+
+        assertEquals("test", invocationMessage.getTarget());
+        assertEquals(null, invocationMessage.getInvocationId());
+        assertEquals(null, invocationMessage.getHeaders());
+        assertEquals(null, invocationMessage.getStreamIds());
+        
+        @SuppressWarnings("unchecked")
+        PersonPojo<ArrayList<Short>> result = (PersonPojo<ArrayList<Short>>)invocationMessage.getArguments()[0];
+        assertEquals("John", result.getFirstName());
+        assertEquals("Doe", result.getLastName());
+        assertEquals(30, result.getAge());
+        
+        ArrayList<Short> generic = result.getT();
+        assertEquals(2, generic.size());
+        assertEquals((short)5, (short)generic.get(0));
+        assertEquals((short)8, (short)generic.get(1));
     }
 
     @Test
