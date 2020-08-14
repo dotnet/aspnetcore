@@ -68,11 +68,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerQosProperty, new IntPtr(&qosSettings), (uint)QosInfoSize);
         }
 
-        internal unsafe void SetDelegationProperty(RequestQueue queue)
+        internal unsafe void SetDelegationProperty(RequestQueue destination)
         {
             var propertyInfo = new HttpApiTypes.HTTP_BINDING_INFO();
             propertyInfo.Flags = HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
-            propertyInfo.RequestQueueHandle = queue.Handle.DangerousGetHandle();
+            propertyInfo.RequestQueueHandle = destination.Handle.DangerousGetHandle();
 
             SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerDelegationProperty, new IntPtr(&propertyInfo), (uint)RequestPropertyInfoSize);
         }

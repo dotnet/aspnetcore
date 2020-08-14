@@ -324,35 +324,40 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Dispose();
         }
 
-        internal unsafe void Transfer(DelegationRule wrapper)
+        internal unsafe void Transfer(DelegationRule destination)
         {
             if (Response.HasStarted)
             {
                 throw new InvalidOperationException("This request cannot be transfered, the response has already started.");
             }
 
-            Response.Transfer();
             var source = Server.RequestQueue;
 
-            var handle = GCHandle.Alloc(wrapper.Uri, GCHandleType.Pinned);
-            var property = new HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_INFO()
+            uint statusCode;
+
+            fixed (char* uriPointer = destination.UrlPrefix)
             {
-                ProperyId = HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_ID.DelegateRequestDelegateUrlProperty,
-                PropertyInfo = handle.AddrOfPinnedObject(),
-                PropertyInfoLength = (uint)System.Text.Encoding.Unicode.GetByteCount(wrapper.Uri)
-            };
-            var statusCode = HttpApi.HttpDelegateRequestEx(source.Handle,
-                                                           wrapper.Queue.Handle,
-                                                           Request.RequestId,
-                                                           wrapper.Queue.UrlGroup.Id,
-                                                           1,
-                                                           &property);
-            handle.Free();
+                var property = new HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_INFO()
+                {
+                    ProperyId = HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_ID.DelegateRequestDelegateUrlProperty,
+                    PropertyInfo = (IntPtr)uriPointer,
+                    PropertyInfoLength = (uint)System.Text.Encoding.Unicode.GetByteCount(destination.UrlPrefix)
+                };
+
+                statusCode = HttpApi.HttpDelegateRequestEx(source.Handle,
+                                                               destination.Queue.Handle,
+                                                               Request.RequestId,
+                                                               destination.Queue.UrlGroup.Id,
+                                                               1,
+                                                               &property);
+            }
 
             if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
             {
                 throw new HttpSysException((int)statusCode);
             }
+
+            Response.MarkTransfered();
         }
     }
 }

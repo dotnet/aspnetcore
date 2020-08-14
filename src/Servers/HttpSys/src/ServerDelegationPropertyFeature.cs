@@ -8,15 +8,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal class ServerDelegationPropertyFeature : IServerDelegationPropertyFeature
+    internal class ServerDelegationPropertyFeature : IServerDelegationFeature
     {
         private readonly ILogger _logger;
         private readonly RequestQueue _queue;
+
         public ServerDelegationPropertyFeature(RequestQueue queue, ILogger logger)
         {
             _queue = queue;
             _logger = logger;
         }
+
         public DelegationRule CreateDelegationRule(string queueName, string uri)
         {
             var wrapper = new DelegationRule(queueName, uri, _logger);

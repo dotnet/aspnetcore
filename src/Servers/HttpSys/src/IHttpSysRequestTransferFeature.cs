@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Http.Features
         /// must not be read before this is invoked. Check <see cref="IsTransferable"/>
         /// before invoking.
         /// </summary>
-        /// <returns></returns>
-        void TransferRequest(DelegationRule wrapper);
+        void TransferRequest(DelegationRule destination);
     }
 }

@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             if (HttpApi.IsFeatureSupported(HttpApiTypes.HTTP_FEATURE_ID.HttpFeatureDelegateEx))
             {
                 var delegationProperty = new ServerDelegationPropertyFeature(Listener.RequestQueue, _logger);
-                Features.Set<IServerDelegationPropertyFeature>(delegationProperty);
+                Features.Set<IServerDelegationFeature>(delegationProperty);
             }
 
             _maxAccepts = _options.MaxAccepts;

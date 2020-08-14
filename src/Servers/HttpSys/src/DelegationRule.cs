@@ -10,15 +10,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         private readonly ILogger _logger;
         public string QueueName { get; }
-        public string Uri { get; }
+        public string UrlPrefix { get; }
         internal RequestQueue Queue { get; }
 
-        internal DelegationRule(string queueName, string uri, ILogger logger)
+        internal DelegationRule(string queueName, string urlPrefix, ILogger logger)
         {
             _logger = logger;
             QueueName = queueName;
-            Uri = uri;
-            Queue = new RequestQueue(null, queueName, RequestQueueMode.Receiver, Uri, _logger);
+            UrlPrefix = urlPrefix;
+            Queue = new RequestQueue(null, queueName, UrlPrefix, _logger, receiver: true);
         }
     }
 }

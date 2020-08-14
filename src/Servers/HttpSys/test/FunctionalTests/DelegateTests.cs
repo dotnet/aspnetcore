@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 return Task.FromResult(0);
             });
 
-            var delegationProperty = delegator.Features.Get<IServerDelegationPropertyFeature>();
+            var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
             wrapper = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
 
             var responseString = await SendRequestAsync(delegatorAddress);
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 Assert.Throws<InvalidOperationException>(() => transferFeature.TransferRequest(wrapper));
             });
 
-            var delegationProperty = delegator.Features.Get<IServerDelegationPropertyFeature>();
+            var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
             wrapper = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
 
             var responseString = await SendRequestAsync(delegatorAddress);
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 });
             });
 
-            var delegationProperty = delegator.Features.Get<IServerDelegationPropertyFeature>();
+            var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
             wrapper = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
 
             var responseString = await SendRequestAsync(delegatorAddress);
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 await httpContext.Response.WriteAsync(_expectedResponseString);
             });
 
-            var delegationProperty = delegator.Features.Get<IServerDelegationPropertyFeature>();
+            var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
             Assert.Null(delegationProperty);
 
             _ = await SendRequestAsync(delegatorAddress);

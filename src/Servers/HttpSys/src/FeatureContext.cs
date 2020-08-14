@@ -714,10 +714,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 await actionPair.Item1(actionPair.Item2);
             }
         }
-        public void TransferRequest(DelegationRule wrapper)
+
+        public void TransferRequest(DelegationRule destination)
         {
+            _requestContext.Transfer(destination);
             _responseStarted = true;
-            _requestContext.Transfer(wrapper);
         }
     }
 }

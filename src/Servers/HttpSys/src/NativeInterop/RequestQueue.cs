@@ -19,13 +19,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private readonly ILogger _logger;
         private bool _disposed;
 
-        internal RequestQueue(UrlGroup urlGroup, string requestQueueName, RequestQueueMode mode, string Uri, ILogger logger)
-            : this(urlGroup, requestQueueName, mode, logger)
+        internal RequestQueue(UrlGroup urlGroup, string requestQueueName, string urlPrefix, ILogger logger, bool receiver)
+            : this(urlGroup, requestQueueName, mode: default, logger, receiver)
         {
-            UrlGroup = new UrlGroup(this, UrlPrefix.Create(Uri));
+            UrlGroup = new UrlGroup(this, UrlPrefix.Create(urlPrefix));
         }
 
         internal RequestQueue(UrlGroup urlGroup, string requestQueueName, RequestQueueMode mode, ILogger logger)
+            : this(urlGroup, requestQueueName, mode, logger, false)
+        { }
+
+        private RequestQueue(UrlGroup urlGroup, string requestQueueName, RequestQueueMode mode, ILogger logger, bool receiver)
         {
             _mode = mode;
             UrlGroup = urlGroup;
@@ -33,13 +37,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             var flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.None;
             Created = true;
+
             if (_mode == RequestQueueMode.Attach)
             {
                 flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting;
                 Created = false;
             }
 
-            if (_mode == RequestQueueMode.Receiver)
+            if (receiver)
             {
                 flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting | HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.Delegation;
                 Created = false;
@@ -65,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         out requestQueueHandle);
             }
 
-            if ((flags & HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting)!=0 && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_FILE_NOT_FOUND)
+            if (flags.HasFlag(HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting) && statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_FILE_NOT_FOUND)
             {
                 throw new HttpSysException((int)statusCode, $"Failed to attach to the given request queue '{requestQueueName}', the queue could not be found.");
             }
