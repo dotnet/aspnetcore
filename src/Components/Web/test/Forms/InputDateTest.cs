@@ -49,9 +49,10 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             // Act
             var inputSelectComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+            var exception = Record.Exception(() => inputSelectComponent.InputElement);
 
             // Assert
-            Assert.NotNull(inputSelectComponent.InputElement);
+            Assert.Null(exception);
         }
 
         private class TestModel

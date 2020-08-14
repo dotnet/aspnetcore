@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             var inputRadioComponents = await RenderAndGetTestInputComponentAsync(rootComponent);
 
-            Assert.All(inputRadioComponents, inputRadio => Assert.NotNull(inputRadio.InputElement));
+            Assert.All(inputRadioComponents, inputRadio => Assert.Null(Record.Exception(() => inputRadio.InputElement)));
         }
 
         private static RenderFragment RadioButtonsWithoutGroup(string name) => (builder) =>

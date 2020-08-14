@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -11,6 +12,8 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class InputSelect<TValue> : InputBase<TValue>
     {
+        private ElementReference? _selectElement;
+
         /// <summary>
         /// Gets or sets the child content to be rendering inside the select element.
         /// </summary>
@@ -19,7 +22,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets or sets the associated <see cref="ElementReference"/>
         /// </summary>
-        public ElementReference? InputElement { get; protected set; }
+        public ElementReference SelectElement
+        {
+            get => _selectElement ?? throw new InvalidOperationException($"Component must be rendered before {nameof(SelectElement)} can be accessed.");
+            protected set => _selectElement = value;
+        }
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -29,7 +36,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.AddAttribute(2, "class", CssClass);
             builder.AddAttribute(3, "value", BindConverter.FormatValue(CurrentValueAsString));
             builder.AddAttribute(4, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
-            builder.AddElementReferenceCapture(5, __inputReference => InputElement = __inputReference);
+            builder.AddElementReferenceCapture(5, __selectReference => SelectElement = __selectReference);
             builder.AddContent(6, ChildContent);
             builder.CloseElement();
         }

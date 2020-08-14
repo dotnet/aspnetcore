@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
 
@@ -20,10 +21,16 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class InputText : InputBase<string?>
     {
+        private ElementReference? _inputElement;
+
         /// <summary>
         /// Gets or sets the associated <see cref="ElementReference"/>
         /// </summary>
-        public ElementReference? InputElement { get; protected set; }
+        public ElementReference InputElement
+        {
+            get => _inputElement ?? throw new InvalidOperationException($"Component must be rendered before {nameof(InputElement)} can be accessed.");
+            protected set => _inputElement = value;
+        }
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)

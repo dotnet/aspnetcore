@@ -21,10 +21,16 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class InputCheckbox : InputBase<bool>
     {
+        private ElementReference? _inputElement;
+
         /// <summary>
         /// Gets or sets the associated <see cref="ElementReference"/>
         /// </summary>
-        public ElementReference? InputElement { get; protected set; }
+        public ElementReference InputElement
+        {
+            get => _inputElement ?? throw new InvalidOperationException($"Component must be rendered before {nameof(InputElement)} can be accessed.");
+            protected set => _inputElement = value;
+        }
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)

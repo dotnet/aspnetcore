@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     public class InputNumber<TValue> : InputBase<TValue>
     {
         private readonly static string _stepAttributeValue; // Null by default, so only allows whole numbers as per HTML spec
+        private ElementReference? _inputElement;
 
         static InputNumber()
         {
@@ -44,7 +45,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets or sets the associated <see cref="ElementReference"/>
         /// </summary>
-        public ElementReference? InputElement { get; protected set; }
+        public ElementReference InputElement
+        {
+            get => _inputElement ?? throw new InvalidOperationException($"Component must be rendered before {nameof(InputElement)} can be accessed.");
+            protected set => _inputElement = value;
+        }
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)

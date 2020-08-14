@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class InputRadio<TValue> : ComponentBase
     {
+        private ElementReference? _inputElement;
+
         /// <summary>
         /// Gets context for this <see cref="InputRadio{TValue}"/>.
         /// </summary>
@@ -42,7 +44,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets or sets the associated <see cref="ElementReference"/>
         /// </summary>
-        public ElementReference? InputElement { get; protected set; }
+        public ElementReference InputElement
+        {
+            get => _inputElement ?? throw new InvalidOperationException($"Component must be rendered before {nameof(InputElement)} can be accessed.");
+            protected set => _inputElement = value;
+        }
 
         private string GetCssClass(string fieldClass)
         {
