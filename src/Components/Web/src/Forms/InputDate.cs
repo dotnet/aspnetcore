@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         /// <summary>
         /// Gets or sets the associated <see cref="ElementReference"/>
-        /// <para>This value is used to gain access to helper methods on the input element.</para>
         /// </summary>
         public ElementReference? InputElement { get; protected set; }
 
