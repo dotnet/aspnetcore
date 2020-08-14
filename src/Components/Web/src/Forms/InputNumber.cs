@@ -41,6 +41,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         [Parameter] public string ParsingErrorMessage { get; set; } = "The {0} field must be a number.";
 
+        /// <summary>
+        /// Gets or sets the associated <see cref="ElementReference"/>
+        /// <para>This value is used to gain access to helper methods on the input elment.</para>
+        /// </summary>
+        public ElementReference? InputElement { get; protected set; }
+
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
@@ -51,6 +57,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.AddAttribute(4, "class", CssClass);
             builder.AddAttribute(5, "value", BindConverter.FormatValue(CurrentValueAsString));
             builder.AddAttribute(6, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+            builder.AddElementReferenceCapture(7, __inputReference => InputElement = __inputReference);
             builder.CloseElement();
         }
 

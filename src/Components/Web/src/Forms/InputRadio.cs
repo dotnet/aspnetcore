@@ -39,6 +39,12 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         [CascadingParameter] private InputRadioContext? CascadedContext { get; set; }
 
+        /// <summary>
+        /// Gets or sets the associated <see cref="ElementReference"/>
+        /// <para>This value is used to gain access to helper methods on the input elment.</para>
+        /// </summary>
+        public ElementReference? InputElement { get; protected set; }
+
         private string GetCssClass(string fieldClass)
         {
             if (AdditionalAttributes != null &&
@@ -76,6 +82,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.AddAttribute(5, "value", BindConverter.FormatValue(Value?.ToString()));
             builder.AddAttribute(6, "checked", Context.CurrentValue?.Equals(Value));
             builder.AddAttribute(7, "onchange", Context.ChangeEventCallback);
+            builder.AddElementReferenceCapture(8, __inputReference => InputElement = __inputReference);
             builder.CloseElement();
         }
     }

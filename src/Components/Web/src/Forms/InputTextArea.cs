@@ -20,6 +20,12 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class InputTextArea : InputBase<string?>
     {
+        /// <summary>
+        /// Gets or sets the associated <see cref="ElementReference"/>
+        /// <para>This value is used to gain access to helper methods on the input elment.</para>
+        /// </summary>
+        public ElementReference? InputElement { get; protected set; }
+
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
@@ -28,6 +34,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.AddAttribute(2, "class", CssClass);
             builder.AddAttribute(3, "value", BindConverter.FormatValue(CurrentValue));
             builder.AddAttribute(4, "onchange", EventCallback.Factory.CreateBinder<string?>(this, __value => CurrentValueAsString = __value, CurrentValueAsString));
+            builder.AddElementReferenceCapture(5, __inputReference => InputElement = __inputReference);
             builder.CloseElement();
         }
 
