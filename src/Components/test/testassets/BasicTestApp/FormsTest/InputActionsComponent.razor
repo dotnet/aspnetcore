@@ -1,0 +1,94 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm EditContext="@editContext">
+    <p class="name">
+        Name: <InputText @ref="inputTextReference" @bind-Value="person.Name" placeholder="Enter your name" />
+        <button @onclick="async () => await inputTextReference.InputElement.FocusAsync()">Focus</button>
+    </p>
+
+    <p class="age">
+        Age (years): <InputNumber @ref="inputNumberReference" @bind-Value="person.AgeInYears" placeholder="Enter your age" />
+        <button @onclick="async () => await inputNumberReference.InputElement.FocusAsync()">Focus</button>
+    </p>
+
+    <p class="description">
+        Description: <InputTextArea @ref="inputTextAreaReference" @bind-Value="person.Description" placeholder="Tell us about yourself" />
+        <button @onclick="async () => await inputTextAreaReference.InputElement.FocusAsync()">Focus</button>
+    </p>
+
+    <p class="renewal-date">
+        Renewal date: <InputDate @ref="inputDateReference" @bind-Value="person.RenewalDate" placeholder="Enter the date" />
+        <button @onclick="async () => await inputDateReference.InputElement.FocusAsync()" value="Focus">Focus</button>
+    </p>
+
+    <p class="ticket-class">
+        Ticket class:
+        <InputSelect @ref="inputSelectReference" @bind-Value="person.TicketClass" size="4">
+            <option>(select)</option>
+            <option value="@TicketClass.Economy">Economy class</option>
+            <option value="@TicketClass.Premium">Premium class</option>
+            <option value="@TicketClass.First">First class</option>
+        </InputSelect>
+        <span id="selected-ticket-class">@person.TicketClass</span>
+        <button @onclick="async () => await inputSelectReference.SelectElement.FocusAsync()">Focus</button>
+
+    </p>
+
+    <p class="radio-group">
+        Pick one country:
+        <InputRadioGroup Name="country" @bind-Value="person.Country">
+            <InputRadio @ref="inputRadio1Reference" Name="country" Value="Country.Japan" />japan
+            <button @onclick="async () => await inputRadio1Reference.InputElement.FocusAsync()">Focus</button>
+            <br />
+            <InputRadio @ref="inputRadio2Reference" Name="country" Value="Country.Latvia" />Latvia
+            <button @onclick="async () => await inputRadio2Reference.InputElement.FocusAsync()">Focus</button>
+        </InputRadioGroup>
+    </p>
+    <p class="accepts-terms">
+        Accepts terms: <InputCheckbox @ref="inputCheckboxReference" @bind-Value="person.AcceptsTerms" title="You have to check this" />
+        <button @onclick="async () => await inputCheckboxReference.InputElement.FocusAsync()">Focus</button>
+    </p>
+</EditForm>
+
+@code {
+    InputText inputTextReference;
+    InputNumber<int> inputNumberReference;
+    InputTextArea inputTextAreaReference;
+    InputDate<DateTime> inputDateReference;
+    InputSelect<TicketClass> inputSelectReference;
+    InputRadio<Country> inputRadio1Reference;
+    InputRadio<Country> inputRadio2Reference;
+    InputCheckbox inputCheckboxReference;
+
+    Person person = new Person();
+    EditContext editContext;
+
+    protected override void OnInitialized()
+    {
+        editContext = new EditContext(person);
+    }
+
+
+    // Usually this would be in a different file
+    class Person
+    {
+        public string Name { get; set; }
+
+        public int AgeInYears { get; set; }
+
+        public DateTime RenewalDate { get; set; } = DateTime.Now;
+
+        public bool AcceptsTerms { get; set; }
+
+        public string Description { get; set; }
+
+        public TicketClass TicketClass { get; set; }
+
+        public Country? Country { get; set; } = null;
+    }
+
+    enum TicketClass { Economy, Premium, First }
+
+    enum Country { Japan, Latvia }
+}
+
