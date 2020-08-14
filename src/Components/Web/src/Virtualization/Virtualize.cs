@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
             {
                 // This is a rare case where it's valid for the sequence number to be programmatically incremented.
                 // This is only true because we know for certain that no other content will be alongside it.
-                builder.AddContent(renderIndex, _placeholder, new PlaceholderContext(renderIndex));
+                builder.AddContent(renderIndex, _placeholder, new PlaceholderContext(renderIndex, _itemSize));
             }
 
             builder.CloseRegion();
@@ -192,14 +192,14 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
                 builder.CloseRegion();
             }
 
-            _lastRenderedPlaceholderCount = lastItemIndex - _itemsBefore - _lastRenderedItemCount;
+            _lastRenderedPlaceholderCount = Math.Max(0, lastItemIndex - _itemsBefore - _lastRenderedItemCount);
 
             builder.OpenRegion(5);
 
             // Render the placeholders after the loaded items.
             for (; renderIndex < lastItemIndex; renderIndex++)
             {
-                builder.AddContent(renderIndex, _placeholder, new PlaceholderContext(renderIndex));
+                builder.AddContent(renderIndex, _placeholder, new PlaceholderContext(renderIndex, _itemSize));
             }
 
             builder.CloseRegion();
