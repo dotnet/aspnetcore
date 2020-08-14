@@ -730,10 +730,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        internal void MarkTransfered()
+        internal void MarkTransferred()
         {
             Abort();
-            _nativeStream?.MarkTransfered();
+            _nativeStream?.MarkTransferred();
         }
 
         internal void CancelLastWrite()

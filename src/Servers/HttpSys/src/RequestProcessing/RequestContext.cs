@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 throw new HttpSysException((int)statusCode);
             }
 
-            Response.MarkTransfered();
+            Response.MarkTransferred();
         }
     }
 }

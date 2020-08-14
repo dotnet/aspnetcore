@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             FlushInternal(endOfRequest: false);
         }
 
-        public void MarkTransfered()
+        public void MarkTransferred()
         {
             _skipWrites = true;
         }
