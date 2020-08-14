@@ -424,15 +424,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             // Output is ending and there are trailers to write
                             // Write any remaining content then write trailers
 
+                            _stream.ResponseTrailers.SetReadOnly();
+                            _stream.DecrementActiveClientStreamCount();
+
                             if (readResult.Buffer.Length > 0)
                             {
-                                flushResult = await _frameWriter.WriteDataAndTrailersAsync(_stream, _flowControl, readResult.Buffer, firstWrite);
+                                // It is faster to write data and trailers together. Locking once reduces lock contention.
+                                flushResult = await _frameWriter.WriteDataAndTrailersAsync(StreamId, _flowControl, readResult.Buffer, firstWrite, _stream.ResponseTrailers);
                             }
                             else
                             {
-                                _stream.ResponseTrailers.SetReadOnly();
-                                _stream.DecrementActiveClientStreamCount();
-                                flushResult = await _frameWriter.WriteResponseTrailers(StreamId, _stream.ResponseTrailers);
+                                flushResult = await _frameWriter.WriteResponseTrailersAsync(StreamId, _stream.ResponseTrailers);
                             }
                         }
                         else if (readResult.IsCompleted && _streamEnded)
