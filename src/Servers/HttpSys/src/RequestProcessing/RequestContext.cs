@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                                                                destination.Queue.Handle,
                                                                Request.RequestId,
                                                                destination.Queue.UrlGroup.Id,
-                                                               1,
+                                                               propertyInfoSetSize: 1,
                                                                &property);
             }
 

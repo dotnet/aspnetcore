@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _logger = logger;
             QueueName = queueName;
             UrlPrefix = urlPrefix;
-            Queue = new RequestQueue(null, queueName, UrlPrefix, _logger, receiver: true);
+            Queue = new RequestQueue(queueName, UrlPrefix, _logger, receiver: true);
         }
 
         public void Dispose()

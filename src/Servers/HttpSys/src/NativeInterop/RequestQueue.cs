@@ -19,10 +19,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private readonly ILogger _logger;
         private bool _disposed;
 
-        internal RequestQueue(UrlGroup urlGroup, string requestQueueName, string urlPrefix, ILogger logger, bool receiver)
-            : this(urlGroup, requestQueueName, mode: default, logger, receiver)
+        internal RequestQueue(string requestQueueName, string urlPrefix, ILogger logger, bool receiver)
+            : this(urlGroup: null, requestQueueName, RequestQueueMode.Attach, logger, receiver)
         {
-            UrlGroup = new UrlGroup(this, UrlPrefix.Create(urlPrefix));
+            try
+            {
+                UrlGroup = new UrlGroup(this, UrlPrefix.Create(urlPrefix));
+            }
+            catch
+            {
+                Dispose();
+                throw;
+            }
         }
 
         internal RequestQueue(UrlGroup urlGroup, string requestQueueName, RequestQueueMode mode, ILogger logger)
@@ -42,12 +50,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting;
                 Created = false;
-            }
-
-            if (receiver)
-            {
-                flags = HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.OpenExisting | HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.Delegation;
-                Created = false;
+                if (receiver)
+                {
+                    flags |= HttpApiTypes.HTTP_CREATE_REQUEST_QUEUE_FLAG.Delegation;
+                }
             }
 
             var statusCode = HttpApi.HttpCreateRequestQueue(

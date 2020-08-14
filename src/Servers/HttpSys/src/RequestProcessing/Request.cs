@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        public bool IsTransferable => (HasRequestBodyStarted || RequestContext.Response.HasStarted);
+        public bool IsTransferable => !(HasRequestBodyStarted || RequestContext.Response.HasStarted);
 
         // Populates the client certificate.  The result may be null if there is no client cert.
         // TODO: Does it make sense for this to be invoked multiple times (e.g. renegotiate)? Client and server code appear to

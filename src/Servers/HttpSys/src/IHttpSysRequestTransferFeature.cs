@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         bool IsTransferable { get; }
 
         /// <summary>
-        /// Attempt to transfer the request to another HttpSys request queue. The request body
-        /// must not be read before this is invoked. Check <see cref="IsTransferable"/>
+        /// Attempt to transfer the request to another Http.Sys request queue. The request body
+        /// must not be read nor the response started before this is invoked. Check <see cref="IsTransferable"/>
         /// before invoking.
         /// </summary>
         void TransferRequest(DelegationRule destination);

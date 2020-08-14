@@ -160,10 +160,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             try
             {
-                if (HttpIsFeatureSupported(feature))
-                {
-                    return true;
-                }
+                return HttpIsFeatureSupported(feature);
             }
             catch (EntryPointNotFoundException) { }
 

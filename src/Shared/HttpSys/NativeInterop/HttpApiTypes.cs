@@ -32,7 +32,6 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HttpServerListenEndpointProperty,
             HttpServerChannelBindProperty,
             HttpServerProtectionLevelProperty,
-            // Internal
             HttpServerDelegationProperty = 16
         }
 

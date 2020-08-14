@@ -66,6 +66,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             {
                 await httpContext.Response.WriteAsync(_expectedResponseString);
                 var transferFeature = httpContext.Features.Get<IHttpSysRequestTransferFeature>();
+                Assert.False(transferFeature.IsTransferable);
                 Assert.Throws<InvalidOperationException>(() => transferFeature.TransferRequest(wrapper));
             });
 
@@ -97,6 +98,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             {
                 var transferFeature = httpContext.Features.Get<IHttpSysRequestTransferFeature>();
                 transferFeature.TransferRequest(wrapper);
+                Assert.False(transferFeature.IsTransferable);
                 await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 {
                     await httpContext.Response.WriteAsync(_expectedResponseString);
@@ -146,21 +148,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         [DelegateSupportedCondition(false)]
         public async Task DelegationFeaturesAreNull()
         {
-            var queueName = Guid.NewGuid().ToString();
-            using var receiver = Utilities.CreateHttpServer(out var receiverAddress, async httpContext =>
-            {
-                await httpContext.Response.WriteAsync(_expectedResponseString);
-            },
-           options =>
-           {
-               options.RequestQueueName = queueName;
-           });
-
-            using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, async httpContext =>
+            using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, httpContext =>
             {
                 var transferFeature = httpContext.Features.Get<IHttpSysRequestTransferFeature>();
                 Assert.Null(transferFeature);
-                await httpContext.Response.WriteAsync(_expectedResponseString);
+                return Task.CompletedTask;
             });
 
             var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
