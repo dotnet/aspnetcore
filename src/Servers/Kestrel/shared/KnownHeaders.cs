@@ -21,10 +21,6 @@ namespace CodeGenerator
         {
             var requestPrimaryHeaders = new[]
             {
-                ":authority",
-                ":method",
-                ":path",
-                ":scheme",
                 "Accept",
                 "Connection",
                 "Host",
