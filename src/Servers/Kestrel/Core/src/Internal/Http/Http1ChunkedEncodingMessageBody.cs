@@ -438,21 +438,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private void Copy(in ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer)
-        {
-            if (readableBuffer.IsSingleSegment)
-            {
-                writableBuffer.Write(readableBuffer.FirstSpan);
-            }
-            else
-            {
-                foreach (var memory in readableBuffer)
-                {
-                    writableBuffer.Write(memory.Span);
-                }
-            }
-        }
-
         private void ParseChunkedSuffix(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;

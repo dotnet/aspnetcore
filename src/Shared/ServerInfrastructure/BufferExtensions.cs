@@ -32,10 +32,11 @@ namespace System.Buffers
             if (buffer.IsSingleSegment)
             {
                 pipeWriter.Write(buffer.FirstSpan);
-                return;
             }
-
-            CopyToMultiSegment(buffer, pipeWriter);
+            else
+            {
+                CopyToMultiSegment(buffer, pipeWriter);
+            }
         }
 
         private static void CopyToMultiSegment(in ReadOnlySequence<byte> buffer, PipeWriter pipeWriter)
