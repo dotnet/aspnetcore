@@ -26,6 +26,25 @@ namespace System.Buffers
             return buffer.ToArray();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void CopyTo(in this ReadOnlySequence<byte> buffer, PipeWriter pipeWriter)
+        {
+            if (buffer.IsSingleSegment)
+            {
+                pipeWriter.Write(buffer.FirstSpan);
+            }
+
+            CopyToMultiSegment(buffer, pipeWriter);
+        }
+
+        private static void CopyToMultiSegment(in ReadOnlySequence<byte> buffer, PipeWriter pipeWriter)
+        {
+            foreach (var item in buffer)
+            {
+                pipeWriter.Write(item.Span);
+            }
+        }
+
         public static ArraySegment<byte> GetArray(this Memory<byte> buffer)
         {
             return ((ReadOnlyMemory<byte>)buffer).GetArray();
