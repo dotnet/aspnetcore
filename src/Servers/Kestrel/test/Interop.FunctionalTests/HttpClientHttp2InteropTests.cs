@@ -25,6 +25,9 @@ namespace Interop.FunctionalTests
     /// <summary>
     /// This tests interop with System.Net.Http.HttpClient (SocketHttpHandler) using HTTP/2 (H2 and H2C)
     /// </summary>
+    // Attributes are here to avoid testing http. Remove when https://github.com/dotnet/aspnetcore/issues/24902 is resolved.
+    [OSSkipCondition(OperatingSystems.MacOSX, SkipReason="https://github.com/dotnet/aspnetcore/issues/24902")]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason="https://github.com/dotnet/aspnetcore/issues/24902")]
     public class HttpClientHttp2InteropTests : LoggedTest
     {
         public HttpClientHttp2InteropTests()
@@ -37,21 +40,23 @@ namespace Interop.FunctionalTests
         {
             get
             {
-                var list = new List<object[]>()
-                {
-                    new[] { "http" }
-                };
-
+                // Re-add "http" when https://github.com/dotnet/aspnetcore/issues/24902 is resolved.
+                var list = new List<object[]>();
                 if (Utilities.CurrentPlatformSupportsHTTP2OverTls())
                 {
                     list.Add(new[] { "https" });
+                }
+                else
+                {
+                    // Here because theory data is checked before class-level attributes are checked.
+                    list.Add(new[] { "Remove when https://github.com/dotnet/aspnetcore/issues/24902 resolved." });
                 }
 
                 return list;
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task HelloWorld(string scheme)
         {
@@ -72,7 +77,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Echo(string scheme)
         {
@@ -102,7 +107,7 @@ namespace Interop.FunctionalTests
         }
 
         // Concurrency testing
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task MultiplexGet(string scheme)
         {
@@ -150,7 +155,7 @@ namespace Interop.FunctionalTests
         }
 
         // Concurrency testing
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task MultiplexEcho(string scheme)
         {
@@ -260,7 +265,7 @@ namespace Interop.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task BidirectionalStreaming(string scheme)
         {
@@ -318,7 +323,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task BidirectionalStreamingMoreClientData(string scheme)
         {
@@ -400,7 +405,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task ReverseEcho(string scheme)
         {
@@ -517,7 +522,7 @@ namespace Interop.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task ResponseTrailersWithoutData(string scheme)
         {
@@ -546,7 +551,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task ResponseTrailersWithData(string scheme)
         {
@@ -582,7 +587,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task ServerReset_BeforeResponse_ClientThrows(string scheme)
         {
@@ -606,7 +611,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task ServerReset_AfterHeaders_ClientBodyThrows(string scheme)
         {
@@ -635,7 +640,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task ServerReset_AfterEndStream_NoError(string scheme)
         {
@@ -662,7 +667,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task ServerReset_AfterTrailers_NoError(string scheme)
         {
@@ -694,7 +699,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         [QuarantinedTest]
         public async Task ServerReset_BeforeRequestBody_ClientBodyThrows(string scheme)
@@ -751,7 +756,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task ServerReset_BeforeRequestBodyEnd_ClientBodyThrows(string scheme)
         {
@@ -810,7 +815,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task ClientReset_BeforeRequestData_ReadThrows(string scheme)
         {
@@ -856,7 +861,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task ClientReset_BeforeRequestDataEnd_ReadThrows(string scheme)
         {
@@ -901,7 +906,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task ClientReset_BeforeResponse_ResponseSuppressed(string scheme)
         {
@@ -943,7 +948,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task ClientReset_BeforeEndStream_WritesSuppressed(string scheme)
         {
@@ -983,7 +988,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task ClientReset_BeforeTrailers_TrailersSuppressed(string scheme)
         {
@@ -1024,7 +1029,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [QuarantinedTest("https://github.com/dotnet/runtime/issues/860")]
         [MemberData(nameof(SupportedSchemes))]
         public async Task RequestHeaders_MultipleFrames_Accepted(string scheme)
@@ -1077,7 +1082,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task ResponseHeaders_MultipleFrames_Accepted(string scheme)
         {
@@ -1126,7 +1131,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         // Expect this to change when the client implements dynamic request header compression.
         // Will the client send the first headers before receiving our settings frame?
         // We'll probably need to ensure the settings changes are ack'd before enforcing them.
@@ -1189,7 +1194,7 @@ namespace Interop.FunctionalTests
         // Settings_HeaderTableSize_CanBeReduced_Client - The client uses the default 4k HPACK dynamic table size and it cannot be changed.
         // Nor does Kestrel yet support sending dynamic table updates, so there's nothing to test here. https://github.com/dotnet/aspnetcore/issues/4715
 
-        [Theory]
+        [ConditionalTheory]
         [QuarantinedTest]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxConcurrentStreamsGet_Server(string scheme)
@@ -1251,7 +1256,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [QuarantinedTest]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxConcurrentStreamsPost_Server(string scheme)
@@ -1315,7 +1320,7 @@ namespace Interop.FunctionalTests
 
         // Settings_MaxConcurrentStreams_Client - Neither client or server support Push, nothing to test in this direction.
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxFrameSize_Larger_Server(string scheme)
         {
@@ -1348,7 +1353,7 @@ namespace Interop.FunctionalTests
 
         // Settings_MaxFrameSize_Larger_Client - Not configurable
 
-        [Theory]
+        [ConditionalTheory]
         [QuarantinedTest("https://github.com/dotnet/runtime/issues/860")]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxHeaderListSize_Server(string scheme)
@@ -1381,7 +1386,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_MaxHeaderListSize_Client(string scheme)
         {
@@ -1415,7 +1420,7 @@ namespace Interop.FunctionalTests
         // Settings_InitialWindowSize_Lower_Server - Kestrel does not support lowering the InitialStreamWindowSize below the spec default 64kb.
         // Settings_InitialWindowSize_Lower_Client - Not configurable.
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_InitialWindowSize_Server(string scheme)
         {
@@ -1457,7 +1462,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_InitialWindowSize_Client(string scheme)
         {
@@ -1493,7 +1498,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task ConnectionWindowSize_Server(string scheme)
         {
@@ -1552,7 +1557,7 @@ namespace Interop.FunctionalTests
         // The spec default connection window is 64kb - 1 but the client default is 64Mb (not configurable).
         // The client restricts streams to 64kb - 1 so we would need to issue 64 * 1024 requests to stress the connection window limit.
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task UnicodeRequestHost(string scheme)
         {
@@ -1579,7 +1584,7 @@ namespace Interop.FunctionalTests
             await host.StopAsync().DefaultTimeout();
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(SupportedSchemes))]
         public async Task UrlEncoding(string scheme)
         {
