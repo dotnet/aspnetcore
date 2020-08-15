@@ -35,6 +35,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/24841", Queues = "Windows.10.Arm64.Open")]
         public async Task RunsWithIterationEnvVariable()
         {
             await _app.StartWatcherAsync();
