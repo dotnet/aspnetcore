@@ -1,7 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework);net472</TargetFrameworks>
+    <DefineConstants Condition="'$(TargetFramework)' == 'net472'">$(DefineConstants);USE_OBSOLETED</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
