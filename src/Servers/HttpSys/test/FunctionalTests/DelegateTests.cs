@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
         [ConditionalFact]
         [DelegateSupportedCondition(true)]
-        public async Task WriteToBodyAfterDelegateShouldThrowTest()
+        public async Task WriteToBodyAfterDelegateShouldNoOp()
         {
             var queueName = Guid.NewGuid().ToString();
             using var receiver = Utilities.CreateHttpServer(out var receiverAddress, async httpContext =>
@@ -94,15 +94,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
             DelegationRule wrapper = default;
 
-            using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, async httpContext =>
+            using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, httpContext =>
             {
                 var transferFeature = httpContext.Features.Get<IHttpSysRequestTransferFeature>();
                 transferFeature.TransferRequest(wrapper);
                 Assert.False(transferFeature.IsTransferable);
-                await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-                {
-                    await httpContext.Response.WriteAsync(_expectedResponseString);
-                });
+                return Task.CompletedTask;
             });
 
             var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
