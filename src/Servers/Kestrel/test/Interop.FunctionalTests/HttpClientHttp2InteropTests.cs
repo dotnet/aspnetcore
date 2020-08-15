@@ -25,7 +25,9 @@ namespace Interop.FunctionalTests
     /// <summary>
     /// This tests interop with System.Net.Http.HttpClient (SocketHttpHandler) using HTTP/2 (H2 and H2C)
     /// </summary>
+    // Attributes are here to avoid testing http. Remove when https://github.com/dotnet/aspnetcore/issues/24902 is resolved.
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason="https://github.com/dotnet/aspnetcore/issues/24902")]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10, SkipReason="https://github.com/dotnet/aspnetcore/issues/24902")]
     public class HttpClientHttp2InteropTests : LoggedTest
     {
         public HttpClientHttp2InteropTests()
@@ -43,6 +45,11 @@ namespace Interop.FunctionalTests
                 if (Utilities.CurrentPlatformSupportsHTTP2OverTls())
                 {
                     list.Add(new[] { "https" });
+                }
+                else
+                {
+                    // Here because theory data is checked before class-level attributes are checked.
+                    list.Add(new[] { "Remove when https://github.com/dotnet/aspnetcore/issues/24902 resolved." });
                 }
 
                 return list;
