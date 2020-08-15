@@ -385,10 +385,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 { "www.example.org", new SniConfig() }
             };
-
             var fallbackOptions = new HttpsConnectionAdapterOptions
             {
-                ServerCertificate = new X509Certificate2()
+                ServerCertificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword")
             };
 
             var sniOptionsSelector = new SniOptionsSelector(
@@ -761,7 +760,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     return null;
                 }
 
-                var cert = new X509Certificate2();
+                var cert = TestResources.GetTestCertificate();
                 CertToPathDictionary.Add(cert, certInfo.Path);
                 return cert;
             }
