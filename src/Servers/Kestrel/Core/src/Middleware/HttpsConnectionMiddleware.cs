@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
                 // This might be do blocking IO but it'll resolve the certificate chain up front before any connections are
                 // made to the server
-                _serverCertificateContext = SslStreamCertificateContext.Create(certificate, additionalCertificates: null);
+                _serverCertificateContext = SslStreamCertificateContext.Create(certificate, additionalCertificates: options.ServerCertificateIntermediates);
             }
 
             var remoteCertificateValidationCallback = _options.ClientCertificateMode == ClientCertificateMode.NoCertificate ?

@@ -40,6 +40,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public X509Certificate2 ServerCertificate { get; set; }
 
         /// <summary>
+        /// Specifies the intermediate certificates in the chain.
+        /// </summary>
+        public X509Certificate2Collection ServerCertificateIntermediates { get; set; }
+
+        /// <summary>
         /// <para>
         /// A callback that will be invoked to dynamically select a server certificate. This is higher priority than ServerCertificate.
         /// If SNI is not available then the name parameter will be null.

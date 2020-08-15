@@ -355,8 +355,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     }
 
                     // A cert specified directly on the endpoint overrides any defaults.
-                    httpsOptions.ServerCertificate = CertificateConfigLoader.LoadCertificate(endpoint.Certificate, endpoint.Name)
-                        ?? httpsOptions.ServerCertificate;
+                    var (serverCert, intermediates) = CertificateConfigLoader.LoadCertificate(endpoint.Certificate, endpoint.Name);
+
+                    httpsOptions.ServerCertificate = serverCert ?? httpsOptions.ServerCertificate;
+                    httpsOptions.ServerCertificateIntermediates = intermediates ?? httpsOptions.ServerCertificateIntermediates;
 
                     if (httpsOptions.ServerCertificate == null && httpsOptions.ServerCertificateSelector == null)
                     {
@@ -417,7 +419,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         {
             if (ConfigurationReader.Certificates.TryGetValue("Default", out var defaultCertConfig))
             {
-                var defaultCert = CertificateConfigLoader.LoadCertificate(defaultCertConfig, "Default");
+                var (defaultCert, intermediates) = CertificateConfigLoader.LoadCertificate(defaultCertConfig, "Default");
                 if (defaultCert != null)
                 {
                     DefaultCertificateConfig = defaultCertConfig;

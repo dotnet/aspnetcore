@@ -346,6 +346,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
     // "CertificateName": {
     //     "Path": "testCert.pfx",
+    //     "KeyPath": "",
+    //     "ChainPath": "",
     //     "Password": "testPassword"
     // }
     internal class CertificateConfig
@@ -379,6 +381,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public bool IsFileCert => !string.IsNullOrEmpty(Path);
 
         public string Path { get; set; }
+
+        public string ChainPath { get; set; }
 
         public string KeyPath { get; set; }
 

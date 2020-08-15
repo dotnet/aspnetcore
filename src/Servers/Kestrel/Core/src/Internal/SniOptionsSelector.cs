@@ -49,12 +49,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 var sslOptions = new SslServerAuthenticationOptions
                 {
-                    ServerCertificate = certifcateConfigLoader.LoadCertificate(sniConfig.Certificate, $"{endpointName}:Sni:{name}"),
                     EnabledSslProtocols = sniConfig.SslProtocols ?? fallbackHttpsOptions.SslProtocols,
                     CertificateRevocationCheckMode = fallbackHttpsOptions.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
                 };
 
-                if (sslOptions.ServerCertificate is null)
+                var (serverCert, intermediates) = certifcateConfigLoader.LoadCertificate(sniConfig.Certificate, $"{endpointName}:Sni:{name}");
+
+                if (serverCert is null)
                 {
                     if (fallbackHttpsOptions.ServerCertificate is null && _fallbackServerCertificateSelector is null)
                     {
@@ -63,21 +64,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                     if (_fallbackServerCertificateSelector is null)
                     {
-                        // Cache the fallback ServerCertificate since there's no fallback ServerCertificateSelector taking precedence. 
-                        sslOptions.ServerCertificate = fallbackHttpsOptions.ServerCertificate;
+                        // Cache the fallback ServerCertificate since there's no fallback ServerCertificateSelector taking precedence.
+                        serverCert = fallbackHttpsOptions.ServerCertificate;
+                        intermediates = fallbackHttpsOptions.ServerCertificateIntermediates;
                     }
                 }
 
-                if (sslOptions.ServerCertificate != null)
+                if (serverCert != null)
                 {
                     // This might be do blocking IO but it'll resolve the certificate chain up front before any connections are
                     // made to the server
-                    sslOptions.ServerCertificateContext = SslStreamCertificateContext.Create((X509Certificate2)sslOptions.ServerCertificate, additionalCertificates: null);
-                }
-
-                if (!certifcateConfigLoader.IsTestMock && sslOptions.ServerCertificate is X509Certificate2 cert2)
-                {
-                    HttpsConnectionMiddleware.EnsureCertificateIsAllowedForServerAuth(cert2);
+                    sslOptions.ServerCertificate = serverCert;
+                    sslOptions.ServerCertificateContext = SslStreamCertificateContext.Create(serverCert, intermediates);
                 }
 
                 var clientCertificateMode = sniConfig.ClientCertificateMode ?? fallbackHttpsOptions.ClientCertificateMode;
