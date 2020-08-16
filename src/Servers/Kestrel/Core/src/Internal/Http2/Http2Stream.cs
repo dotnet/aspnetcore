@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
+using System.Net.Http.HPack;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using HttpMethods = Microsoft.AspNetCore.Http.HttpMethods;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
@@ -205,7 +207,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             _httpVersion = Http.HttpVersion.Http2;
 
-            if (!TryValidateMethod())
+            // Method could already have been set from :method static table index
+            if (Method == HttpMethod.None && !TryValidateMethod())
             {
                 return false;
             }
@@ -237,7 +240,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // - That said, we shouldn't allow arbitrary values or use them to populate Request.Scheme, right?
             // - For now we'll restrict it to http/s and require it match the transport.
             // - We'll need to find some concrete scenarios to warrant unblocking this.
-            if (!string.Equals(HttpRequestHeaders.HeaderScheme, Scheme, StringComparison.OrdinalIgnoreCase))
+            var headerScheme = HttpRequestHeaders.HeaderScheme.ToString();
+            if (!ReferenceEquals(headerScheme, Scheme) &&
+                !string.Equals(headerScheme, Scheme, StringComparison.OrdinalIgnoreCase))
             {
                 ResetAndAbort(new ConnectionAbortedException(
                     CoreStrings.FormatHttp2StreamErrorSchemeMismatch(HttpRequestHeaders.HeaderScheme, Scheme)), Http2ErrorCode.PROTOCOL_ERROR);
@@ -620,9 +625,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Aborted = 4,
         }
 
-        public override void OnHeader(int index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        public override void OnHeader(int index, bool indexOnly, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            base.OnHeader(index, name, value);
+            base.OnHeader(index, indexOnly, name, value);
+
+            if (indexOnly)
+            {
+                // Special case setting index only headers for performance
+                switch (index)
+                {
+                    case H2StaticTable.MethodGet:
+                        HttpRequestHeaders.HeaderMethod = HttpMethods.Get;
+                        Method = HttpMethod.Get;
+                        _methodText = HttpMethods.Get;
+                        return;
+                    case H2StaticTable.MethodPost:
+                        HttpRequestHeaders.HeaderMethod = HttpMethods.Post;
+                        Method = HttpMethod.Post;
+                        _methodText = HttpMethods.Post;
+                        return;
+                    case H2StaticTable.SchemeHttp:
+                        HttpRequestHeaders.HeaderScheme = SchemeHttp;
+                        return;
+                    case H2StaticTable.SchemeHttps:
+                        HttpRequestHeaders.HeaderScheme = SchemeHttps;
+                        return;
+                }
+            }
 
             // HPack append will return false if the index is not a known request header.
             // For example, someone could send the index of "Server" (a response header) in the request.

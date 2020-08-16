@@ -1231,7 +1231,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         // rework the flow so that the remaining headers are drained and the decompression state is maintained.
         public void OnHeader(ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            OnHeaderCore(index: null, name, value);
+            OnHeaderCore(index: null, indexOnly : false, name, value);
         }
 
         public void OnStaticIndexedHeader(int index)
@@ -1239,20 +1239,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Debug.Assert(index <= H2StaticTable.Count);
 
             ref readonly var entry = ref H2StaticTable.Get(index - 1);
-            OnHeaderCore(index, entry.Name, entry.Value);
+            OnHeaderCore(index, indexOnly: true, entry.Name, entry.Value);
         }
 
         public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
         {
             Debug.Assert(index <= H2StaticTable.Count);
 
-            OnHeaderCore(index, H2StaticTable.Get(index - 1).Name, value);
+            OnHeaderCore(index, indexOnly: false, H2StaticTable.Get(index - 1).Name, value);
         }
 
         // We can't throw a Http2StreamErrorException here, it interrupts the header decompression state and may corrupt subsequent header frames on other streams.
         // For now these either need to be connection errors or BadRequests. If we want to downgrade any of them to stream errors later then we need to
         // rework the flow so that the remaining headers are drained and the decompression state is maintained.
-        private void OnHeaderCore(int? index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        private void OnHeaderCore(int? index, bool indexOnly, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             // https://tools.ietf.org/html/rfc7540#section-6.5.2
             // "The value is based on the uncompressed size of header fields, including the length of the name and value in octets plus an overhead of 32 octets for each header field.";
@@ -1283,7 +1283,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     // Throws InvalidOperation for bad encoding.
                     if (index != null)
                     {
-                        _currentHeadersStream.OnHeader(index.Value, name, value);
+                        _currentHeadersStream.OnHeader(index.Value, indexOnly, name, value);
                     }
                     else
                     {
