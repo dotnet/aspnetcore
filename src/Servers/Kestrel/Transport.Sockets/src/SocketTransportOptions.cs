@@ -49,10 +49,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         /// </summary>
         /// <remarks>
         /// This will run application code on the IO thread which is why this is unsafe.
-        /// We recommend setting the DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS environment variable to '1' when using this setting to also inline the completions
+        /// It is recommended to set the DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS environment variable to '1' when using this setting to also inline the completions
         /// at the runtime layer as well.
-        /// This setting can make make perf worse if you have expensive work that will end up holding onto the IO thread for longer than needed. As always, test your
-        /// scenarios to make sure this setting helps you.
+        /// This setting can make performance worse if there is expensive work that will end up holding onto the IO thread for longer than needed.
+        /// Test to make sure this setting helps performance.
         /// </remarks>
         public bool UnsafePreferInlineScheduling { get; set; }
 
