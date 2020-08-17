@@ -289,7 +289,9 @@ namespace Microsoft.AspNetCore.Session
                 {
                     try
                     {
+                       if(!_isNewSessionKey){
                         await _cache.RefreshAsync(_sessionKey, cts.Token);
+                       }
                     }
                     catch (OperationCanceledException oex)
                     {
