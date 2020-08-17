@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 _maximumMessageSize = _hubOptions.MaximumReceiveMessageSize;
                 _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
-                _maxParallelInvokes = _hubOptions.MaxParallelInvocationsPerClient;
+                _maxParallelInvokes = _hubOptions.MaximumParallelInvocationsPerClient;
 
                 if (_hubOptions.HubFilters != null)
                 {
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 _maximumMessageSize = _globalHubOptions.MaximumReceiveMessageSize;
                 _enableDetailedErrors = _globalHubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
-                _maxParallelInvokes = _globalHubOptions.MaxParallelInvocationsPerClient;
+                _maxParallelInvokes = _globalHubOptions.MaximumParallelInvocationsPerClient;
 
                 if (_globalHubOptions.HubFilters != null)
                 {

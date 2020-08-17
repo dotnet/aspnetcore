@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.Equal(globalHubOptions.HandshakeTimeout, hubOptions.HandshakeTimeout);
             Assert.Equal(globalHubOptions.SupportedProtocols, hubOptions.SupportedProtocols);
             Assert.Equal(globalHubOptions.ClientTimeoutInterval, hubOptions.ClientTimeoutInterval);
-            Assert.Equal(globalHubOptions.MaxParallelInvocationsPerClient, hubOptions.MaxParallelInvocationsPerClient);
+            Assert.Equal(globalHubOptions.MaximumParallelInvocationsPerClient, hubOptions.MaximumParallelInvocationsPerClient);
             Assert.True(hubOptions.UserHasSetValues);
         }
 
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 options.HandshakeTimeout = null;
                 options.SupportedProtocols = null;
                 options.ClientTimeoutInterval = TimeSpan.FromSeconds(1);
-                options.MaxParallelInvocationsPerClient = 3;
+                options.MaximumParallelInvocationsPerClient = 3;
             });
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.Null(globalOptions.KeepAliveInterval);
             Assert.Null(globalOptions.HandshakeTimeout);
             Assert.Null(globalOptions.SupportedProtocols);
-            Assert.Equal(3, globalOptions.MaxParallelInvocationsPerClient);
+            Assert.Equal(3, globalOptions.MaximumParallelInvocationsPerClient);
             Assert.Equal(TimeSpan.FromSeconds(1), globalOptions.ClientTimeoutInterval);
         }
 
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void ThrowsIfSetInvalidValueForMaxInvokes()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new HubOptions() { MaxParallelInvocationsPerClient = 0 });
+            Assert.Throws<ArgumentOutOfRangeException>(() => new HubOptions() { MaximumParallelInvocationsPerClient = 0 });
         }
     }
 

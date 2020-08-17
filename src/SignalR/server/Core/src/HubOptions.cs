@@ -58,20 +58,20 @@ namespace Microsoft.AspNetCore.SignalR
         /// By default a client is only allowed to invoke a single Hub method at a time.
         /// Changing this property will allow clients to invoke multiple methods at the same time before queueing.
         /// </summary>
-        public int MaxParallelInvocationsPerClient
+        public int MaximumParallelInvocationsPerClient
         {
-            get => _maxParallelInvocationsPerClient;
+            get => _maximumParallelInvocationsPerClient;
             set
             {
                 if (value < 1)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(MaxParallelInvocationsPerClient));
+                    throw new ArgumentOutOfRangeException(nameof(MaximumParallelInvocationsPerClient));
                 }
 
-                _maxParallelInvocationsPerClient = value;
+                _maximumParallelInvocationsPerClient = value;
             }
         }
 
-        private int _maxParallelInvocationsPerClient = 1;
+        private int _maximumParallelInvocationsPerClient = 1;
     }
 }

@@ -2923,7 +2923,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     services.Configure<HubOptions>(options =>
                     {
                         options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(0);
-                        options.MaxParallelInvocationsPerClient = 1;
+                        options.MaximumParallelInvocationsPerClient = 1;
                     });
                     services.AddSingleton(tcsService);
                 }, LoggerFactory);
@@ -2975,7 +2975,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     services.Configure<HubOptions>(options =>
                     {
                         options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(0);
-                        options.MaxParallelInvocationsPerClient = 2;
+                        options.MaximumParallelInvocationsPerClient = 2;
                     });
                     services.AddSingleton(tcsService);
                 }, LoggerFactory);
@@ -3081,7 +3081,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     services.AddSignalR(options =>
                     {
-                        options.MaxParallelInvocationsPerClient = 1;
+                        options.MaximumParallelInvocationsPerClient = 1;
                     });
                 }, LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
@@ -3228,7 +3228,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     builder.AddSignalR(options =>
                     {
-                        options.MaxParallelInvocationsPerClient = 1;
+                        options.MaximumParallelInvocationsPerClient = 1;
                     });
                 }, LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
@@ -3283,7 +3283,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     builder.AddSignalR(options =>
                     {
-                        options.MaxParallelInvocationsPerClient = 2;
+                        options.MaximumParallelInvocationsPerClient = 2;
                     });
                 }, LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
@@ -3339,7 +3339,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     builder.AddSignalR(options =>
                     {
-                        options.MaxParallelInvocationsPerClient = 2;
+                        options.MaximumParallelInvocationsPerClient = 2;
                     });
                 }, LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
@@ -3410,7 +3410,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     builder.AddSignalR(options =>
                     {
-                        options.MaxParallelInvocationsPerClient = 1;
+                        options.MaximumParallelInvocationsPerClient = 1;
                     });
                 }, LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
@@ -3670,7 +3670,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var tcsService = new TcsService();
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
             {
-                services.AddSignalR(options => options.MaxParallelInvocationsPerClient = 1);
+                services.AddSignalR(options => options.MaximumParallelInvocationsPerClient = 1);
                 services.AddSingleton(tcsService);
             });
             var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
