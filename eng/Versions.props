@@ -250,11 +250,11 @@
     <GrpcAuthPackageVersion>2.27.0</GrpcAuthPackageVersion>
     <GrpcNetClientPackageVersion>2.27.0</GrpcNetClientPackageVersion>
     <GrpcToolsPackageVersion>2.27.0</GrpcToolsPackageVersion>
-    <IdentityServer4AspNetIdentityPackageVersion>3.0.0</IdentityServer4AspNetIdentityPackageVersion>
-    <IdentityServer4EntityFrameworkPackageVersion>3.0.0</IdentityServer4EntityFrameworkPackageVersion>
-    <IdentityServer4PackageVersion>3.0.0</IdentityServer4PackageVersion>
-    <IdentityServer4StoragePackageVersion>3.0.0</IdentityServer4StoragePackageVersion>
-    <IdentityServer4EntityFrameworkStoragePackageVersion>3.0.0</IdentityServer4EntityFrameworkStoragePackageVersion>
+    <IdentityServer4AspNetIdentityPackageVersion>4.0.4</IdentityServer4AspNetIdentityPackageVersion>
+    <IdentityServer4EntityFrameworkPackageVersion>4.0.4</IdentityServer4EntityFrameworkPackageVersion>
+    <IdentityServer4PackageVersion>4.0.4</IdentityServer4PackageVersion>
+    <IdentityServer4StoragePackageVersion>4.0.4</IdentityServer4StoragePackageVersion>
+    <IdentityServer4EntityFrameworkStoragePackageVersion>4.0.4</IdentityServer4EntityFrameworkStoragePackageVersion>
     <MessagePackPackageVersion>2.1.90</MessagePackPackageVersion>
     <MicrosoftIdentityWebPackageVersion>0.2.1-preview</MicrosoftIdentityWebPackageVersion>
     <MicrosoftIdentityWebUIPackageVersion>0.2.1-preview</MicrosoftIdentityWebUIPackageVersion>
