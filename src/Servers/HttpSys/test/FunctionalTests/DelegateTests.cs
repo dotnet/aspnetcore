@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             {
                 var delegateFeature = httpContext.Features.Get<IHttpSysRequestDelegationFeature>();
                 delegateFeature.DelegateRequest(destination);
-                return Task.FromResult(0);
+                return Task.CompletedTask;
             });
 
             var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
@@ -170,9 +170,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         private async Task<string> SendRequestWithBodyAsync(string uri)
         {
             using var client = new HttpClient();
-            var requestMessage = new HttpRequestMessage(HttpMethod.Post, uri);
-            requestMessage.Content = new StringContent("Sample request body");
-            var response = await client.SendAsync(requestMessage);
+            var content = new StringContent("Sample request body");
+            var response = await client.PostAsync(uri, content);
+            response.EnsureSuccessStatusCode();
             return await response.Content.ReadAsStringAsync();
         }
     }
