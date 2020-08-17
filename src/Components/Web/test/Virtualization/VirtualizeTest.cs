@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
     public class VirtualizeTest
     {
         [Fact]
-        public async Task Virtualize_ThrowsWhenGivenNegativeItemSize()
+        public async Task Virtualize_ThrowsWhenGivenNonPositiveItemSize()
         {
             var rootComponent = new VirtualizeTestHostcomponent
             {
