@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.SignalR
     /// </summary>
     public class HubOptions
     {
+        private int _maximumParallelInvocationsPerClient = 1;
+
         // HandshakeTimeout and KeepAliveInterval are set to null here to help identify when
         // local hub options have been set. Global default values are set in HubOptionsSetup.
         // SupportedProtocols being null is the true default value, and it represents support
@@ -71,7 +73,5 @@ namespace Microsoft.AspNetCore.SignalR
                 _maximumParallelInvocationsPerClient = value;
             }
         }
-
-        private int _maximumParallelInvocationsPerClient = 1;
     }
 }
