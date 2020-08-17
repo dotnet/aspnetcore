@@ -53,6 +53,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, _logFolderPath), Logger);
 
             Assert.Contains("TEST MESSAGE", contents);
+            Assert.DoesNotContain("\r\n\r\n", contents);
         }
 
         // Move to separate file
