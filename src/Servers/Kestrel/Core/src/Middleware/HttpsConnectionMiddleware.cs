@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
         // The following fields are only set by HttpsConnectionAdapterOptions ctor.
         private readonly HttpsConnectionAdapterOptions _options;
+        private readonly SslStreamCertificateContext _serverCertificateContext;
         private readonly X509Certificate2 _serverCertificate;
         private readonly Func<ConnectionContext, string, X509Certificate2> _serverCertificateSelector;
 
@@ -89,6 +90,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             else
             {
                 EnsureCertificateIsAllowedForServerAuth(_serverCertificate);
+
+                // This might be do blocking IO but it'll resolve the certificate chain up front before any connections are
+                // made to the server
+                _serverCertificateContext = SslStreamCertificateContext.Create(_serverCertificate, additionalCertificates: null);
             }
 
             var remoteCertificateValidationCallback = _options.ClientCertificateMode == ClientCertificateMode.NoCertificate ?
@@ -232,6 +237,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             var sslOptions = new SslServerAuthenticationOptions
             {
                 ServerCertificate = _serverCertificate,
+                ServerCertificateContext = _serverCertificateContext,
                 ServerCertificateSelectionCallback = selector,
                 ClientCertificateRequired = _options.ClientCertificateMode != ClientCertificateMode.NoCertificate,
                 EnabledSslProtocols = _options.SslProtocols,
