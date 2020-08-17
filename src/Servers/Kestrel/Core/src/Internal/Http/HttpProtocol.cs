@@ -607,6 +607,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private async Task ProcessRequests<TContext>(IHttpApplication<TContext> application)
         {
+            var cleanContext = ExecutionContext.Capture();
             while (_keepAlive)
             {
                 BeginRequestProcessing();
@@ -637,10 +638,92 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 InitializeBodyControl(messageBody);
 
-                // We run user controlled request processing in a seperate async method
-                // so any changes made to ExecutionContext are undone when it returns and
-                // each request starts with a fresh ExecutionContext state.
-                await ProcessRequest(application);
+
+                var context = application.CreateContext(this);
+
+                try
+                {
+                    KestrelEventSource.Log.RequestStart(this);
+
+                    // Run the application code for this request
+                    await application.ProcessRequestAsync(context);
+
+                    // Trigger OnStarting if it hasn't been called yet and the app hasn't
+                    // already failed. If an OnStarting callback throws we can go through
+                    // our normal error handling in ProduceEnd.
+                    // https://github.com/aspnet/KestrelHttpServer/issues/43
+                    if (!HasResponseStarted && _applicationException == null && _onStarting?.Count > 0)
+                    {
+                        await FireOnStarting();
+                    }
+
+                    if (!_connectionAborted && !VerifyResponseContentLength(out var lengthException))
+                    {
+                        ReportApplicationError(lengthException);
+                    }
+                }
+                catch (BadHttpRequestException ex)
+                {
+                    // Capture BadHttpRequestException for further processing
+                    // This has to be caught here so StatusCode is set properly before disposing the HttpContext
+                    // (DisposeContext logs StatusCode).
+                    SetBadRequestState(ex);
+                    ReportApplicationError(ex);
+                }
+                catch (Exception ex)
+                {
+                    ReportApplicationError(ex);
+                }
+
+                KestrelEventSource.Log.RequestStop(this);
+
+                // At this point all user code that needs use to the request or response streams has completed.
+                // Using these streams in the OnCompleted callback is not allowed.
+                try
+                {
+                    await _bodyControl.StopAsync();
+                }
+                catch (Exception ex)
+                {
+                    // BodyControl.StopAsync() can throw if the PipeWriter was completed prior to the application writing
+                    // enough bytes to satisfy the specified Content-Length. This risks double-logging the exception,
+                    // but this scenario generally indicates an app bug, so I don't want to risk not logging it.
+                    ReportApplicationError(ex);
+                }
+
+                // 4XX responses are written by TryProduceInvalidRequestResponse during connection tear down.
+                if (_requestRejectedException == null)
+                {
+                    if (!_connectionAborted)
+                    {
+                        // Call ProduceEnd() before consuming the rest of the request body to prevent
+                        // delaying clients waiting for the chunk terminator:
+                        //
+                        // https://github.com/dotnet/corefx/issues/17330#issuecomment-288248663
+                        //
+                        // This also prevents the 100 Continue response from being sent if the app
+                        // never tried to read the body.
+                        // https://github.com/aspnet/KestrelHttpServer/issues/2102
+                        //
+                        // ProduceEnd() must be called before _application.DisposeContext(), to ensure
+                        // HttpContext.Response.StatusCode is correctly set when
+                        // IHttpContextFactory.Dispose(HttpContext) is called.
+                        await ProduceEnd();
+                    }
+                    else if (!HasResponseStarted)
+                    {
+                        // If the request was aborted and no response was sent, there's no
+                        // meaningful status code to log.
+                        StatusCode = 0;
+                    }
+                }
+
+                if (_onCompleted?.Count > 0)
+                {
+                    await FireOnCompleted();
+                }
+
+                application.DisposeContext(context, _applicationException);
 
                 // Even for non-keep-alive requests, try to consume the entire body to avoid RSTs.
                 if (!_connectionAborted && _requestRejectedException == null && !messageBody.IsEmpty)
@@ -652,96 +735,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     await messageBody.StopAsync();
                 }
+
+                // Clear any AsyncLocals set during the request; back to a clean state ready for next request
+                ExecutionContext.Restore(cleanContext);
             }
-        }
-
-        private async ValueTask ProcessRequest<TContext>(IHttpApplication<TContext> application)
-        {
-            var context = application.CreateContext(this);
-
-            try
-            {
-                KestrelEventSource.Log.RequestStart(this);
-
-                // Run the application code for this request
-                await application.ProcessRequestAsync(context);
-
-                // Trigger OnStarting if it hasn't been called yet and the app hasn't
-                // already failed. If an OnStarting callback throws we can go through
-                // our normal error handling in ProduceEnd.
-                // https://github.com/aspnet/KestrelHttpServer/issues/43
-                if (!HasResponseStarted && _applicationException == null && _onStarting?.Count > 0)
-                {
-                    await FireOnStarting();
-                }
-
-                if (!_connectionAborted && !VerifyResponseContentLength(out var lengthException))
-                {
-                    ReportApplicationError(lengthException);
-                }
-            }
-            catch (BadHttpRequestException ex)
-            {
-                // Capture BadHttpRequestException for further processing
-                // This has to be caught here so StatusCode is set properly before disposing the HttpContext
-                // (DisposeContext logs StatusCode).
-                SetBadRequestState(ex);
-                ReportApplicationError(ex);
-            }
-            catch (Exception ex)
-            {
-                ReportApplicationError(ex);
-            }
-
-            KestrelEventSource.Log.RequestStop(this);
-
-            // At this point all user code that needs use to the request or response streams has completed.
-            // Using these streams in the OnCompleted callback is not allowed.
-            try
-            {
-                await _bodyControl.StopAsync();
-            }
-            catch (Exception ex)
-            {
-                // BodyControl.StopAsync() can throw if the PipeWriter was completed prior to the application writing
-                // enough bytes to satisfy the specified Content-Length. This risks double-logging the exception,
-                // but this scenario generally indicates an app bug, so I don't want to risk not logging it.
-                ReportApplicationError(ex);
-            }
-
-            // 4XX responses are written by TryProduceInvalidRequestResponse during connection tear down.
-            if (_requestRejectedException == null)
-            {
-                if (!_connectionAborted)
-                {
-                    // Call ProduceEnd() before consuming the rest of the request body to prevent
-                    // delaying clients waiting for the chunk terminator:
-                    //
-                    // https://github.com/dotnet/corefx/issues/17330#issuecomment-288248663
-                    //
-                    // This also prevents the 100 Continue response from being sent if the app
-                    // never tried to read the body.
-                    // https://github.com/aspnet/KestrelHttpServer/issues/2102
-                    //
-                    // ProduceEnd() must be called before _application.DisposeContext(), to ensure
-                    // HttpContext.Response.StatusCode is correctly set when
-                    // IHttpContextFactory.Dispose(HttpContext) is called.
-                    await ProduceEnd();
-                }
-                else if (!HasResponseStarted)
-                {
-                    // If the request was aborted and no response was sent, there's no
-                    // meaningful status code to log.
-                    StatusCode = 0;
-                }
-            }
-
-            if (_onCompleted?.Count > 0)
-            {
-                await FireOnCompleted();
-            }
-
-            application.DisposeContext(context, _applicationException);
         }
 
         public void OnStarting(Func<object, Task> callback, object state)
