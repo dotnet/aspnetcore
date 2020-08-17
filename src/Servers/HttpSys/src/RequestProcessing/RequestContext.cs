@@ -328,11 +328,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (Request.HasRequestBodyStarted)
             {
-                throw new InvalidOperationException("This request cannot be transfered, the request body has already started.");
+                throw new InvalidOperationException("This request cannot be delegated, the request body has already started.");
             }
             if (Response.HasStarted)
             {
-                throw new InvalidOperationException("This request cannot be transfered, the response has already started.");
+                throw new InvalidOperationException("This request cannot be delegated, the response has already started.");
             }
 
             var source = Server.RequestQueue;

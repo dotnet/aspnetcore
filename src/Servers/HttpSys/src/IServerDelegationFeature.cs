@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// Create a delegation rule on request queue owned by the server.
         /// </summary>
         /// <returns>
-        /// Creates a <see cref="DelegationRule"/> that can used to transfer individual requests.
+        /// Creates a <see cref="DelegationRule"/> that can used to delegate individual requests.
         /// </returns>
         DelegationRule CreateDelegationRule(string queueName, string urlPrefix);
     }
