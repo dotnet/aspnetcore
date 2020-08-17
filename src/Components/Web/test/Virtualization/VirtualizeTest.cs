@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
         {
             var rootComponent = new VirtualizeTestHostcomponent
             {
-                InnerContent = BuildVirtualize(-1f, EmptyItemsProvider<int>, null)
+                InnerContent = BuildVirtualize(0f, EmptyItemsProvider<int>, null)
             };
 
             var serviceProvider = new ServiceCollection()
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.Virtualization
             var componentId = testRenderer.AssignRootComponentId(rootComponent);
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await testRenderer.RenderRootComponentAsync(componentId));
-            Assert.Contains("requires a non-negative value for parameter", ex.Message);
+            Assert.Contains("requires a positive value for parameter", ex.Message);
         }
 
         [Fact]
