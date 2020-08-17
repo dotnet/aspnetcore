@@ -29,21 +29,21 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 options.RequestQueueName = queueName;
             });
 
-            DelegationRule wrapper = default;
+            DelegationRule destination = default;
 
             using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, httpContext =>
             {
                 var transferFeature = httpContext.Features.Get<IHttpSysRequestTransferFeature>();
-                transferFeature.TransferRequest(wrapper);
+                transferFeature.TransferRequest(destination);
                 return Task.FromResult(0);
             });
 
             var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
-            wrapper = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
+            destination = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
 
             var responseString = await SendRequestAsync(delegatorAddress);
             Assert.Equal(_expectedResponseString, responseString);
-            wrapper?.Dispose();
+            destination?.Dispose();
         }
 
         [ConditionalFact]
@@ -51,31 +51,32 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         public async Task DelegateAfterWriteToResponseBodyShouldThrowTest()
         {
             var queueName = Guid.NewGuid().ToString();
-            using var receiver = Utilities.CreateHttpServer(out var receiverAddress, async httpContext =>
+            using var receiver = Utilities.CreateHttpServer(out var receiverAddress, httpContext =>
             {
-                await httpContext.Response.WriteAsync(_expectedResponseString);
+                httpContext.Response.StatusCode = StatusCodes.Status418ImATeapot;
+                return Task.CompletedTask;
             },
             options =>
             {
                 options.RequestQueueName = queueName;
             });
 
-            DelegationRule wrapper = default;
+            DelegationRule destination = default;
 
             using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, async httpContext =>
             {
                 await httpContext.Response.WriteAsync(_expectedResponseString);
                 var transferFeature = httpContext.Features.Get<IHttpSysRequestTransferFeature>();
                 Assert.False(transferFeature.IsTransferable);
-                Assert.Throws<InvalidOperationException>(() => transferFeature.TransferRequest(wrapper));
+                Assert.Throws<InvalidOperationException>(() => transferFeature.TransferRequest(destination));
             });
 
             var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
-            wrapper = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
+            destination = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
 
             var responseString = await SendRequestAsync(delegatorAddress);
             Assert.Equal(_expectedResponseString, responseString);
-            wrapper?.Dispose();
+            destination?.Dispose();
         }
 
         [ConditionalFact]
@@ -92,22 +93,22 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 options.RequestQueueName = queueName;
             });
 
-            DelegationRule wrapper = default;
+            DelegationRule destination = default;
 
             using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, httpContext =>
             {
                 var transferFeature = httpContext.Features.Get<IHttpSysRequestTransferFeature>();
-                transferFeature.TransferRequest(wrapper);
+                transferFeature.TransferRequest(destination);
                 Assert.False(transferFeature.IsTransferable);
                 return Task.CompletedTask;
             });
 
             var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
-            wrapper = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
+            destination = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
 
             var responseString = await SendRequestAsync(delegatorAddress);
             Assert.Equal(_expectedResponseString, responseString);
-            wrapper?.Dispose();
+            destination?.Dispose();
         }
 
         [ConditionalFact]
@@ -115,30 +116,31 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         public async Task DelegateAfterRequestBodyReadShouldThrow()
         {
             var queueName = Guid.NewGuid().ToString();
-            using var receiver = Utilities.CreateHttpServer(out var receiverAddress, async httpContext =>
+            using var receiver = Utilities.CreateHttpServer(out var receiverAddress, httpContext =>
             {
-                await httpContext.Response.WriteAsync(_expectedResponseString);
+                httpContext.Response.StatusCode = StatusCodes.Status418ImATeapot;
+                return Task.CompletedTask;
             },
            options =>
            {
                options.RequestQueueName = queueName;
            });
 
-            DelegationRule wrapper = default;
+            DelegationRule destination = default;
 
             using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, async httpContext =>
             {
                 var memoryStream = new MemoryStream();
                 await httpContext.Request.Body.CopyToAsync(memoryStream);
                 var transferFeature = httpContext.Features.Get<IHttpSysRequestTransferFeature>();
-                Assert.Throws<InvalidOperationException>(() => transferFeature.TransferRequest(wrapper));
+                Assert.Throws<InvalidOperationException>(() => transferFeature.TransferRequest(destination));
             });
 
             var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
-            wrapper = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
+            destination = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
 
             _ = await SendRequestWithBodyAsync(delegatorAddress);
-            wrapper?.Dispose();
+            destination?.Dispose();
         }
 
         [ConditionalFact]

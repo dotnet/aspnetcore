@@ -71,6 +71,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HeaderWait,
             MinSendRate,
         }
+
         internal enum HTTP_DELEGATE_REQUEST_PROPERTY_ID : uint
         {
             DelegateRequestReservedProperty,
