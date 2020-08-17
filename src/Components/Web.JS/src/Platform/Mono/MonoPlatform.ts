@@ -256,9 +256,6 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       `_framework/${icuDataResourceName}`,
       resourceLoader.bootConfig.resources.runtime[icuDataResourceName],
       'globalization');
-  } else {
-    // Use invariant culture if the app does not carry icu data.
-    MONO.mono_wasm_setenv("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT", "1");
   }
 
   // Override the mechanism for fetching the main wasm file so we can connect it to our cache
@@ -288,6 +285,9 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
     if (icuDataResource) {
       loadICUData(icuDataResource);
+    } else {
+      // Use invariant culture if the app does not carry icu data.
+      MONO.mono_wasm_setenv("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT", "1");
     }
 
     // Fetch the assemblies and PDBs in the background, telling Mono to wait until they are loaded

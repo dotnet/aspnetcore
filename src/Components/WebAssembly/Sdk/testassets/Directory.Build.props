@@ -20,6 +20,7 @@
     <RazorSdkCurrentVersionTargets>$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\build\netstandard2.0\Sdk.Razor.CurrentVersion.targets</RazorSdkCurrentVersionTargets>
     <RazorSdkArtifactsDirectory>$(RepoRoot)artifacts\bin\Microsoft.NET.Sdk.Razor\</RazorSdkArtifactsDirectory>
     <BlazorWebAssemblySdkArtifactsDirectory>$(RepoRoot)artifacts\bin\Microsoft.NET.Sdk.BlazorWebAssembly\</BlazorWebAssemblySdkArtifactsDirectory>
+    <_BlazorWebAssemblyTargetsFile>$(RepoRoot)src\Components\WebAssembly\Sdk\src\targets\Microsoft.NET.Sdk.BlazorWebAssembly.Current.targets</_BlazorWebAssemblyTargetsFile>
     <BlazorWebAssemblyJSPath>$(MSBuildThisFileDirectory)blazor.webassembly.js</BlazorWebAssemblyJSPath>
   </PropertyGroup>
 
