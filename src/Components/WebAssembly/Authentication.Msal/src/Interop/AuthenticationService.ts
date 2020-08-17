@@ -56,6 +56,9 @@ class MsalAuthorizeService implements AuthorizeService {
 
     constructor(private readonly _settings: AuthorizeServiceConfiguration) {
         const callbackUrl = location.href;
+        if (this._settings.auth) {
+            this._settings.auth.knownAuthorities = [new URL(this._settings.auth.authority!).hostname]
+        }
         this._msalApplication = new Msal.PublicClientApplication(this._settings);
     }
 
