@@ -370,11 +370,38 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 destinations.Remove(AnyMethod);
             }
 
-            return new HttpMethodPolicyJumpTable(
-                exitDestination,
-                destinations,
-                corsPreflightExitDestination,
-                corsPreflightDestinations);
+            if (destinations?.Count == 1)
+            {
+                // If there is only a single valid HTTP method then use an optimized jump table.
+                // It avoids unnecessary dictionary lookups with the method name.
+                var httpMethodDestination = destinations.Single();
+                var method = httpMethodDestination.Key;
+                var destination = httpMethodDestination.Value;
+                var supportsCorsPreflight = false;
+                var corsPreflightDestination = 0;
+
+                if (corsPreflightDestinations?.Count > 0)
+                {
+                    supportsCorsPreflight = true;
+                    corsPreflightDestination = corsPreflightDestinations.Single().Value;
+                }
+
+                return new HttpMethodSingleEntryPolicyJumpTable(
+                    exitDestination,
+                    method,
+                    destination,
+                    supportsCorsPreflight,
+                    corsPreflightExitDestination,
+                    corsPreflightDestination);
+            }
+            else
+            {
+                return new HttpMethodDictionaryPolicyJumpTable(
+                    exitDestination,
+                    destinations,
+                    corsPreflightExitDestination,
+                    corsPreflightDestinations);
+            }
         }
 
         private Endpoint CreateRejectionEndpoint(IEnumerable<string> httpMethods)
@@ -418,50 +445,15 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return false;
         }
 
-        private class HttpMethodPolicyJumpTable : PolicyJumpTable
+        internal static bool IsCorsPreflightRequest(HttpContext httpContext, string httpMethod, out StringValues accessControlRequestMethod)
         {
-            private readonly int _exitDestination;
-            private readonly Dictionary<string, int>? _destinations;
-            private readonly int _corsPreflightExitDestination;
-            private readonly Dictionary<string, int>? _corsPreflightDestinations;
+            accessControlRequestMethod = default;
+            var headers = httpContext.Request.Headers;
 
-            private readonly bool _supportsCorsPreflight;
-
-            public HttpMethodPolicyJumpTable(
-                int exitDestination,
-                Dictionary<string, int>? destinations,
-                int corsPreflightExitDestination,
-                Dictionary<string, int>? corsPreflightDestinations)
-            {
-                _exitDestination = exitDestination;
-                _destinations = destinations;
-                _corsPreflightExitDestination = corsPreflightExitDestination;
-                _corsPreflightDestinations = corsPreflightDestinations;
-
-                _supportsCorsPreflight = _corsPreflightDestinations != null && _corsPreflightDestinations.Count > 0;
-            }
-
-            public override int GetDestination(HttpContext httpContext)
-            {
-                int destination;
-
-                var httpMethod = httpContext.Request.Method;
-                var headers = httpContext.Request.Headers;
-                if (_supportsCorsPreflight &&
-                    HttpMethods.Equals(httpMethod, PreflightHttpMethod) &&
-                    headers.ContainsKey(HeaderNames.Origin) &&
-                    headers.TryGetValue(HeaderNames.AccessControlRequestMethod, out var accessControlRequestMethod) &&
-                    !StringValues.IsNullOrEmpty(accessControlRequestMethod))
-                {
-                    return _corsPreflightDestinations != null &&
-                        _corsPreflightDestinations.TryGetValue(accessControlRequestMethod, out destination)
-                        ? destination
-                        : _corsPreflightExitDestination;
-                }
-
-                return _destinations != null &&
-                    _destinations.TryGetValue(httpMethod, out destination) ? destination : _exitDestination;
-            }
+            return HttpMethods.Equals(httpMethod, PreflightHttpMethod) &&
+                headers.ContainsKey(HeaderNames.Origin) &&
+                headers.TryGetValue(HeaderNames.AccessControlRequestMethod, out accessControlRequestMethod) &&
+                !StringValues.IsNullOrEmpty(accessControlRequestMethod);
         }
 
         private class HttpMethodMetadataEndpointComparer : EndpointMetadataComparer<IHttpMethodMetadata>
