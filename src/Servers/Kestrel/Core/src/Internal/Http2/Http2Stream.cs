@@ -625,13 +625,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             Aborted = 4,
         }
 
-        public override void OnHeader(int index, bool indexOnly, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        public override void OnHeader(int index, bool indexedValue, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
-            base.OnHeader(index, indexOnly, name, value);
+            base.OnHeader(index, indexedValue, name, value);
 
-            if (indexOnly)
+            if (indexedValue)
             {
-                // Special case setting index only headers for performance
+                // Special case setting headers when the value is indexed for performance.
                 switch (index)
                 {
                     case H2StaticTable.MethodGet:

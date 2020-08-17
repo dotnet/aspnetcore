@@ -154,7 +154,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             switch (staticTableIndex)
             {
                 case H2StaticTable.SetCookie:
-                    return true;
                 case H2StaticTable.ContentDisposition:
                     return true;
                 case -1:
