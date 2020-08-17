@@ -228,6 +228,7 @@ namespace Microsoft.AspNetCore.TestHost
 
             var stream = new ThrowOnDisposeStream();
             stream.Write(Encoding.ASCII.GetBytes("Hello World"));
+            stream.Seek(0, SeekOrigin.Begin);
             var response = await server.CreateClient().PostAsync("/", new StreamContent(stream));
             Assert.True(response.IsSuccessStatusCode);
             Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
