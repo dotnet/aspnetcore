@@ -32,11 +32,13 @@ namespace Templates.Test.Helpers
             "Microsoft.DotNet.Web.ProjectTemplates.3.0",
             "Microsoft.DotNet.Web.ProjectTemplates.3.1",
             "Microsoft.DotNet.Web.ProjectTemplates.5.0",
+            "Microsoft.DotNet.Web.ProjectTemplates.6.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.1",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.2.2",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.1",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0",
+            "Microsoft.DotNet.Web.Spa.ProjectTemplates.6.0",
             "Microsoft.DotNet.Web.Spa.ProjectTemplates",
             "Microsoft.AspNetCore.Blazor.Templates",
         };
