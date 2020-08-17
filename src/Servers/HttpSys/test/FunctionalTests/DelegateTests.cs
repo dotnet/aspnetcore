@@ -100,6 +100,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 var transferFeature = httpContext.Features.Get<IHttpSysRequestTransferFeature>();
                 transferFeature.TransferRequest(destination);
                 Assert.False(transferFeature.IsTransferable);
+                httpContext.Response.WriteAsync(_expectedResponseString);
                 return Task.CompletedTask;
             });
 
