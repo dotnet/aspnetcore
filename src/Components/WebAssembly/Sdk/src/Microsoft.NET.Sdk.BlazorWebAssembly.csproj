@@ -17,6 +17,11 @@
   <ItemGroup>
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities.Core" />
+    <Reference Include="Microsoft.NET.Sdk.Razor"
+      PrivateAssets="All"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework;TargetFrameworks" />
 
     <ProjectReference
       Include="..\tools\Microsoft.NET.Sdk.BlazorWebAssembly.Tools.csproj"
