@@ -4,7 +4,6 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks.Sources;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {

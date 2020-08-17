@@ -664,11 +664,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 // Post completion after completing the request to resume the state machine
                 PostCompletion(ConvertRequestCompletionResults(successfulRequest));
 
-                // After disposing this handle, Dispose will not block waiting for the pinvokes to finish.
-                // Instead SafeHandle.Dispose() won't call release handle inline. Instead Safehandle will call ReleaseHandle
-                // on the pinvoke thread when teh pinvoke completes and the reference count goes to zero.
+                // After disposing a safe handle, Dispose() will not block waiting for the pinvokes to finish.
+                // Instead Safehandle will call ReleaseHandle on the pinvoke thread when the pinvokes complete
+                // and the reference count goes to zero.
 
                 // What this means is we need to wait until ReleaseHandle is called to finish disposal.
+                // This is to make sure it is safe to return back to native.
                 // The handle implements IValueTaskSource
                 _requestNativeHandle.Dispose();
 
