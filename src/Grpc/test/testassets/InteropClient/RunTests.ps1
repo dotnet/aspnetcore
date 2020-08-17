@@ -1,33 +1,10 @@
-﻿Param
+Param
 (
     [bool]$use_tls = $false
 )
 
 $allTests =
-  "empty_unary",
-  "large_unary",
-  "client_streaming",
-  "server_streaming",
-  "ping_pong",
-  "empty_stream",
-
-  #"compute_engine_creds",
-  #"jwt_token_creds",
-  #"oauth2_auth_token",
-  #"per_rpc_creds",
-
-  "cancel_after_begin",
-  "cancel_after_first_response",
-  "timeout_on_sleeping_server",
-  "custom_metadata",
-  "status_code_and_message",
-  "special_status_message",
-  "unimplemented_service",
-  "unimplemented_method",
-  "client_compressed_unary",
-  "client_compressed_streaming",
-  "server_compressed_unary",
-  "server_compressed_streaming"
+  "client_compressed_unary"
 
 Write-Host "Running $($allTests.Count) tests" -ForegroundColor Cyan
 Write-Host "Use TLS: $use_tls" -ForegroundColor Cyan
@@ -39,7 +16,7 @@ foreach ($test in $allTests)
 
   if (!$use_tls)
   {
-    dotnet run --use_tls false --server_port 50052 --client_type httpclient --test_case $test
+    dotnet run --use_tls false --server_port 65337 --client_type httpclient --test_case $test
   }
   else
   {
