@@ -229,14 +229,14 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.AddSingleton<ISigningCredentialStore>(sp =>
             {
                 var options = sp.GetRequiredService<IOptions<ApiAuthorizationOptions>>();
-                return new DefaultSigningCredentialsStore(options.Value.SigningCredential);
+                return new InMemorySigningCredentialsStore(options.Value.SigningCredential);
             });
 
             // We take over the setup for the validation keys store as Identity Server registers a singleton
             builder.Services.AddSingleton<IValidationKeysStore>(sp =>
             {
                 var options = sp.GetRequiredService<IOptions<ApiAuthorizationOptions>>();
-                return new DefaultValidationKeysStore(new[]
+                return new InMemoryValidationKeysStore(new[]
                 {
                     new SecurityKeyInfo
                     {
