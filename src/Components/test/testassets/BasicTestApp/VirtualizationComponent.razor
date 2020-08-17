@@ -6,7 +6,7 @@
 <p>
     Synchronous:<br />
     <div id="sync-container" style="background-color: #eee; height: 500px; overflow-y: auto">
-        <Virtualize Items="@fixedItems" ItemSize="200">
+        <Virtualize Items="@fixedItems" ItemSize="itemSize">
             <div @key="context" id="sync-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
         </Virtualize>
     </div>
@@ -17,7 +17,7 @@
     <button id="finish-loading-button" @onclick="FinishLoadingAsync">Finish loading</button><br />
     Cancellation count: <span id="cancellation-count">@asyncCancellationCount</span><br />
     <div id="async-container" style="background-color: #eee; height: 500px; overflow-y: auto">
-        <Virtualize ItemsProvider="GetItemsAsync" ItemSize="50">
+        <Virtualize ItemsProvider="GetItemsAsync" ItemSize="itemSize">
             <ItemContent>
                 <div @key="context" id="async-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
             </ItemContent>
