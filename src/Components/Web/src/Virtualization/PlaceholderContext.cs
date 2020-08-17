@@ -15,6 +15,10 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
 
         /// <summary>
         /// The size of the placeholder in pixels.
+        /// <para>
+        /// For virtualized components with vertical scrolling, this would be the height of the placeholder in pixels.
+        /// For virtualized components with horizontal scrolling, this would be the width of the placeholder in pixels.
+        /// </para>
         /// </summary>
         public float Size { get; }
 
