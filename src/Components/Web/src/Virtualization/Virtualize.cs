@@ -91,10 +91,10 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
-            if (ItemSize < 0)
+            if (ItemSize <= 0)
             {
                 throw new InvalidOperationException(
-                    $"{GetType()} requires a non-negative value for parameter '{nameof(ItemSize)}'.");
+                    $"{GetType()} requires a positive value for parameter '{nameof(ItemSize)}'.");
             }
 
             if (_itemSize <= 0)
