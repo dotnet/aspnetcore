@@ -32,6 +32,9 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
     }
   });
 
+  // Configure JS interop
+  window['Blazor']._internal.invokeJSFromDotNet = invokeJSFromDotNet;
+
   // Configure environment for execution under Mono WebAssembly with shared-memory rendering
   const platform = Environment.setPlatform(monoPlatform);
   window['Blazor'].platform = platform;
@@ -82,6 +85,27 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   // Start up the application
   platform.callEntryPoint(resourceLoader.bootConfig.entryAssembly);
+}
+
+function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any) : any {
+  const functionIdentifier = monoPlatform.readStringField(callInfo, 0)!;
+  // const resultType = monoPlatform.readInt32Field(callInfo, 4);
+  const marshalledCallArgsJson = monoPlatform.readStringField(callInfo, 8);
+
+  if (marshalledCallArgsJson !== null) {
+    const marshalledCallAsyncHandle = monoPlatform.readUint64Field(callInfo, 12);
+
+    if (marshalledCallAsyncHandle !== 0) {
+      DotNet.jsCallDispatcher.beginInvokeJSFromDotNet(marshalledCallAsyncHandle, functionIdentifier, marshalledCallArgsJson);
+      return 0;
+    } else {
+      const resultJson = DotNet.jsCallDispatcher.invokeJSFromDotNet(functionIdentifier, marshalledCallArgsJson)!;
+      return resultJson === null ? 0 : BINDING.js_string_to_mono_string(resultJson);
+    }
+  } else {
+    const func = DotNet.jsCallDispatcher.findJSFunction(functionIdentifier);
+    return func.call(null, arg0, arg1, arg2);
+  }
 }
 
 window['Blazor'].start = boot;

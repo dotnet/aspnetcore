@@ -16,8 +16,15 @@ namespace Microsoft.JSInterop.WebAssembly
         /// <inheritdoc />
         protected override string InvokeJS(string identifier, string argsJson)
         {
-            var noAsyncHandle = default(long);
-            var result = InternalCalls.InvokeJSMarshalled(out var exception, ref noAsyncHandle, identifier, argsJson);
+            var callInfo = new JSCallInfo
+            {
+                FunctionIdentifier = identifier,
+                MarshalledCallArgsJson = argsJson,
+                MarshalledCallAsyncHandle = default
+            };
+
+            var result = InternalCalls.InvokeJS<object, object, object, string>(out var exception, ref callInfo, null, null, null);
+
             return exception != null
                 ? throw new JSException(exception)
                 : result;
@@ -26,7 +33,14 @@ namespace Microsoft.JSInterop.WebAssembly
         /// <inheritdoc />
         protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
         {
-            InternalCalls.InvokeJSMarshalled(out _, ref asyncHandle, identifier, argsJson);
+            var callInfo = new JSCallInfo
+            {
+                FunctionIdentifier = identifier,
+                MarshalledCallArgsJson = argsJson,
+                MarshalledCallAsyncHandle = asyncHandle
+            };
+
+            InternalCalls.InvokeJS<object, object, object, string>(out _, ref callInfo, null, null, null);
         }
 
         protected override void EndInvokeDotNet(DotNetInvocationInfo callInfo, in DotNetInvocationResult dispatchResult)
@@ -89,7 +103,13 @@ namespace Microsoft.JSInterop.WebAssembly
         /// <returns>The result of the function invocation.</returns>
         public TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)
         {
-            var result = InternalCalls.InvokeJSUnmarshalled<T0, T1, T2, TResult>(out var exception, identifier, arg0, arg1, arg2);
+            var callInfo = new JSCallInfo
+            {
+                FunctionIdentifier = identifier
+            };
+
+            var result = InternalCalls.InvokeJS<T0, T1, T2, TResult>(out var exception, ref callInfo, arg0, arg1, arg2);
+
             return exception != null
                 ? throw new JSException(exception)
                 : result;
