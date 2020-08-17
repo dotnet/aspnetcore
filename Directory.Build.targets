@@ -130,8 +130,14 @@
     <None Include="$(PackageThirdPartyNoticesFile)" Pack="true" PackagePath="." />
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(Language)' == 'C#'">
-    <AssemblyVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0.0</AssemblyVersion>
+  <!--
+    If assembly is in shared framework and not net4*, assembly version should remain fixed for an entire
+    major.minor release even in servicing.
+  -->
+  <PropertyGroup Condition=" '$(IsAspNetCoreApp)' == 'true' AND
+      '$(Language)' == 'C#' AND
+      '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
+    <AssemblyVersion>$(AspNetCoreMajorMinorVersion).0.0</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup>
