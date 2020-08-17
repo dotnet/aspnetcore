@@ -180,7 +180,8 @@ namespace InteropTestsClient
             return new GrpcChannelWrapper(channel);
         }
 
-        // TODO(JamesNK): This type can be removed in the future when Grpc.Net.Client sets VersionPolicy automatically
+        // TODO(JamesNK): This type can be removed in the future when Grpc.Net.Client sets VersionPolicy automatically.
+        // https://github.com/grpc/grpc-dotnet/pull/987
         private class VersionPolicyHandler : DelegatingHandler
         {
             public VersionPolicyHandler(HttpMessageHandler innerHandler) : base(innerHandler)
