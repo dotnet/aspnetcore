@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Dispose();
         }
 
-        internal unsafe void Transfer(DelegationRule destination)
+        internal unsafe void Delegate(DelegationRule destination)
         {
             if (Request.HasRequestBodyStarted)
             {
@@ -361,7 +361,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 throw new HttpSysException((int)statusCode);
             }
 
-            Response.MarkTransferred();
+            Response.MarkDelegated();
         }
     }
 }

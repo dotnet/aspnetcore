@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpSysRequestInfoFeature,
         IHttpResponseTrailersFeature,
         IHttpResetFeature,
-        IHttpSysRequestTransferFeature
+        IHttpSysRequestDelegationFeature
     {
         private RequestContext _requestContext;
         private IFeatureCollection _features;
@@ -592,7 +592,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             set => _responseTrailers = value;
         }
 
-        public bool IsTransferable => Request.IsTransferable;
+        public bool CanDelegate => Request.CanDelegate;
 
         internal async Task OnResponseStart()
         {
@@ -715,9 +715,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        public void TransferRequest(DelegationRule destination)
+        public void DelegateRequest(DelegationRule destination)
         {
-            _requestContext.Transfer(destination);
+            _requestContext.Delegate(destination);
             _responseStarted = true;
         }
     }

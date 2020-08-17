@@ -33,8 +33,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
             using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, httpContext =>
             {
-                var transferFeature = httpContext.Features.Get<IHttpSysRequestTransferFeature>();
-                transferFeature.TransferRequest(destination);
+                var delegateFeature = httpContext.Features.Get<IHttpSysRequestDelegationFeature>();
+                delegateFeature.DelegateRequest(destination);
                 return Task.FromResult(0);
             });
 
@@ -66,9 +66,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, async httpContext =>
             {
                 await httpContext.Response.WriteAsync(_expectedResponseString);
-                var transferFeature = httpContext.Features.Get<IHttpSysRequestTransferFeature>();
-                Assert.False(transferFeature.IsTransferable);
-                Assert.Throws<InvalidOperationException>(() => transferFeature.TransferRequest(destination));
+                var delegateFeature = httpContext.Features.Get<IHttpSysRequestDelegationFeature>();
+                Assert.False(delegateFeature.CanDelegate);
+                Assert.Throws<InvalidOperationException>(() => delegateFeature.DelegateRequest(destination));
             });
 
             var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
@@ -97,9 +97,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
 
             using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, httpContext =>
             {
-                var transferFeature = httpContext.Features.Get<IHttpSysRequestTransferFeature>();
-                transferFeature.TransferRequest(destination);
-                Assert.False(transferFeature.IsTransferable);
+                var delegateFeature = httpContext.Features.Get<IHttpSysRequestDelegationFeature>();
+                delegateFeature.DelegateRequest(destination);
+                Assert.False(delegateFeature.CanDelegate);
                 httpContext.Response.WriteAsync(_expectedResponseString);
                 return Task.CompletedTask;
             });
@@ -133,8 +133,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             {
                 var memoryStream = new MemoryStream();
                 await httpContext.Request.Body.CopyToAsync(memoryStream);
-                var transferFeature = httpContext.Features.Get<IHttpSysRequestTransferFeature>();
-                Assert.Throws<InvalidOperationException>(() => transferFeature.TransferRequest(destination));
+                var delegateFeature = httpContext.Features.Get<IHttpSysRequestDelegationFeature>();
+                Assert.Throws<InvalidOperationException>(() => delegateFeature.DelegateRequest(destination));
             });
 
             var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
@@ -150,8 +150,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         {
             using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, httpContext =>
             {
-                var transferFeature = httpContext.Features.Get<IHttpSysRequestTransferFeature>();
-                Assert.Null(transferFeature);
+                var delegateFeature = httpContext.Features.Get<IHttpSysRequestDelegationFeature>();
+                Assert.Null(delegateFeature);
                 return Task.CompletedTask;
             });
 
