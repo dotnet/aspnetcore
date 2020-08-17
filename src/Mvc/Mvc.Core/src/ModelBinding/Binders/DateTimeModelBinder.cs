@@ -60,7 +60,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var type = metadata.UnderlyingOrModelType;
             try
             {
-
                 var value = valueProviderResult.FirstValue;
 
                 object model;
@@ -75,7 +74,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 }
                 else
                 {
-                    // unreachable
                     throw new NotSupportedException();
                 }
 
