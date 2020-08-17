@@ -140,6 +140,7 @@ namespace MusicStore
                 options.Scope.Add("wl.signin");
             });
 
+            services.AddDatabaseDeveloperPageExceptionFilter();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -159,8 +160,6 @@ namespace MusicStore
             // Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the request pipeline.
             // Note: Not recommended for production.
             app.UseDeveloperExceptionPage();
-
-            app.UseDatabaseErrorPage();
 
             // Configure Session.
             app.UseSession();

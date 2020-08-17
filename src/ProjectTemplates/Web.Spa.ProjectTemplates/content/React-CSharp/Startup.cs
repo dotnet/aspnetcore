@@ -42,6 +42,8 @@ namespace Company.WebApplication1
 #else
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddDatabaseDeveloperPageExceptionFilter();
 #endif
 
             services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
@@ -72,9 +74,6 @@ namespace Company.WebApplication1
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-#if (IndividualLocalAuth)
-                app.UseDatabaseErrorPage();
-#endif
             }
             else
             {
