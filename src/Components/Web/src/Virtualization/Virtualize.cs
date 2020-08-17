@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         public RenderFragment<PlaceholderContext>? Placeholder { get; set; }
 
         /// <summary>
-        /// Gets the size of each item in pixels.
+        /// Gets the size of each item in pixels. Defaults to 50px.
         /// </summary>
         [Parameter]
         public float ItemSize { get; set; } = 50f;
@@ -242,6 +242,13 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
             if (_lastRenderedItemCount > 0)
             {
                 _itemSize = (spacerSeparation - (_lastRenderedPlaceholderCount * _itemSize)) / _lastRenderedItemCount;
+            }
+
+            if (_itemSize <= 0)
+            {
+                // At this point, something unusual has occurred, likely due to misuse of this component.
+                // Reset the calculated item size to the user-provided item size.
+                _itemSize = ItemSize;
             }
 
             itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / _itemSize) - 1);
