@@ -105,6 +105,10 @@ namespace ComponentsWebAssembly_CSharp.Server.Data.Migrations
                         .HasMaxLength(50000)
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("DeviceCode")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -113,6 +117,10 @@ namespace ComponentsWebAssembly_CSharp.Server.Data.Migrations
                     b.Property<DateTime?>("Expiration")
                         .IsRequired()
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("SessionId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("SubjectId")
                         .HasMaxLength(200)
@@ -139,6 +147,9 @@ namespace ComponentsWebAssembly_CSharp.Server.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<DateTime?>("ConsumedTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
 
@@ -147,8 +158,16 @@ namespace ComponentsWebAssembly_CSharp.Server.Data.Migrations
                         .HasMaxLength(50000)
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<DateTime?>("Expiration")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("SessionId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("SubjectId")
                         .HasMaxLength(200)
@@ -164,6 +183,8 @@ namespace ComponentsWebAssembly_CSharp.Server.Data.Migrations
                     b.HasIndex("Expiration");
 
                     b.HasIndex("SubjectId", "ClientId", "Type");
+
+                    b.HasIndex("SubjectId", "SessionId", "Type");
 
                     b.ToTable("PersistedGrants");
                 });
