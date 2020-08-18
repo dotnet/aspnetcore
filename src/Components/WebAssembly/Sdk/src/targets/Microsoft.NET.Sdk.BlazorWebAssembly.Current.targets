@@ -395,7 +395,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_BlazorTypeGranularAssembly
           Include="@(ManagedAssemblyToLink)"
-          Condition="'%(Extension)' == '.dll' AND ($([System.String]::Copy('%(Filename)').StartsWith('Microsoft.AspNetCore.')))">
+          Condition="'%(Extension)' == '.dll' AND $([System.String]::Copy('%(Filename)').StartsWith('Microsoft.AspNetCore.'))">
         <Required>false</Required>
         <Preserve>all</Preserve>
       </_BlazorTypeGranularAssembly>
