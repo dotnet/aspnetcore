@@ -17,7 +17,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Experimental.Quic
 {
-    public class QuicConnectionFactory : IMultiplexedConnectionFactory
+    internal class QuicConnectionFactory : IMultiplexedConnectionFactory
     {
         private QuicTransportContext _transportContext;
 

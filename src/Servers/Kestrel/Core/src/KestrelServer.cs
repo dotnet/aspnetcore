@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         {
         }
 
-        public KestrelServer(
+        internal KestrelServer(
             IOptions<KestrelServerOptions> options,
             IEnumerable<IConnectionListenerFactory> transportFactories,
             IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories,
