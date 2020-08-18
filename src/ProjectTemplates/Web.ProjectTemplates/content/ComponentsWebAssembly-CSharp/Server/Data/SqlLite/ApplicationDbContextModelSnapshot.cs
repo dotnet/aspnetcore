@@ -99,6 +99,10 @@ namespace ComponentsWebAssembly_CSharp.Server.Data.Migrations
                         .HasMaxLength(50000)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("DeviceCode")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -106,6 +110,10 @@ namespace ComponentsWebAssembly_CSharp.Server.Data.Migrations
 
                     b.Property<DateTime?>("Expiration")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SessionId")
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("SubjectId")
@@ -133,6 +141,9 @@ namespace ComponentsWebAssembly_CSharp.Server.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("ConsumedTime")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("TEXT");
 
@@ -141,7 +152,15 @@ namespace ComponentsWebAssembly_CSharp.Server.Data.Migrations
                         .HasMaxLength(50000)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime?>("Expiration")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SessionId")
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("SubjectId")
@@ -158,6 +177,8 @@ namespace ComponentsWebAssembly_CSharp.Server.Data.Migrations
                     b.HasIndex("Expiration");
 
                     b.HasIndex("SubjectId", "ClientId", "Type");
+
+                    b.HasIndex("SubjectId", "SessionId", "Type");
 
                     b.ToTable("PersistedGrants");
                 });
