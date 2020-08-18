@@ -6,9 +6,51 @@ export module DotNet {
   export type JsonReviver = ((key: any, value: any) => any);
   const jsonRevivers: JsonReviver[] = [];
 
+  class JSObject {
+    _cachedFunctions: { [identifier: string]: Function };
+
+    constructor(private _jsObject: any, _id: number)
+    {
+      this._cachedFunctions = {};
+      this._jsObject.__jsObjectId = _id;
+    }
+
+    public findFunction(identifier: string) {
+      if (Object.prototype.hasOwnProperty.call(this._cachedFunctions, identifier)) {
+        return this._cachedFunctions[identifier];
+      }
+
+      let result: any = this._jsObject;
+      let resultIdentifier = this._jsObject.constructor.name;
+      let lastSegmentValue: any;
+
+      identifier.split('.').forEach(segment => {
+        if (segment in result) {
+          lastSegmentValue = result;
+          result = result[segment];
+          resultIdentifier += '.' + segment;
+        } else {
+          throw new Error(`Could not find '${segment}' in '${resultIdentifier}'`);
+        }
+      });
+
+      if (result instanceof Function) {
+        result = result.bind(lastSegmentValue);
+        this._cachedFunctions[identifier] = result;
+        return result;
+      } else {
+        throw new Error(`The value '${resultIdentifier}' is not a function.`);
+      }
+    }
+  }
+
   const pendingAsyncCalls: { [id: number]: PendingAsyncCall<any> } = {};
-  const cachedJSFunctions: { [identifier: string]: Function } = {};
+  const cachedJSObjectsById: { [id: number]: JSObject } = {
+    0: new JSObject(window, 0),
+  };
+
   let nextAsyncCallId = 1; // Start at 1 because zero signals "no response needed"
+  let nextJsObjectId = 1; // Start at 1 because zero is reserved for "window"
 
   let dotNetDispatcher: DotNetCallDispatcher | null = null;
 
@@ -114,6 +156,11 @@ export module DotNet {
     reject: (reason?: any) => void;
   }
 
+  enum JSCallResultType {
+    Default = 0,
+    JSObjectReference = 1
+  }
+
   /**
    * Represents the ability to dispatch calls from JavaScript to a .NET runtime.
    */
@@ -169,7 +216,7 @@ export module DotNet {
      * @param argsJson JSON representation of arguments to be passed to the function.
      * @returns JSON representation of the invocation result.
      */
-    invokeJSFromDotNet: (identifier: string, argsJson: string) => {
+    invokeJSFromDotNet: (identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number) => {
       const result = findJSFunction(identifier).apply(null, parseJsonWithRevivers(argsJson));
       return result === null || result === undefined
         ? null
@@ -183,7 +230,7 @@ export module DotNet {
      * @param identifier Identifies the globally-reachable function to invoke.
      * @param argsJson JSON representation of arguments to be passed to the function.
      */
-    beginInvokeJSFromDotNet: (asyncHandle: number, identifier: string, argsJson: string): void => {
+    beginInvokeJSFromDotNet: (asyncHandle: number, identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number): void => {
       // Coerce synchronous functions into async ones, plus treat
       // synchronous exceptions the same as async ones
       const promise = new Promise<any>(resolve => {
@@ -233,30 +280,13 @@ export module DotNet {
     }
   }
 
-  function findJSFunction(identifier: string): Function {
-    if (Object.prototype.hasOwnProperty.call(cachedJSFunctions, identifier)) {
-      return cachedJSFunctions[identifier];
-    }
+  function findJSFunction(identifier: string, targetInstanceId: number = 0): Function {
+    let targetInstance = cachedJSObjectsById[targetInstanceId];
 
-    let result: any = window;
-    let resultIdentifier = 'window';
-    let lastSegmentValue: any;
-    identifier.split('.').forEach(segment => {
-      if (segment in result) {
-        lastSegmentValue = result;
-        result = result[segment];
-        resultIdentifier += '.' + segment;
-      } else {
-        throw new Error(`Could not find '${segment}' in '${resultIdentifier}'.`);
-      }
-    });
-
-    if (result instanceof Function) {
-      result = result.bind(lastSegmentValue);
-      cachedJSFunctions[identifier] = result;
-      return result;
+    if (targetInstance) {
+      return targetInstance.findFunction(identifier);
     } else {
-      throw new Error(`The value '${resultIdentifier}' is not a function.`);
+      throw new Error(`JS object instance with id ${targetInstanceId} does not exist.`);
     }
   }
 

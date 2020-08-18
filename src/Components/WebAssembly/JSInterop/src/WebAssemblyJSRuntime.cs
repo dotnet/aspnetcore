@@ -19,6 +19,7 @@ namespace Microsoft.JSInterop.WebAssembly
             var callInfo = new JSCallInfo
             {
                 FunctionIdentifier = identifier,
+                ResultType = JSCallResultType.Default,
                 MarshalledCallArgsJson = argsJson ?? "[]",
                 MarshalledCallAsyncHandle = default
             };
@@ -31,11 +32,13 @@ namespace Microsoft.JSInterop.WebAssembly
         }
 
         /// <inheritdoc />
-        protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
+        protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
         {
             var callInfo = new JSCallInfo
             {
                 FunctionIdentifier = identifier,
+                TargetInstanceId = targetInstanceId,
+                ResultType = resultType,
                 MarshalledCallArgsJson = argsJson ?? "[]",
                 MarshalledCallAsyncHandle = asyncHandle
             };
@@ -53,7 +56,7 @@ namespace Microsoft.JSInterop.WebAssembly
             // We pass 0 as the async handle because we don't want the JS-side code to
             // send back any notification (we're just providing a result for an existing async call)
             var args = JsonSerializer.Serialize(new[] { callInfo.CallId, dispatchResult.Success, resultOrError }, JsonSerializerOptions);
-            BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args);
+            BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args, JSCallResultType.Default, 0);
         }
 
         /// <summary>
@@ -105,7 +108,8 @@ namespace Microsoft.JSInterop.WebAssembly
         {
             var callInfo = new JSCallInfo
             {
-                FunctionIdentifier = identifier
+                FunctionIdentifier = identifier,
+                ResultType = JSCallResultTypeHelper.FromGenericResultType<TResult>()
             };
 
             var result = InternalCalls.InvokeJS<T0, T1, T2, TResult>(out var exception, ref callInfo, arg0, arg1, arg2);

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Runtime.InteropServices;
+using Microsoft.JSInterop;
 
 namespace WebAssembly.JSInterop
 {
@@ -19,5 +20,8 @@ namespace WebAssembly.JSInterop
 
         [FieldOffset(12)]
         public long MarshalledCallAsyncHandle;
+
+        [FieldOffset(20)]
+        public long TargetInstanceId;
     }
 }

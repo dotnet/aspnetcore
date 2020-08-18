@@ -377,7 +377,7 @@ namespace Microsoft.JSInterop
                 });
             }
 
-            protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson)
+            protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
             {
                 BeginInvokeCalls.Add(new BeginInvokeAsyncArgs
                 {

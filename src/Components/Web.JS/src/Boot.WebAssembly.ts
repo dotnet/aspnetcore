@@ -89,21 +89,22 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
 function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any) : any {
   const functionIdentifier = monoPlatform.readStringField(callInfo, 0)!;
-  // const resultType = monoPlatform.readInt32Field(callInfo, 4);
+  const resultType = monoPlatform.readInt32Field(callInfo, 4);
   const marshalledCallArgsJson = monoPlatform.readStringField(callInfo, 8);
+  const targetInstanceId = monoPlatform.readUint64Field(callInfo, 20);
 
   if (marshalledCallArgsJson !== null) {
     const marshalledCallAsyncHandle = monoPlatform.readUint64Field(callInfo, 12);
 
     if (marshalledCallAsyncHandle !== 0) {
-      DotNet.jsCallDispatcher.beginInvokeJSFromDotNet(marshalledCallAsyncHandle, functionIdentifier, marshalledCallArgsJson);
+      DotNet.jsCallDispatcher.beginInvokeJSFromDotNet(marshalledCallAsyncHandle, functionIdentifier, marshalledCallArgsJson, resultType, targetInstanceId);
       return 0;
     } else {
-      const resultJson = DotNet.jsCallDispatcher.invokeJSFromDotNet(functionIdentifier, marshalledCallArgsJson)!;
+      const resultJson = DotNet.jsCallDispatcher.invokeJSFromDotNet(functionIdentifier, marshalledCallArgsJson, resultType, targetInstanceId)!;
       return resultJson === null ? 0 : BINDING.js_string_to_mono_string(resultJson);
     }
   } else {
-    const func = DotNet.jsCallDispatcher.findJSFunction(functionIdentifier);
+    const func = DotNet.jsCallDispatcher.findJSFunction(functionIdentifier, targetInstanceId);
     return func.call(null, arg0, arg1, arg2);
   }
 }
