@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                                     c.Configure(context.ServerOptions);
                                 }
 
-                                return new KestrelServer(new List<IConnectionListenerFactory>() { sp.GetRequiredService<IConnectionListenerFactory>() }, context);
+                                return new KestrelServerImpl(new List<IConnectionListenerFactory>() { sp.GetRequiredService<IConnectionListenerFactory>() }, context);
                             });
                             configureServices(services);
                         })

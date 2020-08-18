@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             IConfiguration configuration,
             IHostEnvironment hostEnvironment,
             bool reloadOnChange,
-            ILogger<KestrelServer> logger,
+            ILogger<KestrelServerImpl> logger,
             ILogger<HttpsConnectionMiddleware> httpsLogger)
         {
             Options = options ?? throw new ArgumentNullException(nameof(options));
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         internal bool ReloadOnChange { get; }
 
         private IHostEnvironment HostEnvironment { get; }
-        private ILogger<KestrelServer> Logger { get; }
+        private ILogger<KestrelServerImpl> Logger { get; }
         private ILogger<HttpsConnectionMiddleware> HttpsLogger { get; }
 
         private ConfigurationReader ConfigurationReader { get; set; }

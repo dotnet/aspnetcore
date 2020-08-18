@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             var mockLogger = new Mock<ILogger>();
             mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
-            new KestrelServer(Options.Create<KestrelServerOptions>(null), new List<IConnectionListenerFactory>() { new MockTransportFactory() }, mockLoggerFactory.Object);
+            new KestrelServerImpl(Options.Create<KestrelServerOptions>(null), new List<IConnectionListenerFactory>() { new MockTransportFactory() }, mockLoggerFactory.Object);
             mockLoggerFactory.Verify(factory => factory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel"));
         }
 
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void ConstructorWithNullTransportFactoriesThrows()
         {
             var exception = Assert.Throws<ArgumentNullException>(() =>
-                new KestrelServer(
+                new KestrelServerImpl(
                     Options.Create<KestrelServerOptions>(null),
                     null,
                     new LoggerFactory(new[] { new KestrelTestLoggerProvider() })));
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void ConstructorWithNoTransportFactoriesThrows()
         {
             var exception = Assert.Throws<InvalidOperationException>(() =>
-                new KestrelServer(
+                new KestrelServerImpl(
                     Options.Create<KestrelServerOptions>(null),
                     new List<IConnectionListenerFactory>(),
                     new LoggerFactory(new[] { new KestrelTestLoggerProvider() })));
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void StartWithMultipleTransportFactoriesDoesNotThrow()
         {
-            using var server = new KestrelServer(
+            using var server = new KestrelServerImpl(
                 Options.Create(CreateServerOptions()),
                 new List<IConnectionListenerFactory>() { new ThrowingTransportFactory(), new MockTransportFactory() },
                 new LoggerFactory(new[] { new KestrelTestLoggerProvider() }));
@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             var mockLogger = new Mock<ILogger>();
             mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
-            var server = new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { mockTransportFactory.Object }, mockLoggerFactory.Object);
+            var server = new KestrelServerImpl(Options.Create(options), new List<IConnectionListenerFactory>() { mockTransportFactory.Object }, mockLoggerFactory.Object);
             await server.StartAsync(new DummyApplication(), CancellationToken.None);
 
             var stopTask1 = server.StopAsync(default);
@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             var mockLogger = new Mock<ILogger>();
             mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
-            var server = new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { mockTransportFactory.Object }, mockLoggerFactory.Object);
+            var server = new KestrelServerImpl(Options.Create(options), new List<IConnectionListenerFactory>() { mockTransportFactory.Object }, mockLoggerFactory.Object);
             await server.StartAsync(new DummyApplication(), CancellationToken.None);
 
             var stopTask1 = server.StopAsync(default);
@@ -398,7 +398,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLoggerFactory = new Mock<ILoggerFactory>();
             var mockLogger = new Mock<ILogger>();
             mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(mockLogger.Object);
-            var server = new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { mockTransportFactory.Object }, mockLoggerFactory.Object);
+            var server = new KestrelServerImpl(Options.Create(options), new List<IConnectionListenerFactory>() { mockTransportFactory.Object }, mockLoggerFactory.Object);
             await server.StartAsync(new DummyApplication(), default);
 
             var stopTask1 = server.StopAsync(default);
@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 DebuggerWrapper.Singleton,
                 testContext.Log);
 
-            using (var server = new KestrelServer(new List<IConnectionListenerFactory>() { new MockTransportFactory() }, testContext))
+            using (var server = new KestrelServerImpl(new List<IConnectionListenerFactory>() { new MockTransportFactory() }, testContext))
             {
                 Assert.Null(testContext.DateHeaderValueManager.GetDateHeaderValues());
 
@@ -496,7 +496,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
-            serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
+            serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServerImpl>>());
             serviceCollection.AddSingleton(Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
             var options = new KestrelServerOptions
@@ -526,7 +526,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 });
 
             // Don't use "using". Dispose() could hang if test fails.
-            var server = new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { mockTransportFactory.Object }, mockLoggerFactory.Object);
+            var server = new KestrelServerImpl(Options.Create(options), new List<IConnectionListenerFactory>() { mockTransportFactory.Object }, mockLoggerFactory.Object);
 
             await server.StartAsync(new DummyApplication(), CancellationToken.None).DefaultTimeout();
 
@@ -633,7 +633,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
-            serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
+            serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServerImpl>>());
             serviceCollection.AddSingleton(Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
             var options = new KestrelServerOptions
@@ -663,7 +663,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 });
 
             // Don't use "using". Dispose() could hang if test fails.
-            var server = new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { mockTransportFactory.Object }, mockLoggerFactory.Object);
+            var server = new KestrelServerImpl(Options.Create(options), new List<IConnectionListenerFactory>() { mockTransportFactory.Object }, mockLoggerFactory.Object);
 
             await server.StartAsync(new DummyApplication(), CancellationToken.None).DefaultTimeout();
 
@@ -675,14 +675,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await server.StopAsync(CancellationToken.None).DefaultTimeout();
         }
 
-        private static KestrelServer CreateServer(KestrelServerOptions options, ILogger testLogger)
+        private static KestrelServerImpl CreateServer(KestrelServerOptions options, ILogger testLogger)
         {
-            return new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { new MockTransportFactory() }, new LoggerFactory(new[] { new KestrelTestLoggerProvider(testLogger) }));
+            return new KestrelServerImpl(Options.Create(options), new List<IConnectionListenerFactory>() { new MockTransportFactory() }, new LoggerFactory(new[] { new KestrelTestLoggerProvider(testLogger) }));
         }
 
-        private static KestrelServer CreateServer(KestrelServerOptions options, bool throwOnCriticalErrors = true)
+        private static KestrelServerImpl CreateServer(KestrelServerOptions options, bool throwOnCriticalErrors = true)
         {
-            return new KestrelServer(Options.Create(options), new List<IConnectionListenerFactory>() { new MockTransportFactory() }, new LoggerFactory(new[] { new KestrelTestLoggerProvider(throwOnCriticalErrors) }));
+            return new KestrelServerImpl(Options.Create(options), new List<IConnectionListenerFactory>() { new MockTransportFactory() }, new LoggerFactory(new[] { new KestrelTestLoggerProvider(throwOnCriticalErrors) }));
         }
 
         private static void StartDummyApplication(IServer server)
