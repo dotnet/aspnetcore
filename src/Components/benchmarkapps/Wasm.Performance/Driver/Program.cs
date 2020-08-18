@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OpenQA.Selenium;
 using DevHostServerProgram = Microsoft.AspNetCore.Components.WebAssembly.DevServer.Server.Program;
 
 namespace Wasm.Performance.Driver
@@ -81,13 +82,31 @@ namespace Wasm.Performance.Driver
             {
                 BenchmarkResultTask = new TaskCompletionSource<BenchmarkResult>();
                 using var runCancellationToken = new CancellationTokenSource(timeForEachRun);
-                using var registration = runCancellationToken.Token.Register(() => BenchmarkResultTask.TrySetException(new TimeoutException($"Timed out after {timeForEachRun}")));
+                using var registration = runCancellationToken.Token.Register(() =>
+                {
+                    string exceptionMessage = $"Timed out after {timeForEachRun}.";
+                    try
+                    {
+                        var innerHtml = browser.FindElement(By.CssSelector(":first-child")).GetAttribute("innerHTML");
+                        exceptionMessage += Environment.NewLine + "Browser state: " + Environment.NewLine + innerHtml;
+                    }
+                    catch
+                    {
+                        // Do nothing;
+                    }
+                    BenchmarkResultTask.TrySetException(new TimeoutException(exceptionMessage));
+                });
 
                 var results = await BenchmarkResultTask.Task;
 
                 FormatAsBenchmarksOutput(results,
                     includeMetadata: firstRun,
                     isStressRun: isStressRun);
+
+                if (!isStressRun)
+                {
+                    PrettyPrint(results);
+                }
 
                 firstRun = false;
             } while (isStressRun && !stressRunCancellation.IsCancellationRequested);
@@ -228,6 +247,17 @@ namespace Wasm.Performance.Driver
             builder.AppendLine("#EndJobStatistics");
 
             Console.WriteLine(builder);
+        }
+
+        static void PrettyPrint(BenchmarkResult benchmarkResult)
+        {
+            Console.WriteLine();
+            Console.WriteLine("| Name | Description | Duration | NumExecutions | ");
+            Console.WriteLine("--------------------------");
+            foreach (var result in benchmarkResult.ScenarioResults)
+            {
+                Console.WriteLine($"| {result.Descriptor.Name} | {result.Name} | {result.Duration} | {result.NumExecutions} |");
+            }
         }
 
         static IHost StartTestApp()

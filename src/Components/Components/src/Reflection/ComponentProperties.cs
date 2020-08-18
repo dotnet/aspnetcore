@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 }
             }
 
-            static void SetProperty(object target, IPropertySetter writer, string parameterName, object value)
+            static void SetProperty(object target, PropertySetter writer, string parameterName, object value)
             {
                 try
                 {
@@ -246,13 +246,13 @@ namespace Microsoft.AspNetCore.Components.Reflection
         private class WritersForType
         {
             private const int MaxCachedWriterLookups = 100;
-            private readonly Dictionary<string, IPropertySetter> _underlyingWriters;
-            private readonly ConcurrentDictionary<string, IPropertySetter?> _referenceEqualityWritersCache;
+            private readonly Dictionary<string, PropertySetter> _underlyingWriters;
+            private readonly ConcurrentDictionary<string, PropertySetter?> _referenceEqualityWritersCache;
 
             public WritersForType(Type targetType)
             {
-                _underlyingWriters = new Dictionary<string, IPropertySetter>(StringComparer.OrdinalIgnoreCase);
-                _referenceEqualityWritersCache = new ConcurrentDictionary<string, IPropertySetter?>(ReferenceEqualityComparer.Instance);
+                _underlyingWriters = new Dictionary<string, PropertySetter>(StringComparer.OrdinalIgnoreCase);
+                _referenceEqualityWritersCache = new ConcurrentDictionary<string, PropertySetter?>(ReferenceEqualityComparer.Instance);
 
                 foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
                 {
@@ -271,7 +271,10 @@ namespace Microsoft.AspNetCore.Components.Reflection
                             $"The type '{targetType.FullName}' declares a parameter matching the name '{propertyName}' that is not public. Parameters must be public.");
                     }
 
-                    var propertySetter = MemberAssignment.CreatePropertySetter(targetType, propertyInfo, cascading: cascadingParameterAttribute != null);
+                    var propertySetter = new PropertySetter(targetType, propertyInfo)
+                    {
+                        Cascading = cascadingParameterAttribute != null,
+                    };
 
                     if (_underlyingWriters.ContainsKey(propertyName))
                     {
@@ -298,17 +301,17 @@ namespace Microsoft.AspNetCore.Components.Reflection
                             ThrowForInvalidCaptureUnmatchedValuesParameterType(targetType, propertyInfo);
                         }
 
-                        CaptureUnmatchedValuesWriter = MemberAssignment.CreatePropertySetter(targetType, propertyInfo, cascading: false);
+                        CaptureUnmatchedValuesWriter = new PropertySetter(targetType, propertyInfo);
                         CaptureUnmatchedValuesPropertyName = propertyInfo.Name;
                     }
                 }
             }
 
-            public IPropertySetter? CaptureUnmatchedValuesWriter { get; }
+            public PropertySetter? CaptureUnmatchedValuesWriter { get; }
 
             public string? CaptureUnmatchedValuesPropertyName { get; }
 
-            public bool TryGetValue(string parameterName, [MaybeNullWhen(false)] out IPropertySetter writer)
+            public bool TryGetValue(string parameterName, [MaybeNullWhen(false)] out PropertySetter writer)
             {
                 // In intensive parameter-passing scenarios, one of the most expensive things we do is the
                 // lookup from parameterName to writer. Pre-5.0 that was because of the string hashing.
