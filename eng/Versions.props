@@ -81,7 +81,7 @@
     <SystemComponentModelAnnotationsPackageVersion>4.7.0</SystemComponentModelAnnotationsPackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>4.7.0</SystemDiagnosticsEventLogPackageVersion>
     <SystemDrawingCommonPackageVersion>4.7.0</SystemDrawingCommonPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.7.1</SystemIOPipelinesPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.7.2</SystemIOPipelinesPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>4.7.0</SystemNetHttpWinHttpHandlerPackageVersion>
     <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.7.1</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.8.1</SystemReflectionMetadataPackageVersion>

@@ -13,7 +13,7 @@
       <Uri>https://github.com/dotnet/blazor</Uri>
       <Sha>cc449601d638ffaab58ae9487f0fd010bb178a12</Sha>
     </Dependency>
-    <Dependency Name="System.Net.Http.Json" Version="3.2.0">
+    <Dependency Name="System.Net.Http.Json" Version="3.2.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>66409e392d64ed96e5d3a5fda712d9baf51196ed</Sha>
     </Dependency>
@@ -317,9 +317,9 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>0f7f38c4fd323b26da10cce95f857f77f0f09b48</Sha>
     </Dependency>
-    <Dependency Name="System.IO.Pipelines" Version="4.7.1" Pinned="true">
+    <Dependency Name="System.IO.Pipelines" Version="4.7.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>8a3ffed558ddf943c1efa87d693227722d6af094</Sha>
+      <Sha>059a4a19e602494bfbed473dbbb18f2dbfbd0878</Sha>
     </Dependency>
     <Dependency Name="System.Net.Http.WinHttpHandler" Version="4.7.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
@@ -333,7 +333,7 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-corefx</Uri>
       <Sha>059a4a19e602494bfbed473dbbb18f2dbfbd0878</Sha>
     </Dependency>
-    <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" Pinned="true">
+    <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>8a3ffed558ddf943c1efa87d693227722d6af094</Sha>
     </Dependency>
