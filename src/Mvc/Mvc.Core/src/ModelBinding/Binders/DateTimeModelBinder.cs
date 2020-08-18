@@ -3,27 +3,25 @@
 
 using System;
 using System.Globalization;
-using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
     /// <summary>
-    /// An <see cref="IModelBinder"/> for <see cref="decimal"/> and <see cref="Nullable{T}"/> where <c>T</c> is
-    /// <see cref="decimal"/>.
+    /// An <see cref="IModelBinder"/> for <see cref="DateTime"/> and nullable <see cref="DateTime"/> models.
     /// </summary>
-    public class DoubleModelBinder : IModelBinder
+    public class DateTimeModelBinder : IModelBinder
     {
-        private readonly NumberStyles _supportedStyles;
+        private readonly DateTimeStyles _supportedStyles;
         private readonly ILogger _logger;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="DoubleModelBinder"/>.
+        /// Initializes a new instance of <see cref="DateTimeModelBinder"/>.
         /// </summary>
-        /// <param name="supportedStyles">The <see cref="NumberStyles"/>.</param>
+        /// <param name="supportedStyles">The <see cref="DateTimeStyles"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        public DoubleModelBinder(NumberStyles supportedStyles, ILoggerFactory loggerFactory)
+        public DateTimeModelBinder(DateTimeStyles supportedStyles, ILoggerFactory loggerFactory)
         {
             if (loggerFactory == null)
             {
@@ -31,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
 
             _supportedStyles = supportedStyles;
-            _logger = loggerFactory.CreateLogger<DoubleModelBinder>();
+            _logger = loggerFactory.CreateLogger<DateTimeModelBinder>();
         }
 
         /// <inheritdoc />
@@ -67,16 +65,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 object model;
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    // Parse() method trims the value (with common NumberStyles) then throws if the result is empty.
+                    // Parse() method trims the value (with common DateTimeSyles) then throws if the result is empty.
                     model = null;
                 }
-                else if (type == typeof(double))
+                else if (type == typeof(DateTime))
                 {
-                    model = double.Parse(value, _supportedStyles, valueProviderResult.Culture);
+                    model = DateTime.Parse(value, valueProviderResult.Culture, _supportedStyles);
                 }
                 else
                 {
-                    // unreachable
                     throw new NotSupportedException();
                 }
 
@@ -97,17 +94,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
             catch (Exception exception)
             {
-                var isFormatException = exception is FormatException;
-                if (!isFormatException && exception.InnerException != null)
-                {
-                    // Unlike TypeConverters, floating point types do not seem to wrap FormatExceptions. Preserve
-                    // this code in case a cursory review of the CoreFx code missed something.
-                    exception = ExceptionDispatchInfo.Capture(exception.InnerException).SourceException;
-                }
-
-                modelState.TryAddModelError(modelName, exception, metadata);
-
                 // Conversion failed.
+                modelState.TryAddModelError(modelName, exception, metadata);
             }
 
             _logger.DoneAttemptingToBindModel(bindingContext);

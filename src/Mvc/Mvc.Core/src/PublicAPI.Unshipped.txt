@@ -463,6 +463,9 @@ Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexObjectModelBinderProvider.C
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinder
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinderProvider
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinderProvider.ComplexTypeModelBinderProvider() -> void
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateTimeModelBinder
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateTimeModelBinderProvider
+Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateTimeModelBinderProvider.DateTimeModelBinderProvider() -> void
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DecimalModelBinder
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DictionaryModelBinder<TKey, TValue>
 Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DictionaryModelBinderProvider
@@ -1464,6 +1467,9 @@ virtual Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ValidationVisitor.Visit
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinder.ComplexTypeModelBinder(System.Collections.Generic.IDictionary<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata, Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder> propertyBinders, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinder.ComplexTypeModelBinder(System.Collections.Generic.IDictionary<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata, Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder> propertyBinders, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, bool allowValidatingTopLevelNodes) -> void
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ComplexTypeModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
+~Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateTimeModelBinder.BindModelAsync(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext bindingContext) -> System.Threading.Tasks.Task
+~Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateTimeModelBinder.DateTimeModelBinder(System.Globalization.DateTimeStyles supportedStyles, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
+~Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DateTimeModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext context) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DecimalModelBinder.BindModelAsync(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext bindingContext) -> System.Threading.Tasks.Task
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DecimalModelBinder.DecimalModelBinder(System.Globalization.NumberStyles supportedStyles, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
 ~Microsoft.AspNetCore.Mvc.ModelBinding.Binders.DictionaryModelBinder<TKey, TValue>.DictionaryModelBinder(Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder keyBinder, Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder valueBinder, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) -> void
