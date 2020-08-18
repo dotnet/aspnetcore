@@ -41,7 +41,7 @@ class MockTransport implements Transport {
         this.url = url;
         if (autoHandshake) {
             try {
-                onReceiveCallBack.invoke(TestUtils.StringToByteBuffer("{}" + RECORD_SEPARATOR));
+                onReceiveCallBack.invoke(TestUtils.stringToByteBuffer("{}" + RECORD_SEPARATOR));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -87,7 +87,7 @@ class MockTransport implements Transport {
     }
 
     public void receiveMessage(String message) {
-        this.onReceive(TestUtils.StringToByteBuffer(message));
+        this.onReceive(TestUtils.stringToByteBuffer(message));
     }
     
     public void receiveMessage(ByteBuffer message) {
@@ -115,7 +115,7 @@ class MockTransport implements Transport {
     }
     
     private boolean isPing(ByteBuffer message) {
-    	return (TestUtils.ByteBufferToString(message).equals("{\"type\":6}" + RECORD_SEPARATOR) ||
+    	return (TestUtils.byteBufferToString(message).equals("{\"type\":6}" + RECORD_SEPARATOR) ||
     	       (message.array()[0] == 2 && message.array()[1] == -111 && message.array()[2] == 6));
     }
 }

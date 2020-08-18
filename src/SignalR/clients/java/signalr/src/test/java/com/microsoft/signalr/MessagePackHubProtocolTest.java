@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 package com.microsoft.signalr;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
-
-import okio.ByteString;
 
 import org.junit.jupiter.api.Test;
 

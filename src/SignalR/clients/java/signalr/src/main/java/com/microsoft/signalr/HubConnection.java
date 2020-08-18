@@ -696,7 +696,6 @@ public class HubConnection implements AutoCloseable {
     public <T> Single<T> invoke(Class<T> returnType, String method, Object... args) {
         return this.<T>invoke(returnType, returnType, method, args);
     }
-    
 
     /**
      * Invokes a hub method on the server using the specified method name and arguments.
@@ -1079,8 +1078,6 @@ public class HubConnection implements AutoCloseable {
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
      * Should be used for generic classes and Parameterized Collections, like List or Map.
-     * 
-     * Should be invoked with the syntax
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.

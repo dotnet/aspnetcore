@@ -14,7 +14,7 @@ class HandshakeProtocolTest {
         HandshakeRequestMessage handshakeRequest = new HandshakeRequestMessage("json", 1);
         ByteBuffer result = HandshakeProtocol.createHandshakeRequestMessage(handshakeRequest);
         String expectedResult = "{\"protocol\":\"json\",\"version\":1}\u001E";
-        assertEquals(expectedResult, TestUtils.ByteBufferToString(result));
+        assertEquals(expectedResult, TestUtils.byteBufferToString(result));
     }
 
     @Test

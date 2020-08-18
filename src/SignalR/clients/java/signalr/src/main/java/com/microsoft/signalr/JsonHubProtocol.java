@@ -41,16 +41,16 @@ public class JsonHubProtocol implements HubProtocol {
 
     @Override
     public List<HubMessage> parseMessages(ByteBuffer payload, InvocationBinder binder) {
-    	String payloadStr;
-    	// If the payload is readOnly, we have to copy the bytes from its array to make the payload string
+        String payloadStr;
+        // If the payload is readOnly, we have to copy the bytes from its array to make the payload string
         if (payload.isReadOnly()) {
-        	byte[] payloadBytes = new byte[payload.remaining()];
+            byte[] payloadBytes = new byte[payload.remaining()];
             payload.get(payloadBytes, 0, payloadBytes.length);
             payloadStr = new String(payloadBytes, StandardCharsets.UTF_8);
         // Otherwise we can allocate directly from its array
         } else {
-        	// The position of the ByteBuffer may have been incremented - make sure we only grab the remaining bytes
-        	payloadStr = new String(payload.array(), payload.position(), payload.remaining(), StandardCharsets.UTF_8);
+            // The position of the ByteBuffer may have been incremented - make sure we only grab the remaining bytes
+            payloadStr = new String(payload.array(), payload.position(), payload.remaining(), StandardCharsets.UTF_8);
         }
         if (payloadStr.length() == 0) {
             return null;

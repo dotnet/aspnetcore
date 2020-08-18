@@ -40,7 +40,7 @@ public class LongPollingTransportTest {
 
         Map<String, String> headers = new HashMap<>();
         LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
-        ByteBuffer sendBuffer = TestUtils.StringToByteBuffer("First");
+        ByteBuffer sendBuffer = TestUtils.stringToByteBuffer("First");
         Throwable exception = assertThrows(RuntimeException.class, () -> transport.send(sendBuffer).timeout(1, TimeUnit.SECONDS).blockingAwait());
         assertEquals(Exception.class, exception.getCause().getClass());
         assertEquals("Cannot send unless the transport is active.", exception.getCause().getMessage());
@@ -114,12 +114,12 @@ public class LongPollingTransportTest {
         AtomicBoolean onReceivedRan = new AtomicBoolean(false);
         transport.setOnReceive((message) -> {
             onReceivedRan.set(true);
-            assertEquals("TEST", TestUtils.ByteBufferToString(message));
+            assertEquals("TEST", TestUtils.byteBufferToString(message));
         });
 
         // The transport doesn't need to be active to trigger onReceive for the case
         // when we are handling the last outstanding poll.
-        ByteBuffer onReceiveBuffer = TestUtils.StringToByteBuffer("TEST");
+        ByteBuffer onReceiveBuffer = TestUtils.stringToByteBuffer("TEST");
         transport.onReceive(onReceiveBuffer);
         assertTrue(onReceivedRan.get());
     }
@@ -135,7 +135,7 @@ public class LongPollingTransportTest {
                         return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                     } else if (requestCount.get() == 1) {
                         requestCount.incrementAndGet();
-                        return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("TEST")));
+                        return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("TEST")));
                     }
 
                     return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
@@ -148,7 +148,7 @@ public class LongPollingTransportTest {
         AtomicReference<String> message = new AtomicReference<>();
         transport.setOnReceive((msg -> {
             onReceiveCalled.set(true);
-            message.set(TestUtils.ByteBufferToString(msg));
+            message.set(TestUtils.byteBufferToString(msg));
             block.onComplete();
         }) );
 
@@ -171,13 +171,13 @@ public class LongPollingTransportTest {
                         return Single.just(new HttpResponse(200, "", TestUtils.emptyByteBuffer));
                     } else if (requestCount.get() == 1) {
                         requestCount.incrementAndGet();
-                        return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("FIRST")));
+                        return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("FIRST")));
                     } else if (requestCount.get() == 2) {
                         requestCount.incrementAndGet();
-                        return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("SECOND")));
+                        return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("SECOND")));
                     } else if (requestCount.get() == 3) {
                         requestCount.incrementAndGet();
-                        return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("THIRD")));
+                        return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("THIRD")));
                     }
 
                     return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
@@ -191,7 +191,7 @@ public class LongPollingTransportTest {
         AtomicInteger messageCount = new AtomicInteger();
         transport.setOnReceive((msg) -> {
             onReceiveCalled.set(true);
-            message.set(message.get() + TestUtils.ByteBufferToString(msg));
+            message.set(message.get() + TestUtils.byteBufferToString(msg));
             if (messageCount.incrementAndGet() == 3) {
                 blocker.onComplete();
             }
@@ -230,7 +230,7 @@ public class LongPollingTransportTest {
         transport.setOnClose((error) -> {});
 
         transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
-        ByteBuffer sendBuffer = TestUtils.StringToByteBuffer("TEST");
+        ByteBuffer sendBuffer = TestUtils.stringToByteBuffer("TEST");
         assertTrue(transport.send(sendBuffer).blockingAwait(1, TimeUnit.SECONDS));
         close.onComplete();
         assertEquals(headerValue.get(), "VALUE");
@@ -262,7 +262,7 @@ public class LongPollingTransportTest {
         transport.setOnClose((error) -> {});
 
         transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
-        ByteBuffer sendBuffer = TestUtils.StringToByteBuffer("TEST");
+        ByteBuffer sendBuffer = TestUtils.stringToByteBuffer("TEST");
         assertTrue(transport.send(sendBuffer).blockingAwait(1, TimeUnit.SECONDS));
         assertEquals(headerValue.get(), "Bearer TOKEN");
         close.onComplete();
@@ -299,7 +299,7 @@ public class LongPollingTransportTest {
 
         transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
         secondGet.blockingAwait(1, TimeUnit.SECONDS);
-        ByteBuffer sendBuffer = TestUtils.StringToByteBuffer("TEST");
+        ByteBuffer sendBuffer = TestUtils.stringToByteBuffer("TEST");
         assertTrue(transport.send(sendBuffer).blockingAwait(1, TimeUnit.SECONDS));
         assertEquals("Bearer TOKEN2", headerValue.get());
         close.onComplete();

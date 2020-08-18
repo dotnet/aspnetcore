@@ -616,7 +616,7 @@ public class MessagePackHubProtocol implements HubProtocol {
                 //Convert this to an object?
                 item = extensionValue;
                 */
-                throw new RuntimeException("Extension types are not supported yet");
+                throw new RuntimeException("Extension types are not supported");
             default:
                 return null;
         }

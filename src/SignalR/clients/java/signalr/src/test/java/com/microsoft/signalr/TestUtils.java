@@ -7,8 +7,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 class TestUtils {
-	
-	static ByteBuffer emptyByteBuffer = StringToByteBuffer("");
+    
+    static ByteBuffer emptyByteBuffer = stringToByteBuffer("");
 
     static HubConnection createHubConnection(String url) {
         return createHubConnection(url, new MockTransport(true), true, new TestHttpClient(), new JsonHubProtocol());
@@ -36,11 +36,11 @@ class TestUtils {
         return builder.build();
     }
     
-    static String ByteBufferToString(ByteBuffer buffer) {
+    static String byteBufferToString(ByteBuffer buffer) {
         return new String(buffer.array(), StandardCharsets.UTF_8);
     }
     
-    static ByteBuffer StringToByteBuffer(String s) {
+    static ByteBuffer stringToByteBuffer(String s) {
         return ByteBuffer.wrap(s.getBytes(StandardCharsets.UTF_8));
     }
 }

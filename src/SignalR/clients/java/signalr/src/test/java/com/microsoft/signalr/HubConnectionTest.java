@@ -26,7 +26,6 @@ import io.reactivex.subjects.CompletableSubject;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.ReplaySubject;
 import io.reactivex.subjects.SingleSubject;
-import okio.ByteString;
 
 class HubConnectionTest {
     private static final String RECORD_SEPARATOR = "\u001e";
@@ -229,7 +228,7 @@ class HubConnectionTest {
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
-        String message = TestUtils.ByteBufferToString(mockTransport.getSentMessages()[0]);
+        String message = TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]);
         String expectedHanshakeRequest = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
 
         assertEquals(expectedHanshakeRequest, message);
@@ -252,7 +251,7 @@ class HubConnectionTest {
         assertEquals(Double.valueOf(0), value.get());
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        String message = TestUtils.ByteBufferToString(mockTransport.getSentMessages()[0]);
+        String message = TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]);
         String expectedHanshakeRequest = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
 
         assertEquals(expectedHanshakeRequest, message);
@@ -279,7 +278,7 @@ class HubConnectionTest {
         assertEquals(Double.valueOf(0), value.get());
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        String message = TestUtils.ByteBufferToString(mockTransport.getSentMessages()[0]);
+        String message = TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]);
         String expectedHanshakeRequest = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
 
         assertEquals(expectedHanshakeRequest, message);
@@ -304,7 +303,7 @@ class HubConnectionTest {
         assertEquals(Double.valueOf(0), value.get());
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        String message = TestUtils.ByteBufferToString(mockTransport.getSentMessages()[0]);
+        String message = TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]);
         String expectedHanshakeRequest = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
 
         assertEquals(expectedHanshakeRequest, message);
@@ -333,7 +332,7 @@ class HubConnectionTest {
         assertEquals(Double.valueOf(0), value.get());
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        String message = TestUtils.ByteBufferToString(mockTransport.getSentMessages()[0]);
+        String message = TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]);
         String expectedHanshakeRequest = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
 
         assertEquals(expectedHanshakeRequest, message);
@@ -365,7 +364,7 @@ class HubConnectionTest {
         assertEquals(Double.valueOf(0), value.get());
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        String message = TestUtils.ByteBufferToString(mockTransport.getSentMessages()[0]);
+        String message = TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]);
         String expectedHanshakeRequest = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
 
         assertEquals(expectedHanshakeRequest, message);
@@ -400,7 +399,7 @@ class HubConnectionTest {
         assertEquals(Double.valueOf(0), value.get());
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        String message = TestUtils.ByteBufferToString(mockTransport.getSentMessages()[0]);
+        String message = TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]);
         String expectedHanshakeRequest = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
 
         assertEquals(expectedHanshakeRequest, message);
@@ -470,11 +469,11 @@ class HubConnectionTest {
 
         stream.onNext("FirstItem");
         ByteBuffer[] messages = mockTransport.getSentMessages();
-        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.ByteBufferToString(messages[2]));
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[2]));
 
         stream.onComplete();
         messages = mockTransport.getSentMessages();
-        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.ByteBufferToString(messages[3]));
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.byteBufferToString(messages[3]));
     }
 
     @Test
@@ -493,15 +492,15 @@ class HubConnectionTest {
         secondStream.onNext("Second Stream 1");
         ByteBuffer[] messages = mockTransport.getSentMessages();
         assertEquals(4, messages.length);
-        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"First Stream 1\"}\u001E", TestUtils.ByteBufferToString(messages[2]));
-        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"Second Stream 1\"}\u001E", TestUtils.ByteBufferToString(messages[3]));
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"First Stream 1\"}\u001E", TestUtils.byteBufferToString(messages[2]));
+        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"Second Stream 1\"}\u001E", TestUtils.byteBufferToString(messages[3]));
 
         firstStream.onComplete();
         secondStream.onComplete();
         messages = mockTransport.getSentMessages();
         assertEquals(6, messages.length);
-        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.ByteBufferToString(messages[4]));
-        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", TestUtils.ByteBufferToString(messages[5]));
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.byteBufferToString(messages[4]));
+        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", TestUtils.byteBufferToString(messages[5]));
     }
 
     @Test
@@ -516,12 +515,12 @@ class HubConnectionTest {
 
         stream.onNext("FirstItem");
         ByteBuffer[] messages = mockTransport.getSentMessages();
-        assertEquals("{\"type\":1,\"target\":\"UploadStream\",\"arguments\":[12],\"streamIds\":[\"1\"]}\u001E", TestUtils.ByteBufferToString(messages[1]));
-        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.ByteBufferToString(messages[2]));
+        assertEquals("{\"type\":1,\"target\":\"UploadStream\",\"arguments\":[12],\"streamIds\":[\"1\"]}\u001E", TestUtils.byteBufferToString(messages[1]));
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[2]));
 
         stream.onComplete();
         messages = mockTransport.getSentMessages();
-        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.ByteBufferToString(messages[3]));
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.byteBufferToString(messages[3]));
     }
 
     @Test
@@ -536,12 +535,12 @@ class HubConnectionTest {
 
         stream.onNext("FirstItem");
         ByteBuffer[] messages = mockTransport.getSentMessages();
-        assertEquals("{\"type\":1,\"target\":\"UploadStream\",\"arguments\":[12],\"streamIds\":[\"1\"]}\u001E", TestUtils.ByteBufferToString(messages[1]));
-        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.ByteBufferToString(messages[2]));
+        assertEquals("{\"type\":1,\"target\":\"UploadStream\",\"arguments\":[12],\"streamIds\":[\"1\"]}\u001E", TestUtils.byteBufferToString(messages[1]));
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[2]));
 
         stream.onComplete();
         messages = mockTransport.getSentMessages();
-        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.ByteBufferToString(messages[3]));
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.byteBufferToString(messages[3]));
 
         hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -565,10 +564,10 @@ class HubConnectionTest {
         stream.onNext("FirstItem");
         secondStream.onNext("SecondItem");
         ByteBuffer[] messages = mockTransport.getSentMessages();
-        assertEquals("{\"type\":1,\"target\":\"UploadStream\",\"arguments\":[12],\"streamIds\":[\"1\"]}\u001E", TestUtils.ByteBufferToString(messages[1]));
-        assertEquals("{\"type\":1,\"target\":\"SecondUploadStream\",\"arguments\":[13],\"streamIds\":[\"2\"]}\u001E", TestUtils.ByteBufferToString(messages[2]));
-        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.ByteBufferToString(messages[3]));
-        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"SecondItem\"}\u001E", TestUtils.ByteBufferToString(messages[4]));
+        assertEquals("{\"type\":1,\"target\":\"UploadStream\",\"arguments\":[12],\"streamIds\":[\"1\"]}\u001E", TestUtils.byteBufferToString(messages[1]));
+        assertEquals("{\"type\":1,\"target\":\"SecondUploadStream\",\"arguments\":[13],\"streamIds\":[\"2\"]}\u001E", TestUtils.byteBufferToString(messages[2]));
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[3]));
+        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"SecondItem\"}\u001E", TestUtils.byteBufferToString(messages[4]));
 
 
         assertEquals(2, hubConnection.getStreamMap().size());
@@ -585,8 +584,8 @@ class HubConnectionTest {
         assertTrue(hubConnection.getStreamMap().isEmpty());
 
         messages = mockTransport.getSentMessages();
-        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.ByteBufferToString(messages[5]));
-        assertEquals("{\"type\":3,\"invocationId\":\"2\",\"error\":\"java.lang.Exception: Exception\"}\u001E", TestUtils.ByteBufferToString(messages[6]));
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.byteBufferToString(messages[5]));
+        assertEquals("{\"type\":3,\"invocationId\":\"2\",\"error\":\"java.lang.Exception: Exception\"}\u001E", TestUtils.byteBufferToString(messages[6]));
 
         hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertTrue(hubConnection.getStreamMap().isEmpty());
@@ -605,15 +604,15 @@ class HubConnectionTest {
         stream.onNext("FirstItem");
         ByteBuffer[] messages = mockTransport.getSentMessages();
         assertEquals(4, messages.length);
-        assertEquals("{\"type\":1,\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"1\",\"2\"]}\u001E", TestUtils.ByteBufferToString(messages[1]));
-        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.ByteBufferToString(messages[2]));
-        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"FirstItem\"}\u001E", TestUtils.ByteBufferToString(messages[3]));
+        assertEquals("{\"type\":1,\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"1\",\"2\"]}\u001E", TestUtils.byteBufferToString(messages[1]));
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[2]));
+        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[3]));
 
         stream.onComplete();
         messages = mockTransport.getSentMessages();
         assertEquals(6, messages.length);
-        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.ByteBufferToString(messages[4]));
-        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", TestUtils.ByteBufferToString(messages[5]));
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.byteBufferToString(messages[4]));
+        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", TestUtils.byteBufferToString(messages[5]));
     }
 
     @Test
@@ -629,16 +628,16 @@ class HubConnectionTest {
         stream.onNext("FirstItem");
         ByteBuffer[] messages = mockTransport.getSentMessages();
         for (ByteBuffer bb: messages) {
-            System.out.println(TestUtils.ByteBufferToString(bb));
+            System.out.println(TestUtils.byteBufferToString(bb));
         }
         assertEquals(3, messages.length);
         assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"2\"]}\u001E", 
-                TestUtils.ByteBufferToString(messages[1]));
-        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"FirstItem\"}\u001E", TestUtils.ByteBufferToString(messages[2]));
+                TestUtils.byteBufferToString(messages[1]));
+        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[2]));
 
         stream.onComplete();
         messages = mockTransport.getSentMessages();
-        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", TestUtils.ByteBufferToString(messages[3]));
+        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", TestUtils.byteBufferToString(messages[3]));
     }
     
     @Test
@@ -654,7 +653,7 @@ class HubConnectionTest {
         stream.onNext("FirstItem");
         ByteBuffer[] messages = mockTransport.getSentMessages();
         for (ByteBuffer bb: messages) {
-            System.out.println(TestUtils.ByteBufferToString(bb));
+            System.out.println(TestUtils.byteBufferToString(bb));
         }
         assertEquals(3, messages.length);
         
@@ -688,13 +687,13 @@ class HubConnectionTest {
         ByteBuffer[] messages = mockTransport.getSentMessages();
         assertEquals(3, messages.length);
         assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"2\"]}\u001E", 
-                TestUtils.ByteBufferToString(messages[1]));
-        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"FirstItem\"}\u001E", TestUtils.ByteBufferToString(messages[2]));
+                TestUtils.byteBufferToString(messages[1]));
+        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[2]));
 
         stream.onComplete();
         messages = mockTransport.getSentMessages();
         assertEquals(4, messages.length);
-        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", TestUtils.ByteBufferToString(messages[3]));
+        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", TestUtils.byteBufferToString(messages[3]));
     }
     
     @Test
@@ -742,26 +741,26 @@ class HubConnectionTest {
 
         ByteBuffer[] messages = mockTransport.getSentMessages();
         assertEquals(4, messages.length);
-        assertEquals("{\"type\":1,\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"1\"]}\u001E", TestUtils.ByteBufferToString(messages[1]));
+        assertEquals("{\"type\":1,\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"1\"]}\u001E", TestUtils.byteBufferToString(messages[1]));
         assertEquals("{\"type\":1,\"invocationId\":\"2\",\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"3\"]}\u001E", 
-                TestUtils.ByteBufferToString(messages[2]));
+                TestUtils.byteBufferToString(messages[2]));
         assertEquals("{\"type\":4,\"invocationId\":\"4\",\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"5\"]}\u001E", 
-                TestUtils.ByteBufferToString(messages[3]));
+                TestUtils.byteBufferToString(messages[3]));
 
         stream.onNext("FirstItem");
 
         messages = mockTransport.getSentMessages();
         assertEquals(7, messages.length);
-        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.ByteBufferToString(messages[4]));
-        assertEquals("{\"type\":2,\"invocationId\":\"3\",\"item\":\"FirstItem\"}\u001E", TestUtils.ByteBufferToString(messages[5]));
-        assertEquals("{\"type\":2,\"invocationId\":\"5\",\"item\":\"FirstItem\"}\u001E", TestUtils.ByteBufferToString(messages[6]));
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[4]));
+        assertEquals("{\"type\":2,\"invocationId\":\"3\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[5]));
+        assertEquals("{\"type\":2,\"invocationId\":\"5\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[6]));
 
         stream.onComplete();
         messages = mockTransport.getSentMessages();
         assertEquals(10, messages.length);
-        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.ByteBufferToString(messages[7]));
-        assertEquals("{\"type\":3,\"invocationId\":\"3\"}\u001E", TestUtils.ByteBufferToString(messages[8]));
-        assertEquals("{\"type\":3,\"invocationId\":\"5\"}\u001E", TestUtils.ByteBufferToString(messages[9]));
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.byteBufferToString(messages[7]));
+        assertEquals("{\"type\":3,\"invocationId\":\"3\"}\u001E", TestUtils.byteBufferToString(messages[8]));
+        assertEquals("{\"type\":3,\"invocationId\":\"5\"}\u001E", TestUtils.byteBufferToString(messages[9]));
     }
     
     @Test
@@ -836,9 +835,9 @@ class HubConnectionTest {
         stream.onError(new RuntimeException("onError called"));
         ByteBuffer[] messages = mockTransport.getSentMessages();
         assertEquals(4, messages.length);
-        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.ByteBufferToString(messages[2]));
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[2]));
         assertEquals("{\"type\":3,\"invocationId\":\"1\",\"error\":\"java.lang.RuntimeException: onError called\"}\u001E", 
-                TestUtils.ByteBufferToString(messages[3]));
+                TestUtils.byteBufferToString(messages[3]));
 
         // onComplete doesn't send a completion message after onError.
         stream.onComplete();
@@ -862,14 +861,14 @@ class HubConnectionTest {
 
         ByteBuffer[] messages = mockTransport.getSentMessages();
         assertEquals(5, messages.length);
-        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.ByteBufferToString(messages[2]));
-        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"SecondItem\"}\u001E", TestUtils.ByteBufferToString(messages[3]));
-        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"ThirdItem\"}\u001E", TestUtils.ByteBufferToString(messages[4]));
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[2]));
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"SecondItem\"}\u001E", TestUtils.byteBufferToString(messages[3]));
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"ThirdItem\"}\u001E", TestUtils.byteBufferToString(messages[4]));
 
         stream.onComplete();
         messages = mockTransport.getSentMessages();
         assertEquals(6, messages.length);
-        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.ByteBufferToString(messages[5]));
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.byteBufferToString(messages[5]));
     }
 
     @Test
@@ -887,13 +886,13 @@ class HubConnectionTest {
 
         ByteBuffer[] messages = mockTransport.getSentMessages();
         assertEquals(4, messages.length);
-        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"FirstItem\"}\u001E", TestUtils.ByteBufferToString(messages[2]));
-        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"SecondItem\"}\u001E", TestUtils.ByteBufferToString(messages[3]));
+        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"FirstItem\"}\u001E", TestUtils.byteBufferToString(messages[2]));
+        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"SecondItem\"}\u001E", TestUtils.byteBufferToString(messages[3]));
 
         stream.onComplete();
         messages = mockTransport.getSentMessages();
         assertEquals(5, messages.length);
-        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", TestUtils.ByteBufferToString(messages[4]));
+        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", TestUtils.byteBufferToString(messages[4]));
     }
     
     @Test
@@ -952,12 +951,12 @@ class HubConnectionTest {
 
         // Handshake message + 2 calls to send + 4 calls to onNext + 2 calls to onComplete = 9
         assertEquals(9, messages.length);
-        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"Stream One First Item\"}\u001E", TestUtils.ByteBufferToString(messages[3]));
-        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"Stream Two First Item\"}\u001E", TestUtils.ByteBufferToString(messages[4]));
-        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"Stream One Second Item\"}\u001E", TestUtils.ByteBufferToString(messages[5]));
-        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"Stream Two Second Item\"}\u001E", TestUtils.ByteBufferToString(messages[6]));
-        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.ByteBufferToString(messages[7]));
-        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", TestUtils.ByteBufferToString(messages[8]));
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"Stream One First Item\"}\u001E", TestUtils.byteBufferToString(messages[3]));
+        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"Stream Two First Item\"}\u001E", TestUtils.byteBufferToString(messages[4]));
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"Stream One Second Item\"}\u001E", TestUtils.byteBufferToString(messages[5]));
+        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"Stream Two Second Item\"}\u001E", TestUtils.byteBufferToString(messages[6]));
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", TestUtils.byteBufferToString(messages[7]));
+        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", TestUtils.byteBufferToString(messages[8]));
     }
 
     @Test
@@ -975,7 +974,7 @@ class HubConnectionTest {
                 () -> completed.set(true));
 
         assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
-                TestUtils.ByteBufferToString(mockTransport.getSentMessages()[1]));
+                TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
         assertFalse(onNextCalled.get());
 
@@ -1036,7 +1035,7 @@ class HubConnectionTest {
                 () -> completed.set(true));
 
         assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
-                TestUtils.ByteBufferToString(mockTransport.getSentMessages()[1]));
+                TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
         assertFalse(onNextCalled.get());
 
@@ -1100,7 +1099,7 @@ class HubConnectionTest {
                 () -> {});
 
         assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
-                TestUtils.ByteBufferToString(mockTransport.getSentMessages()[1]));
+                TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(onErrorCalled.get());
         assertFalse(onNextCalled.get());
 
@@ -1164,7 +1163,7 @@ class HubConnectionTest {
                 () -> {/*OnCompleted*/completed.set(true);});
 
         assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
-                TestUtils.ByteBufferToString(mockTransport.getSentMessages()[1]));
+                TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
 
         mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"First\"}" + RECORD_SEPARATOR);
@@ -1224,11 +1223,11 @@ class HubConnectionTest {
                 () -> {/*OnCompleted*/completed.set(true);});
 
         assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
-                TestUtils.ByteBufferToString(mockTransport.getSentMessages()[1]));
+                TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
 
         subscription.dispose();
-        assertEquals("{\"type\":5,\"invocationId\":\"1\"}" + RECORD_SEPARATOR, TestUtils.ByteBufferToString(mockTransport.getSentMessages()[2]));
+        assertEquals("{\"type\":5,\"invocationId\":\"1\"}" + RECORD_SEPARATOR, TestUtils.byteBufferToString(mockTransport.getSentMessages()[2]));
     }
     
     @Test
@@ -1273,12 +1272,12 @@ class HubConnectionTest {
         subscription.dispose();
         assertEquals(2, mockTransport.getSentMessages().length);
         assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR,
-                TestUtils.ByteBufferToString(mockTransport.getSentMessages()[mockTransport.getSentMessages().length - 1]));
+                TestUtils.byteBufferToString(mockTransport.getSentMessages()[mockTransport.getSentMessages().length - 1]));
 
         secondSubscription.dispose();
         assertEquals(3, mockTransport.getSentMessages().length);
         assertEquals("{\"type\":5,\"invocationId\":\"1\"}" + RECORD_SEPARATOR,
-                TestUtils.ByteBufferToString(mockTransport.getSentMessages()[mockTransport.getSentMessages().length - 1]));
+                TestUtils.byteBufferToString(mockTransport.getSentMessages()[mockTransport.getSentMessages().length - 1]));
     }
     
     @Test
@@ -1323,7 +1322,7 @@ class HubConnectionTest {
                 () -> {/*OnCompleted*/});
 
         assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
-                TestUtils.ByteBufferToString(mockTransport.getSentMessages()[1]));
+                TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
 
         mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"First\"}" + RECORD_SEPARATOR);
 
@@ -1377,7 +1376,7 @@ class HubConnectionTest {
                 () -> {/*OnCompleted*/completed.set(true);});
 
         assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
-                TestUtils.ByteBufferToString(mockTransport.getSentMessages()[1]));
+                TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(completed.get());
 
         mockTransport.receiveMessage("{\"type\":2,\"invocationId\":\"1\",\"item\":\"First\"}" + RECORD_SEPARATOR);
@@ -1443,7 +1442,7 @@ class HubConnectionTest {
         Single<Integer> result = hubConnection.invoke(Integer.class, "echo", "message");
         result.doOnSuccess(value -> done.set(true)).subscribe();
         assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
-                TestUtils.ByteBufferToString(mockTransport.getSentMessages()[1]));
+                TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42}" + RECORD_SEPARATOR);
@@ -1486,7 +1485,7 @@ class HubConnectionTest {
         result.doOnComplete(() -> done.set(true)).subscribe();
 
         assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"test\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
-                TestUtils.ByteBufferToString(mockTransport.getSentMessages()[1]));
+                TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\"}" + RECORD_SEPARATOR);
@@ -1529,7 +1528,7 @@ class HubConnectionTest {
         result.doOnComplete(() -> done.set(true)).subscribe();
 
         assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"test\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
-                TestUtils.ByteBufferToString(mockTransport.getSentMessages()[1]));
+                TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":42}" + RECORD_SEPARATOR);
@@ -1572,7 +1571,7 @@ class HubConnectionTest {
         result.doOnComplete(() -> done.set(true)).subscribe(() -> {}, (error) -> {});
 
         assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"test\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
-                TestUtils.ByteBufferToString(mockTransport.getSentMessages()[1]));
+                TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
         Throwable exception = assertThrows(IllegalArgumentException.class, () -> 
@@ -1592,7 +1591,7 @@ class HubConnectionTest {
         result.doOnComplete(() -> done.set(true)).subscribe(() -> {}, (error) -> {});
 
         assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"test\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
-                TestUtils.ByteBufferToString(mockTransport.getSentMessages()[1]));
+                TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"error\":\"There was an error\"}" + RECORD_SEPARATOR);
@@ -1648,7 +1647,7 @@ class HubConnectionTest {
         Single<String> result = hubConnection.invoke(String.class, "fixedMessage", (Object)null);
         result.doOnSuccess(value -> done.set(true)).subscribe();
         assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"fixedMessage\",\"arguments\":[null]}" + RECORD_SEPARATOR, 
-                TestUtils.ByteBufferToString(mockTransport.getSentMessages()[1]));
+                TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":\"Hello World\"}" + RECORD_SEPARATOR);
@@ -1692,7 +1691,7 @@ class HubConnectionTest {
         Single<String> result = hubConnection.invoke(String.class, "fixedMessage", null, null);
         result.doOnSuccess(value -> done.set(true)).subscribe();
         assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"fixedMessage\",\"arguments\":[null,null]}"+ RECORD_SEPARATOR, 
-                TestUtils.ByteBufferToString(mockTransport.getSentMessages()[1]));
+                TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertFalse(done.get());
 
         mockTransport.receiveMessage("{\"type\":3,\"invocationId\":\"1\",\"result\":\"Hello World\"}" + RECORD_SEPARATOR);
@@ -1739,9 +1738,9 @@ class HubConnectionTest {
         result.doOnSuccess(value -> doneFirst.set(true)).subscribe();
         result2.doOnSuccess(value -> doneSecond.set(true)).subscribe();
         assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
-                TestUtils.ByteBufferToString(mockTransport.getSentMessages()[1]));
+                TestUtils.byteBufferToString(mockTransport.getSentMessages()[1]));
         assertEquals("{\"type\":1,\"invocationId\":\"2\",\"target\":\"echo\",\"arguments\":[\"message\"]}" + RECORD_SEPARATOR, 
-                TestUtils.ByteBufferToString(mockTransport.getSentMessages()[2]));
+                TestUtils.byteBufferToString(mockTransport.getSentMessages()[2]));
         assertFalse(doneFirst.get());
         assertFalse(doneSecond.get());
 
@@ -2581,7 +2580,7 @@ class HubConnectionTest {
         hubConnection.start();
         mockTransport.getStartTask().timeout(1, TimeUnit.SECONDS).blockingAwait();
         String expectedSentMessage  = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
-        assertEquals(expectedSentMessage, TestUtils.ByteBufferToString(mockTransport.getSentMessages()[0]));
+        assertEquals(expectedSentMessage, TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]));
 
         mockTransport.receiveMessage("{}" + RECORD_SEPARATOR + "{\"type\":1,\"target\":\"inc\",\"arguments\":[]}" + RECORD_SEPARATOR);
 
@@ -2721,7 +2720,7 @@ class HubConnectionTest {
     @Test
     public void negotiateThatRedirectsForeverFailsAfter100Tries() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
-                (req) -> Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"url\":\"http://example.com\"}"))));
+                (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"url\":\"http://example.com\"}"))));
 
         HubConnection hubConnection = HubConnectionBuilder
             .create("http://example.com")
@@ -2755,7 +2754,7 @@ class HubConnectionTest {
     public void connectionIdIsAvailableAfterStart() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
-                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                		TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                                 + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         MockTransport transport = new MockTransport(true);
@@ -2780,7 +2779,7 @@ class HubConnectionTest {
     public void connectionTokenAppearsInQSConnectionIdIsOnConnectionInstance() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
-                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
+                		TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
                                 "\"negotiateVersion\": 1," +
                                 "\"connectionToken\":\"connection-token-value\"," +
                                 "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
@@ -2807,7 +2806,7 @@ class HubConnectionTest {
     public void connectionTokenIsIgnoredIfNegotiateVersionIsNotPresentInNegotiateResponse() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
-                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
+                		TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
                         "\"connectionToken\":\"connection-token-value\"," +
                         "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
@@ -2833,7 +2832,7 @@ class HubConnectionTest {
     public void negotiateVersionIsNotAddedIfAlreadyPresent() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=42",
                 (req) -> Single.just(new HttpResponse(200, "",
-                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
+                		TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\"," +
                         "\"connectionToken\":\"connection-token-value\"," +
                         "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
@@ -2859,7 +2858,7 @@ class HubConnectionTest {
     public void afterSuccessfulNegotiateConnectsWithWebsocketsTransport() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
-                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                		TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                                 + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         MockTransport transport = new MockTransport(true);
@@ -2873,14 +2872,14 @@ class HubConnectionTest {
 
         ByteBuffer[] sentMessages = transport.getSentMessages();
         assertEquals(1, sentMessages.length);
-        assertEquals("{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR, TestUtils.ByteBufferToString(sentMessages[0]));
+        assertEquals("{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR, TestUtils.byteBufferToString(sentMessages[0]));
     }
 
     @Test
     public void afterSuccessfulNegotiateConnectsWithLongPollingTransport() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
-                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                		TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                                 + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         MockTransport transport = new MockTransport(true);
@@ -2894,7 +2893,7 @@ class HubConnectionTest {
 
         ByteBuffer[] sentMessages = transport.getSentMessages();
         assertEquals(1, sentMessages.length);
-        assertEquals("{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR, TestUtils.ByteBufferToString(sentMessages[0]));
+        assertEquals("{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR, TestUtils.byteBufferToString(sentMessages[0]));
     }
 
     @Test
@@ -2904,12 +2903,12 @@ class HubConnectionTest {
         TestHttpClient client = new TestHttpClient()
                 .on("POST",
                         (req) -> Single.just(new HttpResponse(200, "",
-                        		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                        		TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                                         + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))))
                 .on("GET", (req) -> {
                     if (requestCount.get() < 2) {
                         requestCount.incrementAndGet();
-                        return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{}" + RECORD_SEPARATOR)));
+                        return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{}" + RECORD_SEPARATOR)));
                     }
                     assertTrue(close.blockingAwait(5, TimeUnit.SECONDS));
                     return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
@@ -2931,7 +2930,7 @@ class HubConnectionTest {
     public void ClientThatSelectsWebsocketsThrowsWhenWebsocketsAreNotAvailable() {
         TestHttpClient client = new TestHttpClient().on("POST",
                 (req) -> Single.just(new HttpResponse(200, "",
-                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                		TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                                 + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))))
                 .on("GET", (req) -> {
                     return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
@@ -2953,7 +2952,7 @@ class HubConnectionTest {
     @Test
     public void ClientThatSelectsLongPollingThrowsWhenLongPollingIsNotAvailable() {
         TestHttpClient client = new TestHttpClient().on("POST",
-                (req) -> Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                         + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         HubConnection hubConnection = HubConnectionBuilder
@@ -2973,7 +2972,7 @@ class HubConnectionTest {
     public void receivingServerSentEventsTransportFromNegotiateFails() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
-                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                		TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                                 + "availableTransports\":[{\"transport\":\"ServerSentEvents\",\"transferFormats\":[\"Text\"]}]}"))));
 
         MockTransport transport = new MockTransport(true);
@@ -2992,7 +2991,7 @@ class HubConnectionTest {
     @Test
     public void negotiateThatReturnsErrorThrowsFromStart() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
-                (req) -> Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"error\":\"Test error.\"}"))));
+                (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"error\":\"Test error.\"}"))));
 
         MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
@@ -3009,7 +3008,7 @@ class HubConnectionTest {
     @Test
     public void DetectWhenTryingToConnectToClassicSignalRServer() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
-                (req) -> Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"Url\":\"/signalr\"," +
+                (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"Url\":\"/signalr\"," +
                         "\"ConnectionToken\":\"X97dw3uxW4NPPggQsYVcNcyQcuz4w2\"," +
                         "\"ConnectionId\":\"05265228-1e2c-46c5-82a1-6a5bcc3f0143\"," +
                         "\"KeepAliveTimeout\":10.0," +
@@ -3035,9 +3034,9 @@ class HubConnectionTest {
     @Test
     public void negotiateRedirectIsFollowed()  {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
-                (req) -> Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"url\":\"http://testexample.com/\"}"))))
+                (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"url\":\"http://testexample.com/\"}"))))
                 .on("POST", "http://testexample.com/negotiate?negotiateVersion=1",
-                (req) -> Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                 + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         MockTransport transport = new MockTransport(true);
@@ -3060,11 +3059,11 @@ class HubConnectionTest {
         TestHttpClient client = new TestHttpClient()
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> {
                     beforeRedirectToken.set(req.getHeaders().get("Authorization"));
-                    return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"newToken\"}")));
+                    return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"newToken\"}")));
                 })
                 .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> {
                     token.set(req.getHeaders().get("Authorization"));
-                    return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                    return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                             + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                 });
 
@@ -3101,7 +3100,7 @@ class HubConnectionTest {
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             token.set(req.getHeaders().get("Authorization"));
-                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                            return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                                 + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                         });
 
@@ -3126,7 +3125,7 @@ class HubConnectionTest {
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             token.set(req.getHeaders().get("Authorization"));
-                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                            return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                                 + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                         });
 
@@ -3155,10 +3154,10 @@ class HubConnectionTest {
         AtomicReference<String> token = new AtomicReference<>();
         TestHttpClient client = new TestHttpClient()
             .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", 
-            		TestUtils.StringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"newToken\"}"))))
+            		TestUtils.stringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"newToken\"}"))))
             .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> {
                 token.set(req.getHeaders().get("Authorization"));
-                return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\","
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\","
                         + "\"connectionToken\":\"connection-token-value\","
                         + "\"negotiateVersion\":1,"
                         + "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
@@ -3187,11 +3186,11 @@ class HubConnectionTest {
         TestHttpClient client = new TestHttpClient()
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> {
                     beforeRedirectToken.set(req.getHeaders().get("Authorization"));
-                    return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"newToken\"}")));
+                    return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"newToken\"}")));
                 })
                 .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> {
                     token.set(req.getHeaders().get("Authorization"));
-                    return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\","
+                    return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\","
                             + "\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                 });
 
@@ -3230,15 +3229,15 @@ class HubConnectionTest {
                     if (redirectCount.get() == 0) {
                         redirectCount.incrementAndGet();
                         redirectToken.set(req.getHeaders().get("Authorization"));
-                        return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"firstRedirectToken\"}")));
+                        return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"firstRedirectToken\"}")));
                     } else {
                         redirectToken.set(req.getHeaders().get("Authorization"));
-                        return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"secondRedirectToken\"}")));
+                        return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"secondRedirectToken\"}")));
                     }
                 })
                 .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> {
                     token.set(req.getHeaders().get("Authorization"));
-                    return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                    return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                             + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                 });
 
@@ -3289,9 +3288,9 @@ class HubConnectionTest {
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
-        String message = TestUtils.ByteBufferToString(mockTransport.getNextSentMessage().timeout(1, TimeUnit.SECONDS).blockingGet());
+        String message = TestUtils.byteBufferToString(mockTransport.getNextSentMessage().timeout(1, TimeUnit.SECONDS).blockingGet());
         assertEquals("{\"type\":6}" + RECORD_SEPARATOR, message);
-        message = TestUtils.ByteBufferToString(mockTransport.getNextSentMessage().timeout(1, TimeUnit.SECONDS).blockingGet());
+        message = TestUtils.byteBufferToString(mockTransport.getNextSentMessage().timeout(1, TimeUnit.SECONDS).blockingGet());
         assertEquals("{\"type\":6}" + RECORD_SEPARATOR, message);
 
         hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
@@ -3304,7 +3303,7 @@ class HubConnectionTest {
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             header.set(req.getHeaders().get("User-Agent"));
-                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                            return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                                     + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                         });
 
@@ -3328,7 +3327,7 @@ class HubConnectionTest {
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             header.set(req.getHeaders().get("User-Agent"));
-                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                            return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                                     + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                         });
 
@@ -3352,7 +3351,7 @@ class HubConnectionTest {
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             header.set(req.getHeaders().get("User-Agent"));
-                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                            return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                                     + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                         });
 
@@ -3375,7 +3374,7 @@ class HubConnectionTest {
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             header.set(req.getHeaders().get("ExampleHeader"));
-                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                            return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                                             + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                         });
 
@@ -3400,7 +3399,7 @@ class HubConnectionTest {
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             header.set(req.getHeaders().get("Authorization"));
-                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                            return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                                     + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                         });
 
@@ -3430,12 +3429,12 @@ class HubConnectionTest {
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             beforeRedirectHeader.set(req.getHeaders().get("Authorization"));
-                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"redirectToken\"}\"}")));
+                            return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"url\":\"http://testexample.com/\",\"accessToken\":\"redirectToken\"}\"}")));
                         })
                 .on("POST", "http://testexample.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             afterRedirectHeader.set(req.getHeaders().get("Authorization"));
-                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                            return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                                     + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                         });
 
@@ -3473,7 +3472,7 @@ class HubConnectionTest {
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                         (req) -> {
                             header.set(req.getHeaders().get("ExampleHeader"));
-                            return Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                            return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                                             + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
                         });
 
@@ -3515,9 +3514,9 @@ class HubConnectionTest {
     public void hubConnectionCanBeStartedAfterBeingStoppedAndRedirected() {
         MockTransport mockTransport = new MockTransport();
         TestHttpClient client = new TestHttpClient()
-                .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"url\":\"http://testexample.com/\"}"))))
+                .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"url\":\"http://testexample.com/\"}"))))
                 .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", 
-                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
+                		TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
@@ -3557,9 +3556,9 @@ class HubConnectionTest {
     public void hubConnectionCloseCallsStop() throws Exception {
         MockTransport mockTransport = new MockTransport();
         TestHttpClient client = new TestHttpClient()
-                .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", TestUtils.StringToByteBuffer("{\"url\":\"http://testexample.com/\"}"))))
+                .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"url\":\"http://testexample.com/\"}"))))
                 .on("POST", "http://testexample.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", 
-                		TestUtils.StringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
+                		TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\"availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))));
 
         CompletableSubject close = CompletableSubject.create();
 

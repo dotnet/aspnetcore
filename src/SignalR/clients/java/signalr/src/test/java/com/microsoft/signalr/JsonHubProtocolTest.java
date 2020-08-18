@@ -34,7 +34,7 @@ class JsonHubProtocolTest {
     @Test
     public void verifyWriteMessage() {
         InvocationMessage invocationMessage = new InvocationMessage(null, null, "test", new Object[] {"42"}, null);
-        String result = TestUtils.ByteBufferToString(jsonHubProtocol.writeMessage(invocationMessage));
+        String result = TestUtils.byteBufferToString(jsonHubProtocol.writeMessage(invocationMessage));
         String expectedResult = "{\"type\":1,\"target\":\"test\",\"arguments\":[\"42\"]}\u001E";
         assertEquals(expectedResult, result);
     }
@@ -42,7 +42,7 @@ class JsonHubProtocolTest {
     @Test
     public void parsePingMessage() {
         String stringifiedMessage = "{\"type\":6}\u001E";
-        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(null, null);
 
         List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
@@ -56,7 +56,7 @@ class JsonHubProtocolTest {
     @Test
     public void parseCloseMessage() {
         String stringifiedMessage = "{\"type\":7}\u001E";
-        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(null, null);
 
         List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
@@ -76,7 +76,7 @@ class JsonHubProtocolTest {
     @Test
     public void parseCloseMessageWithError() {
         String stringifiedMessage = "{\"type\":7,\"error\": \"There was an error\"}\u001E";
-        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
         List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
@@ -96,7 +96,7 @@ class JsonHubProtocolTest {
     @Test
     public void parseSingleMessage() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
-        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
         List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
@@ -120,7 +120,7 @@ class JsonHubProtocolTest {
     @Test
     public void parseSingleUnsupportedStreamInvocationMessage() {
         String stringifiedMessage = "{\"type\":4,\"Id\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
-        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
         Throwable exception = assertThrows(UnsupportedOperationException.class, () -> jsonHubProtocol.parseMessages(message, binder));
@@ -130,7 +130,7 @@ class JsonHubProtocolTest {
     @Test
     public void parseSingleUnsupportedCancelInvocationMessage() {
         String stringifiedMessage = "{\"type\":5,\"invocationId\":123}\u001E";
-        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(null, null);
 
         Throwable exception = assertThrows(UnsupportedOperationException.class, () -> jsonHubProtocol.parseMessages(message, binder));
@@ -140,7 +140,7 @@ class JsonHubProtocolTest {
     @Test
     public void parseTwoMessages() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"one\",\"arguments\":[42]}\u001E{\"type\":1,\"target\":\"two\",\"arguments\":[43]}\u001E";
-        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
         List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
@@ -174,7 +174,7 @@ class JsonHubProtocolTest {
     @Test
     public void parseSingleMessageMutipleArgs() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42, 24]}\u001E";
-        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class, int.class }, null);
 
         List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
@@ -197,7 +197,7 @@ class JsonHubProtocolTest {
     @Test
     public void parseSingleMessageNestedCollection() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[[{\"one\":[\"a\",\"b\"],\"two\":[\"\uBEEF\",\"\uABCD\"]},{\"four\":[\"^\",\"*\"],\"three\":[\"5\",\"9\"]}]]}\u001E";
-        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { (new TypeReference<ArrayList<HashMap<String, ArrayList<Character>>>>() { }).getType() }, null);
 
         List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
@@ -252,7 +252,7 @@ class JsonHubProtocolTest {
     @Test
     public void parseSingleMessageCustomPojoArg() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[{\"firstName\":\"John\",\"lastName\":\"Doe\",\"age\":30,\"t\":[5,8]}]}\u001E";
-        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         
         TestBinder binder = new TestBinder(new Type[] { (new TypeReference<PersonPojo<ArrayList<Short>>>() { }).getType() }, null);
 
@@ -287,7 +287,7 @@ class JsonHubProtocolTest {
     @Test
     public void parseMessageWithOutOfOrderProperties() {
         String stringifiedMessage = "{\"arguments\":[42, 24],\"type\":1,\"target\":\"test\"}\u001E";
-        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class, int.class }, null);
 
         List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
@@ -310,7 +310,7 @@ class JsonHubProtocolTest {
     @Test
     public void parseCompletionMessageWithOutOfOrderProperties() {
         String stringifiedMessage = "{\"type\":3,\"result\":42,\"invocationId\":\"1\"}\u001E";
-        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(null, int.class);
 
         List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
@@ -329,7 +329,7 @@ class JsonHubProtocolTest {
     @Test
     public void invocationBindingFailureWhileParsingTooManyArgumentsWithOutOfOrderProperties() {
         String stringifiedMessage = "{\"arguments\":[42, 24],\"type\":1,\"target\":\"test\"}\u001E";
-        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
         List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
@@ -345,7 +345,7 @@ class JsonHubProtocolTest {
     @Test
     public void invocationBindingFailureWhileParsingTooManyArguments() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42, 24]}\u001E";
-        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
         List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
@@ -361,7 +361,7 @@ class JsonHubProtocolTest {
     @Test
     public void invocationBindingFailureWhileParsingTooFewArguments() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[42]}\u001E";
-        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class, int.class }, null);
 
         List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
@@ -377,7 +377,7 @@ class JsonHubProtocolTest {
     @Test
     public void invocationBindingFailureWhenParsingIncorrectType() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[\"true\"]}\u001E";
-        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
         List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
@@ -393,7 +393,7 @@ class JsonHubProtocolTest {
     @Test
     public void invocationBindingFailureStillReadsJsonPayloadAfterFailure() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":[\"true\"],\"invocationId\":\"123\"}\u001E";
-        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class }, null);
 
         List<HubMessage> messages = jsonHubProtocol.parseMessages(message, binder);
@@ -410,7 +410,7 @@ class JsonHubProtocolTest {
     @Test
     public void errorWhileParsingIncompleteMessage() {
         String stringifiedMessage = "{\"type\":1,\"target\":\"test\",\"arguments\":";
-        ByteBuffer message = TestUtils.StringToByteBuffer(stringifiedMessage);
+        ByteBuffer message = TestUtils.stringToByteBuffer(stringifiedMessage);
         TestBinder binder = new TestBinder(new Type[] { int.class, int.class }, null);
 
         RuntimeException exception = assertThrows(RuntimeException.class,
