@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Threading;
 using BasicTestApp;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using TestServer;
 using Xunit;
 using Xunit.Abstractions;
@@ -44,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Equal("block", () => Browser.FindElement(By.Id("components-reconnect-modal")).GetCssValue("display"));
 
             // Then it should disappear
-            Browser.Equal("none", () => Browser.FindElement(By.Id("components-reconnect-modal")).GetCssValue("display"));
+            Browser.Equal("none", () => Browser.FindElement(By.Id("components-reconnect-modal")).GetCssValue("display"), TimeSpan.FromSeconds(30));
 
             Browser.FindElement(By.Id("increment")).Click();
 
@@ -67,7 +69,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.Equal("block", () => Browser.FindElement(By.Id("components-reconnect-modal")).GetCssValue("display"));
 
             // Then it should disappear
-            Browser.Equal("none", () => Browser.FindElement(By.Id("components-reconnect-modal")).GetCssValue("display"));
+            Browser.Equal("none", () => Browser.FindElement(By.Id("components-reconnect-modal")).GetCssValue("display"), TimeSpan.FromSeconds(30));
 
             // We should receive a render that occurred while disconnected
             var currentValue = Browser.FindElement(selector).Text;

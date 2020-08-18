@@ -20,8 +20,8 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
     if (!this._reconnectionDisplay) {
       const modal = document.getElementById(options.dialogId);
       this._reconnectionDisplay = modal
-          ? new UserSpecifiedDisplay(modal)
-          : new DefaultReconnectDisplay(options.dialogId, document, this._logger);
+          ? new UserSpecifiedDisplay(modal, options.maxRetries, document)
+          : new DefaultReconnectDisplay(options.dialogId, options.maxRetries, document, this._logger);
     }
 
     if (!this._currentReconnectionProcess) {
@@ -54,6 +54,8 @@ class ReconnectionProcess {
 
   async attemptPeriodicReconnection(options: ReconnectionOptions) {
     for (let i = 0; i < options.maxRetries; i++) {
+      this.reconnectDisplay.update(i + 1);
+
       await this.delay(options.retryIntervalMilliseconds);
       if (this.isDisposed) {
         break;
