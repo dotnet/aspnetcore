@@ -41,6 +41,10 @@
       <Uri>https://github.com/dotnet/efcore</Uri>
       <Sha>5099d918192f5df031e1ff5e3beea9cb361c605a</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.EntityFrameworkCore.Design" Version="5.0.0-rc.1.20417.2">
+      <Uri>https://github.com/dotnet/efcore</Uri>
+      <Sha>5099d918192f5df031e1ff5e3beea9cb361c605a</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="5.0.0-rc.1.20416.7">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0862d48a9c9fbda879206b194a16d8e607deac42</Sha>
