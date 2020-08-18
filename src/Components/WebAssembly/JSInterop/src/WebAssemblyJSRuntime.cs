@@ -19,7 +19,7 @@ namespace Microsoft.JSInterop.WebAssembly
             var callInfo = new JSCallInfo
             {
                 FunctionIdentifier = identifier,
-                MarshalledCallArgsJson = argsJson,
+                MarshalledCallArgsJson = argsJson ?? "[]",
                 MarshalledCallAsyncHandle = default
             };
 
@@ -36,7 +36,7 @@ namespace Microsoft.JSInterop.WebAssembly
             var callInfo = new JSCallInfo
             {
                 FunctionIdentifier = identifier,
-                MarshalledCallArgsJson = argsJson,
+                MarshalledCallArgsJson = argsJson ?? "[]",
                 MarshalledCallAsyncHandle = asyncHandle
             };
 
