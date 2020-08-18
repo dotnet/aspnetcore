@@ -34,6 +34,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
         private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: " + Constants.ServerName);
+        internal const string SchemeHttp = "http";
+        internal const string SchemeHttps = "https";
 
         protected BodyControl _bodyControl;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
@@ -385,7 +387,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_scheme == null)
             {
                 var tlsFeature = ConnectionFeatures?[typeof(ITlsConnectionFeature)];
-                _scheme = tlsFeature != null ? "https" : "http";
+                _scheme = tlsFeature != null ? SchemeHttps : SchemeHttp;
             }
 
             Scheme = _scheme;
@@ -518,7 +520,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             HttpRequestHeaders.Append(name, value);
         }
 
-        public virtual void OnHeader(int index, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
+        public virtual void OnHeader(int index, bool indexOnly, ReadOnlySpan<byte> name, ReadOnlySpan<byte> value)
         {
             IncrementRequestHeadersCount();
 
