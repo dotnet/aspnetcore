@@ -440,10 +440,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     // Ignore data frames for aborted streams, but only after counting them for purposes of connection level flow control.
                     if (!IsAborted)
                     {
-                        foreach (var segment in dataPayload)
-                        {
-                            RequestBodyPipe.Writer.Write(segment.Span);
-                        }
+                        dataPayload.CopyTo(RequestBodyPipe.Writer);
 
                         // If the stream is completed go ahead and call RequestBodyPipe.Writer.Complete().
                         // Data will still be available to the reader.

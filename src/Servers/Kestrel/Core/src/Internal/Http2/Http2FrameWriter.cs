@@ -357,10 +357,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             WriteHeaderUnsynchronized();
 
-            foreach (var buffer in data)
-            {
-                _outputWriter.Write(buffer.Span);
-            }
+            data.CopyTo(_outputWriter);
 
             // Plus padding
             return;
