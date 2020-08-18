@@ -42,41 +42,18 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         {
             // Arrange
             var called = false;
-            async Task OnNavigateAsync(NavigationContext args)
+            Action<NavigationContext> OnNavigateAsync = async (NavigationContext args) =>
             {
                 await Task.CompletedTask;
                 called = true;
-            }
-            _router.OnNavigateAsync = OnNavigateAsync;
+            };
+            _router.OnNavigateAsync = new EventCallback<NavigationContext>(null, OnNavigateAsync);
 
             // Act
-            await _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateWithRefreshAsync("http://example.com/jan", false));
+            await _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateAsync("http://example.com/jan", false));
 
             // Assert
             Assert.True(called);
-        }
-
-        [Fact]
-        public async Task CanHandleSingleFailedOnNavigateAsync()
-        {
-            // Arrange
-            var called = false;
-            async Task OnNavigateAsync(NavigationContext args)
-            {
-                called = true;
-                await Task.CompletedTask;
-                throw new Exception("This is an uncaught exception.");
-            }
-            _router.OnNavigateAsync = OnNavigateAsync;
-
-            // Act
-            await _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateWithRefreshAsync("http://example.com/jan", false));
-
-            // Assert
-            Assert.True(called);
-            Assert.Single(_renderer.HandledExceptions);
-            var unhandledException = _renderer.HandledExceptions[0];
-            Assert.Equal("This is an uncaught exception.", unhandledException.Message);
         }
 
         [Fact]
@@ -84,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         {
             // Arrange
             var onNavigateInvoked = 0;
-            async Task OnNavigateAsync(NavigationContext args)
+            Action<NavigationContext> OnNavigateAsync = async (NavigationContext args) =>
             {
                 onNavigateInvoked += 1;
                 if (args.Path.EndsWith("jan"))
@@ -92,22 +69,12 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
                     await Task.Delay(Timeout.Infinite, args.CancellationToken);
                     throw new Exception("This is an uncaught exception.");
                 }
-            }
-            var refreshCalled = false;
-            _renderer.OnUpdateDisplay = (renderBatch) =>
-            {
-                if (!refreshCalled)
-                {
-                    refreshCalled = true;
-                    return;
-                }
-                Assert.True(false, "OnUpdateDisplay called more than once.");
             };
-            _router.OnNavigateAsync = OnNavigateAsync;
+            _router.OnNavigateAsync = new EventCallback<NavigationContext>(null, OnNavigateAsync);
 
             // Act
-            var janTask = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateWithRefreshAsync("http://example.com/jan", false));
-            var febTask = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateWithRefreshAsync("http://example.com/feb", false));
+            var janTask = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateAsync("http://example.com/jan", false));
+            var febTask = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateAsync("http://example.com/feb", false));
 
             await janTask;
             await febTask;
@@ -118,33 +85,11 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         }
 
         [Fact]
-        public async Task CanHandleSingleCancelledOnNavigateAsync()
-        {
-            // Arrange
-            async Task OnNavigateAsync(NavigationContext args)
-            {
-                var tcs = new TaskCompletionSource<int>();
-                tcs.TrySetCanceled();
-                await tcs.Task;
-            }
-            _renderer.OnUpdateDisplay = (renderBatch) => Assert.True(false, "OnUpdateDisplay called more than once.");
-            _router.OnNavigateAsync = OnNavigateAsync;
-
-            // Act
-            await _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateWithRefreshAsync("http://example.com/jan", false));
-
-            // Assert
-            Assert.Single(_renderer.HandledExceptions);
-            var unhandledException = _renderer.HandledExceptions[0];
-            Assert.Equal("OnNavigateAsync can only be cancelled via NavigateContext.CancellationToken.", unhandledException.Message);
-        }
-
-        [Fact]
         public async Task AlreadyCanceledOnNavigateAsyncDoesNothing()
         {
             // Arrange
             var triggerCancel = new TaskCompletionSource();
-            async Task OnNavigateAsync(NavigationContext args)
+            Action<NavigationContext> OnNavigateAsync = async (NavigationContext args) =>
             {
                 if (args.Path.EndsWith("jan"))
                 {
@@ -153,7 +98,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
                     tcs.TrySetCanceled();
                     await tcs.Task;
                 }
-            }
+            };
             var refreshCalled = false;
             _renderer.OnUpdateDisplay = (renderBatch) =>
             {
@@ -164,11 +109,11 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
                 }
                 Assert.True(false, "OnUpdateDisplay called more than once.");
             };
-            _router.OnNavigateAsync = OnNavigateAsync;
+            _router.OnNavigateAsync = new EventCallback<NavigationContext>(null, OnNavigateAsync);
 
             // Act (start the operations then await them)
-            var jan = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateWithRefreshAsync("http://example.com/jan", false));
-            var feb = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateWithRefreshAsync("http://example.com/feb", false));
+            var jan = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateAsync("http://example.com/jan", false));
+            var feb = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateAsync("http://example.com/feb", false));
             triggerCancel.TrySetResult();
 
             await jan;
@@ -180,16 +125,16 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         {
             // Arrange
             var cancelled = "";
-            async Task OnNavigateAsync(NavigationContext args)
+            Action<NavigationContext> OnNavigateAsync = async (NavigationContext args) =>
             {
                 await Task.CompletedTask;
                 args.CancellationToken.Register(() => cancelled = args.Path);
             };
-            _router.OnNavigateAsync = OnNavigateAsync;
+            _router.OnNavigateAsync = new EventCallback<NavigationContext>(null, OnNavigateAsync);
 
             // Act
-            _ = _router.RunOnNavigateWithRefreshAsync("jan", false);
-            _ = _router.RunOnNavigateWithRefreshAsync("feb", false);
+            _ = _router.RunOnNavigateAsync("jan", false);
+            _ = _router.RunOnNavigateAsync("feb", false);
 
             // Assert
             var expected = "jan";
@@ -200,7 +145,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         public async Task RefreshesOnceOnCancelledOnNavigateAsync()
         {
             // Arrange
-            async Task OnNavigateAsync(NavigationContext args)
+            Action<NavigationContext> OnNavigateAsync = async (NavigationContext args) =>
             {
                 if (args.Path.EndsWith("jan"))
                 {
@@ -217,11 +162,11 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
                 }
                 Assert.True(false, "OnUpdateDisplay called more than once.");
             };
-            _router.OnNavigateAsync = OnNavigateAsync;
+            _router.OnNavigateAsync = new EventCallback<NavigationContext>(null, OnNavigateAsync);
 
             // Act
-            var jan = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateWithRefreshAsync("http://example.com/jan", false));
-            var feb = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateWithRefreshAsync("http://example.com/feb", false));
+            var jan = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateAsync("http://example.com/jan", false));
+            var feb = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateAsync("http://example.com/feb", false));
 
             await jan;
             await feb;
