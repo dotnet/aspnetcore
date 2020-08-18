@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             Assert.Contains("TEST MESSAGE", contents);
             Assert.DoesNotContain("\r\n\r\n", contents);
+            Assert.Contains("\r\n", contents);
         }
 
         // Move to separate file
