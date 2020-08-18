@@ -381,8 +381,8 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-core-setup</Uri>
       <Sha>3acd9b0cd16596bad450c82be08780875a73c05c</Sha>
     </Dependency>
-    <!-- !!! Pin this again once 3.1.8 is released. May need CoherentParentDependency="Microsoft.EntityFrameworkCore" after next extensions build. -->
-    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="3.1.0-rtm.19565.4">
+    <!-- !!! Pin this again & remove CPD once 3.1.8 is released. -->
+    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="3.1.0-rtm.19565.4" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/Extensions</Uri>
       <Sha>3acd9b0cd16596bad450c82be08780875a73c05c</Sha>
     </Dependency>
