@@ -123,6 +123,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Clear out temporary build artifacts that the runtime packages -->
       <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" Condition="'%(ReferenceCopyLocalPaths.Extension)' == '.a'" />
 
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"
+        Condition="'$(BlazorEnableTimeZoneSupport)' == 'false' AND '%(ReferenceCopyLocalPaths.FileName)%(ReferenceCopyLocalPaths.Extension)' == 'dotnet.timezones.blat'" />
+
+      <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"
+        Condition="'$(InvariantGlobalization)' == 'true' AND '%(ReferenceCopyLocalPaths.FileName)%(ReferenceCopyLocalPaths.Extension)' == 'icudt.dat'" />
+
       <!--
         ReferenceCopyLocalPaths includes satellite assemblies from referenced projects but are inexpicably missing
         any metadata that might allow them to be differentiated. We'll explicitly add those
@@ -429,6 +435,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ResolvedFileToPublish Include="@(_ResolvedSatelliteToPublish)" />
 
       <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.a'" />
+
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+        Condition="'$(BlazorEnableTimeZoneSupport)' == 'false' AND '%(ResolvedFileToPublish.FileName)%(ResolvedFileToPublish.Extension)' == 'dotnet.timezones.blat'" />
+
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+        Condition="'$(InvariantGlobalization)' == 'true' AND '%(ResolvedFileToPublish.FileName)%(ResolvedFileToPublish.Extension)' == 'icudt.dat'" />
 
       <!-- Remove dotnet.js from publish output -->
       <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(ResolvedFileToPublish.RelativePath)' == 'dotnet.js'" />

@@ -823,6 +823,34 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
+        [Fact]
+        public async Task Publish_WithInvariantGlobalizationEnabled_DoesNotCopyGlobalizationData()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorwasm-minimal");
+            project.AddProjectFileContent(
+@"
+<PropertyGroup>
+    <InvariantGlobalization>true</InvariantGlobalization>
+</PropertyGroup>");
+
+            var result = await MSBuildProcessManager.DotnetMSBuild(project, "Publish");
+
+            Assert.BuildPassed(result);
+
+            var publishOutputDirectory = project.PublishOutputDirectory;
+
+            var bootJsonPath = Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
+            var bootJsonData = ReadBootJsonData(result, bootJsonPath);
+
+            var runtime = bootJsonData.resources.runtime.Keys;
+            Assert.Contains("dotnet.wasm", runtime);
+            Assert.DoesNotContain("icudt.dat", runtime);
+
+            Assert.FileExists(result, publishOutputDirectory, "wwwroot", "_framework", "dotnet.wasm");
+            Assert.FileDoesNotExist(result, publishOutputDirectory, "wwwroot", "_framework", "icudt.dat");
+        }
+
         private static void AddWasmProjectContent(ProjectDirectory project, string content)
         {
             var path = Path.Combine(project.SolutionPath, "blazorwasm", "blazorwasm.csproj");

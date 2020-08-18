@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "dotnet.timezones.blat");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm.gz");
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", DotNetJsFileName);
             Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "blazorwasm-minimal.dll");
@@ -169,7 +170,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.Null(bootJsonData.resources.satelliteResources);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/22975")]
+        [Fact]
         public async Task Build_WithBlazorEnableTimeZoneSupportDisabled_DoesNotCopyTimeZoneInfo()
         {
             // Arrange
@@ -192,10 +193,39 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             var runtime = bootJsonData.resources.runtime.Keys;
             Assert.Contains("dotnet.wasm", runtime);
-            Assert.DoesNotContain("dotnet.timezones.dat", runtime);
+            Assert.DoesNotContain("dotnet.timezones.blat", runtime);
 
-            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", "dotnet.wasm");
-            Assert.FileDoesNotExist(result, buildOutputDirectory, "wwwroot", "_framework", "wasm", "dotnet.timezones.dat");
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm");
+            Assert.FileDoesNotExist(result, buildOutputDirectory, "wwwroot", "_framework", "dotnet.timezones.blat");
+        }
+
+        [Fact]
+        public async Task Build_WithInvariantGlobalizationEnabled_DoesNotCopyGlobalizationData()
+        {
+            // Arrange
+            using var project = ProjectDirectory.Create("blazorwasm-minimal");
+            project.AddProjectFileContent(
+@"
+<PropertyGroup>
+    <InvariantGlobalization>true</InvariantGlobalization>
+</PropertyGroup>");
+
+            var result = await MSBuildProcessManager.DotnetMSBuild(project);
+
+            Assert.BuildPassed(result);
+
+            var buildOutputDirectory = project.BuildOutputDirectory;
+
+            var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
+            var bootJsonData = ReadBootJsonData(result, bootJsonPath);
+
+            var runtime = bootJsonData.resources.runtime.Keys;
+            Assert.Contains("dotnet.wasm", runtime);
+            Assert.Contains("dotnet.timezones.blat", runtime);
+            Assert.DoesNotContain("icudt.dat", runtime);
+
+            Assert.FileExists(result, buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm");
+            Assert.FileDoesNotExist(result, buildOutputDirectory, "wwwroot", "_framework", "icudt.dat");
         }
 
         [Fact]
