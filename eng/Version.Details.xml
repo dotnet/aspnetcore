@@ -13,7 +13,7 @@
       <Uri>https://github.com/dotnet/blazor</Uri>
       <Sha>cc449601d638ffaab58ae9487f0fd010bb178a12</Sha>
     </Dependency>
-    <Dependency Name="System.Net.Http.Json" Version="3.2.0">
+    <Dependency Name="System.Net.Http.Json" Version="3.2.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>66409e392d64ed96e5d3a5fda712d9baf51196ed</Sha>
     </Dependency>
@@ -317,9 +317,9 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>0f7f38c4fd323b26da10cce95f857f77f0f09b48</Sha>
     </Dependency>
-    <Dependency Name="System.IO.Pipelines" Version="4.7.1" Pinned="true">
+    <Dependency Name="System.IO.Pipelines" Version="4.7.2" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>8a3ffed558ddf943c1efa87d693227722d6af094</Sha>
+      <Sha>059a4a19e602494bfbed473dbbb18f2dbfbd0878</Sha>
     </Dependency>
     <Dependency Name="System.Net.Http.WinHttpHandler" Version="4.7.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
@@ -333,7 +333,7 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-corefx</Uri>
       <Sha>059a4a19e602494bfbed473dbbb18f2dbfbd0878</Sha>
     </Dependency>
-    <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" Pinned="true">
+    <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="4.7.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>8a3ffed558ddf943c1efa87d693227722d6af094</Sha>
     </Dependency>
@@ -381,8 +381,8 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-core-setup</Uri>
       <Sha>3acd9b0cd16596bad450c82be08780875a73c05c</Sha>
     </Dependency>
-    <!-- !!! Pin this again once 3.1.8 is released. May need CoherentParentDependency="Microsoft.EntityFrameworkCore" after next extensions build. -->
-    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="3.1.0-rtm.19565.4">
+    <!-- !!! Pin this again & remove CPD once 3.1.8 is released. -->
+    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="3.1.0-rtm.19565.4" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/Extensions</Uri>
       <Sha>3acd9b0cd16596bad450c82be08780875a73c05c</Sha>
     </Dependency>
