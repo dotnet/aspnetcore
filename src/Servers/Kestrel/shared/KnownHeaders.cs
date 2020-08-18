@@ -212,12 +212,13 @@ namespace CodeGenerator
         static string AppendSwitch(IEnumerable<IGrouping<int, KnownHeader>> values) =>
              $@"switch (name.Length)
             {{{Each(values, byLength => $@"
-                case {byLength.Key}:{AppendSwitchSection(byLength.Key, byLength.OrderBy(OrderByPrimaryAndName))}
+                case {byLength.Key}:{AppendSwitchSection(byLength.Key, byLength.OrderBy(ResolveSortName))}
                     break;")}
             }}";
 
-        private static string OrderByPrimaryAndName(KnownHeader h)
+        static string ResolveSortName(KnownHeader h)
         {
+            // Prefix primary header with underscore so it is first
             return (h.PrimaryHeader ? "_" : "") + h.Name;
         }
 
@@ -330,8 +331,12 @@ namespace CodeGenerator
                 }
             }
 
-            var groups = values.GroupBy(header => header.EqualIgnoreCaseBytesFirstTerm());
-            return start + $@"{Each(groups, (byFirstTerm, i) => $@"{(byFirstTerm.Count() == 1 ? $@"{Each(byFirstTerm.OrderBy(OrderByPrimaryAndName), header => $@"
+            // Group headers together that have the same ignore equal case equals check
+            // Explicitly order result after grouping.
+            var groups = values.GroupBy(header => header.EqualIgnoreCaseBytesFirstTerm())
+                .OrderBy(g => ResolveSortName(g.OrderBy(ResolveSortName).First()));
+
+            return start + $@"{Each(groups, (byFirstTerm, i) => $@"{(byFirstTerm.Count() == 1 ? $@"{Each(byFirstTerm.OrderBy(ResolveSortName), header => $@"
                     {(i > 0 ? "else " : "")}if ({header.EqualIgnoreCaseBytes(firstTermVar)})
                     {{{GenerateIfBody(header)}
                     }}")}" : $@"
