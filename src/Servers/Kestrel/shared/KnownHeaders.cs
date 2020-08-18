@@ -212,9 +212,14 @@ namespace CodeGenerator
         static string AppendSwitch(IEnumerable<IGrouping<int, KnownHeader>> values) =>
              $@"switch (name.Length)
             {{{Each(values, byLength => $@"
-                case {byLength.Key}:{AppendSwitchSection(byLength.Key, byLength.OrderBy(h => (h.PrimaryHeader ? "_" : "") + h.Name))}
+                case {byLength.Key}:{AppendSwitchSection(byLength.Key, byLength.OrderBy(OrderByPrimaryAndName))}
                     break;")}
             }}";
+
+        private static string OrderByPrimaryAndName(KnownHeader h)
+        {
+            return (h.PrimaryHeader ? "_" : "") + h.Name;
+        }
 
         static string AppendHPackSwitch(IEnumerable<HPackGroup> values) =>
              $@"switch (index)
@@ -326,7 +331,7 @@ namespace CodeGenerator
             }
 
             var groups = values.GroupBy(header => header.EqualIgnoreCaseBytesFirstTerm());
-            return start + $@"{Each(groups,  (byFirstTerm, i) => $@"{(byFirstTerm.Count() == 1 ? $@"{Each(byFirstTerm, header => $@"
+            return start + $@"{Each(groups, (byFirstTerm, i) => $@"{(byFirstTerm.Count() == 1 ? $@"{Each(byFirstTerm.OrderBy(OrderByPrimaryAndName), header => $@"
                     {(i > 0 ? "else " : "")}if ({header.EqualIgnoreCaseBytes(firstTermVar)})
                     {{{GenerateIfBody(header)}
                     }}")}" : $@"
