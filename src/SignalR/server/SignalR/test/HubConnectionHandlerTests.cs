@@ -2773,7 +2773,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/3651", FlakyOn.Helix.All)]
+        [Flaky("https://github.com/dotnet/aspnetcore-internal/issues/3651",FlakyOn.All)]
         public async Task ReceivingMessagesPreventsConnectionTimeoutFromOccuring()
         {
             using (StartVerifiableLog())
