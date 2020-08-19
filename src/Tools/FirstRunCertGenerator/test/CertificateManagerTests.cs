@@ -193,6 +193,36 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
 
         [ConditionalFact]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        public void EnsureCreateHttpsCertificate_CanExportTheCertInPemFormat_WithoutKey()
+        {
+            // Arrange
+            const string CertificateName = nameof(EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates) + ".pem";
+
+            _fixture.CleanupCertificates();
+
+            var now = DateTimeOffset.UtcNow;
+            now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
+            var creation = _manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, isInteractive: false);
+            Output.WriteLine(creation.ToString());
+            ListCertificates();
+
+            var httpsCertificate = _manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: false).Single(c => c.Subject == TestCertificateSubject);
+
+            // Act
+            var result = _manager
+                .EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, includePrivateKey: false, password: null, keyExportFormat: CertificateKeyExportFormat.Pem, isInteractive: false);
+
+            // Assert
+            Assert.Equal(EnsureCertificateResult.ValidCertificatePresent, result);
+            Assert.True(File.Exists(CertificateName));
+
+            var exportedCertificate = new X509Certificate2(CertificateName);
+            Assert.NotNull(exportedCertificate);
+            Assert.False(exportedCertificate.HasPrivateKey);
+        }
+
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         public void EnsureCreateHttpsCertificate_CanImport_ExportedPfx()
         {
             // Arrange

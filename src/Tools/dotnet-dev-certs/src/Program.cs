@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             return Success;
         }
 
-        private static int EnsureHttpsCertificate(CommandOption exportPath, CommandOption password, CommandOption noPassword, CommandOption trust, CommandOption keyFormat, IReporter reporter)
+        private static int EnsureHttpsCertificate(CommandOption exportPath, CommandOption password, CommandOption noPassword, CommandOption trust, CommandOption exportFormat, IReporter reporter)
         {
             var now = DateTimeOffset.Now;
             var manager = CertificateManager.Instance;
@@ -362,9 +362,9 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             }
 
             var format = CertificateKeyExportFormat.Pfx;
-            if (keyFormat.HasValue() && !Enum.TryParse(keyFormat.Value(), ignoreCase: true, out format))
+            if (exportFormat.HasValue() && !Enum.TryParse(exportFormat.Value(), ignoreCase: true, out format))
             {
-                reporter.Error($"Unknown key format '{keyFormat.Value()}'.");
+                reporter.Error($"Unknown key format '{exportFormat.Value()}'.");
                 return InvalidKeyExportFormat;
             }
 
@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 trust == null ? false : trust.HasValue() && !RuntimeInformation.IsOSPlatform(OSPlatform.Linux),
                 password.HasValue() || (noPassword.HasValue() && format == CertificateKeyExportFormat.Pem),
                 password.Value(),
-                keyFormat.HasValue() ? format : CertificateKeyExportFormat.Pfx);
+                exportFormat.HasValue() ? format : CertificateKeyExportFormat.Pfx);
 
             switch (result)
             {
