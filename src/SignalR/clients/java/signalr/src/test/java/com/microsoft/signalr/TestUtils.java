@@ -11,27 +11,30 @@ class TestUtils {
     static ByteBuffer emptyByteBuffer = stringToByteBuffer("");
 
     static HubConnection createHubConnection(String url) {
-        return createHubConnection(url, new MockTransport(true), true, new TestHttpClient(), new JsonHubProtocol());
+        return createHubConnection(url, new MockTransport(true), true, new TestHttpClient(), false);
     }
 
     static HubConnection createHubConnection(String url, Transport transport) {
-        return createHubConnection(url, transport, true, new TestHttpClient(), new JsonHubProtocol());
+        return createHubConnection(url, transport, true, new TestHttpClient(), false);
     }
     
-    static HubConnection createHubConnection(String url, HubProtocol protocol) {
-        return createHubConnection(url, new MockTransport(true), true, new TestHttpClient(), protocol);
+    static HubConnection createHubConnection(String url, boolean withMessagePack) {
+        return createHubConnection(url, new MockTransport(true), true, new TestHttpClient(), withMessagePack);
     }
     
-    static HubConnection createHubConnection(String url, Transport transport, HubProtocol protocol) {
-        return createHubConnection(url, transport, true, new TestHttpClient(), protocol);
+    static HubConnection createHubConnection(String url, Transport transport, boolean withMessagePack) {
+        return createHubConnection(url, transport, true, new TestHttpClient(), withMessagePack);
     }
 
-    static HubConnection createHubConnection(String url, Transport transport, boolean skipNegotiate, HttpClient client, HubProtocol protocol) {
+    static HubConnection createHubConnection(String url, Transport transport, boolean skipNegotiate, HttpClient client, boolean withMessagePack) {
         HttpHubConnectionBuilder builder = HubConnectionBuilder.create(url)
             .withTransportImplementation(transport)
             .withHttpClient(client)
-            .withProtocol(protocol)
             .shouldSkipNegotiate(skipNegotiate);
+        
+        if (withMessagePack) {
+            builder = builder.withMessagePack();
+        }
 
         return builder.build();
     }

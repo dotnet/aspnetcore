@@ -18,6 +18,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -33,7 +35,6 @@ class HubConnectionTest {
     private static final Type doubleType = (new TypeReference<Double>() { }).getType();
     private static final Type integerType = (new TypeReference<Integer>() { }).getType();
     private static final Type stringType = (new TypeReference<String>() { }).getType();
-    private static final MessagePackHubProtocol messagePackHubProtocol = new MessagePackHubProtocol();
 
     @Test
     public void checkHubConnectionState() {
@@ -643,7 +644,7 @@ class HubConnectionTest {
     @Test
     public void checkStreamUploadSingleItemThroughInvokeWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -699,7 +700,7 @@ class HubConnectionTest {
     @Test
     public void checkStreamUploadSingleItemThroughStreamWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -766,7 +767,7 @@ class HubConnectionTest {
     @Test
     public void useSameSubjectInMutlipleStreamsFromDifferentMethodsWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -898,7 +899,7 @@ class HubConnectionTest {
     @Test
     public void checkStreamUploadMultipleItemsThroughInvokeWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -991,7 +992,7 @@ class HubConnectionTest {
     @Test
     public void checkStreamSingleItemWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -1053,7 +1054,7 @@ class HubConnectionTest {
     @Test
     public void checkStreamCompletionResultWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -1118,7 +1119,7 @@ class HubConnectionTest {
     @Test
     public void checkStreamCompletionErrorWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -1179,7 +1180,7 @@ class HubConnectionTest {
     @Test
     public void checkStreamMultipleItemsWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -1233,7 +1234,7 @@ class HubConnectionTest {
     @Test
     public void checkCancelIsSentAfterDisposeWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -1283,7 +1284,7 @@ class HubConnectionTest {
     @Test
     public void checkCancelIsSentAfterAllSubscriptionsAreDisposedWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -1335,7 +1336,7 @@ class HubConnectionTest {
     @Test
     public void checkStreamWithDisposeWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -1395,7 +1396,7 @@ class HubConnectionTest {
     @Test
     public void checkStreamWithDisposeWithMultipleSubscriptionsWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -1454,7 +1455,7 @@ class HubConnectionTest {
     @Test
     public void invokeWaitsForCompletionMessageWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -1497,7 +1498,7 @@ class HubConnectionTest {
     @Test
     public void invokeNoReturnValueWaitsForCompletionWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -1540,7 +1541,7 @@ class HubConnectionTest {
     @Test
     public void invokeCompletedByCompletionMessageWithResultWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -1609,7 +1610,7 @@ class HubConnectionTest {
     @Test
     public void invokeNoReturnValueHandlesErrorWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -1659,7 +1660,7 @@ class HubConnectionTest {
     @Test
     public void canSendNullArgInInvocationWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -1703,7 +1704,7 @@ class HubConnectionTest {
     @Test
     public void canSendMultipleNullArgsInInvocationWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -1757,7 +1758,7 @@ class HubConnectionTest {
     @Test
     public void multipleInvokesWaitForOwnCompletionMessageWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -1814,7 +1815,7 @@ class HubConnectionTest {
     @Test
     public void invokeWorksForPrimitiveTypesWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -1859,7 +1860,7 @@ class HubConnectionTest {
     @Test
     public void completionMessageCanHaveErrorWithMessagePack() {
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
@@ -2202,7 +2203,7 @@ class HubConnectionTest {
     public void sendWithNoParamsTriggersOnHandlerWithMessagePack() {
         AtomicReference<Integer> value = new AtomicReference<>(0);
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.on("inc", () ->{
             assertEquals(Integer.valueOf(0), value.get());
@@ -2221,7 +2222,7 @@ class HubConnectionTest {
     public void sendWithParamTriggersOnHandlerWithMessagePack() {
         AtomicReference<String> value = new AtomicReference<>();
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.<String>on("inc", (param) ->{
             assertNull(value.get());
@@ -2244,7 +2245,7 @@ class HubConnectionTest {
         AtomicReference<Double> value2 = new AtomicReference<>();
 
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.<String, Double>on("inc", (param1, param2) ->{
             assertNull(value1.get());
@@ -2272,7 +2273,7 @@ class HubConnectionTest {
         AtomicReference<String> value3 = new AtomicReference<>();
 
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.<String, String, String>on("inc", (param1, param2, param3) ->{
             assertNull(value1.get());
@@ -2304,7 +2305,7 @@ class HubConnectionTest {
         AtomicReference<String> value4 = new AtomicReference<>();
 
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.<String, String, String, String>on("inc", (param1, param2, param3, param4) ->{
             assertNull(value1.get());
@@ -2339,7 +2340,7 @@ class HubConnectionTest {
         AtomicReference<Double> value5 = new AtomicReference<>();
 
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.<String, String, String, Boolean, Double>on("inc", (param1, param2, param3, param4, param5) ->{
             assertNull(value1.get());
@@ -2378,7 +2379,7 @@ class HubConnectionTest {
         AtomicReference<String> value6 = new AtomicReference<>();
 
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.<String, String, String, Boolean, Double, String>on("inc", (param1, param2, param3, param4, param5, param6) -> {
             assertNull(value1.get());
@@ -2421,7 +2422,7 @@ class HubConnectionTest {
         AtomicReference<String> value7 = new AtomicReference<>();
 
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.<String, String, String, Boolean, Double, String, String>on("inc", (param1, param2, param3, param4, param5, param6, param7) -> {
             assertNull(value1.get());
@@ -2469,7 +2470,7 @@ class HubConnectionTest {
         AtomicReference<String> value8 = new AtomicReference<>();
 
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.<String, String, String, Boolean, Double, String, String, String>on("inc", (param1, param2, param3, param4, param5, param6, param7, param8) -> {
             assertNull(value1.get());
@@ -2543,7 +2544,7 @@ class HubConnectionTest {
         AtomicReference<PersonPojo<Short>> value1 = new AtomicReference<>();
 
         MockTransport mockTransport = new MockTransport();
-        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, messagePackHubProtocol);
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport, true);
 
         hubConnection.<PersonPojo<Short>>on("inc", (param1) -> {
             assertNull(value1.get());

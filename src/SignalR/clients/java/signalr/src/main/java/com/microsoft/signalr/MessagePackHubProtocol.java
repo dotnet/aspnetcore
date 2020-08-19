@@ -25,7 +25,7 @@ import org.msgpack.value.ValueType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
-public class MessagePackHubProtocol implements HubProtocol {
+class MessagePackHubProtocol implements HubProtocol {
     
     private static final int ERROR_RESULT = 1;
     private static final int VOID_RESULT = 2;
