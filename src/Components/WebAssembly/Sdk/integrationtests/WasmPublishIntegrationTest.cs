@@ -141,8 +141,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 serviceWorkerPath: Path.Combine("serviceworkers", "my-service-worker.js"),
                 serviceWorkerContent: "// This is the production service worker",
                 assetsManifestPath: "custom-service-worker-assets.js");
-
-            VerifyTypeGranularTrimming(result, blazorPublishDirectory);
         }
 
         [Fact]
@@ -906,16 +904,17 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         private void VerifyTypeGranularTrimming(MSBuildResult result, string blazorPublishDirectory)
         {
-            var loggingAssemblyPath = Path.Combine(blazorPublishDirectory, "_framework", "Microsoft.Extensions.Logging.Abstractions.dll");
-            Assert.FileExists(result, loggingAssemblyPath);
+            var componentsShimAssemblyPath = Path.Combine(blazorPublishDirectory, "_framework", "Microsoft.AspNetCore.Razor.Test.ComponentShim.dll");
+            Assert.FileExists(result, componentsShimAssemblyPath);
 
-            // ILogger is referenced by the app, so we expect it to be preserved
-            Assert.AssemblyContainsType(result, loggingAssemblyPath, "Microsoft.Extensions.Logging.ILogger");
-            // LogLevel is referenced by ILogger and therefore must be preserved.
-            Assert.AssemblyContainsType(result, loggingAssemblyPath, "Microsoft.Extensions.Logging.LogLevel");
+            // RouteView is referenced by the app, so we expect it to be preserved
+            Assert.AssemblyContainsType(result, componentsShimAssemblyPath, "Microsoft.AspNetCore.Components.RouteView");
 
-            // NullLogger is not referenced by the app, and should be trimmed.
-            Assert.AssemblyDoesNotContainType(result, loggingAssemblyPath, "Microsoft.Extensions.Logging.Abstractions.NullLogger");
+            // RouteData is referenced by RouteView so we expect it to be preserved.
+            Assert.AssemblyContainsType(result, componentsShimAssemblyPath, "Microsoft.AspNetCore.Components.RouteData");
+
+            // CascadingParameterAttribute is not referenced by the app, and should be trimmed.
+            Assert.AssemblyDoesNotContainType(result, componentsShimAssemblyPath, "Microsoft.AspNetCore.Components.CascadingParameterAttribute");
         }
 
         private static BootJsonData ReadBootJsonData(MSBuildResult result, string path)
