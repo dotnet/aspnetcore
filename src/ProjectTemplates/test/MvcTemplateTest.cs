@@ -223,6 +223,77 @@ namespace Templates.Test
             }
         }
 
+        [ConditionalFact]
+        [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        public async Task MvcTemplate_SingleFileExe()
+        {
+            // This test verifies publishing an MVC app as a single file exe works. We'll limit testing
+            // this to a few operating systems to make our lives easier.
+            string runtimeIdentifer;
+            if (OperatingSystem.IsWindows())
+            {
+                runtimeIdentifer = "win-x64";
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                runtimeIdentifer = "linux-x64";
+            }
+            else
+            {
+                return;
+            }
+
+            Project = await ProjectFactory.GetOrCreateProject("mvcindividualuld", Output);
+            Project.RuntimeIdentifier = runtimeIdentifer;
+
+            var createResult = await Project.RunDotNetNewAsync("mvc", auth: "Individual", useLocalDB: true);
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
+
+            var publishResult = await Project.RunDotNetPublishAsync(additionalArgs: $"/p:PublishSingleFile=true -r {runtimeIdentifer}", noRestore: false);
+            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
+
+            var pages = new[]
+            {
+                new Page
+                {
+                    // Verify a view from the app works
+                    Url = PageUrls.HomeUrl,
+                    Links = new []
+                    {
+                        PageUrls.HomeUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
+                        PageUrls.HomeUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.DocsUrl,
+                        PageUrls.PrivacyUrl
+                    }
+                },
+                new Page
+                {
+                    // Verify a view from a RCL (in this case IdentityUI) works
+                    Url = PageUrls.RegisterUrl,
+                    Links = new []
+                    {
+                        PageUrls.HomeUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
+                        PageUrls.HomeUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.ExternalArticle,
+                        PageUrls.PrivacyUrl
+                    }
+                },
+            };
+
+            using var aspNetProcess = Project.StartPublishedProjectAsync();
+            Assert.False(
+                aspNetProcess.Process.HasExited,
+                ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
+
+            await aspNetProcess.AssertPagesOk(pages);
+        }
+
         [Fact]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23993")]
         public async Task MvcTemplate_RazorRuntimeCompilation_BuildsAndPublishes()

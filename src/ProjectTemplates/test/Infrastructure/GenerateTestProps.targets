@@ -35,7 +35,7 @@
         MicrosoftNETSdkRazorPackageVersion=$(MicrosoftNETSdkRazorPackageVersion);
         MicrosoftAspNetCoreAppRefPackageVersion=$(MicrosoftAspNetCoreAppRefPackageVersion);
         MicrosoftAspNetCoreAppRuntimePackageVersion=@(_RuntimePackageVersionInfo->'%(PackageVersion)');
-        SupportedRuntimeIdentifiers=$(SupportedRuntimeIdentifiers);
+        SupportedRuntimeIdentifiers=$(SupportedRuntimeIdentifiers.Trim());
         DefaultNetCoreTargetFramework=$(DefaultNetCoreTargetFramework);
         RepoRoot=$(RepoRoot);
         Configuration=$(Configuration);

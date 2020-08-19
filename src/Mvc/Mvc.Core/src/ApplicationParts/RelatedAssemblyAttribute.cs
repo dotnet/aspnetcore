@@ -17,9 +17,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
     public sealed class RelatedAssemblyAttribute : Attribute
     {
-        private static readonly Func<string, Assembly> LoadFromAssemblyPathDelegate =
-            AssemblyLoadContext.GetLoadContext(typeof(RelatedAssemblyAttribute).Assembly).LoadFromAssemblyPath;
-
         /// <summary>
         /// Initializes a new instance of <see cref="RelatedAssemblyAttribute"/>.
         /// </summary>
@@ -52,14 +49,15 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
                 throw new ArgumentNullException(nameof(assembly));
             }
 
-            return GetRelatedAssemblies(assembly, throwOnError, File.Exists, LoadFromAssemblyPathDelegate);
+            var loadContext = AssemblyLoadContext.GetLoadContext(assembly) ?? AssemblyLoadContext.Default;
+            return GetRelatedAssemblies(assembly, throwOnError, File.Exists, new AssemblyLoadContextWrapper(loadContext));
         }
 
         internal static IReadOnlyList<Assembly> GetRelatedAssemblies(
             Assembly assembly,
             bool throwOnError,
             Func<string, bool> fileExists,
-            Func<string, Assembly> loadFile)
+            AssemblyLoadContextWrapper assemblyLoadContext)
         {
             if (assembly == null)
             {
@@ -95,42 +93,46 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
                         Resources.FormatRelatedAssemblyAttribute_AssemblyCannotReferenceSelf(nameof(RelatedAssemblyAttribute), assemblyName));
                 }
 
-                var relatedAssemblyName = new AssemblyName(attribute.AssemblyFileName);
                 Assembly relatedAssembly;
-                try
-                {
-                    // Perform a cursory check to determine if the Assembly has already been loaded
-                    // before going to disk. In the ordinary case, related parts that are part of
-                    // application's reference closure should already be loaded.
-                    relatedAssembly = Assembly.Load(relatedAssemblyName);
-                    relatedAssemblies.Add(relatedAssembly);
-                    continue;
-                }
-                catch (IOException)
-                {
-                    // The assembly isn't already loaded. Patience, we'll attempt to load it from disk next.
-                }
-
                 var relatedAssemblyLocation = Path.Combine(assemblyDirectory, attribute.AssemblyFileName + ".dll");
-                if (!fileExists(relatedAssemblyLocation))
+                if (fileExists(relatedAssemblyLocation))
                 {
-                    if (throwOnError)
+                    relatedAssembly = assemblyLoadContext.LoadFromAssemblyPath(relatedAssemblyLocation);
+                }
+                else
+                {
+                    try
                     {
-                        throw new FileNotFoundException(
-                            Resources.FormatRelatedAssemblyAttribute_CouldNotBeFound(attribute.AssemblyFileName, assemblyName, assemblyDirectory),
-                            relatedAssemblyLocation);
+                        var relatedAssemblyName = new AssemblyName(attribute.AssemblyFileName);
+                        relatedAssembly = assemblyLoadContext.LoadFromAssemblyName(relatedAssemblyName);
                     }
-                    else
+                    catch when (!throwOnError)
                     {
+                        // Ignore assembly load failures when throwOnError = false.
                         continue;
                     }
                 }
 
-                relatedAssembly = loadFile(relatedAssemblyLocation);
                 relatedAssemblies.Add(relatedAssembly);
             }
 
             return relatedAssemblies;
+        }
+
+        internal class AssemblyLoadContextWrapper
+        {
+            private readonly AssemblyLoadContext _loadContext;
+
+            public AssemblyLoadContextWrapper(AssemblyLoadContext loadContext)
+            {
+                _loadContext = loadContext;
+            }
+
+            public virtual Assembly LoadFromAssemblyName(AssemblyName assemblyName)
+                => _loadContext.LoadFromAssemblyName(assemblyName);
+
+            public virtual Assembly LoadFromAssemblyPath(string assemblyPath)
+                => _loadContext.LoadFromAssemblyPath(assemblyPath);
         }
     }
 }
