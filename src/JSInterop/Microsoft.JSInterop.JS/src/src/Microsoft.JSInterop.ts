@@ -42,6 +42,10 @@ export module DotNet {
         throw new Error(`The value '${resultIdentifier}' is not a function.`);
       }
     }
+
+    public dispose() {
+      delete this._jsObject.__jsObjectId;
+    }
   }
 
   const pendingAsyncCalls: { [id: number]: PendingAsyncCall<any> } = {};
@@ -210,6 +214,21 @@ export module DotNet {
     findJSFunction, // Note that this is used by the JS interop code inside Mono WebAssembly itself
 
     /**
+     * Disposes the JavaScript object reference with the specified object ID.
+     * 
+     * @param id The ID of the JavaScript object reference.
+     */
+    disposeJSObjectReference: (id: number) => {
+      const jsObject = cachedJSObjectsById[id];
+
+      if (jsObject) {
+        jsObject.dispose();
+      }
+
+      delete cachedJSObjectsById[id];
+    },
+
+    /**
      * Invokes the specified synchronous JavaScript function.
      *
      * @param identifier Identifies the globally-reachable function to invoke.
@@ -218,8 +237,11 @@ export module DotNet {
      */
     invokeJSFromDotNet: (identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number) => {
       const returnValue = findJSFunction(identifier, targetInstanceId).apply(null, parseJsonWithRevivers(argsJson));
+      const result = createJSCallResult(returnValue, resultType);
 
-      return createJSCallResult(returnValue, resultType);
+      return result === null || result === undefined
+        ? null
+        : JSON.stringify(result, argReplacer);
     },
 
     /**
@@ -242,8 +264,8 @@ export module DotNet {
         // On completion, dispatch result back to .NET
         // Not using "await" because it codegens a lot of boilerplate
         promise.then(
-          result => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, true, createJSCallResult([asyncHandle, true, result], resultType)),
-          error => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, false, createJSCallResult([asyncHandle, false, formatError(error)], resultType)) // TODO: Does JSObjectReference generate a confusing error?
+          result => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, true, JSON.stringify([asyncHandle, true, createJSCallResult(result, resultType)])),
+          error => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, false, JSON.stringify([asyncHandle, false, formatError(error)]))
         );
       }
     },
@@ -324,17 +346,21 @@ export module DotNet {
   function createJSCallResult(returnValue: any, resultType: JSCallResultType) {
     switch (resultType) {
       case JSCallResultType.Default:
-        return returnValue === null || returnValue === undefined
-          ? null
-          : JSON.stringify(returnValue, argReplacer);
+        return returnValue;
       case JSCallResultType.JSObjectReference:
         if (returnValue === null || returnValue === undefined) {
           throw new Error(`Cannot create a JSObjectReference from the returned value '${returnValue}'.`);
         } else {
-          cachedJSObjectsById[nextJsObjectId] = new JSObject(returnValue, nextJsObjectId);
-          nextJsObjectId++;
-          return JSON.stringify(returnValue, argReplacer);
+          if (!Object.prototype.hasOwnProperty.call(returnValue, '__jsObjectId') || cachedJSObjectsById[nextJsObjectId] !== returnValue) {
+            // The return value is not cached as a JSObjectReference, or is copied from an object that was, so we cache it as a new one
+            cachedJSObjectsById[nextJsObjectId] = new JSObject(returnValue, nextJsObjectId);
+            nextJsObjectId++;
+          }
+
+          return returnValue;
         }
+      default:
+        throw new Error(`Invalid JS call result type '${resultType}'.`);
     }
   }
 

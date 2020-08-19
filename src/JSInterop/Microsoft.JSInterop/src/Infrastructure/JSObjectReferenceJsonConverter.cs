@@ -18,20 +18,26 @@ namespace Microsoft.JSInterop.Infrastructure
 
         public override JSObjectReference? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            long jsObjectId = -1;
+
             while (reader.Read())
             {
-                if (reader.TokenType == JsonTokenType.PropertyName)
+                if (jsObjectId < 0 && reader.TokenType == JsonTokenType.PropertyName)
                 {
                     if (reader.ValueTextEquals(JSObjectReference.JSObjectIdKey.EncodedUtf8Bytes))
                     {
                         reader.Read();
-                        var jsObjectId = reader.GetInt64();
-                        return new JSObjectReference(_jsRuntime, jsObjectId);
+                        jsObjectId = reader.GetInt64();
                     }
                 }
             }
 
-            throw new JsonException($"Required property {JSObjectReference.JSObjectIdKey} not found.");
+            if (jsObjectId < 0)
+            {
+                throw new JsonException($"Required property {JSObjectReference.JSObjectIdKey} not found.");
+            }
+
+            return new JSObjectReference(_jsRuntime, jsObjectId);
         }
 
         public override void Write(Utf8JsonWriter writer, JSObjectReference value, JsonSerializerOptions options)

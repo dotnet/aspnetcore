@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             Log.BeginInvokeJS(_logger, asyncHandle, identifier);
 
-            _clientProxy.SendAsync("JS.BeginInvokeJS", asyncHandle, identifier, argsJson, resultType, targetInstanceId);
+            _clientProxy.SendAsync("JS.BeginInvokeJS", asyncHandle, identifier, argsJson, (int)resultType, targetInstanceId);
         }
 
         public static class Log

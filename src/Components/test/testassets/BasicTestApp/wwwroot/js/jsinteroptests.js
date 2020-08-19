@@ -259,3 +259,11 @@ function receiveDotNetObjectByRefAsync(incomingData) {
     };
   });
 }
+
+function returnJSObjectReference() {
+  return {
+    doSomething: function () {
+        console.log('Invoked from JSObjectReference.');
+    },
+  };
+}

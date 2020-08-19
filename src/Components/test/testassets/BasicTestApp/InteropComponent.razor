@@ -6,6 +6,8 @@
 
 <button id="btn-interop" @onclick="InvokeInteropAsync">Invoke interop!</button>
 
+<button @onclick="UseJSObjectReference">Use JSObjectReference!</button>
+
 <div>
     <h1>Invocations</h1>
     @foreach (var invocation in Invocations)
@@ -161,6 +163,13 @@
         ReceiveDotNetObjectByRefResult["stringValueUpper"] = result.StringValueUpper;
         ReceiveDotNetObjectByRefResult["testDtoNonSerializedValue"] = result.TestDtoNonSerializedValue;
         ReceiveDotNetObjectByRefResult["testDto"] = result.TestDto.Value == passDotNetObjectByRef ? "Same" : "Different";
+    }
+
+    public async Task UseJSObjectReference()
+    {
+        var jsObject = await JSRuntime.InvokeAsync<JSObjectReference>("returnJSObjectReference");
+        await jsObject.InvokeAsync<object>("doSomething");
+        await jsObject.DisposeAsync();
     }
 
     public class PassDotNetObjectByRefArgs

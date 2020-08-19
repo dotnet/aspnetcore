@@ -34,6 +34,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   // Configure JS interop
   window['Blazor']._internal.invokeJSFromDotNet = invokeJSFromDotNet;
+  window['Blazor']._internal.disposeJSObjectReference = (jsObjectId: number): void => DotNet.jsCallDispatcher.disposeJSObjectReference(jsObjectId);
 
   // Configure environment for execution under Mono WebAssembly with shared-memory rendering
   const platform = Environment.setPlatform(monoPlatform);
