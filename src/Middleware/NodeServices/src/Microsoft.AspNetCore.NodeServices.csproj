@@ -3,6 +3,7 @@
     <Description>Invoke Node.js modules at runtime in ASP.NET Core applications.</Description>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsShipping>false</IsShipping>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
