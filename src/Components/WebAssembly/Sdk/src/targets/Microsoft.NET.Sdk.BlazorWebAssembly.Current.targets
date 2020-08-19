@@ -69,6 +69,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Configuration for the platform compatibility analyzer. See https://github.com/dotnet/designs/blob/master/accepted/2020/platform-exclusion/platform-exclusion.md#build-configuration-for-platforms -->
+    <SupportedPlatform Remove="@(SupportedPlatform)" />
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
   <Import Project="Microsoft.NET.Sdk.BlazorWebAssembly.ServiceWorkerAssetsManifest.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
 
   <Target Name="_ScrambleDotnetJsFileName" AfterTargets="ResolveRuntimePackAssets">
