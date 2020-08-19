@@ -217,10 +217,9 @@ export module DotNet {
      * @returns JSON representation of the invocation result.
      */
     invokeJSFromDotNet: (identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number) => {
-      const result = findJSFunction(identifier).apply(null, parseJsonWithRevivers(argsJson));
-      return result === null || result === undefined
-        ? null
-        : JSON.stringify(result, argReplacer);
+      const returnValue = findJSFunction(identifier, targetInstanceId).apply(null, parseJsonWithRevivers(argsJson));
+
+      return createJSCallResult(returnValue, resultType);
     },
 
     /**
@@ -234,7 +233,7 @@ export module DotNet {
       // Coerce synchronous functions into async ones, plus treat
       // synchronous exceptions the same as async ones
       const promise = new Promise<any>(resolve => {
-        const synchronousResultOrPromise = findJSFunction(identifier).apply(null, parseJsonWithRevivers(argsJson));
+        const synchronousResultOrPromise = findJSFunction(identifier, targetInstanceId).apply(null, parseJsonWithRevivers(argsJson));
         resolve(synchronousResultOrPromise);
       });
 
@@ -243,8 +242,8 @@ export module DotNet {
         // On completion, dispatch result back to .NET
         // Not using "await" because it codegens a lot of boilerplate
         promise.then(
-          result => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, true, JSON.stringify([asyncHandle, true, result], argReplacer)),
-          error => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, false, JSON.stringify([asyncHandle, false, formatError(error)]))
+          result => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, true, createJSCallResult([asyncHandle, true, result], resultType)),
+          error => getRequiredDispatcher().endInvokeJSFromDotNet(asyncHandle, false, createJSCallResult([asyncHandle, false, formatError(error)], resultType)) // TODO: Does JSObjectReference generate a confusing error?
         );
       }
     },
@@ -280,7 +279,7 @@ export module DotNet {
     }
   }
 
-  function findJSFunction(identifier: string, targetInstanceId: number = 0): Function {
+  function findJSFunction(identifier: string, targetInstanceId: number): Function {
     let targetInstance = cachedJSObjectsById[targetInstanceId];
 
     if (targetInstance) {
@@ -321,6 +320,23 @@ export module DotNet {
     // Unrecognized - let another reviver handle it
     return value;
   });
+
+  function createJSCallResult(returnValue: any, resultType: JSCallResultType) {
+    switch (resultType) {
+      case JSCallResultType.Default:
+        return returnValue === null || returnValue === undefined
+          ? null
+          : JSON.stringify(returnValue, argReplacer);
+      case JSCallResultType.JSObjectReference:
+        if (returnValue === null || returnValue === undefined) {
+          throw new Error(`Cannot create a JSObjectReference from the returned value '${returnValue}'.`);
+        } else {
+          cachedJSObjectsById[nextJsObjectId] = new JSObject(returnValue, nextJsObjectId);
+          nextJsObjectId++;
+          return JSON.stringify(returnValue, argReplacer);
+        }
+    }
+  }
 
   function argReplacer(key: string, value: any) {
     return value instanceof DotNetObject ? value.serializeAsArg() : value;
