@@ -38,6 +38,8 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
 };
 
 class ReconnectionProcess {
+  static readonly MaximumFirstRetryInterval = 3000;
+
   readonly reconnectDisplay: ReconnectDisplay;
   isDisposed = false;
 
@@ -56,7 +58,11 @@ class ReconnectionProcess {
     for (let i = 0; i < options.maxRetries; i++) {
       this.reconnectDisplay.update(i + 1);
 
-      await this.delay(options.retryIntervalMilliseconds);
+      const delayDuration = i == 0 && options.retryIntervalMilliseconds > ReconnectionProcess.MaximumFirstRetryInterval
+                            ? ReconnectionProcess.MaximumFirstRetryInterval
+                            : options.retryIntervalMilliseconds;
+      await this.delay(delayDuration);
+
       if (this.isDisposed) {
         break;
       }

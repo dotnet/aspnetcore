@@ -23,9 +23,6 @@ namespace Microsoft.AspNetCore.E2ETesting
         public static void Equal<T>(this IWebDriver driver, T expected, Func<T> actual)
             => WaitAssertCore(driver, () => Assert.Equal(expected, actual()));
 
-        public static void Equal<T>(this IWebDriver driver, T expected, Func<T> actual, TimeSpan timeout)
-            => WaitAssertCore(driver, () => Assert.Equal(expected, actual()), timeout);
-
         public static void NotEqual<T>(this IWebDriver driver, T expected, Func<T> actual)
             => WaitAssertCore(driver, () => Assert.NotEqual(expected, actual()));
 
