@@ -139,8 +139,8 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <PreCommands>@(HelixPreCommand)</PreCommands>
         <PostCommands>@(HelixPostCommand)</PostCommands>
-        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) Microsoft.AspNetCore.App.Runtime.win-x64.$(SharedFxVersion).nupkg Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg $(HelixTimeout)</Command>
-        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) Microsoft.AspNetCore.App.Runtime.win-x64.$(SharedFxVersion).nupkg Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg $(HelixTimeout)</Command>
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) 5.0.100-rc.1.20418.3 $(MicrosoftNETCoreAppRuntimeVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) Microsoft.AspNetCore.App.Runtime.win-x64.$(SharedFxVersion).nupkg Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg $(HelixTimeout)</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) 5.0.100-rc.1.20418.3 $(MicrosoftNETCoreAppRuntimeVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) Microsoft.AspNetCore.App.Runtime.win-x64.$(SharedFxVersion).nupkg Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg $(HelixTimeout)</Command>
         <Command Condition="$(HelixCommand) != ''">$(HelixCommand)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>
