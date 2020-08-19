@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core data protection abstractions.
@@ -9,6 +9,7 @@ Microsoft.AspNetCore.DataProtection.IDataProtector</Description>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;dataprotection</PackageTags>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

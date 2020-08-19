@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
     {
         private readonly object _contextLock;
 
-        private readonly IntPtr _handler;
+        private readonly NativeSafeHandle _handler;
 
         private bool _isInitialized;
 
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
         private AsyncInitializeOperation _cachedAsyncInitializeOperation;
 
-        public WebSocketsAsyncIOEngine(object contextLock, IntPtr handler)
+        public WebSocketsAsyncIOEngine(object contextLock, NativeSafeHandle handler)
         {
             _contextLock = contextLock;
             _handler = handler;
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             }
         }
 
-        public void Dispose()
+        public void Complete()
         {
             lock (_contextLock)
             {

@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.TestHost
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.TestHost
             });
 
             Assert.True(context.RequestAborted.CanBeCanceled);
-            Assert.Equal("HTTP/1.1", context.Request.Protocol);
+            Assert.Equal(HttpProtocol.Http11, context.Request.Protocol);
             Assert.Equal("POST", context.Request.Method);
             Assert.Equal("https", context.Request.Scheme);
             Assert.Equal("example.com", context.Request.Host.Value);
@@ -45,6 +46,22 @@ namespace Microsoft.AspNetCore.TestHost
             Assert.NotNull(context.Response.Body);
             Assert.Equal(404, context.Response.StatusCode);
             Assert.Null(context.Features.Get<IHttpResponseFeature>().ReasonPhrase);
+        }
+
+        [Fact]
+        public async Task UserAgentHeaderWorks()
+        {
+            var userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:71.0) Gecko/20100101 Firefox/71.0";
+            var builder = new WebHostBuilder().Configure(app => { });
+            var server = new TestServer(builder);
+            server.BaseAddress = new Uri("https://example.com/");
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers[HeaderNames.UserAgent] = userAgent;
+            });
+
+            var actualResult = context.Request.Headers[HeaderNames.UserAgent];
+            Assert.Equal(userAgent, actualResult);
         }
 
         [Fact]
@@ -159,7 +176,7 @@ namespace Microsoft.AspNetCore.TestHost
                 app.Run(async c =>
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
-                    c.Response.Body.Flush();
+                    await c.Response.Body.FlushAsync();
                     await block.Task;
                     await c.Response.WriteAsync("BodyFinished");
                 });
@@ -181,7 +198,7 @@ namespace Microsoft.AspNetCore.TestHost
                 app.Run(async c =>
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
-                    c.Response.Body.Flush();
+                    await c.Response.Body.FlushAsync();
                     await block.Task;
                     await c.Response.WriteAsync("BodyFinished");
                 });
@@ -230,7 +247,7 @@ namespace Microsoft.AspNetCore.TestHost
                 app.Run(async c =>
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
-                    c.Response.Body.Flush();
+                    await c.Response.Body.FlushAsync();
                     await block.Task;
                     await c.Response.WriteAsync("BodyFinished");
                 });

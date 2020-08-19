@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace FormatterWebSite.Controllers
 {
@@ -34,5 +35,13 @@ namespace FormatterWebSite.Controllers
                 SampleIntInDerived = 50
             };
         }
+
+        [HttpPost]
+        public IActionResult DefaultBody([FromBody] DummyClass dummy) 
+            => ModelState.IsValid ? Ok() : ValidationProblem();
+
+        [HttpPost]
+        public IActionResult OptionalBody([FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Allow)] DummyClass dummy)
+            => ModelState.IsValid ? Ok() : ValidationProblem();
     }
 }

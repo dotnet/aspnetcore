@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core abstractions for routing requests to application logic and for generating links.
@@ -11,6 +11,7 @@ Microsoft.AspNetCore.Routing.RouteData</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;routing</PackageTags>
     <IsPackable>false</IsPackable>
+    <Nullable>annotations</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

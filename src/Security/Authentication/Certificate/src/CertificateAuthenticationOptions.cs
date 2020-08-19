@@ -16,9 +16,20 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         public CertificateTypes AllowedCertificateTypes { get; set; } = CertificateTypes.Chained;
 
         /// <summary>
+        /// Collection of X509 certificates which are trusted components of the certificate chain.
+        /// </summary>
+        public X509Certificate2Collection CustomTrustStore { get; set; } = new X509Certificate2Collection();
+
+        /// <summary>
+        /// Method used to validate certificate chains against <see cref="CustomTrustStore"/>.
+        /// </summary>
+        /// <remarks>This property must be set to <see cref="X509ChainTrustMode.CustomRootTrust"/> to enable <see cref="CustomTrustStore"/> to be used in certificate chain validation.</remarks>
+        public X509ChainTrustMode ChainTrustValidationMode { get; set; } = X509ChainTrustMode.System;
+
+        /// <summary>
         /// Flag indicating whether the client certificate must be suitable for client
         /// authentication, either via the Client Authentication EKU, or having no EKUs
-        /// at all. If the certificate chains to a root CA all certificates in the chain must be validate
+        /// at all. If the certificate chains to a root CA all certificates in the chain must be validated
         /// for the client authentication EKU.
         /// </summary>
         public bool ValidateCertificateUse { get; set; } = true;

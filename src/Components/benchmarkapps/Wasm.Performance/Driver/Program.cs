@@ -40,13 +40,12 @@ namespace Wasm.Performance.Driver
                     return 1;
                 }
 
-                if (stressRunSeconds < 1)
+                if (stressRunSeconds < 0)
                 {
                     Console.Error.WriteLine("Stress run duration must be a positive integer.");
                     return 1;
                 }
-
-                if (stressRunSeconds > 0)
+                else if (stressRunSeconds > 0)
                 {
                     isStressRun = true;
 

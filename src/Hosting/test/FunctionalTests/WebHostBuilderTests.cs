@@ -17,9 +17,10 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
         public WebHostBuilderTests(ITestOutputHelper output) : base(output) { }
 
         public static TestMatrix TestVariants => TestMatrix.ForServers(ServerType.Kestrel)
-                .WithTfms(Tfm.NetCoreApp31);
+                .WithTfms(Tfm.Net50);
 
         [ConditionalTheory]
+        [QuarantinedTest]
         [MemberData(nameof(TestVariants))]
         public async Task InjectedStartup_DefaultApplicationNameIsEntryAssembly(TestVariant variant)
         {
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger(nameof(InjectedStartup_DefaultApplicationNameIsEntryAssembly));
 
-// https://github.com/aspnet/AspNetCore/issues/8247
+// https://github.com/dotnet/aspnetcore/issues/8247
 #pragma warning disable 0618
                 var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "testassets", "IStartupInjectionAssemblyName");
 #pragma warning restore 0618

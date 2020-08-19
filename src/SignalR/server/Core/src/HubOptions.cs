@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets or sets a collection of supported hub protocol names.
         /// </summary>
-        public IList<string> SupportedProtocols { get; set; } = null;
+        public IList<string>? SupportedProtocols { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum message size of a single incoming hub message. The default is 32KB.
@@ -51,5 +51,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// Gets or sets the max buffer size for client upload streams. The default size is 10.
         /// </summary>
         public int? StreamBufferCapacity { get; set; } = null;
+
+        internal List<IHubFilter>? HubFilters { get; set; }
     }
 }

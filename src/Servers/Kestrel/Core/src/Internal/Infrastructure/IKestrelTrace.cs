@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http.HPack;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
@@ -33,13 +33,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         void NotAllConnectionsClosedGracefully();
 
-        void ConnectionBadRequest(string connectionId, BadHttpRequestException ex);
+        void ConnectionBadRequest(string connectionId, Microsoft.AspNetCore.Http.BadHttpRequestException ex);
 
         void ApplicationError(string connectionId, string traceIdentifier, Exception ex);
 
         void NotAllConnectionsAborted();
 
-        void HeartbeatSlow(TimeSpan interval, DateTimeOffset now);
+        void HeartbeatSlow(TimeSpan heartbeatDuration, TimeSpan interval, DateTimeOffset now);
 
         void ApplicationNeverCompleted(string connectionId);
 
@@ -74,5 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         void Http2FrameReceived(string connectionId, Http2Frame frame);
 
         void Http2FrameSending(string connectionId, Http2Frame frame);
+
+        void Http2MaxConcurrentStreamsReached(string connectionId);
     }
 }

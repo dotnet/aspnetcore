@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Http
             Assert.Null(cookies0["key0"]);
             Assert.False(cookies0.ContainsKey("key0"));
 
-            var newCookies = new[] { "name0=value0%2C", "%5Ename1=value1" };
+            var newCookies = new[] { "name0=value0%2C", "name1=value1" };
             request.Headers["Cookie"] = newCookies;
 
             cookies0 = RequestCookieCollection.Parse(newCookies);
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Http
             Assert.Equal(cookies0, cookies1);
             Assert.Equal(2, cookies1.Count);
             Assert.Equal("value0,", cookies1["name0"]);
-            Assert.Equal("value1", cookies1["^name1"]);
+            Assert.Equal("value1", cookies1["name1"]);
             Assert.Equal(newCookies, request.Headers["Cookie"]);
 
             var cookies2 = new RequestCookieCollection(new Dictionary<string,string>()

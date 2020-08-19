@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
@@ -17,25 +18,46 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
     internal unsafe class NativeRequestContext : IDisposable
     {
         private const int AlignmentPadding = 8;
+        private const int DefaultBufferSize = 4096 - AlignmentPadding;
         private IntPtr _originalBufferAddress;
         private bool _useLatin1;
         private HttpApiTypes.HTTP_REQUEST* _nativeRequest;
-        private byte[] _backingBuffer;
+        private IMemoryOwner<byte> _backingBuffer;
+        private MemoryHandle _memoryHandle;
         private int _bufferAlignment;
         private SafeNativeOverlapped _nativeOverlapped;
         private bool _permanentlyPinned;
+        private bool _disposed;
 
         // To be used by HttpSys
-        internal NativeRequestContext(SafeNativeOverlapped nativeOverlapped,
-            int bufferAlignment,
-            HttpApiTypes.HTTP_REQUEST* nativeRequest,
-            byte[] backingBuffer,
-            ulong requestId)
+        internal NativeRequestContext(SafeNativeOverlapped nativeOverlapped, MemoryPool<Byte> memoryPool, uint? bufferSize, ulong requestId)
         {
             _nativeOverlapped = nativeOverlapped;
-            _bufferAlignment = bufferAlignment;
-            _nativeRequest = nativeRequest;
-            _backingBuffer = backingBuffer;
+
+            // TODO:
+            // Apparently the HttpReceiveHttpRequest memory alignment requirements for non - ARM processors
+            // are different than for ARM processors. We have seen 4 - byte - aligned buffers allocated on
+            // virtual x64/x86 machines which were accepted by HttpReceiveHttpRequest without errors. In
+            // these cases the buffer alignment may cause reading values at invalid offset. Setting buffer
+            // alignment to 0 for now.
+            // 
+            // _bufferAlignment = (int)(requestAddress.ToInt64() & 0x07);
+            _bufferAlignment = 0;
+
+            var newSize = (int)(bufferSize ?? DefaultBufferSize) + AlignmentPadding;
+            if (newSize <= memoryPool.MaxBufferSize)
+            {
+                _backingBuffer = memoryPool.Rent(newSize);
+            }
+            else
+            {
+                // No size limit
+                _backingBuffer = MemoryPool<byte>.Shared.Rent(newSize);
+            }
+            _backingBuffer.Memory.Span.Clear();
+            _memoryHandle = _backingBuffer.Memory.Pin();
+            _nativeRequest = (HttpApiTypes.HTTP_REQUEST*)((long)_memoryHandle.Pointer + _bufferAlignment);
+
             RequestId = requestId;
         }
 
@@ -96,15 +118,17 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         internal uint Size
         {
-            get { return (uint)_backingBuffer.Length - AlignmentPadding; }
+            get { return (uint)_backingBuffer.Memory.Length - AlignmentPadding; }
         }
 
         // ReleasePins() should be called exactly once.  It must be called before Dispose() is called, which means it must be called
         // before an object (Request) which closes the RequestContext on demand is returned to the application.
         internal void ReleasePins()
         {
-            Debug.Assert(_nativeRequest != null || _backingBuffer == null, "RequestContextBase::ReleasePins()|ReleasePins() called twice.");
+            Debug.Assert(_nativeRequest != null, "RequestContextBase::ReleasePins()|ReleasePins() called twice.");
             _originalBufferAddress = (IntPtr)_nativeRequest;
+            _memoryHandle.Dispose();
+            _memoryHandle = default;
             _nativeRequest = null;
             _nativeOverlapped?.Dispose();
             _nativeOverlapped = null;
@@ -112,8 +136,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         public virtual void Dispose()
         {
-            Debug.Assert(_nativeRequest == null, "RequestContextBase::Dispose()|Dispose() called before ReleasePins().");
-            _nativeOverlapped?.Dispose();
+            if (!_disposed)
+            {
+                _disposed = true;
+                Debug.Assert(_nativeRequest == null, "RequestContextBase::Dispose()|Dispose() called before ReleasePins().");
+                _nativeOverlapped?.Dispose();
+                _memoryHandle.Dispose();
+                _backingBuffer.Dispose();
+            }
         }
 
         // These methods require the HTTP_REQUEST to still be pinned in its original location.
@@ -275,7 +305,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
             else
             {
-                fixed (byte* pMemoryBlob = _backingBuffer)
+                fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
                 {
                     var request = (HttpApiTypes.HTTP_REQUEST*)(pMemoryBlob + _bufferAlignment);
                     long fixup = pMemoryBlob - (byte*)_originalBufferAddress;
@@ -309,7 +339,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             else
             {
                 // Return value.
-                fixed (byte* pMemoryBlob = _backingBuffer)
+                fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
                 {
                     var request = (HttpApiTypes.HTTP_REQUEST*)(pMemoryBlob + _bufferAlignment);
                     long fixup = pMemoryBlob - (byte*)_originalBufferAddress;
@@ -369,7 +399,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
             else
             {
-                fixed (byte* pMemoryBlob = _backingBuffer)
+                fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
                 {
                     var request = (HttpApiTypes.HTTP_REQUEST*)(pMemoryBlob + _bufferAlignment);
                     return GetEndPointHelper(localEndpoint, request, pMemoryBlob);
@@ -429,7 +459,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
             else
             {
-                fixed (byte* pMemoryBlob = _backingBuffer)
+                fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
                 {
                     var request = (HttpApiTypes.HTTP_REQUEST*)(pMemoryBlob + _bufferAlignment);
                     long fixup = pMemoryBlob - (byte*)_originalBufferAddress;
@@ -493,7 +523,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
             else
             {
-                fixed (byte* pMemoryBlob = _backingBuffer)
+                fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
                 {
                     var request = (HttpApiTypes.HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
                     return GetRequestInfo(_originalBufferAddress, request);
@@ -517,7 +547,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 var offset = (long)requestInfo.pInfo - (long)baseAddress;
                 info.Add(
                     (int)requestInfo.InfoType,
-                    new ReadOnlyMemory<byte>(_backingBuffer, (int)offset, (int)requestInfo.InfoLength));
+                    _backingBuffer.Memory.Slice((int)offset, (int)requestInfo.InfoLength));
             }
 
             return new ReadOnlyDictionary<int, ReadOnlyMemory<byte>>(info);
@@ -531,7 +561,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
             else
             {
-                fixed (byte* pMemoryBlob = _backingBuffer)
+                fixed (byte* pMemoryBlob = _backingBuffer.Memory.Span)
                 {
                     var request = (HttpApiTypes.HTTP_REQUEST_V2*)(pMemoryBlob + _bufferAlignment);
                     return GetClientCertificate(_originalBufferAddress, request);

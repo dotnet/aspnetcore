@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Xunit;
 
 namespace Microsoft.AspNetCore.WebUtilities
@@ -82,7 +83,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // File should have been created.
             Assert.NotNull(fileStream);
-            var fileBytes = ReadFileContent(fileStream);
+            var fileBytes = ReadFileContent(fileStream!);
             Assert.Equal(input, fileBytes);
 
             // No content should be in the memory stream
@@ -105,7 +106,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // File should have been created.
             Assert.NotNull(fileStream);
-            var fileBytes = ReadFileContent(fileStream);
+            var fileBytes = ReadFileContent(fileStream!);
             Assert.Equal(input, fileBytes);
 
             // No content should be in the memory stream
@@ -129,7 +130,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // File should have been created.
             Assert.NotNull(fileStream);
-            var fileBytes = ReadFileContent(fileStream);
+            var fileBytes = ReadFileContent(fileStream!);
             Assert.Equal(new byte[] { 1, 2, 3, 4, 5, }, fileBytes);
 
             Assert.Equal(new byte[] { 6, 7 }, ReadBufferedContent(pageBuffer));
@@ -193,7 +194,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // File should have been created.
             Assert.NotNull(fileStream);
-            var fileBytes = ReadFileContent(fileStream);
+            var fileBytes = ReadFileContent(fileStream!);
             Assert.Equal(input, fileBytes);
 
             // No content should be in the memory stream
@@ -216,7 +217,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // File should have been created.
             Assert.NotNull(fileStream);
-            var fileBytes = ReadFileContent(fileStream);
+            var fileBytes = ReadFileContent(fileStream!);
             Assert.Equal(input, fileBytes);
 
             // No content should be in the memory stream
@@ -240,7 +241,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // File should have been created.
             Assert.NotNull(fileStream);
-            var fileBytes = ReadFileContent(fileStream);
+            var fileBytes = ReadFileContent(fileStream!);
 
             Assert.Equal(input.Length, bufferingStream.Length);
 
@@ -383,9 +384,9 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         private static byte[] ReadFileContent(FileStream fileStream)
         {
-            fileStream.Position = 0;
+            var fs = new FileStream(fileStream.Name, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.ReadWrite);
             using var memoryStream = new MemoryStream();
-            fileStream.CopyTo(memoryStream);
+            fs.CopyTo(memoryStream);
 
             return memoryStream.ToArray();
         }

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// The <see cref="HandleRequestResult"/> which is used by the handler.
         /// </summary>
-        public HandleRequestResult Result { get; protected set; }
+        public HandleRequestResult Result { get; protected set; } = default!;
 
         /// <summary>
         /// Discontinue all processing for this request and return to the client.

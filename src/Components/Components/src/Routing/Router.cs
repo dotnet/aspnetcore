@@ -1,13 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable disable warnings
+
 using System;
+using System.Runtime.ExceptionServices;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Routing
@@ -26,6 +29,14 @@ namespace Microsoft.AspNetCore.Components.Routing
         string _locationAbsolute;
         bool _navigationInterceptionEnabled;
         ILogger<Router> _logger;
+
+        private CancellationTokenSource _onNavigateCts;
+
+        private Task _previousOnNavigateTask = Task.CompletedTask;
+
+        private readonly HashSet<Assembly> _assemblies = new HashSet<Assembly>();
+
+        private bool _onNavigateCalled = false;
 
         [Inject] private NavigationManager NavigationManager { get; set; }
 
@@ -54,6 +65,16 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// </summary>
         [Parameter] public RenderFragment<RouteData> Found { get; set; }
 
+        /// <summary>
+        /// Get or sets the content to display when asynchronous navigation is in progress.
+        /// </summary>
+        [Parameter] public RenderFragment? Navigating { get; set; }
+
+        /// <summary>
+        /// Gets or sets a handler that should be called before navigating to a new page.
+        /// </summary>
+        [Parameter] public Func<NavigationContext, Task>? OnNavigateAsync { get; set; }
+
         private RouteTable Routes { get; set; }
 
         /// <inheritdoc />
@@ -67,7 +88,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         }
 
         /// <inheritdoc />
-        public Task SetParametersAsync(ParameterView parameters)
+        public async Task SetParametersAsync(ParameterView parameters)
         {
             parameters.SetParameterProperties(this);
 
@@ -91,11 +112,14 @@ namespace Microsoft.AspNetCore.Components.Routing
                 throw new InvalidOperationException($"The {nameof(Router)} component requires a value for the parameter {nameof(NotFound)}.");
             }
 
+            if (!_onNavigateCalled)
+            {
+                _onNavigateCalled = true;
+                await RunOnNavigateWithRefreshAsync(NavigationManager.ToBaseRelativePath(_locationAbsolute), isNavigationIntercepted: false);
+                return;
+            }
 
-            var assemblies = AdditionalAssemblies == null ? new[] { AppAssembly } : new[] { AppAssembly }.Concat(AdditionalAssemblies);
-            Routes = RouteTableFactory.Create(assemblies);
             Refresh(isNavigationIntercepted: false);
-            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
@@ -112,8 +136,37 @@ namespace Microsoft.AspNetCore.Components.Routing
                 : str.Substring(0, firstIndex);
         }
 
-        private void Refresh(bool isNavigationIntercepted)
+        private void RefreshRouteTable()
         {
+            var assemblies = AdditionalAssemblies == null ? new[] { AppAssembly } : new[] { AppAssembly }.Concat(AdditionalAssemblies);
+            var assembliesSet = new HashSet<Assembly>(assemblies);
+
+            if (!_assemblies.SetEquals(assembliesSet))
+            {
+                Routes = RouteTableFactory.Create(assemblies);
+                _assemblies.Clear();
+                _assemblies.UnionWith(assembliesSet);
+            }
+
+        }
+
+        internal virtual void Refresh(bool isNavigationIntercepted)
+        {
+            // If an `OnNavigateAsync` task is currently in progress, then wait
+            // for it to complete before rendering. Note: because _previousOnNavigateTask
+            // is initialized to a CompletedTask on initialization, this will still
+            // allow first-render to complete successfully.
+            if (_previousOnNavigateTask.Status != TaskStatus.RanToCompletion)
+            {
+                if (Navigating != null)
+                {
+                    _renderHandle.Render(Navigating);
+                }
+                return;
+            }
+
+            RefreshRouteTable();
+
             var locationPath = NavigationManager.ToBaseRelativePath(_locationAbsolute);
             locationPath = StringUntilAny(locationPath, _queryOrHashStartChar);
             var context = new RouteContext(locationPath);
@@ -153,12 +206,78 @@ namespace Microsoft.AspNetCore.Components.Routing
             }
         }
 
+        private async ValueTask<bool> RunOnNavigateAsync(string path, Task previousOnNavigate)
+        {
+
+            // Cancel the CTS instead of disposing it, since disposing does not
+            // actually cancel and can cause unintended Object Disposed Exceptions.
+            // This effectivelly cancels the previously running task and completes it.
+            _onNavigateCts?.Cancel();
+            // Then make sure that the task has been completely cancelled or completed
+            // before starting the next one. This avoid race conditions where the cancellation
+            // for the previous task was set but not fully completed by the time we get to this
+            // invocation.
+            await previousOnNavigate;
+
+            if (OnNavigateAsync == null)
+            {
+                return true;
+            }
+
+            _onNavigateCts = new CancellationTokenSource();
+            var navigateContext = new NavigationContext(path, _onNavigateCts.Token);
+
+            try
+            {
+                if (Navigating != null)
+                {
+                    _renderHandle.Render(Navigating);
+                }
+                await OnNavigateAsync(navigateContext);
+                return true;
+            }
+            catch (OperationCanceledException e)
+            {
+                if (e.CancellationToken != navigateContext.CancellationToken)
+                {
+                    var rethrownException = new InvalidOperationException("OnNavigateAsync can only be cancelled via NavigateContext.CancellationToken.", e);
+                    _renderHandle.Render(builder => ExceptionDispatchInfo.Throw(rethrownException));
+                }
+            }
+            catch (Exception e)
+            {
+                _renderHandle.Render(builder => ExceptionDispatchInfo.Throw(e));
+            }
+
+            return false;
+        }
+
+        internal async Task RunOnNavigateWithRefreshAsync(string path, bool isNavigationIntercepted)
+        {
+            // We cache the Task representing the previously invoked RunOnNavigateWithRefreshAsync
+            // that is stored. Then we create a new one that represents our current invocation and store it
+            // globally for the next invocation. This allows us to check inside `RunOnNavigateAsync` if the
+            // previous OnNavigateAsync task has fully completed before starting the next one.
+            var previousTask = _previousOnNavigateTask;
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _previousOnNavigateTask = tcs.Task;
+
+            // And pass an indicator for the previous task to the currently running one.
+            var shouldRefresh = await RunOnNavigateAsync(path, previousTask);
+            tcs.SetResult();
+            if (shouldRefresh)
+            {
+                Refresh(isNavigationIntercepted);
+            }
+
+        }
+
         private void OnLocationChanged(object sender, LocationChangedEventArgs args)
         {
             _locationAbsolute = args.Location;
             if (_renderHandle.IsInitialized && Routes != null)
             {
-                Refresh(args.IsNavigationIntercepted);
+                _ = RunOnNavigateWithRefreshAsync(NavigationManager.ToBaseRelativePath(_locationAbsolute), args.IsNavigationIntercepted);
             }
         }
 

@@ -1,0 +1,34 @@
+﻿{
+  "solution": {
+    "path": "..\\..\\AspNetCore.sln",
+    "projects" : [
+      "src\\Hosting\\Hosting\\src\\Microsoft.AspNetCore.Hosting.csproj",
+      "src\\Hosting\\Hosting\\test\\Microsoft.AspNetCore.Hosting.Tests.csproj",
+      "src\\Hosting\\Abstractions\\src\\Microsoft.AspNetCore.Hosting.Abstractions.csproj",
+      "src\\Hosting\\samples\\GenericWebHost\\GenericWebHost.csproj",
+      "src\\Hosting\\samples\\SampleStartups\\SampleStartups.csproj",
+      "src\\Hosting\\Server.Abstractions\\src\\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj",
+      "src\\Hosting\\Server.IntegrationTesting\\src\\Microsoft.AspNetCore.Server.IntegrationTesting.csproj",
+      "src\\Hosting\\TestHost\\src\\Microsoft.AspNetCore.TestHost.csproj",
+      "src\\Hosting\\TestHost\\test\\Microsoft.AspNetCore.TestHost.Tests.csproj",
+      "src\\Hosting\\WindowsServices\\src\\Microsoft.AspNetCore.Hosting.WindowsServices.csproj",
+      "src\\Hosting\\WindowsServices\\test\\Microsoft.AspNetCore.Hosting.WindowsServices.Tests.csproj",
+      "src\\Hosting\\test\\FunctionalTests\\Microsoft.AspNetCore.Hosting.FunctionalTests.csproj",
+      "src\\Hosting\\test\\testassets\\IStartupInjectionAssemblyName\\IStartupInjectionAssemblyName.csproj",
+      "src\\Hosting\\test\\testassets\\Microsoft.AspNetCore.Hosting.TestSites\\Microsoft.AspNetCore.Hosting.TestSites.csproj",
+      "src\\Hosting\\test\\testassets\\TestStartupAssembly1\\TestStartupAssembly1.csproj",
+      "src\\Http\\Http.Features\\src\\Microsoft.AspNetCore.Http.Features.csproj",
+      "src\\Http\\Http.Abstractions\\src\\Microsoft.AspNetCore.Http.Abstractions.csproj",
+      "src\\Http\\Http.Extensions\\src\\Microsoft.AspNetCore.Http.Extensions.csproj",
+      "src\\Http\\Http\\src\\Microsoft.AspNetCore.Http.csproj",
+      "src\\Http\\Headers\\src\\Microsoft.Net.Http.Headers.csproj",
+      "src\\Http\\WebUtilities\\src\\Microsoft.AspNetCore.WebUtilities.csproj",
+      "src\\Http\\Owin\\src\\Microsoft.AspNetCore.Owin.csproj",
+      "src\\Servers\\Kestrel\\Kestrel\\src\\Microsoft.AspNetCore.Server.Kestrel.csproj",
+      "src\\Servers\\Kestrel\\Core\\src\\Microsoft.AspNetCore.Server.Kestrel.Core.csproj",
+      "src\\Servers\\Kestrel\\Transport.Sockets\\src\\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj",
+      "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
+      "src\\ObjectPool\\src\\Microsoft.Extensions.ObjectPool.csproj"
+    ]
+  }
+}

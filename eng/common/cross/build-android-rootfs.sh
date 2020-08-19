@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-__NDK_Version=r14
+__NDK_Version=r21
 
 usage()
 {
@@ -16,11 +16,11 @@ usage()
     echo.
     echo "By default, the NDK will be downloaded into the cross/android-rootfs/android-ndk-$__NDK_Version directory. If you already have an NDK installation,"
     echo "you can set the NDK_DIR environment variable to have this script use that installation of the NDK."
-    echo "By default, this script will generate a file, android_platform, in the root of the ROOTFS_DIR directory that contains the RID for the supported and tested Android build: android.21-arm64. This file is to replace '/etc/os-release', which is not available for Android."
+    echo "By default, this script will generate a file, android_platform, in the root of the ROOTFS_DIR directory that contains the RID for the supported and tested Android build: android.28-arm64. This file is to replace '/etc/os-release', which is not available for Android."
     exit 1
 }
 
-__ApiLevel=21 # The minimum platform for arm64 is API level 21
+__ApiLevel=28 # The minimum platform for arm64 is API level 21 but the minimum version that support glob(3) is 28. See $ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/glob.h
 __BuildArch=arm64
 __AndroidArch=aarch64
 __AndroidToolchain=aarch64-linux-android
@@ -53,13 +53,20 @@ for i in "$@"
 done
 
 # Obtain the location of the bash script to figure out where the root of the repo is.
-__CrossDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+__ScriptBaseDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-__Android_Cross_Dir="$__CrossDir/android-rootfs"
-__NDK_Dir="$__Android_Cross_Dir/android-ndk-$__NDK_Version"
-__libunwind_Dir="$__Android_Cross_Dir/libunwind"
-__lldb_Dir="$__Android_Cross_Dir/lldb"
-__ToolchainDir="$__Android_Cross_Dir/toolchain/$__BuildArch"
+__CrossDir="$__ScriptBaseDir/../../../.tools/android-rootfs"
+
+if [[ ! -f "$__CrossDir" ]]; then
+    mkdir -p "$__CrossDir"
+fi
+
+# Resolve absolute path to avoid `../` in build logs
+__CrossDir="$( cd "$__CrossDir" && pwd )"
+
+__NDK_Dir="$__CrossDir/android-ndk-$__NDK_Version"
+__lldb_Dir="$__CrossDir/lldb"
+__ToolchainDir="$__CrossDir/android-ndk-$__NDK_Version"
 
 if [[ -n "$TOOLCHAIN_DIR" ]]; then
     __ToolchainDir=$TOOLCHAIN_DIR
@@ -78,60 +85,47 @@ echo "Target Toolchain location: $__ToolchainDir"
 if [ ! -d $__NDK_Dir ]; then
     echo Downloading the NDK into $__NDK_Dir
     mkdir -p $__NDK_Dir
-    wget -nv -nc --show-progress https://dl.google.com/android/repository/android-ndk-$__NDK_Version-linux-x86_64.zip -O $__Android_Cross_Dir/android-ndk-$__NDK_Version-linux-x86_64.zip
-    unzip -q $__Android_Cross_Dir/android-ndk-$__NDK_Version-linux-x86_64.zip -d $__Android_Cross_Dir
+    wget -q --progress=bar:force:noscroll --show-progress https://dl.google.com/android/repository/android-ndk-$__NDK_Version-linux-x86_64.zip -O $__CrossDir/android-ndk-$__NDK_Version-linux-x86_64.zip
+    unzip -q $__CrossDir/android-ndk-$__NDK_Version-linux-x86_64.zip -d $__CrossDir
 fi
 
 if [ ! -d $__lldb_Dir ]; then
     mkdir -p $__lldb_Dir
     echo Downloading LLDB into $__lldb_Dir
-    wget -nv -nc --show-progress https://dl.google.com/android/repository/lldb-2.3.3614996-linux-x86_64.zip -O $__Android_Cross_Dir/lldb-2.3.3614996-linux-x86_64.zip
-    unzip -q $__Android_Cross_Dir/lldb-2.3.3614996-linux-x86_64.zip -d $__lldb_Dir
+    wget -q --progress=bar:force:noscroll --show-progress https://dl.google.com/android/repository/lldb-2.3.3614996-linux-x86_64.zip -O $__CrossDir/lldb-2.3.3614996-linux-x86_64.zip
+    unzip -q $__CrossDir/lldb-2.3.3614996-linux-x86_64.zip -d $__lldb_Dir
 fi
 
-# Create the RootFS for both arm64 as well as aarch
-rm -rf $__Android_Cross_Dir/toolchain
+echo "Download dependencies..."
+__TmpDir=$__CrossDir/tmp/$__BuildArch/
+mkdir -p "$__TmpDir"
 
-echo Generating the $__BuildArch toolchain
-$__NDK_Dir/build/tools/make_standalone_toolchain.py --arch $__BuildArch --api $__ApiLevel --install-dir $__ToolchainDir
+# combined dependencies for coreclr, installer and libraries
+__AndroidPackages="libicu"
+__AndroidPackages+=" libandroid-glob"
+__AndroidPackages+=" liblzma"
+__AndroidPackages+=" krb5"
+__AndroidPackages+=" openssl"
 
-# Install the required packages into the toolchain
-# TODO: Add logic to get latest pkg version instead of specific version number
-rm -rf $__Android_Cross_Dir/deb/
-rm -rf $__Android_Cross_Dir/tmp
+for path in $(wget -qO- http://termux.net/dists/stable/main/binary-$__AndroidArch/Packages |\
+    grep -A15 "Package: \(${__AndroidPackages// /\\|}\)" | grep -v "static\|tool" | grep Filename); do
 
-mkdir -p $__Android_Cross_Dir/deb/
-mkdir -p $__Android_Cross_Dir/tmp/$arch/
-wget -nv -nc http://termux.net/dists/stable/main/binary-$__AndroidArch/libicu_60.2_$__AndroidArch.deb -O $__Android_Cross_Dir/deb/libicu_60.2_$__AndroidArch.deb
-wget -nv -nc http://termux.net/dists/stable/main/binary-$__AndroidArch/libicu-dev_60.2_$__AndroidArch.deb -O $__Android_Cross_Dir/deb/libicu-dev_60.2_$__AndroidArch.deb
+    if [[ "$path" != "Filename:" ]]; then
+        echo "Working on: $path"
+        wget -qO- http://termux.net/$path | dpkg -x - "$__TmpDir"
+    fi
+done
 
-wget -nv -nc http://termux.net/dists/stable/main/binary-$__AndroidArch/libandroid-glob-dev_0.4_$__AndroidArch.deb -O $__Android_Cross_Dir/deb/libandroid-glob-dev_0.4_$__AndroidArch.deb
-wget -nv -nc http://termux.net/dists/stable/main/binary-$__AndroidArch/libandroid-glob_0.4_$__AndroidArch.deb -O $__Android_Cross_Dir/deb/libandroid-glob_0.4_$__AndroidArch.deb
-wget -nv -nc http://termux.net/dists/stable/main/binary-$__AndroidArch/libandroid-support-dev_22_$__AndroidArch.deb -O $__Android_Cross_Dir/deb/libandroid-support-dev_22_$__AndroidArch.deb
-wget -nv -nc http://termux.net/dists/stable/main/binary-$__AndroidArch/libandroid-support_22_$__AndroidArch.deb -O $__Android_Cross_Dir/deb/libandroid-support_22_$__AndroidArch.deb
-wget -nv -nc http://termux.net/dists/stable/main/binary-$__AndroidArch/liblzma-dev_5.2.3_$__AndroidArch.deb  -O $__Android_Cross_Dir/deb/liblzma-dev_5.2.3_$__AndroidArch.deb
-wget -nv -nc http://termux.net/dists/stable/main/binary-$__AndroidArch/liblzma_5.2.3_$__AndroidArch.deb -O $__Android_Cross_Dir/deb/liblzma_5.2.3_$__AndroidArch.deb
-wget -nv -nc http://termux.net/dists/stable/main/binary-$__AndroidArch/libunwind-dev_1.2.20170304_$__AndroidArch.deb  -O $__Android_Cross_Dir/deb/libunwind-dev_1.2.20170304_$__AndroidArch.deb
-wget -nv -nc http://termux.net/dists/stable/main/binary-$__AndroidArch/libunwind_1.2.20170304_$__AndroidArch.deb -O $__Android_Cross_Dir/deb/libunwind_1.2.20170304_$__AndroidArch.deb
-
-echo Unpacking Termux packages
-dpkg -x $__Android_Cross_Dir/deb/libicu_60.2_$__AndroidArch.deb $__Android_Cross_Dir/tmp/$__AndroidArch/
-dpkg -x $__Android_Cross_Dir/deb/libicu-dev_60.2_$__AndroidArch.deb $__Android_Cross_Dir/tmp/$__AndroidArch/
-dpkg -x $__Android_Cross_Dir/deb/libandroid-glob-dev_0.4_$__AndroidArch.deb $__Android_Cross_Dir/tmp/$__AndroidArch/
-dpkg -x $__Android_Cross_Dir/deb/libandroid-glob_0.4_$__AndroidArch.deb $__Android_Cross_Dir/tmp/$__AndroidArch/
-dpkg -x $__Android_Cross_Dir/deb/libandroid-support-dev_22_$__AndroidArch.deb $__Android_Cross_Dir/tmp/$__AndroidArch/
-dpkg -x $__Android_Cross_Dir/deb/libandroid-support_22_$__AndroidArch.deb $__Android_Cross_Dir/tmp/$__AndroidArch/
-dpkg -x $__Android_Cross_Dir/deb/liblzma-dev_5.2.3_$__AndroidArch.deb $__Android_Cross_Dir/tmp/$__AndroidArch/
-dpkg -x $__Android_Cross_Dir/deb/liblzma_5.2.3_$__AndroidArch.deb $__Android_Cross_Dir/tmp/$__AndroidArch/
-dpkg -x $__Android_Cross_Dir/deb/libunwind-dev_1.2.20170304_$__AndroidArch.deb $__Android_Cross_Dir/tmp/$__AndroidArch/
-dpkg -x $__Android_Cross_Dir/deb/libunwind_1.2.20170304_$__AndroidArch.deb $__Android_Cross_Dir/tmp/$__AndroidArch/
-
-cp -R $__Android_Cross_Dir/tmp/$__AndroidArch/data/data/com.termux/files/usr/* $__ToolchainDir/sysroot/usr/
+cp -R "$__TmpDir/data/data/com.termux/files/usr/"* "$__ToolchainDir/sysroot/usr/"
 
 # Generate platform file for build.sh script to assign to __DistroRid
 echo "Generating platform file..."
+echo "RID=android.${__ApiLevel}-${__BuildArch}" > $__ToolchainDir/sysroot/android_platform
 
-echo "RID=android.21-arm64" > $__ToolchainDir/sysroot/android_platform
-echo Now run:
-echo CONFIG_DIR=\`realpath cross/android/$__BuildArch\` ROOTFS_DIR=\`realpath $__ToolchainDir/sysroot\` ./build.sh cross $__BuildArch skipgenerateversion skipnuget cmakeargs -DENABLE_LLDBPLUGIN=0
-
+echo "Now to build coreclr, libraries and installers; run:"
+echo ROOTFS_DIR=\$\(realpath $__ToolchainDir/sysroot\) ./build.sh --cross --arch $__BuildArch \
+    --subsetCategory coreclr
+echo ROOTFS_DIR=\$\(realpath $__ToolchainDir/sysroot\) ./build.sh --cross --arch $__BuildArch \
+    --subsetCategory libraries
+echo ROOTFS_DIR=\$\(realpath $__ToolchainDir/sysroot\) ./build.sh --cross --arch $__BuildArch \
+    --subsetCategory installer

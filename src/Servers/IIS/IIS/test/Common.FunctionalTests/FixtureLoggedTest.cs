@@ -8,24 +8,24 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
-    public class FixtureLoggedTest: LoggedTest
+    public class FixtureLoggedTest : LoggedTest
     {
-        private readonly IISTestSiteFixture _fixture;
+        protected IISTestSiteFixture Fixture { get; set; }
 
         public FixtureLoggedTest(IISTestSiteFixture fixture)
         {
-            _fixture = fixture;
+            Fixture = fixture;
         }
 
         public override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
         {
             base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
-            _fixture.Attach(this);
+            Fixture.Attach(this);
         }
 
         public override void Dispose()
         {
-            _fixture.Detach(this);
+            Fixture.Detach(this);
             base.Dispose();
         }
     }

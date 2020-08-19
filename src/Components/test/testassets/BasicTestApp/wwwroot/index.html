@@ -21,8 +21,10 @@
         <a class='dismiss' style="cursor: pointer;">🗙</a>
     </div>
 
-    <!-- Used for testing interop scenarios between JS and .NET -->
+    <!-- Used for specific test cases -->
     <script src="js/jsinteroptests.js"></script>
+    <script src="js/renderattributestest.js"></script>
+    <script src="js/webComponentPerformingJsInterop.js"></script>
 
     <script>
         // Used by ElementRefComponent
@@ -40,6 +42,8 @@
         }
     </script>
     <script src="_framework/blazor.webassembly.js"></script>
+
+    <script src="_content/Microsoft.AspNetCore.Components.Web.Extensions/headManager.js"></script>
 
     <!-- Used by ExternalContentPackage -->
     <script src="_content/TestContentPackage/prompt.js"></script>

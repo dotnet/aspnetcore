@@ -6,6 +6,7 @@ using System.Globalization;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
         [Theory]
         [InlineData("en-US")]
         [InlineData("fr-FR")]
-        public void CanSetCultureAndParseCultueSensitiveNumbersAndDates(string culture)
+        public virtual void CanSetCultureAndParseCultureSensitiveNumbersAndDates(string culture)
         {
             var cultureInfo = CultureInfo.GetCultureInfo(culture);
             SetCulture(culture);
@@ -86,6 +87,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
         // We need to do step 4 to make sure that the value we're entering can "stick" in the form field.
         // We can't use ".Text" because DOM reasons :(
         [Theory]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23643")]
         [InlineData("en-US")]
         [InlineData("fr-FR")]
         public void CanSetCultureAndParseCultureInvariantNumbersAndDatesWithInputFields(string culture)
@@ -173,6 +175,18 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             input.SendKeys("\t");
             Browser.Equal(90000000000.ToString(cultureInfo), () => display.Text);
             Browser.Equal(90000000000.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+
+            // short
+            input = Browser.FindElement(By.Id("inputnumber_short"));
+            display = Browser.FindElement(By.Id("inputnumber_short_value"));
+            Browser.Equal(42.ToString(cultureInfo), () => display.Text);
+            Browser.Equal(42.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+
+            input.Clear();
+            input.SendKeys(127.ToString(CultureInfo.InvariantCulture));
+            input.SendKeys("\t");
+            Browser.Equal(127.ToString(cultureInfo), () => display.Text);
+            Browser.Equal(127.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
 
             // decimal
             input = Browser.FindElement(By.Id("inputnumber_decimal"));

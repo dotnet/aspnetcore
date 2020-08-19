@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
             current.Matches.Sort((x, y) =>
             {
                 var result = x.Entry.Precedence.CompareTo(y.Entry.Precedence);
-                return result == 0 ? x.Entry.RouteTemplate.TemplateText.CompareTo(y.Entry.RouteTemplate.TemplateText) : result;
+                return result == 0 ? x.Entry.RouteTemplate.TemplateText!.CompareTo(y.Entry.RouteTemplate.TemplateText) : result;
             });
         }
 

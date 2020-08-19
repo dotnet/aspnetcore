@@ -1,10 +1,12 @@
 parameters:
+  enable: 'false'                                             # Whether the SDL validation job should execute or not
   overrideParameters: ''                                       # Optional: to override values for parameters.
   additionalParameters: ''                                     # Optional: parameters that need user specific values eg: '-SourceToolsList @("abc","def") -ArtifactToolsList @("ghi","jkl")'
   # There is some sort of bug (has been reported) in Azure DevOps where if this parameter is named
   # 'continueOnError', the parameter value is not correctly picked up.
   # This can also be remedied by the caller (post-build.yml) if it does not use a nested parameter
   sdlContinueOnError: false                                    # optional: determines whether to continue the build if the step errors;
+  downloadArtifacts: true                                      # optional: determines if the artifacts should be dowloaded
   dependsOn: ''                                                # Optional: dependencies of the job
   artifactNames: ''                                            # Optional: patterns supplied to DownloadBuildArtifacts
                                                                # Usage:
@@ -16,37 +18,53 @@ jobs:
 - job: Run_SDL
   dependsOn: ${{ parameters.dependsOn }}
   displayName: Run SDL tool
+  condition: eq( ${{ parameters.enable }}, 'true')
   variables:
     - group: DotNet-VSTS-Bot
+    - name: AzDOProjectName
+      value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOProjectName'] ]
+    - name: AzDOPipelineId
+      value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOPipelineId'] ]
+    - name: AzDOBuildId
+      value: $[ dependencies.setupMaestroVars.outputs['setReleaseVars.AzDOBuildId'] ]
   pool:
     name: Hosted VS2017
   steps:
   - checkout: self
     clean: true
-  - ${{ if ne(parameters.artifactNames, '') }}:
-    - ${{ each artifactName in parameters.artifactNames }}:
+  - ${{ if ne(parameters.downloadArtifacts, 'false')}}:
+    - ${{ if ne(parameters.artifactNames, '') }}:
+      - ${{ each artifactName in parameters.artifactNames }}:
+        - task: DownloadBuildArtifacts@0
+          displayName: Download Build Artifacts
+          inputs:
+            buildType: specific
+            buildVersionToDownload: specific
+            project: $(AzDOProjectName)
+            pipeline: $(AzDOPipelineId)
+            buildId: $(AzDOBuildId)
+            artifactName: ${{ artifactName }}
+            downloadPath: $(Build.ArtifactStagingDirectory)\artifacts
+    - ${{ if eq(parameters.artifactNames, '') }}:
       - task: DownloadBuildArtifacts@0
         displayName: Download Build Artifacts
         inputs:
-          buildType: current
-          artifactName: ${{ artifactName }}
+          buildType: specific
+          buildVersionToDownload: specific
+          project: $(AzDOProjectName)
+          pipeline: $(AzDOPipelineId)
+          buildId: $(AzDOBuildId)
+          downloadType: specific files
+          itemPattern: "**"
           downloadPath: $(Build.ArtifactStagingDirectory)\artifacts
-  - ${{ if eq(parameters.artifactNames, '') }}:
-    - task: DownloadBuildArtifacts@0
-      displayName: Download Build Artifacts
-      inputs:
-        buildType: current
-        downloadType: specific files
-        itemPattern: "**"
-        downloadPath: $(Build.ArtifactStagingDirectory)\artifacts
   - powershell: eng/common/sdl/extract-artifact-packages.ps1
-      -InputPath $(Build.SourcesDirectory)\artifacts\BlobArtifacts
-      -ExtractPath $(Build.SourcesDirectory)\artifacts\BlobArtifacts
+      -InputPath $(Build.ArtifactStagingDirectory)\artifacts\BlobArtifacts
+      -ExtractPath $(Build.ArtifactStagingDirectory)\artifacts\BlobArtifacts
     displayName: Extract Blob Artifacts
     continueOnError: ${{ parameters.sdlContinueOnError }}
   - powershell: eng/common/sdl/extract-artifact-packages.ps1
-      -InputPath $(Build.SourcesDirectory)\artifacts\PackageArtifacts
-      -ExtractPath $(Build.SourcesDirectory)\artifacts\PackageArtifacts
+      -InputPath $(Build.ArtifactStagingDirectory)\artifacts\PackageArtifacts
+      -ExtractPath $(Build.ArtifactStagingDirectory)\artifacts\PackageArtifacts
     displayName: Extract Package Artifacts
     continueOnError: ${{ parameters.sdlContinueOnError }}
   - task: NuGetToolInstaller@1
@@ -65,7 +83,7 @@ jobs:
       continueOnError: ${{ parameters.sdlContinueOnError }}
   - ${{ if eq(parameters.overrideParameters, '') }}:
     - powershell: eng/common/sdl/execute-all-sdl-tools.ps1
-        -GuardianPackageName Microsoft.Guardian.Cli.0.7.2
+        -GuardianPackageName Microsoft.Guardian.Cli.win10-x64.0.20.1
         -NugetPackageDirectory $(Build.SourcesDirectory)\.packages
         -AzureDevOpsAccessToken $(dn-bot-dotnet-build-rw-code-rw)
         ${{ parameters.additionalParameters }}

@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Authentication.ExtendedProtection;
-using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal sealed class RequestContext : IDisposable
+    internal sealed class RequestContext : IDisposable, IThreadPoolWorkItem
     {
         private static readonly Action<object> AbortDelegate = Abort;
 
@@ -33,6 +32,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Response = new Response(this);
             AllowSynchronousIO = server.Options.AllowSynchronousIO;
         }
+
+        internal MessagePump MessagePump { get; set; }
 
         internal HttpSysListener Server { get; }
 
@@ -119,14 +120,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (!Request.IsHttps)
             {
-                LogHelper.LogDebug(Logger, "TryGetChannelBinding", "Channel binding requires HTTPS.");
+                Logger.LogDebug(LoggerEventIds.ChannelBindingNeedsHttps, "TryGetChannelBinding; Channel binding requires HTTPS.");
                 return false;
             }
 
             value = ClientCertLoader.GetChannelBindingFromTls(Server.RequestQueue, Request.UConnectionId, Logger);
 
             Debug.Assert(value != null, "GetChannelBindingFromTls returned null even though OS supposedly supports Extended Protection");
-            LogHelper.LogInfo(Logger, "Channel binding retrieved.");
+            Logger.LogDebug(LoggerEventIds.ChannelBindingRetrived, "Channel binding retrieved.");
             return value != null;
         }
 
@@ -176,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 catch (Exception ex)
                 {
-                    LogHelper.LogDebug(Logger, "Abort", ex);
+                    Logger.LogDebug(LoggerEventIds.AbortError, ex, "Abort");
                 }
                 _requestAbortSource.Dispose();
             }
@@ -217,6 +218,109 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 // RequestQueueHandle may have been closed
             }
+        }
+
+        // You must still call ForceCancelRequest after this.
+        internal unsafe void SetResetCode(int errorCode)
+        {
+            if (!HttpApi.SupportsReset)
+            {
+                return;
+            }
+
+            try
+            {
+                var streamError = new HttpApiTypes.HTTP_REQUEST_PROPERTY_STREAM_ERROR() { ErrorCode = (uint)errorCode };
+                var statusCode = HttpApi.HttpSetRequestProperty(Server.RequestQueue.Handle, Request.RequestId, HttpApiTypes.HTTP_REQUEST_PROPERTY.HttpRequestPropertyStreamError, (void*)&streamError,
+                    (uint)sizeof(HttpApiTypes.HTTP_REQUEST_PROPERTY_STREAM_ERROR), IntPtr.Zero);
+            }
+            catch (ObjectDisposedException)
+            {
+                // RequestQueueHandle may have been closed
+            }
+        }
+
+        public async void Execute()
+        {
+            var messagePump = MessagePump;
+            var application = messagePump.Application;
+
+            try
+            {
+                if (messagePump.Stopping)
+                {
+                    SetFatalResponse(503);
+                    return;
+                }
+
+                object context = null;
+                messagePump.IncrementOutstandingRequest();
+                try
+                {
+                    var featureContext = new FeatureContext(this);
+                    context = application.CreateContext(featureContext.Features);
+                    try
+                    {
+                        await application.ProcessRequestAsync(context).SupressContext();
+                        await featureContext.CompleteAsync();
+                    }
+                    finally
+                    {
+                        await featureContext.OnCompleted();
+                    }
+                    application.DisposeContext(context, null);
+                    Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(LoggerEventIds.RequestProcessError, ex, "ProcessRequestAsync");
+                    application.DisposeContext(context, ex);
+                    if (Response.HasStarted)
+                    {
+                        // HTTP/2 INTERNAL_ERROR = 0x2 https://tools.ietf.org/html/rfc7540#section-7
+                        // Otherwise the default is Cancel = 0x8.
+                        SetResetCode(2);
+                        Abort();
+                    }
+                    else
+                    {
+                        // We haven't sent a response yet, try to send a 500 Internal Server Error
+                        Response.Headers.IsReadOnly = false;
+                        Response.Trailers.IsReadOnly = false;
+                        Response.Headers.Clear();
+                        Response.Trailers.Clear();
+
+                        if (ex is BadHttpRequestException badHttpRequestException)
+                        {
+                            SetFatalResponse(badHttpRequestException.StatusCode);
+                        }
+                        else
+                        {
+                            SetFatalResponse(StatusCodes.Status500InternalServerError);
+                        }
+                    }
+                }
+                finally
+                {
+                    if (messagePump.DecrementOutstandingRequest() == 0 && messagePump.Stopping)
+                    {
+                        Logger.LogInformation(LoggerEventIds.RequestsDrained, "All requests drained.");
+                        messagePump.SetShutdownSignal();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(LoggerEventIds.RequestError, ex, "ProcessRequestAsync");
+                Abort();
+            }
+        }
+
+        private void SetFatalResponse(int status)
+        {
+            Response.StatusCode = status;
+            Response.ContentLength = 0;
+            Dispose();
         }
     }
 }

@@ -27,8 +27,10 @@ namespace Microsoft.AspNetCore
         {
             _output = output;
             _expectedRid = TestData.GetSharedFxRuntimeIdentifier();
-            _targetingPackTfm = "netcoreapp" + TestData.GetSharedFxVersion().Substring(0, 3);
-            _targetingPackRoot = Path.Combine(TestData.GetTestDataValue("TargetingPackLayoutRoot"), "packs", "Microsoft.AspNetCore.App.Ref", TestData.GetTestDataValue("TargetingPackVersion"));
+            _targetingPackTfm = "net" + TestData.GetSharedFxVersion().Substring(0, 3);
+            _targetingPackRoot = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"))
+                ? Path.Combine(TestData.GetTestDataValue("TargetingPackLayoutRoot"), "packs", "Microsoft.AspNetCore.App.Ref", TestData.GetTestDataValue("TargetingPackVersion"))
+                : Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "Microsoft.AspNetCore.App.Ref");
             _isTargetingPackBuilding = bool.Parse(TestData.GetTestDataValue("IsTargetingPackBuilding"));
         }
 
@@ -85,6 +87,49 @@ namespace Microsoft.AspNetCore
                 TestData.ListedTargetingPackAssemblies.TryGetValue(fileName, out var expectedVersion);
                 Assert.Equal(expectedVersion, assemblyDefinition.Version.ToString());
             });
+        }
+
+        [Fact]
+        public void PackageOverridesContainsCorrectEntries()
+        {
+            if (!_isTargetingPackBuilding)
+            {
+                return;
+            }
+
+            var packageOverridePath = Path.Combine(_targetingPackRoot, "data", "PackageOverrides.txt");
+
+            AssertEx.FileExists(packageOverridePath);
+
+            var packageOverrideFileLines = File.ReadAllLines(packageOverridePath);
+            var runtimeDependencies = TestData.GetRuntimeTargetingPackDependencies()
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .ToHashSet();
+            var aspnetcoreDependencies = TestData.GetAspNetCoreTargetingPackDependencies()
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .ToHashSet();
+
+            Assert.Equal(packageOverrideFileLines.Length, runtimeDependencies.Count + aspnetcoreDependencies.Count);
+
+            foreach (var entry in packageOverrideFileLines)
+            {
+                var packageOverrideParts = entry.Split("|");
+                var packageName = packageOverrideParts[0];
+                var packageVersion = packageOverrideParts[1];
+
+                if (runtimeDependencies.Contains(packageName))
+                {
+                    Assert.Equal(TestData.GetMicrosoftNETCoreAppPackageVersion(), packageVersion);
+                }
+                else if (aspnetcoreDependencies.Contains(packageName))
+                {
+                    Assert.Equal(TestData.GetReferencePackSharedFxVersion(), packageVersion);
+                }
+                else
+                {
+                    Assert.True(false, $"{packageName} is not a recognized aspNetCore or runtime dependency");
+                }
+            }
         }
 
         [Fact]

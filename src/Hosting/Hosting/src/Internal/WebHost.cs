@@ -270,6 +270,7 @@ namespace Microsoft.AspNetCore.Hosting
                 {
                     var exceptionDetailProvider = new ExceptionDetailsProvider(
                         hostingEnv.ContentRootFileProvider,
+                        logger,
                         sourceCodeLineCount: 6);
 
                     model.ErrorDetails = exceptionDetailProvider.GetDetails(ex);
@@ -283,7 +284,8 @@ namespace Microsoft.AspNetCore.Hosting
                 return context =>
                 {
                     context.Response.StatusCode = 500;
-                    context.Response.Headers[HeaderNames.CacheControl] = "no-cache";
+                    context.Response.Headers[HeaderNames.CacheControl] = "no-cache,no-store";
+                    context.Response.Headers[HeaderNames.Pragma] = "no-cache";
                     return errorPage.ExecuteAsync(context);
                 };
             }
@@ -304,7 +306,7 @@ namespace Microsoft.AspNetCore.Hosting
                     {
                         serverAddressesFeature.PreferHostingUrls = WebHostUtilities.ParseBool(_config, WebHostDefaults.PreferHostingUrlsKey);
 
-                        foreach (var value in urls.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+                        foreach (var value in urls.Split(';', StringSplitOptions.RemoveEmptyEntries))
                         {
                             addresses.Add(value);
                         }
@@ -323,7 +325,8 @@ namespace Microsoft.AspNetCore.Hosting
 
             _logger.Shutdown();
 
-            var timeoutToken = new CancellationTokenSource(Options.ShutdownTimeout).Token;
+            using var timeoutCTS = new CancellationTokenSource(Options.ShutdownTimeout);
+            var timeoutToken = timeoutCTS.Token;
             if (!cancellationToken.CanBeCanceled)
             {
                 cancellationToken = timeoutToken;
@@ -355,7 +358,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         public void Dispose()
         {
-            DisposeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            DisposeAsync().GetAwaiter().GetResult();
         }
 
         public async ValueTask DisposeAsync()
@@ -381,7 +384,7 @@ namespace Microsoft.AspNetCore.Hosting
             switch (serviceProvider)
             {
                 case IAsyncDisposable asyncDisposable:
-                    await asyncDisposable.DisposeAsync();
+                    await asyncDisposable.DisposeAsync().ConfigureAwait(false);
                     break;
                 case IDisposable disposable:
                     disposable.Dispose();

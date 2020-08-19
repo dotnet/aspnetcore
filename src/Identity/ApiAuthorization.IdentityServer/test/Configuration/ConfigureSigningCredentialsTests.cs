@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
             X509KeyStorageFlags.DefaultKeySet);
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6720")]
         [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
         public void Configure_AddsDevelopmentKeyFromConfiguration()
         {
@@ -64,7 +63,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6720")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         public void Configure_LoadsPfxCertificateCredentialFromConfiguration()
         {
             // Arrange
@@ -94,7 +93,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6720")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         public void Configure_LoadsCertificateStoreCertificateCredentialFromConfiguration()
         {
             try

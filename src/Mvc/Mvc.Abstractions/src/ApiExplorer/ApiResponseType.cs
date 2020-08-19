@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <remarks>
         /// Will be null if <see cref="Type"/> is null or void.
         /// </remarks>
-        public ModelMetadata ModelMetadata { get; set; }
+        public ModelMetadata? ModelMetadata { get; set; }
 
         /// <summary>
         /// Gets or sets the CLR data type of the response or null.
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <c>Microsoft.AspNetCore.Mvc.ProducesAttribute</c> or <c>Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute</c> on an action method
         /// to specify a response type.
         /// </remarks>
-        public Type Type { get; set; }
+        public Type? Type { get; set; }
 
         /// <summary>
         /// Gets or sets the HTTP response status code.

@@ -39,7 +39,7 @@ namespace MusicStore
 
             // Add EF services to the services container
             services.AddDbContext<MusicStoreContext>(options =>
-                options.UseSqlite("Data Source=MusicStore.db"));
+                options.UseSqlite("Data Source=MusicStore.db;Cache=Shared"));
 
             // Add Identity services to the services container
             services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -119,6 +119,8 @@ namespace MusicStore
                 options.ClientId = "000000004012C08A";
                 options.ClientSecret = "GaMQ2hCnqAC6EcDLnXsAeBVIJOLmeutL";
             });
+
+            services.AddDatabaseDeveloperPageExceptionFilter();
         }
 
         //This method is invoked when ASPNETCORE_ENVIRONMENT is 'Development' or is not defined
@@ -131,8 +133,6 @@ namespace MusicStore
             // Display custom error page in production when error occurs
             // During development use the ErrorPage middleware to display error information in the browser
             app.UseDeveloperExceptionPage();
-
-            app.UseDatabaseErrorPage();
 
             Configure(app);
         }

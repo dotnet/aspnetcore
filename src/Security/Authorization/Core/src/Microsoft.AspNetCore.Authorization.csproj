@@ -11,6 +11,7 @@ Microsoft.AspNetCore.Authorization.AuthorizeAttribute</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authorization</PackageTags>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

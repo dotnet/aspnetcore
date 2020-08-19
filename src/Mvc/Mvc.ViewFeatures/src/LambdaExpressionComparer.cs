@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public int GetHashCode(LambdaExpression lambdaExpression)
         {
             var expression = lambdaExpression.Body;
-            var hashCodeCombiner = HashCodeCombiner.Start();
+            var hashCodeCombiner = new HashCode();
 
             while (true)
             {
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 }
             }
 
-            return hashCodeCombiner.CombinedHash;
+            return hashCodeCombiner.ToHashCode();
         }
     }
 }

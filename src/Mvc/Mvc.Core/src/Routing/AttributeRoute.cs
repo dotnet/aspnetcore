@@ -291,10 +291,10 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     return 0;
                 }
 
-                var hash = new HashCodeCombiner();
+                var hash = new HashCode();
                 hash.Add(obj.Order);
                 hash.Add(obj.RouteTemplate.TemplateText, StringComparer.OrdinalIgnoreCase);
-                return hash;
+                return hash.ToHashCode();
             }
         }
 

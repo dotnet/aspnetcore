@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             {
                 RuntimeArchitecture = RuntimeArchitecture.x64,
                 RuntimeFlavor =  RuntimeFlavor.CoreClr,
-                TargetFramework = Tfm.NetCoreApp31,
+                TargetFramework = Tfm.Net50,
                 HostingModel = HostingModel.InProcess,
                 PublishApplicationBeforeDeployment = true,
                 ApplicationPublisher = new PublishedApplicationPublisher(Helpers.GetInProcessTestSitesName()),

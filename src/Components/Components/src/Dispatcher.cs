@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Provides notifications of unhandled exceptions that occur within the dispatcher.
         /// </summary>
-        internal event UnhandledExceptionEventHandler UnhandledException;
+        internal event UnhandledExceptionEventHandler? UnhandledException;
 
         /// <summary>
         /// Validates that the currently executing code is running inside the dispatcher.

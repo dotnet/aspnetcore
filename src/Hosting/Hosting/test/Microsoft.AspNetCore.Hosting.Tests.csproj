@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Compile Include="$(SharedSourceRoot)EventSource.Testing\TestEventListener.cs" />
     <Compile Include="$(SharedSourceRoot)EventSource.Testing\TestCounterListener.cs" />
     <Content Include="testroot\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
@@ -20,7 +19,6 @@
     <Reference Include="Microsoft.AspNetCore.Owin" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.Extensions.Hosting" />
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="System.Threading.Channels" />
   </ItemGroup>

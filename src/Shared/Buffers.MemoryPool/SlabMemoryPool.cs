@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace System.Buffers
@@ -110,7 +111,8 @@ namespace System.Buffers
             var slab = MemoryPoolSlab.Create(_slabLength);
             _slabs.Push(slab);
 
-            var basePtr = slab.NativePointer;
+            // Get the address for alignment
+            IntPtr basePtr = Marshal.UnsafeAddrOfPinnedArrayElement(slab.PinnedArray, 0);
             // Page align the blocks
             var offset = (int)((((ulong)basePtr + (uint)_blockSize - 1) & ~((uint)_blockSize - 1)) - (ulong)basePtr);
             // Ensure page aligned

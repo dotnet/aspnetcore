@@ -34,8 +34,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         private const string NonceProperty = "N";
         private const string HeaderValueEpocDate = "Thu, 01 Jan 1970 00:00:00 GMT";
 
-        private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
-
         private OpenIdConnectConfiguration _configuration;
 
         protected HttpClient Backchannel => Options.Backchannel;
@@ -78,13 +76,13 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         {
             OpenIdConnectMessage message = null;
 
-            if (string.Equals(Request.Method, "GET", StringComparison.OrdinalIgnoreCase))
+            if (HttpMethods.IsGet(Request.Method))
             {
                 message = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
             }
 
             // assumption: if the ContentType is "application/x-www-form-urlencoded" it should be safe to read as it is small.
-            else if (string.Equals(Request.Method, "POST", StringComparison.OrdinalIgnoreCase)
+            else if (HttpMethods.IsPost(Request.Method)
               && !string.IsNullOrEmpty(Request.ContentType)
               // May have media/type; charset=utf-8, allow partial match.
               && Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
@@ -371,14 +369,13 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             if (Options.UsePkce && Options.ResponseType == OpenIdConnectResponseType.Code)
             {
                 var bytes = new byte[32];
-                CryptoRandom.GetBytes(bytes);
+                RandomNumberGenerator.Fill(bytes);
                 var codeVerifier = Base64UrlTextEncoder.Encode(bytes);
 
                 // Store this for use during the code redemption. See RunAuthorizationCodeReceivedEventAsync.
                 properties.Items.Add(OAuthConstants.CodeVerifierKey, codeVerifier);
 
-                using var sha256 = SHA256.Create();
-                var challengeBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(codeVerifier));
+                var challengeBytes = SHA256.HashData(Encoding.UTF8.GetBytes(codeVerifier));
                 var codeChallenge = WebEncoders.Base64UrlEncode(challengeBytes);
 
                 message.Parameters.Add(OAuthConstants.CodeChallengeKey, codeChallenge);
@@ -482,7 +479,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             OpenIdConnectMessage authorizationResponse = null;
 
-            if (string.Equals(Request.Method, "GET", StringComparison.OrdinalIgnoreCase))
+            if (HttpMethods.IsGet(Request.Method))
             {
                 authorizationResponse = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
 
@@ -501,7 +498,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 }
             }
             // assumption: if the ContentType is "application/x-www-form-urlencoded" it should be safe to read as it is small.
-            else if (string.Equals(Request.Method, "POST", StringComparison.OrdinalIgnoreCase)
+            else if (HttpMethods.IsPost(Request.Method)
               && !string.IsNullOrEmpty(Request.ContentType)
               // May have media/type; charset=utf-8, allow partial match.
               && Request.ContentType.StartsWith("application/x-www-form-urlencoded", StringComparison.OrdinalIgnoreCase)
@@ -806,9 +803,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         {
             Logger.RedeemingCodeForTokens();
 
-            var requestMessage = new HttpRequestMessage(HttpMethod.Post, _configuration.TokenEndpoint);
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, tokenEndpointRequest.TokenEndpoint ?? _configuration.TokenEndpoint);
             requestMessage.Content = new FormUrlEncodedContent(tokenEndpointRequest.Parameters);
-
+            requestMessage.Version = Backchannel.DefaultRequestVersion;
             var responseMessage = await Backchannel.SendAsync(requestMessage);
 
             var contentMediaType = responseMessage.Content.Headers.ContentType?.MediaType;
@@ -871,6 +868,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             Logger.RetrievingClaims();
             var requestMessage = new HttpRequestMessage(HttpMethod.Get, userInfoEndpoint);
             requestMessage.Headers.Authorization = new AuthenticationHeaderValue("Bearer", message.AccessToken);
+            requestMessage.Version = Backchannel.DefaultRequestVersion;
             var responseMessage = await Backchannel.SendAsync(requestMessage);
             responseMessage.EnsureSuccessStatusCode();
             var userInfoResponse = await responseMessage.Content.ReadAsStringAsync();
@@ -912,7 +910,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
                     foreach (var action in Options.ClaimActions)
                     {
-                        action.Run(user.RootElement, identity, ClaimsIssuer);
+                        action.Run(updatedUser.RootElement, identity, ClaimsIssuer);
                     }
                 }
             }

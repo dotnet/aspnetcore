@@ -9,6 +9,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using TestServer;
 using Xunit;
@@ -45,6 +46,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        public void PrerenderingWaitsForAsyncDisposableComponents()
+        {
+            Navigate("/prerendered/prerendered-async-disposal");
+
+            // Prerendered output shows "not connected"
+            Browser.Equal("After async disposal", () => Browser.FindElement(By.Id("disposal-message")).Text);
+        }
+
+        [Fact]
         public void CanUseJSInteropFromOnAfterRenderAsync()
         {
             Navigate("/prerendered/prerendered-interop");
@@ -58,6 +68,51 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Once connected, we can
             Browser.Equal("Hello from interop call", () => Browser.FindElement(By.Id("val-get-by-interop")).Text);
             Browser.Equal("Hello from interop call", () => Browser.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
+        }
+
+        [Fact]
+        public void IsCompatibleWithLazyLoadWebAssembly()
+        {
+            Navigate("/prerendered/WithLazyAssembly");
+
+            var button = Browser.FindElement(By.Id("use-package-button"));
+
+            button.Click();
+
+            AssertLogDoesNotContainCriticalMessages("Could not load file or assembly 'Newtonsoft.Json");
+        }
+
+        [Fact]
+        [QuarantinedTest]
+        public void CanInfluenceHeadDuringPrerender()
+        {
+            Navigate("/prerendered/prerendered-head");
+
+            // Validate updated head during prerender
+            Browser.Equal("Initial title", () => Browser.Title);
+            Browser.Equal("Initial meta content", () => GetMetaWithBindings().GetAttribute("content"));
+            Browser.Equal("Immutable meta content", () => GetMetaWithoutBindings().GetAttribute("content"));
+
+            BeginInteractivity();
+
+            // Wait until the component has rerendered
+            Browser.Exists(By.Id("interactive-indicator"));
+
+            // Validate updated head after prerender
+            Browser.Equal("Initial title", () => Browser.Title);
+            Browser.Equal("Initial meta content", () => GetMetaWithBindings().GetAttribute("content"));
+            Browser.Equal("Immutable meta content", () => GetMetaWithoutBindings().GetAttribute("content"));
+
+            // Change parameter of meta component
+            var inputMetaBinding = Browser.FindElement(By.Id("input-meta-binding"));
+            inputMetaBinding.Clear();
+            inputMetaBinding.SendKeys("Updated meta content\n");
+
+            // Validate new meta content attribute
+            Browser.Equal("Updated meta content", () => GetMetaWithBindings().GetAttribute("content"));
+
+            IWebElement GetMetaWithBindings() => Browser.FindElement(By.Id("meta-with-bindings"));
+            IWebElement GetMetaWithoutBindings() => Browser.FindElement(By.Id("meta-no-bindings"));
         }
 
         [Fact]
@@ -119,6 +174,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         private void BeginInteractivity()
         {
             Browser.FindElement(By.Id("load-boot-script")).Click();
+        }
+
+        private void AssertLogDoesNotContainCriticalMessages(params string[] messages)
+        {
+            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+            foreach (var message in messages)
+            {
+                Assert.DoesNotContain(log, entry =>
+                {
+                    return entry.Level == LogLevel.Severe
+                    && entry.Message.Contains(message);
+                });
+            }
         }
 
         private void SignInAs(string userName, string roles, bool useSeparateTab = false) =>

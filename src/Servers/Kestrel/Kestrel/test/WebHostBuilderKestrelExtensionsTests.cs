@@ -63,17 +63,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         [Fact]
         public void LibuvTransportCanBeManuallySelectedIndependentOfOrder()
         {
+#pragma warning disable CS0618
             var hostBuilder = new WebHostBuilder()
                 .UseKestrel()
                 .UseLibuv()
                 .Configure(app => { });
+#pragma warning restore CS0618
 
             Assert.IsType<LibuvTransportFactory>(hostBuilder.Build().Services.GetService<IConnectionListenerFactory>());
 
+#pragma warning disable CS0618
             var hostBuilderReversed = new WebHostBuilder()
                 .UseLibuv()
                 .UseKestrel()
                 .Configure(app => { });
+#pragma warning restore CS0618
 
             Assert.IsType<LibuvTransportFactory>(hostBuilderReversed.Build().Services.GetService<IConnectionListenerFactory>());
         }

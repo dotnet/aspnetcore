@@ -10,33 +10,33 @@ import com.microsoft.signalr.HubConnectionBuilder;
 
 
 public class Chat {
-    public static void main(String[] args) {
+    public static void main(final String[] args) throws Exception {
         System.out.println("Enter the URL of the SignalR Chat you want to join");
-        Scanner reader = new Scanner(System.in);  // Reading from System.in
-        String input = reader.nextLine();
+        final Scanner reader = new Scanner(System.in); // Reading from System.in
+        final String input = reader.nextLine();
 
-        HubConnection hubConnection = HubConnectionBuilder.create(input).build();
+        try (HubConnection hubConnection = HubConnectionBuilder.create(input).build()) {
+            hubConnection.on("Send", (message) -> {
+                System.out.println(message);
+            }, String.class);
 
-        hubConnection.on("Send", (message) -> {
-            System.out.println(message);
-        }, String.class);
+            hubConnection.onClosed((ex) -> {
+                if (ex != null) {
+                    System.out.printf("There was an error: %s", ex.getMessage());
+                }
+            });
 
-        hubConnection.onClosed((ex) -> {
-            if (ex != null) {
-                System.out.printf("There was an error: %s", ex.getMessage());
+            //This is a blocking call
+            hubConnection.start().blockingAwait();
+
+            String message = "";
+            while (!message.equals("leave")) {
+                // Scans the next token of the input as an int.
+                message = reader.nextLine();
+                hubConnection.send("Send", message);
             }
-        });
 
-        //This is a blocking call
-        hubConnection.start().blockingAwait();
-
-        String message = "";
-        while (!message.equals("leave")) {
-            // Scans the next token of the input as an int.
-            message = reader.nextLine();
-            hubConnection.send("Send", message);
+            hubConnection.stop().blockingAwait();
         }
-
-        hubConnection.stop().blockingAwait();
     }
 }

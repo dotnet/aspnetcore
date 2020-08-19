@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     /// <see cref="ControllerActionDescriptor.ActionName"/>
     /// </para>
     /// <example>
-    /// For an action like <code>MyApp.Controllers.HomeController.Index()</code>, in order to be selected, the
+    /// For an action like <c>MyApp.Controllers.HomeController.Index()</c>, in order to be selected, the
     /// <see cref="RouteData.Values"/> must contain the values
     /// { 
     ///     "action": "Index",
@@ -39,11 +39,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     /// <see cref="IRouteValueProvider"/>) or are considered 'outside' of areas by having the value <c>null</c>.
     /// </para>
     /// <example>
-    /// Consider an application with two controllers, each with an <code>Index</code> action method:
-    ///     - <code>MyApp.Controllers.HomeController.Index()</code>
-    ///     - <code>MyApp.Areas.Blog.Controllers.HomeController.Index()</code>
-    /// where <code>MyApp.Areas.Blog.Controllers.HomeController</code> has an area attribute
-    /// <code>[Area("Blog")]</code>.
+    /// Consider an application with two controllers, each with an <c>Index</c> action method:
+    ///     - <c>MyApp.Controllers.HomeController.Index()</c>
+    ///     - <c>MyApp.Areas.Blog.Controllers.HomeController.Index()</c>
+    /// where <c>MyApp.Areas.Blog.Controllers.HomeController</c> has an area attribute
+    /// <c>[Area("Blog")]</c>.
     /// 
     /// For <see cref="RouteData.Values"/> like:
     /// { 
@@ -51,8 +51,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     ///     "controller": "Home"
     /// }
     /// 
-    /// <code>MyApp.Controllers.HomeController.Index()</code> will be selected.
-    /// <code>MyApp.Area.Blog.Controllers.HomeController.Index()</code> is not considered eligible because the
+    /// <c>MyApp.Controllers.HomeController.Index()</c> will be selected.
+    /// <c>MyApp.Area.Blog.Controllers.HomeController.Index()</c> is not considered eligible because the
     /// <see cref="RouteData.Values"/> does not contain the value 'Blog' for 'area'.
     /// 
     /// For <see cref="RouteData.Values"/> like:
@@ -62,9 +62,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     ///     "controller": "Home"
     /// }
     /// 
-    /// <code>MyApp.Area.Blog.Controllers.HomeController.Index()</code> will be selected.
-    /// <code>MyApp.Controllers.HomeController.Index()</code> is not considered eligible because the route values
-    /// contain a value for 'area'. <code>MyApp.Controllers.HomeController.Index()</code> cannot match any value
+    /// <c>MyApp.Area.Blog.Controllers.HomeController.Index()</c> will be selected.
+    /// <c>MyApp.Controllers.HomeController.Index()</c> is not considered eligible because the route values
+    /// contain a value for 'area'. <c>MyApp.Controllers.HomeController.Index()</c> cannot match any value
     /// for 'area' other than <c>null</c>.
     /// </example>
     /// </remarks>

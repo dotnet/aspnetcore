@@ -87,17 +87,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 pipe,
                 "0",
                 connectionContext,
+                _memoryPool,
                 serviceContext.Log,
                 Mock.Of<ITimeoutControl>(),
                 Mock.Of<IHttpMinResponseDataRateFeature>(),
-                _memoryPool);
+                Mock.Of<IHttpOutputAborter>());
 
             return socketOutput;
         }
 
         private class TestHttpOutputProducer : Http1OutputProducer
         {
-            public TestHttpOutputProducer(Pipe pipe, string connectionId, ConnectionContext connectionContext, IKestrelTrace log, ITimeoutControl timeoutControl, IHttpMinResponseDataRateFeature minResponseDataRateFeature, MemoryPool<byte> memoryPool) : base(pipe.Writer, connectionId, connectionContext, log, timeoutControl, minResponseDataRateFeature, memoryPool)
+            public TestHttpOutputProducer(Pipe pipe, string connectionId, ConnectionContext connectionContext, MemoryPool<byte> memoryPool, IKestrelTrace log, ITimeoutControl timeoutControl, IHttpMinResponseDataRateFeature minResponseDataRateFeature, IHttpOutputAborter outputAborter)
+                : base(pipe.Writer, connectionId, connectionContext, memoryPool, log, timeoutControl, minResponseDataRateFeature, outputAborter)
             {
                 Pipe = pipe;
             }

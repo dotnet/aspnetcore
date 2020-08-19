@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// </summary>
         public long? BodyLengthLimit { get; set; }
 
-        public async Task<MultipartSection> ReadNextSectionAsync(CancellationToken cancellationToken = new CancellationToken())
+        public async Task<MultipartSection?> ReadNextSectionAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             // Drain the prior section.
             await _currentStream.DrainAsync(cancellationToken);

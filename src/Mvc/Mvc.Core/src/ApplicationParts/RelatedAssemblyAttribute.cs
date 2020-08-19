@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 
             // MVC will specifically look for related parts in the same physical directory as the assembly.
             // No-op if the assembly does not have a location.
-            if (assembly.IsDynamic || string.IsNullOrEmpty(assembly.CodeBase))
+            if (assembly.IsDynamic || string.IsNullOrEmpty(assembly.Location))
             {
                 return Array.Empty<Assembly>();
             }
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             }
 
             var assemblyName = assembly.GetName().Name;
-            var assemblyLocation = GetAssemblyLocation(assembly);
+            var assemblyLocation = assembly.Location;
             var assemblyDirectory = Path.GetDirectoryName(assemblyLocation);
 
             var relatedAssemblies = new List<Assembly>();
@@ -111,17 +111,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             }
 
             return relatedAssemblies;
-        }
-
-        internal static string GetAssemblyLocation(Assembly assembly)
-        {
-            if (Uri.TryCreate(assembly.CodeBase, UriKind.Absolute, out var result) && 
-                result.IsFile && string.IsNullOrWhiteSpace(result.Fragment))
-            {
-                return result.LocalPath;
-            }
-
-            return assembly.Location;
         }
     }
 }

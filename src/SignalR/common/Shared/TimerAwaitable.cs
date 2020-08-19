@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -10,8 +12,8 @@ namespace Microsoft.AspNetCore.Internal
 {
     internal class TimerAwaitable : IDisposable, ICriticalNotifyCompletion
     {
-        private Timer _timer;
-        private Action _callback;
+        private Timer? _timer;
+        private Action? _callback;
         private static readonly Action _callbackCompleted = () => { };
 
         private readonly TimeSpan _period;
@@ -50,7 +52,20 @@ namespace Microsoft.AspNetCore.Internal
                                 restoreFlow = true;
                             }
 
-                            _timer = new Timer(state => ((TimerAwaitable)state).Tick(), this, _dueTime, _period);
+                            // This fixes the cycle by using a WeakReference to the state object. The object graph now looks like this:
+                            // Timer -> TimerHolder -> TimerQueueTimer -> WeakReference<TimerAwaitable> -> Timer -> ...
+                            // If TimerAwaitable falls out of scope, the timer should be released.
+                            _timer = new Timer(state =>
+                            {
+                                var weakRef = (WeakReference<TimerAwaitable>)state!;
+                                if (weakRef.TryGetTarget(out var thisRef))
+                                {
+                                    thisRef.Tick();
+                                }
+                            },
+                            new WeakReference<TimerAwaitable>(this),
+                            _dueTime,
+                            _period);
                         }
                         finally
                         {

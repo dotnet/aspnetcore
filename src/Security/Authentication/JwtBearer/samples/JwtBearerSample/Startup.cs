@@ -78,7 +78,7 @@ namespace JwtBearerSample
                 todoApp.Run(async context =>
                 {
                     var response = context.Response;
-                    if (context.Request.Method.Equals("POST", System.StringComparison.OrdinalIgnoreCase))
+                    if (HttpMethods.IsPost(context.Request.Method))
                     {
                         var reader = new StreamReader(context.Request.Body);
                         var body = await reader.ReadToEndAsync();

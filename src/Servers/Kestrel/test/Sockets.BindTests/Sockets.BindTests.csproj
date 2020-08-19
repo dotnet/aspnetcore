@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Compile Include="..\BindTests\**\*.cs" />
     <Compile Include="..\Sockets.FunctionalTests\TransportSelector.cs" />
     <Compile Include="$(SharedSourceRoot)NullScope.cs" />

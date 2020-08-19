@@ -31,11 +31,14 @@
   </ItemGroup>
 
   <Target Name="_PublishInstallersAndChecksums">
-    <!-- 
-      This target is defined in eng/targets/Packaging.targets and included in every C# and F# project.
-      We use Microsoft.AspNetCore.DeveloperCertificates.XPlat because it is a nonshipping package, and we need a non-stable version string to use as our publish location.
+    <!--
+      This target is defined in eng/targets/Packaging.targets and Npm.Common.targets and included in every C#, F#,
+      and npm project. We use SignalR.Npm.FunctionalTests.npmproj because it is non-shipping (we need a non-stable
+      version string to use as our publish location), non-packed (won't be shipped in the future), and it is _not_ a
+      C# or F# project. For now at least, C# and F# projects should not be referenced when using desktop msbuild.
     -->
-    <MSBuild Projects="$(RepoRoot)src\Tools\FirstRunCertGenerator\src\Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj"
+    <MSBuild Projects="$(RepoRoot)src\SignalR\clients\ts\FunctionalTests\SignalR.Npm.FunctionalTests.npmproj"
+        Properties="DisableYarnCheck=true;ExcludeFromBuild=false"
         Targets="_GetPackageVersionInfo"
         SkipNonexistentProjects="false">
       <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
