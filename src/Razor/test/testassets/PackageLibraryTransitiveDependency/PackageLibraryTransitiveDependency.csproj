@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0</TargetFrameworks>
     <Copyright>© Microsoft</Copyright>
     <Product>Razor Test</Product>
     <Company>Microsoft</Company>
