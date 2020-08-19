@@ -56,7 +56,7 @@ class MsalAuthorizeService implements AuthorizeService {
     private _redirectCallback: Promise<AuthenticationResult | null> | undefined;
 
     constructor(private readonly _settings: AuthorizeServiceConfiguration) {
-        if (this._settings.auth && !this._settings.auth.knownAuthorities) {
+        if (this._settings.auth?.knownAuthorities?.length == 0) {
             this._settings.auth.knownAuthorities = [new URL(this._settings.auth.authority!).hostname]
         }
         this._msalApplication = new Msal.PublicClientApplication(this._settings);

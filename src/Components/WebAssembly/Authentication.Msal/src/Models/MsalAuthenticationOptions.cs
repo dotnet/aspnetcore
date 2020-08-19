@@ -53,6 +53,6 @@ namespace Microsoft.Authentication.WebAssembly.Msal
         /// <summary>
         /// Gets or sets the set of known authority host names for the application.
         /// </summary>
-        public IList<string> KnownAuthorities { get; set; }
+        public IList<string> KnownAuthorities { get; set; } = new List<string>();
     }
 }
