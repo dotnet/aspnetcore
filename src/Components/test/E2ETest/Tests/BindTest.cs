@@ -979,8 +979,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target to something invalid - the invalid change is reverted
             // back to the last valid value
             target.SendKeys(Keys.Control + "a"); // select all
-            target.SendKeys("05/06A");
-            Browser.Equal("05/06A", () => target.GetAttribute("value"));
+            target.SendKeys("05/06X");
+            Browser.Equal("05/06X", () => target.GetAttribute("value"));
             target.SendKeys("\t");
             Browser.Equal(expected, () => DateTime.Parse(target.GetAttribute("value")));
             Assert.Equal(expected, DateTime.Parse(boundValue.Text));
@@ -1017,8 +1017,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target to something invalid - the invalid change is reverted
             // back to the last valid value
             target.SendKeys(Keys.Control + "a"); // select all
-            target.SendKeys("05/06A");
-            Browser.Equal("05/06A", () => target.GetAttribute("value"));
+            target.SendKeys("05/06X");
+            Browser.Equal("05/06X", () => target.GetAttribute("value"));
             target.SendKeys("\t");
             Browser.Equal(expected.DateTime, () => DateTimeOffset.Parse(target.GetAttribute("value")).DateTime);
             Assert.Equal(expected.DateTime, DateTimeOffset.Parse(boundValue.Text).DateTime);

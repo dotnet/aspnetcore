@@ -25,7 +25,7 @@ namespace InteropTests
             _output = output;
         }
 
-        [Fact(Skip= "https://github.com/dotnet/aspnetcore/issues/24902")]
+        [Fact]
         public Task EmptyUnary() => InteropTestCase("empty_unary");
 
         [Fact]
@@ -36,20 +36,20 @@ namespace InteropTests
         [QuarantinedTest]
         public Task ClientStreaming() => InteropTestCase("client_streaming");
 
-        [Fact(Skip= "https://github.com/dotnet/aspnetcore/issues/24902")]
+        [Fact]
         public Task ServerStreaming() => InteropTestCase("server_streaming");
 
         [Fact]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/22101")]
         public Task PingPong() => InteropTestCase("ping_pong");
 
-        [Fact(Skip= "https://github.com/dotnet/aspnetcore/issues/24902")]
+        [Fact]
         public Task EmptyStream() => InteropTestCase("empty_stream");
 
         [Fact]
         public Task CancelAfterBegin() => InteropTestCase("cancel_after_begin");
 
-        [Fact(Skip= "https://github.com/dotnet/aspnetcore/issues/24902")]
+        [Fact]
         public Task CancelAfterFirstResponse() => InteropTestCase("cancel_after_first_response");
 
         [Fact]
@@ -59,30 +59,31 @@ namespace InteropTests
         [QuarantinedTest]
         public Task CustomMetadata() => InteropTestCase("custom_metadata");
 
-        [Fact(Skip= "https://github.com/dotnet/aspnetcore/issues/24902")]
+        [Fact]
         public Task StatusCodeAndMessage() => InteropTestCase("status_code_and_message");
 
-        [Fact(Skip= "https://github.com/dotnet/aspnetcore/issues/24902")]
+        [Fact]
         public Task SpecialStatusMessage() => InteropTestCase("special_status_message");
 
-        [Fact(Skip= "https://github.com/dotnet/aspnetcore/issues/24902")]
+        [Fact]
         public Task UnimplementedService() => InteropTestCase("unimplemented_service");
 
-        [Fact(Skip= "https://github.com/dotnet/aspnetcore/issues/24902")]
+        [Fact]
         public Task UnimplementedMethod() => InteropTestCase("unimplemented_method");
 
         [Fact]
-        [QuarantinedTest]
+        [QuarantinedTest("Server is getting 'identity' encoding. Will resolve in gRPC project when updated SDK is available.")]
         public Task ClientCompressedUnary() => InteropTestCase("client_compressed_unary");
 
-        [Fact(Skip= "https://github.com/dotnet/aspnetcore/issues/24902")]
+        [Fact]
+        [QuarantinedTest("Server is getting 'identity' encoding. Will resolve in gRPC project when updated SDK is available.")]
         public Task ClientCompressedStreaming() => InteropTestCase("client_compressed_streaming");
 
         [Fact]
         [QuarantinedTest]
         public Task ServerCompressedUnary() => InteropTestCase("server_compressed_unary");
 
-        [Fact(Skip= "https://github.com/dotnet/aspnetcore/issues/24902")]
+        [Fact]
         public Task ServerCompressedStreaming() => InteropTestCase("server_compressed_streaming");
 
         private async Task InteropTestCase(string name)

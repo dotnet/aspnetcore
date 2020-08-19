@@ -135,7 +135,7 @@ namespace Grpc.Testing
             {
                 // ServerCallContext.RequestHeaders filters out grpc-* headers
                 // Get grpc-encoding from HttpContext instead
-                var encoding = context.GetHttpContext().Request.Headers.SingleOrDefault(h => h.Key == "grpc-encoding").Value.SingleOrDefault();
+                var encoding = context.GetHttpContext().Request.Headers.SingleOrDefault(h => string.Equals(h.Key, "grpc-encoding", StringComparison.OrdinalIgnoreCase)).Value.SingleOrDefault();
                 if (expectCompressed.Value)
                 {
                     if (encoding == null || encoding == "identity")

@@ -3,6 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -16,18 +19,16 @@ namespace Microsoft.AspNetCore.Http
         internal const string EnableCookieNameEncoding = "Microsoft.AspNetCore.Http.EnableCookieNameEncoding";
         internal bool _enableCookieNameEncoding = AppContext.TryGetSwitch(EnableCookieNameEncoding, out var enabled) && enabled;
 
+        private readonly IFeatureCollection _features;
+        private ILogger? _logger;
+
         /// <summary>
         /// Create a new wrapper.
         /// </summary>
-        /// <param name="headers">The <see cref="IHeaderDictionary"/> for the response.</param>
-        public ResponseCookies(IHeaderDictionary headers)
+        internal ResponseCookies(IFeatureCollection features)
         {
-            if (headers == null)
-            {
-                throw new ArgumentNullException(nameof(headers));
-            }
-
-            Headers = headers;
+            _features = features;
+            Headers = _features.Get<IHttpResponseFeature>().Headers;
         }
 
         private IHeaderDictionary Headers { get; set; }
@@ -52,6 +53,21 @@ namespace Microsoft.AspNetCore.Http
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
+            }
+
+            // SameSite=None cookies must be marked as Secure.
+            if (!options.Secure && options.SameSite == SameSiteMode.None)
+            {
+                if (_logger == null)
+                {
+                    var services = _features.Get<Features.IServiceProvidersFeature>()?.RequestServices;
+                    _logger = services?.GetService<ILogger<ResponseCookies>>();
+                }
+
+                if (_logger != null)
+                {
+                    Log.SameSiteCookieNotSecure(_logger, key);
+                }
             }
 
             var setCookieHeaderValue = new SetCookieHeaderValue(
@@ -134,6 +150,19 @@ namespace Microsoft.AspNetCore.Http
                 HttpOnly = options.HttpOnly,
                 SameSite = options.SameSite
             });
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string, Exception?> _samesiteNotSecure = LoggerMessage.Define<string>(
+                LogLevel.Warning,
+                EventIds.SameSiteNotSecure,
+                "The cookie '{name}' has set 'SameSite=None' and must also set 'Secure'.");
+
+            public static void SameSiteCookieNotSecure(ILogger logger, string name)
+            {
+                _samesiteNotSecure(logger, name, null);
+            }
         }
     }
 }
