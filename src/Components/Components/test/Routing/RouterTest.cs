@@ -10,9 +10,7 @@ using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
 using Xunit;
-using Microsoft.AspNetCore.Components;
 
 namespace Microsoft.AspNetCore.Components.Test.Routing
 {
@@ -70,6 +68,12 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
                     throw new Exception("This is an uncaught exception.");
                 }
             };
+            var refreshCalled = 0;
+            _renderer.OnUpdateDisplay = (renderBatch) =>
+            {
+                refreshCalled += 1;
+                return;
+            };
             _router.OnNavigateAsync = new EventCallback<NavigationContext>(null, OnNavigateAsync);
 
             // Act
@@ -82,6 +86,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
             // Assert that we render the second route component and don't throw an exception
             Assert.Empty(_renderer.HandledExceptions);
             Assert.Equal(2, onNavigateInvoked);
+            Assert.Equal(2, refreshCalled);
         }
 
         [Fact]
