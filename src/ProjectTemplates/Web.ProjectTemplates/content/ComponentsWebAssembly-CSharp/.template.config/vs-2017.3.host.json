@@ -50,6 +50,7 @@
   ],
   "excludeLaunchSettings": false,
   "disableHttpsSymbol": "NoHttps",
+  "supportsDocker": true,
   "symbolInfo": [
     {
       "id": "Hosted",
