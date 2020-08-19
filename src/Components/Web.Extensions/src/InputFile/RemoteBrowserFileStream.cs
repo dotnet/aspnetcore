@@ -14,10 +14,10 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
     {
         private readonly IJSRuntime _jsRuntime;
         private readonly ElementReference _inputFileElement;
-        private readonly int _maxChunkSize;
+        private readonly int _maxSegmentSize;
         private readonly PipeReader _pipeReader;
         private readonly CancellationTokenSource _fillBufferCts;
-        private readonly TimeSpan _chunkFetchTimeout;
+        private readonly TimeSpan _segmentFetchTimeout;
 
         private bool _isReadingCompleted;
         private bool _isDisposed;
@@ -32,8 +32,8 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         {
             _jsRuntime = jsRuntime;
             _inputFileElement = inputFileElement;
-            _maxChunkSize = options.ChunkSize;
-            _chunkFetchTimeout = options.ChunkFetchTimeout;
+            _maxSegmentSize = options.SegmentSize;
+            _segmentFetchTimeout = options.SegmentFetchTimeout;
 
             var pipe = new Pipe(new PipeOptions(pauseWriterThreshold: options.MaxBufferSize, resumeWriterThreshold: options.MaxBufferSize));
             _pipeReader = pipe.Reader;
@@ -48,35 +48,31 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
             while (offset < File.Size)
             {
-                var pipeBuffer = writer.GetMemory(_maxChunkSize);
-                var chunkSize = (int)Math.Min(_maxChunkSize, File.Size - offset);
+                var pipeBuffer = writer.GetMemory(_maxSegmentSize);
+                var segmentSize = (int)Math.Min(_maxSegmentSize, File.Size - offset);
 
                 try
                 {
-                    using var readChunkCts = CancellationTokenSource.CreateLinkedTokenSource(_fillBufferCts.Token);
-                    readChunkCts.CancelAfter(_chunkFetchTimeout);
+                    using var readSegmentCts = CancellationTokenSource.CreateLinkedTokenSource(_fillBufferCts.Token);
+                    readSegmentCts.CancelAfter(_segmentFetchTimeout);
 
-                    var base64 = await _jsRuntime.InvokeAsync<string>(
+                    var bytes = await _jsRuntime.InvokeAsync<byte[]>(
                         InputFileInterop.ReadFileData,
-                        readChunkCts.Token,
+                        readSegmentCts.Token,
                         _inputFileElement,
                         File.Id,
                         offset,
-                        chunkSize);
+                        segmentSize);
 
-                    if (!Convert.TryFromBase64String(base64, pipeBuffer.Span, out var bytesWritten))
-                    {
-                        throw new FormatException("A chunk with an invalid format was received.");
-                    }
-
-                    if (bytesWritten != chunkSize)
+                    if (bytes.Length != segmentSize)
                     {
                         throw new InvalidOperationException(
-                            $"A chunk with size {bytesWritten} bytes was received, but {chunkSize} bytes were expected.");
+                            $"A segment with size {bytes.Length} bytes was received, but {segmentSize} bytes were expected.");
                     }
 
-                    writer.Advance(chunkSize);
-                    offset += chunkSize;
+                    bytes.CopyTo(pipeBuffer);
+                    writer.Advance(segmentSize);
+                    offset += segmentSize;
 
                     var result = await writer.FlushAsync(cancellationToken);
 
@@ -119,23 +115,25 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
                 }
 
                 var bytesToCopy = (int)Math.Min(result.Buffer.Length, destination.Length);
-                var slice = result.Buffer.Slice(0, bytesToCopy);
 
-                slice.CopyTo(destination.Span);
-                _pipeReader.AdvanceTo(slice.End);
-
-                totalBytesCopied += bytesToCopy;
-
-                destination = destination.Slice(bytesToCopy);
-
-                if (result.IsCompleted && slice.Length == 0)
+                if (bytesToCopy == 0)
                 {
-                    _isReadingCompleted = true;
-
-                    await _pipeReader.CompleteAsync();
+                    if (result.IsCompleted)
+                    {
+                        _isReadingCompleted = true;
+                        await _pipeReader.CompleteAsync();
+                    }
 
                     break;
                 }
+
+                var slice = result.Buffer.Slice(0, bytesToCopy);
+                slice.CopyTo(destination.Span);
+
+                _pipeReader.AdvanceTo(slice.End);
+
+                totalBytesCopied += bytesToCopy;
+                destination = destination.Slice(bytesToCopy);
             }
 
             return totalBytesCopied;

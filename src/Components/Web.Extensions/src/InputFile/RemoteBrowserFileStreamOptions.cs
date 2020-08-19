@@ -11,10 +11,10 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
     public class RemoteBrowserFileStreamOptions
     {
         /// <summary>
-        /// Gets or sets the maximum chunk size for file data sent over a SignalR circuit.
+        /// Gets or sets the maximum segment size for file data sent over a SignalR circuit.
         /// This only has an effect when using Blazor Server.
         /// </summary>
-        public int ChunkSize { get; set; } = 20 * 1024; // SignalR limit is 32K.
+        public int SegmentSize { get; set; } = 20 * 1024; // SignalR limit is 32K.
 
         /// <summary>
         /// Gets or sets the maximum internal buffer size for unread data sent over a SignalR circuit.
@@ -23,9 +23,9 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         public int MaxBufferSize { get; set; } = 1024 * 1024;
 
         /// <summary>
-        /// Gets or sets the time limit for fetching a chunk of file data.
+        /// Gets or sets the time limit for fetching a segment of file data.
         /// This only has an effect when using Blazor Server.
         /// </summary>
-        public TimeSpan ChunkFetchTimeout { get; set; } = TimeSpan.FromSeconds(3);
+        public TimeSpan SegmentFetchTimeout { get; set; } = TimeSpan.FromSeconds(3);
     }
 }
