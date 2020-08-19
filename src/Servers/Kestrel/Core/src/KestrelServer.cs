@@ -14,9 +14,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
-    [Obsolete("This type is obsolete and will be removed in a future version. " +
-        "Instead, you can resolve the server by calling IWebHostBuilder.UseKestrel()" +
-        " and resolving the IServer through the built host (ex: IHost.Services.GetRequiredService<IServer>())")]
+    [Obsolete("This type is obsolete and will be removed in a future version.")]
     public class KestrelServer : IServer
     {
         private KestrelServerImpl _innerKestrelServer;

@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             if (DefaultCertificate == null && !IsDevCertLoaded)
             {
                 IsDevCertLoaded = true; // Only try once
-                var logger = ApplicationServices!.GetRequiredService<ILogger<KestrelServerImpl>>();
+                var logger = ApplicationServices!.GetRequiredService<ILogger<KestrelServer>>();
                 try
                 {
                     DefaultCertificate = CertificateManager.Instance.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true)
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
 
             var hostEnvironment = ApplicationServices.GetRequiredService<IHostEnvironment>();
-            var logger = ApplicationServices.GetRequiredService<ILogger<KestrelServerImpl>>();
+            var logger = ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
             var httpsLogger = ApplicationServices.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
 
             var loader = new KestrelConfigurationLoader(this, config, hostEnvironment, reloadOnChange, logger, httpsLogger);

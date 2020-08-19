@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var serviceProvider =  new ServiceCollection().AddLogging().BuildServiceProvider();
             options.ApplicationServices = serviceProvider;
 
-            var logger = serviceProvider.GetRequiredService<ILogger<KestrelServerImpl>>();
+            var logger = serviceProvider.GetRequiredService<ILogger<KestrelServer>>();
             var httpsLogger = serviceProvider.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
             var loader = new KestrelConfigurationLoader(options, configuration, env.Object, reloadOnChange: false, logger, httpsLogger);
             loader.Load();

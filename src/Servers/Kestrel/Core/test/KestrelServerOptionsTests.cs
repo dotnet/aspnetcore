@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Ensure configure doesn't throw because of missing services.
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
-            serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServerImpl>>());
+            serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
             serviceCollection.AddSingleton(Mock.Of<ILogger<HttpsConnectionMiddleware>>());
             options.ApplicationServices = serviceCollection.BuildServiceProvider();
 

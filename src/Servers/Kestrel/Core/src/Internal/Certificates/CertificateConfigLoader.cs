@@ -14,14 +14,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Certificates
 {
     internal class CertificateConfigLoader : ICertificateConfigLoader
     {
-        public CertificateConfigLoader(IHostEnvironment hostEnvironment, ILogger<KestrelServerImpl> logger)
+        public CertificateConfigLoader(IHostEnvironment hostEnvironment, ILogger<KestrelServer> logger)
         {
             HostEnvironment = hostEnvironment;
             Logger = logger;
         }
 
         public IHostEnvironment HostEnvironment { get; }
-        public ILogger<KestrelServerImpl> Logger { get; }
+        public ILogger<KestrelServer> Logger { get; }
 
         public bool IsTestMock => false;
 
