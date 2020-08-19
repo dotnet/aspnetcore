@@ -356,7 +356,6 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
 
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    reporter.Warn("Trusting the HTTPS development certificate was requested. We don't support trusting the certificate on Linux distributions automatically. " +
                     reporter.Warn("Trusting the HTTPS development certificate was requested. Trusting the certificate on Linux distributions automatically is not supported. " +
                         "For instructions on how to manually trust the certificate on your Linux distribution, go to https://aka.ms/dev-certs-trust");
                 }
