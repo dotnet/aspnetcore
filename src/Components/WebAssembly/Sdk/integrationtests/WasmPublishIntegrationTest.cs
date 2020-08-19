@@ -41,6 +41,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             // Verify web.config
             Assert.FileExists(result, publishDirectory, "web.config");
+            var webConfigContent = new StreamReader(GetType().Assembly.GetManifestResourceStream("Microsoft.NET.Sdk.BlazorWebAssembly.IntegrationTests.BlazorWasm.web.config")).ReadToEnd();
+            Assert.FileContentEquals(result, Path.Combine(publishDirectory, "web.config"), webConfigContent);
             Assert.FileCountEquals(result, 1, publishDirectory, "*", SearchOption.TopDirectoryOnly);
 
             VerifyBootManifestHashes(result, blazorPublishDirectory);

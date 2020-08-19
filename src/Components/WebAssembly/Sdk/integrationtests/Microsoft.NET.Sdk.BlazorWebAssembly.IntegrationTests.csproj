@@ -36,6 +36,8 @@
     <Compile Include="..\src\BootJsonData.cs" LinkBase="Wasm" />
     <Compile Include="..\src\AssetsManifestFile.cs" LinkBase="Wasm" />
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
+
+    <EmbeddedResource Include="..\src\targets\BlazorWasm.web.config" />
   </ItemGroup>
 
   <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes">
