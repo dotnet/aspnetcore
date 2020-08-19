@@ -73,8 +73,7 @@ namespace Microsoft.AspNetCore.SignalR
 
                 if (_hubOptions.HubFilters != null)
                 {
-                    hubFilters = new List<IHubFilter>();
-                    hubFilters.AddRange(_hubOptions.HubFilters);
+                    hubFilters = new List<IHubFilter>(_hubOptions.HubFilters);
                 }
             }
             else
@@ -84,8 +83,7 @@ namespace Microsoft.AspNetCore.SignalR
 
                 if (_globalHubOptions.HubFilters != null)
                 {
-                    hubFilters = new List<IHubFilter>();
-                    hubFilters.AddRange(_globalHubOptions.HubFilters);
+                    hubFilters = new List<IHubFilter>(_globalHubOptions.HubFilters);
                 }
             }
 

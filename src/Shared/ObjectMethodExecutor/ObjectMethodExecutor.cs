@@ -157,8 +157,8 @@ namespace Microsoft.Extensions.Internal
             var parametersParameter = Expression.Parameter(typeof(object[]), "parameters");
 
             // Build parameter list
-            var parameters = new List<Expression>();
             var paramInfos = methodInfo.GetParameters();
+            var parameters = new List<Expression>(paramInfos.Length);
             for (int i = 0; i < paramInfos.Length; i++)
             {
                 var paramInfo = paramInfos[i];
@@ -209,8 +209,8 @@ namespace Microsoft.Extensions.Internal
             var parametersParameter = Expression.Parameter(typeof(object[]), "parameters");
 
             // Build parameter list
-            var parameters = new List<Expression>();
             var paramInfos = methodInfo.GetParameters();
+            var parameters = new List<Expression>(paramInfos.Length);
             for (int i = 0; i < paramInfos.Length; i++)
             {
                 var paramInfo = paramInfos[i];

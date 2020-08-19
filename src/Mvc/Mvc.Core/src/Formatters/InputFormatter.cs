@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     {
                         if (mediaTypes == null)
                         {
-                            mediaTypes = new List<string>();
+                            mediaTypes = new List<string>(SupportedMediaTypes.Count);
                         }
 
                         mediaTypes.Add(mediaType);
