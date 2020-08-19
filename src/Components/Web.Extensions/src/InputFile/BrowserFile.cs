@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
@@ -23,8 +24,8 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
         public string? RelativePath { get; set; }
 
-        public Stream OpenReadStream()
-            => Owner.OpenReadStream(this);
+        public Stream OpenReadStream(CancellationToken cancellationToken = default)
+            => Owner.OpenReadStream(this, cancellationToken);
 
         public Task<IBrowserFile> ToImageFileAsync(string format, int maxWidth, int maxHeight)
             => Owner.ConvertToImageFileAsync(this, format, maxWidth, maxHeight);

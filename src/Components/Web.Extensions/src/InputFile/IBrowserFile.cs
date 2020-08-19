@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
@@ -35,7 +36,8 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// <summary>
         /// Opens the stream for reading the uploaded file.
         /// </summary>
-        Stream OpenReadStream();
+        /// <param name="cancellationToken">A cancellation token to signal the cancellation of streaming file data.</param>
+        Stream OpenReadStream(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Converts the current image file to a new one of the specified file type and maximum file dimensions.

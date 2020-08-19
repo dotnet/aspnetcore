@@ -49,28 +49,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             => throw new NotSupportedException();
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            if (buffer == null)
-            {
-                throw new ArgumentNullException(nameof(buffer));
-            }
-            if (offset < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(offset), "Expected non-negative value.");
-            }
-            if (count < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(count), "Expected non-negative value.");
-            }
-            if (buffer.Length - offset < count)
-            {
-                throw new ArgumentException(
-                    "Offset and length were out of bounds for the array, or count is greater than " +
-                    "the number of elements from offset to the end of the source collection.");
-            }
-
-            return ReadAsync(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
-        }
+            => ReadAsync(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
 
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {

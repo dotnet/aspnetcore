@@ -17,20 +17,27 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         private readonly int _maxChunkSize;
         private readonly PipeReader _pipeReader;
         private readonly CancellationTokenSource _fillBufferCts;
+        private readonly TimeSpan _chunkFetchTimeout;
 
         private bool _isReadingCompleted;
         private bool _isDisposed;
 
-        public RemoteBrowserFileStream(IJSRuntime jsRuntime, ElementReference inputFileElement, int maxChunkSize, int maxBufferSize, BrowserFile file)
+        public RemoteBrowserFileStream(
+            IJSRuntime jsRuntime,
+            ElementReference inputFileElement,
+            BrowserFile file,
+            RemoteBrowserFileStreamOptions options,
+            CancellationToken cancellationToken)
             : base(file)
         {
             _jsRuntime = jsRuntime;
             _inputFileElement = inputFileElement;
-            _maxChunkSize = maxChunkSize;
+            _maxChunkSize = options.ChunkSize;
+            _chunkFetchTimeout = options.ChunkFetchTimeout;
 
-            var pipe = new Pipe(new PipeOptions(pauseWriterThreshold: maxBufferSize, resumeWriterThreshold: maxBufferSize));
+            var pipe = new Pipe(new PipeOptions(pauseWriterThreshold: options.MaxBufferSize, resumeWriterThreshold: options.MaxBufferSize));
             _pipeReader = pipe.Reader;
-            _fillBufferCts = new CancellationTokenSource();
+            _fillBufferCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
             _ = FillBuffer(pipe.Writer, _fillBufferCts.Token);
         }
@@ -46,9 +53,12 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
                 try
                 {
+                    using var readChunkCts = CancellationTokenSource.CreateLinkedTokenSource(_fillBufferCts.Token);
+                    readChunkCts.CancelAfter(_chunkFetchTimeout);
+
                     var base64 = await _jsRuntime.InvokeAsync<string>(
                         InputFileInterop.ReadFileData,
-                        cancellationToken,
+                        readChunkCts.Token,
                         _inputFileElement,
                         File.Id,
                         offset,
@@ -67,18 +77,18 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
                     writer.Advance(chunkSize);
                     offset += chunkSize;
+
+                    var result = await writer.FlushAsync(cancellationToken);
+
+                    if (result.IsCompleted)
+                    {
+                        break;
+                    }
                 }
                 catch (Exception e)
                 {
                     await writer.CompleteAsync(e);
-                    throw;
-                }
-
-                var result = await writer.FlushAsync();
-
-                if (result.IsCompleted)
-                {
-                    break;
+                    return;
                 }
             }
 
@@ -139,11 +149,6 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             }
 
             _fillBufferCts.Cancel();
-
-            if (disposing)
-            {
-                _fillBufferCts.Dispose();
-            }
 
             _isDisposed = true;
 

@@ -4,9 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Versioning;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
@@ -25,27 +26,14 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         [Inject]
         private IJSRuntime JSRuntime { get; set; } = default!;
 
+        [Inject]
+        private IOptions<RemoteBrowserFileStreamOptions> Options { get; set; } = default!;
+
         /// <summary>
         /// Gets or sets the event callback that will be invoked when the collection of selected files changes.
         /// </summary>
         [Parameter]
         public EventCallback<InputFileChangeEventArgs> OnChange { get; set; }
-
-        /// <summary>
-        /// Gets or sets the maximum chunk size for file data sent over a SignalR circuit.
-        /// This only has an effect when using Blazor Server.
-        /// </summary>
-        [Parameter]
-        [UnsupportedOSPlatform("browser")]
-        public int MaxSignalRChunkSize { get; set; } = 20 * 1024; // SignalR limit is 32K.
-
-        /// <summary>
-        /// Gets or sets the maximum internal buffer size for unread data sent over a SignalR circuit.
-        /// This only has an effect when using Blazor Server.
-        /// </summary>
-        [Parameter]
-        [UnsupportedOSPlatform("browser")]
-        public int MaxUnreadMemoryBufferSize { get; set; } = 1024 * 1024;
 
         /// <summary>
         /// Gets or sets a collection of additional attributes that will be applied to the input element.
@@ -76,10 +64,10 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             builder.CloseElement();
         }
 
-        internal Stream OpenReadStream(BrowserFile file)
+        internal Stream OpenReadStream(BrowserFile file, CancellationToken cancellationToken)
             => _jsUnmarshalledRuntime != null ?
                 (Stream)new SharedBrowserFileStream(JSRuntime, _jsUnmarshalledRuntime, _inputFileElement, file) :
-                new RemoteBrowserFileStream(JSRuntime, _inputFileElement, MaxSignalRChunkSize, MaxUnreadMemoryBufferSize, file);
+                new RemoteBrowserFileStream(JSRuntime, _inputFileElement, file, Options.Value, cancellationToken);
 
         internal async Task<IBrowserFile> ConvertToImageFileAsync(BrowserFile file, string format, int maxWidth, int maxHeight)
         {
