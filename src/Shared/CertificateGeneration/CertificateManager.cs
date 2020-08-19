@@ -453,10 +453,13 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 }
                 else
                 {
-                    bytes = certificate.Export(X509ContentType.Cert);
                     if (format == CertificateKeyExportFormat.Pem)
                     {
                         bytes = Encoding.ASCII.GetBytes(PemEncoding.Write("CERTIFICATE", certificate.Export(X509ContentType.Cert)));
+                    }
+                    else
+                    {
+                        bytes = certificate.Export(X509ContentType.Cert);
                     }
                 }
             }
