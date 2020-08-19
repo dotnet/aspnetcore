@@ -243,7 +243,7 @@ namespace Templates.Test
                 return;
             }
 
-            Project = await ProjectFactory.GetOrCreateProject("mvcindividualuld", Output);
+            Project = await ProjectFactory.GetOrCreateProject("mvcsinglefileexe", Output);
             Project.RuntimeIdentifier = runtimeIdentifer;
 
             var createResult = await Project.RunDotNetNewAsync("mvc", auth: "Individual", useLocalDB: true);
@@ -286,7 +286,7 @@ namespace Templates.Test
                 },
             };
 
-            using var aspNetProcess = Project.StartPublishedProjectAsync();
+            using var aspNetProcess = Project.StartPublishedProjectAsync(usePublishedAppHost: true);
             Assert.False(
                 aspNetProcess.Process.HasExited,
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));

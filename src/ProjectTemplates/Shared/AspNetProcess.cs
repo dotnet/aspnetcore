@@ -42,6 +42,7 @@ namespace Templates.Test.Helpers
             IDictionary<string, string> environmentVariables,
             bool published,
             bool hasListeningUri = true,
+            bool usePublishedAppHost = false,
             ILogger logger = null)
         {
             _developmentCertificate = DevelopmentCertificate.Create(workingDirectory);
@@ -64,9 +65,17 @@ namespace Templates.Test.Helpers
             string arguments;
             if (published)
             {
-                // When publishingu used the app host to run the app. This makes it easy to consistently run for regular and single-file publish
-                process = OperatingSystem.IsWindows() ? dllPath + ".exe" : dllPath;
-                arguments = null;
+                if (usePublishedAppHost)
+                {
+                    // When publishingu used the app host to run the app. This makes it easy to consistently run for regular and single-file publish
+                    process = Path.ChangeExtension(dllPath, OperatingSystem.IsWindows() ? ".exe" : null);
+                    arguments = null;
+                }
+                else
+                {
+                    process = DotNetMuxer.MuxerPathOrDefault();
+                    arguments = $"exec {dllPath}";
+                }
             }
             else
             {
