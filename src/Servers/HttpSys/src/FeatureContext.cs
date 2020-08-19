@@ -37,7 +37,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpBodyControlFeature,
         IHttpSysRequestInfoFeature,
         IHttpResponseTrailersFeature,
-        IHttpResetFeature
+        IHttpResetFeature,
+        IHttpSysRequestDelegationFeature
     {
         private RequestContext _requestContext;
         private IFeatureCollection _features;
@@ -591,6 +592,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             set => _responseTrailers = value;
         }
 
+        public bool CanDelegate => Request.CanDelegate;
+
         internal async Task OnResponseStart()
         {
             if (_responseStarted)
@@ -710,6 +713,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 await actionPair.Item1(actionPair.Item2);
             }
+        }
+
+        public void DelegateRequest(DelegationRule destination)
+        {
+            _requestContext.Delegate(destination);
+            _responseStarted = true;
         }
     }
 }
