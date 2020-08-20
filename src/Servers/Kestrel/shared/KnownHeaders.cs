@@ -212,15 +212,9 @@ namespace CodeGenerator
         static string AppendSwitch(IEnumerable<IGrouping<int, KnownHeader>> values) =>
              $@"switch (name.Length)
             {{{Each(values, byLength => $@"
-                case {byLength.Key}:{AppendSwitchSection(byLength.Key, byLength.OrderBy(ResolveSortName, StringComparer.InvariantCulture).ToList())}
+                case {byLength.Key}:{AppendSwitchSection(byLength.Key, byLength.OrderBy(h => h, KnownHeaderComparer.Instance).ToList())}
                     break;")}
             }}";
-
-        static string ResolveSortName(KnownHeader h)
-        {
-            // Prefix primary header with underscore so it is first
-            return (h.PrimaryHeader ? "_" : "") + h.Name;
-        }
 
         static string AppendHPackSwitch(IEnumerable<HPackGroup> values) =>
              $@"switch (index)
@@ -334,7 +328,7 @@ namespace CodeGenerator
             // Group headers together that have the same ignore equal case equals check for the first term.
             // There will probably only be more than one item in a group for Content-Encoding, Content-Language, Content-Location.
             var groups = values.GroupBy(header => header.EqualIgnoreCaseBytesFirstTerm())
-                .OrderBy(g => ResolveSortName(g.First()), StringComparer.InvariantCulture)
+                .OrderBy(g => g.First(), KnownHeaderComparer.Instance)
                 .ToList();
 
             return start + $@"{Each(groups, (byFirstTerm, i) => $@"{(byFirstTerm.Count() == 1 ? $@"{Each(byFirstTerm, header => $@"
@@ -1182,13 +1176,6 @@ $@"        private void Clear(long bitsToClear)
 ")}}}";
         }
 
-        private class HPackGroup
-        {
-            public int[] HPackStaticTableIndexes { get; set; }
-            public KnownHeader Header { get; set; }
-            public string Name { get; set; }
-        }
-
         private static IEnumerable<HPackGroup> GroupHPack(KnownHeader[] headers)
         {
             var staticHeaders = new (int Index, HeaderField HeaderField)[H2StaticTable.Count];
@@ -1208,6 +1195,34 @@ $@"        private void Clear(long bitsToClear)
             }).Where(g => g.Header != null).ToList();
 
             return groupedHeaders;
+        }
+
+        private class HPackGroup
+        {
+            public int[] HPackStaticTableIndexes { get; set; }
+            public KnownHeader Header { get; set; }
+            public string Name { get; set; }
+        }
+
+        private class KnownHeaderComparer : IComparer<KnownHeader>
+        {
+            public static readonly KnownHeaderComparer Instance = new KnownHeaderComparer();
+
+            public int Compare(KnownHeader x, KnownHeader y)
+            {
+                // Primary headers appear first
+                if (x.PrimaryHeader && !y.PrimaryHeader)
+                {
+                    return -1;
+                }
+                if (y.PrimaryHeader && !x.PrimaryHeader)
+                {
+                    return 1;
+                }
+
+                // Then alphabetical
+                return StringComparer.InvariantCulture.Compare(x.Name, y.Name);
+            }
         }
     }
 }
