@@ -1,4 +1,4 @@
-﻿Param
+Param
 (
     [bool]$use_tls = $false
 )

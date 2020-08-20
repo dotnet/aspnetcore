@@ -63,6 +63,7 @@ namespace Microsoft.AspNetCore.Mvc
             options.ModelBinderProviders.Add(new HeaderModelBinderProvider());
             options.ModelBinderProviders.Add(new FloatingPointTypeModelBinderProvider());
             options.ModelBinderProviders.Add(new EnumTypeModelBinderProvider(options));
+            options.ModelBinderProviders.Add(new DateTimeModelBinderProvider());
             options.ModelBinderProviders.Add(new SimpleTypeModelBinderProvider());
             options.ModelBinderProviders.Add(new CancellationTokenModelBinderProvider());
             options.ModelBinderProviders.Add(new ByteArrayModelBinderProvider());

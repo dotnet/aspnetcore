@@ -3,6 +3,8 @@
 
 package com.microsoft.signalr;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -100,7 +102,7 @@ class LongPollingTransport implements Transport {
                     } else {
                         if (response.getContent() != null) {
                             logger.debug("Message received.");
-                            onReceiveThread.submit(() ->this.onReceive(response.getContent()));
+                            onReceiveThread.submit(() -> this.onReceive(response.getContent()));
                         } else {
                             logger.debug("Poll timed out, reissuing.");
                         }
@@ -121,7 +123,7 @@ class LongPollingTransport implements Transport {
     }
 
     @Override
-    public Completable send(String message) {
+    public Completable send(ByteBuffer message) {
         if (!this.active) {
             return Completable.error(new Exception("Cannot send unless the transport is active."));
         }
@@ -138,7 +140,7 @@ class LongPollingTransport implements Transport {
     }
 
     @Override
-    public void onReceive(String message) {
+    public void onReceive(ByteBuffer message) {
         this.onReceiveCallBack.invoke(message);
         logger.debug("OnReceived callback has been invoked.");
     }

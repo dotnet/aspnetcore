@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
                 var metadataReader = peReader.GetMetadataReader();
 
-                var references = new List<AssemblyItem>();
+                var references = new List<AssemblyItem>(metadataReader.AssemblyReferences.Count);
                 foreach (var handle in metadataReader.AssemblyReferences)
                 {
                     var reference = metadataReader.GetAssemblyReference(handle);

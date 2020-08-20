@@ -218,21 +218,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestBodyPipe.Reset();
         }
 
-        private void Copy(in ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer)
-        {
-            if (readableBuffer.IsSingleSegment)
-            {
-                writableBuffer.Write(readableBuffer.FirstSpan);
-            }
-            else
-            {
-                foreach (var memory in readableBuffer)
-                {
-                    writableBuffer.Write(memory.Span);
-                }
-            }
-        }
-
         protected override void OnReadStarted()
         {
             _pumpTask = PumpAsync();
@@ -442,7 +427,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             consumed = buffer.GetPosition(actual);
             examined = consumed;
 
-            Copy(buffer.Slice(0, actual), writableBuffer);
+            buffer.Slice(0, actual).CopyTo(writableBuffer);
 
             _inputLength -= actual;
             AddAndCheckObservedBytes(actual);

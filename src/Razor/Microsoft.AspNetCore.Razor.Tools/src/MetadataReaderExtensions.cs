@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
         
         internal static AssemblyIdentity[] GetReferencedAssembliesOrThrow(this MetadataReader reader)
         {
-            var references = new List<AssemblyIdentity>();
+            var references = new List<AssemblyIdentity>(reader.AssemblyReferences.Count);
 
             foreach (var referenceHandle in reader.AssemblyReferences)
             {

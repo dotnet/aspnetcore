@@ -124,7 +124,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                     }
 
                     var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[_schedulerIndex], _trace,
-                        _options.MaxReadBufferSize, _options.MaxWriteBufferSize, _options.WaitForDataBeforeAllocatingBuffer);
+                        _options.MaxReadBufferSize, _options.MaxWriteBufferSize, _options.WaitForDataBeforeAllocatingBuffer,
+                        _options.UnsafePreferInlineScheduling);
 
                     connection.Start();
 

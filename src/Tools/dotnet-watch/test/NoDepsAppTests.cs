@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.NotEqual(processIdentifier, processIdentifier2);
         }
 
-        [Fact]
+        [ConditionalFact]
         [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/24841", Queues = "Windows.10.Arm64.Open")]
         public async Task RestartProcessThatTerminatesAfterFileChange()
         {

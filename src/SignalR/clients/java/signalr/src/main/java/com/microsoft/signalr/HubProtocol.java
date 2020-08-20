@@ -3,6 +3,9 @@
 
 package com.microsoft.signalr;
 
+import java.nio.ByteBuffer;
+import java.util.List;
+
 /**
  * A protocol abstraction for communicating with SignalR hubs.
  */
@@ -13,15 +16,15 @@ interface HubProtocol {
 
     /**
      * Creates a new list of {@link HubMessage}s.
-     * @param message A string representation of one or more {@link HubMessage}s.
+     * @param message A ByteBuffer representation of one or more {@link HubMessage}s.
      * @return A list of {@link HubMessage}s.
      */
-    HubMessage[] parseMessages(String message, InvocationBinder binder);
+    List<HubMessage> parseMessages(ByteBuffer message, InvocationBinder binder);
 
     /**
      * Writes the specified {@link HubMessage} to a String.
      * @param message The message to write.
-     * @return A string representation of the message.
+     * @return A ByteBuffer representation of the message.
      */
-    String writeMessage(HubMessage message);
+    ByteBuffer writeMessage(HubMessage message);
 }

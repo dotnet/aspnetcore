@@ -14,12 +14,23 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         public int Index { get; }
 
         /// <summary>
+        /// The size of the placeholder in pixels.
+        /// <para>
+        /// For virtualized components with vertical scrolling, this would be the height of the placeholder in pixels.
+        /// For virtualized components with horizontal scrolling, this would be the width of the placeholder in pixels.
+        /// </para>
+        /// </summary>
+        public float Size { get; }
+
+        /// <summary>
         /// Constructs a new <see cref="PlaceholderContext"/> instance.
         /// </summary>
         /// <param name="index">The item index of the placeholder.</param>
-        public PlaceholderContext(int index)
+        /// <param name="size">The size of the placeholder in pixels.</param>
+        public PlaceholderContext(int index, float size = 0f)
         {
             Index = index;
+            Size = size;
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -21,6 +21,42 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         private static readonly X509KeyStorageFlags DefaultFlags = RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ?
             UnsafeEphemeralKeySet : (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? X509KeyStorageFlags.PersistKeySet :
             X509KeyStorageFlags.DefaultKeySet);
+
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
+        public void Configure_NoOpsWhenConfigurationIsEmpty()
+        {
+            var expectedKeyPath = Path.Combine(Directory.GetCurrentDirectory(), "./testkey.json");
+            try
+            {
+                // Arrange
+                var configuration = new ConfigurationBuilder()
+                    .AddInMemoryCollection(new Dictionary<string, string>()
+                    {
+                    }).Build();
+
+                var configureSigningCredentials = new ConfigureSigningCredentials(
+                    configuration,
+                    new TestLogger<ConfigureSigningCredentials>());
+
+                var options = new ApiAuthorizationOptions();
+
+                // Act
+                configureSigningCredentials.Configure(options);
+
+                // Assert
+                Assert.NotNull(options);
+                Assert.False(File.Exists(expectedKeyPath));
+                Assert.Null(options.SigningCredential);
+            }
+            finally
+            {
+                if (File.Exists(expectedKeyPath))
+                {
+                    File.Delete(expectedKeyPath);
+                }
+            }
+        }
 
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.CLR)]
