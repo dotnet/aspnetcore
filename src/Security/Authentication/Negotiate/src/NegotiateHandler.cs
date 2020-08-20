@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text.Encodings.Web;
@@ -29,6 +30,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
         private bool _requestProcessed;
         private INegotiateState _negotiateState;
+        private LinuxAdapter _linuxAdapter;
 
         /// <summary>
         /// Creates a new <see cref="NegotiateHandler"/>
@@ -39,7 +41,17 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <param name="clock"></param>
         public NegotiateHandler(IOptionsMonitor<NegotiateOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
-        { }
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && Options?.LdapConnectionOptions != null)
+            {
+                if (string.IsNullOrEmpty(Options.LdapConnectionOptions.Domain))
+                {
+                    throw new InvalidOperationException($"{nameof(LdapConnectionOptions)} is configured but {nameof(LdapConnectionOptions.Domain)} is not set");
+                }
+
+                _linuxAdapter = new LinuxAdapter(Options, Logger);
+            }
+        }
 
         /// <summary>
         /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
@@ -328,6 +340,12 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             {
                 Principal = user
             };
+
+            if (_linuxAdapter != null)
+            {
+                await _linuxAdapter.OnAuthenticatedAsync(authenticatedContext);
+            }
+
             await Events.Authenticated(authenticatedContext);
 
             if (authenticatedContext.Result != null)

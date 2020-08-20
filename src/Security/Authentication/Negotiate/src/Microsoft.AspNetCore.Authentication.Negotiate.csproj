@@ -11,6 +11,7 @@
     <Reference Include="Microsoft.AspNetCore.Authentication" />
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
+    <Reference Include="System.DirectoryServices.Protocols" />
   </ItemGroup>
 
 </Project>

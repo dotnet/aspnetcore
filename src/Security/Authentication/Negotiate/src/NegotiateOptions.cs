@@ -34,6 +34,12 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public bool PersistNtlmCredentials { get; set; } = true;
 
         /// <summary>
+        /// Configuration settings for LDAP connections used to retrieve AD Role claims.
+        /// This is only used on Linux systems.
+        /// </summary>
+        public LdapConnectionOptions LdapConnectionOptions { get; set; } = null;
+
+        /// <summary>
         /// Indicates if integrated server Windows Auth is being used instead of this handler.
         /// See <see cref="PostConfigureNegotiateOptions"/>.
         /// </summary>

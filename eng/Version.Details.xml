@@ -205,6 +205,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0862d48a9c9fbda879206b194a16d8e607deac42</Sha>
     </Dependency>
+    <Dependency Name="System.DirectoryServices.Protocols" Version="5.0.0-rc.1.20416.7">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>0862d48a9c9fbda879206b194a16d8e607deac42</Sha>
+    </Dependency>
     <Dependency Name="System.Drawing.Common" Version="5.0.0-rc.1.20416.7">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0862d48a9c9fbda879206b194a16d8e607deac42</Sha>
