@@ -223,7 +223,7 @@ namespace Templates.Test
             }
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/25103")]
         [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         public async Task MvcTemplate_SingleFileExe()
         {
