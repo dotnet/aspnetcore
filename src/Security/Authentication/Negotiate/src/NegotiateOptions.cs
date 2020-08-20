@@ -37,7 +37,25 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// Configuration settings for LDAP connections used to retrieve AD Role claims.
         /// This is only used on Linux systems.
         /// </summary>
-        public LdapConnectionOptions LdapConnectionOptions { get; set; } = null;
+        public LdapOptions LdapOptions { get; } = new LdapOptions();
+
+        /// <summary>
+        /// Checks that the options are valid for a specific scheme
+        /// </summary>
+        /// <param name="scheme">The scheme being validated.</param>
+        public override void Validate(string scheme)
+        {
+            Validate();
+        }
+
+        /// <summary>
+        /// Check that the options are valid.  Should throw an exception if things are not ok.
+        /// </summary>
+        public override void Validate()
+        {
+            base.Validate();
+            LdapOptions.Validate();
+        }
 
         /// <summary>
         /// Indicates if integrated server Windows Auth is being used instead of this handler.

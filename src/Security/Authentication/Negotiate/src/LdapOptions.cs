@@ -9,8 +9,14 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     /// <summary>
     /// Options class for configuring LDAP connections on Linux
     /// </summary>
-    public class LdapConnectionOptions
+    public class LdapOptions
     {
+        /// <summary>
+        /// Configure whether LDAP connection should be used to resolve role claims.
+        /// This should only be enabled on Linux.
+        /// </summary>
+        public bool EnableLdapRoleClaimResolution { get; set; }
+
         /// <summary>
         /// The domain to use for the LDAP connection. This is a mandatory setting.
         /// </summary>
@@ -28,8 +34,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
         /// <summary>
         /// The machine account password to use when opening the LDAP connection.
-        /// If this is not provided, the machine wide credentials of the
-        /// domain joined machine will be used.
+        /// This must be provided if a MachineAccountName is provided.
         /// </summary>
         public string MachineAccountPassword { get; set; }
 
@@ -40,8 +45,25 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public bool ResolveNestedGroups { get; set; } = true;
 
         /// <summary>
-        /// Additional configuration on the created LdapConnection.
+        /// The LdapConnection to be used to retrieve role claims. If no explicit
+        /// connection is provided, an LDAP connection will be automatically created
+        /// based on the Domain, MachineAccountName and MachineAccountPassword options.
         /// </summary>
-        public Action<LdapConnection> ConfigureLdapConnection { get; set; }
+        public LdapConnection LdapConnection { get; set; }
+
+        public void Validate()
+        {
+            if (EnableLdapRoleClaimResolution)
+            {
+                if (string.IsNullOrEmpty(Domain))
+                {
+                    throw new ArgumentException($"{nameof(EnableLdapRoleClaimResolution)} is set to true but {nameof(Domain)} is not set.");
+                }
+                if (string.IsNullOrEmpty(MachineAccountName) && !string.IsNullOrEmpty(MachineAccountPassword))
+                {
+                    throw new ArgumentException($"{nameof(MachineAccountPassword)} should only be specified when {nameof(MachineAccountName)} is configured.");
+                }
+            }
+        }
     }
 }

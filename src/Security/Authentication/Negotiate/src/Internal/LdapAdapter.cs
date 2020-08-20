@@ -12,52 +12,57 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
-    internal class LinuxAdapter
+    internal class LdapAdapter
     {
         private readonly string _distinguishedName;
         private readonly LdapConnection _connection;
         private readonly ILogger _logger;
-        private readonly LdapConnectionOptions _options;
+        private readonly LdapOptions _options;
 
-        public LinuxAdapter(NegotiateOptions options, ILogger logger)
+        public LdapAdapter(LdapOptions options, ILogger logger)
         {
             _logger = logger;
-            _options = options.LdapConnectionOptions;
+            _options = options;
             _distinguishedName = _options.Domain.Split('.').Select(name => $"dc={name}").Aggregate((a, b) => $"{a},{b}");
 
-
-            var di = new LdapDirectoryIdentifier(server: _options.Domain, fullyQualifiedDnsHostName: true, connectionless: false);
-
-            if (string.IsNullOrEmpty(_options.MachineAccountName))
+            if (_options.LdapConnection == null)
             {
-                // Use default credentials
-                _connection = new LdapConnection(di);
+                var di = new LdapDirectoryIdentifier(server: _options.Domain, fullyQualifiedDnsHostName: true, connectionless: false);
+
+                if (string.IsNullOrEmpty(_options.MachineAccountName))
+                {
+                    // Use default credentials
+                    _connection = new LdapConnection(di);
+                }
+                else
+                {
+                    // Use specific specific machine account
+                    var machineAccount = _options.MachineAccountName + "@" + _options.Domain;
+                    var credentials = new NetworkCredential(machineAccount, _options.MachineAccountPassword);
+                    _connection = new LdapConnection(di, credentials);
+                }
+
+                _connection.SessionOptions.ProtocolVersion = 3; //Setting LDAP Protocol to latest version
+                _connection.Timeout = TimeSpan.FromMinutes(1);
             }
-            else
-            {
-                // Use specific specific machine account
-                var machineAccount = _options.MachineAccountName + "@" + _options.Domain;
-                var credentials = new NetworkCredential(machineAccount, _options.MachineAccountPassword);
-                _connection = new LdapConnection(di, credentials);
-            }
 
-            _connection.SessionOptions.ProtocolVersion = 3; //Setting LDAP Protocol to latest version
-            _connection.Timeout = TimeSpan.FromMinutes(1);
-
-            // Additional custom configuration
-            _options.ConfigureLdapConnection?.Invoke(_connection);
-
+            // TODO: Async? IO?
             _connection.Bind(); // This line actually makes the connection.
         }
 
-        public Task OnAuthenticatedAsync(AuthenticatedContext context)
+        public async Task OnAuthenticatedAsync(AuthenticatedContext context)
         {
             var user = context.Principal.Identity.Name;
             var userAccountName = user.Substring(0, user.IndexOf('@'));
 
             var filter = $"(&(objectClass=user)(sAMAccountName={userAccountName}))"; // This is using ldap search query language, it is looking on the server for someUser
             var searchRequest = new SearchRequest(_distinguishedName, filter, SearchScope.Subtree, null);
-            var searchResponse = (SearchResponse)_connection.SendRequest(searchRequest);
+            var searchResponse = (SearchResponse) await Task<DirectoryResponse>.Factory.FromAsync(
+                _connection.BeginSendRequest,
+                _connection.EndSendRequest,
+                searchRequest,
+                PartialResultProcessing.NoPartialResultSupport,
+                null);
 
             if (searchResponse.Entries.Count > 0)
             {
@@ -92,7 +97,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 _logger.LogWarning($"No response received for query: {filter} with distinguished name: {_distinguishedName}");
             }
 
-            return Task.CompletedTask;
+            return;
         }
 
         private void GetNestedGroups(ClaimsIdentity principal, string groupCN)

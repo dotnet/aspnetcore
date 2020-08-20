@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
         private bool _requestProcessed;
         private INegotiateState _negotiateState;
-        private LinuxAdapter _linuxAdapter;
+        private LdapAdapter _linuxAdapter;
 
         /// <summary>
         /// Creates a new <see cref="NegotiateHandler"/>
@@ -332,14 +332,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 Principal = user
             };
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && Options?.LdapConnectionOptions != null && _linuxAdapter == null)
+            if (Options.LdapOptions.EnableLdapRoleClaimResolution && _linuxAdapter == null)
             {
-                if (string.IsNullOrEmpty(Options.LdapConnectionOptions.Domain))
-                {
-                    throw new InvalidOperationException($"{nameof(LdapConnectionOptions)} is configured but {nameof(LdapConnectionOptions.Domain)} is not set");
-                }
-
-                _linuxAdapter = new LinuxAdapter(Options, Logger);
+                _linuxAdapter = new LdapAdapter(Options.LdapOptions, Logger);
             }
 
             if (_linuxAdapter != null)
