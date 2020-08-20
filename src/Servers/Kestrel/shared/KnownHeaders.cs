@@ -212,7 +212,7 @@ namespace CodeGenerator
         static string AppendSwitch(IEnumerable<IGrouping<int, KnownHeader>> values) =>
              $@"switch (name.Length)
             {{{Each(values, byLength => $@"
-                case {byLength.Key}:{AppendSwitchSection(byLength.Key, byLength.OrderBy(ResolveSortName).ToList())}
+                case {byLength.Key}:{AppendSwitchSection(byLength.Key, byLength.OrderBy(ResolveSortName, StringComparer.InvariantCulture).ToList())}
                     break;")}
             }}";
 
@@ -331,24 +331,25 @@ namespace CodeGenerator
                 }
             }
 
-            // Group headers together that have the same ignore equal case equals check
-            // Explicitly order result after grouping.
-            var groups = values.GroupBy(header => header.EqualIgnoreCaseBytesFirstTerm(), resultSelector: (key, headers) => (Key: key, Headers: headers.OrderBy(ResolveSortName).ToList()))
-                .OrderBy(g => ResolveSortName(g.Headers.First()))
+            // Group headers together that have the same ignore equal case equals check for the first term.
+            // There will probably only be more than one item in a group for Content-Encoding, Content-Language, Content-Location.
+            var groups = values.GroupBy(header => header.EqualIgnoreCaseBytesFirstTerm())
+                .OrderBy(g => ResolveSortName(g.First()), StringComparer.InvariantCulture)
                 .ToList();
 
-            return start + $@"{Each(groups, (byFirstTerm, i) => $@"{(byFirstTerm.Headers.Count == 1 ? $@"{Each(byFirstTerm.Headers, header => $@"
+            return start + $@"{Each(groups, (byFirstTerm, i) => $@"{(byFirstTerm.Count() == 1 ? $@"{Each(byFirstTerm, header => $@"
                     {(i > 0 ? "else " : "")}if ({header.EqualIgnoreCaseBytes(firstTermVar)})
                     {{{GenerateIfBody(header)}
                     }}")}" : $@"
                     if ({byFirstTerm.Key.Replace(firstTermVarExpression, firstTermVar)})
-                    {{{Each(byFirstTerm.Headers, (header, i) => $@"
+                    {{{Each(byFirstTerm, (header, i) => $@"
                         {(i > 0 ? "else " : "")}if ({header.EqualIgnoreCaseBytesSecondTermOnwards()})
                         {{{GenerateIfBody(header, extraIndent: "    ")}
                         }}")}
                     }}")}")}";
         }
 
+        [DebuggerDisplay("{Name}")]
         public class KnownHeader
         {
             public string Name { get; set; }
@@ -661,7 +662,7 @@ namespace CodeGenerator
             var responseTrailers = ResponseTrailers;
 
             var allHeaderNames = RequestHeaders.Concat(ResponseHeaders).Concat(ResponseTrailers)
-                .Select(h => h.Identifier).Distinct().OrderBy(n => n).ToArray();
+                .Select(h => h.Identifier).Distinct().OrderBy(n => n, StringComparer.InvariantCulture).ToArray();
 
             var loops = new[]
             {
