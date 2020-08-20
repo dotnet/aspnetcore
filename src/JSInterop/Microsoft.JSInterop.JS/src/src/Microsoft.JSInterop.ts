@@ -215,6 +215,7 @@ export module DotNet {
      * Finds the JavaScript function matching the specified identifier.
      *
      * @param identifier Identifies the globally-reachable function to be returned.
+     * @param targetInstanceId The instance ID of the target JS object.
      * @returns A Function instance.
      */
     findJSFunction, // Note that this is used by the JS interop code inside Mono WebAssembly itself

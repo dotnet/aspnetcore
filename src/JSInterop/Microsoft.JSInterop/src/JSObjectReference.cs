@@ -8,9 +8,12 @@ using System.Threading.Tasks;
 
 namespace Microsoft.JSInterop
 {
+    /// <summary>
+    /// Represents a reference to a JavaScript object.
+    /// </summary>
     public class JSObjectReference : IJSRuntime, IDisposable, IAsyncDisposable
     {
-        public static readonly JsonEncodedText IdKey = JsonEncodedText.Encode("__jsObjectId");
+        internal static readonly JsonEncodedText IdKey = JsonEncodedText.Encode("__jsObjectId");
 
         private readonly JSRuntime _jsRuntime;
 
@@ -25,6 +28,7 @@ namespace Microsoft.JSInterop
             Id = id;
         }
 
+        /// <inheritdoc />
         public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, params object[] args)
         {
             ThrowIfDisposed();
@@ -38,6 +42,7 @@ namespace Microsoft.JSInterop
             return await InvokeAsync<TValue>(identifier, CancellationToken.None, args);
         }
 
+        /// <inheritdoc />
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, params object[] args)
         {
             ThrowIfDisposed();
@@ -45,11 +50,18 @@ namespace Microsoft.JSInterop
             return _jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args, Id);
         }
 
+        /// <summary>
+        /// Disposes the <see cref="JSObjectReference"/>, freeing its resources and disabling it from further use.
+        /// </summary>
         public void Dispose()
         {
             _ = DisposeAsync();
         }
 
+        /// <summary>
+        /// Disposes the <see cref="JSObjectReference"/>, freeing its resources and disabling it from further use.
+        /// </summary>
+        /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
         public async ValueTask DisposeAsync()
         {
             if (!_disposed)
@@ -60,6 +72,9 @@ namespace Microsoft.JSInterop
             }
         }
 
+        /// <summary>
+        /// Throws an exception if this instance has been disposed.
+        /// </summary>
         protected void ThrowIfDisposed()
         {
             if (_disposed)

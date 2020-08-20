@@ -5,6 +5,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.JSInterop
 {
+    /// <summary>
+    /// Represents a reference to a JavaScript object whose functions can be invoked synchronously.
+    /// </summary>
     public class JSInProcessObjectReference : JSObjectReference, IJSInProcessRuntime
     {
         private readonly JSInProcessRuntime _jsRuntime;
@@ -14,6 +17,7 @@ namespace Microsoft.JSInterop
             _jsRuntime = jsRuntime;
         }
 
+        /// <inheritdoc />
         [return: MaybeNull]
         public TValue Invoke<TValue>(string identifier, params object[] args)
         {

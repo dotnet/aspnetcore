@@ -894,7 +894,7 @@ namespace Microsoft.JSInterop.Infrastructure
                 _nextInvocationTcs = new TaskCompletionSource<object>();
             }
 
-            protected override string InvokeJS(string identifier, string argsJson)
+            protected override string InvokeJS(string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
             {
                 LastInvocationAsyncHandle = default;
                 LastInvocationIdentifier = identifier;

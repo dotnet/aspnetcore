@@ -99,7 +99,7 @@ namespace Microsoft.JSInterop
 
             public string? NextResultJson { get; set; }
 
-            protected override string? InvokeJS(string identifier, string? argsJson)
+            protected override string? InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
             {
                 InvokeCalls.Add(new InvokeArgs { Identifier = identifier, ArgsJson = argsJson });
                 return NextResultJson;
