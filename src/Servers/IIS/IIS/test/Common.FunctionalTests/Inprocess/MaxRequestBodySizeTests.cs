@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                 });
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var result = await deploymentResult.HttpClient.PostAsync("/ReadRequestBodyLarger", new StringContent(new string('a', 10)));
+            var result = await deploymentResult.HttpClient.PostAsync("/ReadRequestBodyLarger", new StringContent(new string('a', 100000000)));
 
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         }
