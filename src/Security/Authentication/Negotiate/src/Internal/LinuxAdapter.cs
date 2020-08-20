@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             _options = options.LdapConnectionOptions;
             _distinguishedName = _options.Domain.Split('.').Select(name => $"dc={name}").Aggregate((a, b) => $"{a},{b}");
 
+
             var di = new LdapDirectoryIdentifier(server: _options.Domain, fullyQualifiedDnsHostName: true, connectionless: false);
 
             if (string.IsNullOrEmpty(_options.MachineAccountName))
@@ -42,6 +43,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
             _connection.SessionOptions.ProtocolVersion = 3; //Setting LDAP Protocol to latest version
             _connection.Timeout = TimeSpan.FromMinutes(1);
+
+            // Additional custom configuration
+            _options.ConfigureLdapConnection?.Invoke(_connection);
+
             _connection.Bind(); // This line actually makes the connection.
         }
 
