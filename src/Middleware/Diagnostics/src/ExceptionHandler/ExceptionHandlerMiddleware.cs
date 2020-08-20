@@ -118,23 +118,17 @@ namespace Microsoft.AspNetCore.Diagnostics
 
                 await _options.ExceptionHandler(context);
 
-                if (context.Response.StatusCode == StatusCodes.Status404NotFound)
+                if (context.Response.StatusCode != StatusCodes.Status404NotFound)
                 {
-                    // Reset status and clear headers
-                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                    await ClearCacheHeaders(context.Response);
+                    if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled("Microsoft.AspNetCore.Diagnostics.HandledException"))
+                    {
+                        _diagnosticListener.Write("Microsoft.AspNetCore.Diagnostics.HandledException", new { httpContext = context, exception = edi.SourceException });
+                    }
 
-                    // This exception will be logged and the original exception wil be thrown
-                    throw new InvalidOperationException($"No exception handler was found at the configured path {_options.ExceptionHandlingPath}.");
+                    return;
                 }
 
-                if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled("Microsoft.AspNetCore.Diagnostics.HandledException"))
-                {
-                    _diagnosticListener.Write("Microsoft.AspNetCore.Diagnostics.HandledException", new { httpContext = context, exception = edi.SourceException });
-                }
-
-                // TODO: Optional re-throw? We'll re-throw the original exception by default if the error handler throws.
-                return;
+                _logger.ErrorHandlerNotFound();
             }
             catch (Exception ex2)
             {

@@ -497,11 +497,15 @@ namespace Microsoft.AspNetCore.Diagnostics
                             catch (InvalidOperationException ex)
                             {
                                 exception = ex;
+
+                                // This mimics what the server would do when an exception occurs
+                                httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
                             }
 
                             // The original exception is thrown
                             Assert.NotNull(exception);
                             Assert.Equal("Something bad happened.", exception.Message);
+
                         });
 
                         app.UseExceptionHandler("/non-existent-hander");
@@ -532,23 +536,12 @@ namespace Microsoft.AspNetCore.Diagnostics
                 var response = await client.GetAsync("throw");
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
                 Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
-                IEnumerable<string> values;
-                Assert.True(response.Headers.CacheControl.NoCache);
-                Assert.True(response.Headers.CacheControl.NoStore);
-                Assert.True(response.Headers.TryGetValues("Pragma", out values));
-                Assert.Single(values);
-                Assert.Equal("no-cache", values.First());
-                Assert.True(response.Content.Headers.TryGetValues("Expires", out values));
-                Assert.Single(values);
-                Assert.Equal("-1", values.First());
-                Assert.False(response.Headers.TryGetValues("ETag", out values));
             }
 
             Assert.Contains(sink.Writes, w =>
-                w.LogLevel == LogLevel.Error
-                && w.Message == "An exception was thrown attempting to execute the error handler."
-                && w.Exception != null
-                && w.Exception.Message == "No exception handler was found at the configured path /non-existent-hander.");
+                w.LogLevel == LogLevel.Warning
+                && w.EventId == 4
+                && w.Message == "No exception handler was found, rethrowing original exception.");
         }
     }
 }
