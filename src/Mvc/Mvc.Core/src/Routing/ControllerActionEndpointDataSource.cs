@@ -15,26 +15,18 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     internal class ControllerActionEndpointDataSource : ActionEndpointDataSourceBase
     {
         private readonly ActionEndpointFactory _endpointFactory;
+        private readonly OrderedEndpointsSequenceProvider _orderSequence;
         private readonly List<ConventionalRouteEntry> _routes;
-
-        private int _order;
 
         public ControllerActionEndpointDataSource(
             IActionDescriptorCollectionProvider actions,
-            ActionEndpointFactory endpointFactory)
+            ActionEndpointFactory endpointFactory,
+            OrderedEndpointsSequenceProvider orderSequence)
             : base(actions)
         {
             _endpointFactory = endpointFactory;
-
+            _orderSequence = orderSequence;
             _routes = new List<ConventionalRouteEntry>();
-
-            // In traditional conventional routing setup, the routes defined by a user have a order
-            // defined by how they are added into the list. We would like to maintain the same order when building
-            // up the endpoints too.
-            //
-            // Start with an order of '1' for conventional routes as attribute routes have a default order of '0'.
-            // This is for scenarios dealing with migrating existing Router based code to Endpoint Routing world.
-            _order = 1;
 
             DefaultBuilder = new ControllerActionEndpointConventionBuilder(Lock, Conventions);
 
@@ -59,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             lock (Lock)
             {
                 var conventions = new List<Action<EndpointBuilder>>();
-                _routes.Add(new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens, _order++, conventions));
+                _routes.Add(new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens, _orderSequence.GetNext(), conventions));
                 return new ControllerActionEndpointConventionBuilder(Lock, conventions);
             }
         }
@@ -112,19 +104,22 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         internal void AddDynamicControllerEndpoint(IEndpointRouteBuilder endpoints, string pattern, Type transformerType, object state)
         {
             CreateInertEndpoints = true;
-            var order = _order++;
+            lock (Lock)
+            {
+                var order = _orderSequence.GetNext();
 
-            endpoints.Map(
-                pattern,
-                context =>
-                {
-                    throw new InvalidOperationException("This endpoint is not expected to be executed directly.");
-                })
-                .Add(b =>
-                {
-                    ((RouteEndpointBuilder)b).Order = order;
-                    b.Metadata.Add(new DynamicControllerRouteValueTransformerMetadata(transformerType, state));
-                });
+                endpoints.Map(
+                    pattern,
+                    context =>
+                    {
+                        throw new InvalidOperationException("This endpoint is not expected to be executed directly.");
+                    })
+                    .Add(b =>
+                    {
+                        ((RouteEndpointBuilder)b).Order = order;
+                        b.Metadata.Add(new DynamicControllerRouteValueTransformerMetadata(transformerType, state));
+                    });
+            }
         }
     }
 }
