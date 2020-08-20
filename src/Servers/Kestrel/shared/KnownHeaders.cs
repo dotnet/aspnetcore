@@ -212,7 +212,7 @@ namespace CodeGenerator
         static string AppendSwitch(IEnumerable<IGrouping<int, KnownHeader>> values) =>
              $@"switch (name.Length)
             {{{Each(values, byLength => $@"
-                case {byLength.Key}:{AppendSwitchSection(byLength.Key, byLength.OrderBy(ResolveSortName))}
+                case {byLength.Key}:{AppendSwitchSection(byLength.Key, byLength.OrderBy(ResolveSortName).ToList())}
                     break;")}
             }}";
 
@@ -290,7 +290,7 @@ namespace CodeGenerator
             }
         }
 
-        static string AppendSwitchSection(int length, IOrderedEnumerable<KnownHeader> values)
+        static string AppendSwitchSection(int length, IList<KnownHeader> values)
         {
             var useVarForFirstTerm = values.Count() > 1 && values.Select(h => h.FirstNameIgnoreCaseSegment()).Distinct().Count() == 1;
             var firstTermVarExpression = values.Select(h => h.FirstNameIgnoreCaseSegment()).FirstOrDefault();
@@ -333,15 +333,16 @@ namespace CodeGenerator
 
             // Group headers together that have the same ignore equal case equals check
             // Explicitly order result after grouping.
-            var groups = values.GroupBy(header => header.EqualIgnoreCaseBytesFirstTerm())
-                .OrderBy(g => ResolveSortName(g.OrderBy(ResolveSortName).First()));
+            var groups = values.GroupBy(header => header.EqualIgnoreCaseBytesFirstTerm(), resultSelector: (key, headers) => (Key: key, Headers: headers.OrderBy(ResolveSortName).ToList()))
+                .OrderBy(g => ResolveSortName(g.Headers.First()))
+                .ToList();
 
-            return start + $@"{Each(groups, (byFirstTerm, i) => $@"{(byFirstTerm.Count() == 1 ? $@"{Each(byFirstTerm.OrderBy(ResolveSortName), header => $@"
+            return start + $@"{Each(groups, (byFirstTerm, i) => $@"{(byFirstTerm.Headers.Count == 1 ? $@"{Each(byFirstTerm.Headers, header => $@"
                     {(i > 0 ? "else " : "")}if ({header.EqualIgnoreCaseBytes(firstTermVar)})
                     {{{GenerateIfBody(header)}
                     }}")}" : $@"
                     if ({byFirstTerm.Key.Replace(firstTermVarExpression, firstTermVar)})
-                    {{{Each(byFirstTerm, (header, i) => $@"
+                    {{{Each(byFirstTerm.Headers, (header, i) => $@"
                         {(i > 0 ? "else " : "")}if ({header.EqualIgnoreCaseBytesSecondTermOnwards()})
                         {{{GenerateIfBody(header, extraIndent: "    ")}
                         }}")}
