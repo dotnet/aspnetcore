@@ -27,7 +27,7 @@ namespace Microsoft.JSInterop
             var resultJson = InvokeJS(
                 identifier,
                 JsonSerializer.Serialize(args, JsonSerializerOptions),
-                JSCallResultTypeHelper.FromGenericResultType<TValue>(),
+                JSCallResultTypeHelper.FromGeneric<TValue>(),
                 targetInstanceId);
 
             if (resultJson is null)

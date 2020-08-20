@@ -60,7 +60,7 @@ namespace Microsoft.JSInterop
             }
         }
 
-        private void ThrowIfDisposed()
+        protected void ThrowIfDisposed()
         {
             if (_disposed)
             {

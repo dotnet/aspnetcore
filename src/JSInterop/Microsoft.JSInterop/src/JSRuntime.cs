@@ -120,7 +120,7 @@ namespace Microsoft.JSInterop
                 var argsJson = args?.Any() == true ?
                     JsonSerializer.Serialize(args, JsonSerializerOptions) :
                     null;
-                var resultType = JSCallResultTypeHelper.FromGenericResultType<TValue>();
+                var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
 
                 BeginInvokeJS(taskId, identifier, argsJson, resultType, targetInstanceId);
 

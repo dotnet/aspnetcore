@@ -16,6 +16,10 @@ namespace Microsoft.JSInterop
 
         [return: MaybeNull]
         public TValue Invoke<TValue>(string identifier, params object[] args)
-            => _jsRuntime.Invoke<TValue>(identifier, Id, args);
+        {
+            ThrowIfDisposed();
+
+            return _jsRuntime.Invoke<TValue>(identifier, Id, args);
+        }
     }
 }

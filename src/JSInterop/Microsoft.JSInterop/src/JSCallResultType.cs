@@ -11,7 +11,7 @@ namespace Microsoft.JSInterop
 
     public static class JSCallResultTypeHelper
     {
-        public static JSCallResultType FromGenericResultType<TResult>()
+        public static JSCallResultType FromGeneric<TResult>()
             => typeof(JSObjectReference).IsAssignableFrom(typeof(TResult)) ?
                 JSCallResultType.JSObjectReference :
                 JSCallResultType.Default;
