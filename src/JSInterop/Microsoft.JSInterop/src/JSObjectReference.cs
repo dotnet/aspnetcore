@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.JSInterop
 {
-    public class JSObjectReference : IDisposable, IAsyncDisposable
+    public class JSObjectReference : IJSRuntime, IDisposable, IAsyncDisposable
     {
         public static readonly JsonEncodedText IdKey = JsonEncodedText.Encode("__jsObjectId");
 
@@ -32,7 +32,6 @@ namespace Microsoft.JSInterop
             if (_jsRuntime.DefaultAsyncTimeout.HasValue)
             {
                 using var cts = new CancellationTokenSource(_jsRuntime.DefaultAsyncTimeout.Value);
-                // We need to await here due to the using
                 return await InvokeAsync<TValue>(identifier, cts.Token, args);
             }
 

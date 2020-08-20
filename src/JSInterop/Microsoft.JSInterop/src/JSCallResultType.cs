@@ -12,7 +12,7 @@ namespace Microsoft.JSInterop
     public static class JSCallResultTypeHelper
     {
         public static JSCallResultType FromGenericResultType<TResult>()
-            => typeof(TResult) == typeof(JSObjectReference) ?
+            => typeof(JSObjectReference).IsAssignableFrom(typeof(TResult)) ?
                 JSCallResultType.JSObjectReference :
                 JSCallResultType.Default;
     }

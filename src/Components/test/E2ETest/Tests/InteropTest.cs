@@ -105,6 +105,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["instanceMethodStringValueUpper"] = @"""MY STRING""",
                 ["instanceMethodIncomingByRef"] = "123",
                 ["instanceMethodOutgoingByRef"] = "1234",
+                ["jsInProcessObjectReference.identity"] = "Invoked from JSInProcessObjectReference",
                 ["stringValueUpperSync"] = "MY STRING",
                 ["testDtoNonSerializedValueSync"] = "99999",
                 ["testDtoSync"] = "Same",

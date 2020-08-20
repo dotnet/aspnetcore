@@ -5,7 +5,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,7 +37,7 @@ namespace Microsoft.JSInterop
                 Converters =
                 {
                     new DotNetObjectReferenceJsonConverterFactory(this),
-                    new JSObjectReferenceJsonConverter(this),
+                    new JSObjectReferenceJsonConverter<JSObjectReference>(id => new JSObjectReference(this, id)),
                 }
             };
         }

@@ -168,6 +168,11 @@
             JSObjectReferenceDisposedException = e;
         }
 
+        if (shouldSupportSyncInterop)
+        {
+            InvokeInProcessJSInterop();
+        }
+
         Invocations = invocations;
         DoneWithInterop = true;
     }
@@ -195,6 +200,14 @@
         ReceiveDotNetObjectByRefResult["stringValueUpper"] = result.StringValueUpper;
         ReceiveDotNetObjectByRefResult["testDtoNonSerializedValue"] = result.TestDtoNonSerializedValue;
         ReceiveDotNetObjectByRefResult["testDto"] = result.TestDto.Value == passDotNetObjectByRef ? "Same" : "Different";
+    }
+
+    public void InvokeInProcessJSInterop()
+    {
+        var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
+
+        var jsInProcObjectReference = inProcRuntime.Invoke<JSInProcessObjectReference>("returnJSObjectReference");
+        ReturnValues["jsInProcessObjectReference.identity"] = jsInProcObjectReference.Invoke<string>("identity", "Invoked from JSInProcessObjectReference");
     }
 
     public class PassDotNetObjectByRefArgs

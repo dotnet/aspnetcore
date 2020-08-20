@@ -14,12 +14,13 @@ namespace Microsoft.JSInterop.WebAssembly
     public abstract class WebAssemblyJSRuntime : JSInProcessRuntime
     {
         /// <inheritdoc />
-        protected override string InvokeJS(string identifier, string argsJson)
+        protected override string InvokeJS(string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
         {
             var callInfo = new JSCallInfo
             {
                 FunctionIdentifier = identifier,
-                ResultType = JSCallResultType.Default,
+                TargetInstanceId = targetInstanceId,
+                ResultType = resultType,
                 MarshalledCallArgsJson = argsJson ?? "[]",
                 MarshalledCallAsyncHandle = default
             };

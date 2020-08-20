@@ -7,16 +7,17 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.JSInterop.Infrastructure
 {
-    internal sealed class JSObjectReferenceJsonConverter : JsonConverter<JSObjectReference>
+    internal sealed class JSObjectReferenceJsonConverter<TJSObjectReference>
+        : JsonConverter<TJSObjectReference> where TJSObjectReference : JSObjectReference
     {
-        private readonly JSRuntime _jsRuntime;
+        private readonly Func<long, TJSObjectReference> _jsObjectReferenceFactory;
 
-        public JSObjectReferenceJsonConverter(JSRuntime jsRuntime)
+        public JSObjectReferenceJsonConverter(Func<long, TJSObjectReference> jsObjectReferenceFactory)
         {
-            _jsRuntime = jsRuntime;
+            _jsObjectReferenceFactory = jsObjectReferenceFactory;
         }
 
-        public override JSObjectReference? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override TJSObjectReference? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             long id = -1;
 
@@ -37,10 +38,10 @@ namespace Microsoft.JSInterop.Infrastructure
                 throw new JsonException($"Required property {JSObjectReference.IdKey} not found.");
             }
 
-            return new JSObjectReference(_jsRuntime, id);
+            return _jsObjectReferenceFactory(id);
         }
 
-        public override void Write(Utf8JsonWriter writer, JSObjectReference value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, TJSObjectReference value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
             writer.WriteNumber(JSObjectReference.IdKey, value.Id);
