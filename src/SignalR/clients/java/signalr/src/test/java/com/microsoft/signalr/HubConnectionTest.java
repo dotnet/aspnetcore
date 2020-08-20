@@ -2914,7 +2914,7 @@ class HubConnectionTest {
                     assertTrue(close.blockingAwait(5, TimeUnit.SECONDS));
                     return Single.just(new HttpResponse(204, "", TestUtils.emptyByteBuffer));
                 })
-                .on("DELETE", (req) -> Single.just(new HttpResponse(200, "", "")));
+                .on("DELETE", (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer(""))));
 
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
@@ -2974,14 +2974,14 @@ class HubConnectionTest {
     public void LongPollingTransportAccessTokenProviderThrowsOnInitialPoll() {
         TestHttpClient client = new TestHttpClient()
             .on("POST", (req) -> {
-                return Single.just(new HttpResponse(200, "", ""));
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("")));
             })
             .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
-                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")))
+                        TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))))
             .on("GET", (req) -> {
-                return Single.just(new HttpResponse(200, "", "{}" + RECORD_SEPARATOR));
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{}" + RECORD_SEPARATOR)));
             });
 
         AtomicInteger accessTokenCount = new AtomicInteger(0);
@@ -3012,16 +3012,16 @@ class HubConnectionTest {
         TestHttpClient client = new TestHttpClient()
             .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
-                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")))
+                        TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))))
             .on("GET", (req) -> {
                 if (requestCount.getAndIncrement() > 1) {
                     blockGet.blockingAwait();
                 }
-                return Single.just(new HttpResponse(200, "", "{}" + RECORD_SEPARATOR));
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{}" + RECORD_SEPARATOR)));
             })
             .on("POST", "http://example.com?id=bVOiRPG8-6YiJ6d7ZcTOVQ", (req) -> {
-                return Single.just(new HttpResponse(200, "", ""));
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("")));
             });
 
         AtomicInteger accessTokenCount = new AtomicInteger(0);
@@ -3056,16 +3056,16 @@ class HubConnectionTest {
         TestHttpClient client = new TestHttpClient()
             .on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
-                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")))
+                        TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))))
             .on("GET", (req) -> {
                 if (requestCount.getAndIncrement() > 1) {
                     blockGet.blockingAwait();
                 }
-                return Single.just(new HttpResponse(200, "", "{}" + RECORD_SEPARATOR));
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{}" + RECORD_SEPARATOR)));
             })
             .on("POST", "http://example.com?id=bVOiRPG8-6YiJ6d7ZcTOVQ", (req) -> {
-                return Single.just(new HttpResponse(200, "", ""));
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("")));
             });
 
         AtomicInteger accessTokenCount = new AtomicInteger(0);
