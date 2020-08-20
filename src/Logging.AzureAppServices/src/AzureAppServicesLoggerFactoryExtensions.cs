@@ -17,6 +17,22 @@ namespace Microsoft.Extensions.Logging
     /// </summary>
     public static class AzureAppServicesLoggerFactoryExtensions
     {
+        internal static string CustomPrefix;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="customPrefix"></param>
+        /// <returns></returns>
+        public static ILoggingBuilder AddAzureWebAppDiagnostics(this ILoggingBuilder builder, string customPrefix)
+        {
+            CustomPrefix = customPrefix;
+            var context = WebAppContext.Default;
+
+            // Only add the provider if we're in Azure WebApp. That cannot change once the apps started
+            return AddAzureWebAppDiagnostics(builder, context);
+        }
+
         /// <summary>
         /// Adds an Azure Web Apps diagnostics logger.
         /// </summary>
