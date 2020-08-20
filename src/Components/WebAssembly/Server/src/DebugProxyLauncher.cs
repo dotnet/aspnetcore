@@ -10,7 +10,9 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,20 +26,20 @@ namespace Microsoft.AspNetCore.Builder
         private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: (?<url>.*)$", RegexOptions.None, TimeSpan.FromSeconds(10));
         private static readonly Regex ApplicationStartedRegex = new Regex(@"^\s*Application started\. Press Ctrl\+C to shut down\.$", RegexOptions.None, TimeSpan.FromSeconds(10));
 
-        public static Task<string> EnsureLaunchedAndGetUrl(IServiceProvider serviceProvider)
+        public static Task<string> EnsureLaunchedAndGetUrl(IServiceProvider serviceProvider, string devToolsHost)
         {
             lock (LaunchLock)
             {
                 if (LaunchedDebugProxyUrl == null)
                 {
-                    LaunchedDebugProxyUrl = LaunchAndGetUrl(serviceProvider);
+                    LaunchedDebugProxyUrl = LaunchAndGetUrl(serviceProvider, devToolsHost);
                 }
 
                 return LaunchedDebugProxyUrl;
             }
         }
 
-        private static async Task<string> LaunchAndGetUrl(IServiceProvider serviceProvider)
+        private static async Task<string> LaunchAndGetUrl(IServiceProvider serviceProvider, string devToolsHost)
         {
             var tcs = new TaskCompletionSource<string>();
 
@@ -45,10 +47,11 @@ namespace Microsoft.AspNetCore.Builder
             var executablePath = LocateDebugProxyExecutable(environment);
             var muxerPath = DotNetMuxer.MuxerPathOrDefault();
             var ownerPid = Process.GetCurrentProcess().Id;
+
             var processStartInfo = new ProcessStartInfo
             {
                 FileName = muxerPath,
-                Arguments = $"exec \"{executablePath}\"",
+                Arguments = $"exec \"{executablePath}\" --owner-pid {ownerPid} --DevToolsUrl {devToolsHost}",
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
             };

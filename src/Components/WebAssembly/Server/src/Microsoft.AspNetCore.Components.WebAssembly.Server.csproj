@@ -12,9 +12,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
-    <Reference Include="Microsoft.NETCore.BrowserDebugHost.Transport" GeneratePathProperty="true"/>
-    <!-- Dependencies needed by DebugProxy. -->
-    <Reference Include= "Newtonsoft.Json" />
+    <Reference Include="Microsoft.NETCore.BrowserDebugHost.Transport" GeneratePathProperty="true" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,12 +30,7 @@
   <Target Name="IncludeDebugProxyBinariesAsContent" BeforeTargets="AssignTargetPaths">
     <ItemGroup>
       <DebugProxyBinaries Include="$(PkgMicrosoft_NETCore_BrowserDebugHost_Transport)\tools\$(DefaultNetCoreTargetFramework)\**" />
-      <Content
-        Include="@(DebugProxyBinaries)"
-        Pack="true"
-        PackagePath="tools\BlazorDebugProxy\%(RecursiveDir)%(FileName)%(Extension)"
-        Link="BlazorDebugProxy\%(RecursiveDir)%(FileName)%(Extension)"
-        CopyToOutputDirectory="PreserveNewest" />
+      <Content Include="@(DebugProxyBinaries)" Pack="true" PackagePath="tools\BlazorDebugProxy\%(RecursiveDir)%(FileName)%(Extension)" Link="BlazorDebugProxy\%(RecursiveDir)%(FileName)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
   </Target>
 

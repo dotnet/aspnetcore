@@ -23,12 +23,13 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
             IgnoreNullValues = true
         };
 
-        private readonly string BrowserHost = "http://localhost:9222";
+        private string _browserHost;
         private string _debugProxyUrl;
 
-        public TargetPickerUi(string debugProxyUrl)
+        public TargetPickerUi(string debugProxyUrl, string devToolsHost)
         {
             _debugProxyUrl = debugProxyUrl;
+            _browserHost = devToolsHost;
         }
 
         public async Task Display(HttpContext context)
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
             var request = context.Request;
             var targetApplicationUrl = request.Query["url"];
 
-            var debuggerTabsListUrl = $"{BrowserHost}/json";
+            var debuggerTabsListUrl = $"{_browserHost}/json";
             IEnumerable<BrowserTab> availableTabs;
 
             try
@@ -137,7 +138,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
         {
             var underlyingV8Endpoint = new Uri(tabToDebug.WebSocketDebuggerUrl);
             var proxyEndpoint = new Uri(_debugProxyUrl);
-            var devToolsUrlAbsolute = new Uri(BrowserHost + tabToDebug.DevtoolsFrontendUrl);
+            var devToolsUrlAbsolute = new Uri(_browserHost + tabToDebug.DevtoolsFrontendUrl);
             var devToolsUrlWithProxy = $"{devToolsUrlAbsolute.Scheme}://{devToolsUrlAbsolute.Authority}{devToolsUrlAbsolute.AbsolutePath}?{underlyingV8Endpoint.Scheme}={proxyEndpoint.Authority}{underlyingV8Endpoint.PathAndQuery}";
             return devToolsUrlWithProxy;
         }
@@ -145,7 +146,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
         private string GetLaunchChromeInstructions(string targetApplicationUrl)
         {
             var profilePath = Path.Combine(Path.GetTempPath(), "blazor-chrome-debug");
-            var debuggerPort = new Uri(BrowserHost).Port;
+            var debuggerPort = new Uri(_browserHost).Port;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -171,7 +172,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
         private string GetLaunchEdgeInstructions(string targetApplicationUrl)
         {
             var profilePath = Path.Combine(Path.GetTempPath(), "blazor-edge-debug");
-            var debuggerPort = new Uri(BrowserHost).Port;
+            var debuggerPort = new Uri(_browserHost).Port;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -210,7 +211,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Server
         private async Task<IEnumerable<BrowserTab>> GetOpenedBrowserTabs()
         {
             using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
-            var jsonResponse = await httpClient.GetStringAsync($"{BrowserHost}/json");
+            var jsonResponse = await httpClient.GetStringAsync($"{_browserHost}/json");
             return JsonSerializer.Deserialize<BrowserTab[]>(jsonResponse, JsonOptions);
         }
 
