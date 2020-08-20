@@ -20,4 +20,8 @@
     <Reference Include="System.ValueTuple" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)'">
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+
 </Project>

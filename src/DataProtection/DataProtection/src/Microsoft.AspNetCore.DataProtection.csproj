@@ -32,4 +32,8 @@
     <SuppressBaselineReference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)'">
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
+  </ItemGroup>
+
 </Project>
