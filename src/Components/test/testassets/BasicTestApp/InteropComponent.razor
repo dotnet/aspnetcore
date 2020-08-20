@@ -144,6 +144,7 @@
         var jsObjectReference = await JSRuntime.InvokeAsync<JSObjectReference>("returnJSObjectReference");
         ReturnValues["jsObjectReference.identity"] = await jsObjectReference.InvokeAsync<string>("identity", "Invoked from JSObjectReference");
         ReturnValues["jsObjectReference.nested.add"] = (await jsObjectReference.InvokeAsync<int>("nested.add", 2, 3)).ToString();
+        ReturnValues["addViaJSObjectReference"] = (await JSRuntime.InvokeAsync<int>("addViaJSObjectReference", jsObjectReference, 2, 3)).ToString();
 
         try
         {

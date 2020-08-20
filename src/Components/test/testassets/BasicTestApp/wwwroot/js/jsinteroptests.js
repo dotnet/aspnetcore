@@ -168,6 +168,7 @@ window.jsInteropTests = {
   returnPrimitive: returnPrimitive,
   returnPrimitiveAsync: returnPrimitiveAsync,
   returnJSObjectReference: returnJSObjectReference,
+  addViaJSObjectReference: addViaJSObjectReference,
   receiveDotNetObjectByRef: receiveDotNetObjectByRef,
   receiveDotNetObjectByRefAsync: receiveDotNetObjectByRefAsync
 };
@@ -208,6 +209,10 @@ function returnJSObjectReference() {
       }
     },
   };
+}
+
+function addViaJSObjectReference(jsObjectReference, a, b) {
+  return jsObjectReference.nested.add(a, b);
 }
 
 function functionThrowsException() {

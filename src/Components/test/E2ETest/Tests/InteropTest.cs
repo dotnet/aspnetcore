@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["returnArrayAsync"] = "first,second",
                 ["jsObjectReference.identity"] = "Invoked from JSObjectReference",
                 ["jsObjectReference.nested.add"] = "5",
+                ["addViaJSObjectReference"] = "5",
                 ["syncGenericInstanceMethod"] = @"""Initial value""",
                 ["asyncGenericInstanceMethod"] = @"""Updated value 1""",
             };

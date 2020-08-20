@@ -7,12 +7,14 @@ export module DotNet {
   const jsonRevivers: JsonReviver[] = [];
 
   class JSObject {
+    public static readonly ID_KEY = '__jsObjectId';
+
     _cachedFunctions: { [identifier: string]: Function };
 
     constructor(private _jsObject: any, _id: number)
     {
       this._cachedFunctions = {};
-      this._jsObject.__jsObjectId = _id;
+      this._jsObject[JSObject.ID_KEY] = _id;
     }
 
     public findFunction(identifier: string) {
@@ -43,8 +45,12 @@ export module DotNet {
       }
     }
 
+    public getWrappedObject() {
+      return this._jsObject;
+    }
+
     public dispose() {
-      delete this._jsObject.__jsObjectId;
+      delete this._jsObject[JSObject.ID_KEY];
     }
   }
 
@@ -343,13 +349,29 @@ export module DotNet {
     return value;
   });
 
+  attachReviver(function reviveJSObjectReference(key: any, value: any) {
+    if (value && typeof value === 'object' && value.hasOwnProperty(JSObject.ID_KEY)) {
+      const id = value[JSObject.ID_KEY];
+      const jsObject = cachedJSObjectsById[value[JSObject.ID_KEY]];
+
+      if (jsObject) {
+        return jsObject.getWrappedObject();
+      } else {
+        throw new Error(`JS object instance with ID ${id} does not exist (has it been disposed?).`);
+      }
+    }
+
+    // Unrecognized - let another reviver handle it
+    return value;
+  });
+
   function createJSCallResult(returnValue: any, resultType: JSCallResultType) {
     switch (resultType) {
       case JSCallResultType.Default:
         return returnValue;
       case JSCallResultType.JSObjectReference:
         if (returnValue instanceof Object) {
-          if (!returnValue.hasOwnProperty('__jsObjectId') || cachedJSObjectsById[nextJsObjectId] !== returnValue) {
+          if (!returnValue.hasOwnProperty(JSObject.ID_KEY) || cachedJSObjectsById[nextJsObjectId] !== returnValue) {
             // The return value is not cached as a JSObjectReference, or is copied from an object that was, so we cache it as a new one
             cachedJSObjectsById[nextJsObjectId] = new JSObject(returnValue, nextJsObjectId);
             nextJsObjectId++;

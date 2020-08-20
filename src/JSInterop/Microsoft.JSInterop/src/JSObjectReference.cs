@@ -10,18 +10,19 @@ namespace Microsoft.JSInterop
 {
     public class JSObjectReference : IDisposable, IAsyncDisposable
     {
-        public static readonly JsonEncodedText JSObjectIdKey = JsonEncodedText.Encode("__jsObjectId");
+        public static readonly JsonEncodedText IdKey = JsonEncodedText.Encode("__jsObjectId");
 
         private readonly JSRuntime _jsRuntime;
 
-        private readonly long _jsObjectId;
-
         private bool _disposed;
 
-        internal JSObjectReference(JSRuntime jsRuntime, long jsObjectId)
+        internal long Id { get; }
+
+        internal JSObjectReference(JSRuntime jsRuntime, long id)
         {
             _jsRuntime = jsRuntime;
-            _jsObjectId = jsObjectId;
+
+            Id = id;
         }
 
         public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, params object[] args)
@@ -42,7 +43,7 @@ namespace Microsoft.JSInterop
         {
             ThrowIfDisposed();
 
-            return _jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args, _jsObjectId);
+            return _jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args, Id);
         }
 
         public void Dispose()
@@ -56,7 +57,7 @@ namespace Microsoft.JSInterop
             {
                 _disposed = true;
 
-                await _jsRuntime.InvokeVoidAsync("Blazor._internal.jsObjectReference.dispose", _jsObjectId);
+                await _jsRuntime.InvokeVoidAsync("Blazor._internal.jsObjectReference.dispose", Id);
             }
         }
 
