@@ -11,11 +11,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     internal sealed class Http2HeadersEnumerator : IEnumerator<KeyValuePair<string, string>>
     {
-        private bool _isTrailers;
+        private enum HeadersType : byte
+        {
+            Headers,
+            Trailers,
+            Untyped
+        }
+        private HeadersType _headersType;
         private HttpResponseHeaders.Enumerator _headersEnumerator;
         private HttpResponseTrailers.Enumerator _trailersEnumerator;
         private IEnumerator<KeyValuePair<string, StringValues>> _genericEnumerator;
         private StringValues.Enumerator _stringValuesEnumerator;
+        private bool _hasMultipleValues;
         private KnownHeaderType _knownHeaderType;
 
         public int HPackStaticTableId => GetResponseHeaderStaticTableId(_knownHeaderType);
@@ -29,136 +36,89 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public void Initialize(HttpResponseHeaders headers)
         {
             _headersEnumerator = headers.GetEnumerator();
-            _trailersEnumerator = default;
-            _genericEnumerator = null;
-            _isTrailers = false;
-
-            _stringValuesEnumerator = default;
-            Current = default;
-            _knownHeaderType = default;
+            _headersType = HeadersType.Headers;
+            _hasMultipleValues = false;
         }
 
         public void Initialize(HttpResponseTrailers headers)
         {
-            _headersEnumerator = default;
             _trailersEnumerator = headers.GetEnumerator();
-            _genericEnumerator = null;
-            _isTrailers = true;
-
-            _stringValuesEnumerator = default;
-            Current = default;
-            _knownHeaderType = default;
+            _headersType = HeadersType.Trailers;
+            _hasMultipleValues = false;
         }
 
         public void Initialize(IDictionary<string, StringValues> headers)
         {
-            _headersEnumerator = default;
-            _trailersEnumerator = default;
             _genericEnumerator = headers.GetEnumerator();
-            _isTrailers = false;
-
-            _stringValuesEnumerator = default;
-            Current = default;
-            _knownHeaderType = default;
+            _headersType = HeadersType.Untyped;
+            _hasMultipleValues = false;
         }
 
         public bool MoveNext()
         {
-            if (MoveNextOnStringEnumerator())
+            if (_hasMultipleValues && MoveNextOnStringEnumerator(Current.Key))
             {
                 return true;
             }
 
-            if (!TryGetNextStringEnumerator(out _stringValuesEnumerator))
+            if (_headersType == HeadersType.Headers)
             {
-                return false;
+                return _headersEnumerator.MoveNext()
+                    ? SetCurrent(_headersEnumerator.Current.Key, _headersEnumerator.Current.Value, _headersEnumerator.CurrentKnownType)
+                    : false;
             }
-
-            return MoveNextOnStringEnumerator();
-        }
-
-        private string GetCurrentKey()
-        {
-            if (_genericEnumerator != null)
+            else if (_headersType == HeadersType.Trailers)
             {
-                return _genericEnumerator.Current.Key;
-            }
-            else if (_isTrailers)
-            {
-                return _trailersEnumerator.Current.Key;
+                return _trailersEnumerator.MoveNext()
+                    ? SetCurrent(_trailersEnumerator.Current.Key, _trailersEnumerator.Current.Value, _trailersEnumerator.CurrentKnownType)
+                    : false;
             }
             else
             {
-                return _headersEnumerator.Current.Key;
+                return _genericEnumerator.MoveNext()
+                    ? SetCurrent(_genericEnumerator.Current.Key, _genericEnumerator.Current.Value, default)
+                    : false;
             }
         }
 
-        private bool MoveNextOnStringEnumerator()
+        private bool MoveNextOnStringEnumerator(string key)
         {
             var result = _stringValuesEnumerator.MoveNext();
-            Current = result ? new KeyValuePair<string, string>(GetCurrentKey(), _stringValuesEnumerator.Current) : default;
+            Current = result ? new KeyValuePair<string, string>(key, _stringValuesEnumerator.Current) : default;
             return result;
         }
 
-        private bool TryGetNextStringEnumerator(out StringValues.Enumerator enumerator)
+        private bool SetCurrent(string name, StringValues value, KnownHeaderType knownHeaderType)
         {
-            if (_genericEnumerator != null)
+            _knownHeaderType = knownHeaderType;
+
+            if (value.Count == 1)
             {
-                if (!_genericEnumerator.MoveNext())
-                {
-                    enumerator = default;
-                    return false;
-                }
-                else
-                {
-                    enumerator = _genericEnumerator.Current.Value.GetEnumerator();
-                    _knownHeaderType = default;
-                    return true;
-                }
-            }
-            else if (_isTrailers)
-            {
-                if (!_trailersEnumerator.MoveNext())
-                {
-                    enumerator = default;
-                    return false;
-                }
-                else
-                {
-                    enumerator = _trailersEnumerator.Current.Value.GetEnumerator();
-                    _knownHeaderType = _trailersEnumerator.CurrentKnownType;
-                    return true;
-                }
+                Current = new KeyValuePair<string, string>(name, value.ToString());
+                _hasMultipleValues = false;
+                return true;
             }
             else
             {
-                if (!_headersEnumerator.MoveNext())
-                {
-                    enumerator = default;
-                    return false;
-                }
-                else
-                {
-                    enumerator = _headersEnumerator.Current.Value.GetEnumerator();
-                    _knownHeaderType = _headersEnumerator.CurrentKnownType;
-                    return true;
-                }
+                _stringValuesEnumerator = value.GetEnumerator();
+                _hasMultipleValues = true;
+                return MoveNextOnStringEnumerator(name);
             }
         }
 
         public void Reset()
         {
-            if (_genericEnumerator != null)
+            if (_headersType == HeadersType.Headers)
             {
-                _genericEnumerator.Reset();
+                _headersEnumerator.Reset();
             }
-            else if (_isTrailers)
+            else if (_headersType == HeadersType.Trailers)
             {
                 _trailersEnumerator.Reset();
             }
             else
             {
-                _headersEnumerator.Reset();
+                _genericEnumerator.Reset();
             }
             _stringValuesEnumerator = default;
             _knownHeaderType = default;

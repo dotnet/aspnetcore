@@ -586,7 +586,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="componentReferenceCaptureAction">An action to be invoked whenever the reference value changes.</param>
-        public void AddComponentReferenceCapture(int sequence, Action<object?> componentReferenceCaptureAction)
+        public void AddComponentReferenceCapture(int sequence, Action<object> componentReferenceCaptureAction)
         {
             var parentFrameIndex = GetCurrentParentFrameIndex();
             if (!parentFrameIndex.HasValue)

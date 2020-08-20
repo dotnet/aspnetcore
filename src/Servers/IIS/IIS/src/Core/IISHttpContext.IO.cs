@@ -175,6 +175,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                                 SetResponseTrailers();
                             }
 
+                            // Done with response, say there is no more data after writing trailers.
+                            await AsyncIO.FlushAsync(moreData: false);
+
                             break;
                         }
 
@@ -228,7 +231,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 Log.ConnectionDisconnect(_logger, ((IHttpConnectionFeature)this).ConnectionId);
             }
 
-            _bodyOutput.Dispose();
+            _bodyOutput.Complete();
 
             if (shouldScheduleCancellation)
             {
@@ -269,7 +272,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             _bodyOutput.Abort(reason);
             _streams.Abort(reason);
-            NativeMethods.HttpCloseConnection(_pInProcessHandler);
+            NativeMethods.HttpCloseConnection(_requestNativeHandle);
 
             AbortIO(clientDisconnect: false);
         }

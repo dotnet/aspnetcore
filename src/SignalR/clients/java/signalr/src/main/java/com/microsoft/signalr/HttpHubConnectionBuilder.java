@@ -16,6 +16,7 @@ public class HttpHubConnectionBuilder {
     private final String url;
     private Transport transport;
     private HttpClient httpClient;
+    private HubProtocol protocol = new JsonHubProtocol();
     private boolean skipNegotiate;
     private Single<String> accessTokenProvider;
     private long handshakeResponseTimeout = 0;
@@ -52,6 +53,16 @@ public class HttpHubConnectionBuilder {
      */
     HttpHubConnectionBuilder withHttpClient(HttpClient httpClient) {
         this.httpClient = httpClient;
+        return this;
+    }
+    
+    /**
+     * Sets MessagePack as the {@link HubProtocol} to be used by the {@link HubConnection}.
+     *
+     * @return This instance of the HttpHubConnectionBuilder.
+     */
+    public HttpHubConnectionBuilder withMessagePackHubProtocol() {
+        this.protocol = new MessagePackHubProtocol();
         return this;
     }
 
@@ -133,7 +144,7 @@ public class HttpHubConnectionBuilder {
      * @return A new instance of {@link HubConnection}.
      */
     public HubConnection build() {
-        return new HubConnection(url, transport, skipNegotiate, httpClient, accessTokenProvider,
+        return new HubConnection(url, transport, skipNegotiate, httpClient, protocol, accessTokenProvider,
             handshakeResponseTimeout, headers, transportEnum, configureBuilder);
     }
 }

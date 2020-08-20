@@ -30,15 +30,15 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         }
 
         [JSInvokable]
-        public void OnSpacerBeforeVisible(float spacerSize, float containerSize)
+        public void OnSpacerBeforeVisible(float spacerSize, float spacerSeparation, float containerSize)
         {
-            _owner.OnBeforeSpacerVisible(spacerSize, containerSize);
+            _owner.OnBeforeSpacerVisible(spacerSize, spacerSeparation, containerSize);
         }
 
         [JSInvokable]
-        public void OnSpacerAfterVisible(float spacerSize, float containerSize)
+        public void OnSpacerAfterVisible(float spacerSize, float spacerSeparation, float containerSize)
         {
-            _owner.OnAfterSpacerVisible(spacerSize, containerSize);
+            _owner.OnAfterSpacerVisible(spacerSize, spacerSeparation, containerSize);
         }
 
         public async ValueTask DisposeAsync()

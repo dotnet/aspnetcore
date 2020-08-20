@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -227,6 +229,91 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("32,000.99", modelState[key].RawValue);
             Assert.Empty(modelState[key].Errors);
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
+        }
+
+        [Fact]
+        [ReplaceCulture("en-GB", "en-GB")]
+        public async Task BindDateTimeParameter_WithData_GetsBound()
+        {
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor
+            {
+                Name = "Parameter1",
+                ParameterType = typeof(DateTime),
+                BindingInfo = new BindingInfo(),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("Parameter1", "2020-02-01");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+
+            // ModelBindingResult
+            Assert.True(modelBindingResult.IsModelSet);
+
+            // Model
+            var model = Assert.IsType<DateTime>(modelBindingResult.Model);
+            Assert.Equal(new DateTime(2020, 02, 01, 0, 0, 0, DateTimeKind.Utc), model);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+
+            Assert.Single(modelState.Keys);
+            var key = Assert.Single(modelState.Keys);
+            Assert.Equal("Parameter1", key);
+            Assert.Equal("2020-02-01", modelState[key].AttemptedValue);
+            Assert.Equal("2020-02-01", modelState[key].RawValue);
+            Assert.Empty(modelState[key].Errors);
+            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
+        }
+
+        [Fact]
+        [ReplaceCulture("en-GB", "en-GB")]
+        public async Task BindDateTimeParameter_WithDataFromBody_GetsBound()
+        {
+            // Arrange
+            var input = "\"2020-02-01\"";
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor
+            {
+                Name = "Parameter1",
+                ParameterType = typeof(DateTime),
+                BindingInfo = new BindingInfo
+                {
+                    BindingSource = BindingSource.Body,
+                }
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.Body = new MemoryStream(Encoding.UTF8.GetBytes(input));
+                request.ContentType = "application/json";
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+
+            // ModelBindingResult
+            Assert.True(modelBindingResult.IsModelSet);
+
+            // Model
+            var model = Assert.IsType<DateTime>(modelBindingResult.Model);
+            Assert.Equal(new DateTime(2020, 02, 01, 0, 0, 0, DateTimeKind.Utc), model);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
         }
 
         [Fact]

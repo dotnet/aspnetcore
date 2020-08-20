@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http.Features
         // Lambda hoisted to static readonly field to improve inlining https://github.com/dotnet/roslyn/issues/13624
         private readonly static Func<IFeatureCollection, IHttpResponseFeature?> _nullResponseFeature = f => null;
 
-        private FeatureReferences<IHttpResponseFeature> _features;
+        private readonly IFeatureCollection _features;
         private IResponseCookies? _cookiesCollection;
 
         /// <summary>
@@ -27,12 +27,7 @@ namespace Microsoft.AspNetCore.Http.Features
         /// </param>
         public ResponseCookiesFeature(IFeatureCollection features)
         {
-            if (features == null)
-            {
-                throw new ArgumentNullException(nameof(features));
-            }
-
-            _features.Initalize(features);
+            _features = features ?? throw new ArgumentNullException(nameof(features));
         }
 
         /// <summary>
@@ -46,15 +41,8 @@ namespace Microsoft.AspNetCore.Http.Features
         [Obsolete("This constructor is obsolete and will be removed in a future version.")]
         public ResponseCookiesFeature(IFeatureCollection features, ObjectPool<StringBuilder>? builderPool)
         {
-            if (features == null)
-            {
-                throw new ArgumentNullException(nameof(features));
-            }
-
-            _features.Initalize(features);
+            _features = features ?? throw new ArgumentNullException(nameof(features));
         }
-
-        private IHttpResponseFeature HttpResponseFeature => _features.Fetch(ref _features.Cache, _nullResponseFeature)!;
 
         /// <inheritdoc />
         public IResponseCookies Cookies
@@ -63,8 +51,7 @@ namespace Microsoft.AspNetCore.Http.Features
             {
                 if (_cookiesCollection == null)
                 {
-                    var headers = HttpResponseFeature.Headers;
-                    _cookiesCollection = new ResponseCookies(headers);
+                    _cookiesCollection = new ResponseCookies(_features);
                 }
 
                 return _cookiesCollection;

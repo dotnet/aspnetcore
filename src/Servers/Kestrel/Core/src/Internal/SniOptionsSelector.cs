@@ -68,6 +68,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     }
                 }
 
+                if (sslOptions.ServerCertificate != null)
+                {
+                    // This might be do blocking IO but it'll resolve the certificate chain up front before any connections are
+                    // made to the server
+                    sslOptions.ServerCertificateContext = SslStreamCertificateContext.Create((X509Certificate2)sslOptions.ServerCertificate, additionalCertificates: null);
+                }
+
                 if (!certifcateConfigLoader.IsTestMock && sslOptions.ServerCertificate is X509Certificate2 cert2)
                 {
                     HttpsConnectionMiddleware.EnsureCertificateIsAllowedForServerAuth(cert2);

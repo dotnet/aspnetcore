@@ -46,6 +46,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(bindingContext));
             }
 
+            _logger.AttemptingToBindModel(bindingContext);
+
             var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
             if (valueProviderResult == ValueProviderResult.None)
             {
@@ -55,8 +57,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 _logger.DoneAttemptingToBindModel(bindingContext);
                 return Task.CompletedTask;
             }
-
-            _logger.AttemptingToBindModel(bindingContext);
 
             bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
 

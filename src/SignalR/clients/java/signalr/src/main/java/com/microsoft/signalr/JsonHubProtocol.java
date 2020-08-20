@@ -5,7 +5,11 @@ package com.microsoft.signalr;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.lang.reflect.Type;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.google.gson.Gson;
@@ -36,15 +40,26 @@ class JsonHubProtocol implements HubProtocol {
     }
 
     @Override
-    public HubMessage[] parseMessages(String payload, InvocationBinder binder) {
-        if (payload.length() == 0) {
-            return new HubMessage[]{};
+    public List<HubMessage> parseMessages(ByteBuffer payload, InvocationBinder binder) {
+        String payloadStr;
+        // If the payload is readOnly, we have to copy the bytes from its array to make the payload string
+        if (payload.isReadOnly()) {
+            byte[] payloadBytes = new byte[payload.remaining()];
+            payload.get(payloadBytes, 0, payloadBytes.length);
+            payloadStr = new String(payloadBytes, StandardCharsets.UTF_8);
+        // Otherwise we can allocate directly from its array
+        } else {
+            // The position of the ByteBuffer may have been incremented - make sure we only grab the remaining bytes
+            payloadStr = new String(payload.array(), payload.position(), payload.remaining(), StandardCharsets.UTF_8);
         }
-        if (!(payload.substring(payload.length() - 1).equals(RECORD_SEPARATOR))) {
+        if (payloadStr.length() == 0) {
+            return null;
+        }
+        if (!(payloadStr.substring(payloadStr.length() - 1).equals(RECORD_SEPARATOR))) {
             throw new RuntimeException("Message is incomplete.");
         }
 
-        String[] messages = payload.split(RECORD_SEPARATOR);
+        String[] messages = payloadStr.split(RECORD_SEPARATOR);
         List<HubMessage> hubMessages = new ArrayList<>();
         try {
             for (String str : messages) {
@@ -87,7 +102,7 @@ class JsonHubProtocol implements HubProtocol {
                             if (target != null) {
                                 boolean startedArray = false;
                                 try {
-                                    List<Class<?>> types = binder.getParameterTypes(target);
+                                    List<Type> types = binder.getParameterTypes(target);
                                     startedArray = true;
                                     arguments = bindArguments(reader, types);
                                 } catch (Exception ex) {
@@ -125,7 +140,7 @@ class JsonHubProtocol implements HubProtocol {
                     case INVOCATION:
                         if (argumentsToken != null) {
                             try {
-                                List<Class<?>> types = binder.getParameterTypes(target);
+                                List<Type> types = binder.getParameterTypes(target);
                                 arguments = bindArguments(argumentsToken, types);
                             } catch (Exception ex) {
                                 argumentBindingException = ex;
@@ -135,25 +150,25 @@ class JsonHubProtocol implements HubProtocol {
                             hubMessages.add(new InvocationBindingFailureMessage(invocationId, target, argumentBindingException));
                         } else {
                             if (arguments == null) {
-                                hubMessages.add(new InvocationMessage(invocationId, target, new Object[0]));
+                                hubMessages.add(new InvocationMessage(null, invocationId, target, new Object[0], null));
                             } else {
-                                hubMessages.add(new InvocationMessage(invocationId, target, arguments.toArray()));
+                                hubMessages.add(new InvocationMessage(null, invocationId, target, arguments.toArray(), null));
                             }
                         }
                         break;
                     case COMPLETION:
                         if (resultToken != null) {
-                            Class<?> returnType = binder.getReturnType(invocationId);
+                            Type returnType = binder.getReturnType(invocationId);
                             result = gson.fromJson(resultToken, returnType != null ? returnType : Object.class);
                         }
-                        hubMessages.add(new CompletionMessage(invocationId, result, error));
+                        hubMessages.add(new CompletionMessage(null, invocationId, result, error));
                         break;
                     case STREAM_ITEM:
                         if (resultToken != null) {
-                            Class<?> returnType = binder.getReturnType(invocationId);
+                            Type returnType = binder.getReturnType(invocationId);
                             result = gson.fromJson(resultToken, returnType != null ? returnType : Object.class);
                         }
-                        hubMessages.add(new StreamItem(invocationId, result));
+                        hubMessages.add(new StreamItem(null, invocationId, result));
                         break;
                     case STREAM_INVOCATION:
                     case CANCEL_INVOCATION:
@@ -176,15 +191,15 @@ class JsonHubProtocol implements HubProtocol {
             throw new RuntimeException("Error reading JSON.", ex);
         }
 
-        return hubMessages.toArray(new HubMessage[hubMessages.size()]);
+        return hubMessages;
     }
 
     @Override
-    public String writeMessage(HubMessage hubMessage) {
-        return gson.toJson(hubMessage) + RECORD_SEPARATOR;
+    public ByteBuffer writeMessage(HubMessage hubMessage) {
+        return ByteBuffer.wrap((gson.toJson(hubMessage) + RECORD_SEPARATOR).getBytes(StandardCharsets.UTF_8));
     }
 
-    private ArrayList<Object> bindArguments(JsonArray argumentsToken, List<Class<?>> paramTypes) {
+    private ArrayList<Object> bindArguments(JsonArray argumentsToken, List<Type> paramTypes) {
         if (argumentsToken.size() != paramTypes.size()) {
             throw new RuntimeException(String.format("Invocation provides %d argument(s) but target expects %d.", argumentsToken.size(), paramTypes.size()));
         }
@@ -200,7 +215,7 @@ class JsonHubProtocol implements HubProtocol {
         return arguments;
     }
 
-    private ArrayList<Object> bindArguments(JsonReader reader, List<Class<?>> paramTypes) throws IOException {
+    private ArrayList<Object> bindArguments(JsonReader reader, List<Type> paramTypes) throws IOException {
         reader.beginArray();
         int paramCount = paramTypes.size();
         int argCount = 0;

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Connections
         /// <summary>
         /// Gets or sets the <see cref="IDuplexPipe"/> that can be used to read or write data on this connection.
         /// </summary>
-        public abstract IDuplexPipe? Transport { get; set; }
+        public abstract IDuplexPipe Transport { get; set; }
 
         /// <summary>
         /// Aborts the underlying connection.

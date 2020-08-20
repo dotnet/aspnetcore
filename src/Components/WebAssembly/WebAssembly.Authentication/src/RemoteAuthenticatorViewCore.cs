@@ -197,9 +197,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication
                     else
                     {
                         Registering ??= LoggingIn;
+                        await RedirectToRegister();
                     }
-
-                    await RedirectToRegister();
                     break;
                 case RemoteAuthenticationActions.LogOut:
                     await ProcessLogOut(GetReturnUrl(state: null, Navigation.ToAbsoluteUri(ApplicationPaths.LogOutSucceededPath).AbsoluteUri));

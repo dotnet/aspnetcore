@@ -74,7 +74,7 @@ namespace System.Net.Quic.Implementations.Mock
             }
 
             Socket socket = new Socket(_remoteEndPoint!.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            await socket.ConnectAsync(_remoteEndPoint).ConfigureAwait(false);
+            await socket.ConnectAsync(_remoteEndPoint, cancellationToken).ConfigureAwait(false);
             socket.NoDelay = true;
 
             _localEndPoint = (IPEndPoint?)socket.LocalEndPoint;

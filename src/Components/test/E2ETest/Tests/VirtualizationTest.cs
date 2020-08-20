@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.Extensions;
 using Xunit;
@@ -188,6 +189,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24922")]
         public void CanUseViewportAsContainer()
         {
             var expectedInitialSpacerStyle = "height: 0px;";

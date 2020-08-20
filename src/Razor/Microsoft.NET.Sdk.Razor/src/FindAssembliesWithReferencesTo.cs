@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public override bool Execute()
         {
-            var referenceItems = new List<AssemblyItem>();
+            var referenceItems = new List<AssemblyItem>(Assemblies.Length);
             foreach (var item in Assemblies)
             {
                 const string FusionNameKey = "FusionName";

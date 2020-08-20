@@ -117,6 +117,27 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         }
 
         [Fact]
+        public void MapInboundClaimsDefaultsToTrue()
+        {
+            var options = new JwtBearerOptions();
+            Assert.True(options.MapInboundClaims);
+            var jwtHandler = options.SecurityTokenValidators.First() as JwtSecurityTokenHandler;
+            Assert.NotNull(jwtHandler);
+            Assert.True(jwtHandler.MapInboundClaims);
+        }
+
+        [Fact]
+        public void MapInboundClaimsCanBeSetToFalse()
+        {
+            var options = new JwtBearerOptions();
+            options.MapInboundClaims = false;
+            Assert.False(options.MapInboundClaims);
+            var jwtHandler = options.SecurityTokenValidators.First() as JwtSecurityTokenHandler;
+            Assert.NotNull(jwtHandler);
+            Assert.False(jwtHandler.MapInboundClaims);
+        }
+
+        [Fact]
         public async Task SignInThrows()
         {
             using var host = await CreateHost();

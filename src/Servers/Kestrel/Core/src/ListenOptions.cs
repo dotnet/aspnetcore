@@ -7,7 +7,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Experimental;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
@@ -84,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         {
             get
             {
-                return IsTls ? "https" : "http";
+                return IsTls ? HttpProtocol.SchemeHttps : HttpProtocol.SchemeHttp;
             }
         }
 

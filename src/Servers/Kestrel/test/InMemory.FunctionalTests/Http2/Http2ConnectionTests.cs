@@ -478,7 +478,58 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(0, _connection.StreamPool.Count);
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+        }
 
+        [Fact]
+        public async Task StreamPool_UnusedExpiredStream_RemovedFromPool()
+        {
+            DateTimeOffset now = _serviceContext.MockSystemClock.UtcNow;
+
+            // Heartbeat
+            TriggerTick(now);
+
+            var serverTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            await InitializeConnectionAsync(async context =>
+            {
+                await _echoApplication(context);
+            });
+
+            Assert.Equal(0, _connection.StreamPool.Count);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 36,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
+                withStreamId: 1);
+
+            // Ping will trigger the stream to be returned to the pool so we can assert it
+            await SendPingAsync(Http2PingFrameFlags.NONE);
+            await ExpectAsync(Http2FrameType.PING,
+                withLength: 8,
+                withFlags: (byte)Http2PingFrameFlags.ACK,
+                withStreamId: 0);
+
+            // Stream has been returned to the pool
+            Assert.Equal(1, _connection.StreamPool.Count);
+
+            _connection.StreamPool.TryPeek(out var pooledStream);
+
+            TriggerTick(now + TimeSpan.FromSeconds(1));
+
+            // Stream has not expired and is still in pool
+            Assert.Equal(1, _connection.StreamPool.Count);
+
+            TriggerTick(now + TimeSpan.FromSeconds(6));
+
+            // Stream has expired and has been removed from pool
+            Assert.Equal(0, _connection.StreamPool.Count);
+
+            // Removed stream should have been disposed
+            Assert.True(((Http2OutputProducer)pooledStream.Output)._disposed);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
@@ -1409,29 +1460,82 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task Frame_MultipleStreams_RequestsNotFinished_EnhanceYourCalm()
+        public async Task MaxTrackedStreams_SmallMaxConcurrentStreams_LowerLimitOf100Async()
         {
             _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = 1;
+
+            await InitializeConnectionAsync(_noopApplication);
+
+            Assert.Equal((uint)100, _connection.MaxTrackedStreams);
+
+            await StopConnectionAsync(0, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task MaxTrackedStreams_DefaultMaxConcurrentStreams_DoubleLimit()
+        {
+            _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = 100;
+
+            await InitializeConnectionAsync(_noopApplication);
+
+            Assert.Equal((uint)200, _connection.MaxTrackedStreams);
+
+            await StopConnectionAsync(0, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task MaxTrackedStreams_LargeMaxConcurrentStreams_DoubleLimit()
+        {
+            _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = int.MaxValue;
+
+            await InitializeConnectionAsync(_noopApplication);
+
+            Assert.Equal((uint)int.MaxValue * 2, _connection.MaxTrackedStreams);
+
+            await StopConnectionAsync(0, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public Task Frame_MultipleStreams_RequestsNotFinished_LowMaxStreamsPerConnection_EnhanceYourCalmAfter100()
+        {
+            // Kestrel always tracks at least 100 streams
+            return RequestUntilEnhanceYourCalm(maxStreamsPerConnection: 1, sentStreams: 101);
+        }
+
+        [Fact]
+        public Task Frame_MultipleStreams_RequestsNotFinished_DefaultMaxStreamsPerConnection_EnhanceYourCalmAfterDoubleMaxStreams()
+        {
+            // Kestrel tracks max streams per connection * 2
+            return RequestUntilEnhanceYourCalm(maxStreamsPerConnection: 100, sentStreams: 201);
+        }
+
+        private async Task RequestUntilEnhanceYourCalm(int maxStreamsPerConnection, int sentStreams)
+        {
+            _serviceContext.ServerOptions.Limits.Http2.MaxStreamsPerConnection = maxStreamsPerConnection;
             var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             await InitializeConnectionAsync(async context =>
             {
                 await tcs.Task.DefaultTimeout();
             });
 
-            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
-            await SendRstStreamAsync(1);
-            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
-            await SendRstStreamAsync(3);
-            await StartStreamAsync(5, _browserRequestHeaders, endStream: true);
+            var streamId = 1;
+            for (var i = 0; i < sentStreams - 1; i++)
+            {
+                await StartStreamAsync(streamId, _browserRequestHeaders, endStream: true);
+                await SendRstStreamAsync(streamId);
 
+                streamId += 2;
+            }
+
+            await StartStreamAsync(streamId, _browserRequestHeaders, endStream: true);
             await WaitForStreamErrorAsync(
-                expectedStreamId: 5,
+                expectedStreamId: streamId,
                 expectedErrorCode: Http2ErrorCode.ENHANCE_YOUR_CALM,
                 expectedErrorMessage: CoreStrings.Http2TellClientToCalmDown);
 
             tcs.SetResult();
 
-            await StopConnectionAsync(5, ignoreNonGoAwayFrames: false);
+            await StopConnectionAsync(streamId, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
@@ -1991,12 +2095,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public void OnStaticIndexedHeader(int index)
             {
-                throw new NotImplementedException();
+                ref readonly var entry = ref H2StaticTable.Get(index - 1);
+                OnHeader(entry.Name, entry.Value);
             }
 
             public void OnStaticIndexedHeader(int index, ReadOnlySpan<byte> value)
             {
-                throw new NotImplementedException();
+                OnHeader(H2StaticTable.Get(index - 1).Name, value);
             }
         }
 

@@ -21,6 +21,6 @@ namespace Microsoft.AspNetCore.Http.Connections
         // WebSocketManager's list of sub protocols is an IList:
         // https://github.com/aspnet/HttpAbstractions/blob/a6bdb9b1ec6ed99978a508e71a7f131be7e4d9fb/src/Microsoft.AspNetCore.Http.Abstractions/WebSocketManager.cs#L23
         // Unfortunately, IList<T> does not implement IReadOnlyList<T> :(
-        public Func<IList<string>, string> SubProtocolSelector { get; set; }
+        public Func<IList<string>, string>? SubProtocolSelector { get; set; }
     }
 }

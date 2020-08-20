@@ -37,7 +37,12 @@ namespace InteropTestsWebsite
             Host.CreateDefaultBuilder(args)
                 .ConfigureLogging(builder =>
                 {
-                    builder.AddSimpleConsole(o => o.DisableColors = true);
+                    builder.AddConsole(loggerOptions =>
+                    {
+#pragma warning disable CS0618 // Type or member is obsolete
+                        loggerOptions.DisableColors = true;
+#pragma warning restore CS0618 // Type or member is obsolete
+                    });
                     builder.SetMinimumLevel(LogLevel.Trace);
                 })
                 .ConfigureWebHostDefaults(webBuilder =>

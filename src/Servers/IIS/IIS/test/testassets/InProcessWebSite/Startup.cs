@@ -35,19 +35,22 @@ namespace TestSite
     public partial class Startup
     {
         public static bool StartupHookCalled;
+        private IHttpContextAccessor _httpContextAccessor;
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, IHttpContextAccessor httpContextAccessor)
         {
             if (Environment.GetEnvironmentVariable("ENABLE_HTTPS_REDIRECTION") != null)
             {
                 app.UseHttpsRedirection();
             }
             TestStartup.Register(app, this);
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public void ConfigureServices(IServiceCollection serviceCollection)
         {
             serviceCollection.AddResponseCompression();
+            serviceCollection.AddHttpContextAccessor();
         }
 #if FORWARDCOMPAT
         private async Task ContentRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IHostingEnvironment>().ContentRootPath);
@@ -1315,9 +1318,130 @@ namespace TestSite
             }
         }
 
+        public Task Goaway(HttpContext httpContext)
+        {
+            httpContext.Response.Headers["Connection"] = "close";
+            return Task.CompletedTask;
+        }
+
+        private TaskCompletionSource _completeAsync = new TaskCompletionSource();
+
+        public async Task CompleteAsync(HttpContext httpContext)
+        {
+            await httpContext.Response.CompleteAsync();
+            await _completeAsync.Task;
+        }
+
+        public Task CompleteAsync_Completed(HttpContext httpContext)
+        {
+            _completeAsync.TrySetResult();
+            return Task.CompletedTask;
+        }
+
         public async Task Reset_DuringRequestBody_Resets_Complete(HttpContext httpContext)
         {
             await _resetDuringRequestBodyResetsCts.Task;
+        }
+
+        private TaskCompletionSource<object> _onCompletedHttpContext = new TaskCompletionSource<object>();
+        public async Task OnCompletedHttpContext(HttpContext context)
+        {
+            // This shouldn't block the response or the server from shutting down.
+            context.Response.OnCompleted(async () =>
+            {
+                var context = _httpContextAccessor.HttpContext;
+
+                await Task.Delay(500);
+                // Access all fields of the connection after final flush.
+                try
+                {
+                    _ = context.Connection.RemoteIpAddress;
+                    _ = context.Connection.LocalIpAddress;
+                    _ = context.Connection.Id;
+                    _ = context.Connection.ClientCertificate;
+                    _ = context.Connection.LocalPort;
+                    _ = context.Connection.RemotePort;
+
+                    _ = context.Request.ContentLength;
+                    _ = context.Request.Headers;
+                    _ = context.Request.Query;
+                    _ = context.Request.Body;
+                    _ = context.Request.ContentType;
+
+                    _ = context.Response.StatusCode;
+                    _ = context.Response.Body;
+                    _ = context.Response.Headers;
+                    _ = context.Response.ContentType;
+                }
+                catch (Exception ex)
+                {
+                    _onCompletedHttpContext.TrySetResult(ex);
+                }
+
+                _onCompletedHttpContext.TrySetResult(null);
+            });
+
+            await context.Response.WriteAsync("SlowOnCompleted");
+        }
+
+        public async Task OnCompletedHttpContext_Completed(HttpContext httpContext)
+        {
+            await _onCompletedHttpContext.Task;
+        }
+
+        private TaskCompletionSource<object> _responseTrailers_CompleteAsyncNoBody_TrailersSent = new TaskCompletionSource<object>();
+        public async Task ResponseTrailers_CompleteAsyncNoBody_TrailersSent(HttpContext httpContext)
+        {
+            httpContext.Response.AppendTrailer("trailername", "TrailerValue");
+            await httpContext.Response.CompleteAsync();
+            await _responseTrailers_CompleteAsyncNoBody_TrailersSent.Task;
+        }
+
+        public Task ResponseTrailers_CompleteAsyncNoBody_TrailersSent_Completed(HttpContext httpContext)
+        {
+            _responseTrailers_CompleteAsyncNoBody_TrailersSent.TrySetResult(null);
+            return Task.CompletedTask;
+        }
+
+        private TaskCompletionSource<object> _responseTrailers_CompleteAsyncWithBody_TrailersSent = new TaskCompletionSource<object>();
+        public async Task ResponseTrailers_CompleteAsyncWithBody_TrailersSent(HttpContext httpContext)
+        {
+            await httpContext.Response.WriteAsync("Hello World");
+            httpContext.Response.AppendTrailer("TrailerName", "Trailer Value");
+            await httpContext.Response.CompleteAsync();
+            await _responseTrailers_CompleteAsyncWithBody_TrailersSent.Task;
+        }
+
+        public Task ResponseTrailers_CompleteAsyncWithBody_TrailersSent_Completed(HttpContext httpContext)
+        {
+            _responseTrailers_CompleteAsyncWithBody_TrailersSent.TrySetResult(null);
+            return Task.CompletedTask;
+        }
+
+        public async Task Reset_AfterCompleteAsync_NoReset(HttpContext httpContext)
+        {
+            Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+            var feature = httpContext.Features.Get<IHttpResetFeature>();
+            Assert.NotNull(feature);
+            await httpContext.Response.WriteAsync("Hello World");
+            await httpContext.Response.CompleteAsync();
+            // The request and response are fully complete, the reset doesn't get sent.
+            feature.Reset(1111);
+        }
+
+        public async Task Reset_CompleteAsyncDuringRequestBody_Resets(HttpContext httpContext)
+        {
+            Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+            var feature = httpContext.Features.Get<IHttpResetFeature>();
+            Assert.NotNull(feature);
+
+            var read = await httpContext.Request.Body.ReadAsync(new byte[10], 0, 10);
+            Assert.Equal(10, read);
+
+            var readTask = httpContext.Request.Body.ReadAsync(new byte[10], 0, 10);
+            await httpContext.Response.CompleteAsync();
+            feature.Reset((int)0); // GRPC does this
+            await Assert.ThrowsAsync<IOException>(() => readTask);
         }
 
         internal static readonly HashSet<(string, StringValues, StringValues)> NullTrailers = new HashSet<(string, StringValues, StringValues)>()

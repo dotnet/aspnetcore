@@ -3,7 +3,9 @@
 
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
@@ -55,7 +57,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             for (var i = 0; i < assemblies.Length; i++)
             {
-                Assembly.Load((byte[])assemblies[i]);
+                using var stream = new MemoryStream((byte[])assemblies[i]);
+                AssemblyLoadContext.Default.LoadFromStream(stream);
             }
         }
 

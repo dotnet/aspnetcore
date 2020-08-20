@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -10,8 +12,8 @@ namespace Microsoft.AspNetCore.Internal
 {
     internal class TimerAwaitable : IDisposable, ICriticalNotifyCompletion
     {
-        private Timer _timer;
-        private Action _callback;
+        private Timer? _timer;
+        private Action? _callback;
         private static readonly Action _callbackCompleted = () => { };
 
         private readonly TimeSpan _period;
@@ -55,7 +57,7 @@ namespace Microsoft.AspNetCore.Internal
                             // If TimerAwaitable falls out of scope, the timer should be released.
                             _timer = new Timer(state =>
                             {
-                                var weakRef = (WeakReference<TimerAwaitable>)state;
+                                var weakRef = (WeakReference<TimerAwaitable>)state!;
                                 if (weakRef.TryGetTarget(out var thisRef))
                                 {
                                     thisRef.Tick();
