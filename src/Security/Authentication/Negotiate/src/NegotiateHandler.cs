@@ -42,15 +42,6 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public NegotiateHandler(IOptionsMonitor<NegotiateOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && Options?.LdapConnectionOptions != null)
-            {
-                if (string.IsNullOrEmpty(Options.LdapConnectionOptions.Domain))
-                {
-                    throw new InvalidOperationException($"{nameof(LdapConnectionOptions)} is configured but {nameof(LdapConnectionOptions.Domain)} is not set");
-                }
-
-                _linuxAdapter = new LinuxAdapter(Options, Logger);
-            }
         }
 
         /// <summary>
@@ -340,6 +331,16 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             {
                 Principal = user
             };
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && Options?.LdapConnectionOptions != null && _linuxAdapter == null)
+            {
+                if (string.IsNullOrEmpty(Options.LdapConnectionOptions.Domain))
+                {
+                    throw new InvalidOperationException($"{nameof(LdapConnectionOptions)} is configured but {nameof(LdapConnectionOptions.Domain)} is not set");
+                }
+
+                _linuxAdapter = new LinuxAdapter(Options, Logger);
+            }
 
             if (_linuxAdapter != null)
             {
