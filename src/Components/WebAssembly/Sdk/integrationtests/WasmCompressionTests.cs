@@ -113,6 +113,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23756")]
         public async Task Publish_WithoutLinkerAndCompression_IsIncremental()
         {
             // Arrange
