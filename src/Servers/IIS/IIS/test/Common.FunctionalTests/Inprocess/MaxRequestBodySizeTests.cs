@@ -71,8 +71,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
             var result = await deploymentResult.HttpClient.PostAsync("/ReadRequestBodyLarger", new StringContent(new string('a', 100000000)));
 
-            // IIS either returns a 404 or a 413 based on versions of IIS.
-            // Check for both as we don't know which specific patch version.
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         }
 
@@ -93,8 +91,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
             var result = await deploymentResult.HttpClient.PostAsync("/ReadRequestBodyLarger", new StringContent(new string('a', 10000)));
 
-            // IIS either returns a 404 or a 413 based on versions of IIS.
-            // Check for both as we don't know which specific patch version.
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         }
 
@@ -115,8 +111,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
             var result = await deploymentResult.HttpClient.PostAsync("/ReadRequestBodyLarger", new StringContent(new string('a', 10)));
 
-            // IIS either returns a 404 or a 413 based on versions of IIS.
-            // Check for both as we don't know which specific patch version.
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         }
 
