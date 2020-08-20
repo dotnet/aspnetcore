@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
                 try
                 {
-                    using var readSegmentCts = CancellationTokenSource.CreateLinkedTokenSource(_fillBufferCts.Token);
+                    using var readSegmentCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
                     readSegmentCts.CancelAfter(_segmentFetchTimeout);
 
                     var bytes = await _jsRuntime.InvokeAsync<byte[]>(
@@ -103,17 +103,6 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
             while (destination.Length > 0)
             {
                 var result = await _pipeReader.ReadAsync(cancellationToken);
-
-                if (result.IsCanceled)
-                {
-                    _isReadingCompleted = true;
-
-                    var exception = new OperationCanceledException(cancellationToken);
-                    await _pipeReader.CompleteAsync(exception);
-
-                    throw exception;
-                }
-
                 var bytesToCopy = (int)Math.Min(result.Buffer.Length, destination.Length);
 
                 if (bytesToCopy == 0)
