@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -107,6 +107,24 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
 
             return endpoints;
+        }
+
+        internal void AddDynamicControllerEndpoint(IEndpointRouteBuilder endpoints, string pattern, Type transformerType, object state)
+        {
+            CreateInertEndpoints = true;
+            var order = _order++;
+
+            endpoints.Map(
+                pattern,
+                context =>
+                {
+                    throw new InvalidOperationException("This endpoint is not expected to be executed directly.");
+                })
+                .Add(b =>
+                {
+                    ((RouteEndpointBuilder)b).Order = order;
+                    b.Metadata.Add(new DynamicControllerRouteValueTransformerMetadata(transformerType, state));
+                });
         }
     }
 }
