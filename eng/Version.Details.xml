@@ -35,259 +35,259 @@
     </Dependency>
     <Dependency Name="dotnet-ef" Version="3.1.8">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>48e1be5979748a7e636da07875cfb92f18948f7f</Sha>
+      <Sha>3077ffb29e0cb63bba3b7fd4fe665fcda8f3f8ca</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.8">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>48e1be5979748a7e636da07875cfb92f18948f7f</Sha>
+      <Sha>3077ffb29e0cb63bba3b7fd4fe665fcda8f3f8ca</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="3.1.8">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>48e1be5979748a7e636da07875cfb92f18948f7f</Sha>
+      <Sha>3077ffb29e0cb63bba3b7fd4fe665fcda8f3f8ca</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.8">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>48e1be5979748a7e636da07875cfb92f18948f7f</Sha>
+      <Sha>3077ffb29e0cb63bba3b7fd4fe665fcda8f3f8ca</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.8">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>48e1be5979748a7e636da07875cfb92f18948f7f</Sha>
+      <Sha>3077ffb29e0cb63bba3b7fd4fe665fcda8f3f8ca</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="3.1.8">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>48e1be5979748a7e636da07875cfb92f18948f7f</Sha>
+      <Sha>3077ffb29e0cb63bba3b7fd4fe665fcda8f3f8ca</Sha>
     </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore" Version="3.1.8">
       <Uri>https://github.com/dotnet/efcore</Uri>
-      <Sha>48e1be5979748a7e636da07875cfb92f18948f7f</Sha>
+      <Sha>3077ffb29e0cb63bba3b7fd4fe665fcda8f3f8ca</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="3.1.8-servicing.20419.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="3.1.8-servicing.20419.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.1.8-servicing.20419.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.1.8-servicing.20419.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ActivatorUtilities.Sources" Version="3.1.8-servicing.20419.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.ActivatorUtilities.Sources" Version="3.1.8-servicing.20419.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.Memory" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.SqlServer" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.1.8-servicing.20419.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.1.8-servicing.20419.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.AzureKeyVault" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.CommandLine" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.FileExtensions" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.KeyPerFile" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Xml" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.DiagnosticAdapter" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Composite" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Physical" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.HashCodeCombiner.Sources" Version="3.1.8-servicing.20419.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.HashCodeCombiner.Sources" Version="3.1.8-servicing.20419.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Hosting" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.HostFactoryResolver.Sources" Version="3.1.8-servicing.20419.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.HostFactoryResolver.Sources" Version="3.1.8-servicing.20419.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Http" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Localization.Abstractions" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Localization" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.AzureAppServices" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.Console" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.EventSource" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.EventLog" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.TraceSource" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Testing" Version="3.1.8-servicing.20419.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.Testing" Version="3.1.8-servicing.20419.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.ObjectPool" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Options.DataAnnotations" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Options" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="3.1.8-servicing.20419.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="3.1.8-servicing.20419.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Primitives" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.TypeNameHelper.Sources" Version="3.1.8-servicing.20419.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.TypeNameHelper.Sources" Version="3.1.8-servicing.20419.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ValueStopwatch.Sources" Version="3.1.8-servicing.20419.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.ValueStopwatch.Sources" Version="3.1.8-servicing.20419.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.WebEncoders" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.JSInterop" Version="3.1.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="1.1.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-corefx</Uri>
@@ -382,9 +382,9 @@
       <Sha>3acd9b0cd16596bad450c82be08780875a73c05c</Sha>
     </Dependency>
     <!-- !!! Pin this again & remove CPD once 3.1.8 is released. -->
-    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="3.1.8-servicing.20419.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="3.1.8-servicing.20419.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <!--
          Win-x64 is used here because we have picked an arbitrary runtime identifier to flow the version of the latest NETCore.App runtime.
@@ -392,15 +392,15 @@
     -->
     <Dependency Name="Microsoft.NETCore.App.Runtime.win-x64" Version="3.1.8" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>189fabf1ed7ffcac3865affc5a09a290ac1c08e8</Sha>
+      <Sha>dda80b2d16ab897bca1c4ab34e76f3a1967a36f5</Sha>
     </Dependency>
     <Dependency Name="NETStandard.Library.Ref" Version="2.1.0" Pinned="true">
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.1.8-servicing.20419.2" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="Microsoft.NETCore.App.Internal" Version="3.1.8-servicing.20419.3" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>189fabf1ed7ffcac3865affc5a09a290ac1c08e8</Sha>
+      <Sha>dda80b2d16ab897bca1c4ab34e76f3a1967a36f5</Sha>
     </Dependency>
     <!-- Keep these dependencies at the bottom of ProductDependencies, else they will be picked as the parent for CoherentParentDependencies -->
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="3.1.0" Pinned="true">
@@ -414,9 +414,9 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>d1252ebf87b135e66c95087b40302c2474b77206</Sha>
     </Dependency>
-    <Dependency Name="Internal.AspNetCore.Analyzers" Version="3.1.8-servicing.20419.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Internal.AspNetCore.Analyzers" Version="3.1.8-servicing.20419.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.20213.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
@@ -430,9 +430,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>1a55276ab9d16792cec595ba870df39a9d97d5ca</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.1.8-servicing.20419.5" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.1.8-servicing.20419.6" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6dbf0990deb23d57fdd328d529b025385e9af973</Sha>
+      <Sha>28235e4549944e5487de8478cdee11e1da8d9547</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="3.4.1-beta4-20127-10" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/roslyn</Uri>
