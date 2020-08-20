@@ -157,7 +157,7 @@
 
         // This is not the typical way to dispose JSObjectReferences - normally one would call jsObjectReference.DisposeAsync().
         // We're doing it this way to validate that we can handle using a disposed JSObjectReference on the JS side.
-        await JSRuntime.InvokeVoidAsync("Blazor._internal.jsObjectReference.dispose", 1);
+        await JSRuntime.InvokeVoidAsync("DotNet.jsCallDispatcher.disposeJSObjectReference", 1);
 
         try
         {

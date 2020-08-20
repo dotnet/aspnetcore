@@ -56,7 +56,7 @@ namespace Microsoft.JSInterop
             {
                 _disposed = true;
 
-                await _jsRuntime.InvokeVoidAsync("Blazor._internal.jsObjectReference.dispose", Id);
+                await _jsRuntime.InvokeVoidAsync("DotNet.jsCallDispatcher.disposeJSObjectReference", Id);
             }
         }
 
