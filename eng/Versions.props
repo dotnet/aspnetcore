@@ -69,7 +69,7 @@
     <MicrosoftNetCompilersToolsetPackageVersion>3.4.1-beta4-20127-10</MicrosoftNetCompilersToolsetPackageVersion>
     <!-- Packages from dotnet/core-setup -->
     <MicrosoftExtensionsDependencyModelPackageVersion>3.1.6</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETCoreAppInternalPackageVersion>3.1.8-servicing.20419.3</MicrosoftNETCoreAppInternalPackageVersion>
+    <MicrosoftNETCoreAppInternalPackageVersion>3.1.8-servicing.20419.4</MicrosoftNETCoreAppInternalPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>3.1.0</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>3.1.8</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
@@ -102,16 +102,16 @@
     <!-- Packages from aspnet/Blazor -->
     <MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion>3.2.0</MicrosoftAspNetCoreComponentsWebAssemblyRuntimePackageVersion>
     <!-- Packages from aspnet/Extensions -->
-    <InternalAspNetCoreAnalyzersPackageVersion>3.1.8-servicing.20419.6</InternalAspNetCoreAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>3.1.8-servicing.20419.6</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
-    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.1.8-servicing.20419.6</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>3.1.8-servicing.20419.6</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>3.1.8-servicing.20419.6</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
+    <InternalAspNetCoreAnalyzersPackageVersion>3.1.8-servicing.20420.1</InternalAspNetCoreAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>3.1.8-servicing.20420.1</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
+    <MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>3.1.8-servicing.20420.1</MicrosoftAspNetCoreBenchmarkRunnerSourcesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>3.1.8-servicing.20420.1</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>3.1.8-servicing.20420.1</MicrosoftExtensionsActivatorUtilitiesSourcesPackageVersion>
     <MicrosoftExtensionsCachingAbstractionsPackageVersion>3.1.8</MicrosoftExtensionsCachingAbstractionsPackageVersion>
     <MicrosoftExtensionsCachingMemoryPackageVersion>3.1.8</MicrosoftExtensionsCachingMemoryPackageVersion>
     <MicrosoftExtensionsCachingSqlServerPackageVersion>3.1.8</MicrosoftExtensionsCachingSqlServerPackageVersion>
     <MicrosoftExtensionsCachingStackExchangeRedisPackageVersion>3.1.8</MicrosoftExtensionsCachingStackExchangeRedisPackageVersion>
-    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.1.8-servicing.20419.6</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>3.1.8-servicing.20420.1</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>3.1.8</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
     <MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>3.1.8</MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>
     <MicrosoftExtensionsConfigurationBinderPackageVersion>3.1.8</MicrosoftExtensionsConfigurationBinderPackageVersion>
@@ -134,10 +134,10 @@
     <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>3.1.8</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
     <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>3.1.8</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>3.1.8</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.1.8-servicing.20419.6</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>3.1.8-servicing.20420.1</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
     <MicrosoftExtensionsHostingAbstractionsPackageVersion>3.1.8</MicrosoftExtensionsHostingAbstractionsPackageVersion>
     <MicrosoftExtensionsHostingPackageVersion>3.1.8</MicrosoftExtensionsHostingPackageVersion>
-    <MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>3.1.8-servicing.20419.6</MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>
+    <MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>3.1.8-servicing.20420.1</MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion>
     <MicrosoftExtensionsHttpPackageVersion>3.1.8</MicrosoftExtensionsHttpPackageVersion>
     <MicrosoftExtensionsLocalizationAbstractionsPackageVersion>3.1.8</MicrosoftExtensionsLocalizationAbstractionsPackageVersion>
     <MicrosoftExtensionsLocalizationPackageVersion>3.1.8</MicrosoftExtensionsLocalizationPackageVersion>
@@ -149,18 +149,18 @@
     <MicrosoftExtensionsLoggingEventSourcePackageVersion>3.1.8</MicrosoftExtensionsLoggingEventSourcePackageVersion>
     <MicrosoftExtensionsLoggingEventLogPackageVersion>3.1.8</MicrosoftExtensionsLoggingEventLogPackageVersion>
     <MicrosoftExtensionsLoggingPackageVersion>3.1.8</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>3.1.8-servicing.20419.6</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>3.1.8-servicing.20420.1</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftExtensionsLoggingTraceSourcePackageVersion>3.1.8</MicrosoftExtensionsLoggingTraceSourcePackageVersion>
     <MicrosoftExtensionsObjectPoolPackageVersion>3.1.8</MicrosoftExtensionsObjectPoolPackageVersion>
     <MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>3.1.8</MicrosoftExtensionsOptionsConfigurationExtensionsPackageVersion>
     <MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>3.1.8</MicrosoftExtensionsOptionsDataAnnotationsPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>3.1.8</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>3.1.8-servicing.20419.6</MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>
+    <MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>3.1.8-servicing.20420.1</MicrosoftExtensionsParameterDefaultValueSourcesPackageVersion>
     <MicrosoftExtensionsPrimitivesPackageVersion>3.1.8</MicrosoftExtensionsPrimitivesPackageVersion>
-    <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>3.1.8-servicing.20419.6</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
-    <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>3.1.8-servicing.20419.6</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
+    <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>3.1.8-servicing.20420.1</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
+    <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>3.1.8-servicing.20420.1</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>3.1.8</MicrosoftExtensionsWebEncodersPackageVersion>
-    <MicrosoftInternalExtensionsRefsPackageVersion>3.1.8-servicing.20419.6</MicrosoftInternalExtensionsRefsPackageVersion>
+    <MicrosoftInternalExtensionsRefsPackageVersion>3.1.8-servicing.20420.1</MicrosoftInternalExtensionsRefsPackageVersion>
     <MicrosoftJSInteropPackageVersion>3.1.8</MicrosoftJSInteropPackageVersion>
     <!-- Packages from aspnet/EntityFrameworkCore -->
     <dotnetefPackageVersion>3.1.8</dotnetefPackageVersion>
