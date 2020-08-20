@@ -1,20 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text.Json;
-using System.Threading.Tasks;
 using BasicTestApp;
 using BasicTestApp.FormsTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -44,7 +36,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [InlineData("age")]
         [InlineData("description")]
         [InlineData("renewal-date")]
-        [InlineData("radio-group")]
         [InlineData("accepts-terms")]
         [InlineData("ticket-class")]
         public void InputElementsGetFocusedSuccessfully(string className)

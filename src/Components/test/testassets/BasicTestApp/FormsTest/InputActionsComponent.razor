@@ -34,16 +34,6 @@
 
     </p>
 
-    <p class="radio-group">
-        Pick one country:
-        <InputRadioGroup Name="country" @bind-Value="person.Country">
-            <InputRadio @ref="inputRadio1Reference" Name="country" Value="Country.Japan" />japan
-            <button @onclick="async () => await inputRadio1Reference.InputElement.FocusAsync()">Focus</button>
-            <br />
-            <InputRadio @ref="inputRadio2Reference" Name="country" Value="Country.Latvia" />Latvia
-            <button @onclick="async () => await inputRadio2Reference.InputElement.FocusAsync()">Focus</button>
-        </InputRadioGroup>
-    </p>
     <p class="accepts-terms">
         Accepts terms: <InputCheckbox @ref="inputCheckboxReference" @bind-Value="person.AcceptsTerms" title="You have to check this" />
         <button @onclick="async () => await inputCheckboxReference.InputElement.FocusAsync()">Focus</button>
@@ -56,8 +46,6 @@
     InputTextArea inputTextAreaReference;
     InputDate<DateTime> inputDateReference;
     InputSelect<TicketClass> inputSelectReference;
-    InputRadio<Country> inputRadio1Reference;
-    InputRadio<Country> inputRadio2Reference;
     InputCheckbox inputCheckboxReference;
 
     Person person = new Person();
@@ -83,12 +71,8 @@
         public string Description { get; set; }
 
         public TicketClass TicketClass { get; set; }
-
-        public Country? Country { get; set; } = null;
     }
 
     enum TicketClass { Economy, Premium, First }
-
-    enum Country { Japan, Latvia }
 }
 

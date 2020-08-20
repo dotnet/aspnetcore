@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class InputRadio<TValue> : ComponentBase
     {
-        private ElementReference? _inputElement;
-
         /// <summary>
         /// Gets context for this <see cref="InputRadio{TValue}"/>.
         /// </summary>
@@ -40,15 +38,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         [Parameter] public string? Name { get; set; }
 
         [CascadingParameter] private InputRadioContext? CascadedContext { get; set; }
-
-        /// <summary>
-        /// Gets or sets the associated <see cref="ElementReference"/>
-        /// </summary>
-        public ElementReference InputElement
-        {
-            get => _inputElement ?? throw new InvalidOperationException($"Component must be rendered before {nameof(InputElement)} can be accessed.");
-            protected set => _inputElement = value;
-        }
 
         private string GetCssClass(string fieldClass)
         {
@@ -87,7 +76,6 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.AddAttribute(5, "value", BindConverter.FormatValue(Value?.ToString()));
             builder.AddAttribute(6, "checked", Context.CurrentValue?.Equals(Value));
             builder.AddAttribute(7, "onchange", Context.ChangeEventCallback);
-            builder.AddElementReferenceCapture(8, __inputReference => InputElement = __inputReference);
             builder.CloseElement();
         }
     }
