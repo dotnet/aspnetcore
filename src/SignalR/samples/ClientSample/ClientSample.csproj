@@ -18,8 +18,4 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)'">
-    <Reference Include="System.Net.Sockets" />
-  </ItemGroup>
-
 </Project>
