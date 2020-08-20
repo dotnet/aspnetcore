@@ -4,7 +4,6 @@
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This assembly contains infrastructure supporting Razor MSBuild integration.</Description>
 
     <!--
-    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
       This is intentionally targeting netcoreapp3.0. This allows using the Microsoft.NET.Sdk.Razor package without having to solve diamond dependency problems in AspNetCore.
       We use a runtimeconfig.json.template to allow roll forwards.
       In addition, the SDK stamps an exact version of the shared fx to use in all runtimeconfig.json that are contained in the SDK.
