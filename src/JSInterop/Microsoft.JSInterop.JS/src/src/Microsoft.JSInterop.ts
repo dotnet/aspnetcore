@@ -307,7 +307,7 @@ export module DotNet {
     if (targetInstance) {
       return targetInstance.findFunction(identifier);
     } else {
-      throw new Error(`JS object instance with id ${targetInstanceId} does not exist.`);
+      throw new Error(`JS object instance with ID ${targetInstanceId} does not exist (has it been disposed?).`);
     }
   }
 
@@ -348,16 +348,16 @@ export module DotNet {
       case JSCallResultType.Default:
         return returnValue;
       case JSCallResultType.JSObjectReference:
-        if (returnValue === null || returnValue === undefined) {
-          throw new Error(`Cannot create a JSObjectReference from the returned value '${returnValue}'.`);
-        } else {
-          if (!Object.prototype.hasOwnProperty.call(returnValue, '__jsObjectId') || cachedJSObjectsById[nextJsObjectId] !== returnValue) {
+        if (returnValue instanceof Object) {
+          if (!returnValue.hasOwnProperty('__jsObjectId') || cachedJSObjectsById[nextJsObjectId] !== returnValue) {
             // The return value is not cached as a JSObjectReference, or is copied from an object that was, so we cache it as a new one
             cachedJSObjectsById[nextJsObjectId] = new JSObject(returnValue, nextJsObjectId);
             nextJsObjectId++;
           }
 
           return returnValue;
+        } else {
+          throw new Error(`Cannot create a JSObjectReference from the value '${returnValue}'.`);
         }
       default:
         throw new Error(`Invalid JS call result type '${resultType}'.`);

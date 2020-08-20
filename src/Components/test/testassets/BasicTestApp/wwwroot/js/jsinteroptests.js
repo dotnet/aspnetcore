@@ -167,6 +167,7 @@ window.jsInteropTests = {
   asyncFunctionThrowsAsyncException: asyncFunctionThrowsAsyncException,
   returnPrimitive: returnPrimitive,
   returnPrimitiveAsync: returnPrimitiveAsync,
+  returnJSObjectReference: returnJSObjectReference,
   receiveDotNetObjectByRef: receiveDotNetObjectByRef,
   receiveDotNetObjectByRefAsync: receiveDotNetObjectByRefAsync
 };
@@ -193,6 +194,20 @@ function returnArrayAsync() {
       resolve(returnArray());
     }, 100);
   });
+}
+
+function returnJSObjectReference() {
+  return {
+    identity: function (value) {
+      return value;
+    },
+    nonFunction: 123,
+    nested: {
+      add: function (a, b) {
+        return a + b;
+      }
+    },
+  };
 }
 
 function functionThrowsException() {
@@ -258,12 +273,4 @@ function receiveDotNetObjectByRefAsync(incomingData) {
       testDto: testDto
     };
   });
-}
-
-function returnJSObjectReference() {
-  return {
-    doSomething: function () {
-        console.log('Invoked from JSObjectReference.');
-    },
-  };
 }

@@ -42,7 +42,7 @@ namespace Microsoft.JSInterop.Infrastructure
 
         public override void Write(Utf8JsonWriter writer, JSObjectReference value, JsonSerializerOptions options)
         {
-            // TODO: Decide if passing JSObjectReferences back into functions should be allowed.
+            // TODO: Support passing a JSObjectReference as a parameter to a JS invocation.
             throw new NotImplementedException();
         }
     }

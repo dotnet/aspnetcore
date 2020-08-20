@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.JSInterop
 {
-    public class JSObjectReference : IAsyncDisposable
+    public class JSObjectReference : IDisposable, IAsyncDisposable
     {
         public static readonly JsonEncodedText JSObjectIdKey = JsonEncodedText.Encode("__jsObjectId");
 
@@ -45,13 +45,18 @@ namespace Microsoft.JSInterop
             return _jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args, _jsObjectId);
         }
 
+        public void Dispose()
+        {
+            _ = DisposeAsync();
+        }
+
         public async ValueTask DisposeAsync()
         {
             if (!_disposed)
             {
                 _disposed = true;
 
-                await _jsRuntime.InvokeVoidAsync("Blazor._internal.disposeJSObjectReference", _jsObjectId);
+                await _jsRuntime.InvokeVoidAsync("Blazor._internal.jsObjectReference.dispose", _jsObjectId);
             }
         }
 
