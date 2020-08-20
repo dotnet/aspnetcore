@@ -57,21 +57,11 @@ public class HttpHubConnectionBuilder {
     }
     
     /**
-     * Sets Json as the {@link HubProtocol} to be used by the {@link HubConnection}.
-     *
-     * @return This instance of the HttpHubConnectionBuilder.
-     */
-    public HttpHubConnectionBuilder withJson() {
-        this.protocol = new JsonHubProtocol();
-        return this;
-    }
-    
-    /**
      * Sets MessagePack as the {@link HubProtocol} to be used by the {@link HubConnection}.
      *
      * @return This instance of the HttpHubConnectionBuilder.
      */
-    public HttpHubConnectionBuilder withMessagePack() {
+    public HttpHubConnectionBuilder withMessagePackHubProtocol() {
         this.protocol = new MessagePackHubProtocol();
         return this;
     }

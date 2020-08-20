@@ -33,7 +33,7 @@ class TestUtils {
             .shouldSkipNegotiate(skipNegotiate);
         
         if (withMessagePack) {
-            builder = builder.withMessagePack();
+            builder = builder.withMessagePackHubProtocol();
         }
 
         return builder.build();
