@@ -113,10 +113,20 @@ namespace Microsoft.AspNetCore.Diagnostics
                 };
                 context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
                 context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
-                context.Response.StatusCode = 500;
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
                 await _options.ExceptionHandler(context);
+
+                if (context.Response.StatusCode == StatusCodes.Status404NotFound)
+                {
+                    // Reset status and clear headers
+                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                    await ClearCacheHeaders(context.Response);
+
+                    // This exception will be logged and the original exception wil be thrown
+                    throw new InvalidOperationException($"No exception handler was found at the configured path {_options.ExceptionHandlingPath}.");
+                }
 
                 if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled("Microsoft.AspNetCore.Diagnostics.HandledException"))
                 {

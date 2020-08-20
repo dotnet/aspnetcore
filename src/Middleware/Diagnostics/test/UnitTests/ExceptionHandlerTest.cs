@@ -7,17 +7,17 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics
@@ -468,6 +468,87 @@ namespace Microsoft.AspNetCore.Diagnostics
                 "Either the 'ExceptionHandlingPath' or the 'ExceptionHandler' property must be set in 'UseExceptionHandler()'. " +
                 "Alternatively, set one of the aforementioned properties in 'Startup.ConfigureServices' as follows: 'services.AddExceptionHandler(options => { ... });'.",
                 exception.Message);
+        }
+
+        [Fact]
+        public async Task ExceptionHandlerNotFound_RethrowsOriginalError()
+        {
+            var sink = new TestSink(TestSink.EnableWithTypeName<ExceptionHandlerMiddleware>);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+                    })
+                    .Configure(app =>
+                    {
+                        app.Use(async (httpContext, next) =>
+                        {
+                            Exception exception = null;
+                            try
+                            {
+                                await next();
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                exception = ex;
+                            }
+
+                            // The original exception is thrown
+                            Assert.NotNull(exception);
+                            Assert.Equal("Something bad happened.", exception.Message);
+                        });
+
+                        app.UseExceptionHandler("/non-existent-hander");
+
+                        app.Map("/handle-errors", (innerAppBuilder) =>
+                        {
+                            innerAppBuilder.Run(async (httpContext) =>
+                            {
+                                await httpContext.Response.WriteAsync("Handled error in a custom way.");
+                            });
+                        });
+
+                        app.Map("/throw", (innerAppBuilder) =>
+                        {
+                            innerAppBuilder.Run(httpContext =>
+                            {
+                                throw new InvalidOperationException("Something bad happened.");
+                            });
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync("throw");
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+                Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
+                IEnumerable<string> values;
+                Assert.True(response.Headers.CacheControl.NoCache);
+                Assert.True(response.Headers.CacheControl.NoStore);
+                Assert.True(response.Headers.TryGetValues("Pragma", out values));
+                Assert.Single(values);
+                Assert.Equal("no-cache", values.First());
+                Assert.True(response.Content.Headers.TryGetValues("Expires", out values));
+                Assert.Single(values);
+                Assert.Equal("-1", values.First());
+                Assert.False(response.Headers.TryGetValues("ETag", out values));
+            }
+
+            Assert.Contains(sink.Writes, w =>
+                w.LogLevel == LogLevel.Error
+                && w.Message == "An exception was thrown attempting to execute the error handler."
+                && w.Exception != null
+                && w.Exception.Message == "No exception handler was found at the configured path /non-existent-hander.");
         }
     }
 }
