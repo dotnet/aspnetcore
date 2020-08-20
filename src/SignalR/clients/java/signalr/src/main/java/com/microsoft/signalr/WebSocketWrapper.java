@@ -3,6 +3,8 @@
 
 package com.microsoft.signalr;
 
+import java.nio.ByteBuffer;
+
 import io.reactivex.Completable;
 
 abstract class WebSocketWrapper {
@@ -10,7 +12,7 @@ abstract class WebSocketWrapper {
 
     public abstract Completable stop();
 
-    public abstract Completable send(String message);
+    public abstract Completable send(ByteBuffer message);
 
     public abstract void setOnReceive(OnReceiveCallBack onReceive);
 
