@@ -56,6 +56,72 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
         [ConditionalFact]
         [RequiresNewHandler]
+        public async Task SetIISLimitMaxRequestBodySizeE2EWorksWithLargerLimit()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            deploymentParameters.ServerConfigActionList.Add(
+                (config, _) => {
+                    config
+                        .RequiredElement("system.webServer")
+                        .GetOrAdd("security")
+                        .GetOrAdd("requestFiltering")
+                        .GetOrAdd("requestLimits", "maxAllowedContentLength", "100000000");
+                });
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var result = await deploymentResult.HttpClient.PostAsync("/ReadRequestBodyLarger", new StringContent(new string('a', 100000000)));
+
+            // IIS either returns a 404 or a 413 based on versions of IIS.
+            // Check for both as we don't know which specific patch version.
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        public async Task SetIISLimitMaxRequestBodySizeE2EWorksWithIntMaxValue()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            deploymentParameters.ServerConfigActionList.Add(
+                (config, _) => {
+                    config
+                        .RequiredElement("system.webServer")
+                        .GetOrAdd("security")
+                        .GetOrAdd("requestFiltering")
+                        .GetOrAdd("requestLimits", "maxAllowedContentLength", "4294967295");
+                });
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var result = await deploymentResult.HttpClient.PostAsync("/ReadRequestBodyLarger", new StringContent(new string('a', 10000)));
+
+            // IIS either returns a 404 or a 413 based on versions of IIS.
+            // Check for both as we don't know which specific patch version.
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        public async Task SetIISLimitMaxRequestBodySizeE2EWorksNoLimit()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            deploymentParameters.ServerConfigActionList.Add(
+                (config, _) => {
+                    config
+                        .RequiredElement("system.webServer")
+                        .GetOrAdd("security")
+                        .GetOrAdd("requestFiltering")
+                        .Remove();
+                });
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var result = await deploymentResult.HttpClient.PostAsync("/ReadRequestBodyLarger", new StringContent(new string('a', 10)));
+
+            // IIS either returns a 404 or a 413 based on versions of IIS.
+            // Check for both as we don't know which specific patch version.
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
         public async Task IISRejectsContentLengthTooLargeByDefault()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
