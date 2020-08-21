@@ -19,7 +19,7 @@ namespace Microsoft.JSInterop
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
         [return: MaybeNull]
-        public TValue Invoke<TValue>(string identifier, params object[] args)
+        public TValue Invoke<TValue>(string identifier, params object?[]? args)
         {
             var resultJson = InvokeJS(identifier, JsonSerializer.Serialize(args, JsonSerializerOptions));
             if (resultJson is null)
