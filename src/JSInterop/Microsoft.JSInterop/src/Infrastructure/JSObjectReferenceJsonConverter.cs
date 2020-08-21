@@ -23,17 +23,21 @@ namespace Microsoft.JSInterop.Infrastructure
 
             while (reader.Read())
             {
-                if (id < 0 && reader.TokenType == JsonTokenType.PropertyName)
+                if (reader.CurrentDepth == 1 &&
+                    reader.TokenType == JsonTokenType.PropertyName &&
+                    reader.ValueTextEquals(JSObjectReference.IdKey.EncodedUtf8Bytes))
                 {
-                    if (reader.ValueTextEquals(JSObjectReference.IdKey.EncodedUtf8Bytes))
+                    if (id != -1)
                     {
-                        reader.Read();
-                        id = reader.GetInt64();
+                        throw new JsonException($"Duplicate property {JSObjectReference.IdKey}.");
                     }
+
+                    reader.Read();
+                    id = reader.GetInt64();
                 }
             }
 
-            if (id < 0)
+            if (id == -1)
             {
                 throw new JsonException($"Required property {JSObjectReference.IdKey} not found.");
             }
