@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
         private bool _requestProcessed;
         private INegotiateState _negotiateState;
-        private LdapAdapter _linuxAdapter;
 
         /// <summary>
         /// Creates a new <see cref="NegotiateHandler"/>
@@ -41,8 +40,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <param name="clock"></param>
         public NegotiateHandler(IOptionsMonitor<NegotiateOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
-        {
-        }
+        { }
 
         /// <summary>
         /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
@@ -332,15 +330,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 Principal = user
             };
 
-            if (Options.LdapOptions.EnableLdapRoleClaimResolution && _linuxAdapter == null)
-            {
-                _linuxAdapter = new LdapAdapter(Options.LdapOptions, Logger);
-            }
-
-            if (_linuxAdapter != null)
-            {
-                await _linuxAdapter.OnAuthenticatedAsync(authenticatedContext);
-            }
+            await LdapAdapter.RetrieveClaimsAsync(Options.LdapOptions, authenticatedContext, Logger);
 
             await Events.Authenticated(authenticatedContext);
 

@@ -24,17 +24,15 @@ namespace NegotiateAuthSample
                 .AddNegotiate(options =>
                 {
                     /*
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                    {
-                        var ldapOptions = options.LdapOptions;
-                        // Mandatory settings
-                        ldapOptions.EnableLdapRoleClaimResolution = true;
-                        ldapOptions.Domain = "DOMAIN.com";
-                        // Optional settings
-                        ldapOptions.MachineAccountName = "machineName";
-                        ldapOptions.MachineAccountPassword = "PassW0rd";
-                        ldapOptions.ResolveNestedGroups = true;
-                    }*/
+                    var ldapOptions = options.LdapOptions;
+                    // Mandatory settings
+                    ldapOptions.EnableLdapRoleClaimResolution = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+                    ldapOptions.Domain = "DOMAIN.com";
+                    // Optional settings
+                    ldapOptions.MachineAccountName = "machineName";
+                    ldapOptions.MachineAccountPassword = "PassW0rd";
+                    ldapOptions.ResolveNestedGroups = true;
+                    */
 
                     options.Events = new NegotiateEvents()
                     {

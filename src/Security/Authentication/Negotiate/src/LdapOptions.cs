@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     {
         /// <summary>
         /// Configure whether LDAP connection should be used to resolve role claims.
-        /// This should only be enabled on Linux.
+        /// This is mainly used on Linux.
         /// </summary>
         public bool EnableLdapRoleClaimResolution { get; set; }
 
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
         /// <summary>
         /// The machine account password to use when opening the LDAP connection.
-        /// This must be provided if a MachineAccountName is provided.
+        /// This must be provided if a <see cref="MachineAccountName"/> is provided.
         /// </summary>
         public string MachineAccountPassword { get; set; }
 
@@ -45,9 +45,14 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public bool ResolveNestedGroups { get; set; } = true;
 
         /// <summary>
-        /// The LdapConnection to be used to retrieve role claims. If no explicit
-        /// connection is provided, an LDAP connection will be automatically created
-        /// based on the Domain, MachineAccountName and MachineAccountPassword options.
+        /// The <see cref="LdapConnection"/> to be used to retrieve role claims.
+        /// If no explicit connection is provided, an LDAP connection will be
+        /// automatically created based on the <see cref="Domain"/>,
+        /// <see cref="MachineAccountName"/> and <see cref="MachineAccountPassword"/>
+        /// options. If provided, this connection will be used and the
+        /// <see cref="Domain"/>, <see cref="MachineAccountName"/> and
+        /// <see cref="MachineAccountPassword"/>  options will not be used to create
+        /// the <see cref="LdapConnection"/>.
         /// </summary>
         public LdapConnection LdapConnection { get; set; }
 
@@ -59,6 +64,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 {
                     throw new ArgumentException($"{nameof(EnableLdapRoleClaimResolution)} is set to true but {nameof(Domain)} is not set.");
                 }
+
                 if (string.IsNullOrEmpty(MachineAccountName) && !string.IsNullOrEmpty(MachineAccountPassword))
                 {
                     throw new ArgumentException($"{nameof(MachineAccountPassword)} should only be specified when {nameof(MachineAccountName)} is configured.");

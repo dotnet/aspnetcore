@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.DirectoryServices.Protocols;
 using System.Linq;
+using System.Net;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -58,6 +60,34 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     throw new InvalidOperationException("The Negotiate Authentication handler cannot be used on a server that directly supports Windows Authentication."
                         + " Enable Windows Authentication for the server and the Negotiate Authentication handler will defer to it.");
                 }
+            }
+
+            var ldapOptions = options.LdapOptions;
+
+            if (ldapOptions.EnableLdapRoleClaimResolution)
+            {
+                if (ldapOptions.LdapConnection == null)
+                {
+                    var di = new LdapDirectoryIdentifier(server: ldapOptions.Domain, fullyQualifiedDnsHostName: true, connectionless: false);
+
+                    if (string.IsNullOrEmpty(ldapOptions.MachineAccountName))
+                    {
+                        // Use default credentials
+                        ldapOptions.LdapConnection = new LdapConnection(di);
+                    }
+                    else
+                    {
+                        // Use specific specific machine account
+                        var machineAccount = ldapOptions.MachineAccountName + "@" + ldapOptions.Domain;
+                        var credentials = new NetworkCredential(machineAccount, ldapOptions.MachineAccountPassword);
+                        ldapOptions.LdapConnection = new LdapConnection(di, credentials);
+                    }
+
+                    ldapOptions.LdapConnection.SessionOptions.ProtocolVersion = 3; //Setting LDAP Protocol to latest version
+                    ldapOptions.LdapConnection.Timeout = TimeSpan.FromMinutes(1);
+                }
+
+                ldapOptions.LdapConnection.Bind(); // This line actually makes the connection.
             }
         }
     }
