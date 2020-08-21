@@ -720,10 +720,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       <AllPublishItemsFullPathWithTargetPath Include="@(RazorIntermediateAssembly->'%(FullPath)')">
         <TargetPath>%(Filename)%(Extension)</TargetPath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       </AllPublishItemsFullPathWithTargetPath>
       <AllPublishItemsFullPathWithTargetPath Include="@(_RazorDebugSymbolsIntermediatePath->'%(FullPath)')">
         <TargetPath>%(Filename)%(Extension)</TargetPath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       </AllPublishItemsFullPathWithTargetPath>
     </ItemGroup>
 
