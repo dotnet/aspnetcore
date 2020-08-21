@@ -47,7 +47,7 @@ namespace Microsoft.JSInterop.Tests
             var jsObject = new JSObjectReference(jsRuntime, 0);
 
             // Act
-            jsObject.Dispose();
+            _ = jsObject.DisposeAsync();
 
             // Assert
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await jsObject.InvokeAsync<object>("test", "arg1", "arg2"));
@@ -62,7 +62,7 @@ namespace Microsoft.JSInterop.Tests
             var jsObject = new JSInProcessObjectReference(jsRuntime, 0);
 
             // Act
-            jsObject.Dispose();
+            _ = jsObject.DisposeAsync();
 
             // Assert
             Assert.Throws<ObjectDisposedException>(() => jsObject.Invoke<object>("test", "arg1", "arg2"));

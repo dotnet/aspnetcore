@@ -54,6 +54,15 @@ namespace Microsoft.JSInterop
         /// </summary>
         /// <param name="identifier">The identifier for the function to invoke.</param>
         /// <param name="argsJson">A JSON representation of the arguments.</param>
+        /// <returns>A JSON representation of the result.</returns>
+        protected virtual string? InvokeJS(string identifier, string? argsJson)
+            => InvokeJS(identifier, argsJson, JSCallResultType.Default, 0);
+
+        /// <summary>
+        /// Performs a synchronous function invocation.
+        /// </summary>
+        /// <param name="identifier">The identifier for the function to invoke.</param>
+        /// <param name="argsJson">A JSON representation of the arguments.</param>
         /// <param name="resultType">The type of result expected from the invocation.</param>
         /// <param name="targetInstanceId">The instance ID of the target JS object.</param>
         /// <returns>A JSON representation of the result.</returns>
