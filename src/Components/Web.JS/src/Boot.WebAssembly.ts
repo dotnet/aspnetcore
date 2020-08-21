@@ -11,6 +11,7 @@ import { WebAssemblyConfigLoader } from './Platform/WebAssemblyConfigLoader';
 import { BootConfigResult } from './Platform/BootConfig';
 import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
+import { discoverComponents } from './Platform/WebAssemblyComponentCommentLoader';
 
 let started = false;
 
@@ -71,8 +72,14 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
   const environment = options?.environment;
 
   // Fetch the resources and prepare the Mono runtime
-  const bootConfigResult = await BootConfigResult.initAsync(environment);
+  const bootConfigPromise = BootConfigResult.initAsync(environment);
 
+  // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
+  // the document.
+  var discoveredComponents = discoverComponents(document);
+  window['Blazor']._internal.discoverComponents = () => discoveredComponents.map(c => c.toRecord());
+
+  const bootConfigResult = await bootConfigPromise;
   const [resourceLoader] = await Promise.all([
     WebAssemblyResourceLoader.initAsync(bootConfigResult.bootConfig, options || {}),
     WebAssemblyConfigLoader.initAsync(bootConfigResult)]);

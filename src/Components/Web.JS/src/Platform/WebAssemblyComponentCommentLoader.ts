@@ -1,86 +1,52 @@
-import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
-import { toLogicalRootCommentElement, LogicalElement } from '../../Rendering/LogicalElements';
-
-export class CircuitDescriptor {
-  public circuitId?: string;
+export class WebAssemblyComponentCommentLoader {
 
   public components: ComponentDescriptor[];
 
   public constructor(components: ComponentDescriptor[]) {
-    this.circuitId = undefined;
     this.components = components;
-  }
-
-  public reconnect(reconnection: signalR.HubConnection): Promise<boolean> {
-    if (!this.circuitId) {
-      throw new Error('Circuit host not initialized.');
-    }
-
-    return reconnection.invoke<boolean>('ConnectCircuit', this.circuitId);
-  }
-
-  public initialize(circuitId: string): void {
-    if (this.circuitId) {
-      throw new Error(`Circuit host '${this.circuitId}' already initialized.`);
-    }
-
-    this.circuitId = circuitId;
-  }
-
-  public async startCircuit(connection: signalR.HubConnection): Promise<boolean> {
-
-    const result = await connection.invoke<string>(
-      'StartCircuit',
-      navigationManagerFunctions.getBaseURI(),
-      navigationManagerFunctions.getLocationHref(),
-      JSON.stringify(this.components.map(c => c.toRecord()))
-    );
-
-    if (result) {
-      this.initialize(result);
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  public resolveElement(sequence: string): LogicalElement {
-    const parsedSequence = Number.parseInt(sequence);
-    if (!Number.isNaN(parsedSequence)) {
-      return toLogicalRootCommentElement(this.components[parsedSequence].start as Comment, this.components[parsedSequence].end as Comment);
-    } else {
-      throw new Error(`Invalid sequence number '${sequence}'.`);
-    }
   }
 }
 
 interface ComponentMarker {
   type: string;
-  sequence: number;
-  descriptor: string;
+  id: number;
+  typeName: string;
+  assembly: string;
+  parameterDefinitions: string | undefined;
+  parameterValues: string | undefined;
 }
 
 export class ComponentDescriptor {
+  private static globalId = 1;
   public type: string;
+
+  public typeName: string;
+
+  public assembly: string;
+
+  public parameterDefinitions: string | undefined;
+
+  public parameterValues: string | undefined;
+
+  public id: number;
 
   public start: Node;
 
   public end?: Node;
 
-  public sequence: number;
-
-  public descriptor: string;
-
-  public constructor(type: string, start: Node, end: Node | undefined, sequence: number, descriptor: string) {
+  public constructor(type: string, start: Node, end: Node | undefined, assembly: string, typeName: string, parameterDefinitions: string | undefined, parameterValues: string | undefined) {
+    this.id = ComponentDescriptor.globalId++;
     this.type = type;
+    this.assembly = assembly;
+    this.typeName = typeName;
+    this.parameterDefinitions = parameterDefinitions;
+    this.parameterValues = parameterValues;
     this.start = start;
     this.end = end;
-    this.sequence = sequence;
-    this.descriptor = descriptor;
   }
 
   public toRecord(): ComponentMarker {
-    const result = { type: this.type, sequence: this.sequence, descriptor: this.descriptor };
+    const result = { type: this.type, id: this.id, assembly: this.assembly, typeName: this.typeName, parameterDefinitions: this.parameterDefinitions, parameterValues: this.parameterValues };
     return result;
   }
 }
@@ -94,21 +60,24 @@ export function discoverComponents(document: Document): ComponentDescriptor[] {
       componentComment.type,
       componentComment.start,
       componentComment.end,
-      componentComment.sequence,
-      componentComment.descriptor,
+      componentComment.assembly,
+      componentComment.typeName,
+      componentComment.parameterDefinitions,
+      componentComment.parameterValues,
     );
 
     discoveredComponents.push(entry);
   }
 
-  return discoveredComponents.sort((a, b) => a.sequence - b.sequence);
+  return discoveredComponents.sort((a, b) => a.id - b.id);
 }
-
 
 interface ComponentComment {
   type: 'server' | 'client';
-  sequence: number;
-  descriptor: string;
+  assembly: string;
+  typeName: string;
+  parameterDefinitions?: string;
+  parameterValues?: string;
   start: Node;
   end?: Node;
   prerenderId?: string;
@@ -152,7 +121,7 @@ function getComponentComment(commentNodeIterator: ComponentCommentIterator): Com
 
     if (json) {
       try {
-        return createServerComponentComment(json, candidateStart, commentNodeIterator);
+        return createClientComponentComment(json, candidateStart, commentNodeIterator);
       } catch (error) {
         throw new Error(`Found malformed component comment at ${candidateStart.textContent}`);
       }
@@ -162,35 +131,36 @@ function getComponentComment(commentNodeIterator: ComponentCommentIterator): Com
   }
 }
 
-function createServerComponentComment(json: string, start: Node, iterator: ComponentCommentIterator): ComponentComment | undefined {
+function createClientComponentComment(json: string, start: Node, iterator: ComponentCommentIterator): ComponentComment | undefined {
   const payload = JSON.parse(json) as ComponentComment;
-  const { type, sequence, descriptor, prerenderId } = payload;
+  const { type, assembly, typeName, parameterDefinitions, parameterValues, prerenderId } = payload;
   if (type !== 'server' && type !== 'client') {
     throw new Error(`Invalid component type '${type}'.`);
   }
 
-  if(type === 'client')
-  {
+  if (type === 'server') {
     return undefined;
   }
 
-  if (!descriptor) {
-    throw new Error('descriptor must be defined when using a descriptor.');
+  if (!assembly) {
+    throw new Error('assembly must be defined when using a descriptor.');
   }
 
-  if (sequence === undefined) {
-    throw new Error('sequence must be defined when using a descriptor.');
-  }
-
-  if (!Number.isInteger(sequence)) {
-    throw new Error(`Error parsing the sequence '${sequence}' for component '${json}'`);
+  if (typeName) {
+    throw new Error('typeName must be defined when using a descriptor.');
   }
 
   if (!prerenderId) {
     return {
       type,
-      sequence: sequence,
-      descriptor,
+      assembly,
+      typeName,
+      // Parameter definitions and values come Base64 encoded from the server, since they contain random data and can make the
+      // comment invalid. We could unencode them in .NET Code, but that would be slower to do and we can leverage the fact that
+      // JS provides a native function that will be much faster and that we are doing this work while we are fetching
+      // blazor.boot.json
+      parameterDefinitions: parameterDefinitions && btoa(parameterDefinitions),
+      parameterValues: parameterValues && btoa(parameterValues),
       start,
     };
   } else {
@@ -201,8 +171,11 @@ function createServerComponentComment(json: string, start: Node, iterator: Compo
 
     return {
       type,
-      sequence,
-      descriptor,
+      assembly,
+      typeName,
+      // Same comment as above.
+      parameterDefinitions: parameterDefinitions && btoa(parameterDefinitions),
+      parameterValues: parameterValues && btoa(parameterValues),
       start,
       prerenderId,
       end,
@@ -275,5 +248,3 @@ class ComponentCommentIterator {
     }
   }
 }
-
-
