@@ -2578,10 +2578,10 @@ class HubConnectionTest {
             value.getAndUpdate((val) -> val + 1);
         });
 
-        SingleSubject<String> handshakeMessageTask = mockTransport.getNextSentMessage();
+        SingleSubject<ByteBuffer> handshakeMessageTask = mockTransport.getNextSentMessage();
         // On start we're going to receive the handshake response and also an invocation in the same payload.
         hubConnection.start();
-        String sentMessage = handshakeMessageTask.timeout(1, TimeUnit.SECONDS).blockingGet();
+        ByteBuffer sentMessage = handshakeMessageTask.timeout(1, TimeUnit.SECONDS).blockingGet();
         String expectedSentMessage  = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
         assertEquals(expectedSentMessage, TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]));
 
