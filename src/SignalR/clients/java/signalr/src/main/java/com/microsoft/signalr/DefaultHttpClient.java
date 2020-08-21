@@ -4,6 +4,7 @@
 package com.microsoft.signalr;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import io.reactivex.Single;
 import io.reactivex.subjects.SingleSubject;
 import okhttp3.*;
+import okio.ByteString;
 
 final class DefaultHttpClient extends HttpClient {
     private OkHttpClient client = null;
@@ -104,7 +106,7 @@ final class DefaultHttpClient extends HttpClient {
     }
 
     @Override
-    public Single<HttpResponse> send(HttpRequest httpRequest, String bodyContent) {
+    public Single<HttpResponse> send(HttpRequest httpRequest, ByteBuffer bodyContent) {
         Request.Builder requestBuilder = new Request.Builder().url(httpRequest.getUrl());
 
         switch (httpRequest.getMethod()) {
@@ -114,7 +116,7 @@ final class DefaultHttpClient extends HttpClient {
             case "POST":
                 RequestBody body;
                 if (bodyContent != null) {
-                    body = RequestBody.create(MediaType.parse("text/plain"), bodyContent);
+                    body = RequestBody.create(MediaType.parse("text/plain"), ByteString.of(bodyContent));
                 } else {
                     body = RequestBody.create(null, new byte[]{});
                 }
@@ -150,7 +152,7 @@ final class DefaultHttpClient extends HttpClient {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 try (ResponseBody body = response.body()) {
-                    HttpResponse httpResponse = new HttpResponse(response.code(), response.message(), body.string());
+                    HttpResponse httpResponse = new HttpResponse(response.code(), response.message(), ByteBuffer.wrap(body.bytes()));
                     responseSubject.onSuccess(httpResponse);
                 }
             }

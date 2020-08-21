@@ -5,6 +5,7 @@ package com.microsoft.signalr;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +36,7 @@ class WebSocketTransportTest {
         }
 
         @Override
-        public Single<HttpResponse> send(HttpRequest request, String body) {
+        public Single<HttpResponse> send(HttpRequest request, ByteBuffer body) {
             return null;
         }
 
@@ -71,7 +72,7 @@ class WebSocketTransportTest {
         }
 
         @Override
-        public Completable send(String message) {
+        public Completable send(ByteBuffer message) {
             return null;
         }
 

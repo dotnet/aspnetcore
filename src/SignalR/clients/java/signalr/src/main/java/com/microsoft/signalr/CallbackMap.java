@@ -3,6 +3,7 @@
 
 package com.microsoft.signalr;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,10 +14,10 @@ class CallbackMap {
     private final Map<String, List<InvocationHandler>> handlers = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
 
-    public InvocationHandler put(String target, ActionBase action, Class<?>... classes) {
+    public InvocationHandler put(String target, ActionBase action, Type... types) {
         try {
             lock.lock();
-            InvocationHandler handler = new InvocationHandler(action, classes);
+            InvocationHandler handler = new InvocationHandler(action, types);
             if (!handlers.containsKey(target)) {
                 handlers.put(target, new ArrayList<>());
             }

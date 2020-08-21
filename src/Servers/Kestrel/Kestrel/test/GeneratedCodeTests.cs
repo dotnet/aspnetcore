@@ -5,11 +5,19 @@ using System;
 using System.IO;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class GeneratedCodeTests
     {
+        private readonly ITestOutputHelper _output;
+
+        public GeneratedCodeTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         [ConditionalFact]
         public void GeneratedCodeIsUpToDate()
         {
@@ -50,12 +58,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 var testTransportMultiplxedConnectionGenerated = File.ReadAllText(testTransportMultiplexedConnectionGeneratedPath);
                 var testTransportConnectionGenerated = File.ReadAllText(testTransportConnectionGeneratedPath);
 
-                AssertFileContentEqual(currentHttpHeadersGenerated, testHttpHeadersGenerated);
-                AssertFileContentEqual(currentHttpProtocolGenerated, testHttpProtocolGenerated);
-                AssertFileContentEqual(currentHttpUtilitiesGenerated, testHttpUtilitiesGenerated);
-                AssertFileContentEqual(currentHttp2ConnectionGenerated, testHttp2ConnectionGenerated);
-                AssertFileContentEqual(currentTransportConnectionBaseGenerated, testTransportMultiplxedConnectionGenerated);
-                AssertFileContentEqual(currentTransportConnectionGenerated, testTransportConnectionGenerated);
+                AssertFileContentEqual(currentHttpHeadersGenerated, testHttpHeadersGenerated, "HTTP headers");
+                AssertFileContentEqual(currentHttpProtocolGenerated, testHttpProtocolGenerated, "HTTP protocol");
+                AssertFileContentEqual(currentHttpUtilitiesGenerated, testHttpUtilitiesGenerated, "HTTP utilities");
+                AssertFileContentEqual(currentHttp2ConnectionGenerated, testHttp2ConnectionGenerated, "HTTP2 connection");
+                AssertFileContentEqual(currentTransportConnectionBaseGenerated, testTransportMultiplxedConnectionGenerated, "TransportConnectionBase");
+                AssertFileContentEqual(currentTransportConnectionGenerated, testTransportConnectionGenerated, "TransportConnection");
             }
             finally
             {
@@ -68,9 +76,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private void AssertFileContentEqual(string expected, string actual)
+        private void AssertFileContentEqual(string expected, string actual, string type)
         {
-            Assert.Equal(expected.Trim(), actual.Trim(), ignoreLineEndingDifferences: true);
+            try
+            {
+                Assert.Equal(expected.Trim(), actual.Trim(), ignoreLineEndingDifferences: true);
+            }
+            catch (Exception)
+            {
+                _output.WriteLine($"Error when comparing {type}.");
+                _output.WriteLine("Expected:");
+                _output.WriteLine(expected);
+                _output.WriteLine("Actual:");
+                _output.WriteLine(actual);
+                throw;
+            }
         }
     }
 }

@@ -3,6 +3,7 @@
 
 package com.microsoft.signalr;
 
+import java.nio.ByteBuffer;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -59,7 +60,7 @@ class WebSocketTransport implements Transport {
     }
 
     @Override
-    public Completable send(String message) {
+    public Completable send(ByteBuffer message) {
         return webSocketClient.send(message);
     }
 
@@ -70,7 +71,7 @@ class WebSocketTransport implements Transport {
     }
 
     @Override
-    public void onReceive(String message) {
+    public void onReceive(ByteBuffer message) {
         this.onReceiveCallBack.invoke(message);
     }
 
