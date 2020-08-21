@@ -3,7 +3,10 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -34,7 +37,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             var request = context.ActionContext.HttpContext.Request;
 
-            var formCollection = await request.ReadFormAsync();
+            IFormCollection formCollection;
+            try
+            {
+                formCollection = await request.ReadFormAsync();
+            }
+            catch (InvalidDataException ex)
+            {
+                throw new ValueProviderException(Resources.FormatFailedToReadRequestForm(ex.Message), ex);
+            }
+            catch (IOException ex)
+            {
+                throw new ValueProviderException(Resources.FormatFailedToReadRequestForm(ex.Message), ex);
+            }
 
             var valueProvider = new JQueryFormValueProvider(
                 BindingSource.Form,

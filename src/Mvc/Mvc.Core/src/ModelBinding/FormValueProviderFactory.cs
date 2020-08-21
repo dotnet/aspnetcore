@@ -46,6 +46,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 throw new ValueProviderException(Resources.FormatFailedToReadRequestForm(ex.Message), ex);
             }
+            catch (IOException ex)
+            {
+                throw new ValueProviderException(Resources.FormatFailedToReadRequestForm(ex.Message), ex);
+            }
 
             var valueProvider = new FormValueProvider(
                 BindingSource.Form,

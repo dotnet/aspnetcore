@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -233,6 +235,31 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             // Assert
             Assert.Equal("cookie-value", tokenSet.CookieToken);
             Assert.Null(tokenSet.RequestToken);
+        }
+
+        [Fact]
+        public async Task GetRequestTokens_ReadFormAsyncThrowsIOException_RethrowsAntiforgeryValidationException()
+        {
+            // Arrange
+            var ioException = new IOException();
+            var httpContext = new Mock<HttpContext>();
+
+            httpContext.Setup(r => r.Request.Cookies).Returns(Mock.Of<IRequestCookieCollection>());
+            httpContext.SetupGet(r => r.Request.HasFormContentType).Returns(true);
+            httpContext.Setup(r => r.Request.ReadFormAsync(It.IsAny<CancellationToken>())).Throws(ioException);
+
+            var options = new AntiforgeryOptions
+            {
+                Cookie = { Name = "cookie-name" },
+                FormFieldName = "form-field-name",
+                HeaderName = null,
+            };
+
+            var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<AntiforgeryValidationException>(() => tokenStore.GetRequestTokensAsync(httpContext.Object));
+            Assert.Same(ioException, ex.InnerException);
         }
 
         [Theory]

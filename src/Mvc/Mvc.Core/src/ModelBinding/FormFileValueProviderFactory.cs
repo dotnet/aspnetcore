@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -41,6 +41,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 form = await request.ReadFormAsync();
             }
             catch (InvalidDataException ex)
+            {
+                throw new ValueProviderException(Resources.FormatFailedToReadRequestForm(ex.Message), ex);
+            }
+            catch (IOException ex)
             {
                 throw new ValueProviderException(Resources.FormatFailedToReadRequestForm(ex.Message), ex);
             }
