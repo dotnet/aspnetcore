@@ -74,6 +74,8 @@ Microsoft.AspNetCore.Mvc.Rendering.MvcForm
 Microsoft.AspNetCore.Mvc.Rendering.MvcForm.Dispose() -> void
 Microsoft.AspNetCore.Mvc.Rendering.MvcForm.EndForm() -> void
 Microsoft.AspNetCore.Mvc.Rendering.RenderMode
+Microsoft.AspNetCore.Mvc.Rendering.RenderMode.Client = 4 -> Microsoft.AspNetCore.Mvc.Rendering.RenderMode
+Microsoft.AspNetCore.Mvc.Rendering.RenderMode.ClientPrerendered = 5 -> Microsoft.AspNetCore.Mvc.Rendering.RenderMode
 Microsoft.AspNetCore.Mvc.Rendering.RenderMode.Server = 2 -> Microsoft.AspNetCore.Mvc.Rendering.RenderMode
 Microsoft.AspNetCore.Mvc.Rendering.RenderMode.ServerPrerendered = 3 -> Microsoft.AspNetCore.Mvc.Rendering.RenderMode
 Microsoft.AspNetCore.Mvc.Rendering.RenderMode.Static = 1 -> Microsoft.AspNetCore.Mvc.Rendering.RenderMode

@@ -14,7 +14,7 @@
     <link href="css/site.css" rel="stylesheet" />
 </head>
 <body>
-    <component type="typeof(MvcSandbox.Components.App)" render-mode="Static" />
-    <script src="_framework/blazor.server.js"></script>
+    <component type="typeof(MvcSandbox.Components.App)" render-mode="Client" param-id="5" param-string="@("--yolo--")" />
+    <component type="typeof(MvcSandbox.Components.App)" render-mode="ClientPrerendered" />
 </body>
 </html>

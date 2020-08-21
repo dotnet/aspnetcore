@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,13 +15,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private static readonly object ComponentSequenceKey = new object();
         private readonly StaticComponentRenderer _staticComponentRenderer;
         private readonly ServerComponentSerializer _serverComponentSerializer;
+        private readonly ClientComponentSerializer _clientComponentSerializer;
 
         public ComponentRenderer(
             StaticComponentRenderer staticComponentRenderer,
-            ServerComponentSerializer serverComponentSerializer)
+            ServerComponentSerializer serverComponentSerializer,
+            ClientComponentSerializer clientComponentSerializer)
         {
             _staticComponentRenderer = staticComponentRenderer;
             _serverComponentSerializer = serverComponentSerializer;
+            _clientComponentSerializer = clientComponentSerializer;
         }
 
         public async Task<IHtmlContent> RenderComponentAsync(
@@ -55,6 +58,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 RenderMode.Server => NonPrerenderedServerComponent(context, GetOrCreateInvocationId(viewContext), componentType, parameterView),
                 RenderMode.ServerPrerendered => await PrerenderedServerComponentAsync(context, GetOrCreateInvocationId(viewContext), componentType, parameterView),
                 RenderMode.Static => await StaticComponentAsync(context, componentType, parameterView),
+                RenderMode.Client => NonPrerenderedClientComponent(context, componentType, parameterView),
+                RenderMode.ClientPrerendered => await PrerenderedClientComponentAsync(context, componentType, parameterView),
                 _ => throw new ArgumentException(Resources.FormatUnsupportedRenderMode(renderMode), nameof(renderMode)),
             };
         }
@@ -99,12 +104,36 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 _serverComponentSerializer.GetEpilogue(currentInvocation));
         }
 
+        private async Task<IHtmlContent> PrerenderedClientComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
+        {
+            var currentInvocation = _clientComponentSerializer.SerializeInvocation(
+                type,
+                parametersCollection,
+                prerendered: true);
+
+            var result = await _staticComponentRenderer.PrerenderComponentAsync(
+                parametersCollection,
+                context,
+                type);
+
+            return new ComponentHtmlContent(
+                _clientComponentSerializer.GetPreamble(currentInvocation),
+                result,
+                _clientComponentSerializer.GetEpilogue(currentInvocation));
+        }
+
         private IHtmlContent NonPrerenderedServerComponent(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
         {
-            var serviceProvider = context.RequestServices;
             var currentInvocation = _serverComponentSerializer.SerializeInvocation(invocationId, type, parametersCollection, prerendered: false);
 
             return new ComponentHtmlContent(_serverComponentSerializer.GetPreamble(currentInvocation));
+        }
+
+        private IHtmlContent NonPrerenderedClientComponent(HttpContext context, Type type, ParameterView parametersCollection)
+        {
+            var currentInvocation = _clientComponentSerializer.SerializeInvocation(type, parametersCollection, prerendered: false);
+
+            return new ComponentHtmlContent(_clientComponentSerializer.GetPreamble(currentInvocation));
         }
     }
 }
