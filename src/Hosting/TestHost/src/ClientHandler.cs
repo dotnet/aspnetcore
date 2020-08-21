@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.TestHost
             // PathString.StartsWithSegments that we use below requires the base path to not end in a slash.
             if (pathBase.HasValue && pathBase.Value.EndsWith("/"))
             {
-                pathBase = new PathString(pathBase.Value.Substring(0, pathBase.Value.Length - 1));
+                pathBase = new PathString(pathBase.Value[..^1]); // All but the last character
             }
             _pathBase = pathBase;
         }
@@ -99,7 +100,7 @@ namespace Microsoft.AspNetCore.TestHost
                 if (request.Version == HttpVersion.Version20)
                 {
                     // https://tools.ietf.org/html/rfc7540
-                    req.Protocol = "HTTP/2";
+                    req.Protocol = HttpProtocol.Http2;
                 }
                 else
                 {
@@ -111,7 +112,15 @@ namespace Microsoft.AspNetCore.TestHost
 
                 foreach (var header in request.Headers)
                 {
-                    req.Headers.Append(header.Key, header.Value.ToArray());
+                    // User-Agent is a space delineated single line header but HttpRequestHeaders parses it as multiple elements.
+                    if (string.Equals(header.Key, HeaderNames.UserAgent, StringComparison.OrdinalIgnoreCase))
+                    {
+                        req.Headers.Append(header.Key, string.Join(" ", header.Value));
+                    }
+                    else
+                    {
+                        req.Headers.Append(header.Key, header.Value.ToArray());
+                    }
                 }
 
                 if (!req.Host.HasValue)
@@ -133,12 +142,13 @@ namespace Microsoft.AspNetCore.TestHost
                 }
                 req.QueryString = QueryString.FromUriComponent(request.RequestUri);
 
-                if (requestContent != null)
+                // Reading the ContentLength will add it to the Headers‼
+                // https://github.com/dotnet/runtime/blob/874399ab15e47c2b4b7c6533cc37d27d47cb5242/src/libraries/System.Net.Http/src/System/Net/Http/Headers/HttpContentHeaders.cs#L68-L87
+                _ = requestContent.Headers.ContentLength;
+
+                foreach (var header in requestContent.Headers)
                 {
-                    foreach (var header in requestContent.Headers)
-                    {
-                        req.Headers.Append(header.Key, header.Value.ToArray());
-                    }
+                    req.Headers.Append(header.Key, header.Value.ToArray());
                 }
 
                 req.Body = new AsyncStreamWrapper(reader.AsStream(), () => contextBuilder.AllowSynchronousIO);
@@ -163,6 +173,7 @@ namespace Microsoft.AspNetCore.TestHost
             response.StatusCode = (HttpStatusCode)httpContext.Response.StatusCode;
             response.ReasonPhrase = httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase;
             response.RequestMessage = request;
+            response.Version = request.Version;
 
             response.Content = new StreamContent(httpContext.Response.Body);
 

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -15,8 +16,8 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public static class EditContextDataAnnotationsExtensions
     {
-        private static ConcurrentDictionary<(Type ModelType, string FieldName), PropertyInfo> _propertyInfoCache
-            = new ConcurrentDictionary<(Type, string), PropertyInfo>();
+        private static ConcurrentDictionary<(Type ModelType, string FieldName), PropertyInfo?> _propertyInfoCache
+            = new ConcurrentDictionary<(Type, string), PropertyInfo?>();
 
         /// <summary>
         /// Adds DataAnnotations validation support to the <see cref="EditContext"/>.
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             // Perform object-level validation on request
             editContext.OnValidationRequested +=
-                (sender, eventArgs) => ValidateModel((EditContext)sender, messages);
+                (sender, eventArgs) => ValidateModel((EditContext)sender!, messages);
 
             // Perform per-field validation on each field edit
             editContext.OnFieldChanged +=
@@ -52,15 +53,20 @@ namespace Microsoft.AspNetCore.Components.Forms
             messages.Clear();
             foreach (var validationResult in validationResults)
             {
+                if (validationResult == null)
+                {
+                    continue;
+                }
+
                 if (!validationResult.MemberNames.Any())
                 {
-                    messages.Add(new FieldIdentifier(editContext.Model, fieldName: string.Empty), validationResult.ErrorMessage);
+                    messages.Add(new FieldIdentifier(editContext.Model, fieldName: string.Empty), validationResult.ErrorMessage!);
                     continue;
                 }
 
                 foreach (var memberName in validationResult.MemberNames)
                 {
-                    messages.Add(editContext.Field(memberName), validationResult.ErrorMessage);
+                    messages.Add(editContext.Field(memberName), validationResult.ErrorMessage!);
                 }
             }
 
@@ -80,7 +86,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
                 Validator.TryValidateProperty(propertyValue, validationContext, results);
                 messages.Clear(fieldIdentifier);
-                messages.Add(fieldIdentifier, results.Select(result => result.ErrorMessage));
+                messages.Add(fieldIdentifier, results.Select(result => result.ErrorMessage!));
 
                 // We have to notify even if there were no messages before and are still no messages now,
                 // because the "state" that changed might be the completion of some async validation task
@@ -88,7 +94,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
-        private static bool TryGetValidatableProperty(in FieldIdentifier fieldIdentifier, out PropertyInfo propertyInfo)
+        private static bool TryGetValidatableProperty(in FieldIdentifier fieldIdentifier, [NotNullWhen(true)] out PropertyInfo? propertyInfo)
         {
             var cacheKey = (ModelType: fieldIdentifier.Model.GetType(), fieldIdentifier.FieldName);
             if (!_propertyInfoCache.TryGetValue(cacheKey, out propertyInfo))

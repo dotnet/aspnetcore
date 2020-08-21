@@ -443,7 +443,7 @@ namespace Nerdbank.Streams
                 // If we store references, clear them to allow the objects to be GC'd.
                 if (!IsValueTypeElement)
                 {
-                    this.AvailableMemory.Span.Slice(startIndex, length).Fill(default);
+                    this.AvailableMemory.Span.Slice(startIndex, length).Clear();
                 }
             }
         }

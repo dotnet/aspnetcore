@@ -16,7 +16,7 @@ const eventPreventDefaultAttributeNamePrefix = 'preventDefault_';
 const eventStopPropagationAttributeNamePrefix = 'stopPropagation_';
 
 export class BrowserRenderer {
-  private eventDelegator: EventDelegator;
+  public eventDelegator: EventDelegator;
 
   private childComponentLocations: { [componentId: number]: LogicalElement } = {};
 
@@ -58,7 +58,7 @@ export class BrowserRenderer {
       }
     }
 
-    const ownerDocument = getClosestDomElement(element).ownerDocument;
+    const ownerDocument = getClosestDomElement(element)?.ownerDocument;
     const activeElementBefore = ownerDocument && ownerDocument.activeElement;
 
     this.applyEdits(batch, componentId, element, 0, edits, referenceFrames);
@@ -233,7 +233,8 @@ export class BrowserRenderer {
       document.createElementNS('http://www.w3.org/2000/svg', tagName) :
       document.createElement(tagName);
     const newElement = toLogicalElement(newDomElementRaw);
-    insertLogicalChild(newDomElementRaw, parent, childIndex);
+
+    let inserted = false;
 
     // Apply attributes
     const descendantsEndIndexExcl = frameIndex + frameReader.subtreeLength(frame);
@@ -242,6 +243,8 @@ export class BrowserRenderer {
       if (frameReader.frameType(descendantFrame) === FrameType.attribute) {
         this.applyAttribute(batch, componentId, newDomElementRaw, descendantFrame);
       } else {
+        insertLogicalChild(newDomElementRaw, parent, childIndex);
+        inserted = true;
         // As soon as we see a non-attribute child, all the subsequent child frames are
         // not attributes, so bail out and insert the remnants recursively
         this.insertFrameRange(batch, componentId, newElement, 0, frames, descendantIndex, descendantsEndIndexExcl);
@@ -249,16 +252,37 @@ export class BrowserRenderer {
       }
     }
 
-    // We handle setting 'value' on a <select> in two different ways:
-    // [1] When inserting a corresponding <option>, in case you're dynamically adding options
-    // [2] After we finish inserting the <select>, in case the descendant options are being
-    //     added as an opaque markup block rather than individually
-    // Right here we implement [2]
-    if (newDomElementRaw instanceof HTMLSelectElement && selectValuePropname in newDomElementRaw) {
-      const selectValue = newDomElementRaw[selectValuePropname];
-      newDomElementRaw.value = selectValue;
-      delete newDomElementRaw[selectValuePropname];
+    // this element did not have any children, so it's not inserted yet.
+    if (!inserted) {
+      insertLogicalChild(newDomElementRaw, parent, childIndex);
     }
+
+    // We handle setting 'value' on a <select> in three different ways:
+    // [1] When inserting a corresponding <option>, in case you're dynamically adding options.
+    //     This is the case below.
+    // [2] After we finish inserting the <select>, in case the descendant options are being
+    //     added as an opaque markup block rather than individually. This is the other case below.
+    // [3] In case the the value of the select and the option value is changed in the same batch.
+    //     We just receive an attribute frame and have to set the select value afterwards.
+
+    if (newDomElementRaw instanceof HTMLOptionElement) {
+      // Situation 1
+      this.trySetSelectValueFromOptionElement(newDomElementRaw);
+    } else if (newDomElementRaw instanceof HTMLSelectElement && selectValuePropname in newDomElementRaw) {
+      // Situation 2
+      const selectValue: string | null = newDomElementRaw[selectValuePropname];
+      setSelectElementValue(newDomElementRaw, selectValue);
+    }
+  }
+
+  private trySetSelectValueFromOptionElement(optionElement: HTMLOptionElement) {
+    const selectElem = this.findClosestAncestorSelectElement(optionElement);
+    if (selectElem && (selectValuePropname in selectElem) && selectElem[selectValuePropname] === optionElement.value) {
+      setSelectElementValue(selectElem, optionElement.value);
+      delete selectElem[selectValuePropname];
+      return true;
+    }
+    return false;
   }
 
   private insertComponent(batch: RenderBatch, parent: LogicalElement, childIndex: number, frame: RenderTreeFrame) {
@@ -358,32 +382,33 @@ export class BrowserRenderer {
       case 'SELECT':
       case 'TEXTAREA': {
         const value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
-        (element as any).value = value;
 
-        if (element.tagName === 'SELECT') {
+        if (element instanceof HTMLSelectElement) {
+          setSelectElementValue(element, value);
+
           // <select> is special, in that anything we write to .value will be lost if there
           // isn't yet a matching <option>. To maintain the expected behavior no matter the
           // element insertion/update order, preserve the desired value separately so
           // we can recover it when inserting any matching <option> or after inserting an
           // entire markup block of descendants.
           element[selectValuePropname] = value;
+        } else {
+          (element as any).value = value;
         }
+
         return true;
       }
       case 'OPTION': {
         const value = attributeFrame ? frameReader.attributeValue(attributeFrame) : null;
-        if (value) {
+        if (value || value === '') {
           element.setAttribute('value', value);
         } else {
           element.removeAttribute('value');
         }
+
         // See above for why we have this special handling for <select>/<option>
-        // Note that this is only one of the two cases where we set the value on a <select>
-        const selectElem = this.findClosestAncestorSelectElement(element);
-        if (selectElem && (selectValuePropname in selectElem) && selectElem[selectValuePropname] === value) {
-          this.tryApplyValueProperty(batch, selectElem, attributeFrame);
-          delete selectElem[selectValuePropname];
-        }
+        // Situation 3
+        this.trySetSelectValueFromOptionElement(<HTMLOptionElement>element);
         return true;
       }
       default:
@@ -519,4 +544,16 @@ function stripOnPrefix(attributeName: string) {
   }
 
   throw new Error(`Attribute should be an event name, but doesn't start with 'on'. Value: '${attributeName}'`);
+}
+
+function setSelectElementValue(element: HTMLSelectElement, value: string | null) {
+  // There's no sensible way to represent a select option with value 'null', because
+  // (1) HTML attributes can't have null values - the closest equivalent is absence of the attribute
+  // (2) When picking an <option> with no 'value' attribute, the browser treats the value as being the
+  //     *text content* on that <option> element. Trying to suppress that default behavior would involve
+  //     a long chain of special-case hacks, as well as being breaking vs 3.x.
+  // So, the most plausible 'null' equivalent is an empty string. It's unfortunate that people can't
+  // write <option value=@someNullVariable>, and that we can never distinguish between null and empty
+  // string in a bound <select>, but that's a limit in the representational power of HTML.
+  element.value = value || '';
 }

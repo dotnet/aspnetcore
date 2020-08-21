@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.reactivex.Single;
+import okhttp3.OkHttpClient;
 
 /**
  * A builder for configuring {@link HubConnection} instances.
@@ -15,11 +16,13 @@ public class HttpHubConnectionBuilder {
     private final String url;
     private Transport transport;
     private HttpClient httpClient;
+    private HubProtocol protocol = new JsonHubProtocol();
     private boolean skipNegotiate;
     private Single<String> accessTokenProvider;
     private long handshakeResponseTimeout = 0;
     private Map<String, String> headers;
     private TransportEnum transportEnum;
+    private Action1<OkHttpClient.Builder> configureBuilder;
 
     HttpHubConnectionBuilder(String url) {
         this.url = url;
@@ -50,6 +53,16 @@ public class HttpHubConnectionBuilder {
      */
     HttpHubConnectionBuilder withHttpClient(HttpClient httpClient) {
         this.httpClient = httpClient;
+        return this;
+    }
+    
+    /**
+     * Sets MessagePack as the {@link HubProtocol} to be used by the {@link HubConnection}.
+     *
+     * @return This instance of the HttpHubConnectionBuilder.
+     */
+    public HttpHubConnectionBuilder withMessagePackHubProtocol() {
+        this.protocol = new MessagePackHubProtocol();
         return this;
     }
 
@@ -114,11 +127,24 @@ public class HttpHubConnectionBuilder {
     }
 
     /**
+     * Sets a method that will be called when constructing the HttpClient to allow customization such as certificate validation, proxies, and cookies.
+     * By default the client will have a cookie jar added and a read timeout for LongPolling.
+     *
+     * @param configureBuilder Callback for configuring the OkHttpClient.Builder.
+     * @return This instance of the HttpHubConnectionBuilder.
+     */
+    public HttpHubConnectionBuilder setHttpClientBuilderCallback(Action1<OkHttpClient.Builder> configureBuilder) {
+        this.configureBuilder = configureBuilder;
+        return this;
+    }
+
+    /**
      * Builds a new instance of {@link HubConnection}.
      *
      * @return A new instance of {@link HubConnection}.
      */
     public HubConnection build() {
-        return new HubConnection(url, transport, skipNegotiate, httpClient, accessTokenProvider, handshakeResponseTimeout, headers, transportEnum);
+        return new HubConnection(url, transport, skipNegotiate, httpClient, protocol, accessTokenProvider,
+            handshakeResponseTimeout, headers, transportEnum, configureBuilder);
     }
 }

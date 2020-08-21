@@ -5,7 +5,6 @@
     <TargetFramework>net461</TargetFramework>
     <CopySymbolsToArtifacts>true</CopySymbolsToArtifacts>
     <IsPackable>false</IsPackable>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
     <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 

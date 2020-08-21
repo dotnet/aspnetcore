@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Fact]
         public async Task GivesCorrectCallstackForSyncronousCalls()
         {
-            // Regression test for https://github.com/aspnet/AspNetCore/issues/15367
+            // Regression test for https://github.com/dotnet/aspnetcore/issues/15367
             // Arrange
             var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await Client.GetAsync("http://localhost/Home/MyHtml"));
 

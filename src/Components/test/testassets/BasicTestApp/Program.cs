@@ -10,6 +10,7 @@ using System.Web;
 using BasicTestApp.AuthTest;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Web.Extensions;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Http;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
@@ -38,11 +39,15 @@ namespace BasicTestApp
                     policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
             });
 
+            builder.Services.AddDataProtection();
+
+            builder.Services.AddTransient<ProtectedLocalStorage>();
+            builder.Services.AddTransient<ProtectedSessionStorage>();
+
             builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 
             builder.Logging.Services.AddSingleton<ILoggerProvider, PrependMessageLoggerProvider>(s =>
                 new PrependMessageLoggerProvider(builder.Configuration["Logging:PrependMessage:Message"], s.GetService<IJSRuntime>()));
-            
 
             var host = builder.Build();
             ConfigureCulture(host);

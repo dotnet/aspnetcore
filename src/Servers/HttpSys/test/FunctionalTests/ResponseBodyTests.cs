@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     return Task.CompletedTask;
                 });
                 await httpContext.Response.StartAsync();
+                Assert.True(httpContext.Response.HasStarted);
                 Assert.True(httpContext.Response.Headers.IsReadOnly);
                 await startingTcs.Task.WithTimeout();
                 await httpContext.Response.WriteAsync("Hello World");
@@ -58,6 +59,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     return Task.CompletedTask;
                 });
                 await httpContext.Response.CompleteAsync();
+                Assert.True(httpContext.Response.HasStarted);
                 Assert.True(httpContext.Response.Headers.IsReadOnly);
                 await startingTcs.Task.WithTimeout();
                 await responseReceived.Task.WithTimeout();

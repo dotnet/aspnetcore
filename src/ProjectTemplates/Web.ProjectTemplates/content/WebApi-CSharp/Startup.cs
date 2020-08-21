@@ -12,16 +12,20 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
 #endif
 #if (OrganizationalAuth)
-using Microsoft.AspNetCore.Authentication.AzureAD.UI;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 #endif
 #if (IndividualB2CAuth)
-using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 #endif
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-
+#if (GenerateGraph)
+using Microsoft.Graph;
+#endif
 namespace Company.WebApplication1
 {
     public class Startup
@@ -37,12 +41,35 @@ namespace Company.WebApplication1
         public void ConfigureServices(IServiceCollection services)
         {
 #if (OrganizationalAuth)
-            services.AddAuthentication(AzureADDefaults.BearerAuthenticationScheme)
-                .AddAzureADBearer(options => Configuration.Bind("AzureAd", options));
-#elif (IndividualB2CAuth)
-            services.AddAuthentication(AzureADB2CDefaults.BearerAuthenticationScheme)
-                .AddAzureADB2CBearer(options => Configuration.Bind("AzureAdB2C", options));
+#if (GenerateApiOrGraph)
+            // Adds Microsoft Identity platform (AAD v2.0) support to protect this Api
+            services.AddMicrosoftWebApiAuthentication(Configuration, "AzureAd")
+                .AddMicrosoftWebApiCallsWebApi(Configuration, "AzureAd")
+                .AddInMemoryTokenCaches();
+
+#else
+            // Adds Microsoft Identity platform (AAD v2.0) support to protect this Api
+            services.AddMicrosoftWebApiAuthentication(Configuration, "AzureAd");
 #endif
+#if (GenerateApi)
+            services.AddDownstreamWebApiService(Configuration);
+#endif
+#if (GenerateGraph)
+            services.AddMicrosoftGraph(Configuration.GetValue<string>("CalledApi:CalledApiScopes")?.Split(' '),
+                                       Configuration.GetValue<string>("CalledApi:CalledApiUrl"));
+#endif
+#elif (IndividualB2CAuth)
+#if (GenerateApi)
+            services.AddMicrosoftWebApiAuthentication(Configuration, "AzureAdB2C")
+                .AddMicrosoftWebApiCallsWebApi(Configuration, "AzureAdB2C")
+                .AddInMemoryTokenCaches();
+
+            services.AddDownstreamWebApiService(Configuration);
+#else
+            services.AddMicrosoftWebApiAuthentication(Configuration, "AzureAdB2C");
+#endif
+#endif
+
             services.AddControllers();
         }
 

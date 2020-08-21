@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Antiforgery
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The inner <see cref="Exception"/>.</param>
-        public AntiforgeryValidationException(string message, Exception innerException)
+        public AntiforgeryValidationException(string message, Exception? innerException)
             : base(message, innerException)
         {
         }

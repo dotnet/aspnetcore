@@ -144,41 +144,47 @@ namespace Microsoft.AspNetCore.Identity
         {
             if (Options.SignIn.RequireConfirmedEmail && !(await UserManager.IsEmailConfirmedAsync(user)))
             {
-                Logger.LogWarning(0, "User {userId} cannot sign in without a confirmed email.", await UserManager.GetUserIdAsync(user));
+                Logger.LogWarning(0, "User cannot sign in without a confirmed email.");
                 return false;
             }
             if (Options.SignIn.RequireConfirmedPhoneNumber && !(await UserManager.IsPhoneNumberConfirmedAsync(user)))
             {
-                Logger.LogWarning(1, "User {userId} cannot sign in without a confirmed phone number.", await UserManager.GetUserIdAsync(user));
+                Logger.LogWarning(1, "User cannot sign in without a confirmed phone number.");
                 return false;
             }
             if (Options.SignIn.RequireConfirmedAccount && !(await _confirmation.IsConfirmedAsync(UserManager, user)))
             {
-                Logger.LogWarning(4, "User {userId} cannot sign in without a confirmed account.", await UserManager.GetUserIdAsync(user));
+                Logger.LogWarning(4, "User cannot sign in without a confirmed account.");
                 return false;
             }
             return true;
         }
 
         /// <summary>
-        /// Regenerates the user's application cookie, whilst preserving the existing
-        /// AuthenticationProperties like rememberMe, as an asynchronous operation.
+        /// Signs in the specified <paramref name="user"/>, whilst preserving the existing
+        /// AuthenticationProperties of the current signed-in user like rememberMe, as an asynchronous operation.
         /// </summary>
-        /// <param name="user">The user whose sign-in cookie should be refreshed.</param>
+        /// <param name="user">The user to sign-in.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
         public virtual async Task RefreshSignInAsync(TUser user)
         {
             var auth = await Context.AuthenticateAsync(IdentityConstants.ApplicationScheme);
-            var claims = new List<Claim>();
+            IList<Claim> claims = Array.Empty<Claim>();
+
             var authenticationMethod = auth?.Principal?.FindFirst(ClaimTypes.AuthenticationMethod);
-            if (authenticationMethod != null)
-            {
-                claims.Add(authenticationMethod);
-            }
             var amr = auth?.Principal?.FindFirst("amr");
-            if (amr != null)
+
+            if (authenticationMethod != null || amr != null)
             {
-                claims.Add(amr);
+                claims = new List<Claim>();
+                if (authenticationMethod != null)
+                {
+                    claims.Add(authenticationMethod);
+                }
+                if (amr != null)
+                {
+                    claims.Add(amr);
+                }
             }
 
             await SignInWithClaimsAsync(user, auth?.Properties, claims);
@@ -203,9 +209,10 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>The task object representing the asynchronous operation.</returns>
         public virtual Task SignInAsync(TUser user, AuthenticationProperties authenticationProperties, string authenticationMethod = null)
         {
-            var additionalClaims = new List<Claim>();
+            IList<Claim> additionalClaims = Array.Empty<Claim>();
             if (authenticationMethod != null)
             {
+                additionalClaims = new List<Claim>();
                 additionalClaims.Add(new Claim(ClaimTypes.AuthenticationMethod, authenticationMethod));
             }
             return SignInWithClaimsAsync(user, authenticationProperties, additionalClaims);
@@ -296,12 +303,12 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Validates the security stamp for the specified <paramref name="user"/>. Will always return false
-        /// if the userManager does not support security stamps.
+        /// Validates the security stamp for the specified <paramref name="user"/>.  If no user is specified, or if the store
+        /// does not support security stamps, validation is considered successful.
         /// </summary>
         /// <param name="user">The user whose stamp should be validated.</param>
         /// <param name="securityStamp">The expected security stamp value.</param>
-        /// <returns>True if the stamp matches the persisted value, otherwise it will return false.</returns>
+        /// <returns>The result of the validation.</returns>
         public virtual async Task<bool> ValidateSecurityStampAsync(TUser user, string securityStamp)
             => user != null &&
             // Only validate the security stamp if the store supports it
@@ -378,15 +385,15 @@ namespace Microsoft.AspNetCore.Identity
             if (await UserManager.CheckPasswordAsync(user, password))
             {
                 var alwaysLockout = AppContext.TryGetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", out var enabled) && enabled;
-                // Only reset the lockout when TFA is not enabled when not in quirks mode
-                if (alwaysLockout || !await IsTfaEnabled(user))
+                // Only reset the lockout when not in quirks mode if either TFA is not enabled or the client is remembered for TFA.
+                if (alwaysLockout || !await IsTfaEnabled(user) || await IsTwoFactorClientRememberedAsync(user))
                 {
                     await ResetLockout(user);
                 }
 
                 return SignInResult.Success;
             }
-            Logger.LogWarning(2, "User {userId} failed to provide the correct password.", await UserManager.GetUserIdAsync(user));
+            Logger.LogWarning(2, "User failed to provide the correct password.");
 
             if (UserManager.SupportsUserLockout && lockoutOnFailure)
             {
@@ -840,10 +847,10 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns>A locked out SignInResult</returns>
-        protected virtual async Task<SignInResult> LockedOut(TUser user)
+        protected virtual Task<SignInResult> LockedOut(TUser user)
         {
-            Logger.LogWarning(3, "User {userId} is currently locked out.", await UserManager.GetUserIdAsync(user));
-            return SignInResult.LockedOut;
+            Logger.LogWarning(3, "User is currently locked out.");
+            return Task.FromResult(SignInResult.LockedOut);
         }
 
         /// <summary>

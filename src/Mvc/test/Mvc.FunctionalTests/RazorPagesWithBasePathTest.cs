@@ -511,6 +511,17 @@ Hello from /Pages/Shared/";
         }
 
         [Fact]
+        public async Task CompareValidationAttributes_OnTopLevelProperties()
+        {
+            // Act
+            var response = await Client.GetStringAsync("/Validation/PageWithCompareValidation?password=test&comparePassword=different");
+
+            // Assert
+            Assert.Contains("User name is required", response);
+            Assert.Contains("Password and confirm password do not match.", response);
+        }
+
+        [Fact]
         public async Task ValidationAttributes_OnHandlerParameters()
         {
             // Act

@@ -3,11 +3,13 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.NodeServices;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace NodeServicesExamples
@@ -58,21 +60,24 @@ namespace NodeServicesExamples
         }
 #pragma warning restore 0618
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .ConfigureLogging(factory =>
+            var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    factory.AddConsole();
-                    factory.AddDebug();
-                })
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseKestrel()
-                .UseStartup<Startup>()
-                .Build();
+                    webHostBuilder
+                    .ConfigureLogging(factory =>
+                    {
+                        factory.AddConsole();
+                        factory.AddDebug();
+                    })
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .UseIISIntegration()
+                    .UseKestrel()
+                    .UseStartup<Startup>();
+                }).Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }

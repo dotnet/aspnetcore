@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -21,12 +22,13 @@ namespace Microsoft.AspNetCore.Authentication
         [Fact]
         public async Task OptionsAreConfiguredOnce()
         {
-            var server = CreateServer(s =>
+            using var host = await CreateHost(s =>
             {
                 s.Configure<TestOptions>("One", o => o.Instance = new Singleton());
                 s.Configure<TestOptions>("Two", o => o.Instance = new Singleton());
             });
             // Add One scheme
+            using var server = host.GetTestServer();
             var response = await server.CreateClient().GetAsync("http://example.com/add/One");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var transaction = await server.SendAsync("http://example.com/auth/One");
@@ -57,7 +59,8 @@ namespace Microsoft.AspNetCore.Authentication
         [Fact]
         public async Task CanAddAndRemoveSchemes()
         {
-            var server = CreateServer();
+            using var host = await CreateHost();
+            using var server = host.GetTestServer();
             await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync("http://example.com/auth/One"));
 
             // Add One scheme
@@ -124,47 +127,52 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
-        private static TestServer CreateServer(Action<IServiceCollection> configureServices = null)
+        private static async Task<IHost> CreateHost(Action<IServiceCollection> configureServices = null)
         {
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.UseAuthentication();
-                    app.Use(async (context, next) =>
-                    {
-                        var req = context.Request;
-                        var res = context.Response;
-                        if (req.Path.StartsWithSegments(new PathString("/add"), out var remainder))
+            var host = new HostBuilder()
+               .ConfigureWebHost(builder =>
+                   builder.UseTestServer()
+                       .Configure(app =>
+                       {
+                           app.UseAuthentication();
+                            app.Use(async (context, next) =>
+                            {
+                                var req = context.Request;
+                                var res = context.Response;
+                                if (req.Path.StartsWithSegments(new PathString("/add"), out var remainder))
+                                {
+                                    var name = remainder.Value.Substring(1);
+                                    var auth = context.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
+                                    var scheme = new AuthenticationScheme(name, name, typeof(TestHandler));
+                                    auth.AddScheme(scheme);
+                                }
+                                else if (req.Path.StartsWithSegments(new PathString("/auth"), out remainder))
+                                {
+                                    var name = (remainder.Value.Length > 0) ? remainder.Value.Substring(1) : null;
+                                    var result = await context.AuthenticateAsync(name);
+                                    await res.DescribeAsync(result?.Ticket?.Principal);
+                                }
+                                else if (req.Path.StartsWithSegments(new PathString("/remove"), out remainder))
+                                {
+                                    var name = remainder.Value.Substring(1);
+                                    var auth = context.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
+                                    auth.RemoveScheme(name);
+                                }
+                                else
+                                {
+                                    await next();
+                                }
+                            });
+                        })
+                        .ConfigureServices(services =>
                         {
-                            var name = remainder.Value.Substring(1);
-                            var auth = context.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
-                            var scheme = new AuthenticationScheme(name, name, typeof(TestHandler));
-                            auth.AddScheme(scheme);
-                        }
-                        else if (req.Path.StartsWithSegments(new PathString("/auth"), out remainder))
-                        {
-                            var name = (remainder.Value.Length > 0) ? remainder.Value.Substring(1) : null;
-                            var result = await context.AuthenticateAsync(name);
-                            await res.DescribeAsync(result?.Ticket?.Principal);
-                        }
-                        else if (req.Path.StartsWithSegments(new PathString("/remove"), out remainder))
-                        {
-                            var name = remainder.Value.Substring(1);
-                            var auth = context.RequestServices.GetRequiredService<IAuthenticationSchemeProvider>();
-                            auth.RemoveScheme(name);
-                        }
-                        else
-                        {
-                            await next();
-                        }
-                    });
-                })
-                .ConfigureServices(services =>
-                {
-                    configureServices?.Invoke(services);
-                    services.AddAuthentication();
-                });
-            return new TestServer(builder);
+                            configureServices?.Invoke(services);
+                            services.AddAuthentication();
+                        }))
+                .Build();
+
+            await host.StartAsync();
+            return host;
         }
     }
 }

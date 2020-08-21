@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Connections
         public DefaultConnectionContext() :
             this(Guid.NewGuid().ToString())
         {
-            ConnectionClosed = _connectionClosedTokenSource.Token;
         }
 
         /// <summary>
@@ -45,6 +44,8 @@ namespace Microsoft.AspNetCore.Connections
             Features.Set<IConnectionTransportFeature>(this);
             Features.Set<IConnectionLifetimeFeature>(this);
             Features.Set<IConnectionEndPointFeature>(this);
+
+            ConnectionClosed = _connectionClosedTokenSource.Token;
         }
 
         public DefaultConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application)
@@ -58,21 +59,21 @@ namespace Microsoft.AspNetCore.Connections
 
         public override IFeatureCollection Features { get; }
 
-        public ClaimsPrincipal User { get; set; }
+        public ClaimsPrincipal? User { get; set; }
 
-        public override IDictionary<object, object> Items { get; set; } = new ConnectionItems();
+        public override IDictionary<object, object?> Items { get; set; } = new ConnectionItems();
 
-        public IDuplexPipe Application { get; set; }
+        public IDuplexPipe? Application { get; set; }
 
-        public override IDuplexPipe Transport { get; set; }
+        public override IDuplexPipe Transport { get; set; } = default!;
 
         public override CancellationToken ConnectionClosed { get; set; }
-        public override EndPoint LocalEndPoint { get; set; }
-        public override EndPoint RemoteEndPoint { get; set; }
+        public override EndPoint? LocalEndPoint { get; set; }
+        public override EndPoint? RemoteEndPoint { get; set; }
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
-            ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts).Cancel(), _connectionClosedTokenSource);
+            ThreadPool.UnsafeQueueUserWorkItem(cts => ((CancellationTokenSource)cts!).Cancel(), _connectionClosedTokenSource);
         }
 
         public override ValueTask DisposeAsync()

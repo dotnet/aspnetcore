@@ -6,6 +6,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETests.Tests;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using TestServer;
@@ -31,6 +32,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Navigate(ServerPathBase);
             Browser.MountTestComponent<CulturePicker>();
             Browser.Exists(By.Id("culture-selector"));
+        }
+
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24692")]
+        [Theory]
+        [InlineData("en-US")]
+        [InlineData("fr-FR")]
+        public override void CanSetCultureAndParseCultureSensitiveNumbersAndDates(string culture)
+        {
+            base.CanSetCultureAndParseCultureSensitiveNumbersAndDates(culture);
         }
 
         protected override void SetCulture(string culture)

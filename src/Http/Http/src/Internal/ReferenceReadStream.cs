@@ -132,7 +132,11 @@ namespace Microsoft.AspNetCore.Http
 
         public override void Flush()
         {
-            throw new NotSupportedException();
+        }
+
+        public override Task FlushAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
         }
 
         protected override void Dispose(bool disposing)

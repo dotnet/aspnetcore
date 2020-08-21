@@ -3,17 +3,20 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
@@ -21,12 +24,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
     /// <summary>
     /// In-memory TestServer
     /// </summary
-    internal class TestServer : IAsyncDisposable, IDisposable, IStartup
+    internal class TestServer : IAsyncDisposable, IStartup
     {
         private readonly MemoryPool<byte> _memoryPool;
         private readonly RequestDelegate _app;
         private readonly InMemoryTransportFactory _transportFactory;
-        private readonly IWebHost _host;
+        private readonly IHost _host;
 
         public TestServer(RequestDelegate app)
             : this(app, new TestServiceContext())
@@ -40,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
         }
 
         public TestServer(RequestDelegate app, TestServiceContext context, ListenOptions listenOptions)
-            : this(app, context, options => options.ListenOptions.Add(listenOptions), _ => { })
+            : this(app, context, options => options.CodeBackedListenOptions.Add(listenOptions), _ => { })
         {
         }
 
@@ -53,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                     };
 
                     configureListenOptions(listenOptions);
-                    options.ListenOptions.Add(listenOptions);
+                    options.CodeBackedListenOptions.Add(listenOptions);
                 },
                 _ => { })
         {
@@ -67,8 +70,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             _transportFactory = new InMemoryTransportFactory();
             HttpClientSlim = new InMemoryHttpClientSlim(this);
 
-            var hostBuilder = new WebHostBuilder()
-                .UseSetting(WebHostDefaults.ShutdownTimeoutKey, TestConstants.DefaultTimeout.TotalSeconds.ToString())
+            var hostBuilder = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                        .UseSetting(WebHostDefaults.ShutdownTimeoutKey, TestConstants.DefaultTimeout.TotalSeconds.ToString())
+                        .Configure(app => { app.Run(_app); });
+                })
                 .ConfigureServices(services =>
                 {
                     configureServices(services);
@@ -80,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
                     {
                         context.ServerOptions.ApplicationServices = sp;
                         configureKestrel(context.ServerOptions);
-                        return new KestrelServer(_transportFactory, context);
+                        return new KestrelServer(new List<IConnectionListenerFactory>() { _transportFactory }, context);
                     });
                 });
 
@@ -106,11 +114,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             return _host.StopAsync(cancellationToken);
         }
 
-        public void Dispose()
-        {
-            _host.Dispose();
-            _memoryPool.Dispose();
-        }
 
         void IStartup.Configure(IApplicationBuilder app)
         {
@@ -124,8 +127,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
         public async ValueTask DisposeAsync()
         {
-            // The concrete WebHost implements IAsyncDisposable
-            await ((IAsyncDisposable)_host).ConfigureAwait(false).DisposeAsync();
+            await _host.StopAsync().ConfigureAwait(false);
+            // The concrete Host implements IAsyncDisposable
+            await ((IAsyncDisposable)_host).DisposeAsync().ConfigureAwait(false);
             _memoryPool.Dispose();
         }
     }

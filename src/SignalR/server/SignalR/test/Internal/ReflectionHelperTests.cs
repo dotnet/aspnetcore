@@ -57,9 +57,23 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
                 typeof(CustomAsyncEnumerable),
                 true
             };
+
+            yield return new object[]
+            {
+                typeof(CustomAsyncEnumerableOfT<object>),
+                true
+            };
         }
 
         private class CustomAsyncEnumerable : IAsyncEnumerable<object>
+        {
+            public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class CustomAsyncEnumerableOfT<T> : IAsyncEnumerable<object>
         {
             public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             {

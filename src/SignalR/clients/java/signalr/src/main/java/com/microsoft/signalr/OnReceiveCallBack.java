@@ -3,6 +3,8 @@
 
 package com.microsoft.signalr;
 
+import java.nio.ByteBuffer;
+
 interface OnReceiveCallBack {
-    void invoke(String message);
+    void invoke(ByteBuffer message);
 }

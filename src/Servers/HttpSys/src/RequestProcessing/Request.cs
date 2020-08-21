@@ -61,42 +61,39 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var rawUrlInBytes = _nativeRequestContext.GetRawUrlInBytes();
             var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);
 
+            PathBase = string.Empty;
+            Path = originalPath;
+
             // 'OPTIONS * HTTP/1.1'
             if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawUrl, "*", StringComparison.Ordinal))
             {
                 PathBase = string.Empty;
                 Path = string.Empty;
             }
-            else if (requestContext.Server.RequestQueue.Created)
-            {
-                var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
-
-                if (originalPath.Length == prefix.PathWithoutTrailingSlash.Length)
-                {
-                    // They matched exactly except for the trailing slash.
-                    PathBase = originalPath;
-                    Path = string.Empty;
-                }
-                else
-                {
-                    // url: /base/path, prefix: /base/, base: /base, path: /path
-                    // url: /, prefix: /, base: , path: /
-                    PathBase = originalPath.Substring(0, prefix.PathWithoutTrailingSlash.Length); // Preserve the user input casing
-                    Path = originalPath.Substring(prefix.PathWithoutTrailingSlash.Length);
-                }
-            }
             else
             {
-                // When attaching to an existing queue, the UrlContext hint may not match our configuration. Search manualy.
-                if (requestContext.Server.Options.UrlPrefixes.TryMatchLongestPrefix(IsHttps, cookedUrl.GetHost(), originalPath, out var pathBase, out var path))
+                var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
+                // Prefix may be null if the requested has been transfered to our queue
+                if (!(prefix is null))
+                {
+                    if (originalPath.Length == prefix.PathWithoutTrailingSlash.Length)
+                    {
+                        // They matched exactly except for the trailing slash.
+                        PathBase = originalPath;
+                        Path = string.Empty;
+                    }
+                    else
+                    {
+                        // url: /base/path, prefix: /base/, base: /base, path: /path
+                        // url: /, prefix: /, base: , path: /
+                        PathBase = originalPath.Substring(0, prefix.PathWithoutTrailingSlash.Length); // Preserve the user input casing
+                        Path = originalPath.Substring(prefix.PathWithoutTrailingSlash.Length);
+                    }
+                }
+                 else if (requestContext.Server.Options.UrlPrefixes.TryMatchLongestPrefix(IsHttps, cookedUrl.GetHost(), originalPath, out var pathBase, out var path))
                 {
                     PathBase = pathBase;
                     Path = path;
-                }
-                else
-                {
-                    PathBase = string.Empty;
-                    Path = originalPath;
                 }
             }
 
@@ -293,7 +290,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Protocol = handshake.Protocol;
             // The OS considers client and server TLS as different enum values. SslProtocols choose to combine those for some reason.
             // We need to fill in the client bits so the enum shows the expected protocol.
-            // https://docs.microsoft.com/en-us/windows/desktop/api/schannel/ns-schannel-_secpkgcontext_connectioninfo
+            // https://docs.microsoft.com/windows/desktop/api/schannel/ns-schannel-_secpkgcontext_connectioninfo
             // Compare to https://referencesource.microsoft.com/#System/net/System/Net/SecureProtocols/_SslState.cs,8905d1bf17729de3
 #pragma warning disable CS0618 // Type or member is obsolete
             if ((Protocol & SslProtocols.Ssl2) != 0)
@@ -338,17 +335,19 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     }
                     catch (CryptographicException ce)
                     {
-                        RequestContext.Logger.LogDebug(ce, "An error occurred reading the client certificate.");
+                        RequestContext.Logger.LogDebug(LoggerEventIds.ErrorInReadingCertificate, ce, "An error occurred reading the client certificate.");
                     }
                     catch (SecurityException se)
                     {
-                        RequestContext.Logger.LogDebug(se, "An error occurred reading the client certificate.");
+                        RequestContext.Logger.LogDebug(LoggerEventIds.ErrorInReadingCertificate, se, "An error occurred reading the client certificate.");
                     }
                 }
 
                 return _clientCert;
             }
         }
+
+        public bool CanDelegate => !(HasRequestBodyStarted || RequestContext.Response.HasStarted);
 
         // Populates the client certificate.  The result may be null if there is no client cert.
         // TODO: Does it make sense for this to be invoked multiple times (e.g. renegotiate)? Client and server code appear to

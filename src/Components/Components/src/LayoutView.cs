@@ -21,14 +21,14 @@ namespace Microsoft.AspNetCore.Components
         /// Gets or sets the content to display.
         /// </summary>
         [Parameter]
-        public RenderFragment ChildContent { get; set; }
+        public RenderFragment ChildContent { get; set; } = default!;
 
         /// <summary>
         /// Gets or sets the type of the layout in which to display the content.
         /// The type must implement <see cref="IComponent"/> and accept a parameter named <see cref="LayoutComponentBase.Body"/>.
         /// </summary>
         [Parameter]
-        public Type Layout { get; set; }
+        public Type Layout { get; set; } = default!;
 
         /// <inheritdoc />
         public void Attach(RenderHandle renderHandle)
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components
             };
         }
 
-        private static Type GetParentLayoutType(Type type)
+        private static Type? GetParentLayoutType(Type type)
             => type.GetCustomAttribute<LayoutAttribute>()?.LayoutType;
     }
 }

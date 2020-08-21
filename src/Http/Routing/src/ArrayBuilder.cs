@@ -6,6 +6,7 @@
 // 
 // See https://github.com/dotnet/corefx/blob/143df51926f2ad397fef9c9ca7ede88e2721e801/src/Common/src/System/Collections/Generic/ArrayBuilder.cs 
 
+#nullable disable
 
 using System;
 using System.Diagnostics;

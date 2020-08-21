@@ -4,12 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Razor.Infrastructure;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
@@ -180,12 +179,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
             // The key is typically too long to be useful, so we use a cryptographic hash
             // as the actual key (better randomization and key distribution, so small vary
             // values will generate dramatically different keys).
-            using (var sha256 = CryptographyAlgorithms.CreateSHA256())
-            {
-                var contentBytes = Encoding.UTF8.GetBytes(key);
-                var hashedBytes = sha256.ComputeHash(contentBytes);
-                return Convert.ToBase64String(hashedBytes);
-            }
+            var contentBytes = Encoding.UTF8.GetBytes(key);
+            var hashedBytes = SHA256.HashData(contentBytes);
+            return Convert.ToBase64String(hashedBytes);
         }
 
         /// <inheritdoc />
@@ -247,7 +243,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
                 return _hashcode.Value;
             }
 
-            var hashCodeCombiner = new HashCodeCombiner();
+            var hashCodeCombiner = new HashCode();
 
             hashCodeCombiner.Add(Key, StringComparer.Ordinal);
             hashCodeCombiner.Add(_expiresAfter);
@@ -258,12 +254,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
             hashCodeCombiner.Add(_requestCulture);
             hashCodeCombiner.Add(_requestUICulture);
 
-            CombineCollectionHashCode(hashCodeCombiner, VaryByCookieName, _cookies);
-            CombineCollectionHashCode(hashCodeCombiner, VaryByHeaderName, _headers);
-            CombineCollectionHashCode(hashCodeCombiner, VaryByQueryName, _queries);
-            CombineCollectionHashCode(hashCodeCombiner, VaryByRouteName, _routeValues);
+            CombineCollectionHashCode(ref hashCodeCombiner, VaryByCookieName, _cookies);
+            CombineCollectionHashCode(ref hashCodeCombiner, VaryByHeaderName, _headers);
+            CombineCollectionHashCode(ref hashCodeCombiner, VaryByQueryName, _queries);
+            CombineCollectionHashCode(ref hashCodeCombiner, VaryByRouteName, _routeValues);
 
-            _hashcode = hashCodeCombiner.CombinedHash;
+            _hashcode = hashCodeCombiner.ToHashCode();
 
             return _hashcode.Value;
         }
@@ -331,7 +327,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
         }
 
         private static void CombineCollectionHashCode(
-            HashCodeCombiner hashCodeCombiner,
+            ref HashCode hashCodeCombiner,
             string collectionName,
             IList<KeyValuePair<string, string>> values)
         {

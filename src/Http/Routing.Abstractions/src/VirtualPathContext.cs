@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Routing
             HttpContext httpContext,
             RouteValueDictionary ambientValues,
             RouteValueDictionary values,
-            string routeName)
+            string? routeName)
         {
             HttpContext = httpContext;
             AmbientValues = ambientValues;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Gets the name of the route to use for virtual path generation.
         /// </summary>
-        public string RouteName { get; }
+        public string? RouteName { get; }
 
         /// <summary>
         /// Gets or sets the set of new values provided for virtual path generation.

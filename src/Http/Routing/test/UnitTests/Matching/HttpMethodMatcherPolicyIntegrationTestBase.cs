@@ -84,14 +84,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.Same(HttpMethodMatcherPolicy.Http405EndpointDisplayName, httpContext.GetEndpoint().DisplayName);
         }
 
-        [Fact]
-        public async Task Match_HttpMethod_CaseInsensitive()
+        [Theory]
+        [InlineData("GeT", "GET")]
+        [InlineData("unKNOWN", "UNKNOWN")]
+        public async Task Match_HttpMethod_CaseInsensitive(string endpointMethod, string requestMethod)
         {
             // Arrange
-            var endpoint = CreateEndpoint("/hello", httpMethods: new string[] { "GeT", });
+            var endpoint = CreateEndpoint("/hello", httpMethods: new string[] { endpointMethod, });
 
             var matcher = CreateMatcher(endpoint);
-            var httpContext = CreateContext("/hello", "GET");
+            var httpContext = CreateContext("/hello", requestMethod);
 
             // Act
             await matcher.MatchAsync(httpContext);
@@ -100,14 +102,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
             MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
-        [Fact]
-        public async Task Match_HttpMethod_CaseInsensitive_CORS_Preflight()
+        [Theory]
+        [InlineData("GeT", "GET")]
+        [InlineData("unKNOWN", "UNKNOWN")]
+        public async Task Match_HttpMethod_CaseInsensitive_CORS_Preflight(string endpointMethod, string requestMethod)
         {
             // Arrange
-            var endpoint = CreateEndpoint("/hello", httpMethods: new string[] { "GeT", }, acceptCorsPreflight: true);
+            var endpoint = CreateEndpoint("/hello", httpMethods: new string[] { endpointMethod, }, acceptCorsPreflight: true);
 
             var matcher = CreateMatcher(endpoint);
-            var httpContext = CreateContext("/hello", "GET", corsPreflight: true);
+            var httpContext = CreateContext("/hello", requestMethod, corsPreflight: true);
 
             // Act
             await matcher.MatchAsync(httpContext);
@@ -290,7 +294,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             MatcherAssert.AssertMatch(httpContext, endpoint2, ignoreValues: true);
         }
 
-        [Fact] // See https://github.com/aspnet/AspNetCore/issues/6415
+        [Fact] // See https://github.com/dotnet/aspnetcore/issues/6415
         public async Task NotMatch_HttpMethod_Returns405Endpoint_ReExecute()
         {
             // Arrange

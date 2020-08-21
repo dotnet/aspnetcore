@@ -33,8 +33,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
             _values = values ?? throw new ArgumentNullException(nameof(values));
         }
 
-        // This needs to be async as otherwise the AsyncLocal could bleed across requests, see https://github.com/aspnet/AspNetCore/issues/13991.
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             // We need to intialize the headers because the message handler will use this to detect misconfiguration.
             var headers = _values.Headers ??= new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
@@ -57,7 +56,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
                 }
             }
 
-            await _next.Invoke(context);
+            return _next.Invoke(context);
         }
 
         private static StringValues GetValue(HttpContext context, HeaderPropagationEntry entry)

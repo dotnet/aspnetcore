@@ -3,6 +3,7 @@
 
 package com.microsoft.signalr;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import io.reactivex.Single;
 class TestHttpClient extends HttpClient {
     private TestHttpRequestHandler handler;
     private List<HttpRequest> sentRequests;
+    private boolean closeCalled;
 
     public TestHttpClient() {
         this.sentRequests = new ArrayList<>();
@@ -26,7 +28,7 @@ class TestHttpClient extends HttpClient {
     }
 
     @Override
-    public Single<HttpResponse> send(HttpRequest request, String body) {
+    public Single<HttpResponse> send(HttpRequest request, ByteBuffer body) {
         this.sentRequests.add(request);
         return this.handler.invoke(request);
     }
@@ -74,6 +76,15 @@ class TestHttpClient extends HttpClient {
     @Override
     public HttpClient cloneWithTimeOut(int timeoutInMilliseconds) {
         return this;
+    }
+
+    @Override
+    public void close() {
+        this.closeCalled = true;
+    }
+
+    public boolean getCloseCalled() {
+        return this.closeCalled;
     }
 
     interface TestHttpRequestHandler {

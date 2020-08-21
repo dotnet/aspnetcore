@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             _next = next;
             _options = options.Value;
             _fileProvider = _options.FileProvider ?? Helpers.ResolveFileProvider(hostingEnv);
-            _formatter = options.Value.Formatter ?? new HtmlDirectoryFormatter(encoder);
+            _formatter = _options.Formatter ?? new HtmlDirectoryFormatter(encoder);
             _matchUrl = _options.RequestPath;
         }
 
@@ -80,19 +80,16 @@ namespace Microsoft.AspNetCore.StaticFiles
         public Task Invoke(HttpContext context)
         {
             // Check if the URL matches any expected paths, skip if an endpoint was selected
-            if (context.GetEndpoint() == null &&
-                Helpers.IsGetOrHeadMethod(context.Request.Method)
+            if (context.GetEndpoint() == null
+                && Helpers.IsGetOrHeadMethod(context.Request.Method)
                 && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out var subpath)
                 && TryGetDirectoryInfo(subpath, out var contents))
             {
                 // If the path matches a directory but does not end in a slash, redirect to add the slash.
                 // This prevents relative links from breaking.
-                if (!Helpers.PathEndsInSlash(context.Request.Path))
+                if (_options.RedirectToAppendTrailingSlash && !Helpers.PathEndsInSlash(context.Request.Path))
                 {
-                    context.Response.StatusCode = StatusCodes.Status301MovedPermanently;
-                    var request = context.Request;
-                    var redirect = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase, request.Path + "/", request.QueryString);
-                    context.Response.Headers[HeaderNames.Location] = redirect;
+                    Helpers.RedirectToPathWithSlash(context);
                     return Task.CompletedTask;
                 }
 

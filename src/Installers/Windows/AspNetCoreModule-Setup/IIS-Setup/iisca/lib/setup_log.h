@@ -20,7 +20,7 @@ enum SETUP_LOG_SEVERITY
 //consider using an IIS prefix for Msi* methods - they conflict with MSI apis
 
 //
-// Initalize logging once at begining of CA
+// Initialize logging once at beginning of CA
 //
 
 VOID
@@ -31,7 +31,7 @@ IISLogInitialize(
 
 //
 // Close logging at end / exit of CA
-//      
+//
 
 VOID
 IISLogClose(
@@ -40,7 +40,7 @@ IISLogClose(
 
 //
 // Writes a message to msi log file
-//    
+//
 VOID
 IISLogWrite(
     IN SETUP_LOG_SEVERITY   setupLogSeverity,

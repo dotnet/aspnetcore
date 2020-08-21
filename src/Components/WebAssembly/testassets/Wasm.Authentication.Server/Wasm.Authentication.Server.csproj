@@ -6,7 +6,6 @@
 
     <!-- This project references the shared framework transitively. Prevent restore errors by setting this flag. -->
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
-    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,6 +14,7 @@
     <Reference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <Reference Include="Microsoft.EntityFrameworkCore.Design" />
     <Reference Include="Microsoft.AspNetCore.Identity.UI" />
     <Reference Include="Microsoft.EntityFrameworkCore.Relational" />
     <Reference Include="Microsoft.EntityFrameworkCore.SQLite" />

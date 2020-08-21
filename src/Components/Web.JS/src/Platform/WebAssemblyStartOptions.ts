@@ -9,9 +9,14 @@ export interface WebAssemblyStartOptions {
    * @returns A URI string or a Response promise to override the loading process, or null/undefined to allow the default loading behavior.
    */
   loadBootResource(type: WebAssemblyBootResourceType, name: string, defaultUri: string, integrity: string) : string | Promise<Response> | null | undefined;
+
+  /**
+   * Override built-in environment setting on start.
+   */
+  environment?: string;
 }
 
 // This type doesn't have to align with anything in BootConfig.
 // Instead, this represents the public API through which certain aspects
 // of boot resource loading can be customized.
-export type WebAssemblyBootResourceType = 'assembly' | 'pdb' | 'dotnetjs' | 'dotnetwasm' | 'timezonedata';
+export type WebAssemblyBootResourceType = 'assembly' | 'pdb' | 'dotnetjs' | 'dotnetwasm' | 'globalization';

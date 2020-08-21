@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Html
         /// <param name="formatProvider">An object that provides culture-specific formatting information.</param>
         /// <param name="format">A composite format string.</param>
         /// <param name="args">An array that contains objects to format.</param>
-        public HtmlFormattableString(IFormatProvider formatProvider, string format, params object[] args)
+        public HtmlFormattableString(IFormatProvider? formatProvider, string format, params object[] args)
         {
             if (format == null)
             {
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Html
             private readonly HtmlEncoder _encoder;
             private readonly IFormatProvider _formatProvider;
 
-            private StringWriter _writer;
+            private StringWriter? _writer;
 
             public EncodingFormatProvider(IFormatProvider formatProvider, HtmlEncoder encoder)
             {
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Html
                 _encoder = encoder;
             }
 
-            public string Format(string format, object arg, IFormatProvider formatProvider)
+            public string Format(string? format, object? arg, IFormatProvider? formatProvider)
             {
                 // These are the cases we need to special case. We trust the HtmlString or IHtmlContent instance
                 // to do the right thing with encoding.
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Html
                 var htmlContent = arg as IHtmlContent;
                 if (htmlContent != null)
                 {
-                    _writer = _writer ?? new StringWriter();
+                    _writer ??= new StringWriter();
 
                     htmlContent.WriteTo(_writer, _encoder);
 
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Html
                 //
                 // First check for an ICustomFormatter - if the IFormatProvider is a CultureInfo, then it's likely
                 // that ICustomFormatter will be null.
-                var customFormatter = (ICustomFormatter)_formatProvider.GetFormat(typeof(ICustomFormatter));
+                var customFormatter = (ICustomFormatter?)_formatProvider.GetFormat(typeof(ICustomFormatter));
                 if (customFormatter != null)
                 {
                     var result = customFormatter.Format(format, arg, _formatProvider);
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Html
                 return string.Empty;
             }
 
-            public object GetFormat(Type formatType)
+            public object? GetFormat(Type? formatType)
             {
                 if (formatType == typeof(ICustomFormatter))
                 {

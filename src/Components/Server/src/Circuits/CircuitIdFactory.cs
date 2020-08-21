@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private const int SecretLength = 64;
         private const int IdLength = 32;
 
-        private readonly RandomNumberGenerator _generator = RandomNumberGenerator.Create();
         private readonly IDataProtector _protector;
 
         public CircuitIdFactory(IDataProtectionProvider provider)
@@ -35,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public CircuitId CreateCircuitId()
         {
             var buffer = new byte[SecretLength];
-            _generator.GetBytes(buffer);
+            RandomNumberGenerator.Fill(buffer);
 
             var id = new byte[IdLength];
             Array.Copy(

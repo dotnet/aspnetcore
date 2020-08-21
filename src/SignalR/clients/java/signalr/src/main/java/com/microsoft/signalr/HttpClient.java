@@ -3,6 +3,7 @@
 
 package com.microsoft.signalr;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,23 +46,23 @@ class HttpRequest {
 class HttpResponse {
     private final int statusCode;
     private final String statusText;
-    private final String content;
+    private final ByteBuffer content;
 
     public HttpResponse(int statusCode) {
         this(statusCode, "");
     }
 
     public HttpResponse(int statusCode, String statusText) {
-        this(statusCode, statusText, "");
+        this(statusCode, statusText, ByteBuffer.wrap(new byte[] {}));
     }
 
-    public HttpResponse(int statusCode, String statusText, String content) {
+    public HttpResponse(int statusCode, String statusText, ByteBuffer content) {
         this.statusCode = statusCode;
         this.statusText = statusText;
         this.content = content;
     }
 
-    public String getContent() {
+    public ByteBuffer getContent() {
         return content;
     }
 
@@ -74,7 +75,7 @@ class HttpResponse {
     }
 }
 
-abstract class HttpClient {
+abstract class HttpClient implements AutoCloseable {
     public Single<HttpResponse> get(String url) {
         HttpRequest request = new HttpRequest();
         request.setUrl(url);
@@ -95,7 +96,7 @@ abstract class HttpClient {
         return this.send(request);
     }
 
-    public Single<HttpResponse> post(String url, String body, HttpRequest options) {
+    public Single<HttpResponse> post(String url, ByteBuffer body, HttpRequest options) {
         options.setUrl(url);
         options.setMethod("POST");
         return this.send(options, body);
@@ -122,9 +123,11 @@ abstract class HttpClient {
 
     public abstract Single<HttpResponse> send(HttpRequest request);
 
-    public abstract Single<HttpResponse> send(HttpRequest request, String body);
+    public abstract Single<HttpResponse> send(HttpRequest request, ByteBuffer body);
 
     public abstract WebSocketWrapper createWebSocket(String url, Map<String, String> headers);
 
     public abstract HttpClient cloneWithTimeOut(int timeoutInMilliseconds);
+
+    public abstract void close();
 }

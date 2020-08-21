@@ -21,6 +21,7 @@ namespace Microsoft.Net.Http.Headers
         public static readonly string AccessControlRequestMethod = "Access-Control-Request-Method";
         public static readonly string Age = "Age";
         public static readonly string Allow = "Allow";
+        public static readonly string AltSvc = "Alt-Svc";
         public static readonly string Authority = ":authority";
         public static readonly string Authorization = "Authorization";
         public static readonly string CacheControl = "Cache-Control";
@@ -43,6 +44,11 @@ namespace Microsoft.Net.Http.Headers
         public static readonly string Expires = "Expires";
         public static readonly string Expect = "Expect";
         public static readonly string From = "From";
+        public static readonly string GrpcAcceptEncoding = "Grpc-Accept-Encoding";
+        public static readonly string GrpcEncoding = "Grpc-Encoding";
+        public static readonly string GrpcMessage = "Grpc-Message";
+        public static readonly string GrpcStatus = "Grpc-Status";
+        public static readonly string GrpcTimeout = "Grpc-Timeout";
         public static readonly string Host = "Host";
         public static readonly string KeepAlive = "Keep-Alive";
         public static readonly string IfMatch = "If-Match";
@@ -87,5 +93,6 @@ namespace Microsoft.Net.Http.Headers
         public static readonly string WebSocketSubProtocols = "Sec-WebSocket-Protocol";
         public static readonly string WWWAuthenticate = "WWW-Authenticate";
         public static readonly string XFrameOptions = "X-Frame-Options";
+        public static readonly string XRequestedWith = "X-Requested-With";
     }
 }

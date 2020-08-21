@@ -19,6 +19,6 @@ namespace Microsoft.AspNetCore.Authentication
             : base(context, scheme, options, ticket?.Properties)
             => Principal = ticket?.Principal;
 
-        public string ReturnUri { get; set; }
+        public string? ReturnUri { get; set; }
     }
 }

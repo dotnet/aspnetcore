@@ -209,6 +209,22 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
+        public void AddEndpoints_AttributeRouted_ContainsParameterUsingReservedNameWithConstraint_ExceptionThrown()
+        {
+            // Arrange
+            var values = new { controller = "TestController", action = "TestAction", page = (string)null };
+            var action = CreateActionDescriptor(values, "Products/{action:int}");
+
+            // Act & Assert
+            var exception = Assert.Throws<InvalidOperationException>(() => CreateAttributeRoutedEndpoint(action));
+            Assert.Equal(
+                "Failed to update the route pattern 'Products/{action:int}' with required route values. " +
+                "This can occur when the route pattern contains parameters with reserved names such as: 'controller', 'action', 'page' and also uses route constraints such as '{action:int}'. " +
+                "To fix this error, choose a different parmaeter name.",
+                exception.Message);
+        }
+
+        [Fact]
         public void AddEndpoints_AttributeRouted_ContainsParameterWithNullRequiredRouteValue_EndpointCreated()
         {
             // Arrange

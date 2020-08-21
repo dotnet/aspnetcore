@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Routing.Logging
 {
     internal static class RouterMiddlewareLoggerExtensions
     {
-        private static readonly Action<ILogger, Exception> _requestNotMatched;
+        private static readonly Action<ILogger, Exception?> _requestNotMatched;
 
         static RouterMiddlewareLoggerExtensions()
         {

@@ -113,18 +113,22 @@ namespace Microsoft.AspNetCore.Diagnostics
                 };
                 context.Features.Set<IExceptionHandlerFeature>(exceptionHandlerFeature);
                 context.Features.Set<IExceptionHandlerPathFeature>(exceptionHandlerFeature);
-                context.Response.StatusCode = 500;
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
                 await _options.ExceptionHandler(context);
 
-                if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled("Microsoft.AspNetCore.Diagnostics.HandledException"))
+                if (context.Response.StatusCode != StatusCodes.Status404NotFound)
                 {
-                    _diagnosticListener.Write("Microsoft.AspNetCore.Diagnostics.HandledException", new { httpContext = context, exception = edi.SourceException });
+                    if (_diagnosticListener.IsEnabled() && _diagnosticListener.IsEnabled("Microsoft.AspNetCore.Diagnostics.HandledException"))
+                    {
+                        _diagnosticListener.Write("Microsoft.AspNetCore.Diagnostics.HandledException", new { httpContext = context, exception = edi.SourceException });
+                    }
+
+                    return;
                 }
 
-                // TODO: Optional re-throw? We'll re-throw the original exception by default if the error handler throws.
-                return;
+                _logger.ErrorHandlerNotFound();
             }
             catch (Exception ex2)
             {
@@ -153,7 +157,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         private static Task ClearCacheHeaders(object state)
         {
             var headers = ((HttpResponse)state).Headers;
-            headers[HeaderNames.CacheControl] = "no-cache";
+            headers[HeaderNames.CacheControl] = "no-cache,no-store";
             headers[HeaderNames.Pragma] = "no-cache";
             headers[HeaderNames.Expires] = "-1";
             headers.Remove(HeaderNames.ETag);

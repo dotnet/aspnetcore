@@ -48,6 +48,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the <see cref="IServiceProvider"/>.
         /// </summary>
-        public virtual IServiceProvider Services { get; }
+        public virtual IServiceProvider Services { get; } = default!;
     }
 }

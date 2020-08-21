@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Rewrite.IISUrlRewrite;
 using Microsoft.AspNetCore.Rewrite.UrlActions;
 using Microsoft.AspNetCore.Rewrite.UrlMatches;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -33,13 +34,21 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.UseRewriter(options);
-                    app.Run(context => context.Response.WriteAsync(context.Response.Headers[HeaderNames.Location]));
-                });
-            var server = new TestServer(builder);
+            using var host = new HostBuilder()
+                 .ConfigureWebHost(webHostBuilder =>
+                 {
+                     webHostBuilder
+                     .UseTestServer()
+                     .Configure(app =>
+                     {
+                         app.UseRewriter(options);
+                         app.Run(context => context.Response.WriteAsync(context.Response.Headers[HeaderNames.Location]));
+                     });
+                 }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync("article/10/hey");
 
@@ -57,13 +66,21 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                    app.Run(context => context.Response.WriteAsync(context.Request.Path + context.Request.QueryString));
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                        app.Run(context => context.Response.WriteAsync(context.Request.Path + context.Request.QueryString));
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetStringAsync("/article/10/hey");
 
@@ -85,13 +102,21 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                    app.Run(context => context.Response.WriteAsync(context.Request.Path + context.Request.QueryString));
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                        app.Run(context => context.Response.WriteAsync(context.Request.Path + context.Request.QueryString));
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetStringAsync("page.asp?p2=321&p1=123");
 
@@ -109,13 +134,21 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                    app.Run(context => context.Response.WriteAsync(context.Response.Headers[HeaderNames.Location]));
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                        app.Run(context => context.Response.WriteAsync(context.Response.Headers[HeaderNames.Location]));
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync("HElLo");
 
@@ -137,12 +170,20 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync("hey/hello/");
 
@@ -164,12 +205,20 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync("hey/hello");
 
@@ -190,12 +239,20 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync(new Uri("http://example.com"));
 
@@ -216,18 +273,26 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                    app.Run(context => context.Response.WriteAsync(
-                        context.Request.Scheme +
-                        "://" +
-                        context.Request.Host +
-                        context.Request.Path +
-                        context.Request.QueryString));
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                        app.Run(context => context.Response.WriteAsync(
+                            context.Request.Scheme +
+                            "://" +
+                            context.Request.Host +
+                            context.Request.Path +
+                            context.Request.QueryString));
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetStringAsync(new Uri("http://example.com"));
 
@@ -245,18 +310,26 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                    app.Run(context => context.Response.WriteAsync(
-                        context.Request.Scheme +
-                        "://" +
-                        context.Request.Host +
-                        context.Request.Path +
-                        context.Request.QueryString));
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                        app.Run(context => context.Response.WriteAsync(
+                            context.Request.Scheme +
+                            "://" +
+                            context.Request.Host +
+                            context.Request.Path +
+                            context.Request.QueryString));
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetStringAsync(new Uri("http://example.com/"));
 
@@ -274,18 +347,26 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                    app.Run(context => context.Response.WriteAsync(
-                        context.Request.Scheme +
-                        "://" +
-                        context.Request.Host +
-                        context.Request.Path +
-                        context.Request.QueryString));
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                        app.Run(context => context.Response.WriteAsync(
+                            context.Request.Scheme +
+                            "://" +
+                            context.Request.Host +
+                            context.Request.Path +
+                            context.Request.QueryString));
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync(new Uri("http://example.com/"));
 
@@ -303,15 +384,23 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                    app.Run(context => context.Response.WriteAsync(
-                        context.Request.Path +
-                        context.Request.QueryString));
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                        app.Run(context => context.Response.WriteAsync(
+                            context.Request.Path +
+                            context.Request.QueryString));
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetStringAsync(new Uri("http://example.com/"));
 
@@ -329,15 +418,24 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var builder = new WebHostBuilder()
-            .Configure(app =>
-            {
-                app.UseRewriter(options);
-                app.Run(context => context.Response.WriteAsync(
-                        context.Request.Path +
-                        context.Request.QueryString));
-            });
-            var server = new TestServer(builder) { BaseAddress = new Uri("http://localhost:5000/foo") };
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                        app.Run(context => context.Response.WriteAsync(
+                                context.Request.Path +
+                                context.Request.QueryString));
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+            server.BaseAddress = new Uri("http://localhost:5000/foo");
 
             var response = await server.CreateClient().GetAsync("");
 
@@ -362,12 +460,20 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync("hey/hello");
 
@@ -390,16 +496,24 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync("article/23?p1=123&p2=abc");
 
-            Assert.Equal("/blogposts/article/abc", response.Headers.Location.OriginalString);
+            Assert.Equal("/blogposts/article/abc?p1=123&p2=abc", response.Headers.Location.OriginalString);
         }
 
         [Fact]
@@ -418,16 +532,24 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync("article/23?p1=123&p2=abc");
 
-            Assert.Equal("/blog/article/23/abc", response.Headers.Location.OriginalString);
+            Assert.Equal("/blog/article/23/abc?p1=123&p2=abc", response.Headers.Location.OriginalString);
         }
 
         [Fact]
@@ -447,12 +569,20 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var ex = await Assert.ThrowsAsync<IndexOutOfRangeException>(() => server.CreateClient().GetAsync("article/23?p1=123&p2=abc"));
 
@@ -475,13 +605,21 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                             </globalRules>
                         </rewrite>";
             var options = new RewriteOptions().AddIISUrlRewrite(new StringReader(xml));
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                    app.Run(context => context.Response.WriteAsync(context.Request.GetEncodedUrl()));
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                        app.Run(context => context.Response.WriteAsync(context.Request.GetEncodedUrl()));
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             // act
             var response = await server.CreateClient().GetStringAsync($"http://localhost/{Guid.NewGuid()}/foo/bar");
@@ -512,13 +650,21 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                         </rewriteMap>
                     </rewriteMaps>
                 </rewrite>"));
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                    app.Run(context => context.Response.WriteAsync(context.Request.GetEncodedUrl()));
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                        app.Run(context => context.Response.WriteAsync(context.Request.GetEncodedUrl()));
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetStringAsync(new Uri(requestUri));
 
@@ -536,12 +682,20 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>"));
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             var response = await server.CreateClient().GetAsync("article/10/hey");
             var content = await response.Content.ReadAsStringAsync();
@@ -583,13 +737,21 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             ruleBuilder.AddUrlAction(action);
 
             var options = new RewriteOptions().Add(ruleBuilder.Build());
-            var builder = new WebHostBuilder()
-                .Configure(app =>
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    app.UseRewriter(options);
-                    app.Run(context => context.Response.WriteAsync(context.Request.GetEncodedUrl()));
-                });
-            var server = new TestServer(builder);
+                    webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.UseRewriter(options);
+                        app.Run(context => context.Response.WriteAsync(context.Request.GetEncodedUrl()));
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
 
             // act
             var response = await server.CreateClient().GetStringAsync("http://localhost/foo/bar");

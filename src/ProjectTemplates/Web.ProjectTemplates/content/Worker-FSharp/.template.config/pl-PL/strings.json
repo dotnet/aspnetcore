@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "strings": {
+    "name": "Usługa procesu roboczego",
+    "description": "Szablon pustego projektu służący do tworzenia usługi procesu roboczego."
+  }
+}
