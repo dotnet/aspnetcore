@@ -12,14 +12,14 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
     internal static class LdapAdapter
     {
-        public static async Task RetrieveClaimsAsync(LdapOptions options, AuthenticatedContext context, ILogger logger)
+        public static async Task RetrieveClaimsAsync(LdapOptions options, ClaimsIdentity identity, ILogger logger)
         {
             if (!options.EnableLdapRoleClaimResolution)
             {
                 return;
             }
 
-            var user = context.Principal.Identity.Name;
+            var user = identity.Name;
             var userAccountName = user.Substring(0, user.IndexOf('@'));
             var distinguishedName = options.Domain.Split('.').Select(name => $"dc={name}").Aggregate((a, b) => $"{a},{b}");
 
@@ -43,8 +43,6 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 var userFound = searchResponse.Entries[0]; //Get the object that was found on ldap
                 var memberof = userFound.Attributes["memberof"]; // You can access ldap Attributes with Attributes property
 
-                var claimsIdentity = context.Principal.Identity as ClaimsIdentity;
-
                 foreach (var group in memberof)
                 {
                     // Example distinguished name: CN=TestGroup,DC=KERB,DC=local
@@ -53,11 +51,11 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
                     if (options.ResolveNestedGroups)
                     {
-                        GetNestedGroups(options.LdapConnection, claimsIdentity, distinguishedName, groupCN, logger);
+                        GetNestedGroups(options.LdapConnection, identity, distinguishedName, groupCN, logger);
                     }
                     else
                     {
-                        AddRole(claimsIdentity, groupCN);
+                        AddRole(identity, groupCN);
                     }
                 }
             }

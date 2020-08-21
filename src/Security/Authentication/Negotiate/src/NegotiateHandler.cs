@@ -331,7 +331,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             };
 
             // TODO: persist results
-            await LdapAdapter.RetrieveClaimsAsync(Options.LdapOptions, authenticatedContext, Logger);
+            await LdapAdapter.RetrieveClaimsAsync(Options.LdapOptions, authenticatedContext.Principal.Identity as ClaimsIdentity, Logger);
 
             await Events.Authenticated(authenticatedContext);
 

@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
         /// <summary>
         /// This option indicates whether nested groups should be examined when
-        /// resolving AD Roles. 
+        /// resolving Roles. The default is true.
         /// </summary>
         public bool ResolveNestedGroups { get; set; } = true;
 
