@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [RequiresNewShim]
         public async Task ServerAddressesIncludesBaseAddress()
         {
-            var appName = "\u041C\u043E\u0451\u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435";
+            var appName = "TEST";
 
             var port = TestPortHelper.GetNextSSLPort();
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);

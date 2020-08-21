@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
                 .WithTfms(Tfm.Net50)
-                .WithAllApplicationTypes()
+                .WithApplicationTypes(ApplicationType.Portable)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
@@ -42,8 +42,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalTheory]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/22319")]
         [MemberData(nameof(TestVariants))]
+        [RequiresIIS(IISCapability.ClientCertificate)]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public Task HttpsClientCert_GetCertInformation(TestVariant variant)
         {
@@ -61,6 +61,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             {
                 ServerCertificateCustomValidationCallback = (a, b, c, d) => true,
                 ClientCertificateOptions = ClientCertificateOption.Manual,
+                SslProtocols = System.Security.Authentication.SslProtocols.Tls12
             };
 
             X509Certificate2 cert = null;
