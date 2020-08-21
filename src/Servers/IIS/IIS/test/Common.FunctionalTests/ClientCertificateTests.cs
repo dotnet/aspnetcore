@@ -43,7 +43,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public Task HttpsClientCert_GetCertInformation(TestVariant variant)
         {
             return ClientCertTest(variant, sendClientCert: true);
