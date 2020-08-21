@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Testing.Tests
     public class SkipOnHelixTests
     {
         [ConditionalFact]
-        [SkipOnHelix("This should be skipped", Queues = "Windows.10.Amd64.Open;Ubuntu.1604.Amd64.Open;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("This should be skipped", Queues = "Windows.10.Amd64.Open")]
         public void SkipOnHelix()
         {
             throw new Exception("Flaky!");
