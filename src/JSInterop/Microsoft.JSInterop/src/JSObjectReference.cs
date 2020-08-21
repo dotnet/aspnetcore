@@ -68,7 +68,7 @@ namespace Microsoft.JSInterop
             {
                 _disposed = true;
 
-                await _jsRuntime.InvokeVoidAsync("DotNet.jsCallDispatcher.disposeJSObjectReference", Id);
+                await _jsRuntime.InvokeVoidAsync("DotNet.jsCallDispatcher.disposeJSObjectReferenceById", Id);
             }
         }
 

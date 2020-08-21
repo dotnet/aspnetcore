@@ -107,6 +107,40 @@ export module DotNet {
     return invokePossibleInstanceMethodAsync(assemblyName, methodIdentifier, null, args);
   }
 
+  /**
+   * Creates a JavaScript object reference that can be passed to .NET via interop calls.
+   * 
+   * @param jsObject The JavaScript Object used to create the JavaScript object reference.
+   * @returns The JavaScript object reference (this will be the same instance as the given object).
+   * @throws Error if the given value is not an Object.
+   */
+  export function createJSObjectReference(jsObject: any): any {
+    if (jsObject instanceof Object) {
+      if (!jsObject.hasOwnProperty(JSObject.ID_KEY) || cachedJSObjectsById[nextJsObjectId] !== jsObject) {
+        // The return value is not cached as a JSObjectReference, or is copied from an object that was, so we cache it as a new one
+        cachedJSObjectsById[nextJsObjectId] = new JSObject(jsObject, nextJsObjectId);
+        nextJsObjectId++;
+      }
+
+      return jsObject;
+    } else {
+      throw new Error(`Cannot create a JSObjectReference from the value '${jsObject}'.`);
+    }
+  }
+
+  /**
+   * Disposes the JavaScript object reference associated with the given object.
+   * 
+   * @param jsObject The JavaScript Object associated with the JavaScript object reference.
+   */
+  export function disposeJSObjectReference(jsObject: any): void {
+    const id = jsObject && jsObject[JSObject.ID_KEY];
+
+    if (typeof id === 'number') {
+      disposeJSObjectReferenceById(id);
+    }
+  }
+
   function invokePossibleInstanceMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T {
     const dispatcher = getRequiredDispatcher();
     if (dispatcher.invokeDotNetFromJS) {
@@ -225,15 +259,7 @@ export module DotNet {
      * 
      * @param id The ID of the JavaScript object reference.
      */
-    disposeJSObjectReference: (id: number) => {
-      const jsObject = cachedJSObjectsById[id];
-
-      if (jsObject) {
-        jsObject.dispose();
-      }
-
-      delete cachedJSObjectsById[id];
-    },
+    disposeJSObjectReferenceById,
 
     /**
      * Invokes the specified synchronous JavaScript function.
@@ -318,6 +344,16 @@ export module DotNet {
     }
   }
 
+  function disposeJSObjectReferenceById(id: number) {
+    const jsObject = cachedJSObjectsById[id];
+
+    if (jsObject) {
+      jsObject.dispose();
+    }
+
+    delete cachedJSObjectsById[id];
+  }
+
   class DotNetObject {
     constructor(private _id: number) {
     }
@@ -371,17 +407,7 @@ export module DotNet {
       case JSCallResultType.Default:
         return returnValue;
       case JSCallResultType.JSObjectReference:
-        if (returnValue instanceof Object) {
-          if (!returnValue.hasOwnProperty(JSObject.ID_KEY) || cachedJSObjectsById[nextJsObjectId] !== returnValue) {
-            // The return value is not cached as a JSObjectReference, or is copied from an object that was, so we cache it as a new one
-            cachedJSObjectsById[nextJsObjectId] = new JSObject(returnValue, nextJsObjectId);
-            nextJsObjectId++;
-          }
-
-          return returnValue;
-        } else {
-          throw new Error(`Cannot create a JSObjectReference from the value '${returnValue}'.`);
-        }
+        return createJSObjectReference(returnValue);
       default:
         throw new Error(`Invalid JS call result type '${resultType}'.`);
     }

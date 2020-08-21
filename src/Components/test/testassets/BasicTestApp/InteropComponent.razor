@@ -140,7 +140,6 @@
             ReturnValues["returnArray"] = string.Join(",", ((IJSInProcessRuntime)JSRuntime).Invoke<Segment[]>("returnArray").Select(x => x.Source).ToArray());
         }
 
-        // TODO: Should some of these tests be moved to M.JSInterop?
         var jsObjectReference = await JSRuntime.InvokeAsync<JSObjectReference>("returnJSObjectReference");
         ReturnValues["jsObjectReference.identity"] = await jsObjectReference.InvokeAsync<string>("identity", "Invoked from JSObjectReference");
         ReturnValues["jsObjectReference.nested.add"] = (await jsObjectReference.InvokeAsync<int>("nested.add", 2, 3)).ToString();
@@ -155,9 +154,9 @@
             JSObjectReferenceInvokeNonFunctionException = e;
         }
 
-        // This is not the typical way to dispose JSObjectReferences - normally one would call jsObjectReference.DisposeAsync().
+        // This is not the typical way to dispose JSObjectReferences - normally one would call JSObjectReference.DisposeAsync().
         // We're doing it this way to validate that we can handle using a disposed JSObjectReference on the JS side.
-        await JSRuntime.InvokeVoidAsync("DotNet.jsCallDispatcher.disposeJSObjectReference", 1);
+        await jsObjectReference.InvokeVoidAsync("dispose");
 
         try
         {

@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["AsyncThrowAsyncException"] = @"""System.InvalidOperationException: Threw an async exception!",
                 ["SyncExceptionFromAsyncMethod"] = "Function threw a sync exception!",
                 ["AsyncExceptionFromAsyncMethod"] = "Function threw an async exception!",
-                ["JSObjectReferenceDisposedException"] = "JS object instance with ID 1 does not exist",
+                ["JSObjectReferenceDisposedException"] = "JS object instance with ID",
                 ["JSObjectReferenceInvokeNonFunctionException"] = "The value 'Object.nonFunction' is not a function.",
                 ["resultReturnDotNetObjectByRefAsync"] = "1001",
                 ["instanceMethodThisTypeNameAsync"] = @"""JavaScriptInterop""",

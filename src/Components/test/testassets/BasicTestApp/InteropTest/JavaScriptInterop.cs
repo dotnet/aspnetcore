@@ -415,6 +415,12 @@ namespace BasicTestApp.InteropTest
         }
 
         [JSInvokable]
+        public static JSObjectReference RoundTripJSObjectReference(JSObjectReference jsObjectReference)
+        {
+            return jsObjectReference;
+        }
+
+        [JSInvokable]
         public InstanceMethodOutput InstanceMethod(InstanceMethodInput input)
         {
             // This method shows we can pass in values marshalled both as JSON (the dict itself)

@@ -30,6 +30,10 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
     var returnDotNetObjectByRefResult = DotNet.invokeMethod(assemblyName, 'ReturnDotNetObjectByRef');
     results['resultReturnDotNetObjectByRefSync'] = DotNet.invokeMethod(assemblyName, 'ExtractNonSerializedValue', returnDotNetObjectByRefResult['Some sync instance']);
 
+    var jsObjectReference = DotNet.createJSObjectReference({ prop: 'successful' });
+    var returnedObject = DotNet.invokeMethod(assemblyName, 'RoundTripJSObjectReference', jsObjectReference);
+    results['roundTripJSObjectReference'] = returnedObject && returnedObject.prop;
+
     var instanceMethodResult = instanceMethodsTarget.invokeMethod('InstanceMethod', {
       stringValue: 'My string',
       dtoByRef: dotNetObjectByRef
@@ -207,6 +211,9 @@ function returnJSObjectReference() {
       add: function (a, b) {
         return a + b;
       }
+    },
+    dispose: function () {
+      DotNet.disposeJSObjectReference(this);
     },
   };
 }
