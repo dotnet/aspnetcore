@@ -39,6 +39,26 @@ namespace Templates.Test
         [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         public Task WebApiTemplateCSharp() => WebApiTemplateCore(languageOverride: null);
 
+        [ConditionalFact]
+        [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        public async Task WebApiTemplateCSharp_WithOpenAPI()
+        {
+            Project = await FactoryFixture.GetOrCreateProject("webapiopenapi", Output);
+
+            var createResult = await Project.RunDotNetNewAsync("webapi", args: new[] { "--openapi" });
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
+
+            var buildResult = await Project.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
+
+            using var aspNetProcess = Project.StartBuiltProjectAsync();
+            Assert.False(
+                aspNetProcess.Process.HasExited,
+                ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+
+            await aspNetProcess.AssertOk("swagger");
+        }
+
         private async Task PublishAndBuildWebApiTemplate(string languageOverride, string auth, string[] args)
         {
             Project = await FactoryFixture.GetOrCreateProject("webapi" + (languageOverride == "F#" ? "fsharp" : "csharp") + Guid.NewGuid().ToString().Substring(0, 10).ToLower(), Output);

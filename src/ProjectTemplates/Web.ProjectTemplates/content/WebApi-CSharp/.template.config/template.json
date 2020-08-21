@@ -273,6 +273,12 @@
     "GenerateApiOrGraph": {
         "type": "computed",
         "value": "(GenerateApi || GenerateGraph)"
+    },
+    "EnableOpenAPI": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Configures the project to use OpenAPI (Swagger)."
     }
   },
   "primaryOutputs": [
