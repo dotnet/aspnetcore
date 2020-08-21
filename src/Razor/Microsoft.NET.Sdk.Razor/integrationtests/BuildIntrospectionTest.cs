@@ -260,6 +260,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InitializeTestProject("SimpleMvc")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25138")]
         public async Task IntrospectRazorTasksDllPath_DesktopMsBuild()
         {
             var solutionRoot = GetType().Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
