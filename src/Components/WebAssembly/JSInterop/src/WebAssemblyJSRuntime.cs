@@ -110,7 +110,7 @@ namespace Microsoft.JSInterop.WebAssembly
             var callInfo = new JSCallInfo
             {
                 FunctionIdentifier = identifier,
-                ResultType = JSCallResultTypeHelper.FromGeneric<TResult>()
+                ResultType = ResultTypeFromGeneric<TResult>()
             };
 
             var result = InternalCalls.InvokeJS<T0, T1, T2, TResult>(out var exception, ref callInfo, arg0, arg1, arg2);

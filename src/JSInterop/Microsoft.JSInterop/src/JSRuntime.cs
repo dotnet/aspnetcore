@@ -53,6 +53,17 @@ namespace Microsoft.JSInterop
         protected TimeSpan? DefaultAsyncTimeout { get; set; }
 
         /// <summary>
+        /// Creates a <see cref="JSCallResultType"/> from the given generic type.
+        /// </summary>
+        /// <typeparam name="TResult">
+        /// The type of the result of the relevant JS interop call.
+        /// </typeparam>
+        protected static JSCallResultType ResultTypeFromGeneric<TResult>()
+            => typeof(JSObjectReference).IsAssignableFrom(typeof(TResult)) ?
+                JSCallResultType.JSObjectReference :
+                JSCallResultType.Default;
+
+        /// <summary>
         /// Invokes the specified JavaScript function asynchronously.
         /// <para>
         /// <see cref="JSRuntime"/> will apply timeouts to this operation based on the value configured in <see cref="DefaultAsyncTimeout"/>. To dispatch a call with a different, or no timeout,
@@ -123,7 +134,7 @@ namespace Microsoft.JSInterop
                 var argsJson = args?.Any() == true ?
                     JsonSerializer.Serialize(args, JsonSerializerOptions) :
                     null;
-                var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
+                var resultType = ResultTypeFromGeneric<TValue>();
 
                 BeginInvokeJS(taskId, identifier, argsJson, resultType, targetInstanceId);
 
