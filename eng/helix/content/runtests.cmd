@@ -1,4 +1,7 @@
 @echo off
+
+echo Initial PATH=%PATH%
+
 REM Need delayed expansion !PATH! so parens in the path don't mess up the parens for the if statements that use parens for blocks
 setlocal enabledelayedexpansion
 
