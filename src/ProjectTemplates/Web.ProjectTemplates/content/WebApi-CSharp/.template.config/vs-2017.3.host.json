@@ -51,11 +51,13 @@
   ],
   "symbolInfo": [
     {
-      "id": "EnableOpenAPI",
+      "id": "DisableOpenAPI",
       "name": {
         "text": "Enable _OpenAPI support"
       },
-      "isVisible": "true"
+      "invertBoolean": true,
+      "isVisible": true,
+      "defaultValue": true
     }
   ],
   "excludeLaunchSettings": false,

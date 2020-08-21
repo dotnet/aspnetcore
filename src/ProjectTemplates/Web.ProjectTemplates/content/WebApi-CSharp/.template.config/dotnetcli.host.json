@@ -68,8 +68,9 @@
       "longName": "calls-graph",
       "shortName": ""
     },
-    "EnableOpenAPI": {
-      "longName": "openapi"
+    "DisableOpenAPI": {
+      "longName": "no-openapi",
+      "shortName": ""
     }
   },
   "usageExamples": [

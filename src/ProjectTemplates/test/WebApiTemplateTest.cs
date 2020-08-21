@@ -41,11 +41,11 @@ namespace Templates.Test
 
         [ConditionalFact]
         [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
-        public async Task WebApiTemplateCSharp_WithOpenAPI()
+        public async Task WebApiTemplateCSharp_WithoutOpenAPI()
         {
-            Project = await FactoryFixture.GetOrCreateProject("webapiopenapi", Output);
+            Project = await FactoryFixture.GetOrCreateProject("webapinoopenapi", Output);
 
-            var createResult = await Project.RunDotNetNewAsync("webapi", args: new[] { "--openapi" });
+            var createResult = await Project.RunDotNetNewAsync("webapi", args: new[] { "--no-openapi" });
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             var buildResult = await Project.RunDotNetBuildAsync();
@@ -56,7 +56,7 @@ namespace Templates.Test
                 aspNetProcess.Process.HasExited,
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
 
-            await aspNetProcess.AssertOk("swagger");
+            await aspNetProcess.AssertNotFound("swagger");
         }
 
         private async Task PublishAndBuildWebApiTemplate(string languageOverride, string auth, string[] args)
@@ -100,6 +100,7 @@ namespace Templates.Test
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
 
                 await aspNetProcess.AssertOk("weatherforecast");
+                await aspNetProcess.AssertOk("swagger");
                 await aspNetProcess.AssertNotFound("/");
             }
 
@@ -111,6 +112,8 @@ namespace Templates.Test
 
 
                 await aspNetProcess.AssertOk("weatherforecast");
+                // Swagger is only available in Development
+                await aspNetProcess.AssertNotFound("swagger");
                 await aspNetProcess.AssertNotFound("/");
             }
         }
