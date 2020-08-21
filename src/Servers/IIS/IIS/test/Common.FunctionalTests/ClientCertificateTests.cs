@@ -59,8 +59,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var handler = new HttpClientHandler
             {
                 ServerCertificateCustomValidationCallback = (a, b, c, d) => true,
-                ClientCertificateOptions = ClientCertificateOption.Manual,
-                SslProtocols = System.Security.Authentication.SslProtocols.Tls12
+                ClientCertificateOptions = ClientCertificateOption.Manual
             };
 
             X509Certificate2 cert = null;
