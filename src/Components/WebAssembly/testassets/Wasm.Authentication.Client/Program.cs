@@ -4,9 +4,11 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Wasm.Authentication.Client
 {
@@ -20,13 +22,20 @@ namespace Wasm.Authentication.Client
                 .AddAccountClaimsPrincipalFactory<RemoteAppState, OidcAccount, PreferencesUserFactory>();
 
             builder.Services.AddHttpClient<WeatherForecastClient>(client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
-                .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
+            .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
-            builder.Services.AddSingleton<StateService>();
+            ConfigureCommonServices(builder.Services);
 
             builder.RootComponents.Add<App>("app");
 
             await builder.Build().RunAsync();
+        }
+
+        public static void ConfigureCommonServices(IServiceCollection services)
+        {
+            services.TryAddScoped<SignOutSessionStateManager>();
+
+            services.AddSingleton<StateService>();
         }
     }
 }

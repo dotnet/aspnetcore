@@ -2,11 +2,14 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Wasm.Authentication.Server.Data;
 using Wasm.Authentication.Server.Models;
@@ -38,6 +41,10 @@ namespace Wasm.Authentication.Server
                     options.IdentityResources["openid"].UserClaims.Add("role");
                     options.ApiResources.Single().UserClaims.Add("role");
                 });
+
+            Client.Program.ConfigureCommonServices(services);
+            services.AddHttpClient<Client.WeatherForecastClient>();
+            services.TryAddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 
             // Need to do this as it maps "role" to ClaimTypes.Role and causes issues
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("role");
@@ -71,7 +78,7 @@ namespace Wasm.Authentication.Server
                 endpoints.MapControllers();
                 endpoints.MapRazorPages();
 
-                endpoints.MapFallbackToFile("index.html");
+                endpoints.MapFallbackToPage("/_Host");
             });
         }
     }

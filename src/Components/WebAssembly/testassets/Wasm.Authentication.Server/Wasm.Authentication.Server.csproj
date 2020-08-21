@@ -13,6 +13,7 @@
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
     <Reference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+    <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <Reference Include="Microsoft.EntityFrameworkCore.Design" />
     <Reference Include="Microsoft.AspNetCore.Identity.UI" />
