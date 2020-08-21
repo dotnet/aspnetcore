@@ -329,8 +329,8 @@ namespace IIS.Tests
                     await connection.Send(
                         "POST / HTTP/1.1",
                         "Host: localhost",
-                        "Content-Length: " + (new IISServerOptions().MaxRequestBodySize + 1),
                         "",
+                        "Content-Length: " + (new IISServerOptions().MaxRequestBodySize + 1),
                         "");
                     await connection.Receive(
                         "HTTP/1.1 413 Payload Too Large");

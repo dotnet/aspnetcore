@@ -96,26 +96,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
         [ConditionalFact]
         [RequiresNewHandler]
-        public async Task SetIISLimitMaxRequestBodySizeE2EWorksNoLimit()
-        {
-            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
-            deploymentParameters.ServerConfigActionList.Add(
-                (config, _) => {
-                    config
-                        .RequiredElement("system.webServer")
-                        .GetOrAdd("security")
-                        .GetOrAdd("requestFiltering")
-                        .Remove();
-                });
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            var result = await deploymentResult.HttpClient.PostAsync("/ReadRequestBodyLarger", new StringContent(new string('a', 100000000)));
-
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-        }
-
-        [ConditionalFact]
-        [RequiresNewHandler]
         public async Task IISRejectsContentLengthTooLargeByDefault()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
