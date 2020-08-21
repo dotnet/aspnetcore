@@ -26,7 +26,7 @@
         "Microsoft.VisualStudio.Component.Windows10SDK.17134"
       ]
     },
-    "xcopy-msbuild": "16.5.0-alpha"
+    "xcopy-msbuild": "16.8.0-preview2.1"
   },
   "msbuild-sdks": {
     "Yarn.MSBuild": "1.15.2",
