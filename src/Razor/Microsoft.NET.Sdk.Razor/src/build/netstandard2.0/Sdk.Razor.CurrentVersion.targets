@@ -33,7 +33,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_RazorSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net5.0</_RazorSdkTasksTFM>
     <_RazorSdkTasksTFM Condition=" '$(_RazorSdkTasksTFM)' == ''">net46</_RazorSdkTasksTFM>
     <RazorSdkBuildTasksAssembly>$(RazorSdkBuildTasksDirectoryRoot)$(_RazorSdkTasksTFM)\Microsoft.NET.Sdk.Razor.Tasks.dll</RazorSdkBuildTasksAssembly>
-    <_RazorSdkToolAssembly>$(RazorSdkDirectoryRoot)tools\netcoreapp3.0\rzc.dll</_RazorSdkToolAssembly>
+    <_RazorSdkToolAssembly>$(RazorSdkDirectoryRoot)tools\rzc.dll</_RazorSdkToolAssembly>
   </PropertyGroup>
 
   <!-- Resolve the RazorLangVersion based on values imported or TFM. -->
