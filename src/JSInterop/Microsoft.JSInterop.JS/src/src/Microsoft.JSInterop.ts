@@ -9,17 +9,19 @@ export module DotNet {
   class JSObject {
     public static readonly ID_KEY = '__jsObjectId';
 
-    _cachedFunctions: { [identifier: string]: Function };
+    _cachedFunctions: Map<string, Function>;
 
     constructor(private _jsObject: any, _id: number)
     {
-      this._cachedFunctions = {};
+      this._cachedFunctions = new Map<string, Function>();
       this._jsObject[JSObject.ID_KEY] = _id;
     }
 
     public findFunction(identifier: string) {
-      if (Object.prototype.hasOwnProperty.call(this._cachedFunctions, identifier)) {
-        return this._cachedFunctions[identifier];
+      const cachedFunction = this._cachedFunctions.get(identifier);
+
+      if (cachedFunction) {
+        return cachedFunction;
       }
 
       let result: any = this._jsObject;
@@ -38,7 +40,7 @@ export module DotNet {
 
       if (result instanceof Function) {
         result = result.bind(lastSegmentValue);
-        this._cachedFunctions[identifier] = result;
+        this._cachedFunctions.set(identifier, result);
         return result;
       } else {
         throw new Error(`The value '${resultIdentifier}' is not a function.`);
@@ -250,6 +252,8 @@ export module DotNet {
      *
      * @param identifier Identifies the globally-reachable function to be returned.
      * @param targetInstanceId The instance ID of the target JS object.
+     * @param resultType The type of result expected from the JS interop call.
+     * @param targetInstanceId The ID of the target JS object instance.
      * @returns A Function instance.
      */
     findJSFunction, // Note that this is used by the JS interop code inside Mono WebAssembly itself
@@ -283,6 +287,8 @@ export module DotNet {
      * @param asyncHandle A value identifying the asynchronous operation. This value will be passed back in a later call to endInvokeJSFromDotNet.
      * @param identifier Identifies the globally-reachable function to invoke.
      * @param argsJson JSON representation of arguments to be passed to the function.
+     * @param resultType The type of result expected from the JS interop call.
+     * @param targetInstanceId The ID of the target JS object instance.
      */
     beginInvokeJSFromDotNet: (asyncHandle: number, identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number): void => {
       // Coerce synchronous functions into async ones, plus treat

@@ -59,7 +59,7 @@ namespace Microsoft.JSInterop
         /// The type of the result of the relevant JS interop call.
         /// </typeparam>
         protected static JSCallResultType ResultTypeFromGeneric<TResult>()
-            => typeof(JSObjectReference).IsAssignableFrom(typeof(TResult)) ?
+            => typeof(TResult) == typeof(JSObjectReference) || typeof(TResult) == typeof(JSInProcessObjectReference) ?
                 JSCallResultType.JSObjectReference :
                 JSCallResultType.Default;
 
@@ -97,7 +97,7 @@ namespace Microsoft.JSInterop
             {
                 using var cts = new CancellationTokenSource(DefaultAsyncTimeout.Value);
                 // We need to await here due to the using
-                return await InvokeAsync<TValue>(0, identifier, cts.Token, args);
+                return await InvokeAsync<TValue>(targetInstanceId, identifier, cts.Token, args);
             }
 
             return await InvokeAsync<TValue>(targetInstanceId, identifier, CancellationToken.None, args);
