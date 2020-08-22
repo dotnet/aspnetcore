@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 using Microsoft.JSInterop.WebAssembly;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
@@ -95,7 +96,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch batch)
         {
-            DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<int, RenderBatch, object>(
+            ((IJSUnmarshalledRuntime)DefaultWebAssemblyJSRuntime.Instance).InvokeUnmarshalled<int, RenderBatch, object>(
                 "Blazor._internal.renderBatch",
                 _webAssemblyRendererId,
                 batch);

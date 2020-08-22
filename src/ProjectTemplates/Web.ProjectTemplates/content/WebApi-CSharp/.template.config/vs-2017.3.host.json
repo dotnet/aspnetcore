@@ -49,6 +49,17 @@
       "useHttps": true
     }
   ],
+  "symbolInfo": [
+    {
+      "id": "DisableOpenAPI",
+      "name": {
+        "text": "Enable _OpenAPI support"
+      },
+      "invertBoolean": true,
+      "isVisible": true,
+      "defaultValue": true
+    }
+  ],
   "excludeLaunchSettings": false,
   "azureReplyUrlPortName": "HttpsPort",
   "minFullFrameworkVersion": "4.6.1",

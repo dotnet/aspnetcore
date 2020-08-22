@@ -39,14 +39,14 @@
         },
         {
           "condition": "(!GenerateApi)",
-            "exclude": [
-              "Services/DownstreamWebApi.cs"
-            ]
+          "exclude": [
+            "Services/DownstreamWebApi.cs"
+          ]
         },
         {
           "condition": "(!GenerateGraph)",
           "exclude": [
-             "Services/MicrosoftGraphServiceExtensions.cs",
+            "Services/MicrosoftGraphServiceExtensions.cs",
             "Services/TokenAcquisitionCredentialProvider.cs"
           ]
         }
@@ -244,35 +244,45 @@
       "defaultValue": "false"
     },
     "CalledApiUrl": {
-        "type": "parameter",
-        "datatype": "string",
-        "replaces": "[WebApiUrl]",
-        "defaultValue" : "https://graph.microsoft.com/v1.0",
-        "description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg or --auth IndividualB2C is specified."
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "[WebApiUrl]",
+      "defaultValue": "https://graph.microsoft.com/v1.0",
+      "description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg or --auth IndividualB2C is specified."
     },
     "CallsMicrosoftGraph": {
-        "type": "parameter",
-        "datatype": "bool",
-        "defaultValue": "false",
-        "description": "Specifies if the web app calls Microsoft Graph. This option only applies if --auth SingleOrg is specified."
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Specifies if the web app calls Microsoft Graph. This option only applies if --auth SingleOrg is specified."
     },
     "CalledApiScopes": {
       "type": "parameter",
       "datatype": "string",
-      "replaces" :  "user.read",
+      "replaces": "user.read",
       "description": "Scopes to request to call the API from the web app. This option only applies if --auth SingleOrg or --auth IndividualB2C is specified."
     },
     "GenerateApi": {
-        "type": "computed",
-        "value": "((IndividualB2CAuth || OrganizationalAuth) && (CalledApiUrl != \"https://graph.microsoft.com/v1.0\" || CalledApiScopes != \"user.read\"))"
+      "type": "computed",
+      "value": "((IndividualB2CAuth || OrganizationalAuth) && (CalledApiUrl != \"https://graph.microsoft.com/v1.0\" || CalledApiScopes != \"user.read\"))"
     },
     "GenerateGraph": {
-        "type": "computed",
-        "value": "(OrganizationalAuth && CallsMicrosoftGraph)"
+      "type": "computed",
+      "value": "(OrganizationalAuth && CallsMicrosoftGraph)"
     },
     "GenerateApiOrGraph": {
-        "type": "computed",
-        "value": "(GenerateApi || GenerateGraph)"
+      "type": "computed",
+      "value": "(GenerateApi || GenerateGraph)"
+    },
+    "DisableOpenAPI": {
+      "type": "parameter",
+      "dataType": "bool",
+      "defaultValue": "false",
+      "description": "Disable OpenAPI (Swagger) support"
+    },
+    "EnableOpenAPI": {
+      "type": "computed",
+      "value": "(!DisableOpenAPI)"
     }
   },
   "primaryOutputs": [

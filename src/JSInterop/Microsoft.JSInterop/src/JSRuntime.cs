@@ -74,7 +74,7 @@ namespace Microsoft.JSInterop
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
             => InvokeAsync<TValue>(0, identifier, args);
 
         /// <summary>
@@ -84,14 +84,14 @@ namespace Microsoft.JSInterop
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="cancellationToken">
         /// A cancellation token to signal the cancellation of the operation. Specifying this parameter will override any default cancellations such as due to timeouts
-        /// (<see cref="JSRuntime.DefaultAsyncTimeout"/>) from being applied.
+        /// (<see cref="DefaultAsyncTimeout"/>) from being applied.
         /// </param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
             => InvokeAsync<TValue>(0, identifier, cancellationToken, args);
 
-        internal async ValueTask<TValue> InvokeAsync<TValue>(long targetInstanceId, string identifier, object[] args)
+        internal async ValueTask<TValue> InvokeAsync<TValue>(long targetInstanceId, string identifier, object?[]? args)
         {
             if (DefaultAsyncTimeout.HasValue)
             {
@@ -107,7 +107,7 @@ namespace Microsoft.JSInterop
             long targetInstanceId,
             string identifier,
             CancellationToken cancellationToken,
-            object[] args)
+            object?[]? args)
         {
             var taskId = Interlocked.Increment(ref _nextPendingTaskId);
             var tcs = new TaskCompletionSource<TValue>(TaskContinuationOptions.RunContinuationsAsynchronously);

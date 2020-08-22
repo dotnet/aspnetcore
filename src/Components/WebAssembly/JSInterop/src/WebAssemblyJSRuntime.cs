@@ -11,7 +11,7 @@ namespace Microsoft.JSInterop.WebAssembly
     /// Provides methods for invoking JavaScript functions for applications running
     /// on the Mono WebAssembly runtime.
     /// </summary>
-    public abstract class WebAssemblyJSRuntime : JSInProcessRuntime
+    public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalledRuntime
     {
         /// <inheritdoc />
         protected override string InvokeJS(string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
@@ -60,52 +60,20 @@ namespace Microsoft.JSInterop.WebAssembly
             BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args, JSCallResultType.Default, 0);
         }
 
-        /// <summary>
-        /// Invokes the JavaScript function registered with the specified identifier.
-        /// </summary>
-        /// <typeparam name="TResult">The .NET type corresponding to the function's return value type.</typeparam>
-        /// <param name="identifier">The identifier used when registering the target function.</param>
-        /// <returns>The result of the function invocation.</returns>
-        public TResult InvokeUnmarshalled<TResult>(string identifier)
-            => InvokeUnmarshalled<object, object, object, TResult>(identifier, null, null, null);
+        /// <inheritdoc />
+        TResult IJSUnmarshalledRuntime.InvokeUnmarshalled<TResult>(string identifier)
+            => ((IJSUnmarshalledRuntime)this).InvokeUnmarshalled<object, object, object, TResult>(identifier, null, null, null);
 
-        /// <summary>
-        /// Invokes the JavaScript function registered with the specified identifier.
-        /// </summary>
-        /// <typeparam name="T0">The type of the first argument.</typeparam>
-        /// <typeparam name="TResult">The .NET type corresponding to the function's return value type.</typeparam>
-        /// <param name="identifier">The identifier used when registering the target function.</param>
-        /// <param name="arg0">The first argument.</param>
-        /// <returns>The result of the function invocation.</returns>
-        public TResult InvokeUnmarshalled<T0, TResult>(string identifier, T0 arg0)
-            => InvokeUnmarshalled<T0, object, object, TResult>(identifier, arg0, null, null);
+        /// <inheritdoc />
+        TResult IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, TResult>(string identifier, T0 arg0)
+            => ((IJSUnmarshalledRuntime)this).InvokeUnmarshalled<T0, object, object, TResult>(identifier, arg0, null, null);
 
-        /// <summary>
-        /// Invokes the JavaScript function registered with the specified identifier.
-        /// </summary>
-        /// <typeparam name="T0">The type of the first argument.</typeparam>
-        /// <typeparam name="T1">The type of the second argument.</typeparam>
-        /// <typeparam name="TResult">The .NET type corresponding to the function's return value type.</typeparam>
-        /// <param name="identifier">The identifier used when registering the target function.</param>
-        /// <param name="arg0">The first argument.</param>
-        /// <param name="arg1">The second argument.</param>
-        /// <returns>The result of the function invocation.</returns>
-        public TResult InvokeUnmarshalled<T0, T1, TResult>(string identifier, T0 arg0, T1 arg1)
-            => InvokeUnmarshalled<T0, T1, object, TResult>(identifier, arg0, arg1, null);
+        /// <inheritdoc />
+        TResult IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, T1, TResult>(string identifier, T0 arg0, T1 arg1)
+            => ((IJSUnmarshalledRuntime)this).InvokeUnmarshalled<T0, T1, object, TResult>(identifier, arg0, arg1, null);
 
-        /// <summary>
-        /// Invokes the JavaScript function registered with the specified identifier.
-        /// </summary>
-        /// <typeparam name="T0">The type of the first argument.</typeparam>
-        /// <typeparam name="T1">The type of the second argument.</typeparam>
-        /// <typeparam name="T2">The type of the third argument.</typeparam>
-        /// <typeparam name="TResult">The .NET type corresponding to the function's return value type.</typeparam>
-        /// <param name="identifier">The identifier used when registering the target function.</param>
-        /// <param name="arg0">The first argument.</param>
-        /// <param name="arg1">The second argument.</param>
-        /// <param name="arg2">The third argument.</param>
-        /// <returns>The result of the function invocation.</returns>
-        public TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)
+        /// <inheritdoc />
+        TResult IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)
         {
             var callInfo = new JSCallInfo
             {

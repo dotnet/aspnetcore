@@ -22,7 +22,7 @@ namespace Microsoft.JSInterop
         }
 
         [return: MaybeNull]
-        internal TValue Invoke<TValue>(string identifier, long targetInstanceId, params object[] args)
+        internal TValue Invoke<TValue>(string identifier, long targetInstanceId, params object?[]? args)
         {
             var resultJson = InvokeJS(
                 identifier,
@@ -46,7 +46,7 @@ namespace Microsoft.JSInterop
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
         [return: MaybeNull]
-        public TValue Invoke<TValue>(string identifier, params object[] args)
+        public TValue Invoke<TValue>(string identifier, params object?[]? args)
             => Invoke<TValue>(identifier, 0, args);
 
         /// <summary>

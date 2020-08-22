@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.Authentication.WebAssembly.Msal
 {
@@ -48,5 +49,10 @@ namespace Microsoft.Authentication.WebAssembly.Msal
         /// Gets or sets whether or not to navigate to the login request url after a successful login.
         /// </summary>
         public bool NavigateToLoginRequestUrl { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the set of known authority host names for the application.
+        /// </summary>
+        public IList<string> KnownAuthorities { get; set; } = new List<string>();
     }
 }

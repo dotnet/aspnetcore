@@ -26,6 +26,10 @@ using Microsoft.Extensions.Logging;
 #if (GenerateGraph)
 using Microsoft.Graph;
 #endif
+#if (EnableOpenAPI)
+using Microsoft.OpenApi.Models;
+#endif
+
 namespace Company.WebApplication1
 {
     public class Startup
@@ -71,6 +75,12 @@ namespace Company.WebApplication1
 #endif
 
             services.AddControllers();
+#if (EnableOpenAPI)
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Company.WebApplication1", Version = "v1" });
+            });
+#endif
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -79,12 +89,15 @@ namespace Company.WebApplication1
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                #if (EnableOpenAPI)
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Company.WebApplication1 v1"));
+                #endif
             }
 #if (RequiresHttps)
 
             app.UseHttpsRedirection();
 #endif
-
             app.UseRouting();
 
 #if (OrganizationalAuth || IndividualAuth)

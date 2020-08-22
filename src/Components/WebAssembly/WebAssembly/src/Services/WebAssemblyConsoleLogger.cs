@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
                             _jsRuntime.InvokeVoid("console.error", formattedMessage);
                             break;
                         case LogLevel.Critical:
-                            _jsRuntime.InvokeUnmarshalled<string, object>("Blazor._internal.dotNetCriticalError", formattedMessage);
+                            ((IJSUnmarshalledRuntime)_jsRuntime).InvokeUnmarshalled<string, object>("Blazor._internal.dotNetCriticalError", formattedMessage);
                             break;
                         default: // LogLevel.None or invalid enum values
                             Console.WriteLine(formattedMessage);

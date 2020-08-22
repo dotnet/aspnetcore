@@ -23,6 +23,7 @@
       MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
       SystemNetHttpJsonPackageVersion=$(SystemNetHttpJsonPackageVersion);
       MicrosoftGraphPackageVersion=$(MicrosoftGraphPackageVersion);
+      SwashbuckleAspNetCorePackageVersion=$(SwashbuckleAspNetCorePackageVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 
