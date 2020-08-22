@@ -29,7 +29,6 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Reference Include="System.Security.Principal.Windows" />
-    <SuppressBaselineReference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)'">

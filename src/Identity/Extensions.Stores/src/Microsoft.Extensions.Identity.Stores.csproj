@@ -13,7 +13,6 @@
     <Reference Include="Microsoft.Extensions.Caching.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Extensions.Identity.Core" />
-    <SuppressBaselineReference Include="System.ComponentModel.Annotations" />
   </ItemGroup>
 
 </Project>

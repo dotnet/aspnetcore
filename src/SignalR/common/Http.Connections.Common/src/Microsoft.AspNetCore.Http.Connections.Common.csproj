@@ -23,12 +23,4 @@
     <Reference Include="System.Text.Json" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(AspNetCoreMajorMinorVersion)' == '5.0'">
-    <!-- This dependency was replaced by System.Text.Json between 3.0 and 2.2. This suppression can be removed after 3.0 is complete. -->
-    <SuppressBaselineReference Include="Newtonsoft.Json" />
-
-    <!-- System.Text.Json (for .NET Standard 2.0) and ShardFx bring System.Buffers in (transitively). No need for both here. -->
-    <SuppressBaselineReference Include="System.Buffers" />
-  </ItemGroup>
-
 </Project>
