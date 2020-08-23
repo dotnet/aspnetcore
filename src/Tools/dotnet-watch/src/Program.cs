@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Watcher.Internal;
@@ -38,6 +39,11 @@ namespace Microsoft.DotNet.Watcher
                 DebugHelper.HandleDebugSwitch(ref args);
                 using (var program = new Program(PhysicalConsole.Singleton, Directory.GetCurrentDirectory()))
                 {
+                    //checks if there is "run" in the args if NOT append a run as the last argument
+                    if (!args.Contains("run") && !args.Contains("test"))
+                    {
+                        args = args.Concat(new[] {"run"}).ToArray();
+                    }
                     return await program.RunAsync(args);
                 }
             }
