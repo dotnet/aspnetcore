@@ -87,7 +87,6 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     ldapOptions.LdapConnection.Timeout = TimeSpan.FromMinutes(1);
                 }
 
-                // TODO: trigger on startup
                 ldapOptions.LdapConnection.Bind(); // This line actually makes the connection.
             }
         }

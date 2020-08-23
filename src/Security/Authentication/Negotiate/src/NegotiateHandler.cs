@@ -330,7 +330,13 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 Principal = user
             };
 
-            // TODO: persist results
+            await Events.RetrieveLdapClaims(authenticatedContext);
+
+            if (authenticatedContext.Result != null)
+            {
+                return authenticatedContext.Result;
+            }
+
             await LdapAdapter.RetrieveClaimsAsync(Options.LdapOptions, authenticatedContext.Principal.Identity as ClaimsIdentity, Logger);
 
             await Events.Authenticated(authenticatedContext);
