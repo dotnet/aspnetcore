@@ -6,12 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Connections
+namespace Microsoft.AspNetCore.Connections.Experimental
 {
     /// <summary>
     /// Encapsulates all information about a multiplexed connection.
     /// </summary>
-    public abstract class MultiplexedConnectionContext : BaseConnectionContext, IAsyncDisposable
+    internal abstract class MultiplexedConnectionContext : BaseConnectionContext, IAsyncDisposable
     {
         /// <summary>
         /// Asynchronously accept an incoming stream on the connection.

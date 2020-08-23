@@ -136,7 +136,7 @@ namespace Microsoft.JSInterop.Infrastructure
             Type[] parameterTypes;
             if (objectReference is null)
             {
-                assemblyKey = new AssemblyKey(assemblyName);
+                assemblyKey = new AssemblyKey(assemblyName!);
                 (methodInfo, parameterTypes) = GetCachedMethodInfo(assemblyKey, methodIdentifier);
             }
             else

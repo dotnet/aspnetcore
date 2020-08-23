@@ -32,5 +32,10 @@ namespace Microsoft.AspNetCore.SignalR
         public long? MaximumReceiveMessageSize { get; set; }
 
         internal ISystemClock SystemClock { get; set; } = default!;
+
+        /// <summary>
+        /// Gets or sets the maximum parallel hub method invocations.
+        /// </summary>
+        public int MaximumParallelInvocations { get; set; } = 1;
     }
 }
