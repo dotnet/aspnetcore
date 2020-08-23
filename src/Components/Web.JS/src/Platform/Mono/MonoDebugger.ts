@@ -1,19 +1,32 @@
 import { WebAssemblyResourceLoader } from '../WebAssemblyResourceLoader';
 
+const BLAZOR_DEBUG_FLAG = '_blazor_debug';
+
 const currentBrowserIsChrome = (window as any).chrome
   && navigator.userAgent.indexOf('Edge') < 0; // Edge pretends to be Chrome
 
-let isDebugging = true;
+let isDebugging = sessionStorage.getItem(BLAZOR_DEBUG_FLAG);
 
 window.addEventListener('load', () => {
   const params = new URLSearchParams(window.location.search);
-  isDebugging = params.get('_blazor_debug') === 'true';
+  const isDebuggingParam = params.get(BLAZOR_DEBUG_FLAG);
+  // (1) Value from query param then (2) value in session storage then (3) default to true
+  isDebugging = isDebuggingParam !== null ? isDebuggingParam : isDebugging || 'true';
+  sessionStorage.setItem(BLAZOR_DEBUG_FLAG, isDebugging);
+
+  // Remove flag from URL if it was provided
+  if (isDebuggingParam !== null) {
+    params.delete(BLAZOR_DEBUG_FLAG);
+    const redirectParmas = params.toString() != "" ? `?${params.toString()}` : '';
+    const redirectUrl = `${window.location.origin}${window.location.pathname}${redirectParmas}`;
+    history.pushState(/*Data not needed*/ null, /*Title not needed*/ '', redirectUrl);
+  }
 })
 
 let hasReferencedPdbs = false;
 
 export function hasDebuggingEnabled() {
-  return isDebugging && hasReferencedPdbs && currentBrowserIsChrome;
+  return isDebugging == 'true' && hasReferencedPdbs && currentBrowserIsChrome;
 }
 
 export function attachDebuggerHotkey(resourceLoader: WebAssemblyResourceLoader) {
