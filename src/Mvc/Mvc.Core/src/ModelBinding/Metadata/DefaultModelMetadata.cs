@@ -468,6 +468,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
         }
 
+        internal override bool PropertyHasValidators => ValidationMetadata.PropertyHasValidators;
+
         internal static bool CalculateHasValidators(HashSet<DefaultModelMetadata> visited, ModelMetadata metadata)
         {
             RuntimeHelpers.EnsureSufficientExecutionStack();
