@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 var typeName = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetTypeName, id, null, null);
                 var serializedParameterDefinitions = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetParameterDefinitions, id, null, null);
                 var serializedParameterValues = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetParameterValues, id, null, null);
-                registeredComponents[i] = new ClientComponentMarker(id, assembly, typeName, serializedParameterDefinitions, serializedParameterValues);
+                registeredComponents[i] = new ClientComponentMarker(ClientComponentMarker.ClientMarkerType, assembly, typeName, serializedParameterDefinitions, serializedParameterValues, id.ToString());
             }
 
             var componentDeserializer = ClientComponentParameterDeserializer.Instance;
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                     throw new InvalidOperationException("Failed to parse parameters.");
                 }
 
-                RootComponents.Add(componentType, registeredComponent.Id.ToString(), parameters);
+                RootComponents.Add(componentType, registeredComponent.ToString(), parameters);
             }
         }
 
