@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// to get a single value for processing regardless of whether a single or multiple values were provided
         /// in the request.
         /// </summary>
-        public string FirstValue
+        public string? FirstValue
         {
             get
             {
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public int Length => Values.Count;
 
         /// <inheritdoc />
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             var other = obj as ValueProviderResult?;
             return other.HasValue && Equals(other.Value);

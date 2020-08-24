@@ -1,8 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using Microsoft.DotNet.Watcher.Internal;
 
 namespace Microsoft.DotNet.Watcher
@@ -19,5 +21,9 @@ namespace Microsoft.DotNet.Watcher
             => Path.GetFileNameWithoutExtension(Executable);
 
         public bool IsOutputCaptured => OutputCapture != null;
+
+        public DataReceivedEventHandler OnOutput { get; set; }
+
+        public CancellationToken CancelOutputCapture { get; set; }
     }
 }

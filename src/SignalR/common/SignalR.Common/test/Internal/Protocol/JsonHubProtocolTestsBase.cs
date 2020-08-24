@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -310,8 +311,35 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 IntProp = 43,
                 DoubleProp = 3.14159,
                 StringProp = "test",
-                DateTimeProp = DateTime.Parse("6/3/2019 10:00:00 PM")
+                DateTimeProp = DateTime.Parse("6/3/2019 10:00:00 PM", CultureInfo.InvariantCulture)
             }, streamItemMessage.Item);
+        }
+
+        [Fact]
+        public void DefaultValuesAreWrittenByDefault()
+        {
+            var obj = new CustomObject()
+            {
+                ByteArrProp = new byte[] { 2, 4, 6 },
+                IntProp = default,
+                DoubleProp = 1.1,
+                StringProp = "test",
+                DateTimeProp = default
+            };
+            var expectedOutput = Frame("{\"type\":1,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[{\"stringProp\":\"test\",\"doubleProp\":1.1,\"intProp\":0,\"dateTimeProp\":\"0001-01-01T00:00:00\",\"nullProp\":null,\"byteArrProp\":\"AgQG\"}]}");
+
+            var writer = MemoryBufferWriter.Get();
+            try
+            {
+                JsonHubProtocol.WriteMessage(new InvocationMessage("123", "Target", new object[] { obj }), writer);
+                var json = Encoding.UTF8.GetString(writer.ToArray());
+
+                Assert.Equal(expectedOutput, json);
+            }
+            finally
+            {
+                MemoryBufferWriter.Return(writer);
+            }
         }
 
         public static IDictionary<string, MessageSizeTestData> MessageSizeData => new[]

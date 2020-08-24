@@ -191,7 +191,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             var transportContext = new TestLibuvTransportContext
             {
+#pragma warning disable CS0618
                 Options = new LibuvTransportOptions { ThreadCount = threadCount }
+#pragma warning restore CS0618
             };
 
             await using var transport = new LibuvConnectionListener(transportContext, listenOptions.EndPoint);

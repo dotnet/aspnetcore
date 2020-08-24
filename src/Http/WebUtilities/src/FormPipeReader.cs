@@ -34,8 +34,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         private static ReadOnlySpan<byte> UTF8AndEncoded => new byte[] { (byte)'&' };
 
         // Used for other encodings
-        private byte[] _otherEqualEncoding;
-        private byte[] _otherAndEncoding;
+        private byte[]? _otherEqualEncoding;
+        private byte[]? _otherAndEncoding;
 
         private readonly PipeReader _pipeReader;
         private readonly Encoding _encoding;
@@ -47,8 +47,10 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public FormPipeReader(PipeReader pipeReader, Encoding encoding)
         {
+#pragma warning disable CS0618, SYSLIB0001 // Type or member is obsolete
             if (encoding == Encoding.UTF7)
             {
+#pragma warning restore CS0618, SYSLIB0001 // Type or member is obsolete
                 throw new ArgumentException("UTF7 is unsupported and insecure. Please select a different encoding.");
             }
 
@@ -269,7 +271,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 var keyValueReader = new SequenceReader<byte>(keyValuePair);
                 ReadOnlySequence<byte> value;
 
-                if (keyValueReader.TryReadTo(out var key, equalsDelimiter))
+                if (keyValueReader.TryReadTo(out ReadOnlySequence<byte> key, equalsDelimiter))
                 {
                     if (key.Length > KeyLengthLimit)
                     {

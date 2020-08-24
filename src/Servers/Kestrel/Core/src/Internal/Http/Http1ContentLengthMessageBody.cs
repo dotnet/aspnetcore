@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     {
         private ReadResult _readResult;
         private readonly long _contentLength;
-        private long _inputLength;
+        private long _unexaminedInputLength;
         private bool _readCompleted;
         private bool _isReading;
         private int _userCanceled;
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             RequestKeepAlive = keepAlive;
             _contentLength = contentLength;
-            _inputLength = _contentLength;
+            _unexaminedInputLength = _contentLength;
         }
 
         public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private long CreateReadResultFromConnectionReadResult()
         {
             var initialLength = _readResult.Buffer.Length;
-            var maxLength = _inputLength + _examinedUnconsumedBytes;
+            var maxLength = _unexaminedInputLength + _examinedUnconsumedBytes;
 
             if (initialLength < maxLength)
             {
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return;
             }
 
-            _inputLength -= OnAdvance(_readResult, consumed, examined);
+            _unexaminedInputLength -= TrackConsumedAndExaminedBytes(_readResult, consumed, examined);
             _context.Input.AdvanceTo(consumed, examined);
         }
 

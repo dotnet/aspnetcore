@@ -247,7 +247,7 @@ namespace RunTests
             {
                 // Timeout test run 5 minutes before the Helix job would timeout
                 var cts = new CancellationTokenSource(Options.Timeout.Subtract(TimeSpan.FromMinutes(5)));
-                var commonTestArgs = $"vstest {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame";
+                var commonTestArgs = $"test {Options.Target} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=5m\"";                
                 if (Options.Quarantined)
                 {
                     Console.WriteLine("Running quarantined tests.");
@@ -272,7 +272,7 @@ namespace RunTests
 
                     // Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
                     var result = await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                        commonTestArgs + " --TestCaseFilter:\"Quarantined!=true\"",
+                        commonTestArgs + " --TestCaseFilter:\"Quarantined!=true|Quarantined=false\"",
                         environmentVariables: EnvironmentVariables,
                         outputDataReceived: Console.WriteLine,
                         errorDataReceived: Console.Error.WriteLine,
@@ -309,6 +309,11 @@ namespace RunTests
             }
 
             var HELIX_WORKITEM_UPLOAD_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
+            if (string.IsNullOrEmpty(HELIX_WORKITEM_UPLOAD_ROOT))
+            {
+                Console.WriteLine("No HELIX_WORKITEM_UPLOAD_ROOT specified, skipping log copy");
+                return;
+            }
             Console.WriteLine($"Copying artifacts/log/ to {HELIX_WORKITEM_UPLOAD_ROOT}/");
             if (Directory.Exists("artifacts/log"))
             {
@@ -326,6 +331,22 @@ namespace RunTests
             {
                 Console.WriteLine("No logs found in artifacts/log");
             }
+            Console.WriteLine($"Copying TestResults/**/*.dmp to {HELIX_WORKITEM_UPLOAD_ROOT}/");
+            if (Directory.Exists("TestResults"))
+            {
+                foreach (var file in Directory.EnumerateFiles("TestResults", "*.dmp", SearchOption.AllDirectories))
+                {
+                    var fileName = Path.GetFileName(file);
+                    Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName)}");
+                    // Need to copy to HELIX_WORKITEM_UPLOAD_ROOT and HELIX_WORKITEM_UPLOAD_ROOT/../ in order for Azure Devops attachments to link properly and for Helix to store the logs
+                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName));
+                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "..", fileName));
+                }
+            }
+            else
+            {
+                Console.WriteLine("No dmps found in TestResults");
+            }            
         }
     }
 }

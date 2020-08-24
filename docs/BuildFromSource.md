@@ -4,6 +4,22 @@ Building ASP.NET Core from source allows you to tweak and customize ASP.NET Core
 
 See <https://github.com/dotnet/aspnetcore/labels/area-infrastructure> for known issues and to track ongoing work.
 
+## Clone the source code
+
+ASP.NET Core uses git submodules to include the source from a few other projects.
+
+For a new copy of the project, run:
+
+```ps1
+git clone --recursive https://github.com/dotnet/aspnetcore
+```
+
+To update an existing copy, run:
+
+```ps1
+git submodule update --init --recursive
+```
+
 ## Install pre-requisites
 
 ### Windows
@@ -22,7 +38,8 @@ Building ASP.NET Core on Windows requires:
     However, any Visual Studio 2019 instance that meets the requirements should be fine. See [global.json](/global.json)
     and [eng/scripts/vs.json](/eng/scripts/vs.json) for those requirements. By default, the script will install Visual Studio Enterprise Edition, however you can use a different edition by passing the `-Edition` flag.
 * Git. <https://git-scm.org>
-* NodeJS. LTS version of 10.14.2 or newer <https://nodejs.org>
+* NodeJS. LTS version of 10.14.2 or newer <https://nodejs.org>.
+* Install yarn globally (`npm install -g yarn`)
 * Java Development Kit 11 or newer. Either:
   * OpenJDK <https://jdk.java.net/>
   * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
@@ -52,25 +69,11 @@ Building ASP.NET Core on macOS or Linux requires:
   * OpenJDK <https://jdk.java.net/>
   * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
 
-## Clone the source code
-
-ASP.NET Core uses git submodules to include the source from a few other projects.
-
-For a new copy of the project, run:
-
-```ps1
-git clone --recursive https://github.com/dotnet/aspnetcore
-```
-
-To update an existing copy, run:
-
-```ps1
-git submodule update --init --recursive
-```
+**NOTE** some ISPs have been know to use web filtering software that has caused issues with git repository cloning, if you experience issues cloning this repo please review <https://help.github.com/en/github/authenticating-to-github/using-ssh-over-the-https-port>
 
 ## Building in Visual Studio
 
-Before opening our .sln files in Visual Studio or VS Code, you need to perform the following actions.
+Before opening our .sln/.slnf files in Visual Studio or VS Code, you need to perform the following actions.
 
 1. Executing the following on command-line:
 
@@ -78,40 +81,47 @@ Before opening our .sln files in Visual Studio or VS Code, you need to perform t
    .\restore.cmd
    ```
 
-   This will download the required tools and build the entire repository once. At that point, you should be able to open .sln files to work on the projects you care about.
+   This will download the required tools and build the entire repository once. At that point, you should be able
+   to open the .sln file or one of the project specific .slnf files to work on the projects you care about.
 
-   > :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the master branch, we regularly update the versions of .NET Core SDK required to build the repo.
+   > :bulb: Pro tip: you will also want to run this command after pulling large sets of changes. On the master
+   > branch, we regularly update the versions of .NET Core SDK required to build the repo.
    > You will need to restart Visual Studio every time we update the .NET Core SDK.
+   > To allow executing the setup script, you may need to update the execution policy on your machine.
+   You can do so by running the `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` command
+   in PowerShell. For more information on execution policies, you can read the [execution policy docs](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy).
 
-2. Use the `startvs.cmd` script to open Visual Studio .sln files. This script first sets the required environment variables.
+2. Use the `startvs.cmd` script to open Visual Studio .sln/.slnf files. This script first sets the required
+environment variables.
 
 ### Solution files
 
-We don't have a single .sln file for all of ASP.NET Core because Visual Studio doesn't currently handle projects of this scale.
-Instead, we have many .sln files which include a sub-set of projects. These principles guide how we create and manage .sln files:
+We have a single .sln file for all of ASP.NET Core, but most people don't work with it directly because Visual Studio
+doesn't currently handle projects of this scale very well.
+
+Instead, we have many Solution Filter (.slnf) files which include a sub-set of projects. See the Visual Studio
+documentation [here](https://docs.microsoft.com/en-us/visualstudio/ide/filtered-solutions?view=vs-2019) for more
+information about Solution Filters.
+
+These principles guide how we create and manage .slnf files:
 
 1. Solution files are not used by CI or command line build scripts. They are meant for use by developers only.
 2. Solution files group together projects which are frequently edited at the same time.
-3. Can't find a solution that has the projects you care about? Feel free to make a PR to add a new .sln file.
-
-> :bulb: Pro tip: `dotnet new sln` and `dotnet sln` are one of the easiest ways to create and modify solutions.
+3. Can't find a solution that has the projects you care about? Feel free to make a PR to add a new .slnf file.
 
 ### Common error: CS0006
 
-Opening solution files and building may produce an error code CS0006 with a message such
+Opening solution filters and building may produce an error code CS0006 with a message such
 
 > Error CS0006 Metadata file 'C:\src\aspnet\AspNetCore\artifacts\bin\Microsoft.AspNetCore.Metadata\Debug\netstandard2.0\Microsoft.AspNetCore.Metadata.dll' could not be found
 
-The cause of this problem is that the solution you are using does not include the project that produces this .dll. This most often occurs after we have added new projects to the repo, but failed to update our .sln files to include the new project. In some cases, it is sometimes the intended behavior of the .sln which has been crafted to only include a subset of projects.
+The cause of this problem is that the solution filter you are using does not include the project that produces this .dll. This most often occurs after we have added new projects to the repo, but failed to update our .sln/slnf files to include the new project. In some cases, it is sometimes the intended behavior of the .slnf which has been crafted to only include a subset of projects.
 
-#### You can fix this in one of two ways
+#### You can fix this in one of three ways
 
 1. Build the project on command line. In most cases, running `build.cmd` on command line solves this problem.
-2. Update the solution to include the missing project. You can either do this one by one using `dotnet sln`
-
-   ```ps1
-   dotnet sln add C:\src\AspNetCore\src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj
-   ```
+2. If the project is missing from the .sln file entirely, you can use `dotnet sln add` to add it, or else right click on the solution/folder in Visual Studio and choose Add->Existing Project, and adding it.
+3. If it is present in the .sln, but not the .slnf, you can update the solution filter to include the missing project. You can either do this one by right-clicking on project in Visual Studio and choosing to load it's direct dependencies, and then saving.  Alternatively, you can hand edit the .slnf file - it's a fairly simple json format.
 
 ### Common error: Unable to locate the .NET Core SDK
 
@@ -121,6 +131,18 @@ Executing `.\restore.cmd` or `.\build.cmd` may produce these errors:
 > error MSB4236: The SDK 'Microsoft.NET.Sdk' specified could not be found.
 
 In most cases, this is because the option _Use previews of the .NET Core SDK_ in VS2019 is not checked. Start Visual Studio, go to _Tools > Options_ and check _Use previews of the .NET Core SDK_ under _Environment > Preview Features_.
+
+### Common error: HTTP Error 500.33 - ANCM Request Handler Load Failure
+
+The [ASP.NET Core Module](https://docs.microsoft.com/en-us/aspnet/core/host-and-deploy/aspnet-core-module) (ANCM) for IIS is not supported when running projects in this repository.
+
+After using `startvs.cmd` to open a solution in Visual Studio, the Kestrel web host option must be used (name of the project) and not IIS Express.
+
+Example of running the `MvcSandbox` project:
+
+`.\startvs.cmd .\src\Mvc\Mvc.sln`
+
+![Web host options in Visual Studio](./vs-iis-express-aspnet-core-mvc-sandbox.jpg)
 
 ## Building with Visual Studio Code
 
@@ -212,7 +234,7 @@ Furthermore, you can use flags on `build.cmd`/`.sh` to build subsets based on la
 Additional properties can be added as an argument in the form `/property:$name=$value`, or `/p:$name=$value` for short. For example:
 
 ```ps1
-.\build.cmd /p:Configuration=Release
+.\build.cmd -Configuration Release
 ```
 
 Common properties include:
@@ -227,6 +249,16 @@ TargetOsName             | The base runtime identifier to build for (win, linux,
 
 After building ASP.NET Core from source, you will need to install and use your local version of ASP.NET Core.
 See ["Artifacts"](./Artifacts.md) for more explanation of the different folders produced by a build.
+
+Building installers does not run as part of `build.cmd` run without parameters, so you should opt-in for building them:
+
+```ps1
+.\build.cmd -all -pack -arch x64
+.\build.cmd -all -pack -arch x86 -noBuildJava
+.\build.cmd -buildInstallers
+```
+
+*Note*: Additional build steps listed above aren't necessary on Linux or macOS.
 
 * Run the installers produced in `artifacts/installers/{Debug, Release}/` for your platform.
 * Add a NuGet.Config to your project directory with the following content:

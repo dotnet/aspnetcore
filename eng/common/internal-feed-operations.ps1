@@ -63,6 +63,7 @@ function SetupCredProvider {
   }
 
   if (($endpoints | Measure-Object).Count -gt 0) {
+      # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Endpoint code example with no real credentials.")]
       # Create the JSON object. It should look like '{"endpointCredentials": [{"endpoint":"http://example.index.json", "username":"optional", "password":"accesstoken"}]}'
       $endpointCredentials = @{endpointCredentials=$endpoints} | ConvertTo-Json -Compress
 

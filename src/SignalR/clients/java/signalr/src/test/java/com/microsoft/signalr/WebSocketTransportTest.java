@@ -5,6 +5,7 @@ package com.microsoft.signalr;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -16,13 +17,6 @@ import io.reactivex.Completable;
 import io.reactivex.Single;
 
 class WebSocketTransportTest {
-    // @Test Skipping until we add functional test support
-    public void WebSocketThrowsIfItCantConnect() {
-        Transport transport = new WebSocketTransport(new HashMap<>(), new DefaultHttpClient());
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> transport.start("http://url.fake.example").blockingAwait(1, TimeUnit.SECONDS));
-        assertEquals("There was an error starting the WebSocket transport.", exception.getMessage());
-    }
-
     @Test
     public void CanPassNullExitCodeToOnClosed() {
         WebSocketTransport transport = new WebSocketTransport(new HashMap<>(), new WebSocketTestHttpClient());
@@ -42,7 +36,7 @@ class WebSocketTransportTest {
         }
 
         @Override
-        public Single<HttpResponse> send(HttpRequest request, String body) {
+        public Single<HttpResponse> send(HttpRequest request, ByteBuffer body) {
             return null;
         }
 
@@ -78,7 +72,7 @@ class WebSocketTransportTest {
         }
 
         @Override
-        public Completable send(String message) {
+        public Completable send(ByteBuffer message) {
             return null;
         }
 

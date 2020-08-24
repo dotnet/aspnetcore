@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,11 +18,16 @@ namespace InteropTests.Helpers
         private readonly ProcessEx _processEx;
         private readonly TaskCompletionSource<object> _startTcs;
         private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: .*:(?<port>\d*)$");
+        private readonly StringBuilder _output;
+        private readonly object _outputLock = new object();
 
         public string ServerPort { get; private set; }
+        public bool IsReady => _startTcs.Task.IsCompletedSuccessfully;
 
         public WebsiteProcess(string path, ITestOutputHelper output)
         {
+            _output = new StringBuilder();
+
             _process = new Process();
             _process.StartInfo = new ProcessStartInfo
             {
@@ -32,11 +38,20 @@ namespace InteropTests.Helpers
             };
             _process.EnableRaisingEvents = true;
             _process.OutputDataReceived += Process_OutputDataReceived;
+            _process.ErrorDataReceived += Process_ErrorDataReceived;
             _process.Start();
 
             _processEx = new ProcessEx(output, _process, Timeout.InfiniteTimeSpan);
 
             _startTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+
+        public string GetOutput()
+        {
+            lock (_outputLock)
+            {
+                return _output.ToString();
+            }
         }
 
         public Task WaitForReady()
@@ -63,6 +78,23 @@ namespace InteropTests.Helpers
                 if (data.Contains("Application started. Press Ctrl+C to shut down."))
                 {
                     _startTcs.TrySetResult(null);
+                }
+
+                lock (_outputLock)
+                {
+                    _output.AppendLine(data);
+                }
+            }
+        }
+
+        private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            var data = e.Data;
+            if (data != null)
+            {
+                lock (_outputLock)
+                {
+                    _output.AppendLine("ERROR: " + data);
                 }
             }
         }

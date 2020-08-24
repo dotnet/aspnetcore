@@ -111,6 +111,7 @@
       <AdditionalIncludeDirectories>$(GoogleTestSubmoduleRoot)googletest\include;$(GoogleTestSubmoduleRoot)googletest;$(GoogleTestSubmoduleRoot)googlemock;$(GoogleTestSubmoduleRoot)googlemock\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -128,6 +129,7 @@
       <AdditionalIncludeDirectories>$(GoogleTestSubmoduleRoot)googletest\include;$(GoogleTestSubmoduleRoot)googletest;$(GoogleTestSubmoduleRoot)googlemock;$(GoogleTestSubmoduleRoot)googlemock\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

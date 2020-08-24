@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -21,8 +22,8 @@ namespace Microsoft.AspNetCore.Routing
     public sealed class CompositeEndpointDataSource : EndpointDataSource
     {
         private readonly object _lock;
-        private readonly ICollection<EndpointDataSource> _dataSources;
-        private IReadOnlyList<Endpoint> _endpoints;
+        private readonly ICollection<EndpointDataSource> _dataSources = default!;
+        private IReadOnlyList<Endpoint> _endpoints = default!;
         private IChangeToken _consumerChangeToken;
         private CancellationTokenSource _cts;
 
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-        private void OnDataSourcesChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void OnDataSourcesChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             lock (_lock)
             {
@@ -140,6 +141,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
+        [MemberNotNull(nameof(_cts), nameof(_consumerChangeToken))]
         private void CreateChangeToken()
         {
             _cts = new CancellationTokenSource();
@@ -198,7 +200,7 @@ namespace Microsoft.AspNetCore.Routing
                 }
                 return sb.ToString();
 
-                IEnumerable<string> FormatValues(IEnumerable<KeyValuePair<string, object>> values)
+                IEnumerable<string> FormatValues(IEnumerable<KeyValuePair<string, object?>> values)
                 {
                     return values.Select(
                         kvp =>

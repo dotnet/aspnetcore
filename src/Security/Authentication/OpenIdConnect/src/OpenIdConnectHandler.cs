@@ -375,8 +375,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 // Store this for use during the code redemption. See RunAuthorizationCodeReceivedEventAsync.
                 properties.Items.Add(OAuthConstants.CodeVerifierKey, codeVerifier);
 
-                using var sha256 = SHA256.Create();
-                var challengeBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(codeVerifier));
+                var challengeBytes = SHA256.HashData(Encoding.UTF8.GetBytes(codeVerifier));
                 var codeChallenge = WebEncoders.Base64UrlEncode(challengeBytes);
 
                 message.Parameters.Add(OAuthConstants.CodeChallengeKey, codeChallenge);

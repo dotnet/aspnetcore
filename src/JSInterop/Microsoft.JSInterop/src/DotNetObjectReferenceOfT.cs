@@ -18,7 +18,7 @@ namespace Microsoft.JSInterop
     {
         private readonly TValue _value;
         private long _objectId;
-        private JSRuntime _jsRuntime;
+        private JSRuntime? _jsRuntime;
 
         /// <summary>
         /// Initializes a new instance of <see cref="DotNetObjectReference{TValue}" />.
@@ -57,7 +57,7 @@ namespace Microsoft.JSInterop
             }
         }
 
-        internal JSRuntime JSRuntime
+        internal JSRuntime? JSRuntime
         {
             get
             {

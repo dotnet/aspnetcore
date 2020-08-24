@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
         public ShutdownTests(ITestOutputHelper output) : base(output) { }
 
         [ConditionalFact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23610")]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ShutdownTestRun()

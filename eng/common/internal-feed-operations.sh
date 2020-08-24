@@ -62,6 +62,7 @@ function SetupCredProvider {
   endpoints+=']'
 
   if [ ${#endpoints} -gt 2 ]; then 
+      # [SuppressMessage("Microsoft.Security", "CS002:SecretInNextLine", Justification="Endpoint code example with no real credentials.")]
       # Create the JSON object. It should look like '{"endpointCredentials": [{"endpoint":"http://example.index.json", "username":"optional", "password":"accesstoken"}]}'
       local endpointCredentials="{\"endpointCredentials\": "$endpoints"}"
 

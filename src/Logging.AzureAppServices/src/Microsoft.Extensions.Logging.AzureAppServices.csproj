@@ -4,7 +4,6 @@
     <Description>Logger implementation to support Azure App Services 'Diagnostics logs' and 'Log stream' features.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
   </PropertyGroup>
 

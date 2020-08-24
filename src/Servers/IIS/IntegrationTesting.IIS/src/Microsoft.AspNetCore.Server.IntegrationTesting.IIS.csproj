@@ -13,7 +13,6 @@
     <!-- This is used as a package by aspnet benchmarking infrastructure. It is meant for internal-use only. -->
     <IsPackable>true</IsPackable>
     <IsShippingPackage>false</IsShippingPackage>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
     <!--
       The assembly 'contentFiles\any\any\x64\aspnetcorev2.dll' is intentionally
       not inside the 'lib' folder and hence it won't be added as a reference when
@@ -29,7 +28,7 @@
     <EmbeddedResource Include="Http.config" />
   </ItemGroup>
 
-  <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" Condition="'$(BuildIisNativeProjects)' == 'true'">
+  <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" Condition="'$(BuildIisNativeProjects)' == 'true' and '$(SkipTestBuild)' != 'true'">
     <Error Text="Required dll from ANCM has not been built. To build ANCM, you must use MSBuild.exe."
           Condition="!Exists('$(AspNetCoreModuleV2ShimDll)') OR !Exists('$(AspNetCoreModuleV2OutOfProcessHandlerDll)')" />
   </Target>

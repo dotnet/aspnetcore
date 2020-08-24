@@ -49,10 +49,15 @@ namespace Microsoft.AspNetCore.Internal
 
             _exited = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
+            // We greedily create a timeout exception message even though a timeout is unlikely to happen for two reasons:
+            // 1. To make it less likely for Process getters to throw exceptions like "System.InvalidOperationException: Process has exited, ..."
+            // 2. To ensure if/when exceptions are thrown from Process getters, these exceptions can easily be observed.
+            var timeoutExMessage = $"Process proc {proc.ProcessName} {proc.StartInfo.Arguments} timed out after {DefaultProcessTimeout}.";
+
             _processTimeoutCts = new CancellationTokenSource(timeout);
             _processTimeoutCts.Token.Register(() =>
             {
-                _exited.TrySetException(new TimeoutException($"Process proc {proc.ProcessName} {proc.StartInfo.Arguments} timed out after {DefaultProcessTimeout}."));
+                _exited.TrySetException(new TimeoutException(timeoutExMessage));
             });
         }
 
@@ -197,7 +202,11 @@ namespace Microsoft.AspNetCore.Internal
             var exited = Exited.Wait(timeSpan.Value);
             if (!exited)
             {
-                _output.WriteLine($"The process didn't exit within the allotted time ({timeSpan.Value.TotalSeconds} seconds).");
+                lock (_testOutputLock)
+                {
+                    _output.WriteLine($"The process didn't exit within the allotted time ({timeSpan.Value.TotalSeconds} seconds).");
+                }
+
                 _process.Dispose();
             }
             else if (assertSuccess && _process.ExitCode != 0)
@@ -209,8 +218,8 @@ namespace Microsoft.AspNetCore.Internal
         private static string GetNugetPackagesRestorePath() => (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("NUGET_RESTORE")))
             ? typeof(ProcessEx).Assembly
                 .GetCustomAttributes<AssemblyMetadataAttribute>()
-                .First(attribute => attribute.Key == "TestPackageRestorePath")
-                .Value
+                .FirstOrDefault(attribute => attribute.Key == "TestPackageRestorePath")
+                ?.Value
             : Environment.GetEnvironmentVariable("NUGET_RESTORE");
 
         public void Dispose()
@@ -227,13 +236,16 @@ namespace Microsoft.AspNetCore.Internal
                 _process.KillTree();
             }
 
-            _process.CancelOutputRead();
-            _process.CancelErrorRead();
+            if (_process != null)
+            {
+                _process.CancelOutputRead();
+                _process.CancelErrorRead();
 
-            _process.ErrorDataReceived -= OnErrorData;
-            _process.OutputDataReceived -= OnOutputData;
-            _process.Exited -= OnProcessExited;
-            _process.Dispose();
+                _process.ErrorDataReceived -= OnErrorData;
+                _process.OutputDataReceived -= OnOutputData;
+                _process.Exited -= OnProcessExited;
+                _process.Dispose();
+            }
         }
     }
 }

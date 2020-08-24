@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
 using System.Text;
@@ -9,23 +8,22 @@ namespace System.Net.Http.HPack
 {
     internal static class H2StaticTable
     {
-        // Index of status code into s_staticDecoderTable
-        private static readonly Dictionary<int, int> s_statusIndex = new Dictionary<int, int>
-        {
-            [200] = 8,
-            [204] = 9,
-            [206] = 10,
-            [304] = 11,
-            [400] = 12,
-            [404] = 13,
-            [500] = 14,
-        };
-
         public static int Count => s_staticDecoderTable.Length;
 
-        public static HeaderField Get(int index) => s_staticDecoderTable[index];
+        public static ref readonly HeaderField Get(int index) => ref s_staticDecoderTable[index];
 
-        public static IReadOnlyDictionary<int, int> StatusIndex => s_statusIndex;
+        public static int GetStatusIndex(int status) =>
+            status switch
+            {
+                200 => 8,
+                204 => 9,
+                206 => 10,
+                304 => 11,
+                400 => 12,
+                404 => 13,
+                500 => 14,
+                _ => throw new ArgumentOutOfRangeException()
+            };
 
         private static readonly HeaderField[] s_staticDecoderTable = new HeaderField[]
         {

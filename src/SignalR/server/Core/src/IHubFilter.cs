@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#nullable enable
-
 using System;
 using System.Threading.Tasks;
 
@@ -19,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="invocationContext">The context for the method invocation that holds all the important information about the invoke.</param>
         /// <param name="next">The next filter to run, and for the final one, the Hub invocation.</param>
         /// <returns>Returns the result of the Hub method invoke.</returns>
-        ValueTask<object> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object>> next);
+        ValueTask<object?> InvokeMethodAsync(HubInvocationContext invocationContext, Func<HubInvocationContext, ValueTask<object?>> next) => next(invocationContext);
 
         /// <summary>
         /// Allows handling of the <see cref="Hub.OnConnectedAsync"/> method.
@@ -36,6 +34,6 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="exception">The exception, if any, for the connection closing.</param>
         /// <param name="next">The next filter to run, and for the final one, the Hub invocation.</param>
         /// <returns></returns>
-        Task OnDisconnectedAsync(HubLifetimeContext context, Exception exception, Func<HubLifetimeContext, Exception, Task> next) => next(context, exception);
+        Task OnDisconnectedAsync(HubLifetimeContext context, Exception? exception, Func<HubLifetimeContext, Exception?, Task> next) => next(context, exception);
     }
 }

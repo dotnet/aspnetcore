@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.TestHost
         private bool _pipelineFinished;
         private bool _returningResponse;
         private object _testContext;
-        private Pipe _requestPipe;
+        private readonly Pipe _requestPipe;
 
         private Action<HttpContext> _responseReadCompleteCallback;
         private Task _sendRequestStreamTask;

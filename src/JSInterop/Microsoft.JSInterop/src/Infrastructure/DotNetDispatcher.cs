@@ -34,14 +34,14 @@ namespace Microsoft.JSInterop.Infrastructure
         /// <param name="invocationInfo">The <see cref="DotNetInvocationInfo"/>.</param>
         /// <param name="argsJson">A JSON representation of the parameters.</param>
         /// <returns>A JSON representation of the return value, or null.</returns>
-        public static string Invoke(JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo, string argsJson)
+        public static string? Invoke(JSRuntime jsRuntime, in DotNetInvocationInfo invocationInfo, string argsJson)
         {
             // This method doesn't need [JSInvokable] because the platform is responsible for having
             // some way to dispatch calls here. The logic inside here is the thing that checks whether
             // the targeted method has [JSInvokable]. It is not itself subject to that restriction,
             // because there would be nobody to police that. This method *is* the police.
 
-            IDotNetObjectReference targetInstance = default;
+            IDotNetObjectReference? targetInstance = default;
             if (invocationInfo.DotNetObjectId != default)
             {
                 targetInstance = jsRuntime.GetObjectReference(invocationInfo.DotNetObjectId);
@@ -75,9 +75,9 @@ namespace Microsoft.JSInterop.Infrastructure
 
             var callId = invocationInfo.CallId;
 
-            object syncResult = null;
-            ExceptionDispatchInfo syncException = null;
-            IDotNetObjectReference targetInstance = null;
+            object? syncResult = null;
+            ExceptionDispatchInfo? syncException = null;
+            IDotNetObjectReference? targetInstance = null;
             try
             {
                 if (invocationInfo.DotNetObjectId != default)
@@ -126,7 +126,7 @@ namespace Microsoft.JSInterop.Infrastructure
             }
         }
 
-        private static object InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference objectReference, string argsJson)
+        private static object? InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference? objectReference, string argsJson)
         {
             var assemblyName = callInfo.AssemblyName;
             var methodIdentifier = callInfo.MethodIdentifier;
@@ -168,14 +168,14 @@ namespace Microsoft.JSInterop.Infrastructure
                 if (tie.InnerException != null)
                 {
                     ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
-                    throw null; // unreached
+                    throw tie.InnerException; // Unreachable
                 }
 
                 throw;
             }
         }
 
-        internal static object[] ParseArguments(JSRuntime jsRuntime, string methodIdentifier, string arguments, Type[] parameterTypes)
+        internal static object?[] ParseArguments(JSRuntime jsRuntime, string methodIdentifier, string arguments, Type[] parameterTypes)
         {
             if (parameterTypes.Length == 0)
             {
@@ -189,7 +189,7 @@ namespace Microsoft.JSInterop.Infrastructure
                 throw new JsonException("Invalid JSON");
             }
 
-            var suppliedArgs = new object[parameterTypes.Length];
+            var suppliedArgs = new object?[parameterTypes.Length];
 
             var index = 0;
             while (index < parameterTypes.Length && reader.Read() && reader.TokenType != JsonTokenType.EndArray)
@@ -331,7 +331,7 @@ namespace Microsoft.JSInterop.Infrastructure
 
                 foreach (var method in invokableMethods)
                 {
-                    var identifier = method.GetCustomAttribute<JSInvokableAttribute>(false).Identifier ?? method.Name;
+                    var identifier = method.GetCustomAttribute<JSInvokableAttribute>(false)!.Identifier ?? method.Name!;
                     var parameterTypes = method.GetParameters().Select(p => p.ParameterType).ToArray();
 
                     if (result.ContainsKey(identifier))
@@ -360,7 +360,7 @@ namespace Microsoft.JSInterop.Infrastructure
                 .Where(method => !method.ContainsGenericParameters && method.IsDefined(typeof(JSInvokableAttribute), inherit: false));
             foreach (var method in invokableMethods)
             {
-                var identifier = method.GetCustomAttribute<JSInvokableAttribute>(false).Identifier ?? method.Name;
+                var identifier = method.GetCustomAttribute<JSInvokableAttribute>(false)!.Identifier ?? method.Name;
                 var parameterTypes = method.GetParameters().Select(p => p.ParameterType).ToArray();
 
                 if (result.ContainsKey(identifier))
@@ -400,7 +400,7 @@ namespace Microsoft.JSInterop.Infrastructure
             public AssemblyKey(Assembly assembly)
             {
                 Assembly = assembly;
-                AssemblyName = assembly.GetName().Name;
+                AssemblyName = assembly.GetName().Name!;
             }
 
             public AssemblyKey(string assemblyName)
@@ -409,7 +409,7 @@ namespace Microsoft.JSInterop.Infrastructure
                 AssemblyName = assemblyName;
             }
 
-            public Assembly Assembly { get; }
+            public Assembly? Assembly { get; }
 
             public string AssemblyName { get; }
 

@@ -37,12 +37,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             ILoggerFactory loggerFactory,
             CircuitOptions options,
             CircuitClientProxy client,
-            ILogger logger)
+            ILogger logger,
+            ElementReferenceContext? elementReferenceContext)
             : base(serviceProvider, loggerFactory)
         {
             _client = client;
             _options = options;
             _logger = logger;
+
+            ElementReferenceContext = elementReferenceContext;
         }
 
         public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();

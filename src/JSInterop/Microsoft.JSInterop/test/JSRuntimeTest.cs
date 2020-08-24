@@ -322,14 +322,14 @@ namespace Microsoft.JSInterop
 
         private class JSError
         {
-            public string Message { get; set; }
+            public string? Message { get; set; }
         }
 
         private class TestPoco
         {
             public int Id { get; set; }
 
-            public string Name { get; set; }
+            public string? Name { get; set; }
         }
 
         class TestJSRuntime : JSRuntime
@@ -348,18 +348,18 @@ namespace Microsoft.JSInterop
             public class BeginInvokeAsyncArgs
             {
                 public long AsyncHandle { get; set; }
-                public string Identifier { get; set; }
-                public string ArgsJson { get; set; }
+                public string? Identifier { get; set; }
+                public string? ArgsJson { get; set; }
             }
 
             public class EndInvokeDotNetArgs
             {
-                public string CallId { get; set; }
+                public string? CallId { get; set; }
                 public bool Success { get; set; }
-                public object ResultOrError { get; set; }
+                public object? ResultOrError { get; set; }
             }
 
-            public Func<DotNetInvocationInfo, object> OnDotNetException { get; set; }
+            public Func<DotNetInvocationInfo, object>? OnDotNetException { get; set; }
 
             protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)
             {
@@ -377,7 +377,7 @@ namespace Microsoft.JSInterop
                 });
             }
 
-            protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
+            protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson)
             {
                 BeginInvokeCalls.Add(new BeginInvokeAsyncArgs
                 {

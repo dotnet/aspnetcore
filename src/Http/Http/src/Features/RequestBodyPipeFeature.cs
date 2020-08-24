@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.Http.Features
 {
     public class RequestBodyPipeFeature : IRequestBodyPipeFeature
     {
-        private PipeReader _internalPipeReader;
-        private Stream _streamInstanceWhenWrapped;
+        private PipeReader? _internalPipeReader;
+        private Stream? _streamInstanceWhenWrapped;
         private HttpContext _context;
 
         public RequestBodyPipeFeature(HttpContext context)

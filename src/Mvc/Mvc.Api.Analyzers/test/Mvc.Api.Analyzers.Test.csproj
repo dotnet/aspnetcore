@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <Compile Include="..\..\Mvc.Analyzers\test\Infrastructure\MvcDiagnosticAnalyzerRunner.cs" Link="Infrastructure\MvcDiagnosticAnalyzerRunner.cs" />
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Content Include="TestFiles\**\*.*" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 

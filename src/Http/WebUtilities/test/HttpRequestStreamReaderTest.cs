@@ -443,12 +443,12 @@ namespace Microsoft.AspNetCore.WebUtilities
             return new MemoryStream(data.ToArray());
         }
 
-        public static IEnumerable<object[]> HttpRequestNullData()
+        public static IEnumerable<object?[]> HttpRequestNullData()
         {
-            yield return new object[] { null, Encoding.UTF8, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
-            yield return new object[] { new MemoryStream(), null, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
-            yield return new object[] { new MemoryStream(), Encoding.UTF8, null, ArrayPool<char>.Shared };
-            yield return new object[] { new MemoryStream(), Encoding.UTF8, ArrayPool<byte>.Shared, null };
+            yield return new object?[] { null, Encoding.UTF8, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
+            yield return new object?[] { new MemoryStream(), null, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
+            yield return new object?[] { new MemoryStream(), Encoding.UTF8, null, ArrayPool<char>.Shared };
+            yield return new object?[] { new MemoryStream(), Encoding.UTF8, ArrayPool<byte>.Shared, null };
         }
 
         public static IEnumerable<object[]> HttpRequestDisposeData()
@@ -487,10 +487,10 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public static IEnumerable<object[]> ReadLineData()
         {
-            yield return new object[] { new Func<HttpRequestStreamReader, Task<string>>((httpRequestStreamReader) =>
+            yield return new object[] { new Func<HttpRequestStreamReader, Task<string?>>((httpRequestStreamReader) =>
                  Task.FromResult(httpRequestStreamReader.ReadLine())
             )};
-            yield return new object[] { new Func<HttpRequestStreamReader, Task<string>>((httpRequestStreamReader) =>
+            yield return new object[] { new Func<HttpRequestStreamReader, Task<string?>>((httpRequestStreamReader) =>
                  httpRequestStreamReader.ReadLineAsync()
             )};
         }

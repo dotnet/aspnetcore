@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Components for performing health checks in .NET applications
 
@@ -11,8 +11,8 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnostics;healthchecks</PackageTags>
-    <IsPackable>true</IsPackable>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

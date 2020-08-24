@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.DependencyInjection
             string name,
             IHealthCheck instance,
             HealthStatus? failureStatus = null,
-            IEnumerable<string> tags = null,
+            IEnumerable<string>? tags = null,
             TimeSpan? timeout = null)
         {
             if (builder == null)
@@ -125,7 +125,7 @@ namespace Microsoft.Extensions.DependencyInjection
             this IHealthChecksBuilder builder,
             string name,
             HealthStatus? failureStatus = null,
-            IEnumerable<string> tags = null,
+            IEnumerable<string>? tags = null,
             TimeSpan? timeout = null) where T : class, IHealthCheck
         {
             if (builder == null)
@@ -227,7 +227,7 @@ namespace Microsoft.Extensions.DependencyInjection
             this IHealthChecksBuilder builder,
             string name,
             HealthStatus? failureStatus,
-            IEnumerable<string> tags,
+            IEnumerable<string>? tags,
             params object[] args) where T : class, IHealthCheck
         {
             if (builder == null)

@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -25,12 +24,12 @@ namespace Wasm.Performance.Driver
 
             app.Run(async context =>
             {
-                var result = await JsonSerializer.DeserializeAsync<List<BenchmarkResult>>(context.Request.Body, new JsonSerializerOptions
+                var result = await JsonSerializer.DeserializeAsync<BenchmarkResult>(context.Request.Body, new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 });
                 await context.Response.WriteAsync("OK");
-                Program.SetBenchmarkResult(result);
+                Program.BenchmarkResultTask.TrySetResult(result);
             });
         }
     }

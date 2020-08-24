@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 .WithAllHostingModels();
 
         [ConditionalTheory]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/22329")]
         [MemberData(nameof(TestVariants))]
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win8)]
         public async Task HttpsHelloWorld(TestVariant variant)

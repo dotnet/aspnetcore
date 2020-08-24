@@ -18,16 +18,16 @@ namespace Microsoft.AspNetCore.Authentication
         public PolicySchemeHandler(IOptionsMonitor<PolicySchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock) : base(options, logger, encoder, clock)
         { }
 
-        protected override Task HandleChallengeAsync(AuthenticationProperties properties)
+        protected override Task HandleChallengeAsync(AuthenticationProperties? properties)
             => throw new NotImplementedException();
 
-        protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
+        protected override Task HandleForbiddenAsync(AuthenticationProperties? properties)
             => throw new NotImplementedException();
 
-        protected override Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
+        protected override Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties? properties)
             => throw new NotImplementedException();
 
-        protected override Task HandleSignOutAsync(AuthenticationProperties properties)
+        protected override Task HandleSignOutAsync(AuthenticationProperties? properties)
             => throw new NotImplementedException();
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()

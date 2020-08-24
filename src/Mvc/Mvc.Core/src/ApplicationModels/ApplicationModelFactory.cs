@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // Text to show as the attribute route template for conventionally routed actions.
             var nullTemplate = Resources.AttributeRoute_NullTemplateRepresentation;
 
-            var actionDescriptions = new List<string>();
+            var actionDescriptions = new List<string>(actions.Count);
             for (var i = 0; i < actions.Count; i++)
             {
                 var (action, selector) = actions[i];

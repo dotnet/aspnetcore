@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 #if DEBUG
 // Uncomment to enable runtime checks to help validate that NetEventSource isn't being misused
@@ -30,14 +29,9 @@ namespace System.Net
     // Usage:
     // - Operations that may allocate (e.g. boxing a value type, using string interpolation, etc.) or that may have computations
     //   at call sites should guard access like:
-    //       if (NetEventSource.IsEnabled) NetEventSource.Enter(this, refArg1, valueTypeArg2); // entering an instance method with a value type arg
-    //       if (NetEventSource.IsEnabled) NetEventSource.Info(null, $"Found certificate: {cert}"); // info logging with a formattable string
+    //       if (NetEventSource.Log.IsEnabled()) NetEventSource.Info(null, $"Found certificate: {cert}"); // info logging with a formattable string
     // - Operations that have zero allocations / measurable computations at call sites can use a simpler pattern, calling methods like:
-    //       NetEventSource.Enter(this);                   // entering an instance method
     //       NetEventSource.Info(this, "literal string");  // arbitrary message with a literal string
-    //       NetEventSource.Enter(this, refArg1, regArg2); // entering an instance method with two reference type arguments
-    //       NetEventSource.Enter(null);                   // entering a static method
-    //       NetEventSource.Enter(null, refArg1);          // entering a static method with one reference type argument
     //   Debug.Asserts inside the logging methods will help to flag some misuse if the DEBUG_NETEVENTSOURCE_MISUSE compilation constant is defined.
     //   However, because it can be difficult by observation to understand all of the costs involved, guarding can be done everywhere.
     // - NetEventSource.Fail calls typically do not need to be prefixed with an IsEnabled check, even if they allocate, as FailMessage

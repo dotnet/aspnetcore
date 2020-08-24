@@ -133,7 +133,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <param name="alwaysValidateAtTopLevel">If <c>true</c>, applies validation rules even if the top-level value is <c>null</c>.</param>
         /// <returns><c>true</c> if the object is valid, otherwise <c>false</c>.</returns>
         public virtual bool Validate(ModelMetadata metadata, string key, object model, bool alwaysValidateAtTopLevel)
+            => Validate(metadata, key, model, alwaysValidateAtTopLevel, container: null);
+
+        /// <summary>
+        /// Validates a object.
+        /// </summary>
+        /// <param name="metadata">The <see cref="ModelMetadata"/> associated with the model.</param>
+        /// <param name="key">The model prefix key.</param>
+        /// <param name="model">The model object.</param>
+        /// <param name="alwaysValidateAtTopLevel">If <c>true</c>, applies validation rules even if the top-level value is <c>null</c>.</param>
+        /// <param name="container">The model container.</param>
+        /// <returns><c>true</c> if the object is valid, otherwise <c>false</c>.</returns>
+        public virtual bool Validate(ModelMetadata metadata, string key, object model, bool alwaysValidateAtTopLevel, object container)
         {
+            if (container != null && metadata.MetadataKind != ModelMetadataKind.Property)
+            {
+                throw new ArgumentException(Resources.FormatValidationVisitor_ContainerCannotBeSpecified(metadata.MetadataKind));
+            }
+
             if (model == null && key != null && !alwaysValidateAtTopLevel)
             {
                 var entry = ModelState[key];
@@ -148,6 +165,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 return true;
             }
 
+            // Container is non-null only when validation top-level properties. Start off by treating "container" as the "Model" instance.
+            // Invoking StateManager.Recurse later in this invocation will result in it being correctly used as the container instance during the
+            // validation of "model".
+            Model = container;
             return Visit(metadata, key, model);
         }
 

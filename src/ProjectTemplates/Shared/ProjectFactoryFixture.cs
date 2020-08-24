@@ -44,7 +44,7 @@ namespace Templates.Test.Helpers
                         DiagnosticsMessageSink = DiagnosticsMessageSink,
                         ProjectGuid = Path.GetRandomFileName().Replace(".", string.Empty)
                     };
-                    project.ProjectName = $"AspNet.{key}.{project.ProjectGuid}";
+                    project.ProjectName = $"AspNet.{project.ProjectGuid}";
 
                     var assemblyPath = GetType().Assembly;
                     var basePath = GetTemplateFolderBasePath(assemblyPath);

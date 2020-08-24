@@ -5,13 +5,13 @@ using System;
 using System.IO;
 using System.Reflection;
 
-namespace Microsoft.Extensions.Localization.Internal
+namespace Microsoft.Extensions.Localization
 {
     /// <summary>
     /// This API supports infrastructure and is not intended to be used
     /// directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    public class AssemblyWrapper
+    internal class AssemblyWrapper
     {
         public AssemblyWrapper(Assembly assembly)
         {
@@ -25,8 +25,8 @@ namespace Microsoft.Extensions.Localization.Internal
 
         public Assembly Assembly { get; }
 
-        public virtual string FullName => Assembly.FullName;
+        public virtual string FullName => Assembly.FullName!;
 
-        public virtual Stream GetManifestResourceStream(string name) => Assembly.GetManifestResourceStream(name);
+        public virtual Stream? GetManifestResourceStream(string name) => Assembly.GetManifestResourceStream(name);
     }
 }

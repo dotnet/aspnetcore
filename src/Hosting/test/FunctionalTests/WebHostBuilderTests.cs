@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                 .WithTfms(Tfm.Net50);
 
         [ConditionalTheory]
+        [QuarantinedTest]
         [MemberData(nameof(TestVariants))]
         public async Task InjectedStartup_DefaultApplicationNameIsEntryAssembly(TestVariant variant)
         {

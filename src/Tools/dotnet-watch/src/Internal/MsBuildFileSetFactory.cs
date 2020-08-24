@@ -72,6 +72,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                         Arguments = new[]
                         {
                             "msbuild",
+                            "/nologo",
                             _projectFile,
                             $"/p:_DotNetWatchListFile={watchList}"
                         }.Concat(_buildFlags),
@@ -84,8 +85,12 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                     if (exitCode == 0 && File.Exists(watchList))
                     {
+                        var lines = File.ReadAllLines(watchList);
+                        var isNetCoreApp31OrNewer = lines.FirstOrDefault() == "true";
+
                         var fileset = new FileSet(
-                            File.ReadAllLines(watchList)
+                            isNetCoreApp31OrNewer,
+                            lines.Skip(1)
                                 .Select(l => l?.Trim())
                                 .Where(l => !string.IsNullOrEmpty(l)));
 
@@ -123,7 +128,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                     {
                         _reporter.Warn("Fix the error to continue or press Ctrl+C to exit.");
 
-                        var fileSet = new FileSet(new[] { _projectFile });
+                        var fileSet = new FileSet(false, new[] { _projectFile });
 
                         using (var watcher = new FileSetWatcher(fileSet, _reporter))
                         {

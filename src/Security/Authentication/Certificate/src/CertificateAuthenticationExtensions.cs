@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="authenticationScheme"></param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
         public static AuthenticationBuilder AddCertificate(this AuthenticationBuilder builder, string authenticationScheme)
-            => builder.AddCertificate(authenticationScheme, configureOptions: (Action<CertificateAuthenticationOptions, IServiceProvider>)null);
+            => builder.AddCertificate(authenticationScheme, configureOptions: null);
 
         /// <summary>
         /// Adds certificate authentication.
@@ -42,16 +42,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds certificate authentication.
         /// </summary>
-        /// <typeparam name="TService">TService: A service resolved from the IServiceProvider for use when configuring this authentication provider. If you need multiple services then specify IServiceProvider and resolve them directly.</typeparam>
-        /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
-        /// <param name="configureOptions"></param>
-        /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
-        public static AuthenticationBuilder AddCertificate<TService>(this AuthenticationBuilder builder, Action<CertificateAuthenticationOptions, TService> configureOptions) where TService : class
-            => builder.AddCertificate(CertificateAuthenticationDefaults.AuthenticationScheme, configureOptions);
-
-        /// <summary>
-        /// Adds certificate authentication.
-        /// </summary>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
         /// <param name="authenticationScheme"></param>
         /// <param name="configureOptions"></param>
@@ -60,32 +50,24 @@ namespace Microsoft.Extensions.DependencyInjection
             this AuthenticationBuilder builder,
             string authenticationScheme,
             Action<CertificateAuthenticationOptions> configureOptions)
-        {
-            Action<CertificateAuthenticationOptions, IServiceProvider> configureOptionsWithServices;
-            if (configureOptions == null)
-            {
-                configureOptionsWithServices = null;
-            }
-            else
-            {
-                configureOptionsWithServices = (options, _) => configureOptions(options);
-            }
-
-            return builder.AddCertificate(authenticationScheme, configureOptionsWithServices);
-        }
+            => builder.AddScheme<CertificateAuthenticationOptions, CertificateAuthenticationHandler>(authenticationScheme, configureOptions);
 
         /// <summary>
         /// Adds certificate authentication.
         /// </summary>
-        /// <typeparam name="TService">TService: A service resolved from the IServiceProvider for use when configuring this authentication provider. If you need multiple services then specify IServiceProvider and resolve them directly.</typeparam>
         /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
-        /// <param name="authenticationScheme"></param>
         /// <param name="configureOptions"></param>
         /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
-        public static AuthenticationBuilder AddCertificate<TService>(
+        public static AuthenticationBuilder AddCertificateCache(
             this AuthenticationBuilder builder,
-            string authenticationScheme,
-            Action<CertificateAuthenticationOptions, TService> configureOptions) where TService : class
-            => builder.AddScheme<CertificateAuthenticationOptions, CertificateAuthenticationHandler, TService>(authenticationScheme, configureOptions);
+            Action<CertificateValidationCacheOptions> configureOptions = null)
+        {
+            builder.Services.AddSingleton<ICertificateValidationCache, CertificateValidationCache>();
+            if (configureOptions != null)
+            {
+                builder.Services.Configure(configureOptions);
+            }
+            return builder;
+        }
     }
 }

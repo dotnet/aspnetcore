@@ -35,6 +35,6 @@ namespace Microsoft.AspNetCore.Authorization.Policy
         /// <returns>Returns <see cref="PolicyAuthorizationResult.Success"/> if authorization succeeds.
         /// Otherwise returns <see cref="PolicyAuthorizationResult.Forbid(AuthorizationFailure)"/> if <see cref="AuthenticateResult.Succeeded"/>, otherwise
         /// returns  <see cref="PolicyAuthorizationResult.Challenge"/></returns>
-        Task<PolicyAuthorizationResult> AuthorizeAsync(AuthorizationPolicy policy, AuthenticateResult authenticationResult, HttpContext context, object resource);
+        Task<PolicyAuthorizationResult> AuthorizeAsync(AuthorizationPolicy policy, AuthenticateResult authenticationResult, HttpContext context, object? resource);
     }
 }

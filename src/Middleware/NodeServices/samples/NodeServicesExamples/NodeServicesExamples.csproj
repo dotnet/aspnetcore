@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework)</TargetFrameworks>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

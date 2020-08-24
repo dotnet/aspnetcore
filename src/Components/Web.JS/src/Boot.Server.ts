@@ -1,4 +1,4 @@
-import '@microsoft/dotnet-js-interop';
+import { DotNet } from '@microsoft/dotnet-js-interop';
 import './GlobalExports';
 import * as signalR from '@microsoft/signalr';
 import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
@@ -9,14 +9,14 @@ import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel, Logger } from './Platform/Logging/Logger';
 import { discoverComponents, CircuitDescriptor } from './Platform/Circuits/CircuitManager';
 import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
-import { resolveOptions, BlazorOptions } from './Platform/Circuits/BlazorOptions';
+import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { attachRootComponentToLogicalElement } from './Rendering/Renderer';
 
 let renderingFailed = false;
 let started = false;
 
-async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
+async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
   if (started) {
     throw new Error('Blazor has already started.');
   }
@@ -56,23 +56,25 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
     return true;
   };
 
-  window.addEventListener(
-    'unload',
-    () => {
+  let disconnectSent = false;
+  const cleanup = () => {
+    if (!disconnectSent) {
       const data = new FormData();
       const circuitId = circuit.circuitId!;
       data.append('circuitId', circuitId);
-      navigator.sendBeacon('_blazor/disconnect', data);
-    },
-    false
-  );
+      disconnectSent = navigator.sendBeacon('_blazor/disconnect', data);
+    }
+  };
+
+  window.addEventListener('beforeunload', cleanup, { capture: false, once: true });
+  window.addEventListener('unload', cleanup, { capture: false, once: true });
 
   window['Blazor'].reconnect = reconnect;
 
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
 }
 
-async function initializeConnection(options: BlazorOptions, logger: Logger, circuit: CircuitDescriptor): Promise<signalR.HubConnection> {
+async function initializeConnection(options: CircuitStartOptions, logger: Logger, circuit: CircuitDescriptor): Promise<signalR.HubConnection> {
   const hubProtocol = new MessagePackHubProtocol();
   (hubProtocol as unknown as { name: string }).name = 'blazorpack';
 
@@ -85,7 +87,7 @@ async function initializeConnection(options: BlazorOptions, logger: Logger, circ
   const connection = connectionBuilder.build();
 
   setEventDispatcher((descriptor, args) => {
-    return connection.send('DispatchBrowserEvent', JSON.stringify(descriptor), JSON.stringify(args));
+    connection.send('DispatchBrowserEvent', JSON.stringify(descriptor), JSON.stringify(args));
   });
 
   // Configure navigation via SignalR

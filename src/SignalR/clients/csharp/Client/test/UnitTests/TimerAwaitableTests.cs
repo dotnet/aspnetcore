@@ -13,10 +13,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
     public class TimerAwaitableTests
     {
         [Fact]
-        [QuarantinedTest]
         public async Task FinalizerRunsIfTimerAwaitableReferencesObject()
         {
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             UseTimerAwaitableAndUnref(tcs);
 
             GC.Collect();
@@ -27,7 +26,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void UseTimerAwaitableAndUnref(TaskCompletionSource<object> tcs)
+        private void UseTimerAwaitableAndUnref(TaskCompletionSource tcs)
         {
             _ = new ObjectWithTimerAwaitable(tcs).Start();
         }
@@ -38,9 +37,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
     public class ObjectWithTimerAwaitable
     {
         private readonly TimerAwaitable _timer;
-        private readonly TaskCompletionSource<object> _tcs;
+        private readonly TaskCompletionSource _tcs;
 
-        public ObjectWithTimerAwaitable(TaskCompletionSource<object> tcs)
+        public ObjectWithTimerAwaitable(TaskCompletionSource tcs)
         {
             _tcs = tcs;
             _timer = new TimerAwaitable(TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(1));
@@ -59,7 +58,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
         ~ObjectWithTimerAwaitable()
         {
-            _tcs.TrySetResult(null);
+            _tcs.TrySetResult();
         }
     }
 }

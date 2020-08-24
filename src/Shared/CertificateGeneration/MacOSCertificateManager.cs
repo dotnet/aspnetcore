@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             var tmpFile = Path.GetTempFileName();
             try
             {
-                ExportCertificate(publicCertificate, tmpFile, includePrivateKey: false, password: null);
+                ExportCertificate(publicCertificate, tmpFile, includePrivateKey: false, password: null, CertificateKeyExportFormat.Pfx);
                 Log.MacOSTrustCommandStart($"{MacOSTrustCertificateCommandLine} {MacOSTrustCertificateCommandLineArguments}{tmpFile}");
                 using (var process = Process.Start(MacOSTrustCertificateCommandLine, MacOSTrustCertificateCommandLineArguments + tmpFile))
                 {
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             // Tries to use the certificate key to validate it can't access it
             try
             {
-                var rsa = candidate.GetRSAPrivateKey();
+                using var rsa = candidate.GetRSAPrivateKey();
                 if (rsa == null)
                 {
                     return new CheckCertificateStateResult(false, InvalidCertificateState);

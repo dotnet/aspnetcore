@@ -16,6 +16,13 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
     /// </summary>
     public class JwtBearerOptions : AuthenticationSchemeOptions
     {
+        private JwtSecurityTokenHandler _defaultHandler = new JwtSecurityTokenHandler();
+        
+        public JwtBearerOptions()
+        {
+            SecurityTokenValidators = new List<ISecurityTokenValidator> { _defaultHandler };
+        }
+    
         /// <summary>
         /// Gets or sets if HTTPS is required for the metadata address or authority.
         /// The default is true. This should be disabled only in development environments.
@@ -90,7 +97,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// <summary>
         /// Gets the ordered list of <see cref="ISecurityTokenValidator"/> used to validate access tokens.
         /// </summary>
-        public IList<ISecurityTokenValidator> SecurityTokenValidators { get; } = new List<ISecurityTokenValidator> { new JwtSecurityTokenHandler() };
+        public IList<ISecurityTokenValidator> SecurityTokenValidators { get; private set; }
 
         /// <summary>
         /// Gets or sets the parameters used to validate identity tokens.
@@ -111,6 +118,18 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// from returning an error and an error_description in the WWW-Authenticate header.
         /// </summary>
         public bool IncludeErrorDetails { get; set; } = true;
+        
+        /// <summary>
+        /// Gets or sets the <see cref="MapInboundClaims"/> property on the default instance of <see cref="JwtSecurityTokenHandler"/> in SecurityTokenValidators, which is used when determining 
+        /// whether or not to map claim types that are extracted when validating a <see cref="JwtSecurityToken"/>. 
+        /// <para>If this is set to true, the Claim Type is set to the JSON claim 'name' after translating using this mapping. Otherwise, no mapping occurs.</para>
+        /// <para>The default value is true.</para>
+        /// </summary>
+        public bool MapInboundClaims
+        {
+            get => _defaultHandler.MapInboundClaims;
+            set => _defaultHandler.MapInboundClaims = value;
+        }
 
         /// <summary>
         /// 1 day is the default time interval that afterwards, <see cref="ConfigurationManager" /> will obtain new configuration.

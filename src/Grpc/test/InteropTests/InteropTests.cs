@@ -72,10 +72,11 @@ namespace InteropTests
         public Task UnimplementedMethod() => InteropTestCase("unimplemented_method");
 
         [Fact]
-        [QuarantinedTest]
+        [QuarantinedTest("Server is getting 'identity' encoding. Will resolve in gRPC project when updated SDK is available.")]
         public Task ClientCompressedUnary() => InteropTestCase("client_compressed_unary");
 
         [Fact]
+        [QuarantinedTest("Server is getting 'identity' encoding. Will resolve in gRPC project when updated SDK is available.")]
         public Task ClientCompressedStreaming() => InteropTestCase("client_compressed_streaming");
 
         [Fact]
@@ -103,10 +104,20 @@ namespace InteropTests
                     }
                     catch (Exception ex)
                     {
-                        var clientOutput = clientProcess.GetOutput();
-                        var errorMessage = $@"Error while running client process. Process output:
+                        var errorMessage = $@"Error while running client process.
+
+Server ready: {serverProcess.IsReady}
+Client ready: {clientProcess.IsReady}
+
+Server process output:
 ======================================
-{clientOutput}";
+{serverProcess.GetOutput()}
+======================================
+
+Client process output:
+======================================
+{clientProcess.GetOutput()}
+======================================";
                         throw new InvalidOperationException(errorMessage, ex);
                     }
                 }

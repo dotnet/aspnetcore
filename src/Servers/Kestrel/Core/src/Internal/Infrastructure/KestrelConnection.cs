@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private bool _completed;
 
         private readonly CancellationTokenSource _connectionClosingCts = new CancellationTokenSource();
-        private readonly TaskCompletionSource<object> _completionTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource _completionTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         protected readonly long _id;
         protected readonly ServiceContext _serviceContext;
         protected readonly TransportConnectionManager _transportConnectionManager;
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public void Complete()
         {
-            _completionTcs.TrySetResult(null);
+            _completionTcs.TrySetResult();
 
             _connectionClosingCts.Dispose();
         }

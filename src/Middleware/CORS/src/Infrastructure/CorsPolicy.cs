@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         {
             get
             {
-                if (Headers == null || Headers.Count != 1 || Headers.Count == 1 && Headers[0] != "*")
+                if (Headers == null || Headers.Count != 1 || Headers[0] != "*")
                 {
                     return false;
                 }
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         {
             get
             {
-                if (Methods == null || Methods.Count != 1 || Methods.Count == 1 && Methods[0] != "*")
+                if (Methods == null || Methods.Count != 1 || Methods[0] != "*")
                 {
                     return false;
                 }
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         {
             get
             {
-                if (Origins == null || Origins.Count != 1 || Origins.Count == 1 && Origins[0] != "*")
+                if (Origins == null || Origins.Count != 1 || Origins[0] != "*")
                 {
                     return false;
                 }

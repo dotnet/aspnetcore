@@ -22,6 +22,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace InteropTestsWebsite
 {
@@ -34,6 +35,16 @@ namespace InteropTestsWebsite
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureLogging(builder =>
+                {
+                    builder.AddConsole(loggerOptions =>
+                    {
+#pragma warning disable CS0618 // Type or member is obsolete
+                        loggerOptions.DisableColors = true;
+#pragma warning restore CS0618 // Type or member is obsolete
+                    });
+                    builder.SetMinimumLevel(LogLevel.Trace);
+                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.ConfigureKestrel((context, options) =>

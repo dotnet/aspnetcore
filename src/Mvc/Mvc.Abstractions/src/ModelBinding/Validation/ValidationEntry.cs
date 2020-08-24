@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     /// </summary>
     public struct ValidationEntry
     {
-        private object _model;
-        private Func<object> _modelAccessor;
+        private object? _model;
+        private Func<object>? _modelAccessor;
 
         /// <summary>
         /// Creates a new <see cref="ValidationEntry"/>.
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <summary>
         /// The model object.
         /// </summary>
-        public object Model
+        public object? Model
         {
             get
             {

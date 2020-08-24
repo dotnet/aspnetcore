@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             Thread capturedThread = null;
 
             var e = new ManualResetEventSlim();
-            
+
             // Act
             context.Post((_) =>
             {
@@ -766,7 +766,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
-        [QuarantinedTest]
         public async Task InvokeAsync_SyncWorkInAsyncTaskIsCompletedFirst()
         {
             // Simplified version of ServerComponentRenderingTest.CanDispatchAsyncWorkToSyncContext

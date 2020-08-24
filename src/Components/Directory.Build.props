@@ -2,19 +2,11 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <!-- Workaround for https://github.com/dotnet/aspnetcore/issues/5486 which requires the bin and obj directory be in the project directory -->
-    <BaseIntermediateOutputPath />
-    <IntermediateOutputPath />
-    <BaseOutputPath />
-    <OutputPath />
+    <EnableTypeScriptNuGetTarget>true</EnableTypeScriptNuGetTarget>
   </PropertyGroup>
 
   <PropertyGroup>
     <PackageTags>aspnetcore;components</PackageTags>
-
-    <!-- This property points to the latest released Microsoft.AspNetCore.App version it needs to be updated to
-         target the latest patch before a preview release. -->
-    <LatestAspNetCoreReferenceVersion>3.1.0</LatestAspNetCoreReferenceVersion>
 
     <ComponentsSharedSourceRoot>$(MSBuildThisFileDirectory)Shared\</ComponentsSharedSourceRoot>
 

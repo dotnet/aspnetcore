@@ -19,10 +19,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections.Features;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -402,9 +400,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     await client.Connection.Application.Output.WriteAsync(part3);
 
-                    Assert.True(task.IsCompleted);
-
-                    var completionMessage = await task as CompletionMessage;
+                    var completionMessage = await task.OrTimeout() as CompletionMessage;
                     Assert.NotNull(completionMessage);
                     Assert.Equal("hello", completionMessage.Result);
                     Assert.Equal("1", completionMessage.InvocationId);
@@ -946,6 +942,30 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
 
             Assert.True(hasErrorLog);
+        }
+
+        [Fact]
+        public async Task HubMethodListeningToConnectionAbortedClosesOnConnectionContextAbort()
+        {
+            using (StartVerifiableLog())
+            {
+                var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(MethodHub), loggerFactory: LoggerFactory);
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    var invokeTask = client.InvokeAsync(nameof(MethodHub.BlockingMethod));
+
+                    client.Connection.Abort();
+
+                    // If this completes then the server has completed the connection
+                    await connectionHandlerTask.OrTimeout();
+
+                    // Nothing written to connection because it was closed
+                    Assert.False(invokeTask.IsCompleted);
+                }
+            }
         }
 
         [Fact]
@@ -2067,7 +2087,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     await client.Connected.OrTimeout();
 
-                    var messages = await client.StreamAsync(nameof(StreamingHub.ThrowStream));
+                    var messages = await client.StreamAsync(nameof(StreamingHub.ExceptionStream));
 
                     Assert.Equal(1, messages.Count);
                     var completion = messages[0] as CompletionMessage;
@@ -2823,13 +2843,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         internal class PipeReaderWrapper : PipeReader
         {
             private readonly PipeReader _originalPipeReader;
-            private TaskCompletionSource<object> _waitForRead;
+            private TaskCompletionSource _waitForRead;
             private object _lock = new object();
 
             public PipeReaderWrapper(PipeReader pipeReader)
             {
                 _originalPipeReader = pipeReader;
-                _waitForRead = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _waitForRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             }
 
             public override void AdvanceTo(SequencePosition consumed) =>
@@ -2848,7 +2868,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 lock (_lock)
                 {
-                    _waitForRead.SetResult(null);
+                    _waitForRead.SetResult();
                 }
 
                 try
@@ -2859,7 +2879,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     lock (_lock)
                     {
-                        _waitForRead = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                        _waitForRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     }
                 }
             }
@@ -2901,7 +2921,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 {
                     services.Configure<HubOptions>(options =>
-                         options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(0));
+                    {
+                        options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(0);
+                        options.MaximumParallelInvocationsPerClient = 1;
+                    });
                     services.AddSingleton(tcsService);
                 }, LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
@@ -2933,6 +2956,42 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     await customDuplex.WrappedPipeReader.WaitForReadStart().OrTimeout();
 
                     // Tick heartbeat again now that we're outside of the hub method
+                    client.TickHeartbeat();
+
+                    // Connection is closed
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task HubMethodInvokeCountsTowardsClientTimeoutIfParallelNotMaxed()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.Configure<HubOptions>(options =>
+                    {
+                        options.ClientTimeoutInterval = TimeSpan.FromMilliseconds(0);
+                        options.MaximumParallelInvocationsPerClient = 2;
+                    });
+                    services.AddSingleton(tcsService);
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
+
+                using (var client = new TestClient(new JsonHubProtocol()))
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+                    // This starts the timeout logic
+                    await client.SendHubMessageAsync(PingMessage.Instance);
+
+                    // Call long running hub method
+                    var hubMethodTask = client.InvokeAsync(nameof(LongRunningHub.LongRunningMethod));
+                    await tcsService.StartedMethod.Task.OrTimeout();
+
+                    // Tick heartbeat while hub method is running
                     client.TickHeartbeat();
 
                     // Connection is closed
@@ -3018,7 +3077,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartVerifiableLog())
             {
-                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.AddSignalR(options =>
+                    {
+                        options.MaximumParallelInvocationsPerClient = 1;
+                    });
+                }, LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
 
                 using (var client = new TestClient(new NewtonsoftJsonHubProtocol()))
@@ -3040,7 +3105,119 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task InvocationsRunInOrder()
+        public async Task StreamMethodThatThrowsWillCleanup()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                       writeContext.EventId.Name == "FailedInvokingHubMethod";
+            }
+
+            using (StartVerifiableLog(ExpectedErrors))
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+                {
+                    builder.AddSingleton(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    await client.Connected.OrTimeout();
+
+                    var messages = await client.StreamAsync(nameof(StreamingHub.ThrowStream));
+
+                    Assert.Equal(1, messages.Count);
+                    var completion = messages[0] as CompletionMessage;
+                    Assert.NotNull(completion);
+
+                    var hubActivator = serviceProvider.GetService<IHubActivator<StreamingHub>>() as CustomHubActivator<StreamingHub>;
+
+                    // OnConnectedAsync and ThrowStream hubs have been disposed
+                    Assert.Equal(2, hubActivator.ReleaseCount);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StreamMethodThatReturnsNullWillCleanup()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+                {
+                    builder.AddSingleton(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    await client.Connected.OrTimeout();
+
+                    var messages = await client.StreamAsync(nameof(StreamingHub.NullStream));
+
+                    Assert.Equal(1, messages.Count);
+                    var completion = messages[0] as CompletionMessage;
+                    Assert.NotNull(completion);
+
+                    var hubActivator = serviceProvider.GetService<IHubActivator<StreamingHub>>() as CustomHubActivator<StreamingHub>;
+
+                    // OnConnectedAsync and NullStream hubs have been disposed
+                    Assert.Equal(2, hubActivator.ReleaseCount);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StreamMethodWithDuplicateIdFails()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+                {
+                    builder.AddSingleton(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    await client.Connected.OrTimeout();
+
+                    await client.SendHubMessageAsync(new StreamInvocationMessage("123", nameof(StreamingHub.BlockingStream), Array.Empty<object>())).OrTimeout();
+
+                    await client.SendHubMessageAsync(new StreamInvocationMessage("123", nameof(StreamingHub.BlockingStream), Array.Empty<object>())).OrTimeout();
+
+                    var completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().OrTimeout());
+                    Assert.Equal("Invocation ID '123' is already in use.", completion.Error);
+
+                    var hubActivator = serviceProvider.GetService<IHubActivator<StreamingHub>>() as CustomHubActivator<StreamingHub>;
+
+                    // OnConnectedAsync and BlockingStream hubs have been disposed
+                    Assert.Equal(2, hubActivator.ReleaseCount);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InvocationsRunInOrderWithNoParallelism()
         {
             using (StartVerifiableLog())
             {
@@ -3048,6 +3225,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
                 {
                     builder.AddSingleton(tcsService);
+
+                    builder.AddSignalR(options =>
+                    {
+                        options.MaximumParallelInvocationsPerClient = 1;
+                    });
                 }, LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
 
@@ -3090,7 +3272,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task StreamInvocationsBlockOtherInvocationsUntilTheyStartStreaming()
+        public async Task InvocationsCanRunOutOfOrderWithParallelism()
         {
             using (StartVerifiableLog())
             {
@@ -3098,7 +3280,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
                 {
                     builder.AddSingleton(tcsService);
-                    builder.AddSingleton(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
+
+                    builder.AddSignalR(options =>
+                    {
+                        options.MaximumParallelInvocationsPerClient = 2;
+                    });
                 }, LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
 
@@ -3108,7 +3294,71 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
 
                     // Long running hub invocation to test that other invocations will not run until it is completed
-                    var streamInvocationId = await client.SendStreamInvocationAsync(nameof(LongRunningHub.LongRunningStream), null).OrTimeout();
+                    await client.SendInvocationAsync(nameof(LongRunningHub.LongRunningMethod), nonBlocking: false).OrTimeout();
+                    // Wait for the long running method to start
+                    await tcsService.StartedMethod.Task.OrTimeout();
+
+                    for (var i = 0; i < 5; i++)
+                    {
+                        // Invoke another hub method which will wait for the first method to finish
+                        await client.SendInvocationAsync(nameof(LongRunningHub.SimpleMethod), nonBlocking: false).OrTimeout();
+
+                        // simple hub method result
+                        var secondResult = await client.ReadAsync().OrTimeout();
+
+                        var simpleCompletion = Assert.IsType<CompletionMessage>(secondResult);
+                        Assert.Equal(21L, simpleCompletion.Result);
+                    }
+
+                    // Release the long running hub method
+                    tcsService.EndMethod.TrySetResult(null);
+
+                    // Long running hub method result
+                    var firstResult = await client.ReadAsync().OrTimeout();
+
+                    var longRunningCompletion = Assert.IsType<CompletionMessage>(firstResult);
+                    Assert.Equal(12L, longRunningCompletion.Result);
+
+                    // Shut down
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task PendingInvocationUnblockedWhenBlockingMethodCompletesWithParallelism()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+                {
+                    builder.AddSingleton(tcsService);
+
+                    builder.AddSignalR(options =>
+                    {
+                        options.MaximumParallelInvocationsPerClient = 2;
+                    });
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
+
+                // Because we use PipeScheduler.Inline the hub invocations will run inline until they wait, which happens inside the LongRunningMethod call
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                    // Long running hub invocation to test that other invocations will not run until it is completed
+                    await client.SendInvocationAsync(nameof(LongRunningHub.LongRunningMethod), nonBlocking: false).OrTimeout();
+                    // Wait for the long running method to start
+                    await tcsService.StartedMethod.Task.OrTimeout();
+                    // Grab the tcs before resetting to use in the second long running method
+                    var endTcs = tcsService.EndMethod;
+                    tcsService.Reset();
+
+                    // Long running hub invocation to test that other invocations will not run until it is completed
+                    await client.SendInvocationAsync(nameof(LongRunningHub.LongRunningMethod), nonBlocking: false).OrTimeout();
                     // Wait for the long running method to start
                     await tcsService.StartedMethod.Task.OrTimeout();
 
@@ -3117,21 +3367,79 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     // Both invocations should be waiting now
                     Assert.Null(client.TryRead());
 
-                    // Release the long running hub method
+                    // Release the second long running hub method
                     tcsService.EndMethod.TrySetResult(null);
 
-                    // simple hub method result
-                    var result = await client.ReadAsync().OrTimeout();
+                    // Long running hub method result
+                    var firstResult = await client.ReadAsync().OrTimeout();
 
-                    var simpleCompletion = Assert.IsType<CompletionMessage>(result);
+                    var longRunningCompletion = Assert.IsType<CompletionMessage>(firstResult);
+                    Assert.Equal(12L, longRunningCompletion.Result);
+
+                    // simple hub method result
+                    var secondResult = await client.ReadAsync().OrTimeout();
+
+                    var simpleCompletion = Assert.IsType<CompletionMessage>(secondResult);
                     Assert.Equal(21L, simpleCompletion.Result);
+
+                    // Release the first long running hub method
+                    endTcs.TrySetResult(null);
+
+                    firstResult = await client.ReadAsync().OrTimeout();
+                    longRunningCompletion = Assert.IsType<CompletionMessage>(firstResult);
+                    Assert.Equal(12L, longRunningCompletion.Result);
+
+                    // Shut down
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StreamInvocationsDoNotBlockOtherInvocations()
+        {
+            using (StartVerifiableLog())
+            {
+                var tcsService = new TcsService();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+                {
+                    builder.AddSingleton(tcsService);
+                    builder.AddSingleton(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
+
+                    builder.AddSignalR(options =>
+                    {
+                        options.MaximumParallelInvocationsPerClient = 1;
+                    });
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
+
+                // Because we use PipeScheduler.Inline the hub invocations will run inline until they go async
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                    // Long running stream invocation to test that other invocations can still run before it is completed
+                    var streamInvocationId = await client.SendStreamInvocationAsync(nameof(LongRunningHub.LongRunningStream), null).OrTimeout();
+                    // Wait for the long running method to start
+                    await tcsService.StartedMethod.Task.OrTimeout();
+
+                    // Invoke another hub method which will be able to run even though a streaming method is still running
+                    var completion = await client.InvokeAsync(nameof(LongRunningHub.SimpleMethod)).OrTimeout();
+                    Assert.Null(completion.Error);
+                    Assert.Equal(21L, completion.Result);
+
+                    // Release the long running hub method
+                    tcsService.EndMethod.TrySetResult(null);
 
                     var hubActivator = serviceProvider.GetService<IHubActivator<LongRunningHub>>() as CustomHubActivator<LongRunningHub>;
 
                     await client.SendHubMessageAsync(new CancelInvocationMessage(streamInvocationId)).OrTimeout();
 
                     // Completion message for canceled Stream
-                    await client.ReadAsync().OrTimeout();
+                    completion = Assert.IsType<CompletionMessage>(await client.ReadAsync().OrTimeout());
+                    Assert.Equal(streamInvocationId, completion.InvocationId);
 
                     // Shut down
                     client.Dispose();
@@ -3297,6 +3605,95 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        private class DelayRequirement : AuthorizationHandler<DelayRequirement, HubInvocationContext>, IAuthorizationRequirement
+        {
+            private readonly TcsService _tcsService;
+            public DelayRequirement(TcsService tcsService)
+            {
+                _tcsService = tcsService;
+            }
+
+            protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, DelayRequirement requirement, HubInvocationContext resource)
+            {
+                _tcsService.StartedMethod.SetResult(null);
+                await _tcsService.EndMethod.Task;
+                context.Succeed(requirement);
+            }
+        }
+
+        [Fact]
+        // Test to check if StreamItems can be processed before the Stream from the invocation is properly registered internally
+        public async Task UploadStreamStreamItemsSentAsSoonAsPossible()
+        {
+            // Use Auth as the delay injection point because it is one of the first things to run after the invocation message has been parsed
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddAuthorization(options =>
+                {
+                    options.AddPolicy("test", policy =>
+                    {
+                        policy.Requirements.Add(new DelayRequirement(tcsService));
+                    });
+                });
+            });
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+                await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.UploadArrayAuth), new[] { "id" }, Array.Empty<object>());
+                await tcsService.StartedMethod.Task.OrTimeout();
+
+                var objects = new[] { new SampleObject("solo", 322), new SampleObject("ggez", 3145) };
+                foreach (var thing in objects)
+                {
+                    await client.SendHubMessageAsync(new StreamItemMessage("id", thing)).OrTimeout();
+                }
+
+                tcsService.EndMethod.SetResult(null);
+
+                await client.SendHubMessageAsync(CompletionMessage.Empty("id")).OrTimeout();
+                var response = (CompletionMessage)await client.ReadAsync().OrTimeout();
+                var result = ((JArray)response.Result).ToArray<object>();
+
+                Assert.Equal(objects[0].Foo, ((JContainer)result[0])["foo"]);
+                Assert.Equal(objects[0].Bar, ((JContainer)result[0])["bar"]);
+                Assert.Equal(objects[1].Foo, ((JContainer)result[1])["foo"]);
+                Assert.Equal(objects[1].Bar, ((JContainer)result[1])["bar"]);
+            }
+        }
+
+        [Fact]
+        public async Task UploadStreamDoesNotCountTowardsMaxInvocationLimit()
+        {
+            var tcsService = new TcsService();
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.AddSignalR(options => options.MaximumParallelInvocationsPerClient = 1);
+                services.AddSingleton(tcsService);
+            });
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<LongRunningHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+                await client.BeginUploadStreamAsync("invocation", nameof(LongRunningHub.Upload), new[] { "id" }, Array.Empty<object>());
+                await tcsService.StartedMethod.Task.OrTimeout();
+
+                var completion = await client.InvokeAsync(nameof(LongRunningHub.SimpleMethod)).OrTimeout();
+                Assert.Null(completion.Error);
+                Assert.Equal(21L, completion.Result);
+
+                await client.SendHubMessageAsync(CompletionMessage.Empty("id")).OrTimeout();
+
+                await tcsService.EndMethod.Task.OrTimeout();
+                var response = (CompletionMessage)await client.ReadAsync().OrTimeout();
+                Assert.Null(response.Result);
+                Assert.Null(response.Error);
+            }
+        }
+
         [Fact]
         public async Task ConnectionAbortedIfSendFailsWithProtocolError()
         {
@@ -3314,6 +3711,52 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     await client.SendInvocationAsync(nameof(MethodHub.ProtocolError)).OrTimeout();
                     await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task SerializationExceptionsSendSelfArePassedToOnDisconnectedAsync()
+        {
+            using (StartVerifiableLog(write => write.EventId.Name == "FailedWritingMessage"))
+            {
+                var state = new ConnectionLifetimeState();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(s => s.AddSingleton(state), LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ConnectionLifetimeHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    // Test HubConnectionContext.WriteCore(HubMessage) codepath
+                    await client.SendInvocationAsync(nameof(ConnectionLifetimeHub.ProtocolErrorSelf)).OrTimeout();
+
+                    await connectionHandlerTask.OrTimeout();
+
+                    Assert.IsType<System.Text.Json.JsonException>(state.DisconnectedException);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task SerializationExceptionsSendAllArePassedToOnDisconnectedAsync()
+        {
+            using (StartVerifiableLog(write => write.EventId.Name == "FailedWritingMessage"))
+            {
+                var state = new ConnectionLifetimeState();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(s => s.AddSingleton(state), LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ConnectionLifetimeHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    // Test HubConnectionContext.WriteCore(SerializedHubMessage) codepath
+                    await client.SendInvocationAsync(nameof(ConnectionLifetimeHub.ProtocolErrorAll)).OrTimeout();
+
+                    await connectionHandlerTask.OrTimeout();
+
+                    Assert.IsType<System.Text.Json.JsonException>(state.DisconnectedException);
                 }
             }
         }
@@ -4011,8 +4454,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             public int ReleaseCount;
             private IServiceProvider _serviceProvider;
-            public TaskCompletionSource<object> ReleaseTask = new TaskCompletionSource<object>();
-            public TaskCompletionSource<object> CreateTask = new TaskCompletionSource<object>();
+            public TaskCompletionSource ReleaseTask = new TaskCompletionSource();
+            public TaskCompletionSource CreateTask = new TaskCompletionSource();
 
             public CustomHubActivator(IServiceProvider serviceProvider)
             {
@@ -4021,9 +4464,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             public THub Create()
             {
-                ReleaseTask = new TaskCompletionSource<object>();
+                ReleaseTask = new TaskCompletionSource();
                 var hub = new DefaultHubActivator<THub>(_serviceProvider).Create();
-                CreateTask.TrySetResult(null);
+                CreateTask.TrySetResult();
                 return hub;
             }
 
@@ -4031,8 +4474,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 ReleaseCount++;
                 hub.Dispose();
-                ReleaseTask.TrySetResult(null);
-                CreateTask = new TaskCompletionSource<object>();
+                ReleaseTask.TrySetResult();
+                CreateTask = new TaskCompletionSource();
             }
         }
 

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -13,6 +14,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI.AzureADB2C.Controlle
     [AllowAnonymous]
     [Area("AzureADB2C")]
     [Route("[area]/[controller]/[action]")]
+    [Obsolete("This is obsolete and will be removed in a future version. Use Microsoft.Identity.Web instead. See https://aka.ms/ms-identity-web.")]
     internal class AccountController : Controller
     {
         private readonly IOptionsMonitor<AzureADB2COptions> _options;

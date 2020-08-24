@@ -42,10 +42,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23366")]
         public void CanRenderTextOnlyComponent()
         {
             var appElement = Browser.MountTestComponent<TextOnlyComponent>();
-            Assert.Equal("Hello from TextOnlyComponent", appElement.Text);
+
+            Browser.Exists(By.XPath("//*[contains(., 'Hello from TextOnlyComponent')]"));
         }
 
         // This verifies that we've correctly configured the Razor language version via MSBuild.
@@ -329,8 +331,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var showPromptButton = appElement.FindElements(By.TagName("button")).First();
             showPromptButton.Click();
 
-            var modal = new WebDriverWait(Browser, TimeSpan.FromSeconds(3))
-                .Until(SwitchToAlert);
+            var modal = Browser.Exists(() => Browser.SwitchTo().Alert(), TimeSpan.FromSeconds(3));
             modal.SendKeys("Some value from test");
             modal.Accept();
             var promptResult = appElement.FindElement(By.TagName("strong"));
@@ -401,6 +402,26 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanUseFocusExtensionToFocusElement()
+        {
+            var appElement = Browser.MountTestComponent<ElementFocusComponent>();
+            var buttonElement = appElement.FindElement(By.Id("focus-button"));
+
+            // Make sure the input element isn't focused when the test begins; we don't want
+            // the test to pass just because the input started as the focused element
+            Browser.NotEqual("focus-input", getFocusedElementId);
+
+            // Click the button whose callback focuses the input element
+            buttonElement.Click();
+
+            // Verify that the input element is focused
+            Browser.Equal("focus-input", getFocusedElementId);
+
+            // A local helper that gets the ID of the focused element.
+            string getFocusedElementId() => Browser.SwitchTo().ActiveElement().GetAttribute("id");
+        }
+
+        [Fact]
         public void CanCaptureReferencesToDynamicallyAddedElements()
         {
             var appElement = Browser.MountTestComponent<ElementRefComponent>();
@@ -464,6 +485,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest]
         public void CanRenderMarkupBlocks()
         {
             var appElement = Browser.MountTestComponent<MarkupBlockComponent>();
@@ -647,16 +669,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             });
         }
 
-        static IAlert SwitchToAlert(IWebDriver driver)
+        [Fact]
+        public void CanHandleClearedChild()
         {
-            try
-            {
-                return driver.SwitchTo().Alert();
-            }
-            catch (NoAlertPresentException)
-            {
-                return null;
-            }
-        }
+            var appElement = Browser.MountTestComponent<ContentEditable>();
+            var input = appElement.FindElement(By.Id("editable-div"));
+            var clickable = appElement.FindElement(By.Id("clickable"));
+
+            input.Clear();
+            clickable.Click();
+
+            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+            Assert.DoesNotContain(log, entry => entry.Level == LogLevel.Severe);
+            Browser.Equal("", () => input.Text);
+        } 
     }
 }

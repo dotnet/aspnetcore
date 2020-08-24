@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
         {
             if (_acks.TryRemove(id, out var ack))
             {
-                ack.Tcs.TrySetResult(null);
+                ack.Tcs.TrySetResult();
             }
         }
 
@@ -104,13 +104,13 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal
 
         private class AckInfo
         {
-            public TaskCompletionSource<object> Tcs { get; private set; }
+            public TaskCompletionSource Tcs { get; private set; }
             public DateTime Created { get; private set; }
 
             public AckInfo()
             {
                 Created = DateTime.UtcNow;
-                Tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                Tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             }
         }
     }

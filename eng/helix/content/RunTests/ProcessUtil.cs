@@ -66,7 +66,7 @@ namespace RunTests
             string filename,
             string arguments,
             string? workingDirectory = null,
-            string dumpDirectoryPath = null,
+            string? dumpDirectoryPath = null,
             bool throwOnError = true,
             IDictionary<string, string?>? environmentVariables = null,
             Action<string>? outputDataReceived = null,

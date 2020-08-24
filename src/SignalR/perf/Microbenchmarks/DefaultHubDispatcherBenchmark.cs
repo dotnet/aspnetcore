@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             var contextOptions = new HubConnectionContextOptions()
             {
                 KeepAliveInterval = TimeSpan.Zero,
+                StreamBufferCapacity = 10,
             };
             _connectionContext = new NoErrorHubConnectionContext(connection, contextOptions, NullLoggerFactory.Instance);
 
@@ -83,7 +84,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 
         public class NoErrorHubConnectionContext : HubConnectionContext
         {
-            public TaskCompletionSource<object> ReceivedCompleted = new TaskCompletionSource<object>();
+            public TaskCompletionSource ReceivedCompleted = new TaskCompletionSource();
 
             public NoErrorHubConnectionContext(ConnectionContext connectionContext, HubConnectionContextOptions contextOptions, ILoggerFactory loggerFactory)
                 : base(connectionContext, contextOptions, loggerFactory)
@@ -94,7 +95,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             {
                 if (message is CompletionMessage completionMessage)
                 {
-                    ReceivedCompleted.TrySetResult(null);
+                    ReceivedCompleted.TrySetResult();
 
                     if (!string.IsNullOrEmpty(completionMessage.Error))
                     {
@@ -264,7 +265,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamChannelReaderCount", new object[] { 0 }));
 
             await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
-            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource();
         }
 
         [Benchmark]
@@ -273,7 +274,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamIAsyncEnumerableCount", new object[] { 0 }));
 
             await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
-            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource();
         }
 
         [Benchmark]
@@ -282,7 +283,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamIAsyncEnumerableCountCompletedTask", new object[] { 0 }));
 
             await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
-            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource();
         }
 
         [Benchmark]
@@ -291,7 +292,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamChannelReaderCount", new object[] { 1 }));
 
             await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
-            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource();
         }
 
         [Benchmark]
@@ -300,7 +301,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamIAsyncEnumerableCount", new object[] { 1 }));
 
             await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
-            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource();
         }
 
         [Benchmark]
@@ -309,7 +310,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamIAsyncEnumerableCountCompletedTask", new object[] { 1 }));
 
             await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
-            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource();
         }
 
         [Benchmark]
@@ -318,7 +319,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamChannelReaderCount", new object[] { 1000 }));
 
             await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
-            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource();
         }
 
         [Benchmark]
@@ -327,7 +328,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamIAsyncEnumerableCount", new object[] { 1000 }));
 
             await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
-            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource();
         }
 
         [Benchmark]
@@ -336,7 +337,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             await _dispatcher.DispatchMessageAsync(_connectionContext, new StreamInvocationMessage("123", "StreamIAsyncEnumerableCountCompletedTask", new object[] { 1000 }));
 
             await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
-            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource();
         }
 
         [Benchmark]
@@ -347,7 +348,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             await _dispatcher.DispatchMessageAsync(_connectionContext, CompletionMessage.Empty("1"));
 
             await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
-            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource();
         }
 
         [Benchmark]
@@ -358,7 +359,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             await _dispatcher.DispatchMessageAsync(_connectionContext, CompletionMessage.Empty("1"));
 
             await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
-            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource();
         }
 
         [Benchmark]
@@ -372,7 +373,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             await _dispatcher.DispatchMessageAsync(_connectionContext, CompletionMessage.Empty("1"));
 
             await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
-            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource();
         }
 
         [Benchmark]
@@ -386,7 +387,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             await _dispatcher.DispatchMessageAsync(_connectionContext, CompletionMessage.Empty("1"));
 
             await (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted.Task;
-            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource<object>();
+            (_connectionContext as NoErrorHubConnectionContext).ReceivedCompleted = new TaskCompletionSource();
         }
     }
 }

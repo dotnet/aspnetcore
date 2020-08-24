@@ -23,14 +23,14 @@ namespace Microsoft.AspNetCore.Authentication
             HttpContext context,
             AuthenticationScheme scheme,
             TOptions options,
-            AuthenticationProperties properties)
+            AuthenticationProperties? properties)
             : base(context, scheme, options)
             => Properties = properties ?? new AuthenticationProperties();
 
         /// <summary>
         /// Gets the <see cref="ClaimsPrincipal"/> containing the user claims.
         /// </summary>
-        public ClaimsPrincipal Principal { get; set; }
+        public ClaimsPrincipal? Principal { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="AuthenticationProperties"/>.
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Calls success creating a ticket with the <see cref="Principal"/> and <see cref="Properties"/>.
         /// </summary>
-        public void Success() => Result = HandleRequestResult.Success(new AuthenticationTicket(Principal, Properties, Scheme.Name));
+        public void Success() => Result = HandleRequestResult.Success(new AuthenticationTicket(Principal!, Properties, Scheme.Name));
 
         public void Fail(Exception failure) => Result = HandleRequestResult.Fail(failure);
 

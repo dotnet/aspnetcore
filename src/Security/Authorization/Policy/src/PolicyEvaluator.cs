@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Authorization.Policy
         {
             if (policy.AuthenticationSchemes != null && policy.AuthenticationSchemes.Count > 0)
             {
-                ClaimsPrincipal newPrincipal = null;
+                ClaimsPrincipal? newPrincipal = null;
                 foreach (var scheme in policy.AuthenticationSchemes)
                 {
                     var result = await context.AuthenticateAsync(scheme);
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Authorization.Policy
         /// <returns>Returns <see cref="PolicyAuthorizationResult.Success"/> if authorization succeeds.
         /// Otherwise returns <see cref="PolicyAuthorizationResult.Forbid(AuthorizationFailure)"/> if <see cref="AuthenticateResult.Succeeded"/>, otherwise
         /// returns  <see cref="PolicyAuthorizationResult.Challenge"/></returns>
-        public virtual async Task<PolicyAuthorizationResult> AuthorizeAsync(AuthorizationPolicy policy, AuthenticateResult authenticationResult, HttpContext context, object resource)
+        public virtual async Task<PolicyAuthorizationResult> AuthorizeAsync(AuthorizationPolicy policy, AuthenticateResult authenticationResult, HttpContext context, object? resource)
         {
             if (policy == null)
             {

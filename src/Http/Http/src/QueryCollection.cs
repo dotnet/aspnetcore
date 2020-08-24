@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Http
         private static readonly IEnumerator<KeyValuePair<string, StringValues>> EmptyIEnumeratorType = EmptyEnumerator;
         private static readonly IEnumerator EmptyIEnumerator = EmptyEnumerator;
 
-        private Dictionary<string, StringValues> Store { get; set; }
+        private Dictionary<string, StringValues>? Store { get; set; }
 
         public QueryCollection()
         {

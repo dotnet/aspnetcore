@@ -26,9 +26,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             // For the first run experience we don't need to know if the certificate can be exported.
             return true;
 #else
-            return (c.GetRSAPrivateKey() is RSACryptoServiceProvider rsaPrivateKey &&
+            using var key = c.GetRSAPrivateKey();
+            return (key is RSACryptoServiceProvider rsaPrivateKey &&
                     rsaPrivateKey.CspKeyContainerInfo.Exportable) ||
-                (c.GetRSAPrivateKey() is RSACng cngPrivateKey &&
+                (key is RSACng cngPrivateKey &&
                     cngPrivateKey.Key.ExportPolicy == CngExportPolicies.AllowExport);
 #endif
         }
@@ -49,6 +50,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             // On non OSX systems we need to export the certificate and import it so that the transient
             // key that we generated gets persisted.
             var export = certificate.Export(X509ContentType.Pkcs12, "");
+            certificate.Dispose();
             certificate = new X509Certificate2(export, "", X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
             Array.Clear(export, 0, export.Length);
             certificate.FriendlyName = AspNetHttpsOidFriendlyName;
@@ -65,7 +67,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         protected override void TrustCertificateCore(X509Certificate2 certificate)
         {
-            var publicCertificate = new X509Certificate2(certificate.Export(X509ContentType.Cert));
+            using var publicCertificate = new X509Certificate2(certificate.Export(X509ContentType.Cert));
 
             publicCertificate.FriendlyName = certificate.FriendlyName;
 

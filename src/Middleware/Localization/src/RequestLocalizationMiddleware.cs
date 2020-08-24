@@ -36,7 +36,6 @@ namespace Microsoft.AspNetCore.Localization
         /// <param name="options">The <see cref="RequestLocalizationOptions"/> representing the options for the
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/> used for logging.</param>
         /// <see cref="RequestLocalizationMiddleware"/>.</param>
-        [ActivatorUtilitiesConstructor]
         public RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options, ILoggerFactory loggerFactory)
         {
             if (options == null)
@@ -47,18 +46,6 @@ namespace Microsoft.AspNetCore.Localization
             _next = next ?? throw new ArgumentNullException(nameof(next));
             _logger = loggerFactory?.CreateLogger<RequestLocalizationMiddleware>() ?? throw new ArgumentNullException(nameof(loggerFactory));
             _options = options.Value;
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="RequestLocalizationMiddleware"/>.
-        /// </summary>
-        /// <param name="next">The <see cref="RequestDelegate"/> representing the next middleware in the pipeline.</param>
-        /// <param name="options">The <see cref="RequestLocalizationOptions"/> representing the options for the
-        /// <see cref="RequestLocalizationMiddleware"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. Use RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options, ILoggerFactory loggerFactory) instead")]
-        public RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options)
-               : this(next, options, NullLoggerFactory.Instance)
-        {
         }
 
         /// <summary>

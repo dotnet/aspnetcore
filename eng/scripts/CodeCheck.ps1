@@ -139,7 +139,7 @@ try {
         | ? {
             # These .sln files are used by the templating engine.
             ($_.Name -ne "BlazorServerWeb_CSharp.sln") -and
-            ($_.Name -ne "BlazorWasm-CSharp.sln")
+            ($_.Name -ne "ComponentsWebAssembly-CSharp.sln")
         } `
         | % {
         Write-Host "  Checking $(Split-Path -Leaf $_)"
@@ -164,11 +164,6 @@ try {
     Write-Host "Re-generating project lists"
     Invoke-Block {
         & $PSScriptRoot\GenerateProjectList.ps1 -ci:$ci
-    }
-
-    Write-Host "Re-generating references assemblies"
-    Invoke-Block {
-        & $PSScriptRoot\GenerateReferenceAssemblies.ps1 -ci:$ci
     }
 
     Write-Host "Re-generating package baselines"

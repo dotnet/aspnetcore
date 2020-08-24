@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     var httpHandler = new TestHttpMessageHandler();
 
-                    var connectResponseTcs = new TaskCompletionSource<object>();
+                    var connectResponseTcs = new TaskCompletionSource();
                     httpHandler.OnGet("/?id=00000000-0000-0000-0000-000000000000", async (_, __) =>
                     {
                         await connectResponseTcs.Task;
@@ -374,7 +374,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             var startTask = connection.StartAsync();
                             Assert.False(connectResponseTcs.Task.IsCompleted);
                             Assert.False(startTask.IsCompleted);
-                            connectResponseTcs.TrySetResult(null);
+                            connectResponseTcs.TrySetResult();
                             await startTask.OrTimeout();
                         });
                 }

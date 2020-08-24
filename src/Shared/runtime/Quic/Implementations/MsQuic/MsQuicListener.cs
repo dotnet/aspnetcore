@@ -1,8 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 #nullable enable
+using System.Diagnostics;
 using System.Net.Quic.Implementations.MsQuic.Internal;
 using System.Net.Security;
 using System.Runtime.InteropServices;
@@ -16,7 +16,7 @@ namespace System.Net.Quic.Implementations.MsQuic
     internal sealed class MsQuicListener : QuicListenerProvider, IDisposable
     {
         // Security configuration for MsQuic
-        private MsQuicSession _session;
+        private readonly MsQuicSession _session;
 
         // Pointer to the underlying listener
         // TODO replace all IntPtr with SafeHandles
@@ -26,10 +26,10 @@ namespace System.Net.Quic.Implementations.MsQuic
         private GCHandle _handle;
 
         // Delegate that wraps the static function that will be called when receiving an event.
-        private ListenerCallbackDelegate? _listenerDelegate;
+        internal static readonly ListenerCallbackDelegate s_listenerDelegate = new ListenerCallbackDelegate(NativeCallbackHandler);
 
         // Ssl listening options (ALPN, cert, etc)
-        private SslServerAuthenticationOptions _sslOptions;
+        private readonly SslServerAuthenticationOptions _sslOptions;
 
         private QuicListenerOptions _options;
         private volatile bool _disposed;
@@ -63,8 +63,6 @@ namespace System.Net.Quic.Implementations.MsQuic
 
         internal override async ValueTask<QuicConnectionProvider> AcceptConnectionAsync(CancellationToken cancellationToken = default)
         {
-            if (NetEventSource.IsEnabled) NetEventSource.Enter(this);
-
             ThrowIfDisposed();
 
             MsQuicConnection connection;
@@ -82,7 +80,6 @@ namespace System.Net.Quic.Implementations.MsQuic
                 _options.CertificateFilePath,
                 _options.PrivateKeyFilePath).ConfigureAwait(false);
 
-            if (NetEventSource.IsEnabled) NetEventSource.Exit(this);
             return connection;
         }
 
@@ -146,11 +143,10 @@ namespace System.Net.Quic.Implementations.MsQuic
         {
             SOCKADDR_INET inetAddress = MsQuicParameterHelpers.GetINetParam(MsQuicApi.Api, _ptr, (uint)QUIC_PARAM_LEVEL.LISTENER, (uint)QUIC_PARAM_LISTENER.LOCAL_ADDRESS);
 
-            _listenEndPoint = MsQuicAddressHelpers.INetToIPEndPoint(inetAddress);
+            _listenEndPoint = MsQuicAddressHelpers.INetToIPEndPoint(ref inetAddress);
         }
 
-        internal unsafe uint ListenerCallbackHandler(
-            ref ListenerEvent evt)
+        internal unsafe uint ListenerCallbackHandler(ref ListenerEvent evt)
         {
             try
             {
@@ -158,10 +154,14 @@ namespace System.Net.Quic.Implementations.MsQuic
                 {
                     case QUIC_LISTENER_EVENT.NEW_CONNECTION:
                         {
-                            NewConnectionInfo connectionInfo = *(NewConnectionInfo*)evt.Data.NewConnection.Info;
-                            IPEndPoint localEndPoint = MsQuicAddressHelpers.INetToIPEndPoint(*(SOCKADDR_INET*)connectionInfo.LocalAddress);
-                            IPEndPoint remoteEndPoint = MsQuicAddressHelpers.INetToIPEndPoint(*(SOCKADDR_INET*)connectionInfo.RemoteAddress);
+                            ref NewConnectionInfo connectionInfo = ref *(NewConnectionInfo*)evt.Data.NewConnection.Info;
+
+                            IPEndPoint localEndPoint = MsQuicAddressHelpers.INetToIPEndPoint(ref *(SOCKADDR_INET*)connectionInfo.LocalAddress);
+                            IPEndPoint remoteEndPoint = MsQuicAddressHelpers.INetToIPEndPoint(ref *(SOCKADDR_INET*)connectionInfo.RemoteAddress);
+
                             MsQuicConnection msQuicConnection = new MsQuicConnection(localEndPoint, remoteEndPoint, evt.Data.NewConnection.Connection);
+                            msQuicConnection.SetNegotiatedAlpn(connectionInfo.NegotiatedAlpn, connectionInfo.NegotiatedAlpnLength);
+
                             _acceptConnectionQueue.Writer.TryWrite(msQuicConnection);
                         }
                         // Always pend the new connection to wait for the security config to be resolved
@@ -171,8 +171,15 @@ namespace System.Net.Quic.Implementations.MsQuic
                         return MsQuicStatusCodes.InternalError;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                if (NetEventSource.Log.IsEnabled())
+                {
+                    NetEventSource.Error(this, $"Exception occurred during connection callback: {ex.Message}");
+                }
+
+                // TODO: trigger an exception on any outstanding async calls.
+
                 return MsQuicStatusCodes.InternalError;
             }
         }
@@ -182,7 +189,7 @@ namespace System.Net.Quic.Implementations.MsQuic
             _acceptConnectionQueue.Writer.TryComplete();
         }
 
-        internal static uint NativeCallbackHandler(
+        private static uint NativeCallbackHandler(
             IntPtr listener,
             IntPtr context,
             ref ListenerEvent connectionEventStruct)
@@ -195,11 +202,12 @@ namespace System.Net.Quic.Implementations.MsQuic
 
         internal void SetCallbackHandler()
         {
+            Debug.Assert(!_handle.IsAllocated);
             _handle = GCHandle.Alloc(this);
-            _listenerDelegate = new ListenerCallbackDelegate(NativeCallbackHandler);
+
             MsQuicApi.Api.SetCallbackHandlerDelegate(
                 _ptr,
-                _listenerDelegate,
+                s_listenerDelegate,
                 GCHandle.ToIntPtr(_handle));
         }
 

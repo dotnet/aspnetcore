@@ -104,6 +104,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".eps", "application/postscript" },
                 { ".etx", "text/x-setext" },
                 { ".evy", "application/envoy" },
+                { ".exe", "application/vnd.microsoft.portable-executable" }, // https://www.iana.org/assignments/media-types/application/vnd.microsoft.portable-executable
                 { ".fdf", "application/vnd.fdf" },
                 { ".fif", "application/fractals" },
                 { ".fla", "application/octet-stream" },

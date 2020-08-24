@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
-                        length.ToString("x"), 
+                        length.ToString("x"),
                         new string('a', length),
                         "0",
                         "",
@@ -485,7 +485,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            var flushWh = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var flushWh = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             await using (var server = new TestServer(async httpContext =>
             {
@@ -514,7 +514,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Hello ",
                         "");
 
-                    flushWh.SetResult(null);
+                    flushWh.SetResult();
 
                     await connection.Receive(
                         "6",

@@ -13,9 +13,11 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -373,7 +375,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
             };
 
-            var unbindTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var unbindTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var mockTransport = new Mock<IConnectionListener>();
             var mockTransportFactory = new Mock<IConnectionListenerFactory>();
@@ -411,7 +413,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 stopTask1.Wait();
             });
 
-            unbindTcs.SetResult(null);
+            unbindTcs.SetResult();
 
             // If stopTask2 is completed inline by the first call to StopAsync, stopTask1 will never complete.
             await stopTask1.DefaultTimeout();
@@ -467,16 +469,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }).Build();
 
             Func<Task> changeCallback = null;
-            TaskCompletionSource<object> changeCallbackRegisteredTcs = null;
+            TaskCompletionSource changeCallbackRegisteredTcs = null;
 
             var mockChangeToken = new Mock<IChangeToken>();
             mockChangeToken.Setup(t => t.RegisterChangeCallback(It.IsAny<Action<object>>(), It.IsAny<object>())).Returns<Action<object>, object>((callback, state) =>
             {
-                changeCallbackRegisteredTcs?.SetResult(null);
+                changeCallbackRegisteredTcs?.SetResult();
 
                 changeCallback = () =>
                 {
-                    changeCallbackRegisteredTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    changeCallbackRegisteredTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     callback(state);
                     return changeCallbackRegisteredTcs.Task;
                 };
@@ -493,8 +495,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(mockLoggerFactory.Object);
+            serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
             serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
+            serviceCollection.AddSingleton(Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
             var options = new KestrelServerOptions
             {
@@ -629,8 +632,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             mockLoggerFactory.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(Mock.Of<ILogger>());
 
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton(mockLoggerFactory.Object);
+            serviceCollection.AddSingleton(Mock.Of<IHostEnvironment>());
             serviceCollection.AddSingleton(Mock.Of<ILogger<KestrelServer>>());
+            serviceCollection.AddSingleton(Mock.Of<ILogger<HttpsConnectionMiddleware>>());
 
             var options = new KestrelServerOptions
             {

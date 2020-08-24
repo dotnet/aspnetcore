@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 case 404:
                 case 500:
                     // Status codes which exist in the HTTP/2 StaticTable.
-                    return HPackEncoder.EncodeIndexedHeaderField(H2StaticTable.StatusIndex[statusCode], buffer, out length);
+                    return HPackEncoder.EncodeIndexedHeaderField(H2StaticTable.GetStatusIndex(statusCode), buffer, out length);
                 default:
                     const string name = ":status";
                     var value = StatusCodes.ToStatusString(statusCode);
@@ -151,13 +151,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private static bool IsSensitive(int staticTableIndex, string name)
         {
             // Set-Cookie could contain sensitive data.
-            if (staticTableIndex == H2StaticTable.SetCookie)
+            switch (staticTableIndex)
             {
-                return true;
-            }
-            if (string.Equals(name, "Content-Disposition", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
+                case H2StaticTable.SetCookie:
+                case H2StaticTable.ContentDisposition:
+                    return true;
+                case -1:
+                    // Content-Disposition currently isn't a known header so a
+                    // static index probably won't be specified.
+                    return string.Equals(name, "Content-Disposition", StringComparison.OrdinalIgnoreCase);
             }
 
             return false;

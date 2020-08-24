@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             return AddQueryString(
-                uri, new[] { new KeyValuePair<string, string>(name, value) });
+                uri, new[] { new KeyValuePair<string, string?>(name, value) });
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <returns>The combined result.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="uri"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="queryString"/> is <c>null</c>.</exception>
-        public static string AddQueryString(string uri, IDictionary<string, string> queryString)
+        public static string AddQueryString(string uri, IDictionary<string, string?> queryString)
         {
             if (uri == null)
             {
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new ArgumentNullException(nameof(queryString));
             }
 
-            return AddQueryString(uri, (IEnumerable<KeyValuePair<string, string>>)queryString);
+            return AddQueryString(uri, (IEnumerable<KeyValuePair<string, string?>>)queryString);
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new ArgumentNullException(nameof(queryString));
             }
 
-            return AddQueryString(uri, queryString.SelectMany(kvp => kvp.Value, (kvp, v) => KeyValuePair.Create(kvp.Key, v)));
+            return AddQueryString(uri, queryString.SelectMany(kvp => kvp.Value, (kvp, v) => KeyValuePair.Create<string, string?>(kvp.Key, v)));
         }
 
         /// <summary>
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <exception cref="ArgumentNullException"><paramref name="queryString"/> is <c>null</c>.</exception>
         public static string AddQueryString(
             string uri,
-            IEnumerable<KeyValuePair<string, string>> queryString)
+            IEnumerable<KeyValuePair<string, string?>> queryString)
         {
             if (uri == null)
             {
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// </summary>
         /// <param name="queryString">The raw query string value, with or without the leading '?'.</param>
         /// <returns>A collection of parsed keys and values, null if there are no entries.</returns>
-        public static Dictionary<string, StringValues> ParseNullableQuery(string queryString)
+        public static Dictionary<string, StringValues>? ParseNullableQuery(string queryString)
         {
             var accumulator = new KeyValueAccumulator();
 

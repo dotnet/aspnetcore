@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.SignalR
     /// </summary>
     public class HubInvocationContext
     {
-        internal ObjectMethodExecutor ObjectMethodExecutor { get; }
+        internal ObjectMethodExecutor ObjectMethodExecutor { get; } = default!;
 
         /// <summary>
         /// Instantiates a new instance of the <see cref="HubInvocationContext"/> class.
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="hub">The instance of the Hub.</param>
         /// <param name="hubMethod">The <see cref="MethodInfo"/> for the Hub method being invoked.</param>
         /// <param name="hubMethodArguments">The arguments provided by the client.</param>
-        public HubInvocationContext(HubCallerContext context, IServiceProvider serviceProvider, Hub hub, MethodInfo hubMethod, IReadOnlyList<object> hubMethodArguments)
+        public HubInvocationContext(HubCallerContext context, IServiceProvider serviceProvider, Hub hub, MethodInfo hubMethod, IReadOnlyList<object?> hubMethodArguments)
         {
             Hub = hub;
             ServiceProvider = serviceProvider;
@@ -40,12 +40,12 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="hubMethodName">The name of the Hub method being invoked.</param>
         /// <param name="hubMethodArguments">The arguments provided by the client.</param>
         [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative is to use the other constructor.")]
-        public HubInvocationContext(HubCallerContext context, string hubMethodName, object[] hubMethodArguments)
+        public HubInvocationContext(HubCallerContext context, string hubMethodName, object?[] hubMethodArguments)
         {
             throw new NotSupportedException("This constructor no longer works. Use the other constructor.");
         }
 
-        internal HubInvocationContext(ObjectMethodExecutor objectMethodExecutor, HubCallerContext context, IServiceProvider serviceProvider, Hub hub, object[] hubMethodArguments)
+        internal HubInvocationContext(ObjectMethodExecutor objectMethodExecutor, HubCallerContext context, IServiceProvider serviceProvider, Hub hub, object?[] hubMethodArguments)
             : this(context, serviceProvider, hub, objectMethodExecutor.MethodInfo, hubMethodArguments)
         {
             ObjectMethodExecutor = objectMethodExecutor;
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets the arguments provided by the client.
         /// </summary>
-        public IReadOnlyList<object> HubMethodArguments { get; }
+        public IReadOnlyList<object?> HubMethodArguments { get; }
 
         /// <summary>
         /// The <see cref="IServiceProvider"/> specific to the scope of this Hub method invocation.

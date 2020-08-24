@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
@@ -9,14 +11,14 @@ namespace Microsoft.Extensions.Internal
 {
     internal class SingleThreadedSynchronizationContext : SynchronizationContext
     {
-        private readonly BlockingCollection<(SendOrPostCallback Callback, object State)> _queue = new BlockingCollection<(SendOrPostCallback Callback, object State)>();
+        private readonly BlockingCollection<(SendOrPostCallback Callback, object? State)> _queue = new BlockingCollection<(SendOrPostCallback Callback, object? State)>();
 
-        public override void Send(SendOrPostCallback d, object state) // Sync operations
+        public override void Send(SendOrPostCallback d, object? state) // Sync operations
         {
             throw new NotSupportedException($"{nameof(SingleThreadedSynchronizationContext)} does not support synchronous operations.");
         }
 
-        public override void Post(SendOrPostCallback d, object state) // Async operations
+        public override void Post(SendOrPostCallback d, object? state) // Async operations
         {
             _queue.Add((d, state));
         }

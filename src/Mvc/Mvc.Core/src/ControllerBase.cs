@@ -1886,13 +1886,29 @@ namespace Microsoft.AspNetCore.Mvc
             string title = null,
             string type = null)
         {
-            var problemDetails = ProblemDetailsFactory.CreateProblemDetails(
-                HttpContext,
-                statusCode: statusCode ?? 500,
-                title: title,
-                type: type,
-                detail: detail,
-                instance: instance);
+            ProblemDetails problemDetails;
+            if (ProblemDetailsFactory == null)
+            {
+                // ProblemDetailsFactory may be null in unit testing scenarios. Improvise to make this more testable.
+                problemDetails = new ProblemDetails
+                {
+                    Detail = detail,
+                    Instance = instance,
+                    Status = statusCode ?? 500,
+                    Title = title,
+                    Type = type,
+                };
+            }
+            else
+            {
+                problemDetails = ProblemDetailsFactory.CreateProblemDetails(
+                    HttpContext,
+                    statusCode: statusCode ?? 500,
+                    title: title,
+                    type: type,
+                    detail: detail,
+                    instance: instance);
+            }
 
             return new ObjectResult(problemDetails)
             {
@@ -1958,14 +1974,30 @@ namespace Microsoft.AspNetCore.Mvc
         {
             modelStateDictionary ??= ModelState;
 
-            var validationProblem = ProblemDetailsFactory.CreateValidationProblemDetails(
-                HttpContext,
-                modelStateDictionary,
-                statusCode: statusCode,
-                title: title,
-                type: type,
-                detail: detail,
-                instance: instance);
+            ValidationProblemDetails validationProblem;
+            if (ProblemDetailsFactory == null)
+            {
+                // ProblemDetailsFactory may be null in unit testing scenarios. Improvise to make this more testable.
+                validationProblem = new ValidationProblemDetails(modelStateDictionary)
+                {
+                    Detail = detail,
+                    Instance = instance,
+                    Status = statusCode,
+                    Title = title,
+                    Type = type,
+                };
+            }
+            else
+            {
+                validationProblem = ProblemDetailsFactory?.CreateValidationProblemDetails(
+                    HttpContext,
+                    modelStateDictionary,
+                    statusCode: statusCode,
+                    title: title,
+                    type: type,
+                    detail: detail,
+                    instance: instance);
+            }
 
             if (validationProblem.Status == 400)
             {
@@ -2387,6 +2419,15 @@ namespace Microsoft.AspNetCore.Mvc
             => new ForbidResult(authenticationSchemes, properties);
 
         /// <summary>
+        /// Creates a <see cref="SignInResult"/>.
+        /// </summary>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> containing the user claims.</param>
+        /// <returns>The created <see cref="SignInResult"/> for the response.</returns>
+        [NonAction]
+        public virtual SignInResult SignIn(ClaimsPrincipal principal)
+            => new SignInResult(principal);
+
+        /// <summary>
         /// Creates a <see cref="SignInResult"/> with the specified authentication scheme.
         /// </summary>
         /// <param name="principal">The <see cref="ClaimsPrincipal"/> containing the user claims.</param>
@@ -2395,6 +2436,18 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual SignInResult SignIn(ClaimsPrincipal principal, string authenticationScheme)
             => new SignInResult(authenticationScheme, principal);
+
+        /// <summary>
+        /// Creates a <see cref="SignInResult"/> with <paramref name="properties"/>.
+        /// </summary>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/> containing the user claims.</param>
+        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-in operation.</param>
+        /// <returns>The created <see cref="SignInResult"/> for the response.</returns>
+        [NonAction]
+        public virtual SignInResult SignIn(
+            ClaimsPrincipal principal,
+            AuthenticationProperties properties)
+            => new SignInResult(principal, properties);
 
         /// <summary>
         /// Creates a <see cref="SignInResult"/> with the specified authentication scheme and
@@ -2410,6 +2463,23 @@ namespace Microsoft.AspNetCore.Mvc
             AuthenticationProperties properties,
             string authenticationScheme)
             => new SignInResult(authenticationScheme, principal, properties);
+
+        /// <summary>
+        /// Creates a <see cref="SignOutResult"/>.
+        /// </summary>
+        /// <returns>The created <see cref="SignOutResult"/> for the response.</returns>
+        [NonAction]
+        public virtual SignOutResult SignOut()
+            => new SignOutResult();
+
+        /// <summary>
+        /// Creates a <see cref="SignOutResult"/> with <paramref name="properties"/>.
+        /// </summary>
+        /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>
+        /// <returns>The created <see cref="SignOutResult"/> for the response.</returns>
+        [NonAction]
+        public virtual SignOutResult SignOut(AuthenticationProperties properties)
+            => new SignOutResult(properties);
 
         /// <summary>
         /// Creates a <see cref="SignOutResult"/> with the specified authentication schemes.

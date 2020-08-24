@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var serviceContext = new TestServiceContext();
             // This needs to run inline
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource();
 
             var connection = new Mock<DefaultConnectionContext> { CallBase = true }.Object;
             connection.ConnectionClosed = new CancellationToken(canceled: true);
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(pairs.ContainsKey("ConnectionId"));
             Assert.Equal(connection.ConnectionId, pairs["ConnectionId"]);
 
-            tcs.TrySetResult(null);
+            tcs.TrySetResult();
 
             await task;
 

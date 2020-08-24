@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <value>
         /// <c>null</c> if <see cref="HasError"/> is <c>true</c>.
         /// </value>
-        public object Model { get; }
+        public object? Model { get; }
 
         /// <summary>
         /// Returns an <see cref="InputFormatterResult"/> indicating the <see cref="IInputFormatter.ReadAsync"/>

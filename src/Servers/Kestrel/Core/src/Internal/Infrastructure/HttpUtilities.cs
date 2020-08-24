@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private const ulong _http10VersionLong = 3471766442030158920; // GetAsciiStringAsLong("HTTP/1.0"); const results in better codegen
         private const ulong _http11VersionLong = 3543824036068086856; // GetAsciiStringAsLong("HTTP/1.1"); const results in better codegen
 
-        private static readonly UTF8EncodingSealed HeaderValueEncoding = new UTF8EncodingSealed();
+        private static readonly UTF8EncodingSealed DefaultRequestHeaderEncoding = new UTF8EncodingSealed();
         private static readonly SpanAction<char, IntPtr> _getHeaderName = GetHeaderName;
         private static readonly SpanAction<char, IntPtr> _getAsciiStringNonNullCharacters = GetAsciiStringNonNullCharacters;
 
@@ -120,6 +120,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
+        public static string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span)
+            => StringUtilities.GetAsciiOrUTF8StringNonNullCharacters(span, DefaultRequestHeaderEncoding);
+
         private static unsafe void GetAsciiStringNonNullCharacters(Span<char> buffer, IntPtr state)
         {
             fixed (char* output = &MemoryMarshal.GetReference(buffer))
@@ -133,84 +136,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        private static string GetAsciiOrUTF8StringNonNullCharacters(this Span<byte> span)
-            => GetAsciiOrUTF8StringNonNullCharacters((ReadOnlySpan<byte>)span);
-
-        public static unsafe string GetAsciiOrUTF8StringNonNullCharacters(this ReadOnlySpan<byte> span)
+        public static string GetRequestHeaderString(this ReadOnlySpan<byte> span, string name, Func<string, Encoding> encodingSelector)
         {
-            if (span.IsEmpty)
+            if (ReferenceEquals(KestrelServerOptions.DefaultRequestHeaderEncodingSelector, encodingSelector))
             {
-                return string.Empty;
+                return span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
             }
 
-            fixed (byte* source = &MemoryMarshal.GetReference(span))
+            var encoding = encodingSelector(name);
+
+            if (encoding is null)
             {
-                var resultString = string.Create(span.Length, new IntPtr(source), s_getAsciiOrUtf8StringNonNullCharacters);
+                return span.GetAsciiOrUTF8StringNonNullCharacters(DefaultRequestHeaderEncoding);
+            }
 
-                // If resultString is marked, perform UTF-8 encoding
-                if (resultString[0] == '\0')
-                {
-                    // null characters are considered invalid
-                    if (span.IndexOf((byte)0) != -1)
-                    {
-                        throw new InvalidOperationException();
-                    }
+            if (ReferenceEquals(encoding, Encoding.Latin1))
+            {
+                return span.GetLatin1StringNonNullCharacters();
+            }
 
-                    try
-                    {
-                        resultString = HeaderValueEncoding.GetString(span);
-                    }
-                    catch (DecoderFallbackException)
-                    {
-                        throw new InvalidOperationException();
-                    }
-                }
-
-                return resultString;
+            try
+            {
+                return encoding.GetString(span);
+            }
+            catch (DecoderFallbackException ex)
+            {
+                throw new InvalidOperationException(ex.Message, ex);
             }
         }
-
-        private static readonly SpanAction<char, IntPtr> s_getAsciiOrUtf8StringNonNullCharacters = GetAsciiOrUTF8StringNonNullCharacters;
-
-        private static unsafe void GetAsciiOrUTF8StringNonNullCharacters(Span<char> buffer, IntPtr state)
-        {
-            fixed (char* output = &MemoryMarshal.GetReference(buffer))
-            {
-                // This version if AsciiUtilities returns null if there are any null (0 byte) characters
-                // in the string
-                if (!StringUtilities.TryGetAsciiString((byte*)state.ToPointer(), output, buffer.Length))
-                {
-                    // Mark resultString for UTF-8 encoding
-                    output[0] = '\0';
-                }
-            }
-        }
-
-        private static unsafe string GetLatin1StringNonNullCharacters(this ReadOnlySpan<byte> span)
-        {
-            if (span.IsEmpty)
-            {
-                return string.Empty;
-            }
-
-            var resultString = new string('\0', span.Length);
-
-            fixed (char* output = resultString)
-            fixed (byte* buffer = span)
-            {
-                // This returns false if there are any null (0 byte) characters in the string.
-                if (!StringUtilities.TryGetLatin1String(buffer, output, span.Length))
-                {
-                    // null characters are considered invalid
-                    throw new InvalidOperationException();
-                }
-            }
-
-            return resultString;
-        }
-
-        public static string GetRequestHeaderStringNonNullCharacters(this ReadOnlySpan<byte> span, bool useLatin1) =>
-            useLatin1 ? GetLatin1StringNonNullCharacters(span) : GetAsciiOrUTF8StringNonNullCharacters(span);
 
         public static string GetAsciiStringEscaped(this ReadOnlySpan<byte> span, int maxChars)
         {

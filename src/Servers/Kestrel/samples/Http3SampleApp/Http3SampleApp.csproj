@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

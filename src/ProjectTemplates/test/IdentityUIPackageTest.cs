@@ -26,59 +26,6 @@ namespace Templates.Test
 
         public ITestOutputHelper Output { get; }
 
-        public static TheoryData<IDictionary<string, string>, string, string[]> MSBuildIdentityUIPackageOptions
-        {
-            get
-            {
-                var data = new TheoryData<IDictionary<string, string>, string, string[]>();
-
-                data.Add(new Dictionary<string, string>
-                {
-                    ["IdentityUIFrameworkVersion"] = "Bootstrap3"
-                },
-                "Bootstrap v3.4.1",
-                Bootstrap3ContentFiles);
-
-                data.Add(new Dictionary<string, string>(), "Bootstrap v4.3.1", Bootstrap4ContentFiles);
-
-                return data;
-            }
-        }
-
-        public static string[] Bootstrap3ContentFiles { get; } = new string[]
-        {
-            "Identity/css/site.css",
-            "Identity/js/site.js",
-            "Identity/lib/bootstrap/dist/css/bootstrap-theme.css",
-            "Identity/lib/bootstrap/dist/css/bootstrap-theme.css.map",
-            "Identity/lib/bootstrap/dist/css/bootstrap-theme.min.css",
-            "Identity/lib/bootstrap/dist/css/bootstrap-theme.min.css.map",
-            "Identity/lib/bootstrap/dist/css/bootstrap.css",
-            "Identity/lib/bootstrap/dist/css/bootstrap.css.map",
-            "Identity/lib/bootstrap/dist/css/bootstrap.min.css",
-            "Identity/lib/bootstrap/dist/css/bootstrap.min.css.map",
-            "Identity/lib/bootstrap/dist/fonts/glyphicons-halflings-regular.eot",
-            "Identity/lib/bootstrap/dist/fonts/glyphicons-halflings-regular.svg",
-            "Identity/lib/bootstrap/dist/fonts/glyphicons-halflings-regular.ttf",
-            "Identity/lib/bootstrap/dist/fonts/glyphicons-halflings-regular.woff",
-            "Identity/lib/bootstrap/dist/fonts/glyphicons-halflings-regular.woff2",
-            "Identity/lib/bootstrap/dist/js/bootstrap.js",
-            "Identity/lib/bootstrap/dist/js/bootstrap.min.js",
-            "Identity/lib/bootstrap/dist/js/npm.js",
-            "Identity/lib/jquery/LICENSE.txt",
-            "Identity/lib/jquery/dist/jquery.js",
-            "Identity/lib/jquery/dist/jquery.min.js",
-            "Identity/lib/jquery/dist/jquery.min.map",
-            "Identity/lib/jquery-validation/LICENSE.md",
-            "Identity/lib/jquery-validation/dist/additional-methods.js",
-            "Identity/lib/jquery-validation/dist/additional-methods.min.js",
-            "Identity/lib/jquery-validation/dist/jquery.validate.js",
-            "Identity/lib/jquery-validation/dist/jquery.validate.min.js",
-            "Identity/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js",
-            "Identity/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js",
-            "Identity/lib/jquery-validation-unobtrusive/LICENSE.txt",
-        };
-
         public static string[] Bootstrap4ContentFiles { get; } = new string[]
         {
             "Identity/favicon.ico",
@@ -118,12 +65,12 @@ namespace Templates.Test
             "Identity/lib/jquery-validation-unobtrusive/LICENSE.txt",
         };
 
-        [ConditionalTheory]
-        [MemberData(nameof(MSBuildIdentityUIPackageOptions))]
+        [ConditionalFact]
         [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/19716")]
-        public async Task IdentityUIPackage_WorksWithDifferentOptions(IDictionary<string, string> packageOptions, string versionValidator, string[] expectedFiles)
+        public async Task IdentityUIPackage_WorksWithDifferentOptions()
         {
+            var packageOptions = new Dictionary<string, string>();
             Project = await ProjectFactory.GetOrCreateProject("identityuipackage" + string.Concat(packageOptions.Values), Output);
             var useLocalDB = false;
 
@@ -147,6 +94,7 @@ namespace Templates.Test
             Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", Project, migrationsResult));
             Project.AssertEmptyMigration("razorpages");
 
+            var versionValidator = "Bootstrap v4.3.1";
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
             {
                 Assert.False(
@@ -156,7 +104,7 @@ namespace Templates.Test
                 var response = await aspNetProcess.SendRequest("/Identity/lib/bootstrap/dist/css/bootstrap.css");
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Contains(versionValidator, await response.Content.ReadAsStringAsync());
-                await ValidatePublishedFiles(aspNetProcess, expectedFiles);
+                await ValidatePublishedFiles(aspNetProcess, Bootstrap4ContentFiles);
             }
 
             using (var aspNetProcess = Project.StartPublishedProjectAsync())
@@ -168,7 +116,7 @@ namespace Templates.Test
                 var response = await aspNetProcess.SendRequest("/Identity/lib/bootstrap/dist/css/bootstrap.css");
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Contains(versionValidator, await response.Content.ReadAsStringAsync());
-                await ValidatePublishedFiles(aspNetProcess, expectedFiles);
+                await ValidatePublishedFiles(aspNetProcess, Bootstrap4ContentFiles);
             }
         }
 

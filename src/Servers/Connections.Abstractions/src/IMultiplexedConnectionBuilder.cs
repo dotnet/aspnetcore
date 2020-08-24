@@ -3,12 +3,12 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Connections
+namespace Microsoft.AspNetCore.Connections.Experimental
 {
     /// <summary>
     /// Defines an interface that provides the mechanisms to configure a connection pipeline.
     /// </summary>
-    public interface IMultiplexedConnectionBuilder
+    internal interface IMultiplexedConnectionBuilder
     {
         /// <summary>
         /// Gets the <see cref="IServiceProvider"/> that provides access to the application's service container.

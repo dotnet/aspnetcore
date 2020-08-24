@@ -20,7 +20,8 @@
     <Compile Include="$(SharedSourceRoot)StackTrace\**\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)RazorViews\*.cs" LinkBase="Shared\" />
     <Compile Include="$(SharedSourceRoot)ErrorPage\*.cs" LinkBase="Shared\" />
-    <Compile Include="$(RepoRoot)src\Shared\TaskToApm.cs" Link="Shared\TaskToApm.cs" />
+    <Compile Include="$(SharedSourceRoot)TaskToApm.cs" Link="Shared\TaskToApm.cs" />
+    <Compile Include="$(SharedSourceRoot)ServerInfrastructure\*.cs" LinkBase="Shared\" />
   </ItemGroup>
 
   <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" >
@@ -40,7 +41,6 @@
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
-    <Reference Include="System.IO.Pipelines" />
     <Reference Include="System.Security.Principal.Windows" />
   </ItemGroup>
 

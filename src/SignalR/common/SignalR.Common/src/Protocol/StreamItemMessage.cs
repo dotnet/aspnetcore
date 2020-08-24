@@ -5,9 +5,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 {
     public class StreamItemMessage : HubInvocationMessage
     {
-        public object Item { get; }
+        public object? Item { get; }
 
-        public StreamItemMessage(string invocationId, object item) : base(invocationId)
+        public StreamItemMessage(string invocationId, object? item) : base(invocationId)
         {
             Item = item;
         }

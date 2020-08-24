@@ -1,6 +1,5 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
 using System.Net.Sockets;
 using static System.Net.Quic.Implementations.MsQuic.Internal.MsQuicNativeMethods;
@@ -12,7 +11,7 @@ namespace System.Net.Quic.Implementations.MsQuic.Internal
         internal const ushort IPv4 = 2;
         internal const ushort IPv6 = 23;
 
-        internal static unsafe IPEndPoint INetToIPEndPoint(SOCKADDR_INET inetAddress)
+        internal static unsafe IPEndPoint INetToIPEndPoint(ref SOCKADDR_INET inetAddress)
         {
             if (inetAddress.si_family == IPv4)
             {

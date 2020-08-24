@@ -6,10 +6,33 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
   </PropertyGroup>
 
+  <!-- Ensure API changes show up clearly in PRs. -->
+  <PropertyGroup>
+    <_TFMDirectory>$(TargetFramework)</_TFMDirectory>
+    <_TFMDirectory Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">netcoreapp</_TFMDirectory>
+
+    <!-- Public members should not use oblivious types. Not done with all nullable annotations. -->
+    <NoWarn>$(NoWarn);RS0041</NoWarn>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(IsImplementationProject)' == 'true' AND
+      '$(DotNetBuildFromSource)' != 'true' AND
+      ! $(RepoRelativeProjectDir.Contains('Tools')) ">
+    <!-- Package does nothing in projects lacking PublicAPI.Shipped.txt or PublicAPI.Unshipped.txt files. -->
+    <Reference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" ExcludeAssets="Compile" PrivateAssets="All" />
+
+    <AdditionalFiles Include="PublicAPI.Shipped.txt"
+        Condition=" Exists('$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt') " />
+    <AdditionalFiles Include="PublicAPI.Unshipped.txt"
+        Condition=" Exists('$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt') " />
+    <AdditionalFiles Include="PublicAPI.Shipped.txt"
+        Condition=" Exists('$(MSBuildProjectDirectory)\$(_TFMDirectory)\PublicAPI.Shipped.txt') " />
+    <AdditionalFiles Include="PublicAPI.Unshipped.txt"
+        Condition=" Exists('$(MSBuildProjectDirectory)\$(_TFMDirectory)\PublicAPI.Unshipped.txt') " />
+  </ItemGroup>
+
   <Target Name="GetCustomAssemblyAttributes"
           BeforeTargets="GetAssemblyAttributes"
           DependsOnTargets="InitializeSourceControlInformation">
-
     <ItemGroup>
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(SourceRevisionId)' != ''">
         <_Parameter1>CommitHash</_Parameter1>
@@ -27,6 +50,31 @@
       </AssemblyAttribute>
     </ItemGroup>
   </Target>
+
+  <!-- Reference assemblies are shipped only in targeting packs. -->
+  <Target Name="_RemoveReferenceAssembly" BeforeTargets="_GetPackageFiles;GenerateNuspec" Condition="$(HasReferenceAssembly)">
+    <ItemGroup>
+      <_PackageFilesToExclude Include="@(IntermediateRefAssembly);$(TargetRefPath)" />
+    </ItemGroup>
+  </Target>
+
+  <Choose>
+    <!--
+        C# 8.0's nullable annotations only work for .NET Core 3.0+ by default. However it can be made to work for other target frameworks
+        by compiling the annotations (as internal types).
+        The code block that follows sets it up so projects in this repo that target ns2.0 or netfx can compile when Nullable is configured.
+        Based on https://github.com/dotnet/runtime/blob/93b6c449d4f31ddd7d573d1d3769e681d5ebceb9/src/libraries/Directory.Build.targets#L215-L222
+     -->
+    <When Condition="'$(Nullable)' != '' AND ('$(TargetFrameworkIdentifier)' == '.NETStandard' OR '$(TargetFrameworkIdentifier)' == '.NETFramework')">
+      <PropertyGroup>
+        <DefineConstants>$(DefineConstants),INTERNAL_NULLABLE_ATTRIBUTES</DefineConstants>
+        <NoWarn>$(NoWarn);nullable</NoWarn>
+      </PropertyGroup>
+      <ItemGroup>
+        <Compile Include="$(SharedSourceRoot)Nullable\NullableAttributes.cs" />
+      </ItemGroup>
+    </When>
+  </Choose>
 
   <Import Project="Packaging.targets" />
   <Import Project="ResolveReferences.targets" />

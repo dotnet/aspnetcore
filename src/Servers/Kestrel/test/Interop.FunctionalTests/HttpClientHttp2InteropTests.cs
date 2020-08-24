@@ -27,12 +27,6 @@ namespace Interop.FunctionalTests
     /// </summary>
     public class HttpClientHttp2InteropTests : LoggedTest
     {
-        public HttpClientHttp2InteropTests()
-        {
-            // H2C
-            AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
-        }
-
         public static IEnumerable<object[]> SupportedSchemes
         {
             get
@@ -42,7 +36,7 @@ namespace Interop.FunctionalTests
                     new[] { "http" }
                 };
 
-                if (Utilities.CurrentPlatformSupportsAlpn())
+                if (Utilities.CurrentPlatformSupportsHTTP2OverTls())
                 {
                     list.Add(new[] { "https" });
                 }
@@ -696,6 +690,7 @@ namespace Interop.FunctionalTests
 
         [Theory]
         [MemberData(nameof(SupportedSchemes))]
+        [QuarantinedTest]
         public async Task ServerReset_BeforeRequestBody_ClientBodyThrows(string scheme)
         {
             var clientEcho = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1415,7 +1410,6 @@ namespace Interop.FunctionalTests
         // Settings_InitialWindowSize_Lower_Client - Not configurable.
 
         [Theory]
-        [QuarantinedTest]
         [MemberData(nameof(SupportedSchemes))]
         public async Task Settings_InitialWindowSize_Server(string scheme)
         {
@@ -1495,7 +1489,6 @@ namespace Interop.FunctionalTests
 
         [Theory]
         [MemberData(nameof(SupportedSchemes))]
-        [QuarantinedTest]
         public async Task ConnectionWindowSize_Server(string scheme)
         {
             var requestFinished = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1608,6 +1601,7 @@ namespace Interop.FunctionalTests
             handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
             var client = new HttpClient(handler);
             client.DefaultRequestVersion = HttpVersion.Version20;
+            client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
             return client;
         }
 
@@ -1616,6 +1610,7 @@ namespace Interop.FunctionalTests
             return new HttpRequestMessage(method, url)
             {
                 Version = HttpVersion.Version20,
+                VersionPolicy = HttpVersionPolicy.RequestVersionExact,
                 Content = content,
             };
         }

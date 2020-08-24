@@ -24,14 +24,12 @@ set DOTNET_CLI_HOME=%HELIX_CORRELATION_PAYLOAD%\home
 
 set PATH=%DOTNET_ROOT%;!PATH!;%HELIX_CORRELATION_PAYLOAD%\node\bin
 echo Set path to: %PATH%
-echo "Installing SDK"
-powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %$arch% -Version %$sdkVersion% -InstallDir %DOTNET_ROOT%"
-echo "Installing Runtime"
-powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture %$arch% -Runtime dotnet -Version %$runtimeVersion% -InstallDir %DOTNET_ROOT%"
+echo "Invoking InstallDotNet.ps1 %$arch% %$sdkVersion% %$runtimeVersion% %DOTNET_ROOT%"
+powershell.exe -NoProfile -ExecutionPolicy unrestricted -file InstallDotNet.ps1 %$arch% %$sdkVersion% %$runtimeVersion% %DOTNET_ROOT%
 
 set exit_code=0
-echo "Restore: dotnet restore RunTests\RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources..."
-dotnet restore RunTests\RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources
+echo "Restore: dotnet restore RunTests\RunTests.csproj --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --source https://api.nuget.org/v3/index.json --ignore-failed-sources..."
+dotnet restore RunTests\RunTests.csproj --source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --source https://api.nuget.org/v3/index.json --ignore-failed-sources
 
 echo "Running tests: dotnet run --project RunTests\RunTests.csproj -- --target %$target% --sdk %$sdkVersion% --runtime %$runtimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --aspnetruntime %$aspnetruntime% --aspnetref %$aspnetref% --helixTimeout %$helixTimeout%..."
 dotnet run --project RunTests\RunTests.csproj -- --target %$target% --sdk %$sdkVersion% --runtime %$runtimeVersion% --queue %$queue% --arch %$arch% --quarantined %$quarantined% --ef %$ef% --aspnetruntime %$aspnetruntime% --aspnetref %$aspnetref% --helixTimeout %$helixTimeout%

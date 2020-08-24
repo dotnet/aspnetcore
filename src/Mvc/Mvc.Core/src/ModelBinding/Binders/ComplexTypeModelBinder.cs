@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// <summary>
     /// <see cref="IModelBinder"/> implementation for binding complex types.
     /// </summary>
+    [Obsolete("This type is obsolete and will be removed in a future version. Use ComplexObjectModelBinder instead.")]
     public class ComplexTypeModelBinder : IModelBinder
     {
         // Don't want a new public enum because communication between the private and internal methods of this class

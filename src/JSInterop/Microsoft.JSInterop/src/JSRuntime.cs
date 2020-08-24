@@ -62,14 +62,16 @@ namespace Microsoft.JSInterop
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
+        public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
         {
             if (DefaultAsyncTimeout.HasValue)
             {
-                return InvokeWithDefaultCancellation<TValue>(identifier, args);
+                using var cts = new CancellationTokenSource(DefaultAsyncTimeout.Value);
+                // We need to await here due to the using
+                return await InvokeAsync<TValue>(identifier, cts.Token, args);
             }
 
-            return InvokeAsync<TValue>(identifier, CancellationToken.None, args);
+            return await InvokeAsync<TValue>(identifier, CancellationToken.None, args);
         }
 
         /// <summary>
@@ -130,22 +132,13 @@ namespace Microsoft.JSInterop
             }
         }
 
-        private async ValueTask<T> InvokeWithDefaultCancellation<T>(string identifier, object[] args)
-        {
-            using (var cts = new CancellationTokenSource(DefaultAsyncTimeout.Value))
-            {
-                // We need to await here due to the using
-                return await InvokeAsync<T>(identifier, cts.Token, args);
-            }
-        }
-
         /// <summary>
         /// Begins an asynchronous function invocation.
         /// </summary>
         /// <param name="taskId">The identifier for the function invocation, or zero if no async callback is required.</param>
         /// <param name="identifier">The identifier for the function to invoke.</param>
         /// <param name="argsJson">A JSON representation of the arguments.</param>
-        protected abstract void BeginInvokeJS(long taskId, string identifier, string argsJson);
+        protected abstract void BeginInvokeJS(long taskId, string identifier, string? argsJson);
 
         /// <summary>
         /// Completes an async JS interop call from JavaScript to .NET

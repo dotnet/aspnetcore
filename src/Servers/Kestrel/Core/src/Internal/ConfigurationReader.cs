@@ -3,6 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Authentication;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
@@ -12,17 +15,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private const string ProtocolsKey = "Protocols";
         private const string CertificatesKey = "Certificates";
         private const string CertificateKey = "Certificate";
+        private const string SslProtocolsKey = "SslProtocols";
         private const string EndpointDefaultsKey = "EndpointDefaults";
         private const string EndpointsKey = "Endpoints";
         private const string UrlKey = "Url";
-        private const string Latin1RequestHeadersKey = "Latin1RequestHeaders";
+        private const string ClientCertificateModeKey = "ClientCertificateMode";
+        private const string SniKey = "Sni";
 
         private readonly IConfiguration _configuration;
 
         private IDictionary<string, CertificateConfig> _certificates;
         private EndpointDefaults _endpointDefaults;
         private IEnumerable<EndpointConfig> _endpoints;
-        private bool? _latin1RequestHeaders;
 
         public ConfigurationReader(IConfiguration configuration)
         {
@@ -32,11 +36,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public IDictionary<string, CertificateConfig> Certificates => _certificates ??= ReadCertificates();
         public EndpointDefaults EndpointDefaults => _endpointDefaults ??= ReadEndpointDefaults();
         public IEnumerable<EndpointConfig> Endpoints => _endpoints ??= ReadEndpoints();
-        public bool Latin1RequestHeaders => _latin1RequestHeaders ??= _configuration.GetValue<bool>(Latin1RequestHeadersKey);
 
         private IDictionary<string, CertificateConfig> ReadCertificates()
         {
-            var certificates = new Dictionary<string, CertificateConfig>(0);
+            var certificates = new Dictionary<string, CertificateConfig>(0, StringComparer.OrdinalIgnoreCase);
 
             var certificatesConfig = _configuration.GetSection(CertificatesKey).GetChildren();
             foreach (var certificateConfig in certificatesConfig)
@@ -48,14 +51,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         }
 
         // "EndpointDefaults": {
-        //    "Protocols": "Http1AndHttp2",
+        //     "Protocols": "Http1AndHttp2",
+        //     "SslProtocols": [ "Tls11", "Tls12", "Tls13"],
+        //     "ClientCertificateMode" : "NoCertificate"
         // }
         private EndpointDefaults ReadEndpointDefaults()
         {
             var configSection = _configuration.GetSection(EndpointDefaultsKey);
             return new EndpointDefaults
             {
-                Protocols = ParseProtocols(configSection[ProtocolsKey])
+                Protocols = ParseProtocols(configSection[ProtocolsKey]),
+                SslProtocols = ParseSslProcotols(configSection.GetSection(SslProtocolsKey)),
+                ClientCertificateMode = ParseClientCertificateMode(configSection[ClientCertificateModeKey]),
             };
         }
 
@@ -67,12 +74,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             foreach (var endpointConfig in endpointsConfig)
             {
                 // "EndpointName": {
-                //    "Url": "https://*:5463",
-                //    "Protocols": "Http1AndHttp2",
-                //    "Certificate": {
-                //        "Path": "testCert.pfx",
-                //        "Password": "testPassword"
-                //    }
+                //     "Url": "https://*:5463",
+                //     "Protocols": "Http1AndHttp2",
+                //     "SslProtocols": [ "Tls11", "Tls12", "Tls13"],
+                //     "Certificate": {
+                //         "Path": "testCert.pfx",
+                //         "Password": "testPassword"
+                //     },
+                //     "ClientCertificateMode" : "NoCertificate",
+                //     "Sni": {
+                //         "a.example.org": {
+                //             "Certificate": {
+                //                 "Path": "testCertA.pfx",
+                //                 "Password": "testPassword"
+                //             }
+                //         },
+                //         "*.example.org": {
+                //             "Protocols": "Http1",
+                //         }
+                //     }
                 // }
 
                 var url = endpointConfig[UrlKey];
@@ -88,12 +108,71 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     Protocols = ParseProtocols(endpointConfig[ProtocolsKey]),
                     ConfigSection = endpointConfig,
                     Certificate = new CertificateConfig(endpointConfig.GetSection(CertificateKey)),
+                    SslProtocols = ParseSslProcotols(endpointConfig.GetSection(SslProtocolsKey)),
+                    ClientCertificateMode = ParseClientCertificateMode(endpointConfig[ClientCertificateModeKey]),
+                    Sni = ReadSni(endpointConfig.GetSection(SniKey), endpointConfig.Key),
                 };
 
                 endpoints.Add(endpoint);
             }
 
             return endpoints;
+        }
+
+        private static Dictionary<string, SniConfig> ReadSni(IConfigurationSection sniConfig, string endpointName)
+        {
+            var sniDictionary = new Dictionary<string, SniConfig>(0, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var sniChild in sniConfig.GetChildren())
+            {
+                // "Sni": {
+                //     "a.example.org": {
+                //         "Protocols": "Http1",
+                //         "SslProtocols": [ "Tls11", "Tls12", "Tls13"],
+                //         "Certificate": {
+                //             "Path": "testCertA.pfx",
+                //             "Password": "testPassword"
+                //         },
+                //         "ClientCertificateMode" : "NoCertificate"
+                //     },
+                //     "*.example.org": {
+                //         "Certificate": {
+                //             "Path": "testCertWildcard.pfx",
+                //             "Password": "testPassword"
+                //         }
+                //     }
+                //     // The following should work once https://github.com/dotnet/runtime/issues/40218 is resolved
+                //     "*": {}
+                // }
+
+                if (string.IsNullOrEmpty(sniChild.Key))
+                {
+                    throw new InvalidOperationException(CoreStrings.FormatSniNameCannotBeEmpty(endpointName));
+                }
+
+                var sni = new SniConfig
+                {
+                    Certificate = new CertificateConfig(sniChild.GetSection(CertificateKey)),
+                    Protocols = ParseProtocols(sniChild[ProtocolsKey]),
+                    SslProtocols = ParseSslProcotols(sniChild.GetSection(SslProtocolsKey)),
+                    ClientCertificateMode = ParseClientCertificateMode(sniChild[ClientCertificateModeKey])
+                };
+
+                sniDictionary.Add(sniChild.Key, sni);
+            }
+
+            return sniDictionary;
+        }
+
+
+        private static ClientCertificateMode? ParseClientCertificateMode(string clientCertificateMode)
+        {
+            if (Enum.TryParse<ClientCertificateMode>(clientCertificateMode, ignoreCase: true, out var result))
+            {
+                return result;
+            }
+
+            return null;
         }
 
         private static HttpProtocols? ParseProtocols(string protocols)
@@ -105,23 +184,78 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             return null;
         }
+
+        private static SslProtocols? ParseSslProcotols(IConfigurationSection sslProtocols)
+        {
+            var stringProtocols = sslProtocols.Get<string[]>();
+
+            return stringProtocols?.Aggregate(SslProtocols.None, (acc, current) =>
+            {
+                if (Enum.TryParse(current, ignoreCase: true, out SslProtocols parsed))
+                {
+                    return acc | parsed;
+                }
+
+                return acc;
+            });
+        }
+
+        internal static void ThrowIfContainsHttpsOnlyConfiguration(EndpointConfig endpoint)
+        {
+            if (endpoint.Certificate.IsFileCert || endpoint.Certificate.IsStoreCert)
+            {
+                throw new InvalidOperationException(CoreStrings.FormatEndpointHasUnusedHttpsConfig(endpoint.Name, CertificateKey));
+            }
+
+            if (endpoint.ClientCertificateMode.HasValue)
+            {
+                throw new InvalidOperationException(CoreStrings.FormatEndpointHasUnusedHttpsConfig(endpoint.Name, ClientCertificateModeKey));
+            }
+
+            if (endpoint.SslProtocols.HasValue)
+            {
+                throw new InvalidOperationException(CoreStrings.FormatEndpointHasUnusedHttpsConfig(endpoint.Name, SslProtocolsKey));
+            }
+
+            if (endpoint.Sni.Count > 0)
+            {
+                throw new InvalidOperationException(CoreStrings.FormatEndpointHasUnusedHttpsConfig(endpoint.Name, SniKey));
+            }
+        }
     }
 
     // "EndpointDefaults": {
-    //    "Protocols": "Http1AndHttp2",
+    //     "Protocols": "Http1AndHttp2",
+    //     "SslProtocols": [ "Tls11", "Tls12", "Tls13"],
+    //     "ClientCertificateMode" : "NoCertificate"
     // }
     internal class EndpointDefaults
     {
         public HttpProtocols? Protocols { get; set; }
+        public SslProtocols? SslProtocols { get; set; }
+        public ClientCertificateMode? ClientCertificateMode { get; set; }
     }
 
     // "EndpointName": {
-    //    "Url": "https://*:5463",
-    //    "Protocols": "Http1AndHttp2",
-    //    "Certificate": {
-    //        "Path": "testCert.pfx",
-    //        "Password": "testPassword"
-    //    }
+    //     "Url": "https://*:5463",
+    //     "Protocols": "Http1AndHttp2",
+    //     "SslProtocols": [ "Tls11", "Tls12", "Tls13"],
+    //     "Certificate": {
+    //         "Path": "testCert.pfx",
+    //         "Password": "testPassword"
+    //     },
+    //     "ClientCertificateMode" : "NoCertificate",
+    //     "Sni": {
+    //         "a.example.org": {
+    //             "Certificate": {
+    //                 "Path": "testCertA.pfx",
+    //                 "Password": "testPasswordA"
+    //             }
+    //         },
+    //         "*.example.org": {
+    //             "Protocols": "Http1",
+    //         }
+    //     }
     // }
     internal class EndpointConfig
     {
@@ -131,7 +265,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public string Name { get; set; }
         public string Url { get; set; }
         public HttpProtocols? Protocols { get; set; }
+        public SslProtocols? SslProtocols { get; set; }
         public CertificateConfig Certificate { get; set; }
+        public ClientCertificateMode? ClientCertificateMode { get; set; }
+        public Dictionary<string, SniConfig> Sni { get; set; }
 
         // Compare config sections because it's accessible to app developers via an Action<EndpointConfiguration> callback.
         // We cannot rely entirely on comparing config sections for equality, because KestrelConfigurationLoader.Reload() sets
@@ -153,18 +290,63 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             Name == other.Name &&
             Url == other.Url &&
             (Protocols ?? ListenOptions.DefaultHttpProtocols) == (other.Protocols ?? ListenOptions.DefaultHttpProtocols) &&
+            (SslProtocols ?? System.Security.Authentication.SslProtocols.None) == (other.SslProtocols ?? System.Security.Authentication.SslProtocols.None) &&
             Certificate == other.Certificate &&
+            (ClientCertificateMode ?? Https.ClientCertificateMode.NoCertificate) == (other.ClientCertificateMode ?? Https.ClientCertificateMode.NoCertificate) &&
+            CompareSniDictionaries(Sni, other.Sni) &&
             _configSectionClone == other._configSectionClone;
 
-        public override int GetHashCode() => HashCode.Combine(Name, Url, Protocols ?? ListenOptions.DefaultHttpProtocols, Certificate, _configSectionClone);
+        public override int GetHashCode() => HashCode.Combine(Name, Url,
+            Protocols ?? ListenOptions.DefaultHttpProtocols, SslProtocols ?? System.Security.Authentication.SslProtocols.None,
+            Certificate, ClientCertificateMode ?? Https.ClientCertificateMode.NoCertificate, Sni.Count, _configSectionClone);
 
         public static bool operator ==(EndpointConfig lhs, EndpointConfig rhs) => lhs is null ? rhs is null : lhs.Equals(rhs);
         public static bool operator !=(EndpointConfig lhs, EndpointConfig rhs) => !(lhs == rhs);
+
+        private static bool CompareSniDictionaries(Dictionary<string, SniConfig> lhs, Dictionary<string, SniConfig> rhs)
+        {
+            if (lhs.Count != rhs.Count)
+            {
+                return false;
+            }
+
+            foreach (var (lhsName, lhsSniConfig) in lhs)
+            {
+                if (!rhs.TryGetValue(lhsName, out var rhsSniConfig) || lhsSniConfig != rhsSniConfig)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+
+    internal class SniConfig
+    {
+        public HttpProtocols? Protocols { get; set; }
+        public SslProtocols? SslProtocols { get; set; }
+        public CertificateConfig Certificate { get; set; }
+        public ClientCertificateMode? ClientCertificateMode { get; set; }
+
+        public override bool Equals(object obj) =>
+            obj is SniConfig other &&
+            (Protocols ?? ListenOptions.DefaultHttpProtocols) == (other.Protocols ?? ListenOptions.DefaultHttpProtocols) &&
+            (SslProtocols ?? System.Security.Authentication.SslProtocols.None) == (other.SslProtocols ?? System.Security.Authentication.SslProtocols.None) &&
+            Certificate == other.Certificate &&
+            (ClientCertificateMode ?? Https.ClientCertificateMode.NoCertificate) == (other.ClientCertificateMode ?? Https.ClientCertificateMode.NoCertificate);
+
+        public override int GetHashCode() => HashCode.Combine(
+            Protocols ?? ListenOptions.DefaultHttpProtocols, SslProtocols ?? System.Security.Authentication.SslProtocols.None,
+            Certificate, ClientCertificateMode ?? Https.ClientCertificateMode.NoCertificate);
+
+        public static bool operator ==(SniConfig lhs, SniConfig rhs) => lhs is null ? rhs is null : lhs.Equals(rhs);
+        public static bool operator !=(SniConfig lhs, SniConfig rhs) => !(lhs == rhs);
     }
 
     // "CertificateName": {
-    //      "Path": "testCert.pfx",
-    //      "Password": "testPassword"
+    //     "Path": "testCert.pfx",
+    //     "Password": "testPassword"
     // }
     internal class CertificateConfig
     {
@@ -174,12 +356,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             ConfigSection.Bind(this);
         }
 
+        // For testing
+        internal CertificateConfig()
+        {
+        }
+
         public IConfigurationSection ConfigSection { get; }
 
         // File
         public bool IsFileCert => !string.IsNullOrEmpty(Path);
 
         public string Path { get; set; }
+
+        public string KeyPath { get; set; }
 
         public string Password { get; set; }
 
@@ -198,13 +387,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public override bool Equals(object obj) =>
             obj is CertificateConfig other &&
             Path == other.Path &&
+            KeyPath == other.KeyPath &&
             Password == other.Password &&
             Subject == other.Subject &&
             Store == other.Store &&
             Location == other.Location &&
             (AllowInvalid ?? false) == (other.AllowInvalid ?? false);
 
-        public override int GetHashCode() => HashCode.Combine(Path, Password, Subject, Store, Location, AllowInvalid ?? false);
+        public override int GetHashCode() => HashCode.Combine(Path, KeyPath, Password, Subject, Store, Location, AllowInvalid ?? false);
 
         public static bool operator ==(CertificateConfig lhs, CertificateConfig rhs) => lhs is null ? rhs is null : lhs.Equals(rhs);
         public static bool operator !=(CertificateConfig lhs, CertificateConfig rhs) => !(lhs == rhs);

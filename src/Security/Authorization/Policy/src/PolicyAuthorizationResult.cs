@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Authorization.Policy
         /// <summary>
         /// Contains information about why authorization failed.
         /// </summary>
-        public AuthorizationFailure AuthorizationFailure { get; private set; }
+        public AuthorizationFailure? AuthorizationFailure { get; private set; }
 
         public static PolicyAuthorizationResult Challenge()
             => new PolicyAuthorizationResult { Challenged = true };
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Authorization.Policy
         public static PolicyAuthorizationResult Forbid()
             => Forbid(null);
 
-        public static PolicyAuthorizationResult Forbid(AuthorizationFailure authorizationFailure)
+        public static PolicyAuthorizationResult Forbid(AuthorizationFailure? authorizationFailure)
             => new PolicyAuthorizationResult { Forbidden = true, AuthorizationFailure = authorizationFailure };
 
         public static PolicyAuthorizationResult Success()

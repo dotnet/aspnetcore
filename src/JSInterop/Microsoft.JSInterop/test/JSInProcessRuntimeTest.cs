@@ -21,7 +21,7 @@ namespace Microsoft.JSInterop
             };
 
             // Act
-            var syncResult = runtime.Invoke<TestDTO>("test identifier 1", "arg1", 123, true);
+            var syncResult = runtime.Invoke<TestDTO>("test identifier 1", "arg1", 123, true)!;
             var call = runtime.InvokeCalls.Single();
 
             // Assert
@@ -80,7 +80,7 @@ namespace Microsoft.JSInterop
                 "test identifier",
                 DotNetObjectReference.Create(obj1),
                 "some other arg",
-                DotNetObjectReference.Create(obj2));
+                DotNetObjectReference.Create(obj2))!;
             var call = runtime.InvokeCalls.Single();
 
             // Assert
@@ -90,16 +90,16 @@ namespace Microsoft.JSInterop
         class TestDTO
         {
             public int IntValue { get; set; }
-            public string StringValue { get; set; }
+            public string? StringValue { get; set; }
         }
 
         class TestJSInProcessRuntime : JSInProcessRuntime
         {
             public List<InvokeArgs> InvokeCalls { get; set; } = new List<InvokeArgs>();
 
-            public string NextResultJson { get; set; }
+            public string? NextResultJson { get; set; }
 
-            protected override string InvokeJS(string identifier, string argsJson)
+            protected override string? InvokeJS(string identifier, string? argsJson)
             {
                 InvokeCalls.Add(new InvokeArgs { Identifier = identifier, ArgsJson = argsJson });
                 return NextResultJson;
@@ -107,11 +107,11 @@ namespace Microsoft.JSInterop
 
             public class InvokeArgs
             {
-                public string Identifier { get; set; }
-                public string ArgsJson { get; set; }
+                public string? Identifier { get; set; }
+                public string? ArgsJson { get; set; }
             }
 
-            protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson)
+            protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson)
                 => throw new NotImplementedException("This test only covers sync calls");
 
             protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)

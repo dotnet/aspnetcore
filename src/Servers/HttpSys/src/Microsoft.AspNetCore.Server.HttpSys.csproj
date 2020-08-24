@@ -14,9 +14,8 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)ServerInfrastructure\StringUtilities.cs" LinkBase="ServerInfrastructure\StringUtilities.cs" />
+    <Compile Include="$(SharedSourceRoot)TaskToApm.cs" />
   </ItemGroup>
 
   <ItemGroup>

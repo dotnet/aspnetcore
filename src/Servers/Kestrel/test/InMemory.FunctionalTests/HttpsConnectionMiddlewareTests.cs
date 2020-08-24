@@ -21,7 +21,11 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
@@ -37,6 +41,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             void ConfigureListenOptions(ListenOptions listenOptions)
             {
                 listenOptions.UseHttps(new HttpsConnectionAdapterOptions { ServerCertificate = _x509Certificate2 });
+            };
+
+            await using (var server = new TestServer(App, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+            {
+                var result = await server.HttpClientSlim.PostAsync($"https://localhost:{server.Port}/",
+                    new FormUrlEncodedContent(new[] {
+                        new KeyValuePair<string, string>("content", "Hello World?")
+                    }),
+                    validateCertificate: false);
+
+                Assert.Equal("content=Hello+World%3F", result);
+            }
+        }
+
+        [Fact]
+        public async Task CanReadAndWriteWithHttpsConnectionMiddlewareWithPemCertificate()
+        {
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
+            {
+                ["Certificates:Default:Path"] = Path.Combine("shared", "TestCertificates", "https-aspnet.crt"),
+                ["Certificates:Default:KeyPath"] = Path.Combine("shared", "TestCertificates", "https-aspnet.key"),
+                ["Certificates:Default:Password"] = "aspnetcore",
+            }).Build();
+
+            var options = new KestrelServerOptions();
+            var env = new Mock<IHostEnvironment>();
+            env.SetupGet(e => e.ContentRootPath).Returns(Directory.GetCurrentDirectory());
+
+            var serviceProvider =  new ServiceCollection().AddLogging().BuildServiceProvider();
+            options.ApplicationServices = serviceProvider;
+
+            var logger = serviceProvider.GetRequiredService<ILogger<KestrelServer>>();
+            var httpsLogger = serviceProvider.GetRequiredService<ILogger<HttpsConnectionMiddleware>>();
+            var loader = new KestrelConfigurationLoader(options, configuration, env.Object, reloadOnChange: false, logger, httpsLogger);
+            loader.Load();
+
+            void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.KestrelServerOptions = options;
+                listenOptions.UseHttps();
             };
 
             await using (var server = new TestServer(App, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
@@ -68,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.True(tlsFeature.CipherStrength > 0, "CipherStrength");
                 Assert.True(tlsFeature.HashAlgorithm >= HashAlgorithmType.None, "HashAlgorithm"); // May be None on Linux.
                 Assert.True(tlsFeature.HashStrength >= 0, "HashStrength"); // May be 0 for some algorithms
-                Assert.True(tlsFeature.KeyExchangeAlgorithm > ExchangeAlgorithmType.None, "KeyExchangeAlgorithm");
+                Assert.True(tlsFeature.KeyExchangeAlgorithm >= ExchangeAlgorithmType.None, "KeyExchangeAlgorithm"); // Maybe None on Windows 7
                 Assert.True(tlsFeature.KeyExchangeStrength >= 0, "KeyExchangeStrength"); // May be 0 on mac
 
                 return context.Response.WriteAsync("hello world");
@@ -122,6 +166,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/runtime/issues/40402")]
+        public async Task ClientCertificateRequiredConfiguredInCallbackContinuesWhenNoCertificate()
+        {
+            void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.UseHttps((connection, stream, clientHelloInfo, state, cancellationToken) =>
+                    new ValueTask<SslServerAuthenticationOptions>(new SslServerAuthenticationOptions
+                    {
+                        ServerCertificate = _x509Certificate2,
+                        // From the API Docs: "Note that this is only a request --
+                        // if no certificate is provided, the server still accepts the connection request."
+                        // Not to mention this is equivalent to the test above.
+                        ClientCertificateRequired = true,
+                        RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
+                        CertificateRevocationCheckMode = X509RevocationMode.NoCheck
+                    }), state: null, HttpsConnectionAdapterOptions.DefaultHandshakeTimeout);
+            }
+
+            await using (var server = new TestServer(context =>
+                {
+                    var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
+                    Assert.NotNull(tlsFeature);
+                    Assert.Null(tlsFeature.ClientCertificate);
+                    return context.Response.WriteAsync("hello world");
+                }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+            {
+                var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
+                Assert.Equal("hello world", result);
+            }
+        }
+
+        [Fact]
         public void ThrowsWhenNoServerCertificateIsProvided()
         {
             Assert.Throws<ArgumentException>(() => new HttpsConnectionMiddleware(context => Task.CompletedTask,
@@ -142,7 +218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStream(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
                 }
             }
@@ -172,7 +248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStream(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
                     Assert.Equal(1, selectorCalled);
                 }
@@ -207,14 +283,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStream(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
                     Assert.Equal(1, selectorCalled);
                 }
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStream(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2NoExt));
                     Assert.Equal(2, selectorCalled);
                 }
@@ -274,7 +350,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStream(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
                     Assert.Equal(1, selectorCalled);
                 }
@@ -340,7 +416,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     // HttpClient might not send the certificate because it is invalid or it doesn't match any
                     // of the certificate authorities sent by the server in the SSL handshake.
                     var stream = OpenSslStreamWithCert(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     await AssertConnectionResult(stream, true);
                 }
             }
@@ -362,12 +438,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task DoesNotSupportTls10()
+        public async Task Tls10CanBeDisabled()
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
             {
                 listenOptions.UseHttps(options =>
                 {
+                    options.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11;
                     options.ServerCertificate = _x509Certificate2;
                     options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
                     options.AllowAnyClientCertificate();
@@ -416,7 +493,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStreamWithCert(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     await AssertConnectionResult(stream, true);
                     Assert.True(clientCertificateValidationCalled);
                 }
@@ -443,7 +520,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStreamWithCert(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     await AssertConnectionResult(stream, false);
                 }
             }
@@ -468,7 +545,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStreamWithCert(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     await AssertConnectionResult(stream, false);
                 }
             }
@@ -493,7 +570,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStreamWithCert(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     await AssertConnectionResult(stream, true);
                 }
             }
@@ -527,7 +604,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var connection = server.CreateConnection())
                 {
                     var stream = OpenSslStreamWithCert(connection.Stream);
-                    await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
+                    await stream.AuthenticateAsClientAsync("localhost");
                     await AssertConnectionResult(stream, true);
                 }
             }
@@ -592,8 +669,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [InlineData(HttpProtocols.Http2)]
         [InlineData(HttpProtocols.Http1AndHttp2)]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/10428", Queues = "Debian.8.Amd64;Debian.8.Amd64.Open")] // Debian 8 uses OpenSSL 1.0.1 which does not support HTTP/2
-        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81)]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
         public async Task ListenOptionsProtolsCanBeSetAfterUseHttps(HttpProtocols httpProtocols)
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
@@ -608,7 +684,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var sslOptions = new SslClientAuthenticationOptions
             {
                 TargetHost = "localhost",
-                EnabledSslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11,
+                EnabledSslProtocols = SslProtocols.None,
                 ApplicationProtocols = new List<SslApplicationProtocol> { SslApplicationProtocol.Http11, SslApplicationProtocol.Http2 },
             };
 
@@ -620,6 +696,65 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     SslApplicationProtocol.Http2 :
                     SslApplicationProtocol.Http11,
                 stream.NegotiatedApplicationProtocol);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Downgrade logic only applies on Windows")]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81)]
+        public void Http1AndHttp2DowngradeToHttp1ForHttpsOnIncompatibleWindowsVersions()
+        {
+            var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = _x509Certificate2,
+                HttpProtocols = HttpProtocols.Http1AndHttp2
+            };
+            new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions);
+
+            Assert.Equal(HttpProtocols.Http1, httpConnectionAdapterOptions.HttpProtocols);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Downgrade logic only applies on Windows")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
+        public void Http1AndHttp2DoesNotDowngradeOnCompatibleWindowsVersions()
+        {
+            var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = _x509Certificate2,
+                HttpProtocols = HttpProtocols.Http1AndHttp2
+            };
+            new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions);
+
+            Assert.Equal(HttpProtocols.Http1AndHttp2, httpConnectionAdapterOptions.HttpProtocols);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Error logic only applies on Windows")]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81)]
+        public void Http2ThrowsOnIncompatibleWindowsVersions()
+        {
+            var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = _x509Certificate2,
+                HttpProtocols = HttpProtocols.Http2
+            };
+
+            Assert.Throws<NotSupportedException>(() => new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions));
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX | OperatingSystems.Linux, SkipReason = "Error logic only applies on Windows")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
+        public void Http2DoesNotThrowOnCompatibleWindowsVersions()
+        {
+            var httpConnectionAdapterOptions = new HttpsConnectionAdapterOptions
+            {
+                ServerCertificate = _x509Certificate2,
+                HttpProtocols = HttpProtocols.Http2
+            };
+
+            // Does not throw
+            new HttpsConnectionMiddleware(context => Task.CompletedTask, httpConnectionAdapterOptions);
         }
 
         private static async Task App(HttpContext httpContext)

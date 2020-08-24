@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace Microsoft.JSInterop
@@ -17,6 +18,7 @@ namespace Microsoft.JSInterop
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
+        [return: MaybeNull]
         public TValue Invoke<TValue>(string identifier, params object[] args)
         {
             var resultJson = InvokeJS(identifier, JsonSerializer.Serialize(args, JsonSerializerOptions));
@@ -34,6 +36,6 @@ namespace Microsoft.JSInterop
         /// <param name="identifier">The identifier for the function to invoke.</param>
         /// <param name="argsJson">A JSON representation of the arguments.</param>
         /// <returns>A JSON representation of the result.</returns>
-        protected abstract string InvokeJS(string identifier, string argsJson);
+        protected abstract string? InvokeJS(string identifier, string? argsJson);
     }
 }

@@ -465,7 +465,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
                     {
                         var invocation = _protocol.ReadInvocation((byte[])channelMessage.Message);
 
-                        var tasks = new List<Task>();
+                        var tasks = new List<Task>(subscriptions.Count);
                         foreach (var userConnection in subscriptions)
                         {
                             tasks.Add(userConnection.WriteAsync(invocation.Message).AsTask());
@@ -491,7 +491,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
                 {
                     var invocation = _protocol.ReadInvocation((byte[])channelMessage.Message);
 
-                    var tasks = new List<Task>();
+                    var tasks = new List<Task>(groupConnections.Count);
                     foreach (var groupConnection in groupConnections)
                     {
                         if (invocation.ExcludedConnectionIds?.Contains(groupConnection.ConnectionId) == true)

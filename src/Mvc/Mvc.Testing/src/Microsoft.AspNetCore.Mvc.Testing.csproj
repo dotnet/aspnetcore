@@ -4,9 +4,6 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
 
-    <!-- !!! Temporary workaround while we switch TFMs. -->
-    <NoWarn>$(NoWarn);NU5129</NoWarn>
-
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;aspnetcoremvctesting</PackageTags>
     <IsPackable>true</IsPackable>
@@ -17,8 +14,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Microsoft.Extensions.DependencyModel" />
     <Reference Include="Microsoft.Extensions.Hosting" />
-
-    <Compile Include="$(SharedSourceRoot)HostFactoryResolver\*.cs" />
+    <Reference Include="Microsoft.Extensions.HostFactoryResolver.Sources" />
   </ItemGroup>
 
   <ItemGroup>

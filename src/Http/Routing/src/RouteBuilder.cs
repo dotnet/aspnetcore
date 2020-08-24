@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
@@ -15,7 +17,7 @@ namespace Microsoft.AspNetCore.Routing
         {
         }
 
-        public RouteBuilder(IApplicationBuilder applicationBuilder, IRouter defaultHandler)
+        public RouteBuilder(IApplicationBuilder applicationBuilder, IRouter? defaultHandler)
         {
             if (applicationBuilder == null)
             {
@@ -39,7 +41,7 @@ namespace Microsoft.AspNetCore.Routing
 
         public IApplicationBuilder ApplicationBuilder { get; }
 
-        public IRouter DefaultHandler { get; set; }
+        public IRouter? DefaultHandler { get; set; }
 
         public IServiceProvider ServiceProvider { get; }
 

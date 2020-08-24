@@ -7,6 +7,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -215,10 +216,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("Fourth", () => boundValue.Text);
             Assert.Equal("Fourth choice", target.SelectedOption.Text);
 
+            // verify that changing an option value and selected value at the same time works.
+            Browser.FindElement(By.Id("change-variable-value")).Click();
+            Browser.Equal("Sixth", () => boundValue.Text);
+
             // Verify we can select options whose value is empty
             // https://github.com/dotnet/aspnetcore/issues/17735
             target.SelectByText("Empty value");
             Browser.Equal(string.Empty, () => boundValue.Text);
+            Browser.Equal("Empty value", () => target.SelectedOption.Text);
         }
 
         [Fact]
@@ -237,6 +243,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // https://github.com/dotnet/aspnetcore/issues/17735
             target.SelectByText("Empty value");
             Browser.Equal(string.Empty, () => boundValue.Text);
+            Browser.Equal("Empty value", () => target.SelectedOption.Text);
         }
 
         [Fact]
@@ -382,6 +389,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23826")]
         public void CanBindTextboxNullableShort()
         {
             var target = Browser.FindElement(By.Id("textbox-nullable-short"));
@@ -504,6 +512,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23596")]
         public void CanBindTextboxNullableDouble()
         {
             var target = Browser.FindElement(By.Id("textbox-nullable-double"));
@@ -603,6 +612,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // This tests what happens you put invalid (unconvertable) input in. This is separate from the
         // other tests because it requires type="text" - the other tests use type="number"
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24756")]
         public void CanBindTextbox_Decimal_InvalidInput()
         {
             var target = Browser.FindElement(By.Id("textbox-decimal-invalid"));
@@ -969,8 +979,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target to something invalid - the invalid change is reverted
             // back to the last valid value
             target.SendKeys(Keys.Control + "a"); // select all
-            target.SendKeys("05/06A");
-            Browser.Equal("05/06A", () => target.GetAttribute("value"));
+            target.SendKeys("05/06X");
+            Browser.Equal("05/06X", () => target.GetAttribute("value"));
             target.SendKeys("\t");
             Browser.Equal(expected, () => DateTime.Parse(target.GetAttribute("value")));
             Assert.Equal(expected, DateTime.Parse(boundValue.Text));
@@ -1007,8 +1017,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target to something invalid - the invalid change is reverted
             // back to the last valid value
             target.SendKeys(Keys.Control + "a"); // select all
-            target.SendKeys("05/06A");
-            Browser.Equal("05/06A", () => target.GetAttribute("value"));
+            target.SendKeys("05/06X");
+            Browser.Equal("05/06X", () => target.GetAttribute("value"));
             target.SendKeys("\t");
             Browser.Equal(expected.DateTime, () => DateTimeOffset.Parse(target.GetAttribute("value")).DateTime);
             Assert.Equal(expected.DateTime, DateTimeOffset.Parse(boundValue.Text).DateTime);

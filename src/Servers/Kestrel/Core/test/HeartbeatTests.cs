@@ -29,12 +29,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var debugger = new Mock<IDebugger>();
             var kestrelTrace = new Mock<IKestrelTrace>();
             var handlerMre = new ManualResetEventSlim();
-            var handlerStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var handlerStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var now = systemClock.UtcNow;
 
             heartbeatHandler.Setup(h => h.OnHeartbeat(now)).Callback(() =>
             {
-                handlerStartedTcs.SetResult(null);
+                handlerStartedTcs.SetResult();
                 handlerMre.Wait();
             });
             debugger.Setup(d => d.IsAttached).Returns(false);
@@ -67,12 +67,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var debugger = new Mock<IDebugger>();
             var kestrelTrace = new Mock<IKestrelTrace>();
             var handlerMre = new ManualResetEventSlim();
-            var handlerStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var handlerStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var now = systemClock.UtcNow;
 
             heartbeatHandler.Setup(h => h.OnHeartbeat(now)).Callback(() =>
             {
-                handlerStartedTcs.SetResult(null);
+                handlerStartedTcs.SetResult();
                 handlerMre.Wait();
             });
 

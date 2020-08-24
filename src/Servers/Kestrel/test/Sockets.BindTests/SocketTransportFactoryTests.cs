@@ -15,13 +15,6 @@ namespace Sockets.BindTests
     public class SocketTransportFactoryTests
     {
         [Fact]
-        public async Task ThrowsNotSupportedExceptionWhenBindingToFileHandleEndPoint()
-        {
-            var socketTransportFactory = new SocketTransportFactory(Options.Create(new SocketTransportOptions()), Mock.Of<ILoggerFactory>());
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await socketTransportFactory.BindAsync(new FileHandleEndPoint(0, FileHandleType.Auto)));
-        }
-
-        [Fact]
         public async Task ThrowsNotImplementedExceptionWhenBindingToUriEndPoint()
         {
             var socketTransportFactory = new SocketTransportFactory(Options.Create(new SocketTransportOptions()), Mock.Of<ILoggerFactory>());

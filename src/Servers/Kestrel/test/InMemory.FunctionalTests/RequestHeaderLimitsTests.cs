@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
@@ -23,7 +22,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [InlineData(5, 0)]
         [InlineData(5, 1)]
         [InlineData(5, 1337)]
-        [QuarantinedTest]
         public async Task ServerAcceptsRequestWithHeaderTotalSizeWithinLimit(int headerCount, int extraLimit)
         {
             var headers = MakeHeaders(headerCount);

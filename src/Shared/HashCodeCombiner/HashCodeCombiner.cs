@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -33,7 +35,7 @@ namespace Microsoft.Extensions.Internal
             else
             {
                 var count = 0;
-                foreach (object o in e)
+                foreach (object? o in e)
                 {
                     Add(o);
                     count++;
@@ -55,14 +57,14 @@ namespace Microsoft.Extensions.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Add(string s)
+        public void Add(string? s)
         {
             var hashCode = (s != null) ? s.GetHashCode() : 0;
             Add(hashCode);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Add(object o)
+        public void Add(object? o)
         {
             var hashCode = (o != null) ? o.GetHashCode() : 0;
             Add(hashCode);

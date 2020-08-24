@@ -123,4 +123,7 @@
   <data name="Localization_MissingManifest_Parent" xml:space="preserve">
     <value>No manifests exist for the current culture.</value>
   </data>
+  <data name="Localization_TypeMustHaveTypeName" xml:space="preserve">
+    <value>Type '{0}' must have a non-null type name.</value>
+  </data>
 </root>

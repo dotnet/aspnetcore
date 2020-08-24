@@ -25,14 +25,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
     }
 
-    public class ServerEventTest : EventTest
-    {
-        public ServerEventTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)
-            : base(browserFixture, serverFixture.WithServerExecution(), output)
-        {
-        }
-    }
-
     public class ServerInteropTest : InteropTest
     {
         public ServerInteropTest(BrowserFixture browserFixture, ToggleExecutionModeServerFixture<Program> serverFixture, ITestOutputHelper output)

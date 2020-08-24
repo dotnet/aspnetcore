@@ -13,7 +13,6 @@
     <DebugType>none</DebugType>
     <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
     <TargetsForTfmSpecificBuildOutput>
       $(TargetsForTfmSpecificBuildOutput);

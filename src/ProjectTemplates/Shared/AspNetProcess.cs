@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -12,7 +11,6 @@ using System.Net.Security;
 using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
-using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.CommandLineUtils;
@@ -31,10 +29,7 @@ namespace Templates.Test.Helpers
         private const string ListeningMessagePrefix = "Now listening on: ";
         private readonly HttpClient _httpClient;
         private readonly ITestOutputHelper _output;
-
-        private string _certificatePath;
-        private string _certificatePassword = Guid.NewGuid().ToString();
-        private string _certificateThumbprint;
+        private readonly DevelopmentCertificate _developmentCertificate;
 
         internal readonly Uri ListeningUri;
         internal ProcessEx Process { get; }
@@ -48,8 +43,7 @@ namespace Templates.Test.Helpers
             bool hasListeningUri = true,
             ILogger logger = null)
         {
-            _certificatePath = Path.Combine(workingDirectory, $"{Guid.NewGuid()}.pfx");
-            EnsureDevelopmentCertificates();
+            _developmentCertificate = DevelopmentCertificate.Create(workingDirectory);
 
             _output = output;
             _httpClient = new HttpClient(new HttpClientHandler()
@@ -57,7 +51,7 @@ namespace Templates.Test.Helpers
                 AllowAutoRedirect = true,
                 UseCookies = true,
                 CookieContainer = new CookieContainer(),
-                ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => (certificate.Subject != "CN=localhost" && errors == SslPolicyErrors.None) || certificate?.Thumbprint == _certificateThumbprint,
+                ServerCertificateCustomValidationCallback = (request, certificate, chain, errors) => (certificate.Subject != "CN=localhost" && errors == SslPolicyErrors.None) || certificate?.Thumbprint == _developmentCertificate.CertificateThumbprint,
             })
             {
                 Timeout = TimeSpan.FromMinutes(2)
@@ -71,8 +65,8 @@ namespace Templates.Test.Helpers
 
             var finalEnvironmentVariables = new Dictionary<string, string>(environmentVariables)
             {
-                ["ASPNETCORE_Kestrel__Certificates__Default__Path"] = _certificatePath,
-                ["ASPNETCORE_Kestrel__Certificates__Default__Password"] = _certificatePassword
+                ["ASPNETCORE_Kestrel__Certificates__Default__Path"] = _developmentCertificate.CertificatePath,
+                ["ASPNETCORE_Kestrel__Certificates__Default__Password"] = _developmentCertificate.CertificatePassword,
             };
 
             Process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), arguments, envVars: finalEnvironmentVariables);
@@ -85,15 +79,6 @@ namespace Templates.Test.Helpers
                 ListeningUri = ResolveListeningUrl(output);
                 logger?.LogInformation($"AspNetProcess - Got {ListeningUri}");
             }
-        }
-
-        internal void EnsureDevelopmentCertificates()
-        {
-            var now = DateTimeOffset.Now;
-            var manager = CertificateManager.Instance;
-            var certificate = manager.CreateAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
-            _certificateThumbprint = certificate.Thumbprint;
-            manager.ExportCertificate(certificate, path: _certificatePath, includePrivateKey: true, _certificatePassword);
         }
 
         public void VisitInBrowser(IWebDriver driver)
@@ -248,6 +233,9 @@ namespace Templates.Test.Helpers
 
         internal Task<HttpResponseMessage> SendRequest(string path) =>
             RetryHelper.RetryRequest(() => _httpClient.GetAsync(new Uri(ListeningUri, path)), logger: NullLogger.Instance);
+
+        internal Task<HttpResponseMessage> SendRequest(Func<HttpRequestMessage> requestFactory)
+            => RetryHelper.RetryRequest(() => _httpClient.SendAsync(requestFactory()), logger: NullLogger.Instance);
 
         public async Task AssertStatusCode(string requestUrl, HttpStatusCode statusCode, string acceptContentType = null)
         {

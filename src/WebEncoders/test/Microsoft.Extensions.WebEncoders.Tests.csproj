@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(DefaultNetCoreTargetFramework);net472</TargetFrameworks>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

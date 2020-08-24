@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             // Arrange
             var formatter = GetOutputFormatter();
-            ((SystemTextJsonOutputFormatter)formatter).SerializerOptions.ReferenceHandling = ReferenceHandling.Preserve;
+            ((SystemTextJsonOutputFormatter)formatter).SerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
             var expectedContent = "{\"$id\":\"1\",\"name\":\"Person\",\"child\":{\"$id\":\"2\",\"name\":\"Child\",\"child\":null,\"parent\":{\"$ref\":\"1\"}},\"parent\":null}";
             var person = new Person
             {

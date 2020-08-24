@@ -3,7 +3,10 @@
 
 package com.microsoft.signalr;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +19,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
+import okio.ByteString;
 
 class OkHttpWebSocketWrapper extends WebSocketWrapper {
     private WebSocket websocketClient;
@@ -26,6 +30,7 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
     private WebSocketOnClosedCallback onClose;
     private CompletableSubject startSubject = CompletableSubject.create();
     private CompletableSubject closeSubject = CompletableSubject.create();
+    private final ReentrantLock closeLock = new ReentrantLock();
 
     private final Logger logger = LoggerFactory.getLogger(OkHttpWebSocketWrapper.class);
 
@@ -58,8 +63,9 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
     }
 
     @Override
-    public Completable send(String message) {
-        websocketClient.send(message);
+    public Completable send(ByteBuffer message) {
+        ByteString bs = ByteString.of(message);
+        websocketClient.send(bs);
         return Completable.complete();
     }
 
@@ -81,20 +87,40 @@ class OkHttpWebSocketWrapper extends WebSocketWrapper {
 
         @Override
         public void onMessage(WebSocket webSocket, String message) {
-            onReceive.invoke(message);
+            onReceive.invoke(ByteBuffer.wrap(message.getBytes(StandardCharsets.UTF_8)));
+        }
+        
+        @Override
+        public void onMessage(WebSocket webSocket, ByteString bytes) {
+            onReceive.invoke(bytes.asByteBuffer());
         }
 
         @Override
         public void onClosing(WebSocket webSocket, int code, String reason) {
             onClose.invoke(code, reason);
-            closeSubject.onComplete();
+            try {
+                closeLock.lock();
+                closeSubject.onComplete();
+            }
+            finally {
+                closeLock.unlock();
+            }
             checkStartFailure();
         }
 
         @Override
         public void onFailure(WebSocket webSocket, Throwable t, Response response) {
             logger.error("WebSocket closed from an error: {}.", t.getMessage());
-            closeSubject.onError(new RuntimeException(t));
+
+            try {
+                closeLock.lock();
+                if (!closeSubject.hasComplete()) {
+                    closeSubject.onError(new RuntimeException(t));
+                }
+            }
+            finally {
+                closeLock.unlock();
+            }
             onClose.invoke(null, t.getMessage());
             checkStartFailure();
         }

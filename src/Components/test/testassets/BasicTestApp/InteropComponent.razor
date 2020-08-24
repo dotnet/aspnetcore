@@ -1,4 +1,4 @@
-@using Microsoft.JSInterop
+﻿@using Microsoft.JSInterop
 @using BasicTestApp.InteropTest
 @using System.Runtime.InteropServices
 @using System.Text.Json
@@ -67,7 +67,7 @@
 
     public async Task InvokeInteropAsync()
     {
-        var shouldSupportSyncInterop = RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY"));
+        var shouldSupportSyncInterop = RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER"));
         var testDTOTOPassByRef = new TestDTO(nonSerializedValue: 123);
         var instanceMethodsTarget = new JavaScriptInterop();
         var genericType = new JavaScriptInterop.GenericType<string> { Value = "Initial value" };

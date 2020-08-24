@@ -84,18 +84,18 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var connection = new TestConnection();
             var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
 
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             hubConnection.On("method", async () =>
             {
                 await hubConnection.StopAsync().OrTimeout();
-                tcs.SetResult(null);
+                tcs.SetResult();
             });
 
             await hubConnection.StartAsync().OrTimeout();
 
             await connection.ReceiveJsonMessage(new { type = HubProtocolConstants.InvocationMessageType, target= "method", arguments = new object[] { } }).OrTimeout();
 
-            Assert.Null(await tcs.Task.OrTimeout());
+            await tcs.Task.OrTimeout();
         }
 
         [Fact]
@@ -104,11 +104,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var connection = new TestConnection();
             var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
 
-            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var methodCalledTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var methodCalledTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             hubConnection.On("method", async () =>
             {
-                methodCalledTcs.SetResult(null);
+                methodCalledTcs.SetResult();
                 await tcs.Task;
             });
 
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             await methodCalledTcs.Task.OrTimeout();
             await hubConnection.StopAsync().OrTimeout();
 
-            tcs.SetResult(null);
+            tcs.SetResult();
         }
 
         [Fact]
@@ -559,7 +559,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var hubConnection = CreateHubConnection(connection, loggerFactory: LoggerFactory);
                 await hubConnection.StartAsync().OrTimeout();
 
-                var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 hubConnection.On<string>("Echo", async msg =>
                 {
                     try
@@ -573,13 +573,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         return;
                     }
 
-                    tcs.SetResult(null);
+                    tcs.SetResult();
                 });
 
-                var closedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                var closedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 hubConnection.Closed += _ =>
                 {
-                    closedTcs.SetResult(null);
+                    closedTcs.SetResult();
 
                     return Task.CompletedTask;
                 };

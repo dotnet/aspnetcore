@@ -28,19 +28,6 @@ namespace Microsoft.AspNetCore.Rewrite.UrlActions
             EscapeBackReferences = escapeBackReferences;
         }
 
-        public RedirectAction(
-            int statusCode,
-            Pattern pattern,
-            bool queryStringAppend)
-            : this(
-                statusCode,
-                pattern,
-                queryStringAppend,
-                queryStringDelete: true,
-                escapeBackReferences: false)
-        {
-        }
-
         public override void ApplyAction(RewriteContext context, BackReferenceCollection ruleBackReferences, BackReferenceCollection conditionBackReferences)
         {
             var pattern = Url.Evaluate(context, ruleBackReferences, conditionBackReferences);
@@ -57,7 +44,6 @@ namespace Microsoft.AspNetCore.Rewrite.UrlActions
                 response.Headers[HeaderNames.Location] = pathBase.HasValue ? pathBase.Value : "/";
                 return;
             }
-
 
             if (pattern.IndexOf("://", StringComparison.Ordinal) == -1 && pattern[0] != '/')
             {

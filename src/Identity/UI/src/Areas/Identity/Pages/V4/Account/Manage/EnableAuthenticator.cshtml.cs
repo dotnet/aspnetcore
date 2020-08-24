@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
 
             await _userManager.SetTwoFactorEnabledAsync(user, true);
             var userId = await _userManager.GetUserIdAsync(user);
-            _logger.LogInformation("User with ID '{UserId}' has enabled 2FA with an authenticator app.", userId);
+            _logger.LogInformation("User has enabled 2FA with an authenticator app.");
 
             StatusMessage = "Your authenticator app has been verified.";
 

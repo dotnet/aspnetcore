@@ -2,13 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
   </PropertyGroup>
 
    <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
-    <Reference Include="Microsoft.AspNetCore.Blazor.Server" />
+    <Reference Include="Microsoft.AspNetCore.Components.Web.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+    <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.Cors" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.Cors" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
@@ -19,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Blazor\DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj" />
+    <ProjectReference Include="..\..\..\WebAssembly\DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj" />
     <ProjectReference Include="..\BasicTestApp\BasicTestApp.csproj" />
   </ItemGroup>
 
@@ -32,15 +35,17 @@
 
   <Target Name="CopyClientAssetsForTest" BeforeTargets="Build"
           Inputs="..\BasicTestApp\wwwroot\js\jsinteroptests.js;
+                  ..\BasicTestApp\wwwroot\js\webComponentPerformingJsInterop.js;
                   ..\BasicTestApp\wwwroot\NotAComponent.html;
                   ..\BasicTestApp\wwwroot\style.css"
           Outputs="wwwroot\js\jsinteroptests.js;
+                   wwwroot\js\webComponentPerformingJsInterop.js;
                    wwwroot\NotAComponent.html;
                    wwwroot\style.css">
 
     <MakeDir Directories="wwwroot" />
 
-    <Copy SourceFiles="..\BasicTestApp\wwwroot\js\jsinteroptests.js;..\BasicTestApp\wwwroot\NotAComponent.html;..\BasicTestApp\wwwroot\style.css"
-          DestinationFiles="wwwroot\js\jsinteroptests.js;wwwroot\NotAComponent.html;wwwroot\style.css" />
+    <Copy SourceFiles="..\BasicTestApp\wwwroot\js\jsinteroptests.js;..\BasicTestApp\wwwroot\js\webComponentPerformingJsInterop.js;..\BasicTestApp\wwwroot\NotAComponent.html;..\BasicTestApp\wwwroot\style.css"
+          DestinationFiles="wwwroot\js\jsinteroptests.js;wwwroot\js\webComponentPerformingJsInterop.js;wwwroot\NotAComponent.html;wwwroot\style.css" />
   </Target>
 </Project>
