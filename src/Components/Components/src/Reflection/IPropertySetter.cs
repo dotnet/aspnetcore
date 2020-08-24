@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
     internal sealed class PropertySetter
     {
         private static readonly MethodInfo CallPropertySetterOpenGenericMethod =
-            typeof(PropertySetter).GetTypeInfo().GetDeclaredMethod(nameof(CallPropertySetter))!;
+            typeof(PropertySetter).GetMethod(nameof(CallPropertySetter), BindingFlags.NonPublic | BindingFlags.Static)!;
 
         private readonly Action<object, object> _setterDelegate;
 
