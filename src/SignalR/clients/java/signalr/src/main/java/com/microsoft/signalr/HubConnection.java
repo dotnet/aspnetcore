@@ -347,7 +347,7 @@ public class HubConnection implements AutoCloseable {
         hubConnectionStateLock.lock();
         try {
             if (hubConnectionState != HubConnectionState.DISCONNECTED) {
-                logger.debug("Another start is in progress. Waiting for start to complete.");
+                logger.debug("The connection is in the '{}' state. Waiting for in-progress start to complete or completing this start immediately.", hubConnectionState);
                 return start;
             }
 
