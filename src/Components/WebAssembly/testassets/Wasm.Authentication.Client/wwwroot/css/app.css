@@ -12,7 +12,7 @@ a, .btn-link {
     border-color: #1861ac;
 }
 
-#app {
+app {
     position: relative;
     display: flex;
     flex-direction: column;

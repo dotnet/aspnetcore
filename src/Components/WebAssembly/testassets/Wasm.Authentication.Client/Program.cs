@@ -4,11 +4,9 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Wasm.Authentication.Client
 {
@@ -18,22 +16,17 @@ namespace Wasm.Authentication.Client
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-            ConfigureCommonServices(builder.Services);
+            builder.Services.AddApiAuthorization<RemoteAppState, OidcAccount>()
+                .AddAccountClaimsPrincipalFactory<RemoteAppState, OidcAccount, PreferencesUserFactory>();
 
             builder.Services.AddHttpClient<WeatherForecastClient>(client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
-            .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
+                .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
-            //builder.RootComponents.Add<App>("app");
+            builder.Services.AddSingleton<StateService>();
+
+            builder.RootComponents.Add<App>("app");
 
             await builder.Build().RunAsync();
-        }
-
-        public static void ConfigureCommonServices(IServiceCollection services)
-        {
-            //services.AddApiAuthorization<RemoteAppState, OidcAccount>()
-            //    .AddAccountClaimsPrincipalFactory<RemoteAppState, OidcAccount, PreferencesUserFactory>();
-
-            services.AddSingleton<StateService>();
         }
     }
 }

@@ -1,15 +1,11 @@
-﻿@foreach (var name in Data?.Names)
-{
-    <p>@name</p>
-}
-@if(Data == null)
-{
-    <p>No names.</p>
-}
+﻿<CascadingAuthenticationState>
     <Router AppAssembly="@typeof(Program).Assembly">
         <Found Context="routeData">
-            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
-            </RouteView>
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <RedirectToLogin />
+                </NotAuthorized>
+            </AuthorizeRouteView>
         </Found>
         <NotFound>
             <LayoutView Layout="@typeof(MainLayout)">
@@ -17,7 +13,4 @@
             </LayoutView>
         </NotFound>
     </Router>
-
-@code{
-    [Parameter] public AppState Data { get; set; }
-}
+</CascadingAuthenticationState>
