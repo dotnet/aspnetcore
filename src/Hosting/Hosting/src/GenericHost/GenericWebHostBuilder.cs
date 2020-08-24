@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Hosting
             var configBuilder = new ConfigurationBuilder()
                 .AddInMemoryCollection();
 
-            if (!options.SuppressEnvironmentConfiguration )
+            if (!options.SuppressEnvironmentConfiguration)
             {
                 configBuilder.AddEnvironmentVariables(prefix: "ASPNETCORE_");
             }
