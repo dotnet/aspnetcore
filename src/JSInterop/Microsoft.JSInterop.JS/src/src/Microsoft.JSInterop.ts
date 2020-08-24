@@ -61,6 +61,17 @@ export module DotNet {
     0: new JSObject(window, 0),
   };
 
+  cachedJSObjectsById[0]._cachedFunctions.set('import', (url: any) => {
+    // In most cases developers will want to resolve dynamic imports relative to the base HREF.
+    // However since we're the one calling the import keyword, they would be resolved relative to
+    // this framework bundle URL. Fix this by providing an absolute URL.
+    if (typeof url === 'string' && url.startsWith('./')) {
+      url = document.baseURI + url.substr(2);
+    }
+
+    return import(/* webpackIgnore: true */ url);
+  });
+
   let nextAsyncCallId = 1; // Start at 1 because zero signals "no response needed"
   let nextJsObjectId = 1; // Start at 1 because zero is reserved for "window"
 
@@ -111,13 +122,13 @@ export module DotNet {
 
   /**
    * Creates a JavaScript object reference that can be passed to .NET via interop calls.
-   * 
+   *
    * @param jsObject The JavaScript Object used to create the JavaScript object reference.
    * @returns The JavaScript object reference (this will be the same instance as the given object).
    * @throws Error if the given value is not an Object.
    */
   export function createJSObjectReference(jsObject: any): any {
-    if (jsObject instanceof Object) {
+    if (jsObject && typeof jsObject === 'object') {
       if (!jsObject.hasOwnProperty(JSObject.ID_KEY) || cachedJSObjectsById[nextJsObjectId] !== jsObject) {
         // The return value is not cached as a JSObjectReference, or is copied from an object that was, so we cache it as a new one
         cachedJSObjectsById[nextJsObjectId] = new JSObject(jsObject, nextJsObjectId);
@@ -132,7 +143,7 @@ export module DotNet {
 
   /**
    * Disposes the JavaScript object reference associated with the given object.
-   * 
+   *
    * @param jsObject The JavaScript Object associated with the JavaScript object reference.
    */
   export function disposeJSObjectReference(jsObject: any): void {
@@ -260,7 +271,7 @@ export module DotNet {
 
     /**
      * Disposes the JavaScript object reference with the specified object ID.
-     * 
+     *
      * @param id The ID of the JavaScript object reference.
      */
     disposeJSObjectReferenceById,
