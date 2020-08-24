@@ -55,11 +55,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["result7Async"] = @"[{""id"":6,""isValid"":true,""data"":{""source"":""Some random text with at least 6 characters"",""start"":6,""length"":6}},6,123,24,48,6.25]",
                 ["result8Async"] = @"[{""id"":7,""isValid"":false,""data"":{""source"":""Some random text with at least 7 characters"",""start"":7,""length"":7}},7,123,28,56,7.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5]]",
                 ["result9Async"] = @"[{""id"":8,""isValid"":true,""data"":{""source"":""Some random text with at least 8 characters"",""start"":8,""length"":8}},8,123,32,64,8.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5],{""source"":""Some random text with at least 7 characters"",""start"":9,""length"":9}]",
+                ["roundTripJSObjectReferenceAsync"] = @"""successful""",
+                ["invokeDisposedJSObjectReferenceExceptionAsync"] = @"""JS object instance with ID",
                 ["AsyncThrowSyncException"] = @"""System.InvalidOperationException: Threw a sync exception!",
                 ["AsyncThrowAsyncException"] = @"""System.InvalidOperationException: Threw an async exception!",
                 ["SyncExceptionFromAsyncMethod"] = "Function threw a sync exception!",
                 ["AsyncExceptionFromAsyncMethod"] = "Function threw an async exception!",
-                ["JSObjectReferenceDisposedException"] = "JS object instance with ID",
                 ["JSObjectReferenceInvokeNonFunctionException"] = "The value 'Object.nonFunction' is not a function.",
                 ["resultReturnDotNetObjectByRefAsync"] = "1001",
                 ["instanceMethodThisTypeNameAsync"] = @"""JavaScriptInterop""",
@@ -98,6 +99,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["result7"] = @"[{""id"":6,""isValid"":true,""data"":{""source"":""Some random text with at least 6 characters"",""start"":6,""length"":6}},6,123,24,48,6.25]",
                 ["result8"] = @"[{""id"":7,""isValid"":false,""data"":{""source"":""Some random text with at least 7 characters"",""start"":7,""length"":7}},7,123,28,56,7.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5]]",
                 ["result9"] = @"[{""id"":8,""isValid"":true,""data"":{""source"":""Some random text with at least 8 characters"",""start"":8,""length"":8}},8,123,32,64,8.25,[0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5],{""source"":""Some random text with at least 7 characters"",""start"":9,""length"":9}]",
+                ["roundTripJSObjectReference"] = @"""successful""",
+                ["invokeDisposedJSObjectReferenceException"] = @"""JS object instance with ID",
                 ["ThrowException"] = @"""System.InvalidOperationException: Threw an exception!",
                 ["ExceptionFromSyncMethod"] = "Function threw an exception!",
                 ["resultReturnDotNetObjectByRefSync"] = "1000",
@@ -130,7 +133,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var interopButton = Browser.FindElement(By.Id("btn-interop"));
             interopButton.Click();
 
-            var wait = new WebDriverWait(Browser, TimeSpan.FromSeconds(10))
+            var wait = new WebDriverWait(Browser, TimeSpan.FromSeconds(1000))
                 .Until(d => d.FindElement(By.Id("done-with-interop")));
 
             foreach (var expectedValue in expectedValues)

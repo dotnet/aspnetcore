@@ -7,14 +7,11 @@ export module DotNet {
   const jsonRevivers: JsonReviver[] = [];
 
   class JSObject {
-    public static readonly ID_KEY = '__jsObjectId';
-
     _cachedFunctions: Map<string, Function>;
 
-    constructor(private _jsObject: any, _id: number)
+    constructor(private _jsObject: any)
     {
       this._cachedFunctions = new Map<string, Function>();
-      this._jsObject[JSObject.ID_KEY] = _id;
     }
 
     public findFunction(identifier: string) {
@@ -50,15 +47,13 @@ export module DotNet {
     public getWrappedObject() {
       return this._jsObject;
     }
-
-    public dispose() {
-      delete this._jsObject[JSObject.ID_KEY];
-    }
   }
+
+  const jsObjectIdKey = "__jsObjectId";
 
   const pendingAsyncCalls: { [id: number]: PendingAsyncCall<any> } = {};
   const cachedJSObjectsById: { [id: number]: JSObject } = {
-    0: new JSObject(window, 0),
+    0: new JSObject(window),
   };
 
   cachedJSObjectsById[0]._cachedFunctions.set('import', (url: any) => {
@@ -129,25 +124,27 @@ export module DotNet {
    */
   export function createJSObjectReference(jsObject: any): any {
     if (jsObject && typeof jsObject === 'object') {
-      if (!jsObject.hasOwnProperty(JSObject.ID_KEY) || cachedJSObjectsById[nextJsObjectId] !== jsObject) {
-        // The return value is not cached as a JSObjectReference, or is copied from an object that was, so we cache it as a new one
-        cachedJSObjectsById[nextJsObjectId] = new JSObject(jsObject, nextJsObjectId);
-        nextJsObjectId++;
-      }
+      cachedJSObjectsById[nextJsObjectId] = new JSObject(jsObject);
 
-      return jsObject;
+      const result = {
+        [jsObjectIdKey]: nextJsObjectId
+      };
+
+      nextJsObjectId++;
+
+      return result;
     } else {
       throw new Error(`Cannot create a JSObjectReference from the value '${jsObject}'.`);
     }
   }
 
   /**
-   * Disposes the JavaScript object reference associated with the given object.
+   * Disposes the given JavaScript object reference.
    *
-   * @param jsObject The JavaScript Object associated with the JavaScript object reference.
+   * @param jsObjectReference The JavaScript Object reference.
    */
-  export function disposeJSObjectReference(jsObject: any): void {
-    const id = jsObject && jsObject[JSObject.ID_KEY];
+  export function disposeJSObjectReference(jsObjectReference: any): void {
+    const id = jsObjectReference && jsObjectReference[jsObjectIdKey];
 
     if (typeof id === 'number') {
       disposeJSObjectReferenceById(id);
@@ -362,12 +359,6 @@ export module DotNet {
   }
 
   function disposeJSObjectReferenceById(id: number) {
-    const jsObject = cachedJSObjectsById[id];
-
-    if (jsObject) {
-      jsObject.dispose();
-    }
-
     delete cachedJSObjectsById[id];
   }
 
@@ -404,9 +395,9 @@ export module DotNet {
   });
 
   attachReviver(function reviveJSObjectReference(key: any, value: any) {
-    if (value && typeof value === 'object' && value.hasOwnProperty(JSObject.ID_KEY)) {
-      const id = value[JSObject.ID_KEY];
-      const jsObject = cachedJSObjectsById[value[JSObject.ID_KEY]];
+    if (value && typeof value === 'object' && value.hasOwnProperty(jsObjectIdKey)) {
+      const id = value[jsObjectIdKey];
+      const jsObject = cachedJSObjectsById[id];
 
       if (jsObject) {
         return jsObject.getWrappedObject();

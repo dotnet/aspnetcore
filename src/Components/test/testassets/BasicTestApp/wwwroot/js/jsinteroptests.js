@@ -30,9 +30,16 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
     var returnDotNetObjectByRefResult = DotNet.invokeMethod(assemblyName, 'ReturnDotNetObjectByRef');
     results['resultReturnDotNetObjectByRefSync'] = DotNet.invokeMethod(assemblyName, 'ExtractNonSerializedValue', returnDotNetObjectByRefResult['Some sync instance']);
 
-    var jsObjectReference = DotNet.createJSObjectReference({ prop: 'successful' });
+    var jsObjectReference = DotNet.createJSObjectReference({
+        prop: 'successful',
+        noop: function () { }
+    });
+
     var returnedObject = DotNet.invokeMethod(assemblyName, 'RoundTripJSObjectReference', jsObjectReference);
     results['roundTripJSObjectReference'] = returnedObject && returnedObject.prop;
+
+    DotNet.disposeJSObjectReference(jsObjectReference);
+    results['invokeDisposedJSObjectReferenceException'] = DotNet.invokeMethod(assemblyName, 'InvokeDisposedJSObjectReferenceException', jsObjectReference);
 
     var instanceMethodResult = instanceMethodsTarget.invokeMethod('InstanceMethod', {
       stringValue: 'My string',
@@ -69,6 +76,17 @@ async function invokeDotNetInteropMethodsAsync(shouldSupportSyncInterop, dotNetO
 
   const returnDotNetObjectByRefAsync = await DotNet.invokeMethodAsync(assemblyName, 'ReturnDotNetObjectByRefAsync');
   results['resultReturnDotNetObjectByRefAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'ExtractNonSerializedValue', returnDotNetObjectByRefAsync['Some async instance']);
+
+  var jsObjectReference = DotNet.createJSObjectReference({
+    prop: 'successful',
+    noop: function () { }
+  });
+
+  var returnedObject = await DotNet.invokeMethodAsync(assemblyName, 'RoundTripJSObjectReferenceAsync', jsObjectReference);
+  results['roundTripJSObjectReferenceAsync'] = returnedObject && returnedObject.prop;
+
+  DotNet.disposeJSObjectReference(jsObjectReference);
+  results['invokeDisposedJSObjectReferenceExceptionAsync'] = await DotNet.invokeMethodAsync(assemblyName, 'InvokeDisposedJSObjectReferenceExceptionAsync', jsObjectReference);
 
   const instanceMethodAsync = await instanceMethodsTarget.invokeMethodAsync('InstanceMethodAsync', {
     stringValue: 'My string',
