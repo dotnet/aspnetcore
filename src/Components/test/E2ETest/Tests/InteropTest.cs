@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var interopButton = Browser.FindElement(By.Id("btn-interop"));
             interopButton.Click();
 
-            var wait = new WebDriverWait(Browser, TimeSpan.FromSeconds(1000))
+            var wait = new WebDriverWait(Browser, TimeSpan.FromSeconds(10))
                 .Until(d => d.FindElement(By.Id("done-with-interop")));
 
             foreach (var expectedValue in expectedValues)
