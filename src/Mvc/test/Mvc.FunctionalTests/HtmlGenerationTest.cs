@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -98,6 +99,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         [Theory]
         [MemberData(nameof(WebPagesData))]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25206")]
         public async Task HtmlGenerationWebSite_GeneratesExpectedResults(string action, string antiforgeryPath)
         {
             // Arrange
