@@ -7,7 +7,6 @@ Document -
         UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public partial - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             DesignTimeDirective - 
-                DirectiveToken - (20:0,20 [4] x:\dir\subdir\Test\_Imports.razor) - true
                 DirectiveToken - (20:0,20 [5] x:\dir\subdir\Test\TestComponent.cshtml) - false
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning disable 0414

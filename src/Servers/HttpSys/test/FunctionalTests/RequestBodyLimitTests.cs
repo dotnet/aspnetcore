@@ -48,6 +48,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
                 Assert.False(feature.IsReadOnly);
+                Assert.True(httpContext.Request.CanHaveBody());
                 Assert.Equal(11, httpContext.Request.ContentLength);
                 byte[] input = new byte[100];
                 int read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);
@@ -114,6 +115,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
                 Assert.False(feature.IsReadOnly);
+                Assert.True(httpContext.Request.CanHaveBody());
                 Assert.Null(httpContext.Request.ContentLength);
                 byte[] input = new byte[100];
                 int read = await httpContext.Request.Body.ReadAsync(input, 0, input.Length);

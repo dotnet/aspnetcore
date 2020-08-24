@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     internal class FeatureContext :
         IHttpRequestFeature,
+        IHttpRequestBodyDetectionFeature,
         IHttpConnectionFeature,
         IHttpResponseFeature,
         IHttpResponseBodyFeature,
@@ -211,6 +212,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             get { return _scheme; }
             set { _scheme = value; }
         }
+
+        bool IHttpRequestBodyDetectionFeature.CanHaveBody => Request.HasEntityBody;
 
         IPAddress IHttpConnectionFeature.LocalIpAddress
         {

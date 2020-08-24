@@ -1933,7 +1933,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 var request = httpContext.Request;
 
                 Assert.Equal("POST", request.Method);
-
+                Assert.True(request.CanHaveBody());
                 var readResult = await request.BodyReader.ReadAsync();
                 request.BodyReader.AdvanceTo(readResult.Buffer.End);
 
