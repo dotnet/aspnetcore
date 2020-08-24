@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             await using (var server = new TestServer(async context =>
             {
+                Assert.True(context.Request.CanHaveBody());
                 var buffer = new byte[1];
 #pragma warning disable CS0618 // Type or member is obsolete
                 requestRejectedEx = await Assert.ThrowsAsync<BadHttpRequestException>(
