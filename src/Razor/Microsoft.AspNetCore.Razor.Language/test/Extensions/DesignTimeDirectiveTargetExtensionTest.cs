@@ -215,6 +215,47 @@ global::System.Object __typeHelper = ""Value"";
         }
 
         [Fact]
+        public void WriteDesignTimeDirective_WithBooleanToken_WritesLambda()
+        {
+            // Arrange
+            var extension = new DesignTimeDirectiveTargetExtension();
+            var context = TestCodeRenderingContext.CreateDesignTime();
+            
+            var node = new DesignTimeDirectiveIntermediateNode();
+            var token = new DirectiveTokenIntermediateNode()
+            {
+                Source = new SourceSpan("test.cshtml", 0, 0, 0, 5),
+                Content = "true",
+                DirectiveToken = DirectiveTokenDescriptor.CreateToken(DirectiveTokenKind.Boolean),
+            };
+            node.Children.Add(token);
+
+            // Act
+            extension.WriteDesignTimeDirective(context, node);
+
+            // Assert
+            var csharp = context.CodeWriter.GenerateCode();
+            Assert.Equal(
+@"#pragma warning disable 219
+private void __RazorDirectiveTokenHelpers__() {
+((System.Action)(() => {
+#nullable restore
+#line 1 ""test.cshtml""
+global::System.Boolean __typeHelper = true;
+
+#line default
+#line hidden
+#nullable disable
+}
+))();
+}
+#pragma warning restore 219
+",
+                    csharp,
+                    ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
         public void WriteDesignTimeDirective_ChildrenWithNoSource_WritesEmptyMethod_WithPragma()
         {
             // Arrange
