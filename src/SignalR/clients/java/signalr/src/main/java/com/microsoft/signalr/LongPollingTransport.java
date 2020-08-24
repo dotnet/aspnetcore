@@ -25,10 +25,10 @@ class LongPollingTransport implements Transport {
     private final HttpClient pollingClient;
     private final Map<String, String> headers;
     private static final int POLL_TIMEOUT = 100*1000;
+    private final Single<String> accessTokenProvider;
     private volatile Boolean active = false;
     private String pollUrl;
     private String closeError;
-    private Single<String> accessTokenProvider;
     private CompletableSubject receiveLoop = CompletableSubject.create();
     private ExecutorService threadPool;
     private ExecutorService onReceiveThread;
@@ -41,7 +41,6 @@ class LongPollingTransport implements Transport {
         this.client = client;
         this.pollingClient = client.cloneWithTimeOut(POLL_TIMEOUT);
         this.accessTokenProvider = accessTokenProvider;
-        this.onReceiveThread = Executors.newSingleThreadExecutor();
     }
 
     //Package private active accessor for testing.
@@ -49,13 +48,12 @@ class LongPollingTransport implements Transport {
         return this.active;
     }
 
-    private Single updateHeaderToken() {
-        return this.accessTokenProvider.flatMap((token) -> {
+    private Completable updateHeaderToken() {
+        return this.accessTokenProvider.doOnSuccess((token) -> {
             if (!token.isEmpty()) {
                 this.headers.put("Authorization", "Bearer " + token);
             }
-            return Single.just("");
-        });
+        }).ignoreElement();
     }
 
     @Override
@@ -65,7 +63,7 @@ class LongPollingTransport implements Transport {
         this.url = url;
         pollUrl = url + "&_=" + System.currentTimeMillis();
         logger.debug("Polling {}.", pollUrl);
-        return this.updateHeaderToken().flatMapCompletable((r) -> {
+        return this.updateHeaderToken().andThen(Completable.defer(() -> {
             HttpRequest request = new HttpRequest();
             request.addHeaders(headers);
             return this.pollingClient.get(pollUrl, request).flatMapCompletable(response -> {
@@ -77,18 +75,26 @@ class LongPollingTransport implements Transport {
                     this.active = true;
                 }
                 this.threadPool = Executors.newCachedThreadPool();
-                threadPool.execute(() -> poll(url).subscribeWith(receiveLoop));
+                threadPool.execute(() -> {
+                    this.onReceiveThread = Executors.newSingleThreadExecutor();
+                    receiveLoop.subscribe(() -> {
+                        this.stop().onErrorComplete().subscribe();
+                    }, e -> {
+                        this.stop().onErrorComplete().subscribe();
+                    });
+                    poll(url).subscribeWith(receiveLoop);
+                });
 
                 return Completable.complete();
             });
-        });
+        }));
     }
 
     private Completable poll(String url) {
         if (this.active) {
             pollUrl = url + "&_=" + System.currentTimeMillis();
             logger.debug("Polling {}.", pollUrl);
-            return this.updateHeaderToken().flatMapCompletable((x) -> {
+            return this.updateHeaderToken().andThen(Completable.defer(() -> {
                 HttpRequest request = new HttpRequest();
                 request.addHeaders(headers);
                 Completable pollingCompletable = this.pollingClient.get(pollUrl, request).flatMapCompletable(response -> {
@@ -111,13 +117,10 @@ class LongPollingTransport implements Transport {
                 });
 
                 return pollingCompletable;
-            });
+            }));
         } else {
             logger.debug("Long Polling transport polling complete.");
             receiveLoop.onComplete();
-            if (!stopCalled.get()) {
-                return this.stop();
-            }
             return Completable.complete();
         }
     }
@@ -127,11 +130,11 @@ class LongPollingTransport implements Transport {
         if (!this.active) {
             return Completable.error(new Exception("Cannot send unless the transport is active."));
         }
-        return this.updateHeaderToken().flatMapCompletable((x) -> {
+        return this.updateHeaderToken().andThen(Completable.defer(() -> {
             HttpRequest request = new HttpRequest();
             request.addHeaders(headers);
-            return Completable.fromSingle(this.client.post(url, message, request));
-        });
+            return this.client.post(url, message, request).ignoreElement();
+        }));
     }
 
     @Override
@@ -152,23 +155,31 @@ class LongPollingTransport implements Transport {
 
     @Override
     public Completable stop() {
-        if (!stopCalled.get()) {
-            this.stopCalled.set(true);
+        if (stopCalled.compareAndSet(false, true)) {
             this.active = false;
-            return this.updateHeaderToken().flatMapCompletable((x) -> {
+            return this.updateHeaderToken().andThen(Completable.defer(() -> {
                 HttpRequest request = new HttpRequest();
                 request.addHeaders(headers);
-                this.pollingClient.delete(this.url, request);
-                CompletableSubject stopCompletableSubject = CompletableSubject.create();
-                return this.receiveLoop.andThen(Completable.defer(() -> {
-                    logger.info("LongPolling transport stopped.");
-                    this.onReceiveThread.shutdown();
-                    this.threadPool.shutdown();
-                    this.onClose.invoke(this.closeError);
-                    return Completable.complete();
-                })).subscribeWith(stopCompletableSubject);
+                return this.pollingClient.delete(this.url, request).ignoreElement()
+                    .andThen(receiveLoop)
+                    .doOnComplete(() -> {
+                        cleanup(this.closeError);
+                    });
+            })).doOnError(e -> {
+                cleanup(e.getMessage());
             });
         }
         return Completable.complete();
+    }
+
+    private void cleanup(String error) {
+        logger.info("LongPolling transport stopped.");
+        if (this.onReceiveThread != null) {
+            this.onReceiveThread.shutdown();
+        }
+        if (this.threadPool != null) {
+            this.threadPool.shutdown();
+        }
+        this.onClose.invoke(error);
     }
 }

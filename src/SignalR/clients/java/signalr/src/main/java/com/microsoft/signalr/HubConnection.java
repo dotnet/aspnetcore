@@ -358,6 +358,8 @@ public class HubConnection implements AutoCloseable {
                 this.localHeaders.put("Authorization", "Bearer " + token);
             }
             tokenCompletable.onComplete();
+        }, error -> {
+            tokenCompletable.onError(error);
         });
 
         stopError = null;

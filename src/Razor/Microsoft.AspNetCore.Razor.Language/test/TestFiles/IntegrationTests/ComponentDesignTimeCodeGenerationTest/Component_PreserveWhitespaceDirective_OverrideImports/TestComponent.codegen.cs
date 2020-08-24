@@ -13,6 +13,13 @@ namespace Test
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+global::System.Boolean __typeHelper = false;
+
+#line default
+#line hidden
+#nullable disable
         }
         ))();
         }

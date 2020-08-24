@@ -1020,7 +1020,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             {
                 Sender = req =>
                 {
-                    if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v4/token")
+                    if (req.RequestUri.AbsoluteUri == "https://oauth2.googleapis.com/token")
                     {
                         return ReturnJsonResponse(new
                         {

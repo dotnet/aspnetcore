@@ -111,7 +111,9 @@ namespace Microsoft.AspNetCore.TestHost
             var contentBytes = Encoding.UTF8.GetBytes("This is a content!");
             var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
             {
+                Assert.True(context.Request.CanHaveBody());
                 Assert.Equal(contentBytes.LongLength, context.Request.ContentLength);
+                Assert.False(context.Request.Headers.ContainsKey(HeaderNames.TransferEncoding));
 
                 return Task.CompletedTask;
             }));
@@ -122,11 +124,13 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
-        public Task ContentLengthWithNoBodyWorks()
+        public Task ContentLengthNotPresentWithNoBody()
         {
             var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
             {
-                Assert.Equal(0, context.Request.ContentLength);
+                Assert.False(context.Request.CanHaveBody());
+                Assert.Null(context.Request.ContentLength);
+                Assert.False(context.Request.Headers.ContainsKey(HeaderNames.TransferEncoding));
 
                 return Task.CompletedTask;
             }));
@@ -136,11 +140,13 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
-        public Task ContentLengthWithChunkedTransferEncodingWorks()
+        public Task ContentLengthWithImplicitChunkedTransferEncodingWorks()
         {
             var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
             {
+                Assert.True(context.Request.CanHaveBody());
                 Assert.Null(context.Request.ContentLength);
+                Assert.Equal("chunked", context.Request.Headers[HeaderNames.TransferEncoding]);
 
                 return Task.CompletedTask;
             }));
@@ -148,6 +154,26 @@ namespace Microsoft.AspNetCore.TestHost
             var httpClient = new HttpClient(handler);
 
             return httpClient.PostAsync("http://example.com", new UnlimitedContent());
+        }
+
+        [Fact]
+        public Task ContentLengthWithExplicitChunkedTransferEncodingWorks()
+        {
+            var handler = new ClientHandler(new PathString(""), new DummyApplication(context =>
+            {
+                Assert.True(context.Request.CanHaveBody());
+                Assert.Null(context.Request.ContentLength);
+                Assert.Equal("chunked", context.Request.Headers[HeaderNames.TransferEncoding]);
+
+                return Task.CompletedTask;
+            }));
+
+            var httpClient = new HttpClient(handler);
+            httpClient.DefaultRequestHeaders.TransferEncodingChunked = true;
+            var contentBytes = Encoding.UTF8.GetBytes("This is a content!");
+            var content = new ByteArrayContent(contentBytes);
+
+            return httpClient.PostAsync("http://example.com", content);
         }
 
         [Fact]
