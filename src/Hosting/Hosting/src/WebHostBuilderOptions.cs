@@ -12,6 +12,6 @@ namespace Microsoft.Extensions.Hosting
         /// Indicates if "ASPNETCORE_" prefixed environment variables should be added to configuration.
         /// They are added by default.
         /// </summary>
-        public bool SuppressEnvironmentConfiguration  { get; set; } = false;
+        public bool SuppressEnvironmentConfiguration { get; set; } = false;
     }
 }
