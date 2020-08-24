@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                     throw new InvalidOperationException("Failed to parse parameters.");
                 }
 
-                RootComponents.Add(componentType, registeredComponent.ToString(), parameters);
+                RootComponents.Add(componentType, registeredComponent.PrerenderId, parameters);
             }
         }
 
