@@ -21,19 +21,23 @@ namespace Microsoft.JSInterop.Infrastructure
         {
             long id = -1;
 
-            while (reader.Read())
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                if (reader.CurrentDepth == 1 &&
-                    reader.TokenType == JsonTokenType.PropertyName &&
-                    reader.ValueTextEquals(JSObjectReference.IdKey.EncodedUtf8Bytes))
+                if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (id != -1)
+                    if (id == -1 && reader.ValueTextEquals(JSObjectReference.IdKey.EncodedUtf8Bytes))
                     {
-                        throw new JsonException($"Duplicate property {JSObjectReference.IdKey}.");
+                        reader.Read();
+                        id = reader.GetInt64();
                     }
-
-                    reader.Read();
-                    id = reader.GetInt64();
+                    else
+                    {
+                        throw new JsonException($"Unexcepted JSON property {reader.GetString()}.");
+                    }
+                }
+                else
+                {
+                    throw new JsonException($"Unexcepted JSON token {reader.TokenType}");
                 }
             }
 

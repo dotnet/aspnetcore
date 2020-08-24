@@ -23,6 +23,17 @@ namespace Microsoft.JSInterop.Infrastructure
         }
 
         [Fact]
+        public void Read_Throws_IfJsonContainsUnknownContent()
+        {
+            // Arrange
+            var json = "{\"foo\":2}";
+
+            // Act & Assert
+            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<JSObjectReference>(json, JsonSerializerOptions));
+            Assert.Equal("Unexcepted JSON property foo.", ex.Message);
+        }
+
+        [Fact]
         public void Read_Throws_IfJsonIsIncomplete()
         {
             // Arrange
@@ -53,20 +64,6 @@ namespace Microsoft.JSInterop.Infrastructure
 
             // Act
             var deserialized = JsonSerializer.Deserialize<JSObjectReference>(json, JsonSerializerOptions)!;
-
-            // Assert
-            Assert.Equal(expectedId, deserialized?.Id);
-        }
-
-        [Fact]
-        public void Read_ReadsOutermostJSObjectId()
-        {
-            // Arrange
-            var expectedId = 3;
-            var json = $"{{\"__jsObjectId\":{expectedId},\"nested\":{{\"__jsObjectId\":7}}}}";
-
-            // Act
-            var deserialized = JsonSerializer.Deserialize<JSObjectReference>(json, JsonSerializerOptions);
 
             // Assert
             Assert.Equal(expectedId, deserialized?.Id);
