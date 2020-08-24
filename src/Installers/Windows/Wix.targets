@@ -2,11 +2,11 @@
   <!-- Set versioning properties after Arcade SDK targets have been imported. -->
   <PropertyGroup>
     <!-- Used for generating stable upgrade codes for bundles -->
-    <Version>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion).0</Version>
+    <Version>$(AspNetCoreMajorMinorVersion).$(AspNetCorePatchVersion).0</Version>
     <!-- Actual upgrade code used in bundles to ensure upgrades withing a version band, e.g. 3.0.0.xxx -->
     <_FileRevisionVersion>$(VersionSuffixDateStamp)</_FileRevisionVersion>
     <_FileRevisionVersion Condition=" '$(_FileRevisionVersion)' == '' ">42424</_FileRevisionVersion>
-    <BundleVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion).$(_FileRevisionVersion)</BundleVersion>
+    <BundleVersion>$(AspNetCoreMajorMinorVersion).$(AspNetCorePatchVersion).$(_FileRevisionVersion)</BundleVersion>
 
     <DefineConstants>$(DefineConstants);MajorVersion=$(AspNetCoreMajorVersion)</DefineConstants>
     <DefineConstants>$(DefineConstants);MinorVersion=$(AspNetCoreMinorVersion)</DefineConstants>
@@ -44,7 +44,7 @@
          the upgrade code. Bundle upgrades pivot on Major.Minor.Patch changes. For example, 3.0.1-preview 1 can upgrade to 3.0.1-preview 8, but 3.0.1
          cannot upgrade to 3.0.2 or 3.1. -->
     <PropertyGroup>
-      <BundleGuidInputs>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion);$(Platform)</BundleGuidInputs>
+      <BundleGuidInputs>$(AspNetCoreMajorMinorVersion).$(AspNetCorePatchVersion);$(Platform)</BundleGuidInputs>
     </PropertyGroup>
     <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(BundleGuidInputs)">
       <Output TaskParameter="Guid" PropertyName="BundleProviderKey" />
