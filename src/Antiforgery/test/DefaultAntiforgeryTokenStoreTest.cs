@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         [Fact]
-        public async Task GetRequestTokens_ReadFormAsyncThrowsIOException_RethrowsAntiforgeryValidationException()
+        public async Task GetRequestTokens_ReadFormAsyncThrowsIOException_ThrowsAntiforgeryValidationException()
         {
             // Arrange
             var ioException = new IOException();
@@ -260,6 +260,31 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             // Act & Assert
             var ex = await Assert.ThrowsAsync<AntiforgeryValidationException>(() => tokenStore.GetRequestTokensAsync(httpContext.Object));
             Assert.Same(ioException, ex.InnerException);
+        }
+
+        [Fact]
+        public async Task GetRequestTokens_ReadFormAsyncThrowsInvalidDataException_ThrowsAntiforgeryValidationException()
+        {
+            // Arrange
+            var exception = new InvalidDataException();
+            var httpContext = new Mock<HttpContext>();
+
+            httpContext.Setup(r => r.Request.Cookies).Returns(Mock.Of<IRequestCookieCollection>());
+            httpContext.SetupGet(r => r.Request.HasFormContentType).Returns(true);
+            httpContext.Setup(r => r.Request.ReadFormAsync(It.IsAny<CancellationToken>())).Throws(exception);
+
+            var options = new AntiforgeryOptions
+            {
+                Cookie = { Name = "cookie-name" },
+                FormFieldName = "form-field-name",
+                HeaderName = null,
+            };
+
+            var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<AntiforgeryValidationException>(() => tokenStore.GetRequestTokensAsync(httpContext.Object));
+            Assert.Same(exception, ex.InnerException);
         }
 
         [Theory]
