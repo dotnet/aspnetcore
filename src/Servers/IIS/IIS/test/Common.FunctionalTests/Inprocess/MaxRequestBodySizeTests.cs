@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                 });
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var result = await deploymentResult.HttpClient.PostAsync("/DecreaseRequestLimit", new StringContent("1"));
+            var result = await deploymentResult.HttpClient.PostAsync("/IncreaseRequestLimit", new StringContent("1"));
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
 
             StopServer();

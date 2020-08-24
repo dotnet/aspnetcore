@@ -1454,6 +1454,13 @@ namespace TestSite
             await Assert.ThrowsAsync<IOException>(() => readTask);
         }
 
+        public Task IncreaseRequestLimit(HttpContext httpContext)
+        {
+            var maxRequestBodySizeFeature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
+            maxRequestBodySizeFeature.MaxRequestBodySize = 2;
+            return Task.CompletedTask;
+        }
+
         internal static readonly HashSet<(string, StringValues, StringValues)> NullTrailers = new HashSet<(string, StringValues, StringValues)>()
         {
             ("NullString", (string)null, (string)null),
