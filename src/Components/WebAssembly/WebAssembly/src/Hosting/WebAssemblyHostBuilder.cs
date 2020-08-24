@@ -12,7 +12,6 @@ using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
-using Microsoft.AspNetCore.Components.Server;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
@@ -95,10 +94,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 var componentType = RootComponentTypeCache.GetRootComponent(registeredComponent.Assembly, registeredComponent.TypeName);
                 var definitions = componentDeserializer.GetParameterDefinitions(registeredComponent.ParameterDefinitions);
                 var values = componentDeserializer.GetParameterValues(registeredComponent.ParameterValues);
-                if (!componentDeserializer.TryDeserializeParameters(definitions, values, out var parameters))
-                {
-                    throw new InvalidOperationException("Failed to parse parameters.");
-                }
+                componentDeserializer.DeserializeParameters(definitions, values, out var parameters))
 
                 RootComponents.Add(componentType, registeredComponent.PrerenderId, parameters);
             }

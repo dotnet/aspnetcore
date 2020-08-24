@@ -33,10 +33,19 @@
     </AssemblyAttribute>
   </ItemGroup>
 
-  <Target Name="CopyClientAssetsForTest" BeforeTargets="Build" Inputs="..\BasicTestApp\wwwroot\js\jsinteroptests.js;&#xD;&#xA;                  ..\BasicTestApp\wwwroot\js\webComponentPerformingJsInterop.js;&#xD;&#xA;                  ..\BasicTestApp\wwwroot\NotAComponent.html;&#xD;&#xA;                  ..\BasicTestApp\wwwroot\style.css" Outputs="wwwroot\js\jsinteroptests.js;&#xD;&#xA;                   wwwroot\js\webComponentPerformingJsInterop.js;&#xD;&#xA;                   wwwroot\NotAComponent.html;&#xD;&#xA;                   wwwroot\style.css">
+  <Target Name="CopyClientAssetsForTest" BeforeTargets="Build"
+          Inputs="..\BasicTestApp\wwwroot\js\jsinteroptests.js;
+                  ..\BasicTestApp\wwwroot\js\webComponentPerformingJsInterop.js;
+                  ..\BasicTestApp\wwwroot\NotAComponent.html;
+                  ..\BasicTestApp\wwwroot\style.css"
+          Outputs="wwwroot\js\jsinteroptests.js;
+                   wwwroot\js\webComponentPerformingJsInterop.js;
+                   wwwroot\NotAComponent.html;
+                   wwwroot\style.css">
 
     <MakeDir Directories="wwwroot" />
 
-    <Copy SourceFiles="..\BasicTestApp\wwwroot\js\jsinteroptests.js;..\BasicTestApp\wwwroot\js\webComponentPerformingJsInterop.js;..\BasicTestApp\wwwroot\NotAComponent.html;..\BasicTestApp\wwwroot\style.css" DestinationFiles="wwwroot\js\jsinteroptests.js;wwwroot\js\webComponentPerformingJsInterop.js;wwwroot\NotAComponent.html;wwwroot\style.css" />
+    <Copy SourceFiles="..\BasicTestApp\wwwroot\js\jsinteroptests.js;..\BasicTestApp\wwwroot\js\webComponentPerformingJsInterop.js;..\BasicTestApp\wwwroot\NotAComponent.html;..\BasicTestApp\wwwroot\style.css"
+          DestinationFiles="wwwroot\js\jsinteroptests.js;wwwroot\js\webComponentPerformingJsInterop.js;wwwroot\NotAComponent.html;wwwroot\style.css" />
   </Target>
 </Project>
