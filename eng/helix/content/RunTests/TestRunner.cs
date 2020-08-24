@@ -325,8 +325,8 @@ namespace RunTests
                 foreach (var file in Directory.EnumerateFiles("TestResults", "*.dmp", SearchOption.AllDirectories))
                 {
                     var fileName = Path.GetFileName(file);
-                    Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName)}");
-                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName));
+                    Console.WriteLine($"Would have Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName)}");
+                    //File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName));
                 }
             }
             else
@@ -347,6 +347,20 @@ namespace RunTests
             {
                 Console.WriteLine("No trx found in TestResults");
             }
+            Console.WriteLine($"Copying TestResults/**/sequence.xml to {HELIX_WORKITEM_UPLOAD_ROOT}/");
+            if (Directory.Exists("TestResults"))
+            {
+                foreach (var file in Directory.EnumerateFiles("TestResults", "sequence.xml", SearchOption.AllDirectories))
+                {
+                    Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "sequence.xml")}");
+                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "sequence.xml"));
+                }
+            }
+            else
+            {
+                Console.WriteLine("No trx found in TestResults");
+            }
+            
         }
     }
 }
