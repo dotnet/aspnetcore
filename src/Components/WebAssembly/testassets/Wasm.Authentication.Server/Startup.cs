@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Wasm.Authentication.Client;
 using Wasm.Authentication.Server.Data;
 using Wasm.Authentication.Server.Models;
 
@@ -44,7 +45,6 @@ namespace Wasm.Authentication.Server
 
             Client.Program.ConfigureCommonServices(services);
             services.AddHttpClient<Client.WeatherForecastClient>();
-            services.TryAddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 
             // Need to do this as it maps "role" to ClaimTypes.Role and causes issues
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("role");

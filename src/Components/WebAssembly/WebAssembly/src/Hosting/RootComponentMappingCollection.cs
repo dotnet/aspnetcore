@@ -49,6 +49,27 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         }
 
         /// <summary>
+        /// Adds a component mapping to the collection.
+        /// </summary>
+        /// <param name="componentType">The component type. Must implement <see cref="IComponent"/>.</param>
+        /// <param name="selector">The DOM element selector.</param>
+        /// <param name="parameters">The parameters to the root component.</param>
+        public void Add(Type componentType, string selector, ParameterView parameters)
+        {
+            if (componentType is null)
+            {
+                throw new ArgumentNullException(nameof(componentType));
+            }
+
+            if (selector is null)
+            {
+                throw new ArgumentNullException(nameof(selector));
+            }
+
+            Add(new RootComponentMapping(componentType, selector, parameters));
+        }
+
+        /// <summary>
         /// Adds a collection of items to this collection.
         /// </summary>
         /// <param name="items">The items to add.</param>

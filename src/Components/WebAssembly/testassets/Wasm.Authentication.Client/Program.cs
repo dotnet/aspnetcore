@@ -18,22 +18,20 @@ namespace Wasm.Authentication.Client
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-            builder.Services.AddApiAuthorization<RemoteAppState, OidcAccount>()
-                .AddAccountClaimsPrincipalFactory<RemoteAppState, OidcAccount, PreferencesUserFactory>();
+            ConfigureCommonServices(builder.Services);
 
             builder.Services.AddHttpClient<WeatherForecastClient>(client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
             .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
-            ConfigureCommonServices(builder.Services);
-
-            builder.RootComponents.Add<App>("app");
+            //builder.RootComponents.Add<App>("app");
 
             await builder.Build().RunAsync();
         }
 
         public static void ConfigureCommonServices(IServiceCollection services)
         {
-            services.TryAddScoped<SignOutSessionStateManager>();
+            services.AddApiAuthorization<RemoteAppState, OidcAccount>()
+                .AddAccountClaimsPrincipalFactory<RemoteAppState, OidcAccount, PreferencesUserFactory>();
 
             services.AddSingleton<StateService>();
         }

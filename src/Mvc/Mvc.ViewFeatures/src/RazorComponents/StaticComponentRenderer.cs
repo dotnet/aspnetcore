@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Type componentType)
         {
             InitializeStandardComponentServices(httpContext);
-            var loggerFactory = (ILoggerFactory)httpContext.RequestServices.GetService(typeof (ILoggerFactory));
+            var loggerFactory = (ILoggerFactory)httpContext.RequestServices.GetService(typeof(ILoggerFactory));
             using (var htmlRenderer = new HtmlRenderer(httpContext.RequestServices, loggerFactory, _encoder.Encode))
             {
                 ComponentRenderedText result = default;
@@ -71,15 +71,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             {
                 _initialized = true;
 
+                var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
+                navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
+
                 var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>() as IHostEnvironmentAuthenticationStateProvider;
                 if (authenticationStateProvider != null)
                 {
                     var authenticationState = new AuthenticationState(httpContext.User);
                     authenticationStateProvider.SetAuthenticationState(Task.FromResult(authenticationState));
                 }
-
-                var navigationManager = (IHostEnvironmentNavigationManager)httpContext.RequestServices.GetRequiredService<NavigationManager>();
-                navigationManager?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
             }
         }
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using Microsoft.AspNetCore.Components;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
@@ -13,11 +14,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     {
         /// <summary>
         /// Creates a new instance of <see cref="RootComponentMapping"/> with the provided <paramref name="componentType"/>
-        /// and <paramref name="selector"/>.
+        /// and <paramref name="selectorOrId"/>.
         /// </summary>
         /// <param name="componentType">The component type. Must implement <see cref="IComponent"/>.</param>
-        /// <param name="selector">The DOM element selector.</param>
-        public RootComponentMapping(Type componentType, string selector)
+        /// <param name="selectorOrId">The DOM element selector or component registration id for the component.</param>
+        public RootComponentMapping(Type componentType, string selectorOrId)
         {
             if (componentType is null)
             {
@@ -31,13 +32,26 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                     nameof(componentType));
             }
 
-            if (selector is null)
+            if (selectorOrId is null)
             {
-                throw new ArgumentNullException(nameof(selector));
+                throw new ArgumentNullException(nameof(selectorOrId));
             }
 
             ComponentType = componentType;
-            Selector = selector;
+            Selector = selectorOrId;
+            Parameters = ParameterView.Empty;
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="RootComponentMapping"/> with the provided <paramref name="componentType"/>
+        /// and <paramref name="selectorOrId"/>.
+        /// </summary>
+        /// <param name="componentType">The component type. Must implement <see cref="IComponent"/>.</param>
+        /// <param name="selectorOrId">The DOM element selector or registration id for the component.</param>
+        /// <param name="parameters">The parameters to pass to the component.</param>
+        public RootComponentMapping(Type componentType, string selectorOrId, ParameterView parameters) : this(componentType, selectorOrId)
+        {
+            Parameters = parameters;
         }
 
         /// <summary>
@@ -49,5 +63,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// Gets the DOM element selector.
         /// </summary>
         public string Selector { get; }
+
+        /// <summary>
+        /// Gets the parameters to pass to the root component.
+        /// </summary>
+        public ParameterView Parameters { get; }
     }
 }

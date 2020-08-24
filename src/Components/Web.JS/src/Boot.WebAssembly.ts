@@ -2,7 +2,7 @@ import { DotNet } from '@microsoft/dotnet-js-interop';
 import './GlobalExports';
 import * as Environment from './Environment';
 import { monoPlatform } from './Platform/Mono/MonoPlatform';
-import { renderBatch, getRendererer } from './Rendering/Renderer';
+import { renderBatch, getRendererer, attachRootComponentToElement, attachRootComponentToLogicalElement } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
 import { shouldAutoStart } from './BootCommon';
 import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
@@ -11,7 +11,7 @@ import { WebAssemblyConfigLoader } from './Platform/WebAssemblyConfigLoader';
 import { BootConfigResult } from './Platform/BootConfig';
 import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
-import { discoverComponents } from './Platform/WebAssemblyComponentCommentLoader';
+import { discoverComponents, WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
 
 let started = false;
 
@@ -76,8 +76,25 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
   // the document.
-  var discoveredComponents = discoverComponents(document);
-  window['Blazor']._internal.discoverComponents = () => discoveredComponents.map(c => c.toRecord());
+  const discoveredComponents = discoverComponents(document);
+  const componentAttacher = new WebAssemblyComponentAttacher(discoveredComponents);
+  window['Blazor']._internal.registeredComponents = {
+    getRegisteredComponentsCount: () => componentAttacher.getCount(),
+    getId: (index) => componentAttacher.getId(index),
+    getAssembly: (id) => BINDING.js_string_to_mono_string(componentAttacher.getAssembly(id)),
+    getTypeName: (id) => BINDING.js_string_to_mono_string(componentAttacher.getTypeName(id)),
+    getParameterDefinitions: (id) => BINDING.js_string_to_mono_string(componentAttacher.getParameterDefinitions(id) || ''),
+    getParameterValues: (id) => BINDING.js_string_to_mono_string(componentAttacher.getParameterValues(id) || ''),
+  };
+
+  window['Blazor']._internal.attachRootComponentToElement = (selector, componentId, rendererId) => {
+    const element = componentAttacher.resolveRegisteredElement(selector);
+    if (!element) {
+      attachRootComponentToElement(selector, componentId, rendererId);
+    } else {
+      attachRootComponentToLogicalElement(rendererId, element, componentId);
+    }
+  };
 
   const bootConfigResult = await bootConfigPromise;
   const [resourceLoader] = await Promise.all([

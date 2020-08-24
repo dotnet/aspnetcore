@@ -1,9 +1,50 @@
-export class WebAssemblyComponentCommentLoader {
+import { LogicalElement, toLogicalRootCommentElement } from "../Rendering/LogicalElements";
 
-  public components: ComponentDescriptor[];
+export class WebAssemblyComponentAttacher {
+  getParameterValues(id: any) {
+    return this.componentsById[id].parameterValues;
+  }
+
+  getParameterDefinitions(id: any) {
+    return this.componentsById[id].parameterDefinitions;
+  }
+
+  getTypeName(id: any) {
+    return this.componentsById[id].typeName;
+  }
+
+  getAssembly(id: any) {
+    return this.componentsById[id].assembly;
+  }
+
+  getId(index: any) {
+    return this.preregisteredComponents[index].id;
+  }
+
+  getCount() {
+    return this.preregisteredComponents.length;
+  }
+
+  public preregisteredComponents: ComponentDescriptor[];
+  private componentsById: { [index: number]: ComponentDescriptor };
 
   public constructor(components: ComponentDescriptor[]) {
-    this.components = components;
+    this.preregisteredComponents = components;
+    let componentsById = {};
+    for (let index = 0; index < components.length; index++) {
+      const component = components[index];
+      componentsById[component.id] = component;
+    }
+    this.componentsById = componentsById;
+  }
+
+  public resolveRegisteredElement(id: string): LogicalElement | undefined {
+    const parsedId = Number.parseInt(id);
+    if (!Number.isNaN(parsedId)) {
+      return toLogicalRootCommentElement(this.componentsById[parsedId].start as Comment, this.componentsById[parsedId].end as Comment);
+    } else {
+      return undefined;
+    }
   }
 }
 
@@ -146,7 +187,7 @@ function createClientComponentComment(json: string, start: Node, iterator: Compo
     throw new Error('assembly must be defined when using a descriptor.');
   }
 
-  if (typeName) {
+  if (!typeName) {
     throw new Error('typeName must be defined when using a descriptor.');
   }
 

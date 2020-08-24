@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using Microsoft.AspNetCore.Components.Server;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 {
@@ -57,6 +58,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             // Retrieve required attributes from JSRuntimeInvoker
             InitializeNavigationManager(jsRuntimeInvoker);
+            InitializeRegisteredRootComponents(jsRuntimeInvoker);
             InitializeDefaultServices();
 
             var hostEnvironment = InitializeEnvironment(jsRuntimeInvoker);
@@ -66,6 +68,59 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             {
                 return Services.BuildServiceProvider(validateScopes: WebAssemblyHostEnvironmentExtensions.IsDevelopment(hostEnvironment));
             };
+        }
+
+        private void InitializeRegisteredRootComponents(WebAssemblyJSRuntimeInvoker jsRuntimeInvoker)
+        {
+            var componentsCount = jsRuntimeInvoker.InvokeUnmarshalled<object, object, object, int>(RegisteredComponentsInterop.GetRegisteredComponentsCount, null, null, null);
+            if (componentsCount == 0)
+            {
+                return;
+            }
+
+            var registeredComponents = new ClientComponentMarker[componentsCount];
+            for (var i = 0; i < componentsCount; i++)
+            {
+                var id = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, int>(RegisteredComponentsInterop.GetId, i, null, null);
+                var assembly = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetAssembly, id, null, null);
+                var typeName = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetTypeName, id, null, null);
+                var serializedParameterDefinitions = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetTypeName, id, null, null);
+                var serializedParameterValues = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetTypeName, id, null, null);
+                registeredComponents[i] = new ClientComponentMarker(id, assembly, typeName, serializedParameterDefinitions, serializedParameterValues);
+            }
+
+            var componentDeserializer = ClientComponentParameterDeserializer.Instance;
+            foreach (var registeredComponent in registeredComponents)
+            {
+                var componentType = RootComponentTypeCache.GetRootComponent(registeredComponent.Assembly, registeredComponent.TypeName);
+                var definitions = componentDeserializer.GetParameterDefinitions(registeredComponent.ParameterDefinitions);
+                var values = componentDeserializer.GetParameterValues(registeredComponent.ParameterValues);
+                if (!componentDeserializer.TryDeserializeParameters(definitions, values, out var parameters))
+                {
+                    throw new InvalidOperationException("Failed to parse parameters.");
+                }
+
+                RootComponents.Add(componentType, registeredComponent.Id.ToString(), parameters);
+            }
+        }
+
+        private record ClientComponentMarker(int Id, string Assembly, string TypeName, string ParameterDefinitions, string ParameterValues);
+
+        private class RegisteredComponentsInterop
+        {
+            private static readonly string Prefix = "Blazor._internal.registeredComponents.";
+
+            public static readonly string GetRegisteredComponentsCount = Prefix + "getRegisteredComponentsCount";
+
+            public static readonly string GetId = Prefix + "getId";
+
+            public static readonly string GetAssembly = Prefix + "getAssembly";
+
+            public static readonly string GetTypeName = Prefix + "getTypeName";
+
+            public static readonly string GetParameterDefinitions = Prefix + "getParameterDefinitions";
+
+            public static readonly string GetParameterValues = Prefix + "getParameterValues";
         }
 
         private void InitializeNavigationManager(WebAssemblyJSRuntimeInvoker jsRuntimeInvoker)
@@ -190,7 +245,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
             Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
             Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
-            Services.AddLogging(builder => {
+            Services.AddLogging(builder =>
+            {
                 builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
             });
         }
