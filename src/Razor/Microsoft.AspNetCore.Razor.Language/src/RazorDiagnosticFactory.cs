@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -906,6 +906,22 @@ namespace Microsoft.AspNetCore.Razor.Language
         public static RazorDiagnostic CreateRewriter_InsufficientStack(SourceSpan location)
         {
             return RazorDiagnostic.Create(Rewriter_InsufficientStack, location);
+        }
+
+        #endregion
+
+        #region "CSS Rewriter Errors"
+
+        // CSS Rewriter Errors ID Offset = 5000
+
+        internal static readonly RazorDiagnosticDescriptor CssRewriting_ImportNotAllowed =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}5000",
+                () => Resources.CssRewriter_ImportNotAllowed,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateCssRewriting_ImportNotAllowed(SourceSpan location)
+        {
+            return RazorDiagnostic.Create(CssRewriting_ImportNotAllowed, location);
         }
 
         #endregion

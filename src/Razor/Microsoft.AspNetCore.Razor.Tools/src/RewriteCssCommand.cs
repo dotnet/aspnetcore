@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Css.Parser.Parser;
 using Microsoft.Css.Parser.Tokens;
 using Microsoft.Css.Parser.TreeItems;
@@ -57,6 +59,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
         protected override Task<int> ExecuteCoreAsync()
         {
+            var allDiagnostics = new ConcurrentQueue<RazorDiagnostic>();
+
             Parallel.For(0, Sources.Values.Count, i =>
             {
                 var source = Sources.Values[i];
@@ -64,21 +68,40 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 var cssScope = CssScopes.Values[i];
 
                 var inputText = File.ReadAllText(source);
-                var rewrittenCss = AddScopeToSelectors(inputText, cssScope);
-                File.WriteAllText(output, rewrittenCss);
+                var rewrittenCss = AddScopeToSelectors(source, inputText, cssScope, out var diagnostics);
+                if (diagnostics.Any())
+                {
+                    foreach (var diagnostic in diagnostics)
+                    {
+                        allDiagnostics.Enqueue(diagnostic);
+                    }
+                }
+                else
+                {
+                    File.WriteAllText(output, rewrittenCss);
+                }
             });
 
-            return Task.FromResult(ExitCodeSuccess);
+            foreach (var diagnostic in allDiagnostics)
+            {
+                Error.WriteLine(diagnostic.ToString());
+            }
+
+            return Task.FromResult(allDiagnostics.Any() ? ExitCodeFailure : ExitCodeSuccess);
         }
 
         // Public for tests
-        public static string AddScopeToSelectors(string inputText, string cssScope)
+        public static string AddScopeToSelectors(string filePath, string inputText, string cssScope, out IEnumerable<RazorDiagnostic> diagnostics)
         {
             var cssParser = new DefaultParserFactory().CreateParser();
             var stylesheet = cssParser.Parse(inputText, insertComments: false);
 
             var resultBuilder = new StringBuilder();
             var previousInsertionPosition = 0;
+            var foundDiagnostics = new List<RazorDiagnostic>();
+
+            var ensureNoImportsVisitor = new EnsureNoImports(filePath, inputText, stylesheet, foundDiagnostics);
+            ensureNoImportsVisitor.Visit();
 
             var scopeInsertionPositionsVisitor = new FindScopeInsertionEdits(stylesheet);
             scopeInsertionPositionsVisitor.Visit();
@@ -105,6 +128,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
             resultBuilder.Append(inputText.Substring(previousInsertionPosition));
 
+            diagnostics = foundDiagnostics;
             return resultBuilder.ToString();
         }
 
@@ -257,6 +281,35 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
         }
 
+        private class EnsureNoImports : Visitor
+        {
+            private readonly string _filePath;
+            private readonly string _sourceText;
+            private readonly List<RazorDiagnostic> _diagnostics;
+
+            public EnsureNoImports(string filePath, string sourceText, ComplexItem root, List<RazorDiagnostic> diagnostics) : base(root)
+            {
+                _filePath = filePath;
+                _sourceText = sourceText;
+                _diagnostics = diagnostics;
+            }
+
+            protected override void VisitAtDirective(AtDirective item)
+            {
+                if (item.Children.Count >= 2
+                    && item.Children[0] is TokenItem firstChild
+                    && item.Children[1] is TokenItem secondChild
+                    && firstChild.TokenType == CssTokenType.At
+                    && string.Equals(secondChild.Text, "import", StringComparison.OrdinalIgnoreCase))
+                {
+                    var location = GetParseItemSourceSpan(_filePath, _sourceText, item);
+                    _diagnostics.Add(RazorDiagnosticFactory.CreateCssRewriting_ImportNotAllowed(location));
+                }
+
+                base.VisitAtDirective(item);
+            }
+        }
+
         private class Visitor
         {
             private readonly ComplexItem _root;
@@ -333,6 +386,28 @@ namespace Microsoft.AspNetCore.Razor.Tools
         private class DeleteContentEdit : CssEdit
         {
             public int DeleteLength { get; set; }
+        }
+
+        private static SourceSpan GetParseItemSourceSpan(string filePath, string sourceText, ParseItem parseItem)
+        {
+            var nextLinebreakSearchStart = 0;
+            var lineNumber = 0;
+
+            while (true)
+            {
+                var nextLinebreakPos = sourceText.IndexOf('\n', nextLinebreakSearchStart);
+                if (nextLinebreakPos >= 0 && nextLinebreakPos < parseItem.Start)
+                {
+                    lineNumber++;
+                    nextLinebreakSearchStart = nextLinebreakPos + 1;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return new SourceSpan(filePath, parseItem.Start, lineNumber, parseItem.Start - nextLinebreakSearchStart, parseItem.Length);
         }
     }
 }

@@ -562,4 +562,7 @@
   <data name="DirectiveExpectsBooleanLiteral" xml:space="preserve">
     <value>The '{0}' directive expects a boolean literal.</value>
   </data>
+  <data name="CssRewriter_ImportNotAllowed" xml:space="preserve">
+    <value>@import rules are not supported within scoped CSS files because the loading order would be undefined. @import may only be placed in non-scoped CSS files.</value>
+  </data>
 </root>
