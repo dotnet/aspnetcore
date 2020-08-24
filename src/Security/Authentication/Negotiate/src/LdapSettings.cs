@@ -9,13 +9,13 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     /// <summary>
     /// Options class for configuring LDAP connections on Linux
     /// </summary>
-    public class LdapOptions
+    public class LdapSettings
     {
         /// <summary>
-        /// Configure whether LDAP connection should be used to resolve role claims.
+        /// Configure whether LDAP connection should be used to resolve claims.
         /// This is mainly used on Linux.
         /// </summary>
-        public bool EnableLdapRoleClaimResolution { get; set; }
+        public bool EnableLdapClaimResolution { get; set; }
 
         /// <summary>
         /// The domain to use for the LDAP connection. This is a mandatory setting.
@@ -39,10 +39,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public string MachineAccountPassword { get; set; }
 
         /// <summary>
-        /// This option indicates whether nested groups should be examined when
-        /// resolving Roles. The default is true.
+        /// This option indicates whether nested groups should be ignored when
+        /// resolving Roles. The default is false.
         /// </summary>
-        public bool ResolveNestedGroups { get; set; } = true;
+        public bool IgnoreNestedGroups { get; set; }
 
         /// <summary>
         /// The <see cref="LdapConnection"/> to be used to retrieve role claims.
@@ -58,11 +58,11 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
         public void Validate()
         {
-            if (EnableLdapRoleClaimResolution)
+            if (EnableLdapClaimResolution)
             {
                 if (string.IsNullOrEmpty(Domain))
                 {
-                    throw new ArgumentException($"{nameof(EnableLdapRoleClaimResolution)} is set to true but {nameof(Domain)} is not set.");
+                    throw new ArgumentException($"{nameof(EnableLdapClaimResolution)} is set to true but {nameof(Domain)} is not set.");
                 }
 
                 if (string.IsNullOrEmpty(MachineAccountName) && !string.IsNullOrEmpty(MachineAccountPassword))

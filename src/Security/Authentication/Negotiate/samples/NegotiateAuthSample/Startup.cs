@@ -23,16 +23,22 @@ namespace NegotiateAuthSample
             services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
                 .AddNegotiate(options =>
                 {
-                    /*
-                    var ldapOptions = options.LdapOptions;
-                    // Mandatory settings
-                    ldapOptions.EnableLdapRoleClaimResolution = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-                    ldapOptions.Domain = "DOMAIN.com";
-                    // Optional settings
-                    ldapOptions.MachineAccountName = "machineName";
-                    ldapOptions.MachineAccountPassword = "PassW0rd";
-                    ldapOptions.ResolveNestedGroups = true;
-                    */
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    {
+                        /*
+                        options.EnableLdap("DOMAIN.net");
+
+                        options.EnableLdap(settings =>
+                        {
+                            // Mandatory settings
+                            settings.Domain = "DOMAIN.com";
+                            // Optional settings
+                            settings.MachineAccountName = "machineName";
+                            settings.MachineAccountPassword = "PassW0rd";
+                            settings.IgnoreNestedGroups = true;
+                        });
+                        */
+                    }
 
                     options.Events = new NegotiateEvents()
                     {

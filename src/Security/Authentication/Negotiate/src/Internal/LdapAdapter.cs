@@ -12,17 +12,17 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
     internal static class LdapAdapter
     {
-        public static async Task RetrieveRoleClaimsAsync(LdapOptions options, ClaimsIdentity identity, ILogger logger)
+        public static async Task RetrieveClaimsAsync(LdapSettings settings, ClaimsIdentity identity, ILogger logger)
         {
             var user = identity.Name;
             var userAccountName = user.Substring(0, user.IndexOf('@'));
-            var distinguishedName = options.Domain.Split('.').Select(name => $"dc={name}").Aggregate((a, b) => $"{a},{b}");
+            var distinguishedName = settings.Domain.Split('.').Select(name => $"dc={name}").Aggregate((a, b) => $"{a},{b}");
 
             var filter = $"(&(objectClass=user)(sAMAccountName={userAccountName}))"; // This is using ldap search query language, it is looking on the server for someUser
             var searchRequest = new SearchRequest(distinguishedName, filter, SearchScope.Subtree, null);
             var searchResponse = (SearchResponse) await Task<DirectoryResponse>.Factory.FromAsync(
-                options.LdapConnection.BeginSendRequest,
-                options.LdapConnection.EndSendRequest,
+                settings.LdapConnection.BeginSendRequest,
+                settings.LdapConnection.EndSendRequest,
                 searchRequest,
                 PartialResultProcessing.NoPartialResultSupport,
                 null);
@@ -43,9 +43,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     var groupDN = $"{Encoding.UTF8.GetString((byte[])group)}";
                     var groupCN = groupDN.Split(',')[0].Substring("CN=".Length);
 
-                    if (options.ResolveNestedGroups)
+                    if (!settings.IgnoreNestedGroups)
                     {
-                        GetNestedGroups(options.LdapConnection, identity, distinguishedName, groupCN, logger);
+                        GetNestedGroups(settings.LdapConnection, identity, distinguishedName, groupCN, logger);
                     }
                     else
                     {

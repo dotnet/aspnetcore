@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
     /// <summary>
@@ -34,27 +36,39 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public bool PersistNtlmCredentials { get; set; } = true;
 
         /// <summary>
-        /// Configuration settings for LDAP connections used to retrieve Role claims.
-        /// This is only used on Linux systems.
+        /// Configuration settings for LDAP connections used to retrieve claims.
+        /// This should only be used on Linux systems.
         /// </summary>
-        public LdapOptions LdapOptions { get; } = new LdapOptions();
+        internal LdapSettings LdapSettings { get; } = new LdapSettings();
 
         /// <summary>
-        /// Checks that the options are valid for a specific scheme
+        /// Use LDAP connections used to retrieve claims for the given domain.
+        /// This should only be used on Linux systems.
         /// </summary>
-        /// <param name="scheme">The scheme being validated.</param>
-        public override void Validate(string scheme)
+        public void EnableLdap(string domain)
         {
-            Validate();
+            if (string.IsNullOrEmpty(domain))
+            {
+                throw new ArgumentNullException(nameof(domain));
+            }
+
+            LdapSettings.EnableLdapClaimResolution = true;
+            LdapSettings.Domain = domain;
         }
 
         /// <summary>
-        /// Check that the options are valid.  Should throw an exception if things are not ok.
+        /// Use LDAP connections used to retrieve claims using the configured settings.
+        /// This should only be used on Linux systems.
         /// </summary>
-        public override void Validate()
+        public void EnableLdap(Action<LdapSettings> configureSettings)
         {
-            base.Validate();
-            LdapOptions.Validate();
+            if (configureSettings == null)
+            {
+                throw new ArgumentNullException(nameof(configureSettings));
+            }
+
+            LdapSettings.EnableLdapClaimResolution = true;
+            configureSettings(LdapSettings);
         }
 
         /// <summary>

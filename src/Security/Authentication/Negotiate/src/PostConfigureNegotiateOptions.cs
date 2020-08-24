@@ -62,32 +62,34 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 }
             }
 
-            var ldapOptions = options.LdapOptions;
+            var ldapSettings = options.LdapSettings;
 
-            if (ldapOptions.EnableLdapRoleClaimResolution)
+            if (ldapSettings.EnableLdapClaimResolution)
             {
-                if (ldapOptions.LdapConnection == null)
-                {
-                    var di = new LdapDirectoryIdentifier(server: ldapOptions.Domain, fullyQualifiedDnsHostName: true, connectionless: false);
+                ldapSettings.Validate();
 
-                    if (string.IsNullOrEmpty(ldapOptions.MachineAccountName))
+                if (ldapSettings.LdapConnection == null)
+                {
+                    var di = new LdapDirectoryIdentifier(server: ldapSettings.Domain, fullyQualifiedDnsHostName: true, connectionless: false);
+
+                    if (string.IsNullOrEmpty(ldapSettings.MachineAccountName))
                     {
                         // Use default credentials
-                        ldapOptions.LdapConnection = new LdapConnection(di);
+                        ldapSettings.LdapConnection = new LdapConnection(di);
                     }
                     else
                     {
                         // Use specific specific machine account
-                        var machineAccount = ldapOptions.MachineAccountName + "@" + ldapOptions.Domain;
-                        var credentials = new NetworkCredential(machineAccount, ldapOptions.MachineAccountPassword);
-                        ldapOptions.LdapConnection = new LdapConnection(di, credentials);
+                        var machineAccount = ldapSettings.MachineAccountName + "@" + ldapSettings.Domain;
+                        var credentials = new NetworkCredential(machineAccount, ldapSettings.MachineAccountPassword);
+                        ldapSettings.LdapConnection = new LdapConnection(di, credentials);
                     }
 
-                    ldapOptions.LdapConnection.SessionOptions.ProtocolVersion = 3; //Setting LDAP Protocol to latest version
-                    ldapOptions.LdapConnection.Timeout = TimeSpan.FromMinutes(1);
+                    ldapSettings.LdapConnection.SessionOptions.ProtocolVersion = 3; //Setting LDAP Protocol to latest version
+                    ldapSettings.LdapConnection.Timeout = TimeSpan.FromMinutes(1);
                 }
 
-                ldapOptions.LdapConnection.Bind(); // This line actually makes the connection.
+                ldapSettings.LdapConnection.Bind(); // This line actually makes the connection.
             }
         }
     }

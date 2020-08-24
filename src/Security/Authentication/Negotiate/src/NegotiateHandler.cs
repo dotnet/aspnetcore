@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 Principal = user
             };
 
-            if (Options.LdapOptions.EnableLdapRoleClaimResolution)
+            if (Options.LdapSettings.EnableLdapClaimResolution)
             {
                 await Events.RetrieveLdapClaims(authenticatedContext);
 
@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     return authenticatedContext.Result;
                 }
 
-                await LdapAdapter.RetrieveRoleClaimsAsync(Options.LdapOptions, authenticatedContext.Principal.Identity as ClaimsIdentity, Logger);
+                await LdapAdapter.RetrieveClaimsAsync(Options.LdapSettings, authenticatedContext.Principal.Identity as ClaimsIdentity, Logger);
             }
 
             await Events.Authenticated(authenticatedContext);
