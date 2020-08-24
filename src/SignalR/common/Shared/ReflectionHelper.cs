@@ -37,7 +37,10 @@ namespace Microsoft.AspNetCore.SignalR
         {
             if (type.IsGenericType)
             {
-                return type.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>);
+                if (type.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>))
+                {
+                    return true;
+                }
             }
 
             return type.GetInterfaces().Any(t =>
