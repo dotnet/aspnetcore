@@ -319,20 +319,6 @@ namespace RunTests
             {
                 Console.WriteLine("No logs found in artifacts/log");
             }
-            Console.WriteLine($"Copying TestResults/**/*.dmp to {HELIX_WORKITEM_UPLOAD_ROOT}/");
-            if (Directory.Exists("TestResults"))
-            {
-                foreach (var file in Directory.EnumerateFiles("TestResults", "*.dmp", SearchOption.AllDirectories))
-                {
-                    var fileName = Path.GetFileName(file);
-                    Console.WriteLine($"Would have Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName)}");
-                    //File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName));
-                }
-            }
-            else
-            {
-                Console.WriteLine("No dmps found in TestResults");
-            }
             Console.WriteLine($"Copying TestResults/**/*.trx to {HELIX_WORKITEM_UPLOAD_ROOT}/");
             if (Directory.Exists("TestResults"))
             {
@@ -358,7 +344,7 @@ namespace RunTests
             }
             else
             {
-                Console.WriteLine("No trx found in TestResults");
+                Console.WriteLine("No sequence.xml found in TestResults");
             }
             
         }
