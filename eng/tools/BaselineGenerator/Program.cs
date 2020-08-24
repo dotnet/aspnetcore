@@ -30,13 +30,21 @@ namespace PackageBaselineGenerator
             new Program().Execute(args);
         }
 
+        private readonly CommandOption _defaultTarget;
         private readonly CommandOption _source;
         private readonly CommandOption _output;
         private readonly CommandOption _update;
 
         public Program()
         {
-            _source = Option("-s|--package-source <SOURCE>", "The NuGet source of packages to fetch", CommandOptionType.SingleValue);
+            _defaultTarget = Option(
+                "--default-netcore-target-framework <TFM>",
+                "The default .NET Core TFM.",
+                CommandOptionType.SingleValue);
+            _source = Option(
+                "-s|--package-source <SOURCE>",
+                "The NuGet source of packages to fetch",
+                CommandOptionType.SingleValue);
             _output = Option("-o|--output <OUT>", "The generated file output path", CommandOptionType.SingleValue);
             _update = Option("-u|--update", "Regenerate the input (Baseline.xml) file.", CommandOptionType.NoValue);
 
@@ -45,17 +53,21 @@ namespace PackageBaselineGenerator
 
         private async Task<int> Run()
         {
-            var source = _source.HasValue()
-                ? _source.Value().TrimEnd('/')
-                : "https://api.nuget.org/v3/index.json";
             if (_output.HasValue() && _update.HasValue())
             {
                 await Error.WriteLineAsync("'--output' and '--update' options must not be used together.");
                 return 1;
             }
 
+            if (!_defaultTarget.HasValue())
+            {
+                await Error.WriteLineAsync("--default-netcore-target-framework is required.");
+                return 2;
+            }
+
             var inputPath = Path.Combine(Directory.GetCurrentDirectory(), "Baseline.xml");
             var input = XDocument.Load(inputPath);
+            var source = _source.HasValue() ? _source.Value().TrimEnd('/') : "https://api.nuget.org/v3/index.json";
             var packageSource = new PackageSource(source);
             var providers = Repository.Provider.GetCoreV3(); // Get v2 and v3 API support
             var sourceRepository = new SourceRepository(packageSource, providers);
@@ -96,6 +108,7 @@ namespace PackageBaselineGenerator
                         new XElement("MSBuildAllProjects", "$(MSBuildAllProjects);$(MSBuildThisFileFullPath)"),
                         new XElement("AspNetCoreBaselineVersion", baselineVersion))));
 
+            var defaultTarget = _defaultTarget.Value();
             var client = new HttpClient();
             foreach (var pkg in input.Root.Descendants("Package"))
             {
@@ -136,12 +149,34 @@ namespace PackageBaselineGenerator
 
                     foreach (var group in reader.NuspecReader.GetDependencyGroups())
                     {
-                        var itemGroup = new XElement("ItemGroup", new XAttribute("Condition", $" '$(PackageId)' == '{id}' AND '$(TargetFramework)' == '{group.TargetFramework.GetShortFolderName()}' "));
+                        // Don't bother generating empty ItemGroup elements.
+                        if (group.Packages.Count() == 0)
+                        {
+                            continue;
+                        }
+
+                        // Handle changes to $(DefaultNetCoreTargetFramework) even if some projects are held back.
+                        var targetCondition = $"'$(TargetFramework)' == '{group.TargetFramework.GetShortFolderName()}'";
+                        if (string.Equals(
+                            group.TargetFramework.GetShortFolderName(),
+                            defaultTarget,
+                            StringComparison.OrdinalIgnoreCase))
+                        {
+                            targetCondition =
+                                $"('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR {targetCondition})";
+                        }
+
+                        var itemGroup = new XElement(
+                            "ItemGroup",
+                            new XAttribute("Condition", $" '$(PackageId)' == '{id}' AND {targetCondition} "));
                         doc.Root.Add(itemGroup);
 
                         foreach (var dependency in group.Packages)
                         {
-                            itemGroup.Add(new XElement("BaselinePackageReference", new XAttribute("Include", dependency.Id), new XAttribute("Version", dependency.VersionRange.ToString())));
+                            itemGroup.Add(
+                                new XElement("BaselinePackageReference",
+                                new XAttribute("Include", dependency.Id),
+                                new XAttribute("Version", dependency.VersionRange.ToString())));
                         }
                     }
                 }

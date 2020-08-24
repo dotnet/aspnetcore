@@ -3,6 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <StartArguments>--default-netcore-target-framework $(DefaultNetCoreTargetFramework)</StartArguments>
     <StartWorkingDirectory>$(MSBuildThisFileDirectory)../../</StartWorkingDirectory>
   </PropertyGroup>
 
