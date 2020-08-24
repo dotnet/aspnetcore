@@ -25,7 +25,7 @@ namespace XUnitTestProject6
 
             _testOutputHelper.WriteLine($"About to execute: {path}");
 
-            await ProcessUtil.RunAsync("dotnet", path, cancellationToken: new CancellationTokenSource(TimeSpan.FromSeconds(5)).Token);
+            await ProcessUtil.RunAsync("dotnet", path);
         }
     }
 }
