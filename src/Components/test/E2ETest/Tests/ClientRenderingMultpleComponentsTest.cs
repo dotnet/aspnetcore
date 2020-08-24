@@ -59,26 +59,9 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             var content = Browser.FindElement(By.Id("test-container")).GetAttribute("innerHTML");
             var markers = ReadMarkers(content);
             var componentSequence = markers.Select(m => m.Item1.PrerenderId != null).ToArray();
-            //var expectedComponentSequence = new bool[]
-            //{
-            //    // true means it was a prerendered component.
-            //    true,
-            //    false,
-            //    false,
-            //    false,
-            //    true,
-            //    false,
-            //    true,
-            //    false,
-            //    true,
-            //    false,
-            //    true,
-            //    false,
-            //    true,
-            //};
-            //Assert.Equal(expectedComponentSequence, componentSequence);
+            Assert.Equal(13, componentSequence.Length);
 
-            // Once connected, output changes
+            // Once the app starts, output changes
             BeginInteractivity();
 
             Browser.Exists(By.CssSelector("h3.interactive"));
