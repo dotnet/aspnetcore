@@ -71,6 +71,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var result = await DeployAsync(parameters);
 
             var response = await result.HttpClient.GetAsync("/HelloWorld");
+            response.EnsureSuccessStatusCode();
             StopServer(gracefulShutdown: true);
             Assert.True(result.HostProcess.ExitCode == 0);
         }
@@ -82,6 +83,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             var result = await DeployAsync(parameters);
 
             var response = await result.HttpClient.GetAsync("/HelloWorld");
+            response.EnsureSuccessStatusCode();
             StopServer(gracefulShutdown: false);
             Assert.True(result.HostProcess.ExitCode == 1);
         }
