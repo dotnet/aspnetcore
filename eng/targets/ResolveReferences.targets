@@ -157,12 +157,13 @@
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)"
           Exclude="@(Reference);@(_ProjectReferenceByAssemblyName);@(PackageReference)" />
 
-      <!-- Only allow suppressing baseline changes in non-servicing builds. -->
-      <!--
-        Temporarily ignore the above. Restore Condition="'$(IsServicingBuild)' != 'true'" when
-        https://github.com/aspnet/AspNetCore/issues/14630 is resolved.
-      -->
-      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)" />
+      <!-- Handle suppressions needed because above Exclude is not aware of references added in .nuspec files. -->
+      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference->WithMetadataValue('InNuspecFile', 'true'))"
+          Condition=" '$(IsServicingBuild)' == 'true' " />
+
+      <!-- Allow suppressions of any baseline changes in non-servicing builds. -->
+      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)"
+          Condition=" '$(IsServicingBuild)' != 'true' " />
 
       <!--
         MSBuild does not provide a way to join on matching identities in a Condition,
