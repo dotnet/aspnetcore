@@ -62,8 +62,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     { "EmployeeList", "/HtmlGeneration_Home/EmployeeList" },
                     // Testing the EnvironmentTagHelper
                     { "Environment", null },
-                    // Testing the ImageTagHelper
-                    { "Image", null },
                     // Testing InputTagHelper with File
                     { "Input", null },
                     // Testing the LinkTagHelper
@@ -99,7 +97,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         [Theory]
         [MemberData(nameof(WebPagesData))]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25206")]
         public async Task HtmlGenerationWebSite_GeneratesExpectedResults(string action, string antiforgeryPath)
         {
             // Arrange
@@ -139,6 +136,15 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 #endif
             }
         }
+
+        [Fact]
+        [InlineData("Image", null)]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25206")]
+        public async Task HtmlGenerationWebSite_GeneratesExpectedResults_WithImageData(string action, string antiforgeryPath)
+        {
+            HtmlGenerationWebSite_GeneratesExpectedResults(action, antiforgeryPath);
+        }
+
 
         [Fact]
         public async Task HtmlGenerationWebSite_LinkGeneration_With21CompatibilityBehavior()
