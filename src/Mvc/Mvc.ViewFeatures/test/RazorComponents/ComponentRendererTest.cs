@@ -564,7 +564,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private static ComponentRenderer GetComponentRenderer() =>
             new ComponentRenderer(
                 new StaticComponentRenderer(HtmlEncoder.Default),
-                new ServerComponentSerializer(_dataprotectorProvider));
+                new ServerComponentSerializer(_dataprotectorProvider),
+                new ClientComponentSerializer());
 
         private static ViewContext GetViewContext(HttpContext context = null, Action<IServiceCollection> configureServices = null)
         {

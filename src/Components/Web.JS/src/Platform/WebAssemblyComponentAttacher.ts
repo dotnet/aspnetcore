@@ -200,8 +200,8 @@ function createClientComponentComment(json: string, start: Node, iterator: Compo
       // comment invalid. We could unencode them in .NET Code, but that would be slower to do and we can leverage the fact that
       // JS provides a native function that will be much faster and that we are doing this work while we are fetching
       // blazor.boot.json
-      parameterDefinitions: parameterDefinitions && btoa(parameterDefinitions),
-      parameterValues: parameterValues && btoa(parameterValues),
+      parameterDefinitions: parameterDefinitions && atob(parameterDefinitions),
+      parameterValues: parameterValues && atob(parameterValues),
       start,
     };
   } else {
@@ -215,8 +215,8 @@ function createClientComponentComment(json: string, start: Node, iterator: Compo
       assembly,
       typeName,
       // Same comment as above.
-      parameterDefinitions: parameterDefinitions && btoa(parameterDefinitions),
-      parameterValues: parameterValues && btoa(parameterValues),
+      parameterDefinitions: parameterDefinitions && atob(parameterDefinitions),
+      parameterValues: parameterValues && atob(parameterValues),
       start,
       prerenderId,
       end,

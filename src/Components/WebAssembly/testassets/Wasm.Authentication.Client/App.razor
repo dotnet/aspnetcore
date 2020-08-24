@@ -6,14 +6,10 @@
 {
     <p>No names.</p>
 }
-<CascadingAuthenticationState>
     <Router AppAssembly="@typeof(Program).Assembly">
         <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
-                <NotAuthorized>
-                    <RedirectToLogin />
-                </NotAuthorized>
-            </AuthorizeRouteView>
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+            </RouteView>
         </Found>
         <NotFound>
             <LayoutView Layout="@typeof(MainLayout)">
@@ -21,7 +17,6 @@
             </LayoutView>
         </NotFound>
     </Router>
-</CascadingAuthenticationState>
 
 @code{
     [Parameter] public AppState Data { get; set; }

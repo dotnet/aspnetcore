@@ -84,8 +84,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 var id = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, int>(RegisteredComponentsInterop.GetId, i, null, null);
                 var assembly = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetAssembly, id, null, null);
                 var typeName = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetTypeName, id, null, null);
-                var serializedParameterDefinitions = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetTypeName, id, null, null);
-                var serializedParameterValues = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetTypeName, id, null, null);
+                var serializedParameterDefinitions = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetParameterDefinitions, id, null, null);
+                var serializedParameterValues = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetParameterValues, id, null, null);
                 registeredComponents[i] = new ClientComponentMarker(id, assembly, typeName, serializedParameterDefinitions, serializedParameterValues);
             }
 
@@ -103,8 +103,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 RootComponents.Add(componentType, registeredComponent.Id.ToString(), parameters);
             }
         }
-
-        private record ClientComponentMarker(int Id, string Assembly, string TypeName, string ParameterDefinitions, string ParameterValues);
 
         private class RegisteredComponentsInterop
         {

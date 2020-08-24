@@ -102,15 +102,7 @@ namespace Microsoft.AspNetCore.Components.Server
 
         public IList<object> GetParameterValues(string parameterValues)
         {
-            try
-            {
-                return JsonSerializer.Deserialize<IList<object>>(parameterValues);
-            }
-            catch (Exception e)
-            {
-                Log.FailedToParseParameterValues(_logger, e);
-                return null;
-            }
+            return JsonSerializer.Deserialize<IList<object>>(parameterValues);
         }
 
         private static class Log

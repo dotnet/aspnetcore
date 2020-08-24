@@ -30,8 +30,8 @@ namespace Wasm.Authentication.Client
 
         public static void ConfigureCommonServices(IServiceCollection services)
         {
-            services.AddApiAuthorization<RemoteAppState, OidcAccount>()
-                .AddAccountClaimsPrincipalFactory<RemoteAppState, OidcAccount, PreferencesUserFactory>();
+            //services.AddApiAuthorization<RemoteAppState, OidcAccount>()
+            //    .AddAccountClaimsPrincipalFactory<RemoteAppState, OidcAccount, PreferencesUserFactory>();
 
             services.AddSingleton<StateService>();
         }

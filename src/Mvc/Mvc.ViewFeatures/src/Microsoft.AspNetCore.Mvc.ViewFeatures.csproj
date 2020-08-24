@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>
@@ -31,7 +31,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Components\ClientComponentSerializationSettings.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponentSerializationSettings.cs" />
+    <Compile Include="$(SharedSourceRoot)Components\ClientComponentMarker.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponentMarker.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponent.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" />
