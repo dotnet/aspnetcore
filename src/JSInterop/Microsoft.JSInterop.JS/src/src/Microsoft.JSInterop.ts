@@ -151,6 +151,22 @@ export module DotNet {
     }
   }
 
+  /**
+   * Parses the given JSON string using revivers to restore args passed from .NET to JS.
+   * 
+   * @param json The JSON stirng to parse.
+   */
+  export function parseJsonWithRevivers(json: string): any {
+    return json ? JSON.parse(json, (key, initialValue) => {
+      // Invoke each reviver in order, passing the output from the previous reviver,
+      // so that each one gets a chance to transform the value
+      return jsonRevivers.reduce(
+        (latestValue, reviver) => reviver(key, latestValue),
+        initialValue
+      );
+    }) : null;
+  }
+
   function invokePossibleInstanceMethod<T>(assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, args: any[] | null): T {
     const dispatcher = getRequiredDispatcher();
     if (dispatcher.invokeDotNetFromJS) {
@@ -210,7 +226,10 @@ export module DotNet {
     reject: (reason?: any) => void;
   }
 
-  enum JSCallResultType {
+  /**
+   * Represents the type of result expected from a JS interop call.
+   */
+  export enum JSCallResultType {
     Default = 0,
     JSObjectReference = 1
   }
@@ -260,8 +279,6 @@ export module DotNet {
      *
      * @param identifier Identifies the globally-reachable function to be returned.
      * @param targetInstanceId The instance ID of the target JS object.
-     * @param resultType The type of result expected from the JS interop call.
-     * @param targetInstanceId The ID of the target JS object instance.
      * @returns A Function instance.
      */
     findJSFunction, // Note that this is used by the JS interop code inside Mono WebAssembly itself
@@ -278,6 +295,8 @@ export module DotNet {
      *
      * @param identifier Identifies the globally-reachable function to invoke.
      * @param argsJson JSON representation of arguments to be passed to the function.
+     * @param resultType The type of result expected from the JS interop call.
+     * @param targetInstanceId The instance ID of the target JS object.
      * @returns JSON representation of the invocation result.
      */
     invokeJSFromDotNet: (identifier: string, argsJson: string, resultType: JSCallResultType, targetInstanceId: number) => {
@@ -327,17 +346,6 @@ export module DotNet {
       const resultOrError = success ? resultOrExceptionMessage : new Error(resultOrExceptionMessage);
       completePendingCall(parseInt(asyncCallId), success, resultOrError);
     }
-  }
-
-  function parseJsonWithRevivers(json: string): any {
-    return json ? JSON.parse(json, (key, initialValue) => {
-      // Invoke each reviver in order, passing the output from the previous reviver,
-      // so that each one gets a chance to transform the value
-      return jsonRevivers.reduce(
-        (latestValue, reviver) => reviver(key, latestValue),
-        initialValue
-      );
-    }) : null;
   }
 
   function formatError(error: any): string {
