@@ -330,14 +330,17 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 Principal = user
             };
 
-            await Events.RetrieveLdapClaims(authenticatedContext);
-
-            if (authenticatedContext.Result != null)
+            if (Options.LdapOptions.EnableLdapRoleClaimResolution)
             {
-                return authenticatedContext.Result;
-            }
+                await Events.RetrieveLdapClaims(authenticatedContext);
 
-            await LdapAdapter.RetrieveClaimsAsync(Options.LdapOptions, authenticatedContext.Principal.Identity as ClaimsIdentity, Logger);
+                if (authenticatedContext.Result != null)
+                {
+                    return authenticatedContext.Result;
+                }
+
+                await LdapAdapter.RetrieveRoleClaimsAsync(Options.LdapOptions, authenticatedContext.Principal.Identity as ClaimsIdentity, Logger);
+            }
 
             await Events.Authenticated(authenticatedContext);
 

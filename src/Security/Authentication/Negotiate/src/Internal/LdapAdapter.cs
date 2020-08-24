@@ -12,13 +12,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
     internal static class LdapAdapter
     {
-        public static async Task RetrieveClaimsAsync(LdapOptions options, ClaimsIdentity identity, ILogger logger)
+        public static async Task RetrieveRoleClaimsAsync(LdapOptions options, ClaimsIdentity identity, ILogger logger)
         {
-            if (!options.EnableLdapRoleClaimResolution)
-            {
-                return;
-            }
-
             var user = identity.Name;
             var userAccountName = user.Substring(0, user.IndexOf('@'));
             var distinguishedName = options.Domain.Split('.').Select(name => $"dc={name}").Aggregate((a, b) => $"{a},{b}");
