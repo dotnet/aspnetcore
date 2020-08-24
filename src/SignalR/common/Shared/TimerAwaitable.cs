@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Internal
                         // If TimerAwaitable falls out of scope, the timer should be released.
                         _timer = NonCapturingTimer.Create(state =>
                         {
-                            var weakRef = (WeakReference<TimerAwaitable>)state;
+                            var weakRef = (WeakReference<TimerAwaitable>)state!;
                             if (weakRef.TryGetTarget(out var thisRef))
                             {
                                 thisRef.Tick();
