@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.SignalR.Internal;
 
 namespace Microsoft.AspNetCore.SignalR
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// </summary>
         /// <typeparam name="TFilter">The <see cref="IHubFilter"/> type that will be added to the options.</typeparam>
         /// <param name="options">The options to add a filter to.</param>
-        public static void AddFilter<TFilter>(this HubOptions options) where TFilter : IHubFilter
+        public static void AddFilter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]TFilter>(this HubOptions options) where TFilter : IHubFilter
         {
             _ = options ?? throw new ArgumentNullException(nameof(options));
 
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// </summary>
         /// <param name="options">The options to add a filter to.</param>
         /// <param name="filterType">The <see cref="IHubFilter"/> type that will be added to the options.</param>
-        public static void AddFilter(this HubOptions options, Type filterType)
+        public static void AddFilter(this HubOptions options, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type filterType)
         {
             _ = options ?? throw new ArgumentNullException(nameof(options));
             _ = filterType ?? throw new ArgumentNullException(nameof(filterType));

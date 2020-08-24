@@ -82,7 +82,10 @@
       "src\\Security\\Authentication\\OAuth\\src\\Microsoft.AspNetCore.Authentication.OAuth.csproj",
       "src\\Mvc\\Mvc.NewtonsoftJson\\src\\Microsoft.AspNetCore.Mvc.NewtonsoftJson.csproj",
       "src\\Features\\JsonPatch\\src\\Microsoft.AspNetCore.JsonPatch.csproj",
-      "src\\Mvc\\Mvc.Testing\\src\\Microsoft.AspNetCore.Mvc.Testing.csproj"
+      "src\\Mvc\\Mvc.Testing\\src\\Microsoft.AspNetCore.Mvc.Testing.csproj",
+      "src\\ObjectPool\\src\\Microsoft.Extensions.ObjectPool.csproj",
+      "src\\Http\\Metadata\\src\\Microsoft.AspNetCore.Metadata.csproj",
+      "src\\Localization\\Abstractions\\src\\Microsoft.Extensions.Localization.Abstractions.csproj"
     ]
   }
 }

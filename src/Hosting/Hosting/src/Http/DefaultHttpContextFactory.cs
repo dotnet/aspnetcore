@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -12,7 +14,7 @@ namespace Microsoft.AspNetCore.Http
 {
     public class DefaultHttpContextFactory : IHttpContextFactory
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpContextAccessor? _httpContextAccessor;
         private readonly FormOptions _formOptions;
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
@@ -26,7 +28,7 @@ namespace Microsoft.AspNetCore.Http
             _serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
         }
 
-        internal IHttpContextAccessor HttpContextAccessor => _httpContextAccessor;
+        internal IHttpContextAccessor? HttpContextAccessor => _httpContextAccessor;
 
         public HttpContext Create(IFeatureCollection featureCollection)
         {

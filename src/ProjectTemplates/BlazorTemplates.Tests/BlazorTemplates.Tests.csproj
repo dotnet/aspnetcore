@@ -40,9 +40,7 @@
     <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
     <ProjectReference Include="../testassets/DotNetToolsInstaller/DotNetToolsInstaller.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="$(RepoRoot)src\Razor\Microsoft.NET.Sdk.Razor\src\Microsoft.NET.Sdk.Razor.csproj"
-      ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" />
+    <Reference Include="Microsoft.NET.Sdk.Razor" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -143,7 +141,7 @@
 
     <GenerateFileFromTemplate
       TemplateFile="$(MSBuildThisFileDirectory)Infrastructure\Directory.Build.props.in"
-      Properties=""
+      Properties="RepoRoot=$(RepoRoot)"
       OutputPath="$(TestTemplateCreationFolder)Directory.Build.props" />
 
     <!-- Workaround https://github.com/dotnet/core-setup/issues/6420 - there is no MSBuild setting for rollforward yet -->

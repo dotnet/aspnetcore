@@ -12,7 +12,7 @@ Microsoft.AspNetCore.Routing.RouteCollection</Description>
     <PackageTags>aspnetcore;routing</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsPackable>false</IsPackable>
-    <Nullable>annotations</Nullable>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -21,7 +21,6 @@ Microsoft.AspNetCore.Routing.RouteCollection</Description>
     -->
     <ILEmitSaveAssemblies Condition="'$(ILEmitSaveAssemblies)'==''">false</ILEmitSaveAssemblies>
     <DefineConstants Condition="'$(ILEmitSaveAssemblies)'=='true'">IL_EMIT_SAVE_ASSEMBLIES;$(DefineConstants)</DefineConstants>
-    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

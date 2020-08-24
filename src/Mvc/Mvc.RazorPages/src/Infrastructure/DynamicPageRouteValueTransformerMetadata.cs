@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     internal class DynamicPageRouteValueTransformerMetadata : IDynamicEndpointMetadata
     {
-        public DynamicPageRouteValueTransformerMetadata(Type selectorType)
+        public DynamicPageRouteValueTransformerMetadata(Type selectorType, object state)
         {
             if (selectorType == null)
             {
@@ -24,9 +24,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
 
             SelectorType = selectorType;
+            State = state;
         }
 
         public bool IsDynamic => true;
+
+        public object State { get; }
 
         public Type SelectorType { get; }
     }

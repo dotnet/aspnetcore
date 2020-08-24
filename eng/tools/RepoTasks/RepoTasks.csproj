@@ -24,6 +24,7 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <PackageReference Include="Wix" Version="3.11.1" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
 
     <Reference Include="Microsoft.Build" />
     <Reference Include="Microsoft.Build.Framework" />
@@ -35,5 +36,15 @@
     <Reference Include="Microsoft.Deployment.WindowsInstaller.Package">
       <HintPath>$(WiXSdkPath)\Microsoft.Deployment.WindowsInstaller.Package.dll</HintPath>
     </Reference>
+
+    <!--
+      Gather project references for compilation against RTM packages. %(RTMVersion) is set for about a dozen packages
+      in all servicing builds. Cannot reference two versions of a package, mandating this separation from projects
+      using the relevant packages.
+    -->
+    <PackageReference Include="@(LatestPackageReference->HasMetadata('RTMVersion'))"
+        IncludeAssets="None"
+        PrivateAssets="All"
+        Version="%(RTMVersion)" />
   </ItemGroup>
 </Project>

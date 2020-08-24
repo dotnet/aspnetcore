@@ -19,7 +19,6 @@
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
-    <Reference Include="Microsoft.AspNetCore" />
 
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" />
     <Reference Include="Microsoft.Extensions.Hosting" />
@@ -34,7 +33,6 @@
 
   <ItemGroup>
     <NuspecProperty Include="publishDir=$(PublishDir)" />
-    <NuspecProperty Include="componentsrootdir=..\..\..\" />
     <NuspecProperty Include="PackageThirdPartyNoticesFile=$(PackageThirdPartyNoticesFile)" />
   </ItemGroup>
 

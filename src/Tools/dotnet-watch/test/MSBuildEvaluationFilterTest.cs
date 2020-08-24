@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Watcher.Tools
     public class MSBuildEvaluationFilterTest
     {
         private readonly IFileSetFactory _fileSetFactory = Mock.Of<IFileSetFactory>(
-            f => f.CreateAsync(It.IsAny<CancellationToken>()) == Task.FromResult<IFileSet>(new FileSet(Enumerable.Empty<string>())));
+            f => f.CreateAsync(It.IsAny<CancellationToken>()) == Task.FromResult<IFileSet>(FileSet.Empty));
 
         [Fact]
         public async Task ProcessAsync_EvaluatesFileSetIfProjFileChanges()
@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             // concurrent edits. MSBuildEvaluationFilter uses timestamps to additionally track changes to these files.
 
             // Arrange
-            var fileSet = new FileSet(new[] { "Controlller.cs", "Proj.csproj" });
+            var fileSet = new FileSet(false, new[] { "Controlller.cs", "Proj.csproj" });
             var fileSetFactory = Mock.Of<IFileSetFactory>(f => f.CreateAsync(It.IsAny<CancellationToken>()) == Task.FromResult<IFileSet>(fileSet));
 
             var filter = new TestableMSBuildEvaluationFilter(fileSetFactory)

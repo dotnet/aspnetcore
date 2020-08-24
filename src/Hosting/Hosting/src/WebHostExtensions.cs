@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+#nullable enable
+
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -103,7 +105,7 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
-        private static async Task RunAsync(this IWebHost host, CancellationToken token, string startupMessage)
+        private static async Task RunAsync(this IWebHost host, CancellationToken token, string? startupMessage)
         {
             try
             {
@@ -114,8 +116,8 @@ namespace Microsoft.AspNetCore.Hosting
 
                 if (!options.SuppressStatusMessages)
                 {
-                    Console.WriteLine($"Hosting environment: {hostingEnvironment.EnvironmentName}");
-                    Console.WriteLine($"Content root path: {hostingEnvironment.ContentRootPath}");
+                    Console.WriteLine($"Hosting environment: {hostingEnvironment?.EnvironmentName}");
+                    Console.WriteLine($"Content root path: {hostingEnvironment?.ContentRootPath}");
 
 
                     var serverAddresses = host.ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
@@ -150,18 +152,18 @@ namespace Microsoft.AspNetCore.Hosting
 
         private static async Task WaitForTokenShutdownAsync(this IWebHost host, CancellationToken token)
         {
-            var applicationLifetime = host.Services.GetService<IHostApplicationLifetime>();
+            var applicationLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
 
             token.Register(state =>
             {
-                ((IHostApplicationLifetime)state).StopApplication();
+                ((IHostApplicationLifetime)state!).StopApplication();
             },
             applicationLifetime);
 
             var waitForStop = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             applicationLifetime.ApplicationStopping.Register(obj =>
             {
-                var tcs = (TaskCompletionSource)obj;
+                var tcs = (TaskCompletionSource)obj!;
                 tcs.TrySetResult();
             }, waitForStop);
 

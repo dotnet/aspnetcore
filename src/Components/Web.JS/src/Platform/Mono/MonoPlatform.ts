@@ -3,12 +3,11 @@ import { attachDebuggerHotkey, hasDebuggingEnabled } from './MonoDebugger';
 import { showErrorNotification } from '../../BootErrors';
 import { WebAssemblyResourceLoader, LoadingResource } from '../WebAssemblyResourceLoader';
 import { Platform, System_Array, Pointer, System_Object, System_String, HeapLock } from '../Platform';
-import { loadTimezoneData } from './TimezoneDataFile';
 import { WebAssemblyBootResourceType } from '../WebAssemblyStartOptions';
-import { initializeProfiling } from '../Profiling';
 
 let mono_wasm_add_assembly: (name: string, heapAddress: number, length: number) => void;
 const appBinDirName = 'appBinDir';
+const icuDataResourceName = 'icudt.dat';
 const uint64HighOrderShift = Math.pow(2, 32);
 const maxSafeNumberHighPart = Math.pow(2, 21) - 1; // The high-order int32 from Number.MAX_SAFE_INTEGER
 
@@ -36,10 +35,6 @@ export const monoPlatform: Platform = {
   start: function start(resourceLoader: WebAssemblyResourceLoader) {
     return new Promise<void>((resolve, reject) => {
       attachDebuggerHotkey(resourceLoader);
-      initializeProfiling(isCapturing => {
-        const setCapturingMethod = bindStaticMethod('Microsoft.AspNetCore.Components', 'Microsoft.AspNetCore.Components.Profiling.WebAssemblyComponentsProfiling', 'SetCapturing');
-        setCapturingMethod(isCapturing);
-      });
 
       // dotnet.js assumes the existence of this
       window['Browser'] = {
@@ -244,14 +239,23 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     /* hash */ resourceLoader.bootConfig.resources.runtime[dotnetWasmResourceName],
     /* type */ 'dotnetwasm');
 
-  const dotnetTimeZoneResourceName = 'dotnet.timezones.dat';
+  const dotnetTimeZoneResourceName = 'dotnet.timezones.blat';
   let timeZoneResource: LoadingResource | undefined;
   if (resourceLoader.bootConfig.resources.runtime.hasOwnProperty(dotnetTimeZoneResourceName)) {
     timeZoneResource = resourceLoader.loadResource(
       dotnetTimeZoneResourceName,
       `_framework/${dotnetTimeZoneResourceName}`,
       resourceLoader.bootConfig.resources.runtime[dotnetTimeZoneResourceName],
-      'timezonedata');
+      'globalization');
+  }
+
+  let icuDataResource: LoadingResource | undefined;
+  if (resourceLoader.bootConfig.resources.runtime.hasOwnProperty(icuDataResourceName)) {
+    icuDataResource = resourceLoader.loadResource(
+      icuDataResourceName,
+      `_framework/${icuDataResourceName}`,
+      resourceLoader.bootConfig.resources.runtime[icuDataResourceName],
+      'globalization');
   }
 
   // Override the mechanism for fetching the main wasm file so we can connect it to our cache
@@ -277,6 +281,13 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
     if (timeZoneResource) {
       loadTimezone(timeZoneResource);
+    }
+
+    if (icuDataResource) {
+      loadICUData(icuDataResource);
+    } else {
+      // Use invariant culture if the app does not carry icu data.
+      MONO.mono_wasm_setenv("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT", "1");
     }
 
     // Fetch the assemblies and PDBs in the background, telling Mono to wait until they are loaded
@@ -324,9 +335,18 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
       const assembliesToLoad = BINDING.mono_array_to_js_array<System_String, string>(assembliesToLoadDotNetArray);
       const lazyAssemblies = resourceLoader.bootConfig.resources.lazyAssembly;
 
-      if (lazyAssemblies) {
-        const resourcePromises = Promise.all(assembliesToLoad
-            .filter(assembly => lazyAssemblies.hasOwnProperty(assembly))
+      if (!lazyAssemblies) {
+        throw new Error("No assemblies have been marked as lazy-loadable. Use the 'BlazorWebAssemblyLazyLoad' item group in your project file to enable lazy loading an assembly.");
+      }
+
+      var assembliesMarkedAsLazy = assembliesToLoad.filter(assembly => lazyAssemblies.hasOwnProperty(assembly));
+
+      if (assembliesMarkedAsLazy.length != assembliesToLoad.length) {
+        var notMarked = assembliesToLoad.filter(assembly => !assembliesMarkedAsLazy.includes(assembly));
+        throw new Error(`${notMarked.join()} must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.`);
+      }
+
+      const resourcePromises = Promise.all(assembliesMarkedAsLazy
             .map(assembly => resourceLoader.loadResource(assembly, `_framework/${assembly}`, lazyAssemblies[assembly], 'assembly'))
             .map(async resource => (await resource.response).arrayBuffer()));
 
@@ -345,8 +365,6 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
           return resourcesToLoad.length;
         }));
       }
-      return BINDING.js_to_mono_obj(Promise.resolve(0));
-    }
   });
 
   module.postRun.push(() => {
@@ -356,6 +374,14 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     resourceLoader.purgeUnusedCacheEntriesAsync(); // Don't await - it's fine to run in background
 
     MONO.mono_wasm_setenv("MONO_URI_DOTNETRELATIVEORABSOLUTE", "true");
+    let timeZone = "UTC";
+    try {
+      timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch { }
+    MONO.mono_wasm_setenv("TZ", timeZone);
+    // Turn off full-gc to prevent browser freezing.
+    const mono_wasm_enable_on_demand_gc = cwrap('mono_wasm_enable_on_demand_gc', null, ['number']);
+    mono_wasm_enable_on_demand_gc(0);
     const load_runtime = cwrap('mono_wasm_load_runtime', null, ['string', 'number']);
     // -1 enables debugging with logging disabled. 0 disables debugging entirely.
     load_runtime(appBinDirName, hasDebuggingEnabled() ? -1 : 0);
@@ -453,8 +479,27 @@ async function loadTimezone(timeZoneResource: LoadingResource) : Promise<void> {
 
   const request = await timeZoneResource.response;
   const arrayBuffer = await request.arrayBuffer();
-  loadTimezoneData(arrayBuffer)
 
+  Module['FS_createPath']('/', 'usr', true, true);
+  Module['FS_createPath']('/usr/', 'share', true, true);
+  Module['FS_createPath']('/usr/share/', 'zoneinfo', true, true);
+  MONO.mono_wasm_load_data_archive(new Uint8Array(arrayBuffer), '/usr/share/zoneinfo/');
+
+  removeRunDependency(runDependencyId);
+}
+
+async function loadICUData(icuDataResource: LoadingResource) : Promise<void> {
+  const runDependencyId = `blazor:icudata`;
+  addRunDependency(runDependencyId);
+
+  const request = await icuDataResource.response;
+  const array = new Uint8Array(await request.arrayBuffer());
+
+  const offset = MONO.mono_wasm_load_bytes_into_heap(array);
+  if (!MONO.mono_wasm_load_icu_data(offset))
+  {
+    throw new Error("Error loading ICU asset.");
+  }
   removeRunDependency(runDependencyId);
 }
 

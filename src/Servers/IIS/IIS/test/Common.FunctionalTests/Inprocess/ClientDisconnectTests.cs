@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             await _fixture.Client.RetryRequestAsync("/WaitingRequestCount", async message => await message.Content.ReadAsStringAsync() == "0");
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/24695")]
         public async Task ClientDisconnectCallbackStress()
         {
             // Fixture initialization fails if inside of the Task.Run, so send an

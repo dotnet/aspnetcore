@@ -40,9 +40,9 @@ namespace Microsoft.AspNetCore
         /// <param name="url">The URL the hosted application will listen on.</param>
         /// <param name="app">A delegate that handles requests to the application.</param>
         /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
-        public static IWebHost Start(string url, RequestDelegate app)
+        public static IWebHost Start(string? url, RequestDelegate app)
         {
-            var startupAssemblyName = app.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name;
+            var startupAssemblyName = app.GetMethodInfo().DeclaringType!.GetTypeInfo().Assembly.GetName().Name;
             return StartWith(url: url, configureServices: null, app: appBuilder => appBuilder.Run(app), applicationName: startupAssemblyName);
         }
 
@@ -62,9 +62,9 @@ namespace Microsoft.AspNetCore
         /// <param name="url">The URL the hosted application will listen on.</param>
         /// <param name="routeBuilder">A delegate that configures the router for handling requests to the application.</param>
         /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
-        public static IWebHost Start(string url, Action<IRouteBuilder> routeBuilder)
+        public static IWebHost Start(string? url, Action<IRouteBuilder> routeBuilder)
         {
-            var startupAssemblyName = routeBuilder.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name;
+            var startupAssemblyName = routeBuilder.GetMethodInfo().DeclaringType!.GetTypeInfo().Assembly.GetName().Name;
             return StartWith(url, services => services.AddRouting(), appBuilder => appBuilder.UseRouter(routeBuilder), applicationName: startupAssemblyName);
         }
 
@@ -84,10 +84,10 @@ namespace Microsoft.AspNetCore
         /// <param name="url">The URL the hosted application will listen on.</param>
         /// <param name="app">The delegate that configures the <see cref="IApplicationBuilder"/>.</param>
         /// <returns>A started <see cref="IWebHost"/> that hosts the application.</returns>
-        public static IWebHost StartWith(string url, Action<IApplicationBuilder> app) =>
+        public static IWebHost StartWith(string? url, Action<IApplicationBuilder> app) =>
             StartWith(url: url, configureServices: null, app: app, applicationName: null);
 
-        private static IWebHost StartWith(string url, Action<IServiceCollection> configureServices, Action<IApplicationBuilder> app, string applicationName)
+        private static IWebHost StartWith(string? url, Action<IServiceCollection>? configureServices, Action<IApplicationBuilder> app, string? applicationName)
         {
             var builder = CreateDefaultBuilder();
 
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore
         /// </remarks>
         /// <param name="args">The command line args.</param>
         /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
-        public static IWebHostBuilder CreateDefaultBuilder(string[] args)
+        public static IWebHostBuilder CreateDefaultBuilder(string[]? args)
         {
             var builder = new WebHostBuilder();
 

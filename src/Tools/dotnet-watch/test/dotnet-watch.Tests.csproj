@@ -32,6 +32,9 @@
     <MSBuild Projects="..\src\dotnet-watch.csproj"
       Targets="Publish"
       Properties="PublishDir=$(OutputPath)\tool\;Configuration=$(Configuration)" />
+
+    <Copy SourceFiles="$(ArtifactsBinDir)Microsoft.AspNetCore.Watch.BrowserRefresh\$(Configuration)\netcoreapp3.1\Microsoft.AspNetCore.Watch.BrowserRefresh.dll"
+          DestinationFolder="$(OutputPath)\tool\middleware" />
   </Target>
 
   <!-- Do not publish in source build -->
@@ -39,6 +42,9 @@
     <MSBuild Projects="..\src\dotnet-watch.csproj"
       Targets="Publish"
       Properties="PublishDir=$(PublishDir)\tool\;Configuration=$(Configuration)" />
+
+    <Copy SourceFiles="$(ArtifactsBinDir)Microsoft.AspNetCore.Watch.BrowserRefresh\$(Configuration)\netcoreapp3.1\Microsoft.AspNetCore.Watch.BrowserRefresh.dll"
+          DestinationFolder="$(PublishDir)\tool\middleware" />
   </Target>
 
 </Project>

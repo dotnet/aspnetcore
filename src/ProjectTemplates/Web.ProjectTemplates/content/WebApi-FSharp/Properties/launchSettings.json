@@ -28,6 +28,7 @@
     },
     "Company.WebApplication1": {
       "commandName": "Project",
+      "dotnetRunMessages": "true",
       "launchBrowser": true,
       "launchUrl": "weatherforecast",
       //#if(NoHttps)

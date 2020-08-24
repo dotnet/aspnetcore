@@ -16,13 +16,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
         private readonly PipeReader _application;
         private readonly string _connectionId;
         private readonly ILogger _logger;
-        private readonly HttpConnectionContext _connection;
+        private readonly HttpConnectionContext? _connection;
 
         public ServerSentEventsServerTransport(PipeReader application, string connectionId, ILoggerFactory loggerFactory)
             : this(application, connectionId, connection: null, loggerFactory)
         { }
 
-        public ServerSentEventsServerTransport(PipeReader application, string connectionId, HttpConnectionContext connection, ILoggerFactory loggerFactory)
+        public ServerSentEventsServerTransport(PipeReader application, string connectionId, HttpConnectionContext? connection, ILoggerFactory loggerFactory)
         {
             _application = application;
             _connectionId = connectionId;
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 
         private static class Log
         {
-            private static readonly Action<ILogger, long, Exception> _sseWritingMessage =
+            private static readonly Action<ILogger, long, Exception?> _sseWritingMessage =
                 LoggerMessage.Define<long>(LogLevel.Trace, new EventId(1, "SSEWritingMessage"), "Writing a {Count} byte message.");
 
             public static void SSEWritingMessage(ILogger logger, long count)

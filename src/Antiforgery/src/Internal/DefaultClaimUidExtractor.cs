@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Antiforgery
@@ -134,9 +135,13 @@ namespace Microsoft.AspNetCore.Antiforgery
 
                 writer.Flush();
 
-                var sha256 = serializationContext.Sha256;
-                var stream = serializationContext.Stream;
-                var bytes = sha256.ComputeHash(stream.ToArray(), 0, checked((int)stream.Length));
+                bool success = serializationContext.Stream.TryGetBuffer(out ArraySegment<byte> buffer);
+                if (!success)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                var bytes = SHA256.HashData(buffer);
 
                 return bytes;
             }

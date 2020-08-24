@@ -211,6 +211,19 @@
             "Server/Controllers/OidcConfigurationController.cs",
             "Server/Models/ApplicationUser.cs"
           ]
+        },
+        {
+          "condition": "(Hosted && !GenerateApi)",
+            "exclude": [
+              "Server/Services/DownstreamWebApi.cs"
+            ]
+        },
+        {
+          "condition": "(Hosted &&!GenerateGraph)",
+          "exclude": [
+             "Server/Services/MicrosoftGraphServiceExtensions.cs",
+             "Server/Services/TokenAcquisitionCredentialProvider.cs"
+          ]
         }
       ]
     }
@@ -297,7 +310,7 @@
       "datatype": "string",
       "defaultValue": "https://login.microsoftonline.com/",
       "replaces": "https:////login.microsoftonline.com/",
-      "description": "The Azure Active Directory instance to connect to (use with SingleOrg)."
+      "description": "The Azure Active Directory instance to connect to (use with SingleOrg auth)."
     },
     "ClientId": {
       "type": "parameter",
@@ -452,6 +465,37 @@
       "parameters": {
         "format": "yyyy"
       }
+    },
+    "CalledApiUrl": {
+        "type": "parameter",
+        "datatype": "string",
+        "replaces": "[WebApiUrl]",
+        "defaultValue" : "https://graph.microsoft.com/v1.0/me",
+        "description": "URL of the API to call from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C without and ASP.NET Core host is specified."
+    },
+    "CallsMicrosoftGraph": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "false",
+        "description": "Specifies if the web app calls Microsoft Graph. This option only applies if --auth SingleOrg or --auth MultiOrg is specified."
+    },
+    "CalledApiScopes": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces" :  "user.read",
+      "description": "Scopes to request to call the API from the web app. This option only applies if --auth SingleOrg, --auth MultiOrg or --auth IndividualB2C without and ASP.NET Core host is specified."
+    },
+    "GenerateApi": {
+        "type": "computed",
+        "value": "(( (IndividualB2CAuth && !Hosted) || OrganizationalAuth) && (CalledApiUrl != \"https://graph.microsoft.com/v1.0/me\" || CalledApiScopes != \"user.read\"))"
+    },
+    "GenerateGraph": {
+        "type": "computed",
+        "value": "(OrganizationalAuth && CallsMicrosoftGraph)"
+    },
+    "GenerateApiOrGraph": {
+        "type": "computed",
+        "value": "(GenerateApi || GenerateGraph)"
     }
   },
   "tags": {

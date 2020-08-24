@@ -46,7 +46,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public void CanRenderTextOnlyComponent()
         {
             var appElement = Browser.MountTestComponent<TextOnlyComponent>();
-            Assert.Equal("Hello from TextOnlyComponent", appElement.Text);
+
+            Browser.Exists(By.XPath("//*[contains(., 'Hello from TextOnlyComponent')]"));
         }
 
         // This verifies that we've correctly configured the Razor language version via MSBuild.
@@ -667,5 +668,20 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                     && completeLIs[0].FindElement(By.CssSelector(".item-isdone")).Selected;
             });
         }
+
+        [Fact]
+        public void CanHandleClearedChild()
+        {
+            var appElement = Browser.MountTestComponent<ContentEditable>();
+            var input = appElement.FindElement(By.Id("editable-div"));
+            var clickable = appElement.FindElement(By.Id("clickable"));
+
+            input.Clear();
+            clickable.Click();
+
+            var log = Browser.Manage().Logs.GetLog(LogType.Browser);
+            Assert.DoesNotContain(log, entry => entry.Level == LogLevel.Severe);
+            Browser.Equal("", () => input.Text);
+        } 
     }
 }

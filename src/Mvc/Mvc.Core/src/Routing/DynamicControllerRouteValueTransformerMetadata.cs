@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 {
     internal class DynamicControllerRouteValueTransformerMetadata : IDynamicEndpointMetadata
     {
-        public DynamicControllerRouteValueTransformerMetadata(Type selectorType)
+        public DynamicControllerRouteValueTransformerMetadata(Type selectorType, object state)
         {
             if (selectorType == null)
             {
@@ -23,10 +23,13 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
 
             SelectorType = selectorType;
+            State = state;
         }
 
         public bool IsDynamic => true;
 
         public Type SelectorType { get; }
+
+        public object State { get; }
     }
 }

@@ -14,7 +14,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
@@ -109,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
         [Theory]
         [MemberData(nameof(LargeUploadData))]
-        [QuarantinedTest]
+        [QuarantinedTest] // This is inherently flaky and should never be unquarantined.
         public async Task LargeUpload(long? maxRequestBufferSize, bool connectionAdapter, bool expectPause)
         {
             // Parameters
@@ -124,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
 
-            using (var host = await StartWebHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
+            using (var host = await StartHost(maxRequestBufferSize, data, connectionAdapter, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
             {
                 var port = host.GetPort();
                 using (var socket = CreateSocket(port))
@@ -203,6 +204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24557")]
         public async Task ServerShutsDownGracefullyWhenMaxRequestBufferSizeExceeded()
         {
             // Parameters
@@ -217,7 +219,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var memoryPoolFactory = new DiagnosticMemoryPoolFactory(allowLateReturn: true);
 
-            using (var host = await StartWebHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
+            using (var host = await StartHost(16 * 1024, data, false, startReadingRequestBody, clientFinishedSendingRequestBody, memoryPoolFactory.Create))
             {
                 var port = host.GetPort();
                 using (var socket = CreateSocket(port))
@@ -271,7 +273,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     // Dispose host prior to closing connection to verify the server doesn't throw during shutdown
                     // if a connection no longer has alloc and read callbacks configured.
-                    await host.StopAsync();
+                    try
+                    {
+                        await host.StopAsync();
+                    }
+                    // Remove when https://github.com/dotnet/runtime/issues/40290 is fixed
+                    catch (OperationCanceledException)
+                    {
+
+                    }
                     host.Dispose();
                 }
             }
@@ -281,67 +291,71 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             await memoryPoolFactory.WhenAllBlocksReturned(TestConstants.DefaultTimeout);
         }
 
-        private async Task<IWebHost> StartWebHost(long? maxRequestBufferSize,
+        private async Task<IHost> StartHost(long? maxRequestBufferSize,
             byte[] expectedBody,
             bool useConnectionAdapter,
             TaskCompletionSource startReadingRequestBody,
             TaskCompletionSource clientFinishedSendingRequestBody,
             Func<MemoryPool<byte>> memoryPoolFactory = null)
         {
-            var host = TransportSelector.GetWebHostBuilder(memoryPoolFactory, maxRequestBufferSize)
-                .ConfigureServices(AddTestLogging)
-                .UseKestrel(options =>
+            var host = TransportSelector.GetHostBuilder(memoryPoolFactory, maxRequestBufferSize)
+                .ConfigureWebHost(webHostBuilder =>
                 {
-                    options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
-                    {
-                        if (useConnectionAdapter)
+                    webHostBuilder
+                        .UseKestrel(options =>
                         {
-                            listenOptions.UsePassThrough();
-                        }
-                    });
+                            options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
+                            {
+                                if (useConnectionAdapter)
+                                {
+                                    listenOptions.UsePassThrough();
+                                }
+                            });
 
-                    options.Limits.MaxRequestBufferSize = maxRequestBufferSize;
+                            options.Limits.MaxRequestBufferSize = maxRequestBufferSize;
 
-                    if (maxRequestBufferSize.HasValue &&
-                        maxRequestBufferSize.Value < options.Limits.MaxRequestLineSize)
-                    {
-                        options.Limits.MaxRequestLineSize = (int)maxRequestBufferSize;
-                    }
+                            if (maxRequestBufferSize.HasValue &&
+                                maxRequestBufferSize.Value < options.Limits.MaxRequestLineSize)
+                            {
+                                options.Limits.MaxRequestLineSize = (int)maxRequestBufferSize;
+                            }
 
-                    if (maxRequestBufferSize.HasValue &&
-                        maxRequestBufferSize.Value < options.Limits.MaxRequestHeadersTotalSize)
-                    {
-                        options.Limits.MaxRequestHeadersTotalSize = (int)maxRequestBufferSize;
-                    }
+                            if (maxRequestBufferSize.HasValue &&
+                                maxRequestBufferSize.Value < options.Limits.MaxRequestHeadersTotalSize)
+                            {
+                                options.Limits.MaxRequestHeadersTotalSize = (int)maxRequestBufferSize;
+                            }
 
-                    options.Limits.MinRequestBodyDataRate = null;
+                            options.Limits.MinRequestBodyDataRate = null;
 
-                    options.Limits.MaxRequestBodySize = _dataLength;
+                            options.Limits.MaxRequestBodySize = _dataLength;
+                        })
+                        .UseContentRoot(Directory.GetCurrentDirectory())
+                        .Configure(app => app.Run(async context =>
+                        {
+                            await startReadingRequestBody.Task.TimeoutAfter(TimeSpan.FromSeconds(120));
+
+                            var buffer = new byte[expectedBody.Length];
+                            var bytesRead = 0;
+                            while (bytesRead < buffer.Length)
+                            {
+                                bytesRead += await context.Request.Body.ReadAsync(buffer, bytesRead, buffer.Length - bytesRead);
+                            }
+
+                            await clientFinishedSendingRequestBody.Task.TimeoutAfter(TimeSpan.FromSeconds(120));
+
+                            // Verify client didn't send extra bytes
+                            if (await context.Request.Body.ReadAsync(new byte[1], 0, 1) != 0)
+                            {
+                                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                                await context.Response.WriteAsync("Client sent more bytes than expectedBody.Length");
+                                return;
+                            }
+
+                            await context.Response.WriteAsync($"bytesRead: {bytesRead.ToString()}");
+                        }));
                 })
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .Configure(app => app.Run(async context =>
-                {
-                    await startReadingRequestBody.Task.TimeoutAfter(TimeSpan.FromSeconds(120));
-
-                    var buffer = new byte[expectedBody.Length];
-                    var bytesRead = 0;
-                    while (bytesRead < buffer.Length)
-                    {
-                        bytesRead += await context.Request.Body.ReadAsync(buffer, bytesRead, buffer.Length - bytesRead);
-                    }
-
-                    await clientFinishedSendingRequestBody.Task.TimeoutAfter(TimeSpan.FromSeconds(120));
-
-                    // Verify client didn't send extra bytes
-                    if (await context.Request.Body.ReadAsync(new byte[1], 0, 1) != 0)
-                    {
-                        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                        await context.Response.WriteAsync("Client sent more bytes than expectedBody.Length");
-                        return;
-                    }
-
-                    await context.Response.WriteAsync($"bytesRead: {bytesRead.ToString()}");
-                }))
+                .ConfigureServices(AddTestLogging)
                 .Build();
 
             await host.StartAsync();

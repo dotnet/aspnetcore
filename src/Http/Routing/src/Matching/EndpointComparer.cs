@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
-        public int Compare(Endpoint x, Endpoint y)
+        public int Compare(Endpoint? x, Endpoint? y)
         {
             // We don't expose this publicly, and we should never call it on
             // a null endpoint.
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return 0;
         }
 
-        public bool Equals(Endpoint x, Endpoint y)
+        public bool Equals(Endpoint? x, Endpoint? y)
         {
             // We don't expose this publicly, and we should never call it on
             // a null endpoint.
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             public static readonly IComparer<Endpoint> Instance = new OrderComparer();
 
-            public int Compare(Endpoint x, Endpoint y)
+            public int Compare(Endpoint? x, Endpoint? y)
             {
                 var routeEndpointX = x as RouteEndpoint;
                 var routeEndpointY = y as RouteEndpoint;
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             public static readonly IComparer<Endpoint> Instance = new PrecedenceComparer();
 
-            public int Compare(Endpoint x, Endpoint y)
+            public int Compare(Endpoint? x, Endpoint? y)
             {
                 var routeEndpointX = x as RouteEndpoint;
                 var routeEndpointY = y as RouteEndpoint;

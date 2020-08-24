@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // Copied from the multi-value headers section of SerializeHeaders
                 if (authChallenges != null && authChallenges.Count > 0)
                 {
-                    pinnedHeaders = new List<GCHandle>();
+                    pinnedHeaders = new List<GCHandle>(authChallenges.Count + 3);
 
                     HttpApiTypes.HTTP_RESPONSE_INFO[] knownHeaderInfo = null;
                     knownHeaderInfo = new HttpApiTypes.HTTP_RESPONSE_INFO[1];

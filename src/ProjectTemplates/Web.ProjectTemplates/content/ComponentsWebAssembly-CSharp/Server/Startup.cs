@@ -1,17 +1,10 @@
 #if (OrganizationalAuth || IndividualB2CAuth || IndividualLocalAuth)
 using Microsoft.AspNetCore.Authentication;
 #endif
-#if (OrganizationalAuth)
-using Microsoft.AspNetCore.Authentication.AzureAD.UI;
-#endif
-#if (IndividualB2CAuth)
-using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
-#endif
 using Microsoft.AspNetCore.Builder;
-#if (IndividualLocalAuth)
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
+#if (OrganizationalAuth || IndividualB2CAuth)
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 #endif
 #if (RequiresHttps)
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -28,6 +21,9 @@ using System.Linq;
 #if (IndividualLocalAuth)
 using ComponentsWebAssembly_CSharp.Server.Data;
 using ComponentsWebAssembly_CSharp.Server.Models;
+#endif
+#if (GenerateGraph)
+using Microsoft.Graph;
 #endif
 
 namespace ComponentsWebAssembly_CSharp.Server
@@ -47,13 +43,15 @@ namespace ComponentsWebAssembly_CSharp.Server
         {
 #if (IndividualLocalAuth)
             services.AddDbContext<ApplicationDbContext>(options =>
-    #if (UseLocalDB)
+#if (UseLocalDB)
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-    #else
+#else
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
-    #endif
+
+            services.AddDatabaseDeveloperPageExceptionFilter();
+#endif
 
             services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -65,11 +63,32 @@ namespace ComponentsWebAssembly_CSharp.Server
                 .AddIdentityServerJwt();
 #endif
 #if (OrganizationalAuth)
-            services.AddAuthentication(AzureADDefaults.BearerAuthenticationScheme)
-                .AddAzureADBearer(options => Configuration.Bind("AzureAd", options));
+#if (GenerateApiOrGraph)
+            // Adds Microsoft Identity platform (AAD v2.0) support to protect this Api
+            services.AddMicrosoftWebApiAuthentication(Configuration, "AzureAd")
+                .AddMicrosoftWebApiCallsWebApi(Configuration, "AzureAd")
+                .AddInMemoryTokenCaches();
+#else
+            // Adds Microsoft Identity platform (AAD v2.0) support to protect this Api
+            services.AddMicrosoftWebApiAuthentication(Configuration, "AzureAd");
+#endif
+#if (GenerateApi)
+            services.AddDownstreamWebApiService(Configuration);
+#endif
+#if (GenerateGraph)
+            services.AddMicrosoftGraph(Configuration.GetValue<string>("CalledApi:CalledApiScopes")?.Split(' '),
+                                       Configuration.GetValue<string>("CalledApi:CalledApiUrl"));
+#endif
 #elif (IndividualB2CAuth)
-            services.AddAuthentication(AzureADB2CDefaults.BearerAuthenticationScheme)
-                .AddAzureADB2CBearer(options => Configuration.Bind("AzureAdB2C", options));
+#if (GenerateApi)
+            services.AddMicrosoftWebApiAuthentication(Configuration, "AzureAdB2C")
+                .AddMicrosoftWebApiCallsWebApi(Configuration, "AzureAdB2C")
+                .AddInMemoryTokenCaches();
+
+            services.AddDownstreamWebApiService(Configuration);
+#else
+            services.AddMicrosoftWebApiAuthentication(Configuration, "AzureAdB2C");
+#endif
 #endif
 
             services.AddControllersWithViews();
@@ -82,9 +101,6 @@ namespace ComponentsWebAssembly_CSharp.Server
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-#if (IndividualLocalAuth)
-                app.UseDatabaseErrorPage();
-#endif
                 app.UseWebAssemblyDebugging();
             }
             else

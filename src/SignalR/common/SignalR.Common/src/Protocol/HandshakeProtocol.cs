@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -109,7 +110,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="buffer">The serialized representation of the message.</param>
         /// <param name="responseMessage">When this method returns, contains the parsed message.</param>
         /// <returns>A value that is <c>true</c> if the <see cref="HandshakeResponseMessage"/> was successfully parsed; otherwise, <c>false</c>.</returns>
-        public static bool TryParseResponseMessage(ref ReadOnlySequence<byte> buffer, out HandshakeResponseMessage responseMessage)
+        public static bool TryParseResponseMessage(ref ReadOnlySequence<byte> buffer, [NotNullWhen(true)] out HandshakeResponseMessage? responseMessage)
         {
             if (!TextMessageParser.TryParseMessage(ref buffer, out var payload))
             {
@@ -122,7 +123,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             reader.CheckRead();
             reader.EnsureObjectStart();
 
-            string error = null;
+            string? error = null;
 
             while (reader.CheckRead())
             {
@@ -163,7 +164,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="buffer">The serialized representation of the message.</param>
         /// <param name="requestMessage">When this method returns, contains the parsed message.</param>
         /// <returns>A value that is <c>true</c> if the <see cref="HandshakeRequestMessage"/> was successfully parsed; otherwise, <c>false</c>.</returns>
-        public static bool TryParseRequestMessage(ref ReadOnlySequence<byte> buffer, out HandshakeRequestMessage requestMessage)
+        public static bool TryParseRequestMessage(ref ReadOnlySequence<byte> buffer, [NotNullWhen(true)] out HandshakeRequestMessage? requestMessage)
         {
             if (!TextMessageParser.TryParseMessage(ref buffer, out var payload))
             {
@@ -176,7 +177,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             reader.CheckRead();
             reader.EnsureObjectStart();
 
-            string protocol = null;
+            string? protocol = null;
             int? protocolVersion = null;
 
             while (reader.CheckRead())

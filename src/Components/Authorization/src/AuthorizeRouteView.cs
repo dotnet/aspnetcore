@@ -54,6 +54,12 @@ namespace Microsoft.AspNetCore.Components.Authorization
         [Parameter]
         public RenderFragment Authorizing { get; set; }
 
+        /// <summary>
+        /// The resource to which access is being controlled.
+        /// </summary>
+        [Parameter]
+        public object Resource { get; set; }
+
         [CascadingParameter]
         private Task<AuthenticationState> ExistingCascadedAuthenticationState { get; set; }
 
@@ -82,6 +88,7 @@ namespace Microsoft.AspNetCore.Components.Authorization
             builder.AddAttribute(2, nameof(AuthorizeRouteViewCore.Authorized), _renderAuthorizedDelegate);
             builder.AddAttribute(3, nameof(AuthorizeRouteViewCore.Authorizing), _renderAuthorizingDelegate);
             builder.AddAttribute(4, nameof(AuthorizeRouteViewCore.NotAuthorized), _renderNotAuthorizedDelegate);
+            builder.AddAttribute(5, nameof(AuthorizeRouteViewCore.Resource), Resource);
             builder.CloseComponent();
         }
 

@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             }
 
-            Assert.All(TestSink.Writes, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Debug));
+            Assert.All(TestSink.Writes.Where(w => w.LoggerName != "Microsoft.Hosting.Lifetime"), w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Debug));
             Assert.Contains(TestSink.Writes, w => w.EventId.Id == 17);
         }
 

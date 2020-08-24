@@ -37,36 +37,48 @@ namespace Microsoft.DotNet.Watcher.Internal
             {
                 cancellationToken.Register(() => processState.TryKill());
 
-                process.OutputDataReceived += (_, a) =>
+                var readOutput = false;
+                var readError = false;
+                if (processSpec.IsOutputCaptured)
                 {
-                    if (!string.IsNullOrEmpty(a.Data))
+                    readOutput = true;
+                    readError = true;
+                    process.OutputDataReceived += (_, a) =>
                     {
-                        processSpec.OutputCapture.AddLine(a.Data);
-                    }
-                };
-                process.ErrorDataReceived += (_, a) =>
+                        if (!string.IsNullOrEmpty(a.Data))
+                        {
+                            processSpec.OutputCapture.AddLine(a.Data);
+                        }
+                    };
+                    process.ErrorDataReceived += (_, a) =>
+                    {
+                        if (!string.IsNullOrEmpty(a.Data))
+                        {
+                            processSpec.OutputCapture.AddLine(a.Data);
+                        }
+                    };
+                }
+                else if (processSpec.OnOutput != null)
                 {
-                    if (!string.IsNullOrEmpty(a.Data))
-                    {
-                        processSpec.OutputCapture.AddLine(a.Data);
-                    }
-                };
+                    readOutput = true;
+                    process.OutputDataReceived += processSpec.OnOutput;
+                }
 
                 stopwatch.Start();
                 process.Start();
 
                 _reporter.Verbose($"Started '{processSpec.Executable}' with process id {process.Id}");
 
-                if (processSpec.IsOutputCaptured)
+                if (readOutput)
+                {
+                    process.BeginOutputReadLine();
+                }
+                if (readError)
                 {
                     process.BeginErrorReadLine();
-                    process.BeginOutputReadLine();
-                    await processState.Task;
                 }
-                else
-                {
-                    await processState.Task;
-                }
+
+                await processState.Task;
 
                 exitCode = process.ExitCode;
                 stopwatch.Stop();
@@ -87,7 +99,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                     Arguments = ArgumentEscaper.EscapeAndConcatenate(processSpec.Arguments),
                     UseShellExecute = false,
                     WorkingDirectory = processSpec.WorkingDirectory,
-                    RedirectStandardOutput = processSpec.IsOutputCaptured,
+                    RedirectStandardOutput = processSpec.IsOutputCaptured || (processSpec.OnOutput != null),
                     RedirectStandardError = processSpec.IsOutputCaptured,
                 }
             };

@@ -6,10 +6,33 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
   </PropertyGroup>
 
+  <!-- Ensure API changes show up clearly in PRs. -->
+  <PropertyGroup>
+    <_TFMDirectory>$(TargetFramework)</_TFMDirectory>
+    <_TFMDirectory Condition=" '$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' ">netcoreapp</_TFMDirectory>
+
+    <!-- Public members should not use oblivious types. Not done with all nullable annotations. -->
+    <NoWarn>$(NoWarn);RS0041</NoWarn>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(IsImplementationProject)' == 'true' AND
+      '$(DotNetBuildFromSource)' != 'true' AND
+      ! $(RepoRelativeProjectDir.Contains('Tools')) ">
+    <!-- Package does nothing in projects lacking PublicAPI.Shipped.txt or PublicAPI.Unshipped.txt files. -->
+    <Reference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" ExcludeAssets="Compile" PrivateAssets="All" />
+
+    <AdditionalFiles Include="PublicAPI.Shipped.txt"
+        Condition=" Exists('$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt') " />
+    <AdditionalFiles Include="PublicAPI.Unshipped.txt"
+        Condition=" Exists('$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt') " />
+    <AdditionalFiles Include="PublicAPI.Shipped.txt"
+        Condition=" Exists('$(MSBuildProjectDirectory)\$(_TFMDirectory)\PublicAPI.Shipped.txt') " />
+    <AdditionalFiles Include="PublicAPI.Unshipped.txt"
+        Condition=" Exists('$(MSBuildProjectDirectory)\$(_TFMDirectory)\PublicAPI.Unshipped.txt') " />
+  </ItemGroup>
+
   <Target Name="GetCustomAssemblyAttributes"
           BeforeTargets="GetAssemblyAttributes"
           DependsOnTargets="InitializeSourceControlInformation">
-
     <ItemGroup>
       <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(SourceRevisionId)' != ''">
         <_Parameter1>CommitHash</_Parameter1>
@@ -25,6 +48,13 @@
         <_Parameter1>Serviceable</_Parameter1>
         <_Parameter2>True</_Parameter2>
       </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
+
+  <!-- Reference assemblies are shipped only in targeting packs. -->
+  <Target Name="_RemoveReferenceAssembly" BeforeTargets="_GetPackageFiles;GenerateNuspec" Condition="$(HasReferenceAssembly)">
+    <ItemGroup>
+      <_PackageFilesToExclude Include="@(IntermediateRefAssembly);$(TargetRefPath)" />
     </ItemGroup>
   </Target>
 

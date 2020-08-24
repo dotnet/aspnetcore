@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
@@ -31,6 +32,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly HubDispatcher<THub> _dispatcher;
         private readonly bool _enableDetailedErrors;
         private readonly long? _maximumMessageSize;
+        private readonly int _maxParallelInvokes;
 
         // Internal for testing
         internal ISystemClock SystemClock { get; set; } = new SystemClock();
@@ -65,27 +67,27 @@ namespace Microsoft.AspNetCore.SignalR
 
             _enableDetailedErrors = false;
 
-            List<IHubFilter> hubFilters = null;
+            List<IHubFilter>? hubFilters = null;
             if (_hubOptions.UserHasSetValues)
             {
                 _maximumMessageSize = _hubOptions.MaximumReceiveMessageSize;
                 _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
+                _maxParallelInvokes = _hubOptions.MaximumParallelInvocationsPerClient;
 
                 if (_hubOptions.HubFilters != null)
                 {
-                    hubFilters = new List<IHubFilter>();
-                    hubFilters.AddRange(_hubOptions.HubFilters);
+                    hubFilters = new List<IHubFilter>(_hubOptions.HubFilters);
                 }
             }
             else
             {
                 _maximumMessageSize = _globalHubOptions.MaximumReceiveMessageSize;
                 _enableDetailedErrors = _globalHubOptions.EnableDetailedErrors ?? _enableDetailedErrors;
+                _maxParallelInvokes = _globalHubOptions.MaximumParallelInvocationsPerClient;
 
                 if (_globalHubOptions.HubFilters != null)
                 {
-                    hubFilters = new List<IHubFilter>();
-                    hubFilters.AddRange(_globalHubOptions.HubFilters);
+                    hubFilters = new List<IHubFilter>(_globalHubOptions.HubFilters);
                 }
             }
 
@@ -118,6 +120,7 @@ namespace Microsoft.AspNetCore.SignalR
                 StreamBufferCapacity = _hubOptions.StreamBufferCapacity ?? _globalHubOptions.StreamBufferCapacity ?? HubOptionsSetup.DefaultStreamBufferCapacity,
                 MaximumReceiveMessageSize = _maximumMessageSize,
                 SystemClock = SystemClock,
+                MaximumParallelInvocations = _maxParallelInvokes,
             };
 
             Log.ConnectedStarting(_logger);
@@ -182,10 +185,10 @@ namespace Microsoft.AspNetCore.SignalR
                 return;
             }
 
-            await HubOnDisconnectedAsync(connection, null);
+            await HubOnDisconnectedAsync(connection, connection.CloseException);
         }
 
-        private async Task HubOnDisconnectedAsync(HubConnectionContext connection, Exception exception)
+        private async Task HubOnDisconnectedAsync(HubConnectionContext connection, Exception? exception)
         {
             // send close message before aborting the connection
             await SendCloseAsync(connection, exception, connection.AllowReconnect);
@@ -207,7 +210,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task SendCloseAsync(HubConnectionContext connection, Exception exception, bool allowReconnect)
+        private async Task SendCloseAsync(HubConnectionContext connection, Exception? exception, bool allowReconnect)
         {
             var closeMessage = CloseMessage.Empty;
 
@@ -237,7 +240,6 @@ namespace Microsoft.AspNetCore.SignalR
             var protocol = connection.Protocol;
             connection.BeginClientTimeout();
 
-
             var binder = new HubConnectionBinder<THub>(_dispatcher, connection);
 
             while (true)
@@ -260,8 +262,9 @@ namespace Microsoft.AspNetCore.SignalR
                         {
                             while (protocol.TryParseMessage(ref buffer, binder, out var message))
                             {
-                                messageReceived = true;
                                 connection.StopClientTimeout();
+                                // This lets us know the timeout has stopped and we need to re-enable it after dispatching the message
+                                messageReceived = true;
                                 await _dispatcher.DispatchMessageAsync(connection, message);
                             }
 
@@ -288,9 +291,9 @@ namespace Microsoft.AspNetCore.SignalR
 
                                 if (protocol.TryParseMessage(ref segment, binder, out var message))
                                 {
-                                    messageReceived = true;
                                     connection.StopClientTimeout();
-
+                                    // This lets us know the timeout has stopped and we need to re-enable it after dispatching the message
+                                    messageReceived = true;
                                     await _dispatcher.DispatchMessageAsync(connection, message);
                                 }
                                 else if (overLength)
@@ -335,22 +338,22 @@ namespace Microsoft.AspNetCore.SignalR
 
         private static class Log
         {
-            private static readonly Action<ILogger, string, Exception> _errorDispatchingHubEvent =
+            private static readonly Action<ILogger, string, Exception?> _errorDispatchingHubEvent =
                 LoggerMessage.Define<string>(LogLevel.Error, new EventId(1, "ErrorDispatchingHubEvent"), "Error when dispatching '{HubMethod}' on hub.");
 
-            private static readonly Action<ILogger, Exception> _errorProcessingRequest =
+            private static readonly Action<ILogger, Exception?> _errorProcessingRequest =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(2, "ErrorProcessingRequest"), "Error when processing requests.");
 
-            private static readonly Action<ILogger, Exception> _abortFailed =
+            private static readonly Action<ILogger, Exception?> _abortFailed =
                 LoggerMessage.Define(LogLevel.Trace, new EventId(3, "AbortFailed"), "Abort callback failed.");
 
-            private static readonly Action<ILogger, Exception> _errorSendingClose =
+            private static readonly Action<ILogger, Exception?> _errorSendingClose =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(4, "ErrorSendingClose"), "Error when sending Close message.");
 
-            private static readonly Action<ILogger, Exception> _connectedStarting =
+            private static readonly Action<ILogger, Exception?> _connectedStarting =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(5, "ConnectedStarting"), "OnConnectedAsync started.");
 
-            private static readonly Action<ILogger, Exception> _connectedEnding =
+            private static readonly Action<ILogger, Exception?> _connectedEnding =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(6, "ConnectedEnding"), "OnConnectedAsync ending.");
 
             public static void ErrorDispatchingHubEvent(ILogger logger, string hubMethod, Exception exception)

@@ -11,10 +11,6 @@
   <PropertyGroup>
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
 
-    <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
-    <IsReferenceAssemblyProject Condition="$(MSBuildProjectDirectory.EndsWith('ref'))">true</IsReferenceAssemblyProject>
-    <OutDirName Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MSBuildProjectName)-ref</OutDirName>
-
     <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance')) OR $(RepoRelativeProjectDir.Contains('perf')) OR $(RepoRelativeProjectDir.Contains('benchmarkapps'))">true</IsBenchmarkProject>
     <IsSpecificationTestProject Condition="$(MSBuildProjectName.EndsWith('.Specification.Tests'))">true</IsSpecificationTestProject>
     <IsUnitTestProject>false</IsUnitTestProject>
@@ -104,9 +100,6 @@
 
     <!-- xUnit1004 = warns about skipped tests. Make this a non-fatal build warning. -->
     <WarningsNotAsErrors>$(WarningsNotAsErrors);xUnit1004</WarningsNotAsErrors>
-
-    <!-- Ignore specific Roslyn warnings for now, https://github.com/dotnet/aspnetcore/issues/22090 -->
-    <NoWarn Condition="'$(IsAnalyzersProject)' == 'true'">$(NoWarn);RS1024;RS1025;RS1026</NoWarn>
   </PropertyGroup>
 
   <!-- Source code settings -->
@@ -130,7 +123,7 @@
     <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
     <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
 
-    <!-- Produce targeting pack installers/packages once per major.minor. -->
+    <!-- This is used to produce targeting pack installers/packages once per major.minor. -->
     <IsTargetingPackBuilding Condition=" '$(DotNetBuildFromSource)' == 'true' ">false</IsTargetingPackBuilding>
     <IsTargetingPackBuilding
         Condition=" '$(IsTargetingPackBuilding)' == '' AND '$(AspNetCorePatchVersion)' != '0' ">false</IsTargetingPackBuilding>
@@ -143,20 +136,6 @@
     -->
     <InternalInstallerBaseName>$(RuntimeInstallerBaseName)-internal</InternalInstallerBaseName>
   </PropertyGroup>
-
-  <ItemGroup
-    Condition="'$(DisablePubternalApiCheck)' != 'true'
-      AND '$(IsTestProject)' != 'true'
-      AND '$(IsBenchmarkProject)' != 'true'
-      AND '$(IsTestAssetProject)' != 'true'
-      AND '$(MSBuildProjectName)' != 'Internal.AspNetCore.Analyzers'
-      AND '$(MSBuildProjectExtension)' == '.csproj'">
-    <ProjectReference
-      Include="$(RepoRoot)src\Analyzers\Internal.AspNetCore.Analyzers\src\Internal.AspNetCore.Analyzers.csproj"
-      PrivateAssets="All"
-      Version="$(InternalAspNetCoreAnalyzersPackageVersion)"
-      IsImplicitlyDefined="true" />
-  </ItemGroup>
 
   <!-- Compilation options which apply to all languages. Language-specific options should be set in eng/targets/$(lang).Common.props -->
   <PropertyGroup>

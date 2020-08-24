@@ -2,103 +2,203 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Test.Helpers;
-using Microsoft.Extensions.DependencyModel;
-using Moq;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test.Routing
 {
     public class RouterTest
     {
+        private readonly Router _router;
+        private readonly TestRenderer _renderer;
+
+        public RouterTest()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddSingleton<NavigationManager, TestNavigationManager>();
+            services.AddSingleton<INavigationInterception, TestNavigationInterception>();
+            var serviceProvider = services.BuildServiceProvider();
+
+            _renderer = new TestRenderer(serviceProvider);
+            _renderer.ShouldHandleExceptions = true;
+            _router = (Router)_renderer.InstantiateComponent<Router>();
+            _router.AppAssembly = Assembly.GetExecutingAssembly();
+            _router.Found = routeData => (builder) => builder.AddContent(0, "Rendering route...");
+            _renderer.AssignRootComponentId(_router);
+        }
+
         [Fact]
         public async Task CanRunOnNavigateAsync()
         {
             // Arrange
-            var router = CreateMockRouter();
             var called = false;
-            async Task OnNavigateAsync(NavigationContext args)
+            Action<NavigationContext> OnNavigateAsync = async (NavigationContext args) =>
             {
                 await Task.CompletedTask;
                 called = true;
-            }
-            router.Object.OnNavigateAsync = new EventCallbackFactory().Create<NavigationContext>(router, OnNavigateAsync);
+            };
+            _router.OnNavigateAsync = new EventCallback<NavigationContext>(null, OnNavigateAsync);
 
             // Act
-            await router.Object.RunOnNavigateWithRefreshAsync("http://example.com/jan", false);
+            await _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateAsync("http://example.com/jan", false));
 
             // Assert
             Assert.True(called);
         }
 
         [Fact]
-        public async Task CanCancelPreviousOnNavigateAsync()
+        public async Task CanceledFailedOnNavigateAsyncDoesNothing()
         {
             // Arrange
-            var router = CreateMockRouter();
+            var onNavigateInvoked = 0;
+            Action<NavigationContext> OnNavigateAsync = async (NavigationContext args) =>
+            {
+                onNavigateInvoked += 1;
+                if (args.Path.EndsWith("jan"))
+                {
+                    await Task.Delay(Timeout.Infinite, args.CancellationToken);
+                    throw new Exception("This is an uncaught exception.");
+                }
+            };
+            var refreshCalled = 0;
+            _renderer.OnUpdateDisplay = (renderBatch) =>
+            {
+                refreshCalled += 1;
+                return;
+            };
+            _router.OnNavigateAsync = new EventCallback<NavigationContext>(null, OnNavigateAsync);
+
+            // Act
+            var janTask = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateAsync("http://example.com/jan", false));
+            var febTask = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateAsync("http://example.com/feb", false));
+
+            await janTask;
+            await febTask;
+
+            // Assert that we render the second route component and don't throw an exception
+            Assert.Empty(_renderer.HandledExceptions);
+            Assert.Equal(2, onNavigateInvoked);
+            Assert.Equal(2, refreshCalled);
+        }
+
+        [Fact]
+        public async Task AlreadyCanceledOnNavigateAsyncDoesNothing()
+        {
+            // Arrange
+            var triggerCancel = new TaskCompletionSource();
+            Action<NavigationContext> OnNavigateAsync = async (NavigationContext args) =>
+            {
+                if (args.Path.EndsWith("jan"))
+                {
+                    var tcs = new TaskCompletionSource();
+                    await triggerCancel.Task;
+                    tcs.TrySetCanceled();
+                    await tcs.Task;
+                }
+            };
+            var refreshCalled = false;
+            _renderer.OnUpdateDisplay = (renderBatch) =>
+            {
+                if (!refreshCalled)
+                {
+                    Assert.True(true);
+                    return;
+                }
+                Assert.True(false, "OnUpdateDisplay called more than once.");
+            };
+            _router.OnNavigateAsync = new EventCallback<NavigationContext>(null, OnNavigateAsync);
+
+            // Act (start the operations then await them)
+            var jan = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateAsync("http://example.com/jan", false));
+            var feb = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateAsync("http://example.com/feb", false));
+            triggerCancel.TrySetResult();
+
+            await jan;
+            await feb;
+        }
+
+        [Fact]
+        public void CanCancelPreviousOnNavigateAsync()
+        {
+            // Arrange
             var cancelled = "";
-            async Task OnNavigateAsync(NavigationContext args)
+            Action<NavigationContext> OnNavigateAsync = async (NavigationContext args) =>
             {
                 await Task.CompletedTask;
                 args.CancellationToken.Register(() => cancelled = args.Path);
             };
-            router.Object.OnNavigateAsync = new EventCallbackFactory().Create<NavigationContext>(router, OnNavigateAsync);
+            _router.OnNavigateAsync = new EventCallback<NavigationContext>(null, OnNavigateAsync);
 
             // Act
-            await router.Object.RunOnNavigateWithRefreshAsync("jan", false);
-            await router.Object.RunOnNavigateWithRefreshAsync("feb", false);
+            _ = _router.RunOnNavigateAsync("jan", false);
+            _ = _router.RunOnNavigateAsync("feb", false);
 
             // Assert
             var expected = "jan";
-            Assert.Equal(cancelled, expected);
+            Assert.Equal(expected, cancelled);
         }
 
         [Fact]
         public async Task RefreshesOnceOnCancelledOnNavigateAsync()
         {
             // Arrange
-            var router = CreateMockRouter();
-            async Task OnNavigateAsync(NavigationContext args)
+            Action<NavigationContext> OnNavigateAsync = async (NavigationContext args) =>
             {
                 if (args.Path.EndsWith("jan"))
                 {
-                    await Task.Delay(Timeout.Infinite);
+                    await Task.Delay(Timeout.Infinite, args.CancellationToken);
                 }
             };
-            router.Object.OnNavigateAsync = new EventCallbackFactory().Create<NavigationContext>(router, OnNavigateAsync);
+            var refreshCalled = false;
+            _renderer.OnUpdateDisplay = (renderBatch) =>
+            {
+                if (!refreshCalled)
+                {
+                    Assert.True(true);
+                    return;
+                }
+                Assert.True(false, "OnUpdateDisplay called more than once.");
+            };
+            _router.OnNavigateAsync = new EventCallback<NavigationContext>(null, OnNavigateAsync);
 
             // Act
-            var janTask = router.Object.RunOnNavigateWithRefreshAsync("jan", false);
-            var febTask = router.Object.RunOnNavigateWithRefreshAsync("feb", false);
+            var jan = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateAsync("http://example.com/jan", false));
+            var feb = _renderer.Dispatcher.InvokeAsync(() => _router.RunOnNavigateAsync("http://example.com/feb", false));
 
-            var janTaskException = await Record.ExceptionAsync(() => janTask);
-            var febTaskException = await Record.ExceptionAsync(() => febTask);
-
-            // Assert neither execution threw an exception
-            Assert.Null(janTaskException);
-            Assert.Null(febTaskException);
-            // Assert refresh should've only been called once for the second route
-            router.Verify(x => x.Refresh(false), Times.Once());
+            await jan;
+            await feb;
         }
 
-        private Mock<Router> CreateMockRouter()
+        internal class TestNavigationManager : NavigationManager
         {
-            var router = new Mock<Router>() { CallBase = true };
-            router.Setup(x => x.Refresh(It.IsAny<bool>())).Verifiable();
-            return router;
+            public TestNavigationManager() =>
+                Initialize("https://www.example.com/subdir/", "https://www.example.com/subdir/jan");
+
+            protected override void NavigateToCore(string uri, bool forceLoad) => throw new NotImplementedException();
         }
 
-        [Route("jan")]
-        private class JanComponent : ComponentBase { }
+        internal sealed class TestNavigationInterception : INavigationInterception
+        {
+            public static readonly TestNavigationInterception Instance = new TestNavigationInterception();
+
+            public Task EnableNavigationInterceptionAsync()
+            {
+                return Task.CompletedTask;
+            }
+        }
 
         [Route("feb")]
-        private class FebComponent : ComponentBase { }
+        public class FebComponent : ComponentBase { }
+
+        [Route("jan")]
+        public class JanComponent : ComponentBase { }
     }
 }

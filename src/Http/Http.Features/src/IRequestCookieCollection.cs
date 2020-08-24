@@ -73,14 +73,14 @@ namespace Microsoft.AspNetCore.Http
         ///     The key of the value to get.
         /// </param>
         /// <returns>
-        ///     The element with the specified key, or <c>string.Empty</c> if the key is not present.
+        ///     The element with the specified key, or <c>null</c> if the key is not present.
         /// </returns>
         /// <exception cref="System.ArgumentNullException">
         ///     key is null.
         /// </exception>
         /// <remarks>
         ///     <see cref="IRequestCookieCollection" /> has a different indexer contract than
-        ///     <see cref="IDictionary{TKey, TValue}" />, as it will return <c>string.Empty</c> for missing entries
+        ///     <see cref="IDictionary{TKey, TValue}" />, as it will return <c>null</c> for missing entries
         ///     rather than throwing an Exception.
         /// </remarks>
         string? this[string key] { get; }

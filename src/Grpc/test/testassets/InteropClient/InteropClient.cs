@@ -29,7 +29,6 @@ using Google.Apis.Auth.OAuth2;
 using Google.Protobuf;
 using Grpc.Auth;
 using Grpc.Core;
-using Grpc.Core.Utils;
 using Grpc.Net.Client;
 using Grpc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -96,11 +95,13 @@ namespace InteropTestsClient
             var services = new ServiceCollection();
             services.AddLogging(configure =>
             {
-                configure.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
+                configure.SetMinimumLevel(LogLevel.Trace);
                 configure.AddConsole(loggerOptions =>
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     loggerOptions.IncludeScopes = true;
                     loggerOptions.DisableColors = true;
+#pragma warning restore CS0618 // Type or member is obsolete
                 });
             });
 
@@ -167,7 +168,7 @@ namespace InteropTestsClient
                 httpClientHandler.ClientCertificates.Add(cert);
             }
 
-            var httpClient = new HttpClient(httpClientHandler);
+            var httpClient = new HttpClient(new VersionPolicyHandler(httpClientHandler));
 
             var channel = GrpcChannel.ForAddress($"{scheme}://{options.ServerHost}:{options.ServerPort}", new GrpcChannelOptions
             {
@@ -179,7 +180,20 @@ namespace InteropTestsClient
             return new GrpcChannelWrapper(channel);
         }
 
-        private bool IsHttpClient() => string.Equals(options.ClientType, "httpclient", StringComparison.OrdinalIgnoreCase);
+        // TODO(JamesNK): This type can be removed in the future when Grpc.Net.Client sets VersionPolicy automatically.
+        // https://github.com/grpc/grpc-dotnet/pull/987
+        private class VersionPolicyHandler : DelegatingHandler
+        {
+            public VersionPolicyHandler(HttpMessageHandler innerHandler) : base(innerHandler)
+            {
+            }
+
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                request.VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher;
+                return base.SendAsync(request, cancellationToken);
+            }
+        }
 
         private async Task<ChannelCredentials> CreateCredentialsAsync(bool? useTestCaOverride = null)
         {

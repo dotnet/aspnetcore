@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,11 +39,19 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(descriptor));
             }
 
-            var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(descriptor.Directive, StringComparer.Ordinal);
-            hashCodeCombiner.Add(descriptor.Kind);
+            var hash = HashCodeCombiner.Start();
+            hash.Add(descriptor.Directive, StringComparer.Ordinal);
+            hash.Add(descriptor.Kind);
 
-            return hashCodeCombiner.CombinedHash;
+            if (descriptor.Tokens != null)
+            {
+                for (var i = 0; i < descriptor.Tokens.Count; i++)
+                {
+                    hash.Add(descriptor.Tokens[i]);
+                }
+            }
+
+            return hash.CombinedHash;
         }
     }
 }

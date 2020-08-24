@@ -7,16 +7,17 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Diagnostics
@@ -122,6 +123,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/24146")]
         public async Task ClearsResponseBuffer_BeforeRequestIsReexecuted()
         {
             var expectedResponseBody = "New response body";
@@ -466,6 +468,80 @@ namespace Microsoft.AspNetCore.Diagnostics
                 "Either the 'ExceptionHandlingPath' or the 'ExceptionHandler' property must be set in 'UseExceptionHandler()'. " +
                 "Alternatively, set one of the aforementioned properties in 'Startup.ConfigureServices' as follows: 'services.AddExceptionHandler(options => { ... });'.",
                 exception.Message);
+        }
+
+        [Fact]
+        public async Task ExceptionHandlerNotFound_RethrowsOriginalError()
+        {
+            var sink = new TestSink(TestSink.EnableWithTypeName<ExceptionHandlerMiddleware>);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+
+            using var host = new HostBuilder()
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddSingleton<ILoggerFactory>(loggerFactory);
+                    })
+                    .Configure(app =>
+                    {
+                        app.Use(async (httpContext, next) =>
+                        {
+                            Exception exception = null;
+                            try
+                            {
+                                await next();
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                exception = ex;
+
+                                // This mimics what the server would do when an exception occurs
+                                httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                            }
+
+                            // The original exception is thrown
+                            Assert.NotNull(exception);
+                            Assert.Equal("Something bad happened.", exception.Message);
+
+                        });
+
+                        app.UseExceptionHandler("/non-existent-hander");
+
+                        app.Map("/handle-errors", (innerAppBuilder) =>
+                        {
+                            innerAppBuilder.Run(async (httpContext) =>
+                            {
+                                await httpContext.Response.WriteAsync("Handled error in a custom way.");
+                            });
+                        });
+
+                        app.Map("/throw", (innerAppBuilder) =>
+                        {
+                            innerAppBuilder.Run(httpContext =>
+                            {
+                                throw new InvalidOperationException("Something bad happened.");
+                            });
+                        });
+                    });
+                }).Build();
+
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
+            {
+                var client = server.CreateClient();
+                var response = await client.GetAsync("throw");
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+                Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
+            }
+
+            Assert.Contains(sink.Writes, w =>
+                w.LogLevel == LogLevel.Warning
+                && w.EventId == 4
+                && w.Message == "No exception handler was found, rethrowing original exception.");
         }
     }
 }

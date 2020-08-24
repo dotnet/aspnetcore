@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <summary>
         /// Gets the logging builder for configuring logging services.
         /// </summary>
-        public ILoggingBuilder Logging { get;  }
+        public ILoggingBuilder Logging { get; }
 
         /// <summary>
         /// Registers a <see cref="IServiceProviderFactory{TBuilder}" /> instance to be used to create the <see cref="IServiceProvider" />.
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
             Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
             Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
-            Services.AddSingleton(provider => new LazyAssemblyLoader(provider));
+            Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
             Services.AddLogging(builder => {
                 builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
             });

@@ -25,22 +25,24 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             };
 
             private readonly WebSocketsAsyncIOEngine _engine;
-            private readonly GCHandle _thisHandle;
+            private GCHandle _thisHandle;
 
             public WebSocketWriteOperation(WebSocketsAsyncIOEngine engine)
             {
                 _engine = engine;
-                _thisHandle = GCHandle.Alloc(this);
             }
 
-            protected override unsafe int WriteChunks(IntPtr requestHandler, int chunkCount, HttpApiTypes.HTTP_DATA_CHUNK* dataChunks, out bool completionExpected)
+            protected override unsafe int WriteChunks(NativeSafeHandle requestHandler, int chunkCount, HttpApiTypes.HTTP_DATA_CHUNK* dataChunks, out bool completionExpected)
             {
+                _thisHandle = GCHandle.Alloc(this);
                 return NativeMethods.HttpWebsocketsWriteBytes(requestHandler, dataChunks, chunkCount, WriteCallback, (IntPtr)_thisHandle, out completionExpected);
             }
 
             protected override void ResetOperation()
             {
                 base.ResetOperation();
+
+                _thisHandle.Free();
 
                 _engine.ReturnOperation(this);
             }

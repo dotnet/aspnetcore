@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="request">The request to read from.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
-        public static ValueTask<TValue> ReadFromJsonAsync<TValue>(
+        public static ValueTask<TValue?> ReadFromJsonAsync<TValue>(
             this HttpRequest request,
             CancellationToken cancellationToken = default)
         {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="options">The serializer options use when deserializing the content.</param>
         /// <param name="cancellationToken">A <see cref="CancellationToken"/> used to cancel the operation.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
-        public static async ValueTask<TValue> ReadFromJsonAsync<TValue>(
+        public static async ValueTask<TValue?> ReadFromJsonAsync<TValue>(
             this HttpRequest request,
             JsonSerializerOptions? options,
             CancellationToken cancellationToken = default)

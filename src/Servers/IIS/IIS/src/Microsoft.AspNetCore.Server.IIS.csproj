@@ -41,7 +41,6 @@
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
-    <Reference Include="System.IO.Pipelines" />
     <Reference Include="System.Security.Principal.Windows" />
   </ItemGroup>
 

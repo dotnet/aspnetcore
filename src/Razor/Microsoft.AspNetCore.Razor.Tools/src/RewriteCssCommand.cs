@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Css.Parser.Parser;
 using Microsoft.Css.Parser.Tokens;
@@ -18,6 +19,11 @@ namespace Microsoft.AspNetCore.Razor.Tools
 {
     internal class RewriteCssCommand : CommandBase
     {
+        private const string DeepCombinatorText = "::deep";
+        private readonly static TimeSpan _regexTimeout = TimeSpan.FromSeconds(1);
+        private readonly static Regex _deepCombinatorRegex = new Regex($@"^{DeepCombinatorText}\s*", RegexOptions.None, _regexTimeout);
+        private readonly static Regex _trailingCombinatorRegex = new Regex(@"\s+[\>\+\~]$", RegexOptions.None, _regexTimeout);
+
         public RewriteCssCommand(Application parent)
             : base(parent, "rewritecss")
         {
@@ -74,26 +80,27 @@ namespace Microsoft.AspNetCore.Razor.Tools
             var resultBuilder = new StringBuilder();
             var previousInsertionPosition = 0;
 
-            var scopeInsertionPositionsVisitor = new FindScopeInsertionPositionsVisitor(stylesheet);
+            var scopeInsertionPositionsVisitor = new FindScopeInsertionEdits(stylesheet);
             scopeInsertionPositionsVisitor.Visit();
-            foreach (var (currentInsertionPosition, insertionType) in scopeInsertionPositionsVisitor.InsertionPositions)
+            foreach (var edit in scopeInsertionPositionsVisitor.Edits)
             {
-                resultBuilder.Append(inputText.Substring(previousInsertionPosition, currentInsertionPosition - previousInsertionPosition));
-                
-                switch (insertionType)
+                resultBuilder.Append(inputText.Substring(previousInsertionPosition, edit.Position - previousInsertionPosition));
+                previousInsertionPosition = edit.Position;
+
+                switch (edit)
                 {
-                    case ScopeInsertionType.Selector:
+                    case InsertSelectorScopeEdit _:
                         resultBuilder.AppendFormat("[{0}]", cssScope);
                         break;
-                    case ScopeInsertionType.KeyframesName:
+                    case InsertKeyframesNameScopeEdit _:
                         resultBuilder.AppendFormat("-{0}", cssScope);
                         break;
+                    case DeleteContentEdit deleteContentEdit:
+                        previousInsertionPosition += deleteContentEdit.DeleteLength;
+                        break;
                     default:
-                        throw new NotImplementedException($"Unknown insertion type: '{insertionType}'");
+                        throw new NotImplementedException($"Unknown edit type: '{edit}'");
                 }
-
-                
-                previousInsertionPosition = currentInsertionPosition;
             }
 
             resultBuilder.Append(inputText.Substring(previousInsertionPosition));
@@ -118,19 +125,13 @@ namespace Microsoft.AspNetCore.Razor.Tools
             return false;
         }
 
-        private enum ScopeInsertionType
+        private class FindScopeInsertionEdits : Visitor
         {
-            Selector,
-            KeyframesName,
-        }
-
-        private class FindScopeInsertionPositionsVisitor : Visitor
-        {
-            public List<(int, ScopeInsertionType)> InsertionPositions { get; } = new List<(int, ScopeInsertionType)>();
+            public List<CssEdit> Edits { get; } = new List<CssEdit>();
 
             private readonly HashSet<string> _keyframeIdentifiers;
 
-            public FindScopeInsertionPositionsVisitor(ComplexItem root) : base(root)
+            public FindScopeInsertionEdits(ComplexItem root) : base(root)
             {
                 // Before we start, we need to know the full set of keyframe names declared in this document
                 var keyframesIdentifiersVisitor = new FindKeyframesIdentifiersVisitor(root);
@@ -146,11 +147,53 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 //   ".first child," containing two simple selectors: ".first" and "child"
                 //   ".second", containing one simple selector: ".second"
                 // Our goal is to insert immediately after the final simple selector within each selector
-                var lastSimpleSelector = selector.Children.OfType<SimpleSelector>().LastOrDefault();
+
+                // If there's a deep combinator among the sequence of simple selectors, we consider that to signal
+                // the end of the set of simple selectors for us to look at, plus we strip it out
+                var allSimpleSelectors = selector.Children.OfType<SimpleSelector>();
+                var firstDeepCombinator = allSimpleSelectors.FirstOrDefault(s => _deepCombinatorRegex.IsMatch(s.Text));
+
+                var lastSimpleSelector = allSimpleSelectors.TakeWhile(s => s != firstDeepCombinator).LastOrDefault();
                 if (lastSimpleSelector != null)
                 {
-                    InsertionPositions.Add((lastSimpleSelector.AfterEnd, ScopeInsertionType.Selector));
+                    Edits.Add(new InsertSelectorScopeEdit { Position = FindPositionBeforeTrailingCombinator(lastSimpleSelector) });
                 }
+                else if (firstDeepCombinator != null)
+                {
+                    // For a leading deep combinator, we want to insert the scope attribute at the start
+                    // Otherwise the result would be a CSS rule that isn't scoped at all
+                    Edits.Add(new InsertSelectorScopeEdit { Position = firstDeepCombinator.Start });
+                }
+
+                // Also remove the deep combinator if we matched one
+                if (firstDeepCombinator != null)
+                {
+                    Edits.Add(new DeleteContentEdit { Position = firstDeepCombinator.Start, DeleteLength = DeepCombinatorText.Length });
+                }
+            }
+
+            private int FindPositionBeforeTrailingCombinator(SimpleSelector lastSimpleSelector)
+            {
+                // For a selector like "a > ::deep b", the parser splits it as "a >", "::deep", "b".
+                // The place we want to insert the scope is right after "a", hence we need to detect
+                // if the simple selector ends with " >" or similar, and if so, insert before that.
+                var text = lastSimpleSelector.Text;
+                var lastChar = text.Length > 0 ? text[^1] : default;
+                switch (lastChar)
+                {
+                    case '>':
+                    case '+':
+                    case '~':
+                        var trailingCombinatorMatch = _trailingCombinatorRegex.Match(text);
+                        if (trailingCombinatorMatch.Success)
+                        {
+                            var trailingCombinatorLength = trailingCombinatorMatch.Length;
+                            return lastSimpleSelector.AfterEnd - trailingCombinatorLength;
+                        }
+                        break;
+                }
+
+                return lastSimpleSelector.AfterEnd;
             }
 
             protected override void VisitAtDirective(AtDirective item)
@@ -158,7 +201,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 // Whenever we see "@keyframes something { ... }", we want to insert right after "something"
                 if (TryFindKeyframesIdentifier(item, out var identifier))
                 {
-                    InsertionPositions.Add((identifier.AfterEnd, ScopeInsertionType.KeyframesName));
+                    Edits.Add(new InsertKeyframesNameScopeEdit { Position = identifier.AfterEnd });
                 }
                 else
                 {
@@ -183,7 +226,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                             .Where(x => x.TokenType == CssTokenType.Identifier && _keyframeIdentifiers.Contains(x.Text));
                         foreach (var token in animationNameTokens)
                         {
-                            InsertionPositions.Add((token.AfterEnd, ScopeInsertionType.KeyframesName));
+                            Edits.Add(new InsertKeyframesNameScopeEdit { Position = token.AfterEnd });
                         }
                         break;
                     default:
@@ -272,6 +315,24 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     }
                 }
             }
+        }
+
+        private abstract class CssEdit
+        {
+            public int Position { get; set; }
+        }
+
+        private class InsertSelectorScopeEdit : CssEdit
+        {
+        }
+
+        private class InsertKeyframesNameScopeEdit : CssEdit
+        {
+        }
+
+        private class DeleteContentEdit : CssEdit
+        {
+            public int DeleteLength { get; set; }
         }
     }
 }

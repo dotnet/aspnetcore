@@ -44,6 +44,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
 
+        /// <summary>
+        /// Inline application and transport continuations instead of dispatching to the threadpool.
+        /// </summary>
+        /// <remarks>
+        /// This will run application code on the IO thread which is why this is unsafe.
+        /// It is recommended to set the DOTNET_SYSTEM_NET_SOCKETS_INLINE_COMPLETIONS environment variable to '1' when using this setting to also inline the completions
+        /// at the runtime layer as well.
+        /// This setting can make performance worse if there is expensive work that will end up holding onto the IO thread for longer than needed.
+        /// Test to make sure this setting helps performance.
+        /// </remarks>
+        public bool UnsafePreferInlineScheduling { get; set; }
+
         internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.SlabMemoryPoolFactory.Create;
     }
 }

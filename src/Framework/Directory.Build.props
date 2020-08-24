@@ -6,7 +6,6 @@
     <!-- Shared between targeting pack and runtime build. -->
     <PlatformManifestFileName>PlatformManifest.txt</PlatformManifestFileName>
     <PlatformManifestOutputPath>$(ArtifactsObjDir)$(PlatformManifestFileName)</PlatformManifestOutputPath>
-    <DisablePubternalApiCheck>true</DisablePubternalApiCheck>
 
     <!-- Platform manifest and package override metatdata -->
     <ReferencePackSharedFxVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0</ReferencePackSharedFxVersion>

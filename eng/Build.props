@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <Choose>
-    <!-- Project selection can be overridden on the command line by passing in -projects -->
+    <!-- Project selection can be overridden on the command line by passing in -projects. -->
     <When Condition="'$(ProjectToBuild)' != ''">
       <ItemGroup>
         <ProjectToBuild Include="$(ProjectToBuild)" Exclude="@(ProjectToExclude);$(RepoRoot)**\bin\**\*;$(RepoRoot)**\obj\**\*">
@@ -165,6 +165,7 @@
                           @(ProjectToBuild);
                           @(ProjectToExclude);
                           $(RepoRoot)src\Razor\test\testassets\**\*.*proj;
+                          $(RepoRoot)src\Components\WebAssembly\Sdk\testassets\**\*.*proj;
                           $(RepoRoot)**\node_modules\**\*;
                           $(RepoRoot)**\bin\**\*;
                           $(RepoRoot)**\obj\**\*;"

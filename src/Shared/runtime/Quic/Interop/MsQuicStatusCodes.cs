@@ -1,22 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.InteropServices;
-
 namespace System.Net.Quic.Implementations.MsQuic.Internal
 {
     internal static class MsQuicStatusCodes
     {
-        internal static readonly uint Success = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Windows.Success : Linux.Success;
-        internal static readonly uint Pending = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Windows.Pending : Linux.Pending;
-        internal static readonly uint InternalError = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Windows.InternalError : Linux.InternalError;
+        internal static uint Success => OperatingSystem.IsWindows() ? Windows.Success : Linux.Success;
+        internal static uint Pending => OperatingSystem.IsWindows() ? Windows.Pending : Linux.Pending;
+        internal static uint InternalError => OperatingSystem.IsWindows() ? Windows.InternalError : Linux.InternalError;
 
         // TODO return better error messages here.
-        public static string GetError(uint status)
-        {
-            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? Windows.GetError(status) : Linux.GetError(status);
-        }
+        public static string GetError(uint status) => OperatingSystem.IsWindows() ? Windows.GetError(status) : Linux.GetError(status);
 
         private static class Windows
         {

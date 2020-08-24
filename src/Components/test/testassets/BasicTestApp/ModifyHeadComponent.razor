@@ -1,0 +1,119 @@
+﻿@using Microsoft.AspNetCore.Components.Web.Extensions.Head
+
+<p>
+    Multiple title elements:<br />
+
+    @for (int i = 0; i < 3; i++)
+    {
+        var titleId = i;
+
+        <button id="button-title-@i" @onclick="() => SetSelectedTitle(titleId)">
+            Title @titleId
+        </button>
+
+        if (selectedTitle == titleId)
+        {
+            <Title Value="@($"Title {titleId}")" />
+        }
+    }
+</p>
+
+<p>
+    Multiple meta elements:<br />
+
+    @for (int i = 0; i < metas.Length; i++)
+    {
+        var metaId = i;
+
+        <button id="button-meta-@i" @onclick="() => Toggle(metas, metaId)">
+            @GetToggleString(metas[metaId]) meta @metaId</button>
+
+        if (metas[metaId])
+        {
+            <Meta id="@($"Meta {metaId}")" />
+        }
+    }
+</p>
+
+<p>
+    Multiple link elements:<br />
+
+    @for (int i = 0; i < links.Length; i++)
+    {
+        var linkId = i;
+
+        <button id="button-link-@i" @onclick="() => Toggle(links, linkId)">
+            @GetToggleString(links[linkId]) link @linkId</button>
+
+        if (links[linkId])
+        {
+            <Link id="@($"Link {linkId}")" />
+        }
+    }
+</p>
+
+<p>
+    Nested title elements:<br />
+
+    <button id="button-title-nested" @onclick="() => SetSelectedTitle(3)">
+        Nested titles
+    </button>
+
+    @if (selectedTitle == 3)
+    {
+        <div>
+            <Title Value="Layer 1" />
+            <div>
+                <Title Value="Layer 2" />
+                <div>
+                    <Title Value="Layer 3" />
+                    <div>
+                        <Title Value="Layer 4" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</p>
+
+<p>
+    Meta elements w/ bindings:<br />
+    <input id="meta-attr-input-1" @bind="@metaAttribute1" placeholder="Attribute 1" /><br />
+    <input id="meta-attr-input-2" @bind="@metaAttribute2" placeholder="Attribute 2" /><br />
+    <Meta id="meta-with-bindings" attr1="@metaAttribute1" attr2="@metaAttribute2" />
+</p>
+
+<p>
+    Link elements w/ bindings:<br />
+    <input id="link-attr-input-1" @bind="@linkAttribute1" placeholder="Attribute 1" /><br />
+    <input id="link-attr-input-2" @bind="@linkAttribute2" placeholder="Attribute 2" /><br />
+    <Link id="link-with-bindings" attr1="@linkAttribute1" attr2="@linkAttribute2" />
+</p>
+
+@code {
+    private readonly bool[] metas = Enumerable.Repeat(false, 3).ToArray();
+    private readonly bool[] links = Enumerable.Repeat(false, 3).ToArray();
+
+    private int selectedTitle = -1;
+
+    private string metaAttribute1 = "First attribute";
+    private string metaAttribute2 = "Second attribute";
+
+    private string linkAttribute1 = "First attribute";
+    private string linkAttribute2 = "Second attribute";
+
+    private void Toggle(bool[] states, int index)
+    {
+        states[index] = !states[index];
+        StateHasChanged();
+    }
+
+    private void SetSelectedTitle(int title)
+    {
+        selectedTitle = title;
+        StateHasChanged();
+    }
+
+    private string GetToggleString(bool b)
+        => b ? "Disable" : "Enable";
+}

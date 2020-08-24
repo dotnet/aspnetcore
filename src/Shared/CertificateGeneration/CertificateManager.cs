@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 {
     internal abstract class CertificateManager
     {
+        internal const int CurrentAspNetCoreCertificateVersion = 2;
         internal const string AspNetHttpsOid = "1.3.6.1.4.1.311.84.1.1";
         internal const string AspNetHttpsOidFriendlyName = "ASP.NET Core HTTPS development certificate";
 
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
         public string Subject { get; }
 
-        public CertificateManager() : this(LocalhostHttpsDistinguishedName, 1)
+        public CertificateManager() : this(LocalhostHttpsDistinguishedName, CurrentAspNetCoreCertificateVersion)
         {
         }
 
@@ -86,10 +87,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                     Log.CheckCertificatesValidity();
                     var now = DateTimeOffset.Now;
                     var validCertificates = matchingCertificates
-                        .Where(c => c.NotBefore <= now &&
-                            now <= c.NotAfter &&
-                            (!requireExportable || IsExportable(c))
-                            && MatchesVersion(c))
+                        .Where(c => IsValidCertificate(c, now, requireExportable))
+                        .OrderByDescending(c => GetCertificateVersion(c))
                         .ToArray();
 
                     var invalidCertificates = matchingCertificates.Except(validCertificates);
@@ -123,7 +122,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 certificate.Extensions.OfType<X509Extension>()
                     .Any(e => string.Equals(oid, e.Oid.Value, StringComparison.Ordinal));
 
-            bool MatchesVersion(X509Certificate2 c)
+            static byte GetCertificateVersion(X509Certificate2 c)
             {
                 var byteArray = c.Extensions.OfType<X509Extension>()
                     .Where(e => string.Equals(AspNetHttpsOid, e.Oid.Value, StringComparison.Ordinal))
@@ -133,14 +132,20 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 if ((byteArray.Length == AspNetHttpsOidFriendlyName.Length && byteArray[0] == (byte)'A') || byteArray.Length == 0)
                 {
                     // No Version set, default to 0
-                    return 0 >= AspNetHttpsCertificateVersion;
+                    return 0b0;
                 }
                 else
                 {
                     // Version is in the only byte of the byte array.
-                    return byteArray[0] >= AspNetHttpsCertificateVersion;
+                    return byteArray[0];
                 }
             }
+
+            bool IsValidCertificate(X509Certificate2 certificate, DateTimeOffset currentDate, bool requireExportable) =>
+                certificate.NotBefore <= currentDate &&
+                currentDate <= certificate.NotAfter &&
+                (!requireExportable || IsExportable(certificate)) &&
+                GetCertificateVersion(certificate) >= AspNetHttpsCertificateVersion;
         }
 
         public IList<X509Certificate2> GetHttpsCertificates() =>
@@ -448,7 +453,14 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 }
                 else
                 {
-                    bytes = certificate.Export(X509ContentType.Cert);
+                    if (format == CertificateKeyExportFormat.Pem)
+                    {
+                        bytes = Encoding.ASCII.GetBytes(PemEncoding.Write("CERTIFICATE", certificate.Export(X509ContentType.Cert)));
+                    }
+                    else
+                    {
+                        bytes = certificate.Export(X509ContentType.Cert);
+                    }
                 }
             }
             catch (Exception e)
@@ -853,13 +865,13 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             [Event(50, Level = EventLevel.Verbose)]
             public void WindowsRemoveCertificateFromRootStoreNotFound() => WriteEvent(50, "The certificate was not trusted.");
 
-            [Event(50, Level = EventLevel.Verbose)]
+            [Event(51, Level = EventLevel.Verbose)]
             public void CorrectCertificateStateStart(string certificate) => WriteEvent(51, $"Correcting the the certificate state for '{certificate}'");
 
-            [Event(51, Level = EventLevel.Verbose)]
+            [Event(52, Level = EventLevel.Verbose)]
             public void CorrectCertificateStateEnd() => WriteEvent(52, "Finished correcting the certificate state");
 
-            [Event(52, Level = EventLevel.Error)]
+            [Event(53, Level = EventLevel.Error)]
             public void CorrectCertificateStateError(string error) => WriteEvent(53, $"An error has ocurred while correcting the certificate state: {error}.");
 
             [Event(54, Level = EventLevel.Verbose)]

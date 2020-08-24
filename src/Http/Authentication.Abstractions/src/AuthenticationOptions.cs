@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <typeparam name="THandler">The <see cref="IAuthenticationHandler"/> responsible for the scheme.</typeparam>
         /// <param name="name">The name of the scheme being added.</param>
         /// <param name="displayName">The display name for the scheme.</param>
-        public void AddScheme<THandler>(string name, string displayName) where THandler : IAuthenticationHandler
+        public void AddScheme<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]THandler>(string name, string displayName) where THandler : IAuthenticationHandler
             => AddScheme(name, b =>
             {
                 b.DisplayName = displayName;

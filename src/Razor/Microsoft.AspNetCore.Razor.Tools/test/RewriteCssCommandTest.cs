@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Xunit;
@@ -72,6 +72,102 @@ namespace Microsoft.AspNetCore.Razor.Tools
             // Assert
             Assert.Equal(@"
     .first /* space at end {} */ div[TestScope] , .myclass[TestScope] /* comment at end */ { color: red; }
+", result);
+        }
+
+        [Fact]
+        public void RespectsDeepCombinator()
+        {
+            // Arrange/act
+            var result = RewriteCssCommand.AddScopeToSelectors(@"
+    .first ::deep .second { color: red; }
+    a ::deep b, c ::deep d { color: blue; }
+", "TestScope");
+
+            // Assert
+            Assert.Equal(@"
+    .first[TestScope]  .second { color: red; }
+    a[TestScope]  b, c[TestScope]  d { color: blue; }
+", result);
+        }
+
+        [Fact]
+        public void RespectsDeepCombinatorWithDirectDescendant()
+        {
+            // Arrange/act
+            var result = RewriteCssCommand.AddScopeToSelectors(@"
+    a  >  ::deep b { color: red; }
+    c ::deep  >  d { color: blue; }
+", "TestScope");
+
+            // Assert
+            Assert.Equal(@"
+    a[TestScope]  >   b { color: red; }
+    c[TestScope]   >  d { color: blue; }
+", result);
+        }
+
+        [Fact]
+        public void RespectsDeepCombinatorWithAdjacentSibling()
+        {
+            // Arrange/act
+            var result = RewriteCssCommand.AddScopeToSelectors(@"
+    a + ::deep b { color: red; }
+    c ::deep + d { color: blue; }
+", "TestScope");
+
+            // Assert
+            Assert.Equal(@"
+    a[TestScope] +  b { color: red; }
+    c[TestScope]  + d { color: blue; }
+", result);
+        }
+
+        [Fact]
+        public void RespectsDeepCombinatorWithGeneralSibling()
+        {
+            // Arrange/act
+            var result = RewriteCssCommand.AddScopeToSelectors(@"
+    a ~ ::deep b { color: red; }
+    c ::deep ~ d { color: blue; }
+", "TestScope");
+
+            // Assert
+            Assert.Equal(@"
+    a[TestScope] ~  b { color: red; }
+    c[TestScope]  ~ d { color: blue; }
+", result);
+        }
+
+        [Fact]
+        public void IgnoresMultipleDeepCombinators()
+        {
+            // Arrange/act
+            var result = RewriteCssCommand.AddScopeToSelectors(@"
+    .first ::deep .second ::deep .third { color:red; }
+", "TestScope");
+
+            // Assert
+            Assert.Equal(@"
+    .first[TestScope]  .second ::deep .third { color:red; }
+", result);
+        }
+
+        [Fact]
+        public void RespectsDeepCombinatorWithSpacesAndComments()
+        {
+            // Arrange/act
+            var result = RewriteCssCommand.AddScopeToSelectors(@"
+    .a .b /* comment ::deep 1 */  ::deep  /* comment ::deep 2 */  .c /* ::deep */ .d { color: red; }
+    ::deep * { color: blue; } /* Leading deep combinator */
+    another ::deep { color: green }  /* Trailing deep combinator */
+", "TestScope");
+
+            // Assert
+            Assert.Equal(@"
+    .a .b[TestScope] /* comment ::deep 1 */    /* comment ::deep 2 */  .c /* ::deep */ .d { color: red; }
+    [TestScope] * { color: blue; } /* Leading deep combinator */
+    another[TestScope]  { color: green }  /* Trailing deep combinator */
 ", result);
         }
 

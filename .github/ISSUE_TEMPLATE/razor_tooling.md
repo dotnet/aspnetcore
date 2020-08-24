@@ -35,7 +35,7 @@ We will close this issue if:
 Please collect the data below before reporting your issue to aid us in diagnosing the root cause.
 
 #### Activity log
-[Here](https://docs.microsoft.com/en-us/visualstudio/extensibility/how-to-use-the-activity-log?view=vs-2019#to-examine-the-activity-log) are the instructions on how to generate/acquire one.
+[Here](https://docs.microsoft.com/en-us/visualstudio/extensibility/how-to-use-the-activity-log?view=vs-2019#to-examine-the-activity-log) are the instructions on how to generate/acquire one. Note that GitHub does not generally allow .xml files to be uploaded with issues.
 
 #### Razor Language Server Client log
 <!-- In Visual Studio's `Output` window, the drop-down contains a `Razor Language Server Client` item. Include that below. -->
@@ -61,6 +61,5 @@ Paste log output here
 
 ### Pre-requisite checklist
 - [ ] Steps to reproduce the issue
-- [ ] Visual Studio Activity Log attached.
 - [ ] Razor Language Server client logs included.
 - [ ] HTML Language Server client logs included

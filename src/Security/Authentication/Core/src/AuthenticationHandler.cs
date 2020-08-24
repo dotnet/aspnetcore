@@ -13,11 +13,11 @@ namespace Microsoft.AspNetCore.Authentication
 {
     public abstract class AuthenticationHandler<TOptions> : IAuthenticationHandler where TOptions : AuthenticationSchemeOptions, new()
     {
-        private Task<AuthenticateResult> _authenticateTask;
+        private Task<AuthenticateResult>? _authenticateTask;
 
-        public AuthenticationScheme Scheme { get; private set; }
-        public TOptions Options { get; private set; }
-        protected HttpContext Context { get; private set; }
+        public AuthenticationScheme Scheme { get; private set; } = default!;
+        public TOptions Options { get; private set; } = default!;
+        protected HttpContext Context { get; private set; } = default!;
 
         protected HttpRequest Request
         {
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// The handler calls methods on the events which give the application control at certain points where processing is occurring. 
         /// If it is not provided a default instance is supplied which does nothing when the methods are called.
         /// </summary>
-        protected virtual object Events { get; set; }
+        protected virtual object? Events { get; set; }
 
         protected virtual string ClaimsIssuer => Options.ClaimsIssuer ?? Scheme.Name;
 
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Authentication
         protected string BuildRedirectUri(string targetPath)
             => Request.Scheme + "://" + Request.Host + OriginalPathBase + targetPath;
 
-        protected virtual string ResolveTarget(string scheme)
+        protected virtual string? ResolveTarget(string? scheme)
         {
             var target = scheme ?? Options.ForwardDefaultSelector?.Invoke(Context) ?? Options.ForwardDefault;
 
@@ -135,10 +135,10 @@ namespace Microsoft.AspNetCore.Authentication
             }
 
             // Calling Authenticate more than once should always return the original value.
-            var result = await HandleAuthenticateOnceAsync();
-            if (result?.Failure == null)
+            var result = await HandleAuthenticateOnceAsync() ?? AuthenticateResult.NoResult();
+            if (result.Failure == null)
             {
-                var ticket = result?.Ticket;
+                var ticket = result.Ticket;
                 if (ticket?.Principal != null)
                 {
                     Logger.AuthenticationSchemeAuthenticated(Scheme.Name);
@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Authentication
             return Task.CompletedTask;
         }
 
-        public async Task ChallengeAsync(AuthenticationProperties properties)
+        public async Task ChallengeAsync(AuthenticationProperties? properties)
         {
             var target = ResolveTarget(Options.ForwardChallenge);
             if (target != null)
@@ -221,12 +221,12 @@ namespace Microsoft.AspNetCore.Authentication
                 return;
             }
 
-            properties = properties ?? new AuthenticationProperties();
+            properties ??= new AuthenticationProperties();
             await HandleChallengeAsync(properties);
             Logger.AuthenticationSchemeChallenged(Scheme.Name);
         }
 
-        public async Task ForbidAsync(AuthenticationProperties properties)
+        public async Task ForbidAsync(AuthenticationProperties? properties)
         {
             var target = ResolveTarget(Options.ForwardForbid);
             if (target != null)
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Authentication
                 return;
             }
 
-            properties = properties ?? new AuthenticationProperties();
+            properties ??= new AuthenticationProperties();
             await HandleForbiddenAsync(properties);
             Logger.AuthenticationSchemeForbidden(Scheme.Name);
         }

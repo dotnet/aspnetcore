@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void EventDuringBatchRendering_CanTriggerDOMEvents()
+        public virtual void EventDuringBatchRendering_CanTriggerDOMEvents()
         {
             Browser.MountTestComponent<EventDuringBatchRendering>();
 
@@ -286,6 +286,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 : "There was an exception invoking 'SomeMethodThatDoesntNeedToExistForThisTest' on assembly 'SomeAssembly'";
 
             Browser.Contains(expectedMessage, () => errorLog.Text);
+        }
+
+        [Fact]
+        public void RenderAttributesBeforeConnectedCallBack()
+        {
+            Browser.MountTestComponent<RenderAttributesBeforeConnectedCallback>();
+            var element = Browser.FindElement(By.TagName("custom-web-component-data-from-attribute"));
+
+            var expectedContent = "success";
+
+            Browser.Contains(expectedContent, () => element.Text);
         }
 
         void SendKeysSequentially(IWebElement target, string text)

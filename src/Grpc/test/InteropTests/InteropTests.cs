@@ -72,10 +72,11 @@ namespace InteropTests
         public Task UnimplementedMethod() => InteropTestCase("unimplemented_method");
 
         [Fact]
-        [QuarantinedTest]
+        [QuarantinedTest("Server is getting 'identity' encoding. Will resolve in gRPC project when updated SDK is available.")]
         public Task ClientCompressedUnary() => InteropTestCase("client_compressed_unary");
 
         [Fact]
+        [QuarantinedTest("Server is getting 'identity' encoding. Will resolve in gRPC project when updated SDK is available.")]
         public Task ClientCompressedStreaming() => InteropTestCase("client_compressed_streaming");
 
         [Fact]

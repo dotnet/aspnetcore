@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
         }
 
-        [Theory(Skip = "https://github.com/dotnet/runtime/issues/38124")]
+        [Theory]
         [InlineData("en-US", "Hello!")]
         [InlineData("fr-FR", "Bonjour!")]
         public void CanSetCultureAndReadLocalizedResources(string culture, string message)

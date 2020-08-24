@@ -4,6 +4,7 @@
 package com.microsoft.signalr;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -15,18 +16,19 @@ import java.util.concurrent.locks.ReentrantLock;
 import io.reactivex.Single;
 import io.reactivex.subjects.SingleSubject;
 import okhttp3.*;
+import okio.ByteString;
 
 final class DefaultHttpClient extends HttpClient {
     private OkHttpClient client = null;
 
-    public DefaultHttpClient() {
-        this(0, null);
+    public DefaultHttpClient(Action1<OkHttpClient.Builder> configureBuilder) {
+        this(null, configureBuilder);
     }
 
     public DefaultHttpClient cloneWithTimeOut(int timeoutInMilliseconds) {
         OkHttpClient newClient = client.newBuilder().readTimeout(timeoutInMilliseconds, TimeUnit.MILLISECONDS)
                 .build();
-        return new DefaultHttpClient(timeoutInMilliseconds, newClient);
+        return new DefaultHttpClient(newClient, null);
     }
 
     @Override
@@ -36,7 +38,7 @@ final class DefaultHttpClient extends HttpClient {
         }
     }
 
-    public DefaultHttpClient(int timeoutInMilliseconds, OkHttpClient client) {
+    public DefaultHttpClient(OkHttpClient client, Action1<OkHttpClient.Builder> configureBuilder) {
         if (client != null) {
             this.client = client;
         } else {
@@ -90,9 +92,10 @@ final class DefaultHttpClient extends HttpClient {
                 }
             });
 
-            if (timeoutInMilliseconds > 0) {
-                builder.readTimeout(timeoutInMilliseconds, TimeUnit.MILLISECONDS);
+            if (configureBuilder != null) {
+                configureBuilder.invoke(builder);
             }
+
             this.client = builder.build();
         }
     }
@@ -103,7 +106,7 @@ final class DefaultHttpClient extends HttpClient {
     }
 
     @Override
-    public Single<HttpResponse> send(HttpRequest httpRequest, String bodyContent) {
+    public Single<HttpResponse> send(HttpRequest httpRequest, ByteBuffer bodyContent) {
         Request.Builder requestBuilder = new Request.Builder().url(httpRequest.getUrl());
 
         switch (httpRequest.getMethod()) {
@@ -113,7 +116,7 @@ final class DefaultHttpClient extends HttpClient {
             case "POST":
                 RequestBody body;
                 if (bodyContent != null) {
-                    body = RequestBody.create(MediaType.parse("text/plain"), bodyContent);
+                    body = RequestBody.create(MediaType.parse("text/plain"), ByteString.of(bodyContent));
                 } else {
                     body = RequestBody.create(null, new byte[]{});
                 }
@@ -149,7 +152,7 @@ final class DefaultHttpClient extends HttpClient {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 try (ResponseBody body = response.body()) {
-                    HttpResponse httpResponse = new HttpResponse(response.code(), response.message(), body.string());
+                    HttpResponse httpResponse = new HttpResponse(response.code(), response.message(), ByteBuffer.wrap(body.bytes()));
                     responseSubject.onSuccess(httpResponse);
                 }
             }

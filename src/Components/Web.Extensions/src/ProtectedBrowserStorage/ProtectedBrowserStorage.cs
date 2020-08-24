@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
@@ -11,9 +12,11 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
+
     /// <summary>
     /// Provides mechanisms for storing and retrieving data in the browser storage.
     /// </summary>
+    [UnsupportedOSPlatform("browser")]
     public abstract class ProtectedBrowserStorage
     {
         private readonly string _storeName;
@@ -31,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         protected ProtectedBrowserStorage(string storeName, IJSRuntime jsRuntime, IDataProtectionProvider dataProtectionProvider)
         {
             // Performing data protection on the client would give users a false sense of security, so we'll prevent this.
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Browser))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER")))
             {
                 throw new PlatformNotSupportedException($"{GetType()} cannot be used when running in a browser.");
             }
