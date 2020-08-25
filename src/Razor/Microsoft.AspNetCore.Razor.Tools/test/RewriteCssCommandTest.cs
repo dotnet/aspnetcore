@@ -293,6 +293,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
     @import ""import-with-media-query.css"" screen and (orientation:landscape);
     @ImPoRt /* comment */ ""scheme://path/to/complex-import"" /* another-comment */ screen;
     @otheratrule ""should-not-cause-error.css"";
+    /* @import ""should-be-ignored-because-it-is-in-a-comment.css""; */
     .myclass { color: red; }
 ", "TestScope", out var diagnostics);
 
