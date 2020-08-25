@@ -56,8 +56,8 @@
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentSerializationSettings.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentMarker.cs" />
-    <Compile Include="$(RepoRoot)src\Shared\Components\ClientComponentSerializationSettings.cs" />
-    <Compile Include="$(RepoRoot)src\Shared\Components\ClientComponentMarker.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\WebAssemblyComponentSerializationSettings.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\WebAssemblyComponentMarker.cs" />
   </ItemGroup>
 
   <ItemGroup>

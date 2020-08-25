@@ -164,7 +164,7 @@ function getComponentComment(commentNodeIterator: ComponentCommentIterator): Com
 
     if (json) {
       try {
-        return createClientComponentComment(json, candidateStart, commentNodeIterator);
+        return createWebAssemblyComponentComment(json, candidateStart, commentNodeIterator);
       } catch (error) {
         throw new Error(`Found malformed component comment at ${candidateStart.textContent}`);
       }
@@ -174,7 +174,7 @@ function getComponentComment(commentNodeIterator: ComponentCommentIterator): Com
   }
 }
 
-function createClientComponentComment(json: string, start: Node, iterator: ComponentCommentIterator): ComponentComment | undefined {
+function createWebAssemblyComponentComment(json: string, start: Node, iterator: ComponentCommentIterator): ComponentComment | undefined {
   const payload = JSON.parse(json) as ComponentComment;
   const { type, assembly, typeName, parameterDefinitions, parameterValues, prerenderId } = payload;
   if (type !== 'server' && type !== 'client') {

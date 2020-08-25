@@ -73,16 +73,16 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
             Assert.Single(updatedGreets.Where(g => string.Equals("Hello Abraham", g)));
         }
 
-        private (ClientComponentMarker, ClientComponentMarker)[] ReadMarkers(string content)
+        private (WebAssemblyComponentMarker, WebAssemblyComponentMarker)[] ReadMarkers(string content)
         {
             content = content.Replace("\r\n", "");
             var matches = Regex.Matches(content, MarkerPattern);
-            var markers = matches.Select(s => JsonSerializer.Deserialize<ClientComponentMarker>(
+            var markers = matches.Select(s => JsonSerializer.Deserialize<WebAssemblyComponentMarker>(
                 s.Groups[1].Value,
-                ClientComponentSerializationSettings.JsonSerializationOptions));
+                WebAssemblyComponentSerializationSettings.JsonSerializationOptions));
 
             var prerenderMarkers = markers.Where(m => m.PrerenderId != null).GroupBy(p => p.PrerenderId).Select(g => (g.First(), g.Skip(1).First())).ToArray();
-            var nonPrerenderMarkers = markers.Where(m => m.PrerenderId == null).Select(g => (g, (ClientComponentMarker)default)).ToArray();
+            var nonPrerenderMarkers = markers.Where(m => m.PrerenderId == null).Select(g => (g, (WebAssemblyComponentMarker)default)).ToArray();
 
             return prerenderMarkers.Concat(nonPrerenderMarkers).ToArray();
         }

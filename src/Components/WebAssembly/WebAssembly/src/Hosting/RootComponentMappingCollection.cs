@@ -35,17 +35,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <param name="selector">The DOM element selector.</param>
         public void Add(Type componentType, string selector)
         {
-            if (componentType is null)
-            {
-                throw new ArgumentNullException(nameof(componentType));
-            }
-
-            if (selector is null)
-            {
-                throw new ArgumentNullException(nameof(selector));
-            }
-
-            Add(new RootComponentMapping(componentType, selector));
+            Add(componentType, selector, ParameterView.Empty);
         }
 
         /// <summary>

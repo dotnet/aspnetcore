@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 return;
             }
 
-            var registeredComponents = new ClientComponentMarker[componentsCount];
+            var registeredComponents = new WebAssemblyComponentMarker[componentsCount];
             for (var i = 0; i < componentsCount; i++)
             {
                 var id = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, int>(RegisteredComponentsInterop.GetId, i, null, null);
@@ -86,10 +86,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 var typeName = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetTypeName, id, null, null);
                 var serializedParameterDefinitions = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetParameterDefinitions, id, null, null);
                 var serializedParameterValues = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetParameterValues, id, null, null);
-                registeredComponents[i] = new ClientComponentMarker(ClientComponentMarker.ClientMarkerType, assembly, typeName, serializedParameterDefinitions, serializedParameterValues, id.ToString());
+                registeredComponents[i] = new WebAssemblyComponentMarker(WebAssemblyComponentMarker.ClientMarkerType, assembly, typeName, serializedParameterDefinitions, serializedParameterValues, id.ToString());
             }
 
-            var componentDeserializer = ClientComponentParameterDeserializer.Instance;
+            var componentDeserializer = WebAssemblyComponentParameterDeserializer.Instance;
             foreach (var registeredComponent in registeredComponents)
             {
                 _rootComponentCache = new RootComponentTypeCache();

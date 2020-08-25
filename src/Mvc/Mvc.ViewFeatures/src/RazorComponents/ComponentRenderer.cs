@@ -15,16 +15,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private static readonly object ComponentSequenceKey = new object();
         private readonly StaticComponentRenderer _staticComponentRenderer;
         private readonly ServerComponentSerializer _serverComponentSerializer;
-        private readonly ClientComponentSerializer _clientComponentSerializer;
+        private readonly WebAssemblyComponentSerializer _WebAssemblyComponentSerializer;
 
         public ComponentRenderer(
             StaticComponentRenderer staticComponentRenderer,
             ServerComponentSerializer serverComponentSerializer,
-            ClientComponentSerializer clientComponentSerializer)
+            WebAssemblyComponentSerializer WebAssemblyComponentSerializer)
         {
             _staticComponentRenderer = staticComponentRenderer;
             _serverComponentSerializer = serverComponentSerializer;
-            _clientComponentSerializer = clientComponentSerializer;
+            _WebAssemblyComponentSerializer = WebAssemblyComponentSerializer;
         }
 
         public async Task<IHtmlContent> RenderComponentAsync(
@@ -58,8 +58,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 RenderMode.Server => NonPrerenderedServerComponent(context, GetOrCreateInvocationId(viewContext), componentType, parameterView),
                 RenderMode.ServerPrerendered => await PrerenderedServerComponentAsync(context, GetOrCreateInvocationId(viewContext), componentType, parameterView),
                 RenderMode.Static => await StaticComponentAsync(context, componentType, parameterView),
-                RenderMode.WebAssembly => NonPrerenderedClientComponent(context, componentType, parameterView),
-                RenderMode.WebAssemblyPrerendered => await PrerenderedClientComponentAsync(context, componentType, parameterView),
+                RenderMode.WebAssembly => NonPrerenderedWebAssemblyComponent(context, componentType, parameterView),
+                RenderMode.WebAssemblyPrerendered => await PrerenderedWebAssemblyComponentAsync(context, componentType, parameterView),
                 _ => throw new ArgumentException(Resources.FormatUnsupportedRenderMode(renderMode), nameof(renderMode)),
             };
         }
@@ -104,9 +104,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 _serverComponentSerializer.GetEpilogue(currentInvocation));
         }
 
-        private async Task<IHtmlContent> PrerenderedClientComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
+        private async Task<IHtmlContent> PrerenderedWebAssemblyComponentAsync(HttpContext context, Type type, ParameterView parametersCollection)
         {
-            var currentInvocation = _clientComponentSerializer.SerializeInvocation(
+            var currentInvocation = _WebAssemblyComponentSerializer.SerializeInvocation(
                 type,
                 parametersCollection,
                 prerendered: true);
@@ -117,9 +117,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 type);
 
             return new ComponentHtmlContent(
-                _clientComponentSerializer.GetPreamble(currentInvocation),
+                _WebAssemblyComponentSerializer.GetPreamble(currentInvocation),
                 result,
-                _clientComponentSerializer.GetEpilogue(currentInvocation));
+                _WebAssemblyComponentSerializer.GetEpilogue(currentInvocation));
         }
 
         private IHtmlContent NonPrerenderedServerComponent(HttpContext context, ServerComponentInvocationSequence invocationId, Type type, ParameterView parametersCollection)
@@ -129,11 +129,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return new ComponentHtmlContent(_serverComponentSerializer.GetPreamble(currentInvocation));
         }
 
-        private IHtmlContent NonPrerenderedClientComponent(HttpContext context, Type type, ParameterView parametersCollection)
+        private IHtmlContent NonPrerenderedWebAssemblyComponent(HttpContext context, Type type, ParameterView parametersCollection)
         {
-            var currentInvocation = _clientComponentSerializer.SerializeInvocation(type, parametersCollection, prerendered: false);
+            var currentInvocation = _WebAssemblyComponentSerializer.SerializeInvocation(type, parametersCollection, prerendered: false);
 
-            return new ComponentHtmlContent(_clientComponentSerializer.GetPreamble(currentInvocation));
+            return new ComponentHtmlContent(_WebAssemblyComponentSerializer.GetPreamble(currentInvocation));
         }
     }
 }

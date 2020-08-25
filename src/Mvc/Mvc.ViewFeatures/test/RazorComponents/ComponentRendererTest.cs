@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             Assert.True(match.Success);
-            var marker = JsonSerializer.Deserialize<ClientComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
+            var marker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.Null(marker.PrerenderId);
             Assert.Equal("client", marker.Type);
             Assert.Equal(typeof(TestComponent).Assembly.GetName().Name, marker.Assembly);
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // Assert
             Assert.True(match.Success);
             var preamble = match.Groups["preamble"].Value;
-            var preambleMarker = JsonSerializer.Deserialize<ClientComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
+            var preambleMarker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.NotNull(preambleMarker.PrerenderId);
             Assert.Equal("client", preambleMarker.Type);
             Assert.Equal(typeof(TestComponent).Assembly.GetName().Name, preambleMarker.Assembly);
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Equal("<h1>Hello world!</h1>", prerenderedContent);
 
             var epilogue = match.Groups["epilogue"].Value;
-            var epilogueMarker = JsonSerializer.Deserialize<ClientComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
+            var epilogueMarker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.Equal(preambleMarker.PrerenderId, epilogueMarker.PrerenderId);
             Assert.Null(epilogueMarker.Assembly);
             Assert.Null(epilogueMarker.TypeName);
@@ -111,19 +111,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             Assert.True(match.Success);
-            var marker = JsonSerializer.Deserialize<ClientComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
+            var marker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.Null(marker.PrerenderId);
             Assert.Equal("client", marker.Type);
             Assert.Equal(typeof(GreetingComponent).Assembly.GetName().Name, marker.Assembly);
             Assert.Equal(typeof(GreetingComponent).FullName, marker.TypeName);
 
             var parameterDefinition = Assert.Single(
-                JsonSerializer.Deserialize<ComponentParameter[]>(Convert.FromBase64String(marker.ParameterDefinitions), ClientComponentSerializationSettings.JsonSerializationOptions));
+                JsonSerializer.Deserialize<ComponentParameter[]>(Convert.FromBase64String(marker.ParameterDefinitions), WebAssemblyComponentSerializationSettings.JsonSerializationOptions));
             Assert.Equal("Name", parameterDefinition.Name);
             Assert.Equal("System.String", parameterDefinition.TypeName);
             Assert.Equal("System.Private.CoreLib", parameterDefinition.Assembly);
 
-            var value = Assert.Single(JsonSerializer.Deserialize<object[]>(Convert.FromBase64String(marker.ParameterValues), ClientComponentSerializationSettings.JsonSerializationOptions));
+            var value = Assert.Single(JsonSerializer.Deserialize<object[]>(Convert.FromBase64String(marker.ParameterValues), WebAssemblyComponentSerializationSettings.JsonSerializationOptions));
             var rawValue = Assert.IsType<JsonElement>(value);
             Assert.Equal("Daniel", rawValue.GetString());
         }
@@ -148,18 +148,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             Assert.True(match.Success);
-            var marker = JsonSerializer.Deserialize<ClientComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
+            var marker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.Null(marker.PrerenderId);
             Assert.Equal("client", marker.Type);
             Assert.Equal(typeof(GreetingComponent).Assembly.GetName().Name, marker.Assembly);
             Assert.Equal(typeof(GreetingComponent).FullName, marker.TypeName);
 
-            var parameterDefinition = Assert.Single(JsonSerializer.Deserialize<ComponentParameter[]>(Convert.FromBase64String(marker.ParameterDefinitions), ClientComponentSerializationSettings.JsonSerializationOptions));
+            var parameterDefinition = Assert.Single(JsonSerializer.Deserialize<ComponentParameter[]>(Convert.FromBase64String(marker.ParameterDefinitions), WebAssemblyComponentSerializationSettings.JsonSerializationOptions));
             Assert.Equal("Name", parameterDefinition.Name);
             Assert.Null(parameterDefinition.TypeName);
             Assert.Null(parameterDefinition.Assembly);
 
-            var value = Assert.Single(JsonSerializer.Deserialize<object[]>(Convert.FromBase64String(marker.ParameterValues), ClientComponentSerializationSettings.JsonSerializationOptions));
+            var value = Assert.Single(JsonSerializer.Deserialize<object[]>(Convert.FromBase64String(marker.ParameterValues), WebAssemblyComponentSerializationSettings.JsonSerializationOptions));
             Assert.Null(value);
         }
 
@@ -184,18 +184,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // Assert
             Assert.True(match.Success);
             var preamble = match.Groups["preamble"].Value;
-            var preambleMarker = JsonSerializer.Deserialize<ClientComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
+            var preambleMarker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.NotNull(preambleMarker.PrerenderId);
             Assert.Equal("client", preambleMarker.Type);
             Assert.Equal(typeof(GreetingComponent).Assembly.GetName().Name, preambleMarker.Assembly);
             Assert.Equal(typeof(GreetingComponent).FullName, preambleMarker.TypeName);
 
-            var parameterDefinition = Assert.Single(JsonSerializer.Deserialize<ComponentParameter[]>(Convert.FromBase64String(preambleMarker.ParameterDefinitions), ClientComponentSerializationSettings.JsonSerializationOptions));
+            var parameterDefinition = Assert.Single(JsonSerializer.Deserialize<ComponentParameter[]>(Convert.FromBase64String(preambleMarker.ParameterDefinitions), WebAssemblyComponentSerializationSettings.JsonSerializationOptions));
             Assert.Equal("Name", parameterDefinition.Name);
             Assert.Equal("System.String", parameterDefinition.TypeName);
             Assert.Equal("System.Private.CoreLib", parameterDefinition.Assembly);
 
-            var value = Assert.Single(JsonSerializer.Deserialize<object[]>(Convert.FromBase64String(preambleMarker.ParameterValues), ClientComponentSerializationSettings.JsonSerializationOptions));
+            var value = Assert.Single(JsonSerializer.Deserialize<object[]>(Convert.FromBase64String(preambleMarker.ParameterValues), WebAssemblyComponentSerializationSettings.JsonSerializationOptions));
             var rawValue = Assert.IsType<JsonElement>(value);
             Assert.Equal("Daniel", rawValue.GetString());
 
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Equal("<p>Hello Daniel!</p>", prerenderedContent);
 
             var epilogue = match.Groups["epilogue"].Value;
-            var epilogueMarker = JsonSerializer.Deserialize<ClientComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
+            var epilogueMarker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.Equal(preambleMarker.PrerenderId, epilogueMarker.PrerenderId);
             Assert.Null(epilogueMarker.Assembly);
             Assert.Null(epilogueMarker.TypeName);
@@ -233,25 +233,25 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // Assert
             Assert.True(match.Success);
             var preamble = match.Groups["preamble"].Value;
-            var preambleMarker = JsonSerializer.Deserialize<ClientComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
+            var preambleMarker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.NotNull(preambleMarker.PrerenderId);
             Assert.Equal("client", preambleMarker.Type);
             Assert.Equal(typeof(GreetingComponent).Assembly.GetName().Name, preambleMarker.Assembly);
             Assert.Equal(typeof(GreetingComponent).FullName, preambleMarker.TypeName);
 
-            var parameterDefinition = Assert.Single(JsonSerializer.Deserialize<ComponentParameter[]>(Convert.FromBase64String(preambleMarker.ParameterDefinitions), ClientComponentSerializationSettings.JsonSerializationOptions));
+            var parameterDefinition = Assert.Single(JsonSerializer.Deserialize<ComponentParameter[]>(Convert.FromBase64String(preambleMarker.ParameterDefinitions), WebAssemblyComponentSerializationSettings.JsonSerializationOptions));
             Assert.Equal("Name", parameterDefinition.Name);
             Assert.Null(parameterDefinition.TypeName);
             Assert.Null(parameterDefinition.Assembly);
 
-            var value = Assert.Single(JsonSerializer.Deserialize<object[]>(Convert.FromBase64String(preambleMarker.ParameterValues), ClientComponentSerializationSettings.JsonSerializationOptions));
+            var value = Assert.Single(JsonSerializer.Deserialize<object[]>(Convert.FromBase64String(preambleMarker.ParameterValues), WebAssemblyComponentSerializationSettings.JsonSerializationOptions));
             Assert.Null(value);
 
             var prerenderedContent = match.Groups["content"].Value;
             Assert.Equal("<p>Hello (null)!</p>", prerenderedContent);
 
             var epilogue = match.Groups["epilogue"].Value;
-            var epilogueMarker = JsonSerializer.Deserialize<ClientComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
+            var epilogueMarker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.Equal(preambleMarker.PrerenderId, epilogueMarker.PrerenderId);
             Assert.Null(epilogueMarker.Assembly);
             Assert.Null(epilogueMarker.TypeName);
@@ -792,7 +792,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             new ComponentRenderer(
                 new StaticComponentRenderer(HtmlEncoder.Default),
                 new ServerComponentSerializer(_dataprotectorProvider),
-                new ClientComponentSerializer());
+                new WebAssemblyComponentSerializer());
 
         private static ViewContext GetViewContext(HttpContext context = null, Action<IServiceCollection> configureServices = null)
         {

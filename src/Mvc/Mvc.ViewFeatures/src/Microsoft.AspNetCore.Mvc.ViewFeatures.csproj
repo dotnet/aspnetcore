@@ -31,9 +31,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)Components\ClientComponentSerializationSettings.cs" />
+    <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentSerializationSettings.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponentSerializationSettings.cs" />
-    <Compile Include="$(SharedSourceRoot)Components\ClientComponentMarker.cs" />
+    <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentMarker.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponentMarker.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponent.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" />

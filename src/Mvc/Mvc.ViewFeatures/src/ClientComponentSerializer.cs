@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.Components;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
-    // See the details of the component serialization protocol in ClientComponentDeserializer.cs on the Components solution.
-    internal class ClientComponentSerializer
+    // See the details of the component serialization protocol in WebAssemblyComponentDeserializer.cs on the Components solution.
+    internal class WebAssemblyComponentSerializer
     {
-        public ClientComponentMarker SerializeInvocation(Type type, ParameterView parameters, bool prerendered)
+        public WebAssemblyComponentMarker SerializeInvocation(Type type, ParameterView parameters, bool prerendered)
         {
             var assembly = type.Assembly.GetName().Name;
             var typeFullName = type.FullName;
@@ -19,18 +19,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // We need to serialize and Base64 encode parameters separately since they can contain arbitrary data that might
             // cause the HTML comment to be invalid (like if you serialize a string that contains two consecutive dashes "--").
-            var serializedDefinitions = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(definitions, ClientComponentSerializationSettings.JsonSerializationOptions));
-            var serializedValues = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(values, ClientComponentSerializationSettings.JsonSerializationOptions));
+            var serializedDefinitions = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(definitions, WebAssemblyComponentSerializationSettings.JsonSerializationOptions));
+            var serializedValues = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(values, WebAssemblyComponentSerializationSettings.JsonSerializationOptions));
 
-            return prerendered ? ClientComponentMarker.Prerendered(assembly, typeFullName, serializedDefinitions, serializedValues) :
-                ClientComponentMarker.NonPrerendered(assembly, typeFullName, serializedDefinitions, serializedValues);
+            return prerendered ? WebAssemblyComponentMarker.Prerendered(assembly, typeFullName, serializedDefinitions, serializedValues) :
+                WebAssemblyComponentMarker.NonPrerendered(assembly, typeFullName, serializedDefinitions, serializedValues);
         }
 
-        internal IEnumerable<string> GetPreamble(ClientComponentMarker record)
+        internal IEnumerable<string> GetPreamble(WebAssemblyComponentMarker record)
         {
             var serializedStartRecord = JsonSerializer.Serialize(
                 record,
-                ClientComponentSerializationSettings.JsonSerializationOptions);
+                WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
 
             if (record.PrerenderId != null)
             {
@@ -56,11 +56,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
         }
 
-        internal IEnumerable<string> GetEpilogue(ClientComponentMarker record)
+        internal IEnumerable<string> GetEpilogue(WebAssemblyComponentMarker record)
         {
             var serializedStartRecord = JsonSerializer.Serialize(
                 record.GetEndRecord(),
-                ClientComponentSerializationSettings.JsonSerializationOptions);
+                WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
 
             return PrerenderEnd(serializedStartRecord);
 

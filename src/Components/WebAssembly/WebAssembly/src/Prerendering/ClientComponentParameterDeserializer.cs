@@ -10,21 +10,21 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components
 {
-    internal class ClientComponentParameterDeserializer
+    internal class WebAssemblyComponentParameterDeserializer
     {
         private readonly ComponentParametersTypeCache _parametersCache;
 
-        public ClientComponentParameterDeserializer(
+        public WebAssemblyComponentParameterDeserializer(
             ComponentParametersTypeCache parametersCache)
         {
             _parametersCache = parametersCache;
         }
 
-        public static ClientComponentParameterDeserializer Instance { get; } = new ClientComponentParameterDeserializer(new ComponentParametersTypeCache());
+        public static WebAssemblyComponentParameterDeserializer Instance { get; } = new WebAssemblyComponentParameterDeserializer(new ComponentParametersTypeCache());
 
         public ParameterView DeserializeParameters(IList<ComponentParameter> parametersDefinitions, IList<object> parameterValues)
         {
-            var parametersDictionary = new Dictionary<string, object>(StringComparer.Ordinal);
+            var parametersDictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
             if (parameterValues.Count != parametersDefinitions.Count)
             {
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components
                         var parameterValue = JsonSerializer.Deserialize(
                             value.GetRawText(),
                             parameterType,
-                            ClientComponentSerializationSettings.JsonSerializationOptions);
+                            WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
 
                         parametersDictionary[definition.Name] = parameterValue;
                     }
@@ -77,12 +77,12 @@ namespace Microsoft.AspNetCore.Components
 
         public ComponentParameter[] GetParameterDefinitions(string parametersDefinitions)
         {
-            return JsonSerializer.Deserialize<ComponentParameter[]>(parametersDefinitions, ClientComponentSerializationSettings.JsonSerializationOptions);
+            return JsonSerializer.Deserialize<ComponentParameter[]>(parametersDefinitions, WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
         }
 
         public IList<object> GetParameterValues(string parameterValues)
         {
-            return JsonSerializer.Deserialize<IList<object>>(parameterValues, ClientComponentSerializationSettings.JsonSerializationOptions);
+            return JsonSerializer.Deserialize<IList<object>>(parameterValues, WebAssemblyComponentSerializationSettings.JsonSerializationOptions);
         }
     }
 }

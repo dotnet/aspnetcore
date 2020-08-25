@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Components
 {
-    internal static class ClientComponentSerializationSettings
+    internal static class WebAssemblyComponentSerializationSettings
     {
         public static readonly JsonSerializerOptions JsonSerializationOptions =
             new JsonSerializerOptions
