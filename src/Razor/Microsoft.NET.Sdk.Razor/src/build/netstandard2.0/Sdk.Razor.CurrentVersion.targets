@@ -327,12 +327,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <UpToDateCheckBuilt Include="@(RazorIntermediateAssembly)"
       Condition="'$(RazorCompileOnBuild)'=='true' AND '@(Content->WithMetadataValue('Extension', '.cshtml'))' != ''" Set="RazorViews" />
-
-    <!-- Set up watchers for dotnet-watch -->
-    <Watch Include="@(Content->WithMetadataValue('Extension', '.razor'))" />
-
-    <Watch Include="@(Content->WithMetadataValue('Extension', '.cshtml'))"
-      Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(AddCshtmlFilesToDotNetWatchList)' != 'false'" />
   </ItemGroup>
 
   <!--
@@ -868,6 +862,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Example, c:\MyProjects\MyProject\bin\debug\MyAssembly.Views.dll -->
       <RazorTargetPath Condition=" '$(RazorTargetPath)' == '' ">$(RazorTargetDir)$(RazorTargetName).dll</RazorTargetPath>
     </PropertyGroup>
+  </Target>
+
+  <Target Name="_RazorSdkCustomCollectWatchItems">
+    <ItemGroup>
+      <Watch Include="%(Content.FullPath)" Condition="'%(Content.Extension)' == '.razor' AND '%(Content.Watch)' != 'false'" />
+      <Watch Include="%(Content.FullPath)"
+        Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(AddCshtmlFilesToDotNetWatchList)' != 'false' AND '%(Content.Extension)' == '.cshtml' AND '%(Content.Watch)' != 'false'" />
+    </ItemGroup>
   </Target>
 
   <PropertyGroup Condition="'$(RazorDesignTimeTargets)'==''">

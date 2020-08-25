@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -275,6 +276,53 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
                         line => line.Contains($"Collecting watch items from '{projectName}'"))
             );
         }
+
+        [Fact]
+        public async Task ProjectReferences_RazorFiles()
+        {
+            // Arrange
+            var razorSdkTargetsPath = GetType().Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .First(f => f.Key == "RazorSdkPath").Value;
+
+            _tempDir
+                .SubDir("src")
+                    .SubDir("MyLibrary")
+                        .WithCSharpProject("MyLibrary", out var proj3, sdk: "Microsoft.NET.Sdk.Razor")
+                        .WithProperty("CustomCollectWatchItems", "$(CustomCollectWatchItems);_RazorSdkCustomCollectWatchItems")
+                        .WithProperty("RazorSdkCurrentVersionTargets", razorSdkTargetsPath)
+                        .WithTargetFrameworks("net5.0")
+                        .Dir()
+                        .WithFile("MyLibraryFile.razor")
+                        .WithFile("Class2.cs")
+                    .Up()
+                    .SubDir("MainApp")
+                        .WithCSharpProject("MainApp", out var target, sdk: "Microsoft.NET.Sdk.Razor")
+                        .WithProperty("CustomCollectWatchItems", "$(CustomCollectWatchItems);_RazorSdkCustomCollectWatchItems")
+                        .WithProperty("RazorSdkCurrentVersionTargets", razorSdkTargetsPath)
+                        .WithTargetFrameworks("net5.0")
+                        .WithProjectReference(proj3)
+                        .Dir()
+                        .WithFile("Class1.cs")
+                        .WithFile("Index.razor")
+                    .Up();
+
+            var fileset = await GetFileSet(target);
+
+            AssertEx.EqualFileList(
+                _tempDir.Root,
+                new[]
+                {
+                    "src/MyLibrary/MyLibraryFile.razor",
+                    "src/MyLibrary/Class2.cs",
+                    "src/MyLibrary/MyLibrary.csproj",
+                    "src/MainApp/Class1.cs",
+                    "src/MainApp/Index.razor",
+                    "src/MainApp/MainApp.csproj"
+                },
+                fileset
+            );
+        }
+
 
         private Task<IFileSet> GetFileSet(TemporaryCSharpProject target)
             => GetFileSet(new MsBuildFileSetFactory(_reporter, target.Path, waitOnError: false, trace: false));
