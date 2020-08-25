@@ -204,6 +204,7 @@
     <SystemCommandlineExperimentalPackageVersion>0.3.0-alpha.19317.1</SystemCommandlineExperimentalPackageVersion>
     <SystemComponentModelPackageVersion>4.3.0</SystemComponentModelPackageVersion>
     <SystemNetHttpPackageVersion>4.3.4</SystemNetHttpPackageVersion>
+    <SystemNetSocketsPackageVersion>4.3.0</SystemNetSocketsPackageVersion>
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.3</SystemThreadingTasksExtensionsPackageVersion>
     <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
