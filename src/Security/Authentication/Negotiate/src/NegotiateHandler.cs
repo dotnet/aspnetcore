@@ -325,21 +325,35 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 user = new ClaimsPrincipal(new ClaimsIdentity(identity));
             }
 
-            var authenticatedContext = new AuthenticatedContext(Context, Scheme, Options)
-            {
-                Principal = user
-            };
+            AuthenticatedContext authenticatedContext;
 
             if (Options.LdapSettings.EnableLdapClaimResolution)
             {
-                await Events.RetrieveLdapClaims(authenticatedContext);
-
-                if (authenticatedContext.Result != null)
+                var ldapContext = new LdapContext(Context, Scheme, Options, Options.LdapSettings)
                 {
-                    return authenticatedContext.Result;
+                    Principal = user
+                };
+
+                await Events.RetrieveLdapClaims(ldapContext);
+
+                if (ldapContext.Result != null)
+                {
+                    return ldapContext.Result;
                 }
 
-                await LdapAdapter.RetrieveClaimsAsync(Options.LdapSettings, authenticatedContext.Principal.Identity as ClaimsIdentity, Logger);
+                await LdapAdapter.RetrieveClaimsAsync(ldapContext.LdapSettings, ldapContext.Principal.Identity as ClaimsIdentity, Logger);
+
+                authenticatedContext = new AuthenticatedContext(Context, Scheme, Options)
+                {
+                    Principal = ldapContext.Principal
+                };
+            }
+            else
+            {
+                authenticatedContext = new AuthenticatedContext(Context, Scheme, Options)
+                {
+                    Principal = user
+                };
             }
 
             await Events.Authenticated(authenticatedContext);

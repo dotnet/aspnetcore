@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// Invoked after the authentication before ClaimsIdentity is populated with claims retrieved through the LDAP connection.
         /// This event is invoked when <see cref="LdapSettings.EnableLdapClaimResolution"/> is set to true on <see cref="LdapSettings"/>.
         /// </summary>
-        public Func<AuthenticatedContext, Task> OnRetrieveLdapClaims { get; set; } = context => Task.CompletedTask;
+        public Func<LdapContext, Task> OnRetrieveLdapClaims { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// Invoked after the authentication is complete and a ClaimsIdentity has been generated.
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <summary>
         /// Invoked after the authentication before ClaimsIdentity is populated with claims retrieved through the LDAP connection.
         /// </summary>
-        public virtual Task RetrieveLdapClaims(AuthenticatedContext context) => OnRetrieveLdapClaims(context);
+        public virtual Task RetrieveLdapClaims(LdapContext context) => OnRetrieveLdapClaims(context);
 
         /// <summary>
         /// Invoked after the authentication is complete and a ClaimsIdentity has been generated.
