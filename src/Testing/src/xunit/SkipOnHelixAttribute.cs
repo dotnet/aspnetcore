@@ -51,9 +51,9 @@ namespace Microsoft.AspNetCore.Testing
             }
             if (Queues.Contains("All.OSX")) 
             {
-                return GetTargetHelixQueue().ToLowerInvariant().Contains("osx"));
+                return GetTargetHelixQueue().ToLowerInvariant().Contains("osx");
             }
-            return Queues.ToLowerInvariant().Split(';').Contains(GetTargetHelixQueue().ToLowerInvariant();
+            return Queues.ToLowerInvariant().Split(';').Contains(GetTargetHelixQueue().ToLowerInvariant());
         }
 
         public static bool OnHelix() => !string.IsNullOrEmpty(GetTargetHelixQueue());
