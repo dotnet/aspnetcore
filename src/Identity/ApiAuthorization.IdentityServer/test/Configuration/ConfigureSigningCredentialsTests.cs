@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open;OSX.1100.Amd64;OSX.1100.Amd64.Open")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "All.OSX")]
         public void Configure_LoadsPfxCertificateCredentialFromConfiguration()
         {
             // Arrange
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open;OSX.1100.Amd64;OSX.1100.Amd64.Open")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "All.OSX")]
         public void Configure_LoadsCertificateStoreCertificateCredentialFromConfiguration()
         {
             try
