@@ -77,6 +77,8 @@ Microsoft.AspNetCore.Mvc.Rendering.RenderMode
 Microsoft.AspNetCore.Mvc.Rendering.RenderMode.Server = 2 -> Microsoft.AspNetCore.Mvc.Rendering.RenderMode
 Microsoft.AspNetCore.Mvc.Rendering.RenderMode.ServerPrerendered = 3 -> Microsoft.AspNetCore.Mvc.Rendering.RenderMode
 Microsoft.AspNetCore.Mvc.Rendering.RenderMode.Static = 1 -> Microsoft.AspNetCore.Mvc.Rendering.RenderMode
+Microsoft.AspNetCore.Mvc.Rendering.RenderMode.WebAssembly = 4 -> Microsoft.AspNetCore.Mvc.Rendering.RenderMode
+Microsoft.AspNetCore.Mvc.Rendering.RenderMode.WebAssemblyPrerendered = 5 -> Microsoft.AspNetCore.Mvc.Rendering.RenderMode
 Microsoft.AspNetCore.Mvc.Rendering.SelectList
 Microsoft.AspNetCore.Mvc.Rendering.SelectListGroup
 Microsoft.AspNetCore.Mvc.Rendering.SelectListGroup.Disabled.get -> bool

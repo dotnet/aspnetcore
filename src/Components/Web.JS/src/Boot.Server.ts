@@ -7,11 +7,12 @@ import { shouldAutoStart } from './BootCommon';
 import { RenderQueue } from './Platform/Circuits/RenderQueue';
 import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel, Logger } from './Platform/Logging/Logger';
-import { discoverComponents, CircuitDescriptor } from './Platform/Circuits/CircuitManager';
+import { CircuitDescriptor } from './Platform/Circuits/CircuitManager';
 import { setEventDispatcher } from './Rendering/RendererEventDispatcher';
 import { resolveOptions, CircuitStartOptions } from './Platform/Circuits/CircuitStartOptions';
 import { DefaultReconnectionHandler } from './Platform/Circuits/DefaultReconnectionHandler';
 import { attachRootComponentToLogicalElement } from './Rendering/Renderer';
+import { discoverComponents, ServerComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 
 let renderingFailed = false;
 let started = false;
@@ -29,7 +30,7 @@ async function boot(userOptions?: Partial<CircuitStartOptions>): Promise<void> {
   options.reconnectionHandler = options.reconnectionHandler || window['Blazor'].defaultReconnectionHandler;
   logger.log(LogLevel.Information, 'Starting up blazor server-side application.');
 
-  const components = discoverComponents(document);
+  const components = discoverComponents(document, 'server') as ServerComponentDescriptor[];
   const circuit = new CircuitDescriptor(components);
 
   const initialConnection = await initializeConnection(options, logger, circuit);

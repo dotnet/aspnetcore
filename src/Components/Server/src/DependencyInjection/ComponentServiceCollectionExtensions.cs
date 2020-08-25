@@ -57,7 +57,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<StaticFileOptions>, ConfigureStaticFilesOptions>());
             services.TryAddSingleton<CircuitFactory>();
             services.TryAddSingleton<ServerComponentDeserializer>();
-            services.TryAddSingleton<ServerComponentTypeCache>();
+            services.TryAddSingleton<RootComponentTypeCache>();
             services.TryAddSingleton<ComponentParameterDeserializer>();
             services.TryAddSingleton<ComponentParametersTypeCache>();
             services.TryAddSingleton<CircuitIdFactory>();
