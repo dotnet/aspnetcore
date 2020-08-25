@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.True(match.Success);
             var marker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.Null(marker.PrerenderId);
-            Assert.Equal("client", marker.Type);
+            Assert.Equal("webassembly", marker.Type);
             Assert.Equal(typeof(TestComponent).Assembly.GetName().Name, marker.Assembly);
             Assert.Equal(typeof(TestComponent).FullName, marker.TypeName);
         }
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var preamble = match.Groups["preamble"].Value;
             var preambleMarker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.NotNull(preambleMarker.PrerenderId);
-            Assert.Equal("client", preambleMarker.Type);
+            Assert.Equal("webassembly", preambleMarker.Type);
             Assert.Equal(typeof(TestComponent).Assembly.GetName().Name, preambleMarker.Assembly);
             Assert.Equal(typeof(TestComponent).FullName, preambleMarker.TypeName);
 
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.True(match.Success);
             var marker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.Null(marker.PrerenderId);
-            Assert.Equal("client", marker.Type);
+            Assert.Equal("webassembly", marker.Type);
             Assert.Equal(typeof(GreetingComponent).Assembly.GetName().Name, marker.Assembly);
             Assert.Equal(typeof(GreetingComponent).FullName, marker.TypeName);
 
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.True(match.Success);
             var marker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.Null(marker.PrerenderId);
-            Assert.Equal("client", marker.Type);
+            Assert.Equal("webassembly", marker.Type);
             Assert.Equal(typeof(GreetingComponent).Assembly.GetName().Name, marker.Assembly);
             Assert.Equal(typeof(GreetingComponent).FullName, marker.TypeName);
 
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var preamble = match.Groups["preamble"].Value;
             var preambleMarker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.NotNull(preambleMarker.PrerenderId);
-            Assert.Equal("client", preambleMarker.Type);
+            Assert.Equal("webassembly", preambleMarker.Type);
             Assert.Equal(typeof(GreetingComponent).Assembly.GetName().Name, preambleMarker.Assembly);
             Assert.Equal(typeof(GreetingComponent).FullName, preambleMarker.TypeName);
 
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var preamble = match.Groups["preamble"].Value;
             var preambleMarker = JsonSerializer.Deserialize<WebAssemblyComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
             Assert.NotNull(preambleMarker.PrerenderId);
-            Assert.Equal("client", preambleMarker.Type);
+            Assert.Equal("webassembly", preambleMarker.Type);
             Assert.Equal(typeof(GreetingComponent).Assembly.GetName().Name, preambleMarker.Assembly);
             Assert.Equal(typeof(GreetingComponent).FullName, preambleMarker.TypeName);
 
