@@ -178,6 +178,6 @@
     <value>The type '{0}' must implement '{1}' to be used as a model binder.</value>
   </data>
   <data name="RecordTypeHasValidationOnProperties" xml:space="preserve">
-    <value>Record type '{0}' has validation metadata defined on property '{1}' that will be ignored. Consider specifying these on the constructor parameter '{1}' instead.</value>
+    <value>Record type '{0}' has validation metadata defined on property '{1}' that will be ignored. '{1}' is a parameter in the record primary constructor and validation metadata must specified against the constructor parameter.</value>
   </data>
 </root>
