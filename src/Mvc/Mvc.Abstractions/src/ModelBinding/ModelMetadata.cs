@@ -501,7 +501,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return;
             }
 
-            _recordTypeConstructorDetailsCalculated = true;
 
             var boundParameters = BoundConstructor!.BoundConstructorParameters!;
             var parameterMapping = new Dictionary<ModelMetadata, ModelMetadata>();
