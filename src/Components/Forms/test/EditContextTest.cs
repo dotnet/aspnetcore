@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
@@ -250,6 +251,76 @@ namespace Microsoft.AspNetCore.Components.Forms
             model.Property = "new value";
 
             Assert.True(editContext.IsModified(editContext.Field(nameof(EquatableModel.Property))));
+        }
+
+        [Fact]
+        public void Properties_CanRetrieveViaIndexer()
+        {
+            // Arrange
+            var editContext = new EditContext(new object());
+            var key1 = new object();
+            var key2 = new object();
+            var key3 = new object();
+            var value1 = new object();
+            var value2 = new object();
+
+            // Initially, the values are not present
+            Assert.Throws<KeyNotFoundException>(() => editContext.Properties[key1]);
+
+            // Can store and retrieve values
+            editContext.Properties[key1] = value1;
+            editContext.Properties[key2] = value2;
+            Assert.Same(value1, editContext.Properties[key1]);
+            Assert.Same(value2, editContext.Properties[key2]);
+
+            // Unrelated keys are still not found
+            Assert.Throws<KeyNotFoundException>(() => editContext.Properties[key3]);
+        }
+
+        [Fact]
+        public void Properties_CanRetrieveViaTryGetValue()
+        {
+            // Arrange
+            var editContext = new EditContext(new object());
+            var key1 = new object();
+            var key2 = new object();
+            var key3 = new object();
+            var value1 = new object();
+            var value2 = new object();
+
+            // Initially, the values are not present
+            Assert.False(editContext.Properties.TryGetValue(key1, out _));
+
+            // Can store and retrieve values
+            editContext.Properties[key1] = value1;
+            editContext.Properties[key2] = value2;
+            Assert.True(editContext.Properties.TryGetValue(key1, out var retrievedValue1));
+            Assert.True(editContext.Properties.TryGetValue(key2, out var retrievedValue2));
+            Assert.Same(value1, retrievedValue1);
+            Assert.Same(value2, retrievedValue2);
+
+            // Unrelated keys are still not found
+            Assert.False(editContext.Properties.TryGetValue(key3, out _));
+        }
+
+        [Fact]
+        public void Properties_CanRemove()
+        {
+            // Arrange
+            var editContext = new EditContext(new object());
+            var key = new object();
+            var value = new object();
+            editContext.Properties[key] = value;
+
+            // Act
+            var resultForExistingKey = editContext.Properties.Remove(key);
+            var resultForNonExistingKey = editContext.Properties.Remove(new object());
+
+            // Assert
+            Assert.True(resultForExistingKey);
+            Assert.False(resultForNonExistingKey);
+            Assert.False(editContext.Properties.TryGetValue(key, out _));
+            Assert.Throws<KeyNotFoundException>(() => editContext.Properties[key]);
         }
 
         class EquatableModel : IEquatable<EquatableModel>

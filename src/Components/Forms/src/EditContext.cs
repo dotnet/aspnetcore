@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             // really don't, you can pass an empty object then ignore it. Ensuring it's nonnull
             // simplifies things for all consumers of EditContext.
             Model = model ?? throw new ArgumentNullException(nameof(model));
+            Properties = new EditContextProperties();
         }
 
         /// <summary>
@@ -61,6 +62,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// Gets the model object for this <see cref="EditContext"/>.
         /// </summary>
         public object Model { get; }
+
+        /// <summary>
+        /// Gets a collection of arbitrary properties associated with this instance.
+        /// </summary>
+        public EditContextProperties Properties { get; }
 
         /// <summary>
         /// Signals that the value for the specified field has changed.
