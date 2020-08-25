@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Various helpers for writing tests that use ASP.NET Core.</Description>
-    <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0;net461</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
@@ -39,7 +39,7 @@
     <Reference Include="xunit.extensibility.execution" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)'">
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
   </ItemGroup>
