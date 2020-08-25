@@ -11,11 +11,11 @@
 </head>
 <body>
     <div id="test-container">
-        <component type="typeof(GreeterComponent)" render-mode="Client" param-name='"Red fish"' />
-        <component type="typeof(GreeterComponent)" render-mode="ClientPrerendered" param-name='"Blue fish"' />
+        <component type="typeof(GreeterComponent)" render-mode="WebAssembly" param-name='"Red fish"' />
+        <component type="typeof(GreeterComponent)" render-mode="WebAssemblyPrerendered" param-name='"Blue fish"' />
         @RenderBody()
-        <component type="typeof(GreeterComponent)" render-mode="Client" param-name='"Red fish"' />
-        <component type="typeof(GreeterComponent)" render-mode="ClientPrerendered" param-name='"Blue fish"' />
+        <component type="typeof(GreeterComponent)" render-mode="WebAssembly" param-name='"Red fish"' />
+        <component type="typeof(GreeterComponent)" render-mode="WebAssemblyPrerendered" param-name='"Blue fish"' />
     </div>
 
     @*

@@ -31,15 +31,15 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         ServerPrerendered = 3,
 
         /// <summary>
-        /// Renders a marker for a Blazor client-side application. This doesn't include any output from the component.
+        /// Renders a marker for a Blazor webassembly application. This doesn't include any output from the component.
         /// When the user-agent starts, it uses this marker to bootstrap a blazor client-side application.
         /// </summary>
-        Client = 4,
+        WebAssembly = 4,
 
         /// <summary>
-        /// Renders the component into static HTML and includes a marker for a Blazor client-side application.
+        /// Renders the component into static HTML and includes a marker for a Blazor webassembly application.
         /// When the user-agent starts, it uses this marker to bootstrap a blazor client-side application.
         /// </summary>
-        ClientPrerendered = 5,
+        WebAssemblyPrerendered = 5,
     }
 }

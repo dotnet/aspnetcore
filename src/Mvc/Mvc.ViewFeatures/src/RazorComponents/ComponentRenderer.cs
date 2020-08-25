@@ -58,8 +58,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 RenderMode.Server => NonPrerenderedServerComponent(context, GetOrCreateInvocationId(viewContext), componentType, parameterView),
                 RenderMode.ServerPrerendered => await PrerenderedServerComponentAsync(context, GetOrCreateInvocationId(viewContext), componentType, parameterView),
                 RenderMode.Static => await StaticComponentAsync(context, componentType, parameterView),
-                RenderMode.Client => NonPrerenderedClientComponent(context, componentType, parameterView),
-                RenderMode.ClientPrerendered => await PrerenderedClientComponentAsync(context, componentType, parameterView),
+                RenderMode.WebAssembly => NonPrerenderedClientComponent(context, componentType, parameterView),
+                RenderMode.WebAssemblyPrerendered => await PrerenderedClientComponentAsync(context, componentType, parameterView),
                 _ => throw new ArgumentException(Resources.FormatUnsupportedRenderMode(renderMode), nameof(renderMode)),
             };
         }

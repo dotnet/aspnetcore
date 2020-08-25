@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var writer = new StringWriter();
 
             // Act
-            var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.Client, null);
+            var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.WebAssembly, null);
             result.WriteTo(writer, HtmlEncoder.Default);
             var content = writer.ToString();
             var match = Regex.Match(content, ComponentPattern);
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var writer = new StringWriter();
 
             // Act
-            var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.ClientPrerendered, null);
+            var result = await renderer.RenderComponentAsync(viewContext, typeof(TestComponent), RenderMode.WebAssemblyPrerendered, null);
             result.WriteTo(writer, HtmlEncoder.Default);
             var content = writer.ToString();
             var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Act
             var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent),
-                RenderMode.Client,
+                RenderMode.WebAssembly,
                 new
                 {
                     Name = "Daniel"
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Act
             var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent),
-                RenderMode.Client,
+                RenderMode.WebAssembly,
                 new
                 {
                     Name = (string)null
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Act
             var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent),
-                RenderMode.ClientPrerendered,
+                RenderMode.WebAssemblyPrerendered,
                 new
                 {
                     Name = "Daniel"
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Act
             var result = await renderer.RenderComponentAsync(viewContext, typeof(GreetingComponent),
-                RenderMode.ClientPrerendered,
+                RenderMode.WebAssemblyPrerendered,
                 new
                 {
                     Name = (string)null

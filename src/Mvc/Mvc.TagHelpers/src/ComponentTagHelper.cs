@@ -66,8 +66,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     case RenderMode.Server:
                     case RenderMode.ServerPrerendered:
                     case RenderMode.Static:
-                    case RenderMode.Client:
-                    case RenderMode.ClientPrerendered:
+                    case RenderMode.WebAssembly:
+                    case RenderMode.WebAssemblyPrerendered:
                         _renderMode = value;
                         break;
 
