@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 var output = Outputs.Values[i];
                 var cssScope = CssScopes.Values[i];
 
-                using var inputSourceStream = File.OpenRead(source);
+                using var inputSourceStream = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
                 var inputSourceText = SourceText.From(inputSourceStream);
 
                 var rewrittenCss = AddScopeToSelectors(source, inputSourceText, cssScope, out var diagnostics);
