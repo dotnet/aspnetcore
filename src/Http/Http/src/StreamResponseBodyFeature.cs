@@ -75,6 +75,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         public virtual void DisableBuffering()
         {
+            PriorFeature?.DisableBuffering();
         }
 
         /// <summary>
