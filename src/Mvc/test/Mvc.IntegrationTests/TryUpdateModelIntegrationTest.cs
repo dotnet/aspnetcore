@@ -1163,7 +1163,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<NotSupportedException>(() => TryUpdateModelAsync(model, string.Empty, testContext));
-            Assert.Equal($"TryUpdateModelAsync is not supported on record type model '{model.GetType()}'.", ex.Message);
+            Assert.Equal($"TryUpdateModelAsync cannot update a record type model. If a '{model.GetType()}' must be updated, include it in an object type." , ex.Message);
 
         }
 

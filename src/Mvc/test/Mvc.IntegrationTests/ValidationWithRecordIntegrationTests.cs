@@ -2313,7 +2313,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelMetadata = modelMetadataProvider.GetMetadataForType(modelType);
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder(modelMetadataProvider);
             var expected = $"Record type '{modelType}' has validation metadata defined on property 'Property1' that will be ignored. " +
-                "'Property1' is a parameter in the record primary constructor and validation metadata must be specified against the constructor parameter.";
+                "'Property1' is a parameter in the record primary constructor and validation metadata must be associated with the constructor parameter.";
 
             var parameter = new ParameterDescriptor()
             {
@@ -2350,7 +2350,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelMetadata = modelMetadataProvider.GetMetadataForType(modelType);
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder(modelMetadataProvider);
             var expected = $"Record type '{modelType}' has validation metadata defined on property 'Property1' that will be ignored. " +
-                "'Property1' is a parameter in the record primary constructor and validation metadata must be specified against the constructor parameter.";
+                "'Property1' is a parameter in the record primary constructor and validation metadata must be associated with the constructor parameter.";
 
             var parameter = new ParameterDescriptor()
             {
@@ -2389,7 +2389,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var modelMetadata = modelMetadataProvider.GetMetadataForType(modelType);
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder(modelMetadataProvider);
             var expected = $"Record type '{modelType}' has validation metadata defined on property 'Property2' that will be ignored. " +
-                "'Property2' is a parameter in the record primary constructor and validation metadata must be specified against the constructor parameter.";
+                "'Property2' is a parameter in the record primary constructor and validation metadata must be associated with the constructor parameter.";
 
             var parameter = new ParameterDescriptor()
             {
