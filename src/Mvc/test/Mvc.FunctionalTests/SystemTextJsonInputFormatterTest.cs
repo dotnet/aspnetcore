@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/38539")]
+        [Fact]
         public override Task JsonInputFormatter_RoundtripsRecordType()
             => base.JsonInputFormatter_RoundtripsRecordType();
 

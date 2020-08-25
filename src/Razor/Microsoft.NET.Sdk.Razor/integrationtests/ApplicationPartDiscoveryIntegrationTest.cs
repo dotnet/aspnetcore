@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public Task Build_ProjectWithDependencyThatReferencesMvc_AddsAttribute_WhenBuildingUsingDotnetMsbuild()
             => Build_ProjectWithDependencyThatReferencesMvc_AddsAttribute(MSBuildProcessKind.Dotnet);
 
-        [ConditionalFact(Skip = "net5.0 TFM is not recognized on Desktop MSBuild. A VS update will be needed.")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InitializeTestProject("AppWithP2PReference", additionalProjects: "ClassLibrary")]
         public Task Build_ProjectWithDependencyThatReferencesMvc_AddsAttribute_WhenBuildingUsingDesktopMsbuild()

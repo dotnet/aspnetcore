@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.AspNetCore.Testing;
 
 namespace Templates.Test
 {
@@ -21,8 +20,7 @@ namespace Templates.Test
         public ProjectFactoryFixture ProjectFactory { get; }
         public ITestOutputHelper Output { get; }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/sdk/issues/12831")]
+        [Theory]
         [InlineData("C#")]
         [InlineData("F#")]
         public async Task WorkerTemplateAsync(string language)

@@ -804,7 +804,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
             Assert.Equal(expected, content);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/36024")]
+        [Fact]
         public async Task PolymorphicPropertiesOnPageModelsAreValidated()
         {
             // Arrange

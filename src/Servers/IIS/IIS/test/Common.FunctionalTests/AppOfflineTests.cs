@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             DeletePublishOutput(deploymentResult);
         }
 
-        [ConditionalFact(Skip = "https://github.com/dotnet/aspnetcore/issues/3835")]
+        [ConditionalFact]
         public async Task AppOfflineDroppedWhileSiteFailedToStartInRequestHandler_SiteStops_InProcess()
         {
             var deploymentResult = await DeployApp(HostingModel.InProcess);
