@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Testing
             {
                 return true;
             }
-            if (Queues == "All.OSX") 
+            if (Queues.Contains("All.OSX")) 
             {
                 return GetTargetHelixQueue().ToLowerInvariant().Contains("osx"));
             }
