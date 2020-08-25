@@ -39,13 +39,10 @@ namespace Microsoft.DotNet.Watcher
                 DebugHelper.HandleDebugSwitch(ref args);
                 using (var program = new Program(PhysicalConsole.Singleton, Directory.GetCurrentDirectory()))
                 {
-                    //checks if there is "run" in the args if NOT append a run as the last argument
+                    //if no command argument provided, we fall back to dotnet watch run
                     if (args.Length == 0)
                     {
                         args = new[] { "run" };
-                    }
-                    {
-                        args = args.Concat(new[] {"run"}).ToArray();
                     }
                     return await program.RunAsync(args);
                 }
