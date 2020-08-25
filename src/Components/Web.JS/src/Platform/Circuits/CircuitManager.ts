@@ -137,7 +137,7 @@ function resolveComponentComments(node: Node): ComponentComment[] {
   return result;
 }
 
-const blazorCommentRegularExpression = /\W*Blazor:[^{]*(.*)$/;
+const blazorCommentRegularExpression = /\W*Blazor:[^{]*(?<descriptor>.*)$/;
 
 function getComponentComment(commentNodeIterator: ComponentCommentIterator): ComponentComment | undefined {
   const candidateStart = commentNodeIterator.currentElement;
@@ -148,7 +148,7 @@ function getComponentComment(commentNodeIterator: ComponentCommentIterator): Com
   if (candidateStart.textContent) {
     const componentStartComment = new RegExp(blazorCommentRegularExpression);
     const definition = componentStartComment.exec(candidateStart.textContent);
-    const json = definition && definition[1];
+    const json = definition && definition.groups && definition.groups['descriptor'];
 
     if (json) {
       try {
@@ -276,5 +276,3 @@ class ComponentCommentIterator {
     }
   }
 }
-
-

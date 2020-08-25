@@ -1,31 +1,8 @@
 import { LogicalElement, toLogicalRootCommentElement } from "../Rendering/LogicalElements";
 
 export class WebAssemblyComponentAttacher {
-  getParameterValues(id: any) {
-    return this.componentsById[id].parameterValues;
-  }
-
-  getParameterDefinitions(id: any) {
-    return this.componentsById[id].parameterDefinitions;
-  }
-
-  getTypeName(id: any) {
-    return this.componentsById[id].typeName;
-  }
-
-  getAssembly(id: any) {
-    return this.componentsById[id].assembly;
-  }
-
-  getId(index: any) {
-    return this.preregisteredComponents[index].id;
-  }
-
-  getCount() {
-    return this.preregisteredComponents.length;
-  }
-
   public preregisteredComponents: ComponentDescriptor[];
+
   private componentsById: { [index: number]: ComponentDescriptor };
 
   public constructor(components: ComponentDescriptor[]) {
@@ -46,6 +23,30 @@ export class WebAssemblyComponentAttacher {
       return undefined;
     }
   }
+
+  public getParameterValues(id: number): string | undefined {
+    return this.componentsById[id].parameterValues;
+  }
+
+  public getParameterDefinitions(id: number): string | undefined {
+    return this.componentsById[id].parameterDefinitions;
+  }
+
+  public getTypeName(id: number): string {
+    return this.componentsById[id].typeName;
+  }
+
+  public getAssembly(id: number): string {
+    return this.componentsById[id].assembly;
+  }
+
+  public getId(index: number): number {
+    return this.preregisteredComponents[index].id;
+  }
+
+  public getCount(): number {
+    return this.preregisteredComponents.length;
+  }
 }
 
 interface ComponentMarker {
@@ -53,21 +54,22 @@ interface ComponentMarker {
   id: number;
   typeName: string;
   assembly: string;
-  parameterDefinitions: string | undefined;
-  parameterValues: string | undefined;
+  parameterDefinitions?: string;
+  parameterValues?: string;
 }
 
 export class ComponentDescriptor {
   private static globalId = 1;
+
   public type: string;
 
   public typeName: string;
 
   public assembly: string;
 
-  public parameterDefinitions: string | undefined;
+  public parameterDefinitions?: string;
 
-  public parameterValues: string | undefined;
+  public parameterValues?: string;
 
   public id: number;
 
@@ -75,7 +77,7 @@ export class ComponentDescriptor {
 
   public end?: Node;
 
-  public constructor(type: string, start: Node, end: Node | undefined, assembly: string, typeName: string, parameterDefinitions: string | undefined, parameterValues: string | undefined) {
+  public constructor(type: string, start: Node, end: Node | undefined, assembly: string, typeName: string, parameterDefinitions?: string, parameterValues?: string) {
     this.id = ComponentDescriptor.globalId++;
     this.type = type;
     this.assembly = assembly;
@@ -110,7 +112,7 @@ export function discoverComponents(document: Document): ComponentDescriptor[] {
     discoveredComponents.push(entry);
   }
 
-  return discoveredComponents.sort((a, b) => a.id - b.id);
+  return discoveredComponents.sort((a, b): number => a.id - b.id);
 }
 
 interface ComponentComment {
@@ -147,7 +149,7 @@ function resolveComponentComments(node: Node): ComponentComment[] {
   return result;
 }
 
-const blazorCommentRegularExpression = /\W*Blazor:[^{]*(.*)$/;
+const blazorCommentRegularExpression = /\W*Blazor:[^{]*(?<descriptor>.*)$/;
 
 function getComponentComment(commentNodeIterator: ComponentCommentIterator): ComponentComment | undefined {
   const candidateStart = commentNodeIterator.currentElement;
@@ -158,7 +160,7 @@ function getComponentComment(commentNodeIterator: ComponentCommentIterator): Com
   if (candidateStart.textContent) {
     const componentStartComment = new RegExp(blazorCommentRegularExpression);
     const definition = componentStartComment.exec(candidateStart.textContent);
-    const json = definition && definition[1];
+    const json = definition && definition.groups && definition.groups['descriptor'];
 
     if (json) {
       try {
