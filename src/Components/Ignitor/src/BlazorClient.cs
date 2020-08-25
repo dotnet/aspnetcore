@@ -353,7 +353,7 @@ namespace Ignitor
             _hubConnection = builder.Build();
 
             HubConnection.On<int, string>("JS.AttachComponent", OnAttachComponent);
-            HubConnection.On<int, string, string>("JS.BeginInvokeJS", OnBeginInvokeJS);
+            HubConnection.On<int, string, string, int, long>("JS.BeginInvokeJS", OnBeginInvokeJS);
             HubConnection.On<string>("JS.EndInvokeDotNet", OnEndInvokeDotNet);
             HubConnection.On<int, byte[]>("JS.RenderBatch", OnRenderBatch);
             HubConnection.On<string>("JS.Error", OnError);
@@ -401,9 +401,9 @@ namespace Ignitor
             NextAttachComponentReceived?.Completion?.TrySetResult(call);
         }
 
-        private void OnBeginInvokeJS(int asyncHandle, string identifier, string argsJson)
+        private void OnBeginInvokeJS(int asyncHandle, string identifier, string argsJson, int resultType, long targetInstanceId)
         {
-            var call = new CapturedJSInteropCall(asyncHandle, identifier, argsJson);
+            var call = new CapturedJSInteropCall(asyncHandle, identifier, argsJson, resultType, targetInstanceId);
             Operations?.JSInteropCalls.Enqueue(call);
             JSInterop?.Invoke(call);
 
