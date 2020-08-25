@@ -12,8 +12,4 @@
     <Compile Include="$(SharedSourceRoot)HashCodeCombiner\*.cs" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)'">
-    <Reference Include="System.ValueTuple" />
-  </ItemGroup>
-
 </Project>
