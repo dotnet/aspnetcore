@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
@@ -12,6 +13,44 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class HealthCheckServiceCollectionExtensions
     {
+        /// <summary>
+        /// Adds the <see cref="HealthCheckService"/> to the container, using the provided delegate to register
+        /// health checks.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the <see cref="HealthCheckService"/> to.</param>
+        /// <param name="configureOptions">A delegate to configure the <see cref="HealthCheckServiceOptions"/>.</param>
+        /// <returns>An instance of <see cref="IHealthChecksBuilder"/> from which health checks can be registered.</returns>
+        public static IHealthChecksBuilder AddHealthChecks(this IServiceCollection services, Action<HealthCheckServiceOptions> configureOptions)
+        {
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            services.AddOptions<HealthCheckServiceOptions>().Configure(configureOptions);
+
+            return services.AddHealthChecks();
+        }
+
+        /// <summary>
+        /// Adds the <see cref="HealthCheckService"/> to the container, using the provided delegate to register
+        /// health checks.
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection"/> to add the <see cref="HealthCheckService"/> to.</param>
+        /// <param name="configureOptions">A delegate to configure the <see cref="HealthCheckServiceOptions"/>.</param>
+        /// <returns>An instance of <see cref="IHealthChecksBuilder"/> from which health checks can be registered.</returns>
+        public static IHealthChecksBuilder AddHealthChecks<TService>(this IServiceCollection services, Action<HealthCheckServiceOptions, TService> configureOptions) where TService : class
+        {
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            services.AddOptions<HealthCheckServiceOptions>().Configure(configureOptions);
+
+            return services.AddHealthChecks();
+        }
+
         /// <summary>
         /// Adds the <see cref="HealthCheckService"/> to the container, using the provided delegate to register
         /// health checks.
