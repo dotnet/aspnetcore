@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open;OSX.1100.Amd64;OSX.1100.Amd64.Open")]
         public static void LoadFromStoreCert_SkipsCertificatesNotYetValid()
         {
             try
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open;OSX.1100.Amd64;OSX.1100.Amd64.Open")]
         public static void LoadFromStoreCert_PrefersCertificatesCloserToExpirationDate()
         {
             try
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/6720", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open;OSX.1100.Amd64;OSX.1100.Amd64.Open")]
         public static void LoadFromStoreCert_SkipsExpiredCertificates()
         {
             try
