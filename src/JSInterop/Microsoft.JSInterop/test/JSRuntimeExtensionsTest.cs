@@ -23,7 +23,7 @@ namespace Microsoft.JSInterop
                 {
                     Assert.Equal(expected, args);
                 })
-                .Returns(new ValueTask<string>("Hello"))
+                .Returns(new ValueTask<string?>("Hello"))
                 .Verifiable();
 
             // Act
@@ -47,7 +47,7 @@ namespace Microsoft.JSInterop
                 {
                     Assert.Equal(expected, args);
                 })
-                .Returns(new ValueTask<string>("Hello"))
+                .Returns(new ValueTask<string?>("Hello"))
                 .Verifiable();
 
             // Act
@@ -65,7 +65,7 @@ namespace Microsoft.JSInterop
             var method = "someMethod";
             var args = new[] { "a", "b" };
             var jsRuntime = new Mock<IJSRuntime>(MockBehavior.Strict);
-            jsRuntime.Setup(s => s.InvokeAsync<object>(method, args)).Returns(new ValueTask<object>(new object()));
+            jsRuntime.Setup(s => s.InvokeAsync<object>(method, args)).Returns(new ValueTask<object?>(new object()));
 
             // Act
             await jsRuntime.Object.InvokeVoidAsync(method, args);
@@ -80,7 +80,7 @@ namespace Microsoft.JSInterop
             var method = "someMethod";
             var args = new[] { "a", "b" };
             var jsRuntime = new Mock<IJSRuntime>(MockBehavior.Strict);
-            jsRuntime.Setup(s => s.InvokeAsync<object>(method, It.IsAny<CancellationToken>(), args)).Returns(new ValueTask<object>(new object()));
+            jsRuntime.Setup(s => s.InvokeAsync<object>(method, It.IsAny<CancellationToken>(), args)).Returns(new ValueTask<object?>(new object()));
 
             // Act
             await jsRuntime.Object.InvokeVoidAsync(method, new CancellationToken(), args);
@@ -103,7 +103,7 @@ namespace Microsoft.JSInterop
                     // it'll get cancelled eventually.
                     Assert.True(cts.CanBeCanceled);
                 })
-                .Returns(new ValueTask<string>(expected));
+                .Returns(new ValueTask<string?>(expected));
 
             // Act
             var result = await jsRuntime.Object.InvokeAsync<string>(method, TimeSpan.FromMinutes(5), args);
@@ -126,7 +126,7 @@ namespace Microsoft.JSInterop
                     Assert.False(cts.CanBeCanceled);
                     Assert.True(cts == CancellationToken.None);
                 })
-                .Returns(new ValueTask<string>(expected));
+                .Returns(new ValueTask<string?>(expected));
 
             // Act
             var result = await jsRuntime.Object.InvokeAsync<string>(method, Timeout.InfiniteTimeSpan, args);
@@ -149,7 +149,7 @@ namespace Microsoft.JSInterop
                     // it'll get cancelled eventually.
                     Assert.True(cts.CanBeCanceled);
                 })
-                .Returns(new ValueTask<object>(new object()));
+                .Returns(new ValueTask<object?>(new object()));
 
             // Act
             await jsRuntime.Object.InvokeVoidAsync(method, TimeSpan.FromMinutes(5), args);
@@ -170,7 +170,7 @@ namespace Microsoft.JSInterop
                     Assert.False(cts.CanBeCanceled);
                     Assert.True(cts == CancellationToken.None);
                 })
-                .Returns(new ValueTask<object>(new object()));
+                .Returns(new ValueTask<object?>(new object()));
 
             // Act
             await jsRuntime.Object.InvokeVoidAsync(method, Timeout.InfiniteTimeSpan, args);
