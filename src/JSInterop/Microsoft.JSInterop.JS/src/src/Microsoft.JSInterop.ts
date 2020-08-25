@@ -22,16 +22,14 @@ export module DotNet {
       }
 
       let result: any = this._jsObject;
-      let resultIdentifier = this._jsObject.constructor.name;
       let lastSegmentValue: any;
 
       identifier.split('.').forEach(segment => {
         if (segment in result) {
           lastSegmentValue = result;
           result = result[segment];
-          resultIdentifier += '.' + segment;
         } else {
-          throw new Error(`Could not find '${segment}' in '${resultIdentifier}'`);
+          throw new Error(`Could not find '${identifier}' ('${segment}' was undefined).`);
         }
       });
 
@@ -40,7 +38,7 @@ export module DotNet {
         this._cachedFunctions.set(identifier, result);
         return result;
       } else {
-        throw new Error(`The value '${resultIdentifier}' is not a function.`);
+        throw new Error(`The value '${identifier}' is not a function.`);
       }
     }
 
@@ -52,11 +50,12 @@ export module DotNet {
   const jsObjectIdKey = "__jsObjectId";
 
   const pendingAsyncCalls: { [id: number]: PendingAsyncCall<any> } = {};
+  const windowJSObjectId = 0;
   const cachedJSObjectsById: { [id: number]: JSObject } = {
-    0: new JSObject(window),
+    [windowJSObjectId]: new JSObject(window),
   };
 
-  cachedJSObjectsById[0]._cachedFunctions.set('import', (url: any) => {
+  cachedJSObjectsById[windowJSObjectId]._cachedFunctions.set('import', (url: any) => {
     // In most cases developers will want to resolve dynamic imports relative to the base HREF.
     // However since we're the one calling the import keyword, they would be resolved relative to
     // this framework bundle URL. Fix this by providing an absolute URL.

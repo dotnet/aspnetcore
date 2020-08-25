@@ -151,6 +151,9 @@
             JSObjectReferenceInvokeNonFunctionException = e;
         }
 
+        var module = await JSRuntime.InvokeAsync<JSObjectReference>("import", "./js/testmodule.js");
+        ReturnValues["jsObjectReferenceModule"] = await module.InvokeAsync<string>("identity", "Returned from module!");
+
         if (shouldSupportSyncInterop)
         {
             InvokeInProcessJSInterop();
