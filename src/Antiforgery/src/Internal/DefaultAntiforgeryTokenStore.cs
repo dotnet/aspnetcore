@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -57,7 +58,24 @@ namespace Microsoft.AspNetCore.Antiforgery
             {
                 // Check the content-type before accessing the form collection to make sure
                 // we report errors gracefully.
-                var form = await httpContext.Request.ReadFormAsync();
+                IFormCollection form;
+                try
+                {
+                    form = await httpContext.Request.ReadFormAsync();
+                }
+                catch (InvalidDataException ex)
+                {
+                    // ReadFormAsync can throw InvalidDataException if the form content is malformed.
+                    // Wrap it in an AntiforgeryValidationException and allow the caller to handle it as just another antiforgery failure.
+                    throw new AntiforgeryValidationException(Resources.AntiforgeryToken_UnableToReadRequest, ex);
+                }
+                catch (IOException ex)
+                {
+                    // Reading the request body (which happens as part of ReadFromAsync) may throw an exception if a client disconnects.
+                    // Wrap it in an AntiforgeryValidationException and allow the caller to handle it as just another antiforgery failure.
+                    throw new AntiforgeryValidationException(Resources.AntiforgeryToken_UnableToReadRequest, ex);
+                }
+
                 requestToken = form[_options.FormFieldName];
             }
 

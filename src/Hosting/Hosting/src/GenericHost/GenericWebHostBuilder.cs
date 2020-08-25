@@ -29,13 +29,18 @@ namespace Microsoft.AspNetCore.Hosting
         private AggregateException _hostingStartupErrors;
         private HostingStartupWebHostBuilder _hostingStartupWebHostBuilder;
 
-        public GenericWebHostBuilder(IHostBuilder builder)
+        public GenericWebHostBuilder(IHostBuilder builder, WebHostBuilderOptions options)
         {
             _builder = builder;
+            var configBuilder = new ConfigurationBuilder()
+                .AddInMemoryCollection();
 
-            _config = new ConfigurationBuilder()
-                .AddEnvironmentVariables(prefix: "ASPNETCORE_")
-                .Build();
+            if (!options.SuppressEnvironmentConfiguration)
+            {
+                configBuilder.AddEnvironmentVariables(prefix: "ASPNETCORE_");
+            }
+
+            _config = configBuilder.Build();
 
             _builder.ConfigureHostConfiguration(config =>
             {

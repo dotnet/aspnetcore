@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DotNetCliTool Version="1">
+  <Commands>
+    <Command Name="dotnet-watch" EntryPoint="dotnet-watch.dll" Runner="dotnet" />
+  </Commands>
+</DotNetCliTool>

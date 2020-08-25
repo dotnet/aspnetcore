@@ -8,7 +8,6 @@ window['Blazor'] = {
   navigateTo,
 
   _internal: {
-    attachRootComponentToElement,
     navigationManager: navigationManagerInternalFunctions,
     domWrapper: domFunctions,
     Virtualize,

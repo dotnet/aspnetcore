@@ -35,6 +35,17 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
         /// <param name="selector">The DOM element selector.</param>
         public void Add(Type componentType, string selector)
         {
+            Add(componentType, selector, ParameterView.Empty);
+        }
+
+        /// <summary>
+        /// Adds a component mapping to the collection.
+        /// </summary>
+        /// <param name="componentType">The component type. Must implement <see cref="IComponent"/>.</param>
+        /// <param name="selector">The DOM element selector.</param>
+        /// <param name="parameters">The parameters to the root component.</param>
+        public void Add(Type componentType, string selector, ParameterView parameters)
+        {
             if (componentType is null)
             {
                 throw new ArgumentNullException(nameof(componentType));
@@ -45,7 +56,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 throw new ArgumentNullException(nameof(selector));
             }
 
-            Add(new RootComponentMapping(componentType, selector));
+            Add(new RootComponentMapping(componentType, selector, parameters));
         }
 
         /// <summary>
