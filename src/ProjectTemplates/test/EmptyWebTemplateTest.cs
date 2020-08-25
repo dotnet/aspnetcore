@@ -24,7 +24,7 @@ namespace Templates.Test
         public ITestOutputHelper Output { get; }
 
         [ConditionalFact]
-        [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open;OSX.1100.Amd64;OSX.1100.Amd64.Open")]
         public async Task EmptyWebTemplateCSharp()
         {
             await EmtpyTemplateCore(languageOverride: null);
