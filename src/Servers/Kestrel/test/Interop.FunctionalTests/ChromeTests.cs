@@ -68,6 +68,7 @@ namespace Interop.FunctionalTests
         [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win81, SkipReason = "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support")]
         [InlineData("", "Interop HTTP/2 GET")]
         [InlineData("?TestMethod=POST", "Interop HTTP/2 POST")]
+        [Repeat]
         public async Task Http2(string requestSuffix, string expectedResponse)
         {
             InitializeArgs();

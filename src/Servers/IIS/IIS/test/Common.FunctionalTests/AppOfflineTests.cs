@@ -78,6 +78,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
+        [Repeat]
         public async Task AppOfflineDroppedWhileSiteFailedToStartInRequestHandler_SiteStops_InProcess()
         {
             var deploymentResult = await DeployApp(HostingModel.InProcess);

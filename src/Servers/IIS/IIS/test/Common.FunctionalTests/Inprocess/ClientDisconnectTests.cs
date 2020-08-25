@@ -67,6 +67,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [Repeat]
         public async Task ClientDisconnectCallbackStress()
         {
             // Fixture initialization fails if inside of the Task.Run, so send an

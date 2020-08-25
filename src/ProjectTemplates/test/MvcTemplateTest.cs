@@ -28,6 +28,7 @@ namespace Templates.Test
 
         [ConditionalFact]
         [SkipOnHelix("cert failure", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [Repeat]
         public async Task MvcTemplate_NoAuthFSharp() => await MvcTemplateCore(languageOverride: "F#");
 
         [ConditionalFact]

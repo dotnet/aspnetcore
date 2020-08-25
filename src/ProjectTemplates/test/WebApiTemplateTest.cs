@@ -34,6 +34,7 @@ namespace Templates.Test
 
         [ConditionalFact]
         [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        [Repeat]
         public Task WebApiTemplateFSharp() => WebApiTemplateCore(languageOverride: "F#");
 
         [ConditionalFact]

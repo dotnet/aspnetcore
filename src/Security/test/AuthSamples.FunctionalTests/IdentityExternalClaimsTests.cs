@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace AuthSamples.FunctionalTests
@@ -30,6 +31,7 @@ namespace AuthSamples.FunctionalTests
         }
 
         [Fact]
+        [Repeat]
         public async Task MyClaimsRedirectsToLoginPageWhenNotLoggedIn()
         {
             // Arrange & Act

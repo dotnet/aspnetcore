@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -78,6 +79,7 @@ namespace MusicStore.Controllers
         }
 
         [Fact]
+        [Repeat]
         public async Task Index_ReturnsCartItems_WhenItemsInCart()
         {
             // Arrange
@@ -114,6 +116,7 @@ namespace MusicStore.Controllers
         }
 
         [Fact]
+        [Repeat]
         public async Task AddToCart_AddsItemToCart()
         {
             // Arrange
@@ -156,6 +159,7 @@ namespace MusicStore.Controllers
         }
 
         [Fact]
+        [Repeat]
         public async Task RemoveFromCart_RemovesItemFromCart()
         {
             // Arrange

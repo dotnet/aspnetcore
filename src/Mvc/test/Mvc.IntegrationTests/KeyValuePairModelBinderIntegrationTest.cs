@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests
@@ -312,6 +313,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
+        [Repeat]
         public async Task KeyValuePairModelBinder_BindsKeyValuePairOfSimpleType_NoData()
         {
             // Arrange
@@ -477,6 +479,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
+        [Repeat]
         public async Task KeyValuePairModelBinder_BindsKeyValuePairOfComplexType_NoData()
         {
             // Arrange

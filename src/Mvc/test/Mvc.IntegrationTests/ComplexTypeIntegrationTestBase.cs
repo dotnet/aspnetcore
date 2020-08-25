@@ -1853,6 +1853,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
+        [Repeat]
         public async Task ComplexBinder_BindsKeyValuePairProperty_NoCollectionData()
         {
             // Arrange
@@ -1902,6 +1903,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         [Fact]
+        [Repeat]
         public async Task ComplexBinder_BindsKeyValuePairProperty_NoData()
         {
             // Arrange

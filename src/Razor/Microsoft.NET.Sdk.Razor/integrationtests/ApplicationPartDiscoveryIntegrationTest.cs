@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [InitializeTestProject("AppWithP2PReference", additionalProjects: "ClassLibrary")]
+        [Repeat]
         public Task Build_ProjectWithDependencyThatReferencesMvc_AddsAttribute_WhenBuildingUsingDesktopMsbuild()
             => Build_ProjectWithDependencyThatReferencesMvc_AddsAttribute(MSBuildProcessKind.Desktop);
 

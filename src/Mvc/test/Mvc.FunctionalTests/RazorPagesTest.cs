@@ -805,6 +805,7 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
         }
 
         [Fact]
+        [Repeat]
         public async Task PolymorphicPropertiesOnPageModelsAreValidated()
         {
             // Arrange
