@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.DirectoryServices.Protocols;
 using System.Security.Principal;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
@@ -17,7 +15,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Negotiate
