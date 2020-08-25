@@ -527,6 +527,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 }
             }
 
+             _recordTypeConstructorDetailsCalculated = true;
             _parameterMapping = parameterMapping;
         }
 
