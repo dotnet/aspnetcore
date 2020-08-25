@@ -22,10 +22,9 @@ namespace Microsoft.AspNetCore.Components
 
         public static ClientComponentParameterDeserializer Instance { get; } = new ClientComponentParameterDeserializer(new ComponentParametersTypeCache());
 
-        public ParameterView DeserializeParameters(IList<ComponentParameter> parametersDefinitions, IList<object> parameterValues, out ParameterView parameters)
+        public ParameterView DeserializeParameters(IList<ComponentParameter> parametersDefinitions, IList<object> parameterValues)
         {
-            parameters = default;
-            var parametersDictionary = new Dictionary<string, object>();
+            var parametersDictionary = new Dictionary<string, object>(StringComparer.Ordinal);
 
             if (parameterValues.Count != parametersDefinitions.Count)
             {
@@ -43,7 +42,7 @@ namespace Microsoft.AspNetCore.Components
 
                 if (definition.TypeName == null && definition.Assembly == null)
                 {
-                    parametersDictionary.Add(definition.Name, null);
+                    parametersDictionary[definition.Name] = null;
                 }
                 else if (definition.TypeName == null || definition.Assembly == null)
                 {
@@ -64,7 +63,7 @@ namespace Microsoft.AspNetCore.Components
                             parameterType,
                             ClientComponentSerializationSettings.JsonSerializationOptions);
 
-                        parametersDictionary.Add(definition.Name, parameterValue);
+                        parametersDictionary[definition.Name] = parameterValue;
                     }
                     catch (Exception e)
                     {
@@ -73,8 +72,7 @@ namespace Microsoft.AspNetCore.Components
                 }
             }
 
-            parameters = ParameterView.FromDictionary(parametersDictionary);
-            return parameters;
+            return ParameterView.FromDictionary(parametersDictionary);
         }
 
         public ComponentParameter[] GetParameterDefinitions(string parametersDefinitions)

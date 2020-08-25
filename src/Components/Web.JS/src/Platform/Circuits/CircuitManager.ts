@@ -169,6 +169,7 @@ function createServerComponentComment(json: string, start: Node, iterator: Compo
     throw new Error(`Invalid component type '${type}'.`);
   }
 
+  // We should not encounter this, but in the case we do, simply ignore it.
   if(type === 'client')
   {
     return undefined;

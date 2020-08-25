@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     public sealed class WebAssemblyHostBuilder
     {
         private Func<IServiceProvider> _createServiceProvider;
+        private RootComponentTypeCache _rootComponentCache;
 
         /// <summary>
         /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> using the most common
@@ -91,10 +92,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             var componentDeserializer = ClientComponentParameterDeserializer.Instance;
             foreach (var registeredComponent in registeredComponents)
             {
-                var componentType = RootComponentTypeCache.GetRootComponent(registeredComponent.Assembly, registeredComponent.TypeName);
+                _rootComponentCache = new RootComponentTypeCache();
+                var componentType = _rootComponentCache.GetRootComponent(registeredComponent.Assembly, registeredComponent.TypeName);
                 var definitions = componentDeserializer.GetParameterDefinitions(registeredComponent.ParameterDefinitions);
                 var values = componentDeserializer.GetParameterValues(registeredComponent.ParameterValues);
-                componentDeserializer.DeserializeParameters(definitions, values, out var parameters))
+                var parameters = componentDeserializer.DeserializeParameters(definitions, values);
 
                 RootComponents.Add(componentType, registeredComponent.PrerenderId, parameters);
             }

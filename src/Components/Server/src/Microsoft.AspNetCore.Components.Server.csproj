@@ -55,6 +55,7 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="Circuits" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ComponentParametersTypeCache.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentTypeCache.cs" />
 
     <Compile Include="..\..\Shared\src\BrowserNavigationManagerInterop.cs" />
     <Compile Include="..\..\Shared\src\JsonSerializerOptionsProvider.cs" />

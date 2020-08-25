@@ -14,11 +14,11 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     {
         /// <summary>
         /// Creates a new instance of <see cref="RootComponentMapping"/> with the provided <paramref name="componentType"/>
-        /// and <paramref name="selectorOrId"/>.
+        /// and <paramref name="selector"/>.
         /// </summary>
         /// <param name="componentType">The component type. Must implement <see cref="IComponent"/>.</param>
-        /// <param name="selectorOrId">The DOM element selector or component registration id for the component.</param>
-        public RootComponentMapping(Type componentType, string selectorOrId)
+        /// <param name="selector">The DOM element selector or component registration id for the component.</param>
+        public RootComponentMapping(Type componentType, string selector)
         {
             if (componentType is null)
             {
@@ -32,24 +32,24 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                     nameof(componentType));
             }
 
-            if (selectorOrId is null)
+            if (selector is null)
             {
-                throw new ArgumentNullException(nameof(selectorOrId));
+                throw new ArgumentNullException(nameof(selector));
             }
 
             ComponentType = componentType;
-            Selector = selectorOrId;
+            Selector = selector;
             Parameters = ParameterView.Empty;
         }
 
         /// <summary>
         /// Creates a new instance of <see cref="RootComponentMapping"/> with the provided <paramref name="componentType"/>
-        /// and <paramref name="selectorOrId"/>.
+        /// and <paramref name="selector"/>.
         /// </summary>
         /// <param name="componentType">The component type. Must implement <see cref="IComponent"/>.</param>
-        /// <param name="selectorOrId">The DOM element selector or registration id for the component.</param>
+        /// <param name="selector">The DOM element selector or registration id for the component.</param>
         /// <param name="parameters">The parameters to pass to the component.</param>
-        public RootComponentMapping(Type componentType, string selectorOrId, ParameterView parameters) : this(componentType, selectorOrId)
+        public RootComponentMapping(Type componentType, string selector, ParameterView parameters) : this(componentType, selector)
         {
             Parameters = parameters;
         }

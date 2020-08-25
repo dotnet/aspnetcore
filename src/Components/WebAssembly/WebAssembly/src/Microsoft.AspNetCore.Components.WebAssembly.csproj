@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -26,6 +26,7 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebEventData.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ComponentParametersTypeCache.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentTypeCache.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ClientComponentSerializationSettings.cs" Link="Prerendering/ClientComponentSerializationSettings.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ClientComponentMarker.cs" Link="Prerendering/ClientComponentMarker.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ComponentParameter.cs" Link="Prerendering/ComponentParameter.cs" />
