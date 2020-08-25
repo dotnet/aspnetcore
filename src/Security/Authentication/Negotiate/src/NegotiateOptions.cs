@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
     /// <summary>
@@ -32,6 +34,42 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// The default is true.
         /// </summary>
         public bool PersistNtlmCredentials { get; set; } = true;
+
+        /// <summary>
+        /// Configuration settings for LDAP connections used to retrieve claims.
+        /// This should only be used on Linux systems.
+        /// </summary>
+        internal LdapSettings LdapSettings { get; } = new LdapSettings();
+
+        /// <summary>
+        /// Use LDAP connections used to retrieve claims for the given domain.
+        /// This should only be used on Linux systems.
+        /// </summary>
+        public void EnableLdap(string domain)
+        {
+            if (string.IsNullOrEmpty(domain))
+            {
+                throw new ArgumentNullException(nameof(domain));
+            }
+
+            LdapSettings.EnableLdapClaimResolution = true;
+            LdapSettings.Domain = domain;
+        }
+
+        /// <summary>
+        /// Use LDAP connections used to retrieve claims using the configured settings.
+        /// This should only be used on Linux systems.
+        /// </summary>
+        public void EnableLdap(Action<LdapSettings> configureSettings)
+        {
+            if (configureSettings == null)
+            {
+                throw new ArgumentNullException(nameof(configureSettings));
+            }
+
+            LdapSettings.EnableLdapClaimResolution = true;
+            configureSettings(LdapSettings);
+        }
 
         /// <summary>
         /// Indicates if integrated server Windows Auth is being used instead of this handler.

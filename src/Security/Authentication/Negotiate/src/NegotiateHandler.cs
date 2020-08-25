@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text.Encodings.Web;
@@ -324,10 +325,37 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 user = new ClaimsPrincipal(new ClaimsIdentity(identity));
             }
 
-            var authenticatedContext = new AuthenticatedContext(Context, Scheme, Options)
+            AuthenticatedContext authenticatedContext;
+
+            if (Options.LdapSettings.EnableLdapClaimResolution)
             {
-                Principal = user
-            };
+                var ldapContext = new LdapContext(Context, Scheme, Options, Options.LdapSettings)
+                {
+                    Principal = user
+                };
+
+                await Events.RetrieveLdapClaims(ldapContext);
+
+                if (ldapContext.Result != null)
+                {
+                    return ldapContext.Result;
+                }
+
+                await LdapAdapter.RetrieveClaimsAsync(ldapContext.LdapSettings, ldapContext.Principal.Identity as ClaimsIdentity, Logger);
+
+                authenticatedContext = new AuthenticatedContext(Context, Scheme, Options)
+                {
+                    Principal = ldapContext.Principal
+                };
+            }
+            else
+            {
+                authenticatedContext = new AuthenticatedContext(Context, Scheme, Options)
+                {
+                    Principal = user
+                };
+            }
+
             await Events.Authenticated(authenticatedContext);
 
             if (authenticatedContext.Result != null)
