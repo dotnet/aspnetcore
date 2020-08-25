@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Components
 {
     internal struct WebAssemblyComponentMarker
     {
-        public const string ClientMarkerType = "client";
+        public const string ClientMarkerType = "webassembly";
 
         public WebAssemblyComponentMarker(string type, string assembly, string typeName, string parameterDefinitions, string parameterValues, string prereenderId) =>
             (Type, Assembly, TypeName, ParameterDefinitions, ParameterValues, PrerenderId) = (type, assembly, typeName, parameterDefinitions, parameterValues, prereenderId);

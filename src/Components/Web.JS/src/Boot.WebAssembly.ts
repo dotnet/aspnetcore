@@ -11,7 +11,8 @@ import { WebAssemblyConfigLoader } from './Platform/WebAssemblyConfigLoader';
 import { BootConfigResult } from './Platform/BootConfig';
 import { Pointer } from './Platform/Platform';
 import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
-import { discoverComponents, WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
+import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
+import { discoverComponents, WebAssemblyComponentDescriptor } from './Services/ComponentDescriptorDiscovery';
 
 let started = false;
 
@@ -76,7 +77,7 @@ async function boot(options?: Partial<WebAssemblyStartOptions>): Promise<void> {
 
   // Leverage the time while we are loading boot.config.json from the network to discover any potentially registered component on
   // the document.
-  const discoveredComponents = discoverComponents(document);
+  const discoveredComponents = discoverComponents(document, 'webassembly') as WebAssemblyComponentDescriptor[];
   const componentAttacher = new WebAssemblyComponentAttacher(discoveredComponents);
   window['Blazor']._internal.registeredComponents = {
     getRegisteredComponentsCount: () => componentAttacher.getCount(),
