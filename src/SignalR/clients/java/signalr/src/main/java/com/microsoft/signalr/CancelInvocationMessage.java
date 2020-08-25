@@ -5,7 +5,7 @@ package com.microsoft.signalr;
 
 import java.util.Map;
 
-final class CancelInvocationMessage extends HubMessage {
+public final class CancelInvocationMessage extends HubMessage {
     private final int type = HubMessageType.CANCEL_INVOCATION.value;
     private Map<String, String> headers;
     private final String invocationId;

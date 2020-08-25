@@ -5,6 +5,7 @@ package com.microsoft.signalr;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import com.microsoft.signalr.messagepack.MessagePackHubProtocol;
 
 class TestUtils {
     
@@ -33,7 +34,7 @@ class TestUtils {
             .shouldSkipNegotiate(skipNegotiate);
         
         if (withMessagePack) {
-            builder = builder.withMessagePackHubProtocol();
+            builder = builder.withProtocol(new MessagePackHubProtocol());
         }
 
         return builder.build();

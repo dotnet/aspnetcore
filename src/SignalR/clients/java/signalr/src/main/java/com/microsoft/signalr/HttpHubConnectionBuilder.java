@@ -57,12 +57,12 @@ public class HttpHubConnectionBuilder {
     }
     
     /**
-     * Sets MessagePack as the {@link HubProtocol} to be used by the {@link HubConnection}.
+     * Sets the {@link HubProtocol} to be used by the {@link HubConnection}.
      *
      * @return This instance of the HttpHubConnectionBuilder.
      */
-    public HttpHubConnectionBuilder withMessagePackHubProtocol() {
-        this.protocol = new MessagePackHubProtocol();
+    public HttpHubConnectionBuilder withProtocol(HubProtocol protocol) {
+        this.protocol = protocol;
         return this;
     }
 

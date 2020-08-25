@@ -3,7 +3,7 @@
 
 package com.microsoft.signalr;
 
-final class CloseMessage extends HubMessage {
+public final class CloseMessage extends HubMessage {
     private final String error;
     private final boolean allowReconnect;
 

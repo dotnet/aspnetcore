@@ -6,7 +6,7 @@ package com.microsoft.signalr;
 import java.util.Collection;
 import java.util.Map;
 
-final class StreamInvocationMessage extends InvocationMessage {
+public final class StreamInvocationMessage extends InvocationMessage {
     
     public StreamInvocationMessage(Map<String, String> headers, String invocationId, String target, Object[] args, Collection<String> streamIds) {
         super(headers, invocationId, target, args, streamIds);

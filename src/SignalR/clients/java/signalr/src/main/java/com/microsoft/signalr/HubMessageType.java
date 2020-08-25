@@ -3,7 +3,7 @@
 
 package com.microsoft.signalr;
 
-enum HubMessageType {
+public enum HubMessageType {
     INVOCATION(1),
     STREAM_ITEM(2),
     COMPLETION(3),

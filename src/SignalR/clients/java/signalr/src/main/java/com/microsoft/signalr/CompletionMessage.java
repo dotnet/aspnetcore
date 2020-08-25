@@ -5,7 +5,7 @@ package com.microsoft.signalr;
 
 import java.util.Map;
 
-final class CompletionMessage extends HubMessage {
+public final class CompletionMessage extends HubMessage {
     private final int type = HubMessageType.COMPLETION.value;
     private Map<String, String> headers;
     private final String invocationId;

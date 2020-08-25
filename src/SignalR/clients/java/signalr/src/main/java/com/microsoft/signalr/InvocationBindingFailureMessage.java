@@ -3,7 +3,7 @@
 
 package com.microsoft.signalr;
 
-class InvocationBindingFailureMessage extends HubMessage {
+public class InvocationBindingFailureMessage extends HubMessage {
     private final String invocationId;
     private final String target;
     private final Exception exception;

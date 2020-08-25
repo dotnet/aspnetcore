@@ -6,6 +6,6 @@ package com.microsoft.signalr;
 /**
  * A base class for hub messages.
  */
- abstract class HubMessage {
+public abstract class HubMessage {
     public abstract HubMessageType getMessageType();
 }

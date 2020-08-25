@@ -3,7 +3,7 @@
 
 package com.microsoft.signalr;
 
-class PingMessage extends HubMessage
+public class PingMessage extends HubMessage
 {
     private final int type = HubMessageType.PING.value;
 

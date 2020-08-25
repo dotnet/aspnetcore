@@ -3,7 +3,7 @@
 
 package com.microsoft.signalr;
 
-class StreamBindingFailureMessage extends HubMessage {
+public class StreamBindingFailureMessage extends HubMessage {
     private final String invocationId;
     private final Exception exception;
 

@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * An abstraction for passing around information about method signatures.
  */
-interface InvocationBinder {
+public interface InvocationBinder {
     Type getReturnType(String invocationId);
     List<Type> getParameterTypes(String methodName);
 }

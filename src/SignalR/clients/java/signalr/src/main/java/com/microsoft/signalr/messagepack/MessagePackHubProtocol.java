@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-package com.microsoft.signalr;
+package com.microsoft.signalr.messagepack;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -25,7 +25,22 @@ import org.msgpack.value.ValueType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
-class MessagePackHubProtocol implements HubProtocol {
+import com.microsoft.signalr.CancelInvocationMessage;
+import com.microsoft.signalr.CloseMessage;
+import com.microsoft.signalr.CompletionMessage;
+import com.microsoft.signalr.HubMessage;
+import com.microsoft.signalr.HubMessageType;
+import com.microsoft.signalr.HubProtocol;
+import com.microsoft.signalr.InvocationBinder;
+import com.microsoft.signalr.InvocationBindingFailureMessage;
+import com.microsoft.signalr.InvocationMessage;
+import com.microsoft.signalr.PingMessage;
+import com.microsoft.signalr.StreamBindingFailureMessage;
+import com.microsoft.signalr.StreamInvocationMessage;
+import com.microsoft.signalr.StreamItem;
+import com.microsoft.signalr.TransferFormat;
+
+public class MessagePackHubProtocol implements HubProtocol {
     
     private static final int ERROR_RESULT = 1;
     private static final int VOID_RESULT = 2;
