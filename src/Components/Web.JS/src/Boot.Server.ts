@@ -97,7 +97,7 @@ async function initializeConnection(options: CircuitStartOptions, logger: Logger
 
   connection.on('JS.AttachComponent', (componentId, selector) => attachRootComponentToLogicalElement(0, circuit.resolveElement(selector), componentId));
   connection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
-  connection.on('JS.EndInvokeDotNet', (args: string) => DotNet.jsCallDispatcher.endInvokeDotNetFromJS(...(JSON.parse(args) as [string, boolean, unknown])));
+  connection.on('JS.EndInvokeDotNet', (args: string) => DotNet.jsCallDispatcher.endInvokeDotNetFromJS(...(DotNet.parseJsonWithRevivers(args) as [string, boolean, unknown])));
 
   const renderQueue = RenderQueue.getOrCreate(logger);
   connection.on('JS.RenderBatch', (batchId: number, batchData: Uint8Array) => {

@@ -66,6 +66,7 @@ public class HubConnection implements AutoCloseable {
     private final int negotiateVersion = 1;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
     private ScheduledExecutorService handshakeTimeout = null;
+    private Completable start;
 
     /**
      * Sets the server timeout interval for the connection.
@@ -341,83 +342,99 @@ public class HubConnection implements AutoCloseable {
      * @return A Completable that completes when the connection has been established.
      */
     public Completable start() {
-        if (hubConnectionState != HubConnectionState.DISCONNECTED) {
-            return Completable.complete();
-        }
+        CompletableSubject localStart = CompletableSubject.create();
 
-        handshakeResponseSubject = CompletableSubject.create();
-        handshakeReceived = false;
-        CompletableSubject tokenCompletable = CompletableSubject.create();
-        localHeaders.put(UserAgentHelper.getUserAgentName(), UserAgentHelper.createUserAgentString());
-        if (headers != null) {
-            this.localHeaders.putAll(headers);
-        }
-
-        accessTokenProvider.subscribe(token -> {
-            if (token != null && !token.isEmpty()) {
-                this.localHeaders.put("Authorization", "Bearer " + token);
+        hubConnectionStateLock.lock();
+        try {
+            if (hubConnectionState != HubConnectionState.DISCONNECTED) {
+                logger.debug("The connection is in the '{}' state. Waiting for in-progress start to complete or completing this start immediately.", hubConnectionState);
+                return start;
             }
-            tokenCompletable.onComplete();
-        }, error -> {
-            tokenCompletable.onError(error);
-        });
 
-        stopError = null;
-        Single<NegotiateResponse> negotiate = null;
-        if (!skipNegotiate) {
-            negotiate = tokenCompletable.andThen(Single.defer(() -> startNegotiate(baseUrl, 0)));
-        } else {
-            negotiate = tokenCompletable.andThen(Single.defer(() -> Single.just(new NegotiateResponse(baseUrl))));
-        }
+            hubConnectionState = HubConnectionState.CONNECTING;
+            start = localStart;
 
-        CompletableSubject start = CompletableSubject.create();
+            handshakeResponseSubject = CompletableSubject.create();
+            handshakeReceived = false;
+            CompletableSubject tokenCompletable = CompletableSubject.create();
+            localHeaders.put(UserAgentHelper.getUserAgentName(), UserAgentHelper.createUserAgentString());
+            if (headers != null) {
+                this.localHeaders.putAll(headers);
+            }
 
-        negotiate.flatMapCompletable(negotiateResponse -> {
-            logger.debug("Starting HubConnection.");
-            if (transport == null) {
-                Single<String> tokenProvider = negotiateResponse.getAccessToken() != null ? Single.just(negotiateResponse.getAccessToken()) : accessTokenProvider;
-                switch (transportEnum) {
-                    case LONG_POLLING:
-                        transport = new LongPollingTransport(localHeaders, httpClient, tokenProvider);
-                        break;
-                    default:
-                        transport = new WebSocketTransport(localHeaders, httpClient);
+            accessTokenProvider.subscribe(token -> {
+                if (token != null && !token.isEmpty()) {
+                    this.localHeaders.put("Authorization", "Bearer " + token);
                 }
+                tokenCompletable.onComplete();
+            }, error -> {
+                tokenCompletable.onError(error);
+            });
+
+            stopError = null;
+            Single<NegotiateResponse> negotiate = null;
+            if (!skipNegotiate) {
+                negotiate = tokenCompletable.andThen(Single.defer(() -> startNegotiate(baseUrl, 0)));
+            } else {
+                negotiate = tokenCompletable.andThen(Single.defer(() -> Single.just(new NegotiateResponse(baseUrl))));
             }
 
-            transport.setOnReceive(this.callback);
-            transport.setOnClose((message) -> stopConnection(message));
+            negotiate.flatMapCompletable(negotiateResponse -> {
+                logger.debug("Starting HubConnection.");
+                if (transport == null) {
+                    Single<String> tokenProvider = negotiateResponse.getAccessToken() != null ? Single.just(negotiateResponse.getAccessToken()) : accessTokenProvider;
+                    switch (transportEnum) {
+                        case LONG_POLLING:
+                            transport = new LongPollingTransport(localHeaders, httpClient, tokenProvider);
+                            break;
+                        default:
+                            transport = new WebSocketTransport(localHeaders, httpClient);
+                    }
+                }
 
-            return transport.start(negotiateResponse.getFinalUrl()).andThen(Completable.defer(() -> {
-                ByteBuffer handshake = HandshakeProtocol.createHandshakeRequestMessage(
-                        new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
+                transport.setOnReceive(this.callback);
+                transport.setOnClose((message) -> stopConnection(message));
 
-                connectionState = new ConnectionState(this);
+                return transport.start(negotiateResponse.getFinalUrl()).andThen(Completable.defer(() -> {
+                    ByteBuffer handshake = HandshakeProtocol.createHandshakeRequestMessage(
+                            new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
 
-                return transport.send(handshake).andThen(Completable.defer(() -> {
-                    timeoutHandshakeResponse(handshakeResponseTimeout, TimeUnit.MILLISECONDS);
-                    return handshakeResponseSubject.andThen(Completable.defer(() -> {
-                        hubConnectionStateLock.lock();
-                        try {
-                            hubConnectionState = HubConnectionState.CONNECTED;
-                            logger.info("HubConnection started.");
-                            resetServerTimeout();
-                            //Don't send pings if we're using long polling.
-                            if (transportEnum != TransportEnum.LONG_POLLING) {
-                                activatePingTimer();
+                    connectionState = new ConnectionState(this);
+
+                    return transport.send(handshake).andThen(Completable.defer(() -> {
+                        timeoutHandshakeResponse(handshakeResponseTimeout, TimeUnit.MILLISECONDS);
+                        return handshakeResponseSubject.andThen(Completable.defer(() -> {
+                            hubConnectionStateLock.lock();
+                            try {
+                                hubConnectionState = HubConnectionState.CONNECTED;
+                                logger.info("HubConnection started.");
+                                resetServerTimeout();
+                                //Don't send pings if we're using long polling.
+                                if (transportEnum != TransportEnum.LONG_POLLING) {
+                                    activatePingTimer();
+                                }
+                            } finally {
+                                hubConnectionStateLock.unlock();
                             }
-                        } finally {
-                            hubConnectionStateLock.unlock();
-                        }
 
-                        return Completable.complete();
+                            return Completable.complete();
+                        }));
                     }));
                 }));
-            }));
-        // subscribe makes this a "hot" completable so this runs immediately
-        }).subscribeWith(start);
+            // subscribe makes this a "hot" completable so this runs immediately
+            }).subscribe(() -> {
+                localStart.onComplete();
+            }, error -> {
+                hubConnectionStateLock.lock();
+                hubConnectionState = HubConnectionState.DISCONNECTED;
+                hubConnectionStateLock.unlock();
+                localStart.onError(error);
+            });
+        } finally {
+            hubConnectionStateLock.unlock();
+        }
 
-        return start;
+        return localStart;
     }
 
     private void activatePingTimer() {
@@ -445,8 +462,8 @@ public class HubConnection implements AutoCloseable {
     }
 
     private Single<NegotiateResponse> startNegotiate(String url, int negotiateAttempts) {
-        if (hubConnectionState != HubConnectionState.DISCONNECTED) {
-            return Single.just(null);
+        if (hubConnectionState != HubConnectionState.CONNECTING) {
+            throw new RuntimeException("HubConnection trying to negotiate when not in the CONNECTING state.");
         }
 
         return handleNegotiate(url).flatMap(response -> {

@@ -8,7 +8,6 @@ import java.util.Scanner;
 import com.microsoft.signalr.HubConnection;
 import com.microsoft.signalr.HubConnectionBuilder;
 
-
 public class Chat {
     public static void main(final String[] args) throws Exception {
         System.out.println("Enter the URL of the SignalR Chat you want to join");
@@ -33,7 +32,7 @@ public class Chat {
             while (!message.equals("leave")) {
                 // Scans the next token of the input as an int.
                 message = reader.nextLine();
-                hubConnection.send("Send", message);
+                hubConnection.send("Send", "Java", message);
             }
 
             hubConnection.stop().blockingAwait();

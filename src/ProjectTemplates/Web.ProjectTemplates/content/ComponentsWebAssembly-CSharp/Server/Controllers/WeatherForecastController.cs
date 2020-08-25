@@ -37,7 +37,7 @@ namespace ComponentsWebAssembly_CSharp.Server.Controllers
 
         private readonly ILogger<WeatherForecastController> _logger;
 
-        // The Web API will only accept tokens 1) for users, and 2) having the access_as_user scope for this API
+        // The Web API will only accept tokens 1) for users, and 2) having the api-scope scope for this API
         static readonly string[] scopeRequiredByApi = new string[] { "api-scope" };
 
 #if (GenerateApi)
@@ -75,7 +75,7 @@ namespace ComponentsWebAssembly_CSharp.Server.Controllers
         {
              _logger = logger;
             _graphServiceClient = graphServiceClient;
-       }
+        }
 
         [HttpGet]
         public async Task<IEnumerable<WeatherForecast>> Get()
