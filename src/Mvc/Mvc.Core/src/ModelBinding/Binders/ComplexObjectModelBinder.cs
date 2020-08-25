@@ -79,8 +79,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             if (boundConstructor != null)
             {
-                // To bind record we need to instantiate the type. This means we'll ignore a previously
-                // assigned bindingContext.Model value.
+                // Only record types are allowed to have a BoundConstructor. Binding a record type requires
+                // instantiating the type. This means we'll ignore a previously assigned bindingContext.Model value.
                 // This behaior is identical to input formatting with S.T.Json and Json.NET.
  
                 var values = new object[boundConstructor.BoundConstructorParameters.Count];
