@@ -40,7 +40,10 @@ namespace Microsoft.DotNet.Watcher
                 using (var program = new Program(PhysicalConsole.Singleton, Directory.GetCurrentDirectory()))
                 {
                     //checks if there is "run" in the args if NOT append a run as the last argument
-                    if (!args.Contains("run") && !args.Contains("test"))
+                    if (args.Length == 0)
+                    {
+                        args = new[] { "run" };
+                    }
                     {
                         args = args.Concat(new[] {"run"}).ToArray();
                     }
