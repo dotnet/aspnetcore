@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     /// <summary>
     /// State for the RetrieveLdapClaims event.
     /// </summary>
-    public class LdapContext : AuthenticatedContext
+    public class LdapContext : ResultContext<NegotiateOptions>
     {
         /// <summary>
         /// Creates a new <see cref="LdapContext"/>.
@@ -30,6 +30,6 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <summary>
         /// The LDAP settings to use for the RetrieveLdapClaims event.
         /// </summary>
-        public LdapSettings LdapSettings { get; private set; }
+        public LdapSettings LdapSettings { get; }
     }
 }
