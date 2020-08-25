@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
@@ -16,18 +15,15 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 
         public string Name { get; set; } = string.Empty;
 
-        public DateTime LastModified { get; set; }
+        public DateTimeOffset LastModified { get; set; }
 
         public long Size { get; set; }
 
-        public string Type { get; set; } = string.Empty;
+        public string ContentType { get; set; } = string.Empty;
 
         public string? RelativePath { get; set; }
 
         public Stream OpenReadStream(CancellationToken cancellationToken = default)
             => Owner.OpenReadStream(this, cancellationToken);
-
-        public Task<IBrowserFile> ToImageFileAsync(string format, int maxWidth, int maxHeight)
-            => Owner.ConvertToImageFileAsync(this, format, maxWidth, maxHeight);
     }
 }
