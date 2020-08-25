@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.Css.Parser.Parser;
 using Microsoft.Css.Parser.Tokens;
 using Microsoft.Css.Parser.TreeItems;
@@ -67,8 +68,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 var output = Outputs.Values[i];
                 var cssScope = CssScopes.Values[i];
 
-                var inputText = File.ReadAllText(source);
-                var rewrittenCss = AddScopeToSelectors(source, inputText, cssScope, out var diagnostics);
+                using var inputSourceStream = File.OpenRead(source);
+                var inputSourceText = SourceText.From(inputSourceStream);
+
+                var rewrittenCss = AddScopeToSelectors(source, inputSourceText, cssScope, out var diagnostics);
                 if (diagnostics.Any())
                 {
                     foreach (var diagnostic in diagnostics)
@@ -91,16 +94,20 @@ namespace Microsoft.AspNetCore.Razor.Tools
         }
 
         // Public for tests
-        public static string AddScopeToSelectors(string filePath, string inputText, string cssScope, out IEnumerable<RazorDiagnostic> diagnostics)
+        public static string AddScopeToSelectors(string filePath, string inputSource, string cssScope, out IEnumerable<RazorDiagnostic> diagnostics)
+            => AddScopeToSelectors(filePath, SourceText.From(inputSource), cssScope, out diagnostics);
+
+        private static string AddScopeToSelectors(string filePath, SourceText inputSourceText, string cssScope, out IEnumerable<RazorDiagnostic> diagnostics)
         {
             var cssParser = new DefaultParserFactory().CreateParser();
+            var inputText = inputSourceText.ToString();
             var stylesheet = cssParser.Parse(inputText, insertComments: false);
 
             var resultBuilder = new StringBuilder();
             var previousInsertionPosition = 0;
             var foundDiagnostics = new List<RazorDiagnostic>();
 
-            var ensureNoImportsVisitor = new EnsureNoImports(filePath, inputText, stylesheet, foundDiagnostics);
+            var ensureNoImportsVisitor = new EnsureNoImports(filePath, inputSourceText, stylesheet, foundDiagnostics);
             ensureNoImportsVisitor.Visit();
 
             var scopeInsertionPositionsVisitor = new FindScopeInsertionEdits(stylesheet);
@@ -284,10 +291,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
         private class EnsureNoImports : Visitor
         {
             private readonly string _filePath;
-            private readonly string _sourceText;
+            private readonly SourceText _sourceText;
             private readonly List<RazorDiagnostic> _diagnostics;
 
-            public EnsureNoImports(string filePath, string sourceText, ComplexItem root, List<RazorDiagnostic> diagnostics) : base(root)
+            public EnsureNoImports(string filePath, SourceText sourceText, ComplexItem root, List<RazorDiagnostic> diagnostics) : base(root)
             {
                 _filePath = filePath;
                 _sourceText = sourceText;
@@ -298,12 +305,13 @@ namespace Microsoft.AspNetCore.Razor.Tools
             {
                 if (item.Children.Count >= 2
                     && item.Children[0] is TokenItem firstChild
-                    && item.Children[1] is TokenItem secondChild
                     && firstChild.TokenType == CssTokenType.At
+                    && item.Children[1] is TokenItem secondChild
                     && string.Equals(secondChild.Text, "import", StringComparison.OrdinalIgnoreCase))
                 {
-                    var location = GetParseItemSourceSpan(_filePath, _sourceText, item);
-                    _diagnostics.Add(RazorDiagnosticFactory.CreateCssRewriting_ImportNotAllowed(location));
+                    var linePosition = _sourceText.Lines.GetLinePosition(item.Start);
+                    var sourceSpan = new SourceSpan(_filePath, item.Start, linePosition.Line, linePosition.Character, item.Length);
+                    _diagnostics.Add(RazorDiagnosticFactory.CreateCssRewriting_ImportNotAllowed(sourceSpan));
                 }
 
                 base.VisitAtDirective(item);
@@ -386,28 +394,6 @@ namespace Microsoft.AspNetCore.Razor.Tools
         private class DeleteContentEdit : CssEdit
         {
             public int DeleteLength { get; set; }
-        }
-
-        private static SourceSpan GetParseItemSourceSpan(string filePath, string sourceText, ParseItem parseItem)
-        {
-            var nextLinebreakSearchStart = 0;
-            var lineNumber = 0;
-
-            while (true)
-            {
-                var nextLinebreakPos = sourceText.IndexOf('\n', nextLinebreakSearchStart);
-                if (nextLinebreakPos >= 0 && nextLinebreakPos < parseItem.Start)
-                {
-                    lineNumber++;
-                    nextLinebreakSearchStart = nextLinebreakPos + 1;
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            return new SourceSpan(filePath, parseItem.Start, lineNumber, parseItem.Start - nextLinebreakSearchStart, parseItem.Length);
         }
     }
 }
