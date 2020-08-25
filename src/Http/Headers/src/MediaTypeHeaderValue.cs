@@ -676,8 +676,8 @@ namespace Microsoft.Net.Http.Headers
         {
             var type = mediaType.Subsegment(0, mediaType.IndexOf(ForwardSlashCharacter));
 
-            return mediaType.Equals(MatchesAllString, StringComparison.Ordinal) ||
-                type.Equals(Type, StringComparison.OrdinalIgnoreCase);
+            return MatchesAllTypes ||
+                Type.Equals(type, StringComparison.OrdinalIgnoreCase);
         }
 
         private bool MatchesSubtype(MediaTypeHeaderValue set)
@@ -709,11 +709,12 @@ namespace Microsoft.Net.Http.Headers
 
         private bool MatchesSubtype(StringSegment mediaType)
         {
-            var subType = mediaType.Subsegment(mediaType.IndexOf(ForwardSlashCharacter) + 1);
-            if (subType.Equals(WildcardString, StringComparison.Ordinal))
+            if (MatchesAllSubTypes)
             {
                 return true;
             }
+
+            var subType = mediaType.Subsegment(mediaType.IndexOf(ForwardSlashCharacter) + 1);
 
             StringSegment suffix;
             var startOfSuffix = subType.LastIndexOf(PlusCharacter);
@@ -764,8 +765,8 @@ namespace Microsoft.Net.Http.Headers
             {
                 subTypeWithoutSuffix = subType.Subsegment(0, startOfSuffix);
             }
-            return subTypeWithoutSuffix.Equals(WildcardString, StringComparison.OrdinalIgnoreCase) ||
-                subTypeWithoutSuffix.Equals(SubTypeWithoutSuffix, StringComparison.OrdinalIgnoreCase);
+            return SubTypeWithoutSuffix.Equals(WildcardString, StringComparison.OrdinalIgnoreCase) ||
+                SubTypeWithoutSuffix.Equals(subTypeWithoutSuffix, StringComparison.OrdinalIgnoreCase);
         }
 
         private bool MatchesEitherSubtypeOrSuffix(MediaTypeHeaderValue set)
@@ -776,8 +777,8 @@ namespace Microsoft.Net.Http.Headers
 
         private bool MatchesEitherSubtypeOrSuffix(StringSegment subType)
         {
-            return subType.Equals(SubType, StringComparison.OrdinalIgnoreCase) ||
-                subType.Equals(Suffix, StringComparison.OrdinalIgnoreCase);
+            return SubType.Equals(subType, StringComparison.OrdinalIgnoreCase) ||
+                Suffix.Equals(subType, StringComparison.OrdinalIgnoreCase);
         }
 
         private bool MatchesParameters(MediaTypeHeaderValue set)
@@ -829,7 +830,7 @@ namespace Microsoft.Net.Http.Headers
         {
             // We don't have support for wildcards on suffixes alone (e.g., "application/entity+*")
             // because there's no clear use case for it.
-            return suffix.Equals(Suffix, StringComparison.OrdinalIgnoreCase);
+            return Suffix.Equals(suffix, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
