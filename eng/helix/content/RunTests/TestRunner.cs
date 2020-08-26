@@ -333,18 +333,19 @@ namespace RunTests
             {
                 Console.WriteLine("No trx found in TestResults");
             }
-            Console.WriteLine($"Copying TestResults/**/sequence.xml to {HELIX_WORKITEM_UPLOAD_ROOT}/");
+            Console.WriteLine($"Copying TestResults/**/Sequence*.xml to {HELIX_WORKITEM_UPLOAD_ROOT}/");
             if (Directory.Exists("TestResults"))
             {
-                foreach (var file in Directory.EnumerateFiles("TestResults", "sequence.xml", SearchOption.AllDirectories))
+                foreach (var file in Directory.EnumerateFiles("TestResults", "Sequence*.xml", SearchOption.AllDirectories))
                 {
-                    Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "sequence.xml")}");
-                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, "sequence.xml"));
+                    var fileName = Path.GetFileName(file);
+                    Console.WriteLine($"Copying: {file} to {Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName)}");
+                    File.Copy(file, Path.Combine(HELIX_WORKITEM_UPLOAD_ROOT, fileName));
                 }
             }
             else
             {
-                Console.WriteLine("No sequence.xml found in TestResults");
+                Console.WriteLine("No sequence xml file found in TestResults");
             }
             
         }
