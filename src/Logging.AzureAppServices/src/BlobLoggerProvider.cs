@@ -62,7 +62,6 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
             foreach (var eventGroup in eventGroups)
             {
                 var key = eventGroup.Key;
-                //var blobName = $"{_appName}/{key.Year}/{key.Month:00}/{key.Day:00}/{key.Hour:00}/{_fileName}";
                 string blobName;
 
                 if (!string.IsNullOrEmpty(AzureAppServicesLoggerFactoryExtensions.CustomPrefix))
