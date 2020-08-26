@@ -221,12 +221,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
                         case PseudoElementSelector:
                         case PseudoElementFunctionSelector:
                         case PseudoClassSelector s when IsSingleColonPseudoElement(s):
-                            if (i > 0)
-                            {
-                                var insertAfterChild = children[i - 1];
-                                return insertAfterChild.AfterEnd;
-                            }
-                            break;
+                            // Insert after the previous token if there is one, otherwise before the whole thing
+                            return i > 0 ? children[i - 1].AfterEnd : lastSimpleSelector.Start;
                     }
                 }
 

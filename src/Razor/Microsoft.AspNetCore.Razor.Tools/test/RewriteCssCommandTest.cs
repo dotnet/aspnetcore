@@ -122,6 +122,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
     custom-element::part(foo) { content: ""🤷‍""; }
     a::before > ::deep another { content: ""👞""; }
     a::fake-pseudo-element { content: ""🐔""; }
+    ::selection { content: ""😾""; }
+    other, ::selection { content: ""👂""; }
 ", "TestScope", out var diagnostics);
 
             // Assert
@@ -132,6 +134,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
     custom-element[TestScope]::part(foo) { content: ""🤷‍""; }
     a[TestScope]::before >  another { content: ""👞""; }
     a[TestScope]::fake-pseudo-element { content: ""🐔""; }
+    [TestScope]::selection { content: ""😾""; }
+    other[TestScope], [TestScope]::selection { content: ""👂""; }
 ", result);
         }
 
