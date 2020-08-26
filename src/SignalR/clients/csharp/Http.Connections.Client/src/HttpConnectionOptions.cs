@@ -28,7 +28,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         public HttpConnectionOptions()
         {
             _headers = new Dictionary<string, string>();
-            _clientCertificates = new X509CertificateCollection();
+
+            try
+            {
+                _clientCertificates = new X509CertificateCollection();
+            }
+            // System.Security.Cryptography isn't supported on WASM currently
+            catch { }
+
             _cookies = new CookieContainer();
 
             Transports = HttpTransports.All;
