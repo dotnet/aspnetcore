@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ProcessUtilities;
@@ -26,9 +25,7 @@ namespace XUnitTestProject6
 
             _testOutputHelper.WriteLine($"About to execute: {path}");
 
-            var sleepCmd = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "timeout" : "sleep";
-
-            await ProcessUtil.RunAsync(sleepCmd, "600");
+            await ProcessUtil.RunAsync("dotnet", path);
         }
     }
 }
