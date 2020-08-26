@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\src\ProcessUtilities\*.cs" />
-    <Compile Include="..\..\src\ProcessWithHang\*.cs" />
-  </ItemGroup>
+    <ProjectReference Include="..\..\src\ProcessWithHang\ProcessWithHang.csproj" />
+   </ItemGroup>
 
 </Project>
