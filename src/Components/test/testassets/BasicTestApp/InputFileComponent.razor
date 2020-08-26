@@ -3,7 +3,15 @@
 
 <h1>File preview</h1>
 
-<InputFile OnChange="LoadFiles" id="input-file" multiple /><br />
+Max file size:<br />
+<input type="number" id="max-file-size" @bind-value="@maxFileSize" /><br />
+
+Max allowed files:<br />
+<input type="number" id="max-allowed-files" @bind-value="@maxAllowedFiles" /><br />
+
+<InputFile OnChange="LoadFiles" MaxFileSize="maxFileSize" MaxAllowedFiles="maxAllowedFiles" id="input-file" multiple /><br />
+
+<span id="exception-message">@exceptionMessage</span>
 
 @if (isLoading)
 {
@@ -39,22 +47,35 @@
 @code {
     Dictionary<IBrowserFile, string> loadedFiles = new Dictionary<IBrowserFile, string>();
 
+    long maxFileSize = 1024 * 1024 * 15;
+    int maxAllowedFiles = 3;
+
     bool isLoading;
 
     string imageDataUri;
+
+    string exceptionMessage;
 
     async Task LoadFiles(InputFileChangeEventArgs e)
     {
         isLoading = true;
         loadedFiles.Clear();
+        exceptionMessage = string.Empty;
 
-        foreach (var file in e.Files)
+        try
         {
-            StateHasChanged();
+            foreach (var file in e.Files)
+            {
+                StateHasChanged();
 
-            using var reader = new StreamReader(file.OpenReadStream());
+                using var reader = new StreamReader(file.OpenReadStream());
 
-            loadedFiles.Add(file, await reader.ReadToEndAsync());
+                loadedFiles.Add(file, await reader.ReadToEndAsync());
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            exceptionMessage = ex.Message;
         }
 
         isLoading = false;
@@ -67,7 +88,7 @@
         if (file != null)
         {
             var format = "image/jpeg";
-            var imageFile = await file.ToImageFileAsync(format, 640, 480);
+            var imageFile = await file.RequestImageFileAsync(format, 640, 480);
 
             using var fileStream = imageFile.OpenReadStream();
             using var memoryStream = new MemoryStream();

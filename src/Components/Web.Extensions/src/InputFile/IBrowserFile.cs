@@ -9,6 +9,9 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
 {
     /// <summary>
     /// Represents the data of a file selected from an <see cref="InputFile"/> component.
+    /// <para>
+    /// Note: Metadata is provided by the client and is untrusted.
+    /// </para>
     /// </summary>
     public interface IBrowserFile
     {

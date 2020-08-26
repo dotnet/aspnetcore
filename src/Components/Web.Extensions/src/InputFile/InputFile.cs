@@ -36,6 +36,18 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         public EventCallback<InputFileChangeEventArgs> OnChange { get; set; }
 
         /// <summary>
+        /// Gets or sets the maximum allowed file size in bytes.
+        /// </summary>
+        [Parameter]
+        public long MaxFileSize { get; set; } = 1024 * 1024 * 15;
+
+        /// <summary>
+        /// Gets or sets the maximum allowed number of files.
+        /// </summary>
+        [Parameter]
+        public int MaxAllowedFiles { get; set; } = 3;
+
+        /// <summary>
         /// Gets or sets a collection of additional attributes that will be applied to the input element.
         /// </summary>
         [Parameter(CaptureUnmatchedValues = true)]
@@ -85,7 +97,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
                 file.Owner = this;
             }
 
-            return OnChange.InvokeAsync(new InputFileChangeEventArgs(files));
+            return OnChange.InvokeAsync(new InputFileChangeEventArgs(files, MaxFileSize, MaxAllowedFiles));
         }
 
         void IDisposable.Dispose()

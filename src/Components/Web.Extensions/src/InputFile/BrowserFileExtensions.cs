@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// <param name="maxWith">The maximum image width.</param>
         /// <param name="maxHeight">The maximum image height</param>
         /// <returns>A <see cref="ValueTask"/> representing the completion of the operation.</returns>
-        public static ValueTask<IBrowserFile> ToImageFileAsync(this IBrowserFile browserFile, string format, int maxWith, int maxHeight)
+        public static ValueTask<IBrowserFile> RequestImageFileAsync(this IBrowserFile browserFile, string format, int maxWith, int maxHeight)
         {
             if (browserFile is BrowserFile browserFileInternal)
             {

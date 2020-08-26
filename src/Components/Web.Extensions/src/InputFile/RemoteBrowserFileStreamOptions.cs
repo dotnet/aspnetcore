@@ -35,6 +35,6 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// This only has an effect when using Blazor Server.
         /// </para>
         /// </summary>
-        public TimeSpan SegmentFetchTimeout { get; set; } = TimeSpan.FromSeconds(3);
+        public TimeSpan SegmentFetchTimeout { get; set; } = TimeSpan.FromMinutes(1);
     }
 }
