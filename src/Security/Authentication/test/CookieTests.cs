@@ -152,6 +152,37 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         }
 
         [Fact]
+        public async Task CustomAuthSchemeEncodesCookieName()
+        {
+            using var host = await CreateHostWithServices(s => s.AddAuthentication("With Spaces").AddCookie("With Spaces", o =>
+            {
+                o.LoginPath = new PathString("/login");
+            }), context =>
+            {
+                var user = new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"));
+                user.AddClaim(new Claim("marker", "true"));
+                return context.SignInAsync("With Spaces",
+                    new ClaimsPrincipal(user),
+                    new AuthenticationProperties());
+            });
+
+            using var server = host.GetTestServer();
+            var transaction = await SendAsync(server, "http://example.com/testpath");
+
+            var setCookie = transaction.SetCookie;
+            Assert.StartsWith(".AspNetCore.With%20Spaces=", setCookie);
+            Assert.Contains("; path=/", setCookie);
+            Assert.Contains("; httponly", setCookie);
+            Assert.Contains("; samesite=", setCookie);
+            Assert.DoesNotContain("; expires=", setCookie);
+            Assert.DoesNotContain("; domain=", setCookie);
+            Assert.DoesNotContain("; secure", setCookie);
+            Assert.True(transaction.Response.Headers.CacheControl.NoCache);
+            Assert.True(transaction.Response.Headers.CacheControl.NoStore);
+            Assert.Equal("no-cache", transaction.Response.Headers.Pragma.ToString());
+        }
+
+        [Fact]
         public void SettingCookieExpirationOptionThrows()
         {
             var services = new ServiceCollection();
