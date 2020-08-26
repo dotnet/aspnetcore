@@ -54,6 +54,7 @@ console.log(`Using SignalR HTTPS Server: '${ENDPOINT_BASE_HTTPS_URL}'`);
 console.log(`Jasmine DEFAULT_TIMEOUT_INTERVAL: ${jasmine.DEFAULT_TIMEOUT_INTERVAL}`);
 
 export const ECHOENDPOINT_URL = ENDPOINT_BASE_URL + "/echo";
+export const HTTPS_ECHOENDPOINT_URL = ENDPOINT_BASE_HTTPS_URL + "/echo";
 
 export function getHttpTransportTypes(): HttpTransportType[] {
     const transportTypes = [];
@@ -100,3 +101,14 @@ export function eachTransportAndProtocol(action: (transport: HttpTransportType, 
 export function getGlobalObject(): any {
     return typeof window !== "undefined" ? window : global;
 }
+
+// Run test in Node or Chrome, but not on macOS
+export const shouldRunHttpsTests =
+    // Need to have an HTTPS URL
+    !!ENDPOINT_BASE_HTTPS_URL &&
+
+    // Run on Node, unless macOS
+    (process && process.platform !== "darwin") &&
+
+    // Only run under Chrome browser
+    (typeof navigator === "undefined" || navigator.userAgent.search("Chrome") !== -1);
