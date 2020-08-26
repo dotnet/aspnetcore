@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Builder
 
             void OnOutputDataReceived(object sender, DataReceivedEventArgs eventArgs)
             {
-                if (ApplicationStartedRegex.IsMatch(eventArgs.Data))
+                if (!String.IsNullOrEmpty(eventArgs.Data) && ApplicationStartedRegex.IsMatch(eventArgs.Data))
                 {
                     aspNetProcess.OutputDataReceived -= OnOutputDataReceived;
                     if (!string.IsNullOrEmpty(capturedUrl))
