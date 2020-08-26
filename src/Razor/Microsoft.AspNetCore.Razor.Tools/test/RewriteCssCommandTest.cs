@@ -41,6 +41,9 @@ namespace Microsoft.AspNetCore.Razor.Tools
             var result = RewriteCssCommand.AddScopeToSelectors("file.css", @"
     .first, .second { color: red; }
     .third { color: blue; }
+    :root { color: green; }
+    * { color: white; }
+    #some-id { color: yellow; }
 ", "TestScope", out var diagnostics);
 
             // Assert
@@ -48,6 +51,9 @@ namespace Microsoft.AspNetCore.Razor.Tools
             Assert.Equal(@"
     .first[TestScope], .second[TestScope] { color: red; }
     .third[TestScope] { color: blue; }
+    :root[TestScope] { color: green; }
+    *[TestScope] { color: white; }
+    #some-id[TestScope] { color: yellow; }
 ", result);
         }
 
