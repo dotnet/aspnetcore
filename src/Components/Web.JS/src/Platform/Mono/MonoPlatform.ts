@@ -288,12 +288,6 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
 
     if (icuDataResource) {
       loadICUData(icuDataResource);
-<<<<<<< HEAD
-    } else {
-      // Use invariant culture if the app does not carry icu data.
-      MONO.mono_wasm_setenv("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT", "1");
-=======
->>>>>>> internal/internal/release/5.0-preview8
     }
 
     // Fetch the assemblies and PDBs in the background, telling Mono to wait until they are loaded
@@ -388,15 +382,12 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
     // Turn off full-gc to prevent browser freezing.
     const mono_wasm_enable_on_demand_gc = cwrap('mono_wasm_enable_on_demand_gc', null, ['number']);
     mono_wasm_enable_on_demand_gc(0);
-<<<<<<< HEAD
-=======
 
     let timeZone = "UTC";
     try {
       timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     } catch { }
     MONO.mono_wasm_setenv("TZ", timeZone);
->>>>>>> internal/internal/release/5.0-preview8
     const load_runtime = cwrap('mono_wasm_load_runtime', null, ['string', 'number']);
     // -1 enables debugging with logging disabled. 0 disables debugging entirely.
     load_runtime(appBinDirName, hasDebuggingEnabled() ? -1 : 0);
