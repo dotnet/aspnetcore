@@ -16,12 +16,12 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
     public interface IBrowserFile
     {
         /// <summary>
-        /// Gets the name of the file.
+        /// Gets the name of the file as specified by the browser.
         /// </summary>
         string Name { get; }
 
         /// <summary>
-        /// Gets the last modified date.
+        /// Gets the last modified date as specified by the browser.
         /// </summary>
         DateTimeOffset LastModified { get; }
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         long Size { get; }
 
         /// <summary>
-        /// Gets the MIME type of the file.
+        /// Gets the MIME type of the file as specified by the browser.
         /// </summary>
         string ContentType { get; }
 

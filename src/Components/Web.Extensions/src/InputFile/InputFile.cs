@@ -36,13 +36,13 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         public EventCallback<InputFileChangeEventArgs> OnChange { get; set; }
 
         /// <summary>
-        /// Gets or sets the maximum allowed file size in bytes.
+        /// Gets or sets the maximum allowed file size in bytes. Defaults to 15 MB.
         /// </summary>
         [Parameter]
         public long MaxFileSize { get; set; } = 1024 * 1024 * 15;
 
         /// <summary>
-        /// Gets or sets the maximum allowed number of files.
+        /// Gets or sets the maximum allowed number of files. Defaults to 3.
         /// </summary>
         [Parameter]
         public int MaxAllowedFiles { get; set; } = 3;
