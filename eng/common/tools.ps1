@@ -57,6 +57,11 @@ set-strictmode -version 2.0
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
+# If specifies, provides an alternate path for getting .NET Core SDKs and Runtimes. This script will still try public sources first.
+[string]$runtimeSourceFeed = if (Test-Path variable:runtimeSourceFeed) { $runtimeSourceFeed } else { $null }
+# Base-64 encoded SAS token that has permission to storage container described by $runtimeSourceFeed
+[string]$runtimeSourceFeedKey = if (Test-Path variable:runtimeSourceFeedKey) { $runtimeSourceFeedKey } else { $null }
+
 function Create-Directory ([string[]] $path) {
     New-Item -Path $path -Force -ItemType 'Directory' | Out-Null
 }
@@ -223,7 +228,7 @@ function GetDotNetInstallScript([string] $dotnetRoot) {
 }
 
 function InstallDotNetSdk([string] $dotnetRoot, [string] $version, [string] $architecture = '') {
-  InstallDotNet $dotnetRoot $version $architecture
+  InstallDotNet $dotnetRoot $version $architecture '' $false $runtimeSourceFeed $runtimeSourceFeedKey
 }
 
 function InstallDotNet([string] $dotnetRoot,
@@ -248,10 +253,8 @@ function InstallDotNet([string] $dotnetRoot,
     & $installScript @installParameters
   }
   catch {
-    Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install dotnet runtime '$runtime' from public location."
-
-    # Only the runtime can be installed from a custom [private] location.
-    if ($runtime -and ($runtimeSourceFeed -or $runtimeSourceFeedKey)) {
+    if ($runtimeSourceFeed -or $runtimeSourceFeedKey) {
+      Write-Host "Failed to install dotnet from public location. Trying from '$runtimeSourceFeed'"
       if ($runtimeSourceFeed) { $installParameters.AzureFeed = $runtimeSourceFeed }
 
       if ($runtimeSourceFeedKey) {
@@ -264,10 +267,11 @@ function InstallDotNet([string] $dotnetRoot,
         & $installScript @installParameters
       }
       catch {
-        Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install dotnet runtime '$runtime' from custom location '$runtimeSourceFeed'."
+        Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install dotnet from custom location '$runtimeSourceFeed'."
         ExitWithExitCode 1
       }
     } else {
+      Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install dotnet from public location."
       ExitWithExitCode 1
     }
   }
