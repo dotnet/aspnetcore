@@ -6,6 +6,9 @@ package com.microsoft.signalr;
 import java.lang.reflect.Type;
 import java.lang.reflect.ParameterizedType;
 
+/**
+ * A utility for getting a Java Type from a literal Class
+ */
 public class TypeReference<T> {
 
     private final Type type;

@@ -718,6 +718,7 @@ public class HubConnection implements AutoCloseable {
 
     /**
      * Invokes a hub method on the server using the specified method name and arguments.
+     * A Type can be retrieved from a Class by using {@link TypeReference}
      *
      * @param returnType The expected return type.
      * @param method The name of the server method to invoke.
@@ -1097,6 +1098,7 @@ public class HubConnection implements AutoCloseable {
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
      * Should be used for generic classes and Parameterized Collections, like List or Map.
+     * A Type can be retrieved from a Class by using {@link TypeReference}
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -1113,6 +1115,7 @@ public class HubConnection implements AutoCloseable {
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
      * Should be used for generic classes and Parameterized Collections, like List or Map.
+     * A Type can be retrieved from a Class by using {@link TypeReference}
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -1133,6 +1136,7 @@ public class HubConnection implements AutoCloseable {
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
      * Should be used for generic classes and Parameterized Collections, like List or Map.
+     * A Type can be retrieved from a Class by using {@link TypeReference}
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -1157,6 +1161,7 @@ public class HubConnection implements AutoCloseable {
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
      * Should be used for generic classes and Parameterized Collections, like List or Map.
+     * A Type can be retrieved from a Class by using {@link TypeReference}
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -1183,6 +1188,7 @@ public class HubConnection implements AutoCloseable {
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
      * Should be used for generic classes and Parameterized Collections, like List or Map.
+     * A Type can be retrieved from a Class by using {@link TypeReference}
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -1212,6 +1218,7 @@ public class HubConnection implements AutoCloseable {
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
      * Should be used for generic classes and Parameterized Collections, like List or Map.
+     * A Type can be retrieved from a Class by using {@link TypeReference}
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -1243,6 +1250,7 @@ public class HubConnection implements AutoCloseable {
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
      * Should be used for generic classes and Parameterized Collections, like List or Map.
+     * A Type can be retrieved from a Class by using {@link TypeReference}
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
@@ -1277,6 +1285,7 @@ public class HubConnection implements AutoCloseable {
     /**
      * Registers a handler that will be invoked when the hub method with the specified method name is invoked.
      * Should be used for generic classes and Parameterized Collections, like List or Map.
+     * A Type can be retrieved from a Class by using {@link TypeReference}
      *
      * @param target   The name of the hub method to define.
      * @param callback The handler that will be raised when the hub method is invoked.
