@@ -249,8 +249,6 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
                     // The calculated item size was within the margin of a rounding error, so use the user-provided item size.
                     _itemSize = ItemSize;
                 }
-
-                Console.WriteLine($"Item size: {_itemSize}, spacer separation: {spacerSeparation}");
             }
 
             if (_itemSize <= 0)

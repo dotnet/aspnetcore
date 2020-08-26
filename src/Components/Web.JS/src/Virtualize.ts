@@ -57,7 +57,9 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
         return;
       }
 
-      const spacerSeparation = spacerAfter.offsetTop - (spacerBefore.offsetTop + spacerBefore.offsetHeight);
+      const spacerBeforeRect = spacerBefore.getBoundingClientRect();
+      const spacerAfterRect = spacerAfter.getBoundingClientRect();
+      const spacerSeparation = spacerAfterRect.top - spacerBeforeRect.bottom;
       const containerSize = entry.rootBounds?.height;
 
       if (entry.target === spacerBefore) {
