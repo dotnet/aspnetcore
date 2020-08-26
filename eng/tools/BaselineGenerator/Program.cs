@@ -30,17 +30,12 @@ namespace PackageBaselineGenerator
             new Program().Execute(args);
         }
 
-        private readonly CommandOption _defaultTarget;
         private readonly CommandOption _source;
         private readonly CommandOption _output;
         private readonly CommandOption _update;
 
         public Program()
         {
-            _defaultTarget = Option(
-                "--default-netcore-target-framework <TFM>",
-                "The default .NET Core TFM.",
-                CommandOptionType.SingleValue);
             _source = Option(
                 "-s|--package-source <SOURCE>",
                 "The NuGet source of packages to fetch",
@@ -57,12 +52,6 @@ namespace PackageBaselineGenerator
             {
                 await Error.WriteLineAsync("'--output' and '--update' options must not be used together.");
                 return 1;
-            }
-
-            if (!_defaultTarget.HasValue())
-            {
-                await Error.WriteLineAsync("--default-netcore-target-framework is required.");
-                return 2;
             }
 
             var inputPath = Path.Combine(Directory.GetCurrentDirectory(), "Baseline.xml");
@@ -101,6 +90,11 @@ namespace PackageBaselineGenerator
 
             var baselineVersion = input.Root.Attribute("Version").Value;
 
+            // Baseline and .NET Core versions always align in non-preview releases.
+            var parsedVersion = Version.Parse(baselineVersion);
+            var defaultTarget = ((parsedVersion.Major < 5) ? "netcoreapp" : "net") +
+                $"{parsedVersion.Major}.{parsedVersion.Minor}";
+
             var doc = new XDocument(
                 new XComment(" Auto generated. Do not edit manually, use eng/tools/BaselineGenerator/ to recreate. "),
                 new XElement("Project",
@@ -108,7 +102,6 @@ namespace PackageBaselineGenerator
                         new XElement("MSBuildAllProjects", "$(MSBuildAllProjects);$(MSBuildThisFileFullPath)"),
                         new XElement("AspNetCoreBaselineVersion", baselineVersion))));
 
-            var defaultTarget = _defaultTarget.Value();
             var client = new HttpClient();
             foreach (var pkg in input.Root.Descendants("Package"))
             {
