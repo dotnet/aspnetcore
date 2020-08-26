@@ -154,14 +154,15 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         [Fact]
         public async Task CustomAuthSchemeEncodesCookieName()
         {
-            using var host = await CreateHostWithServices(s => s.AddAuthentication("With Spaces").AddCookie("With Spaces", o =>
+            var schemeName = "With spaces and 界";
+            using var host = await CreateHostWithServices(s => s.AddAuthentication(schemeName).AddCookie(schemeName, o =>
             {
                 o.LoginPath = new PathString("/login");
             }), context =>
             {
                 var user = new ClaimsIdentity(new GenericIdentity("Alice", "Cookies"));
                 user.AddClaim(new Claim("marker", "true"));
-                return context.SignInAsync("With Spaces",
+                return context.SignInAsync(schemeName,
                     new ClaimsPrincipal(user),
                     new AuthenticationProperties());
             });
@@ -170,7 +171,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var transaction = await SendAsync(server, "http://example.com/testpath");
 
             var setCookie = transaction.SetCookie;
-            Assert.StartsWith(".AspNetCore.With%20Spaces=", setCookie);
+            Assert.StartsWith(".AspNetCore.With%20spaces%20and%20%E7%95%8C=", setCookie);
             Assert.Contains("; path=/", setCookie);
             Assert.Contains("; httponly", setCookie);
             Assert.Contains("; samesite=", setCookie);
