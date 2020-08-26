@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,6 +39,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override bool SuppressNullabilityEnforcement { get; set; }
 
+        public override bool OmitMinimizedComponentAttributeValues { get; set; }
+
         public override RazorCodeGenerationOptions Build()
         {
             return new DefaultRazorCodeGenerationOptions(
@@ -49,7 +51,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 SuppressChecksum,
                 SuppressMetadataAttributes,
                 SuppressPrimaryMethodBody,
-                SuppressNullabilityEnforcement);
+                SuppressNullabilityEnforcement,
+                OmitMinimizedComponentAttributeValues);
         }
 
         public override void SetDesignTime(bool designTime)
