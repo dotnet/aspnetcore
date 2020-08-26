@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         /// <param name="failure">The failure exception.</param>
         /// <returns>The result.</returns>
-        public static AuthenticateResult Fail(Exception? failure)
+        public static AuthenticateResult Fail(Exception failure)
         {
             return new AuthenticateResult() { Failure = failure };
         }
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="failure">The failure exception.</param>
         /// <param name="properties">Additional state values for the authentication session.</param>
         /// <returns>The result.</returns>
-        public static AuthenticateResult Fail(Exception? failure, AuthenticationProperties? properties)
+        public static AuthenticateResult Fail(Exception failure, AuthenticationProperties? properties)
         {
             return new AuthenticateResult() { Failure = failure, Properties = properties };
         }
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         /// <param name="failureMessage">The failure message.</param>
         /// <returns>The result.</returns>
-        public static AuthenticateResult Fail(string? failureMessage)
+        public static AuthenticateResult Fail(string failureMessage)
             => Fail(new Exception(failureMessage));
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="failureMessage">The failure message.</param>
         /// <param name="properties">Additional state values for the authentication session.</param>
         /// <returns>The result.</returns>
-        public static AuthenticateResult Fail(string? failureMessage, AuthenticationProperties? properties)
+        public static AuthenticateResult Fail(string failureMessage, AuthenticationProperties? properties)
             => Fail(new Exception(failureMessage), properties);
     }
 }
