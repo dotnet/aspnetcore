@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         DateTimeOffset LastModified { get; }
 
         /// <summary>
-        /// Gets the size of the file in bytes.
+        /// Gets the size of the file in bytes as specified by the browser.
         /// </summary>
         long Size { get; }
 
