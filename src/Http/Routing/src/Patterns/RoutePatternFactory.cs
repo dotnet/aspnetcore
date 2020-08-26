@@ -497,7 +497,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                         updatedParameterPolicies = new Dictionary<string, List<RoutePatternParameterPolicyReference>>(StringComparer.OrdinalIgnoreCase);
                     }
 
-                    parameterConstraints = new List<RoutePatternParameterPolicyReference>();
+                    parameterConstraints = new List<RoutePatternParameterPolicyReference>(parameter.ParameterPolicies.Count);
                     updatedParameterPolicies.Add(parameter.Name, parameterConstraints);
                 }
 

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="include">Names of parameters to include in binding.</param>
         public BindAttribute(params string[] include)
         {
-            var items = new List<string>();
+            var items = new List<string>(include.Length);
             foreach (var item in include)
             {
                 items.AddRange(SplitString(item));

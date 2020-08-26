@@ -10,10 +10,13 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.CookiePolicy" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
     <Reference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
+    <Reference Include="Microsoft.EntityFrameworkCore.Design" />
     <Reference Include="Microsoft.AspNetCore.Identity.UI" />
     <Reference Include="Microsoft.EntityFrameworkCore.Relational" />
     <Reference Include="Microsoft.EntityFrameworkCore.SQLite" />

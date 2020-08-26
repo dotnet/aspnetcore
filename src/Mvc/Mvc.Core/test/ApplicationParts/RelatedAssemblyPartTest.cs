@@ -1,10 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.Loader;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationParts
@@ -43,7 +45,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         public void GetRelatedAssemblies_ThrowsIfAssemblyCannotBeFound()
         {
             // Arrange
-            var expected = $"Related assembly 'DoesNotExist' specified by assembly 'MyAssembly' could not be found in the directory {AssemblyDirectory}. Related assemblies must be co-located with the specifying assemblies.";
             var assemblyPath = Path.Combine(AssemblyDirectory, "MyAssembly.dll");
             var assembly = new TestAssembly
             {
@@ -51,27 +52,32 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             };
 
             // Act & Assert
-            var ex = Assert.Throws<FileNotFoundException>(() => RelatedAssemblyAttribute.GetRelatedAssemblies(assembly, throwOnError: true));
-            Assert.Equal(expected, ex.Message);
-            Assert.Equal(Path.Combine(AssemblyDirectory, "DoesNotExist.dll"), ex.FileName);
+            Assert.Throws<FileNotFoundException>(() => RelatedAssemblyAttribute.GetRelatedAssemblies(assembly, throwOnError: true));
         }
 
         [Fact]
-        public void GetRelatedAssemblies_LoadsRelatedAssembly()
+        public void GetRelatedAssemblies_ReadsAssemblyFromLoadContext_IfItAlreadyExists()
         {
             // Arrange
-            var destination = Path.Combine(AssemblyDirectory, "RelatedAssembly.dll");
+            var expected = $"Related assembly 'DoesNotExist' specified by assembly 'MyAssembly' could not be found in the directory {AssemblyDirectory}. Related assemblies must be co-located with the specifying assemblies.";
+            var assemblyPath = Path.Combine(AssemblyDirectory, "MyAssembly.dll");
+            var relatedAssembly = typeof(RelatedAssemblyPartTest).Assembly;
             var assembly = new TestAssembly
             {
-                AttributeAssembly = "RelatedAssembly",
+                AttributeAssembly = "RelatedAssembly"
             };
-            var relatedAssembly = typeof(RelatedAssemblyPartTest).Assembly;
-
-            var result = RelatedAssemblyAttribute.GetRelatedAssemblies(assembly, throwOnError: true, file => true, file =>
+            var loadContext = new TestableAssemblyLoadContextWrapper
             {
-                Assert.Equal(file, destination);
-                return relatedAssembly;
-            });
+                Assemblies =
+                {
+                    ["RelatedAssembly"] = relatedAssembly,
+                }
+            };
+
+            // Act
+            var result = RelatedAssemblyAttribute.GetRelatedAssemblies(assembly, throwOnError: true, file => false, loadContext);
+
+            // Assert
             Assert.Equal(new[] { relatedAssembly }, result);
         }
 
@@ -92,6 +98,22 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             {
                 var attribute = new RelatedAssemblyAttribute(AttributeAssembly);
                 return new[] { attribute };
+            }
+        }
+
+        private class TestableAssemblyLoadContextWrapper : RelatedAssemblyAttribute.AssemblyLoadContextWrapper
+        {
+            public TestableAssemblyLoadContextWrapper() : base(AssemblyLoadContext.Default)
+            {
+            }
+
+            public Dictionary<string, Assembly> Assemblies { get; } = new Dictionary<string, Assembly>();
+
+            public override Assembly LoadFromAssemblyPath(string assemblyPath) => throw new NotSupportedException();
+
+            public override Assembly LoadFromAssemblyName(AssemblyName assemblyName)
+            {
+                return Assemblies[assemblyName.Name];
             }
         }
     }

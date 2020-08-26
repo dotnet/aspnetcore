@@ -41,7 +41,6 @@
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\StandaloneApp\StandaloneApp.csproj" />
-    <ProjectReference Include="..\..\WebAssembly\DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj" />
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
     <ProjectReference Include="..\..\WebAssembly\testassets\Wasm.Authentication.Server\Wasm.Authentication.Server.csproj" />
@@ -56,6 +55,8 @@
     <Compile Include="$(RepoRoot)src\Shared\Components\ComponentParameter.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentSerializationSettings.cs" />
     <Compile Include="$(RepoRoot)src\Shared\Components\ServerComponentMarker.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\WebAssemblyComponentSerializationSettings.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Components\WebAssemblyComponentMarker.cs" />
   </ItemGroup>
 
   <ItemGroup>

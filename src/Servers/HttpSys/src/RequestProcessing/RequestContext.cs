@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Security.Authentication.ExtendedProtection;
 using System.Security.Principal;
 using System.Threading;
@@ -17,7 +19,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     internal sealed class RequestContext : IDisposable, IThreadPoolWorkItem
     {
         private static readonly Action<object> AbortDelegate = Abort;
-
         private NativeRequestContext _memoryBlob;
         private CancellationTokenSource _requestAbortSource;
         private CancellationToken? _disconnectToken;
@@ -321,6 +322,46 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Response.StatusCode = status;
             Response.ContentLength = 0;
             Dispose();
+        }
+
+        internal unsafe void Delegate(DelegationRule destination)
+        {
+            if (Request.HasRequestBodyStarted)
+            {
+                throw new InvalidOperationException("This request cannot be delegated, the request body has already started.");
+            }
+            if (Response.HasStarted)
+            {
+                throw new InvalidOperationException("This request cannot be delegated, the response has already started.");
+            }
+
+            var source = Server.RequestQueue;
+
+            uint statusCode;
+
+            fixed (char* uriPointer = destination.UrlPrefix)
+            {
+                var property = new HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_INFO()
+                {
+                    ProperyId = HttpApiTypes.HTTP_DELEGATE_REQUEST_PROPERTY_ID.DelegateRequestDelegateUrlProperty,
+                    PropertyInfo = (IntPtr)uriPointer,
+                    PropertyInfoLength = (uint)System.Text.Encoding.Unicode.GetByteCount(destination.UrlPrefix)
+                };
+
+                statusCode = HttpApi.HttpDelegateRequestEx(source.Handle,
+                                                               destination.Queue.Handle,
+                                                               Request.RequestId,
+                                                               destination.Queue.UrlGroup.Id,
+                                                               propertyInfoSetSize: 1,
+                                                               &property);
+            }
+
+            if (statusCode != UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
+            {
+                throw new HttpSysException((int)statusCode);
+            }
+
+            Response.MarkDelegated();
         }
     }
 }

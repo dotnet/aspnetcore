@@ -9,4 +9,5 @@ package com.microsoft.signalr;
 public enum HubConnectionState {
     CONNECTED,
     DISCONNECTED,
+    CONNECTING,
 }

@@ -44,46 +44,5 @@ namespace Microsoft.AspNetCore.Components.Reflection
 
             return dictionary.Values.SelectMany(p => p);
         }
-
-        public static IPropertySetter CreatePropertySetter(Type targetType, PropertyInfo property, bool cascading)
-        {
-            if (property.SetMethod == null)
-            {
-                throw new InvalidOperationException($"Cannot provide a value for property " +
-                    $"'{property.Name}' on type '{targetType.FullName}' because the property " +
-                    $"has no setter.");
-            }
-
-            return (IPropertySetter)Activator.CreateInstance(
-                typeof(PropertySetter<,>).MakeGenericType(targetType, property.PropertyType),
-                property.SetMethod,
-                cascading)!;
-        }
-
-        class PropertySetter<TTarget, TValue> : IPropertySetter where TTarget : notnull
-        {
-            private readonly Action<TTarget, TValue> _setterDelegate;
-
-            public PropertySetter(MethodInfo setMethod, bool cascading)
-            {
-                _setterDelegate = (Action<TTarget, TValue>)Delegate.CreateDelegate(
-                    typeof(Action<TTarget, TValue>), setMethod);
-                Cascading = cascading;
-            }
-
-            public bool Cascading { get; }
-
-            public void SetValue(object target, object value)
-            {
-                if (value == null)
-                {
-                    _setterDelegate((TTarget)target, default!);
-                }
-                else
-                {
-                    _setterDelegate((TTarget)target, (TValue)value);
-                }
-            }
-        }
     }
 }

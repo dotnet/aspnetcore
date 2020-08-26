@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -15,13 +15,7 @@
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.JSInterop.WebAssembly" />
 
-    <ProjectReference
-      Include="..\..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
-      ReferenceOutputAssemblies="false"
-      SkipGetTargetFrameworkProperties="true"
-      UndefineProperties="TargetFramework"
-      Private="false"
-      Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'" />
+    <ProjectReference Include="..\..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj" ReferenceOutputAssemblies="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework" Private="false" Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'" />
 
     <SuppressBaselineReference Include="Microsoft.AspNetCore.Components.WebAssembly.HttpHandler" />
   </ItemGroup>
@@ -31,6 +25,11 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebEventData.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ElementReferenceJsonConverter.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ComponentParametersTypeCache.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentTypeCache.cs" />
+    <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentSerializationSettings.cs" Link="Prerendering/WebAssemblyComponentSerializationSettings.cs" />
+    <Compile Include="$(SharedSourceRoot)Components\WebAssemblyComponentMarker.cs" Link="Prerendering/WebAssemblyComponentMarker.cs" />
+    <Compile Include="$(SharedSourceRoot)Components\ComponentParameter.cs" Link="Prerendering/ComponentParameter.cs" />
   </ItemGroup>
 
   <ItemGroup>

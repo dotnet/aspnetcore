@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 "profile",
                 "Wasm.Authentication.ServerAPI"
             },
-            payload.Scopes);
+            payload.Scopes.OrderBy(id => id));
 
             var currentTime = DateTimeOffset.Parse(Browser.Exists(By.Id("current-time")).Text);
             var tokenExpiration = DateTimeOffset.Parse(Browser.Exists(By.Id("access-token-expires")).Text);

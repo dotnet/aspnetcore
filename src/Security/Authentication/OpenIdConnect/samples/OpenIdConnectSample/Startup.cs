@@ -110,7 +110,7 @@ namespace OpenIdConnectSample
                 o.Authority = Configuration["oidc:authority"];
                 */
                 // https://github.com/IdentityServer/IdentityServer4.Demo/blob/master/src/IdentityServer4Demo/Config.cs
-                o.ClientId = "server.hybrid";
+                o.ClientId = "hybrid";
                 o.ClientSecret = "secret"; // for code flow
                 o.Authority = "https://demo.identityserver.io/";
 

@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Hosting
                 services.TryAddSingleton<IConnectionListenerFactory, SocketTransportFactory>();
 
                 services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
-                services.AddSingleton<IServer, KestrelServer>();
+                services.AddSingleton<IServer, KestrelServerImpl>();
             });
         }
 

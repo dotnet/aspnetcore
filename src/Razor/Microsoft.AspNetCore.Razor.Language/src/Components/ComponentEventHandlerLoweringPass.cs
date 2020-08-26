@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // This method is overloaded on string and T, which means that it will put the code in the
             // correct context for intellisense when typing in the attribute.
             var eventArgsType = node.TagHelper.GetEventArgsType();
-            var tokens = new List<IntermediateToken>()
+            var tokens = new List<IntermediateToken>(original.Count + 2)
             {
                 new IntermediateToken()
                 {

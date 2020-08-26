@@ -64,6 +64,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.ComponentModel.Annotations" />
     <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" />
+    <LatestPackageReference Include="System.DirectoryServices.Protocols" />
     <LatestPackageReference Include="System.Drawing.Common" />
     <LatestPackageReference Include="System.IO.Pipelines" />
     <LatestPackageReference Include="System.Net.Http" />
@@ -107,6 +108,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" />
+    <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Design" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <LatestPackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />

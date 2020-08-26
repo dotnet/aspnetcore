@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -41,6 +42,7 @@ namespace Templates.Test.Helpers
             IDictionary<string, string> environmentVariables,
             bool published,
             bool hasListeningUri = true,
+            bool usePublishedAppHost = false,
             ILogger logger = null)
         {
             _developmentCertificate = DevelopmentCertificate.Create(workingDirectory);
@@ -59,9 +61,29 @@ namespace Templates.Test.Helpers
 
             output.WriteLine("Running ASP.NET Core application...");
 
-            var arguments = published ? $"exec {dllPath}" : "run --no-build";
+            string process;
+            string arguments;
+            if (published)
+            {
+                if (usePublishedAppHost)
+                {
+                    // When publishingu used the app host to run the app. This makes it easy to consistently run for regular and single-file publish
+                    process = Path.ChangeExtension(dllPath, OperatingSystem.IsWindows() ? ".exe" : null);
+                    arguments = null;
+                }
+                else
+                {
+                    process = DotNetMuxer.MuxerPathOrDefault();
+                    arguments = $"exec {dllPath}";
+                }
+            }
+            else
+            {
+                process = DotNetMuxer.MuxerPathOrDefault();
+                arguments = "run --no-build";
+            }
 
-            logger?.LogInformation($"AspNetProcess - process: {DotNetMuxer.MuxerPathOrDefault()} arguments: {arguments}");
+            logger?.LogInformation($"AspNetProcess - process: {process} arguments: {arguments}");
 
             var finalEnvironmentVariables = new Dictionary<string, string>(environmentVariables)
             {
@@ -69,7 +91,7 @@ namespace Templates.Test.Helpers
                 ["ASPNETCORE_Kestrel__Certificates__Default__Password"] = _developmentCertificate.CertificatePassword,
             };
 
-            Process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), arguments, envVars: finalEnvironmentVariables);
+            Process = ProcessEx.Run(output, workingDirectory, process, arguments, envVars: finalEnvironmentVariables);
 
             logger?.LogInformation("AspNetProcess - process started");
 

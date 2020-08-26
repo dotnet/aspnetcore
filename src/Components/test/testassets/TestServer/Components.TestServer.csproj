@@ -22,8 +22,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\WebAssembly\DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj" />
     <ProjectReference Include="..\BasicTestApp\BasicTestApp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\WebAssembly\DevServer\src\Server\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

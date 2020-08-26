@@ -22,7 +22,7 @@
                 <div @key="context" id="async-item" style="height: @(itemSize)px; background-color: rgb(@((context % 2) * 255), @((1-(context % 2)) * 255), 255);">Item @context</div>
             </ItemContent>
             <Placeholder>
-                <div id="async-placeholder" style="height: @(itemSize)px; background-color: orange;">Loading item @context.Index...</div>
+                <div id="async-placeholder" style="height: @(context.Size)px; background-color: orange;">Loading item @context.Index...</div>
             </Placeholder>
         </Virtualize>
     </div>

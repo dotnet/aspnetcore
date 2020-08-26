@@ -31,6 +31,12 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
 
         private int _loadedItemsStartIndex;
 
+        private int _lastRenderedItemCount;
+
+        private int _lastRenderedPlaceholderCount;
+
+        private float _itemSize;
+
         private IEnumerable<TItem>? _loadedItems;
 
         private CancellationTokenSource? _refreshCts;
@@ -65,10 +71,10 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         public RenderFragment<PlaceholderContext>? Placeholder { get; set; }
 
         /// <summary>
-        /// Gets the size of each item in pixels.
+        /// Gets the size of each item in pixels. Defaults to 50px.
         /// </summary>
         [Parameter]
-        public float ItemSize { get; set; }
+        public float ItemSize { get; set; } = 50f;
 
         /// <summary>
         /// Gets or sets the function providing items to the list.
@@ -88,7 +94,12 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
             if (ItemSize <= 0)
             {
                 throw new InvalidOperationException(
-                    $"{GetType()} requires a positive value for parameter '{nameof(ItemSize)}' to perform virtualization.");
+                    $"{GetType()} requires a positive value for parameter '{nameof(ItemSize)}'.");
+            }
+
+            if (_itemSize <= 0)
+            {
+                _itemSize = ItemSize;
             }
 
             if (ItemsProvider != null)
@@ -154,10 +165,12 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
             {
                 // This is a rare case where it's valid for the sequence number to be programmatically incremented.
                 // This is only true because we know for certain that no other content will be alongside it.
-                builder.AddContent(renderIndex, _placeholder, new PlaceholderContext(renderIndex));
+                builder.AddContent(renderIndex, _placeholder, new PlaceholderContext(renderIndex, _itemSize));
             }
 
             builder.CloseRegion();
+
+            _lastRenderedItemCount = 0;
 
             // Render the loaded items.
             if (_loadedItems != null && _itemTemplate != null)
@@ -171,18 +184,22 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
                 foreach (var item in itemsToShow)
                 {
                     _itemTemplate(item)(builder);
-                    renderIndex++;
+                    _lastRenderedItemCount++;
                 }
+
+                renderIndex += _lastRenderedItemCount;
 
                 builder.CloseRegion();
             }
+
+            _lastRenderedPlaceholderCount = Math.Max(0, lastItemIndex - _itemsBefore - _lastRenderedItemCount);
 
             builder.OpenRegion(5);
 
             // Render the placeholders after the loaded items.
             for (; renderIndex < lastItemIndex; renderIndex++)
             {
-                builder.AddContent(renderIndex, _placeholder, new PlaceholderContext(renderIndex));
+                builder.AddContent(renderIndex, _placeholder, new PlaceholderContext(renderIndex, _itemSize));
             }
 
             builder.CloseRegion();
@@ -197,28 +214,45 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         }
 
         private string GetSpacerStyle(int itemsInSpacer)
-            => $"height: {itemsInSpacer * ItemSize}px;";
+            => $"height: {itemsInSpacer * _itemSize}px;";
 
-        void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float containerSize)
+        void IVirtualizeJsCallbacks.OnBeforeSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
         {
-            CalcualteItemDistribution(spacerSize, containerSize, out var itemsBefore, out var visibleItemCapacity);
+            CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsBefore, out var visibleItemCapacity);
 
             UpdateItemDistribution(itemsBefore, visibleItemCapacity);
         }
 
-        void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float containerSize)
+        void IVirtualizeJsCallbacks.OnAfterSpacerVisible(float spacerSize, float spacerSeparation, float containerSize)
         {
-            CalcualteItemDistribution(spacerSize, containerSize, out var itemsAfter, out var visibleItemCapacity);
+            CalcualteItemDistribution(spacerSize, spacerSeparation, containerSize, out var itemsAfter, out var visibleItemCapacity);
 
             var itemsBefore = Math.Max(0, _itemCount - itemsAfter - visibleItemCapacity);
 
             UpdateItemDistribution(itemsBefore, visibleItemCapacity);
         }
 
-        private void CalcualteItemDistribution(float spacerSize, float containerSize, out int itemsInSpacer, out int visibleItemCapacity)
+        private void CalcualteItemDistribution(
+            float spacerSize,
+            float spacerSeparation,
+            float containerSize,
+            out int itemsInSpacer,
+            out int visibleItemCapacity)
         {
-            itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / ItemSize) - 1);
-            visibleItemCapacity = (int)Math.Ceiling(containerSize / ItemSize) + 2;
+            if (_lastRenderedItemCount > 0)
+            {
+                _itemSize = (spacerSeparation - (_lastRenderedPlaceholderCount * _itemSize)) / _lastRenderedItemCount;
+            }
+
+            if (_itemSize <= 0)
+            {
+                // At this point, something unusual has occurred, likely due to misuse of this component.
+                // Reset the calculated item size to the user-provided item size.
+                _itemSize = ItemSize;
+            }
+
+            itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / _itemSize) - 1);
+            visibleItemCapacity = (int)Math.Ceiling(containerSize / _itemSize) + 2;
         }
 
         private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity)
@@ -285,7 +319,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         private RenderFragment DefaultPlaceholder(PlaceholderContext context) => (builder) =>
         {
             builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "style", $"height: {ItemSize}px;");
+            builder.AddAttribute(1, "style", $"height: {_itemSize}px;");
             builder.CloseElement();
         };
 

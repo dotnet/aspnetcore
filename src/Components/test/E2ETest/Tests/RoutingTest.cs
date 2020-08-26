@@ -570,9 +570,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
 
-            // Navigating from one page to another should
-            // cancel the previous OnNavigate Task
             SetUrlViaPushState("/Other");
+
+            var errorUiElem = Browser.Exists(By.Id("blazor-error-ui"), TimeSpan.FromSeconds(10));
+            Assert.NotNull(errorUiElem);
+        }
+
+        [Fact]
+        public void OnNavigate_CanRenderUIForSyncExceptions()
+        {
+            var app = Browser.MountTestComponent<TestRouterWithOnNavigate>();
+
+            // Should capture exception from synchronously thrown
+            SetUrlViaPushState("/WithLazyAssembly");
 
             var errorUiElem = Browser.Exists(By.Id("blazor-error-ui"), TimeSpan.FromSeconds(10));
             Assert.NotNull(errorUiElem);
