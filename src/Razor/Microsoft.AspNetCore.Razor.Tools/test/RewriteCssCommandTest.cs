@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
     a::after::placeholder { content: ""🐯""; }
     custom-element::part(foo) { content: ""🤷‍""; }
     a::before > ::deep another { content: ""👞""; }
-    a::fake-pseudo-element { content: ""🐔""; }
+    a::fake-PsEuDo-element { content: ""🐔""; }
     ::selection { content: ""😾""; }
     other, ::selection { content: ""👂""; }
 ", "TestScope", out var diagnostics);
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
     a[TestScope]::after::placeholder { content: ""🐯""; }
     custom-element[TestScope]::part(foo) { content: ""🤷‍""; }
     a[TestScope]::before >  another { content: ""👞""; }
-    a[TestScope]::fake-pseudo-element { content: ""🐔""; }
+    a[TestScope]::fake-PsEuDo-element { content: ""🐔""; }
     [TestScope]::selection { content: ""😾""; }
     other[TestScope], [TestScope]::selection { content: ""👂""; }
 ", result);
@@ -148,6 +148,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
     a:before { content: ""x""; }
     a:first-letter { content: ""x""; }
     a:first-line { content: ""x""; }
+    a:AFTER { content: ""x""; }
     a:not(something):before { content: ""x""; }
 ", "TestScope", out var diagnostics);
 
@@ -158,6 +159,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
     a[TestScope]:before { content: ""x""; }
     a[TestScope]:first-letter { content: ""x""; }
     a[TestScope]:first-line { content: ""x""; }
+    a[TestScope]:AFTER { content: ""x""; }
     a:not(something)[TestScope]:before { content: ""x""; }
 ", result);
         }

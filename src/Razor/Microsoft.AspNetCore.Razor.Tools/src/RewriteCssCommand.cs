@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 // of the W3C spec. Our CSS parser sees them as pseudoselectors rather than pseudoelements, so
                 // we have to special-case them. The single-colon option doesn't exist for other more modern
                 // pseudoelements.
-                switch (selector.Text)
+                switch (selector.Text?.ToLowerInvariant())
                 {
                     case ":after":
                     case ":before":
