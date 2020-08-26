@@ -11,12 +11,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     /// a <see cref="TagHelper"/> that implement the `asp-if` keyword
     /// </summary>
     [HtmlTargetElement(Attributes= IfAttributeName)]
-    public class IfTagHelper : TagHelper
+    public class IfHelperTagHelper : TagHelper
     {
         private const string IfAttributeName = "asp-if";
 
         /// <summary>
-        /// if <see cref="false"/> then the TagHelper will be remove and not be execute (including the C# inside this)
+        /// if false then the TagHelper will be remove and not be execute (including the C# inside this)
         /// </summary>
         [HtmlAttributeName(IfAttributeName)]
         public bool Condition { get; set; }
