@@ -16,7 +16,7 @@ public class TypeReference<T> {
      * To get the Type of Class Foo, use the following syntax:
      * <pre>{@code
      * Type fooType = (new TypeReference<Foo>() { }).getType();
-     * </pre>
+     * }</pre>
      */
     public TypeReference() {
         Type superclass = getClass().getGenericSuperclass();
