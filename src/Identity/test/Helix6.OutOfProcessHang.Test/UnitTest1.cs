@@ -28,7 +28,7 @@ namespace XUnitTestProject6
 
             var sleepCmd = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "timeout" : "sleep";
 
-            await ProcessUtil.RunAsync(sleepCmd, "10", cancellationToken: new CancellationTokenSource(TimeSpan.FromSeconds(5)).Token);
+            await ProcessUtil.RunAsync(sleepCmd, "600");
         }
     }
 }
