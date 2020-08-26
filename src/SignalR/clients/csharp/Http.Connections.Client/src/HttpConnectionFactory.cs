@@ -82,11 +82,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         // Internal for testing
         internal static HttpConnectionOptions ShallowCopyHttpConnectionOptions(HttpConnectionOptions options)
         {
-            return new HttpConnectionOptions
+            var newOptions = new HttpConnectionOptions
             {
                 HttpMessageHandlerFactory = options.HttpMessageHandlerFactory,
                 Headers = options.Headers,
-                ClientCertificates = options.ClientCertificates,
                 Cookies = options.Cookies,
                 Url = options.Url,
                 Transports = options.Transports,
@@ -99,6 +98,14 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 DefaultTransferFormat = options.DefaultTransferFormat,
                 WebSocketConfiguration = options.WebSocketConfiguration,
             };
+
+            // WASM doesn't support Crypto APIs and our setter throws if you try to assign null
+            if (options.ClientCertificates != null)
+            {
+                newOptions.ClientCertificates = options.ClientCertificates;
+            }
+
+            return newOptions;
         }
     }
 }
