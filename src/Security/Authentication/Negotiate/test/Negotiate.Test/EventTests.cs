@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection.Metadata;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -13,7 +12,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
@@ -369,6 +367,27 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
             Assert.Equal("Negotiate", result.Response.Headers[HeaderNames.WWWAuthenticate]);
             Assert.Equal(1, callCount);
+        }
+
+        [Fact]
+        public async Task OnRetrieveLdapClaims_DoesNotFireWhenLdapDisabled()
+        {
+            var callCount = 0;
+            using var host = await CreateHostAsync(options =>
+            {
+                options.Events = new NegotiateEvents()
+                {
+                    OnRetrieveLdapClaims = context =>
+                    {
+                        callCount++;
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+            var server = host.GetTestServer();
+
+            await KerberosStage1And2Auth(server, new TestConnection());
+            Assert.Equal(0, callCount);
         }
 
         private static async Task KerberosStage1And2Auth(TestServer server, TestConnection testConnection)

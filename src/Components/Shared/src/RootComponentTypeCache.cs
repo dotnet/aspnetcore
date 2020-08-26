@@ -9,7 +9,7 @@ using System.Reflection;
 namespace Microsoft.AspNetCore.Components
 {
     // A cache for root component types
-    internal class ServerComponentTypeCache
+    internal class RootComponentTypeCache
     {
         private readonly ConcurrentDictionary<Key, Type> _typeToKeyLookUp = new ConcurrentDictionary<Key, Type>();
 
@@ -39,14 +39,14 @@ namespace Microsoft.AspNetCore.Components
             return assembly.GetType(key.Type, throwOnError: false, ignoreCase: false);
         }
 
-        private struct Key : IEquatable<Key>
+        private readonly struct Key : IEquatable<Key>
         {
             public Key(string assembly, string type) =>
                 (Assembly, Type) = (assembly, type);
 
-            public string Assembly { get; set; }
+            public string Assembly { get; }
 
-            public string Type { get; set; }
+            public string Type { get; }
 
             public override bool Equals(object obj) => Equals((Key)obj);
 

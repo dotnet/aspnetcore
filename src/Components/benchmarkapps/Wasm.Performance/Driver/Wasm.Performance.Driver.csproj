@@ -12,11 +12,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Cors" />
+    <Reference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
     <Reference Include="Selenium.Support" />
     <Reference Include="Selenium.WebDriver" />
-    <ProjectReference Include="..\..\..\WebAssembly\DevServer\src\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj" />
     <ProjectReference Include="..\TestApp\Wasm.Performance.TestApp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\WebAssembly\DevServer\src\Server\*.cs" />
   </ItemGroup>
 
   <Target Name="_AddTestProjectMetadataAttributes" BeforeTargets="BeforeCompile">

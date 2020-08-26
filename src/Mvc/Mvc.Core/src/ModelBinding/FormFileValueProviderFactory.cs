@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -42,6 +42,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
             catch (InvalidDataException ex)
             {
+                // ReadFormAsync can throw InvalidDataException if the form content is malformed.
+                // Wrap it in a ValueProviderException that the CompositeValueProvider special cases.
+                throw new ValueProviderException(Resources.FormatFailedToReadRequestForm(ex.Message), ex);
+            }
+            catch (IOException ex)
+            {
+                // ReadFormAsync can throw IOException if the client disconnects.
+                // Wrap it in a ValueProviderException that the CompositeValueProvider special cases.
                 throw new ValueProviderException(Resources.FormatFailedToReadRequestForm(ex.Message), ex);
             }
 

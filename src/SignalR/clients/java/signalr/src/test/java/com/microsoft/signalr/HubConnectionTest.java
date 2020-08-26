@@ -24,6 +24,7 @@ import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.CompletableSubject;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.ReplaySubject;
@@ -2577,9 +2578,10 @@ class HubConnectionTest {
             value.getAndUpdate((val) -> val + 1);
         });
 
+        SingleSubject<ByteBuffer> handshakeMessageTask = mockTransport.getNextSentMessage();
         // On start we're going to receive the handshake response and also an invocation in the same payload.
         hubConnection.start();
-        mockTransport.getStartTask().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        ByteBuffer sentMessage = handshakeMessageTask.timeout(1, TimeUnit.SECONDS).blockingGet();
         String expectedSentMessage  = "{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR;
         assertEquals(expectedSentMessage, TestUtils.byteBufferToString(mockTransport.getSentMessages()[0]));
 
@@ -2647,7 +2649,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void callingStartOnStartedHubConnectionNoOps()  {
+    public void callingStartOnStartedHubConnectionNoops()  {
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
@@ -2655,7 +2657,35 @@ class HubConnectionTest {
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
 
-        hubConnection.stop();
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
+
+    @Test
+    public void callingStartOnStartingHubConnectionWaitsForOriginalStart()  {
+        CompletableSubject startedAccessToken = CompletableSubject.create();
+        CompletableSubject continueAccessToken = CompletableSubject.create();
+        HubConnection hubConnection = HubConnectionBuilder.create("http://example.com")
+                .withTransportImplementation(new MockTransport(true))
+                .withHttpClient(new TestHttpClient())
+                .withAccessTokenProvider(Single.defer(() -> {
+                    startedAccessToken.onComplete();
+                    continueAccessToken.timeout(1, TimeUnit.SECONDS).blockingAwait();
+                    return Single.just("test");
+                }).subscribeOn(Schedulers.newThread()))
+                .shouldSkipNegotiate(true)
+                .build();
+        Completable start = hubConnection.start();
+        startedAccessToken.timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTING, hubConnection.getConnectionState());
+
+        Completable start2 = hubConnection.start();
+        continueAccessToken.onComplete();
+        start.timeout(1, TimeUnit.SECONDS).blockingAwait();
+        start2.timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
     }
 
@@ -3595,9 +3625,6 @@ class HubConnectionTest {
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop().blockingAwait();
         assertEquals("ExampleValue", beforeRedirectHeader.get());
-
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertEquals("Bearer redirectToken", afterRedirectHeader.get());
 
         // Making sure you can do this after restarting the HubConnection.
@@ -3605,9 +3632,6 @@ class HubConnectionTest {
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop().blockingAwait();
         assertEquals("ExampleValue", beforeRedirectHeader.get());
-
-        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
-        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertEquals("Bearer redirectToken", afterRedirectHeader.get());
     }
 
@@ -3699,7 +3723,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void hubConnectionCloseCallsStop() throws Exception {
+    public void hubConnectionCloseCallsStop() {
         MockTransport mockTransport = new MockTransport();
         TestHttpClient client = new TestHttpClient()
                 .on("POST", "http://example.com/negotiate?negotiateVersion=1", (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"url\":\"http://testexample.com/\"}"))))
