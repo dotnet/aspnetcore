@@ -40,4 +40,23 @@
   <PropertyGroup>
     <PackageFileName>$(InternalInstallerBaseName)-$(PackageVersion)-win-$(Platform)$(TargetExt)</PackageFileName>
   </PropertyGroup>
+
+  <!-- Overwrite the wix package drop creation target to create a lit
+       package instead. -->
+  <Target Name="CreateWixPackageDrop" AfterTargets="Build">
+    <CreateLitCommandPackageDrop
+      LitCommandWorkingDir="$(WixCommandObjDir)"
+      WixExtensions="@(WixExtension)"
+      Bf="true"
+      Out="$(InstallersOutputPath)$(OutputName).wixlib"
+      WixSrcFiles="@(CompileObjOutput);@(WixObject);@(WixLibProjects);@(WixLibrary)">
+      <Output TaskParameter="LitCommandPackageNameOutput" PropertyName="_LitCommandPackageNameOutput" />
+    </CreateLitCommandPackageDrop>
+    <MakeDir Directories="$(WixCommandPackagesDir)" />
+
+    <ZipDirectory
+      DestinationFile="$(WixCommandPackagesDir)/LitCommandPackage-$(_LitCommandPackageNameOutput).zip"
+      SourceDirectory="$(WixCommandObjDir)/$(_LitCommandPackageNameOutput)"
+      Overwrite="true" />
+  </Target>
 </Project>
