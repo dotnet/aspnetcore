@@ -38,11 +38,20 @@ namespace Company.WebApplication1.Controllers
             _downstreamWebApi = downstreamWebApi;
        }
 
-        [AuthorizeForScopes(ScopeKeySection = "CalledApi:CalledApiScopes")]
+        [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
         public async Task<IActionResult> Index()
         {
-            ViewData["ApiResult"] = await _downstreamWebApi.CallWebApiAsync();
-
+            var response = await _downstreamWebApi.CallWebApiForUserAsync("DownstreamApi").ConfigureAwait(false);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                string apiResult = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                ViewData["ApiResult"] = apiResult;
+            }
+            else
+            {
+                string error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                throw new HttpRequestException($"Invalid status code in the HttpResponseMessage: {response.StatusCode}: {error}");
+            }
             return View();
         }
 #elseif (GenerateGraph)
@@ -55,7 +64,7 @@ namespace Company.WebApplication1.Controllers
             _graphServiceClient = graphServiceClient;
        }
 
-        [AuthorizeForScopes(ScopeKeySection = "CalledApi:CalledApiScopes")]
+        [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
         public async Task<IActionResult> Index()
         {
             var user = await _graphServiceClient.Me.Request().GetAsync();

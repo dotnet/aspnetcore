@@ -4,20 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.AspNetCore.Authentication;
-#endif
-#if (OrganizationalAuth)
-using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.UI;
-using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
-#if (MultiOrgAuth)
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-#endif
-using Microsoft.AspNetCore.Authorization;
-#endif
-#if (IndividualB2CAuth)
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
-using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
+using Microsoft.AspNetCore.Authorization;
 #endif
 using Microsoft.AspNetCore.Builder;
 #if (IndividualLocalAuth)
@@ -74,28 +64,36 @@ namespace Company.WebApplication1
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 #elif (OrganizationalAuth)
 #if (GenerateApiOrGraph)
-            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAd")
-                .AddMicrosoftWebAppCallsWebApi(Configuration, "AzureAd")
-                .AddInMemoryTokenCaches();
-#else
-            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAd");
+            string[] initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
+
 #endif
+            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+                    .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"))
+#if (GenerateApiOrGraph)
+                        .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
 #if (GenerateApi)
-            services.AddDownstreamWebApiService(Configuration);
+                            .AddDownstreamWebApi("DownstreamApi", Configuration.GetSection("DownstreamApi"))
 #endif
 #if (GenerateGraph)
-            services.AddMicrosoftGraph(Configuration.GetValue<string>("CalledApi:CalledApiScopes")?.Split(' '),
-                                       Configuration.GetValue<string>("CalledApi:CalledApiUrl"));
+                            .AddMicrosoftGraph(Configuration.GetSection("DownstreamApi"))
+#endif
+                            .AddInMemoryTokenCaches();
+#else
+                    ;
 #endif
 #elif (IndividualB2CAuth)
 #if (GenerateApi)
-            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAdB2C")
-                .AddMicrosoftWebAppCallsWebApi(Configuration, "AzureAdB2C")
-                .AddInMemoryTokenCaches();
+            string[] initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
 
-            services.AddDownstreamWebApiService(Configuration);
+#endif
+            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+                    .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAdB2C"))
+#if (GenerateApi)
+                        .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
+                            .AddDownstreamWebApi("DownstreamApi", Configuration.GetSection("DownstreamApi"))
+                            .AddInMemoryTokenCaches();
 #else
-            services.AddMicrosoftWebAppAuthentication(Configuration, "AzureAdB2C");
+                    ;
 #endif
 #endif
 #if (OrganizationalAuth)
@@ -112,7 +110,7 @@ namespace Company.WebApplication1
 #endif
 #if (OrganizationalAuth || IndividualB2CAuth)
            services.AddRazorPages()
-                .AddMicrosoftIdentityUI();
+                   .AddMicrosoftIdentityUI();
 #endif
         }
 

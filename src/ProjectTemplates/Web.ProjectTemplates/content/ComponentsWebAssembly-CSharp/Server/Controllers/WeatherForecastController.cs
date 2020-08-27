@@ -15,10 +15,10 @@ using System.Net.Http;
 using Microsoft.Graph;
 #endif
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.Identity.Web.Resource;
 #endif
-using Microsoft.Extensions.Logging;
 using ComponentsWebAssembly_CSharp.Shared;
 
 namespace ComponentsWebAssembly_CSharp.Server.Controllers
@@ -37,7 +37,7 @@ namespace ComponentsWebAssembly_CSharp.Server.Controllers
 
         private readonly ILogger<WeatherForecastController> _logger;
 
-        // The Web API will only accept tokens 1) for users, and 2) having the api-scope scope for this API
+        // The Web API will only accept tokens 1) for users, and 2) having the "api-scope" scope for this API
         static readonly string[] scopeRequiredByApi = new string[] { "api-scope" };
 
 #if (GenerateApi)
@@ -55,7 +55,17 @@ namespace ComponentsWebAssembly_CSharp.Server.Controllers
         {
             HttpContext.VerifyUserHasAnyAcceptedScope(scopeRequiredByApi);
 
-            string downstreamApiResult = await _downstreamWebApi.CallWebApiAsync();
+            var response = await _downstreamWebApi.CallWebApiForUserAsync("DownstreamApi").ConfigureAwait(false);
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                string apiResult = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                // Do something
+            }
+            else
+            {
+                string error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                throw new HttpRequestException($"Invalid status code in the HttpResponseMessage: {response.StatusCode}: {error}");
+            }
 
             var rng = new Random();
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
@@ -75,7 +85,7 @@ namespace ComponentsWebAssembly_CSharp.Server.Controllers
         {
              _logger = logger;
             _graphServiceClient = graphServiceClient;
-        }
+       }
 
         [HttpGet]
         public async Task<IEnumerable<WeatherForecast>> Get()
