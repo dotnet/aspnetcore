@@ -63,36 +63,36 @@ namespace Company.WebApplication1
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 #elif (OrganizationalAuth)
 #if (GenerateApiOrGraph)
-            string[] initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
+            var initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
 
 #endif
             services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-                    .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"))
 #if (GenerateApiOrGraph)
-                        .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
+                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"))
+                    .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
 #if (GenerateApi)
-                            .AddDownstreamWebApi("DownstreamApi", Configuration.GetSection("DownstreamApi"))
+                        .AddDownstreamWebApi("DownstreamApi", Configuration.GetSection("DownstreamApi"))
 #endif
 #if (GenerateGraph)
-                            .AddMicrosoftGraph(Configuration.GetSection("DownstreamApi"))
+                        .AddMicrosoftGraph(Configuration.GetSection("DownstreamApi"))
 #endif
-                            .AddInMemoryTokenCaches();
+                        .AddInMemoryTokenCaches();
 #else
-                    ;
+                    .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"));
 #endif
 #elif (IndividualB2CAuth)
 #if (GenerateApi)
-            string[] initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
+            var initialScopes = Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
 
 #endif
             services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-                    .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAdB2C"))
 #if (GenerateApi)
-                        .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
-                            .AddDownstreamWebApi("DownstreamApi", Configuration.GetSection("DownstreamApi"))
-                            .AddInMemoryTokenCaches();
+                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAdB2C"))
+                    .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
+                        .AddDownstreamWebApi("DownstreamApi", Configuration.GetSection("DownstreamApi"))
+                        .AddInMemoryTokenCaches();
 #else
-                    ;
+                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAdB2C"));
 #endif
 #endif
 #if (OrganizationalAuth)

@@ -34,7 +34,7 @@
     },
     "DefaultScope": {
       "longName": "default-scope",
-      "shortName": "s"
+      "shortName": ""
     },    
     "Framework": {
       "longName": "framework"

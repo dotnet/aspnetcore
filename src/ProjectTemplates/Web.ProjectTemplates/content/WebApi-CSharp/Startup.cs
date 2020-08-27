@@ -9,8 +9,8 @@ using Microsoft.AspNetCore.HttpsPolicy;
 #endif
 using Microsoft.AspNetCore.Mvc;
 #if (OrganizationalAuth || IndividualB2CAuth)
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 #endif
 using Microsoft.Extensions.Configuration;
@@ -40,28 +40,28 @@ namespace Company.WebApplication1
         {
 #if (OrganizationalAuth)
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                    .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAd"))
 #if (GenerateApiOrGraph)
-                        .EnableTokenAcquisitionToCallDownstreamApi()
+                .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAd"))
+                    .EnableTokenAcquisitionToCallDownstreamApi()
 #if (GenerateApi)
-                            .AddDownstreamWebApi("DownstreamApi", Configuration.GetSection("DownstreamApi"))
+                        .AddDownstreamWebApi("DownstreamApi", Configuration.GetSection("DownstreamApi"))
 #endif
 #if (GenerateGraph)
-                            .AddMicrosoftGraph(Configuration.GetSection("DownstreamApi"))
+                        .AddMicrosoftGraph(Configuration.GetSection("DownstreamApi"))
 #endif
-                            .AddInMemoryTokenCaches();
+                        .AddInMemoryTokenCaches();
 #else
-                    ;
+                    .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAd"));
 #endif
 #elif (IndividualB2CAuth)
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                    .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAdB2C"))
 #if (GenerateApi)
-                        .EnableTokenAcquisitionToCallDownstreamApi()
-                            .AddDownstreamWebApi("DownstreamApi", Configuration.GetSection("DownstreamApi"))
-                            .AddInMemoryTokenCaches();
+                .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAdB2C"))
+                    .EnableTokenAcquisitionToCallDownstreamApi()
+                        .AddDownstreamWebApi("DownstreamApi", Configuration.GetSection("DownstreamApi"))
+                        .AddInMemoryTokenCaches();
 #else
-                    ;
+                .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAdB2C"));
 #endif
 #endif
 
