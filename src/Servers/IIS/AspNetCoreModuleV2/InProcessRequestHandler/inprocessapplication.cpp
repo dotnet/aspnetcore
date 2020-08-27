@@ -169,7 +169,7 @@ IN_PROCESS_APPLICATION::LoadManagedApplication(ErrorContext& errorContext)
         errorContext.errorReason = format("ASP.NET Core app failed to start after %d milliseconds", m_pConfig->QueryStartupTimeLimitInMS());
 
         m_waitForShutdown = false;
-        StopClr();
+        Stop(/* fServerInitiated */false);
         throw InvalidOperationException(format(L"Managed server didn't initialize after %u ms.", m_pConfig->QueryStartupTimeLimitInMS()));
     }
 

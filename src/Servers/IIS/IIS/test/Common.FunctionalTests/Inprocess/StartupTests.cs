@@ -455,7 +455,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         [ConditionalFact]
         public async Task StartupTimeoutIsApplied()
         {
-            // From what I can tell, this failure is due to ungraceful shutdown.
+            // From what we can tell, this failure is due to ungraceful shutdown.
             // The error could be the same as https://github.com/dotnet/core-setup/issues/4646
             // But can't be certain without another repro.
             using (AppVerifier.Disable(DeployerSelector.ServerType, 0x300))
@@ -470,11 +470,12 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                 var response = await deploymentResult.HttpClient.GetAsync("/");
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
-                StopServer(gracefulShutdown: false);
+                deploymentResult.AssertWorkerProcessStop();
+                //StopServer(gracefulShutdown: false);
 
-                EventLogHelpers.VerifyEventLogEvents(deploymentResult,
-                    EventLogHelpers.InProcessFailedToStart(deploymentResult, "Managed server didn't initialize after 1000 ms.")
-                    );
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+                    EventLogHelpers.InProcessFailedToStart(deploymentResult, "Managed server didn't initialize after 1000 ms."),
+                    Logger);
 
                 if (DeployerSelector.HasNewHandler)
                 {
