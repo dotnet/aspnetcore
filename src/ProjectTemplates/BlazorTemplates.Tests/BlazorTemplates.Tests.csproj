@@ -10,6 +10,10 @@
 
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''" >true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
+
+    <!-- Tests are disabled due to https://github.com/dotnet/aspnetcore/issues/25322 -->
+    <SkipTests>true</SkipTests>
+
     <!--Do not run this test project on Helix.-->
     <BuildHelixPayload>false</BuildHelixPayload>
     <SkipHelixArm>true</SkipHelixArm>
