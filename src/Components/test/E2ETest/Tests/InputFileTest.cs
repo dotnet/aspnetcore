@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using BasicTestApp;
+using BasicTestApp.FormsTest;
 using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;

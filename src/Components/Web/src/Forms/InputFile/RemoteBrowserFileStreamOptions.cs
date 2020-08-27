@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.Versioning;
 
-namespace Microsoft.AspNetCore.Components.Web.Extensions
+namespace Microsoft.AspNetCore.Components.Forms
 {
     /// <summary>
     /// Repesents configurable options for <see cref="RemoteBrowserFileStream"/>.

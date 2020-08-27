@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Components.Web.Extensions
+namespace Microsoft.AspNetCore.Components.Forms
 {
     /// <summary>
     /// Represents the data of a file selected from an <see cref="InputFile"/> component.
