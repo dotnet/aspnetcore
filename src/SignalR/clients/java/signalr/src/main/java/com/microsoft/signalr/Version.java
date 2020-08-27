@@ -6,6 +6,6 @@ package com.microsoft.signalr;
 
 class Version {
     public static String getDetailedVersion() {
-        return "5.0.0-dev";
+        return "99.99.99-dev";
     }
 }

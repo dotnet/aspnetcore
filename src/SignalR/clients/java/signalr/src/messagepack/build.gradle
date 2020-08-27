@@ -1,0 +1,7 @@
+group 'com.microsoft.signalr.messagepack'
+
+dependencies {
+	implementation project(':main')
+    compile 'org.msgpack:msgpack-core:0.8.20'
+    compile 'org.msgpack:jackson-dataformat-msgpack:0.8.20'
+}

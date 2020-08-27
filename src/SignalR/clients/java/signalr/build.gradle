@@ -15,45 +15,39 @@ plugins {
     id 'maven'
 }
 
-apply plugin: "java-library"
-apply plugin: "com.diffplug.gradle.spotless"
-apply plugin: 'org.junit.platform.gradle.plugin'
+allprojects {
+    apply plugin: "java-library"
+    apply plugin: "com.diffplug.gradle.spotless"
+    apply plugin: 'org.junit.platform.gradle.plugin'
 
-// If we're run from outside MSBuild, just assign a bogus dev version.
-version project.findProperty('packageVersion') ?: "99.99.99-dev"
+    // If we're run from outside MSBuild, just assign a bogus dev version.
+    version project.findProperty('packageVersion') ?: "99.99.99-dev"
 
-sourceCompatibility = 1.8
+    sourceCompatibility = 1.8
 
-repositories {
-    mavenCentral()
+    repositories {
+        mavenCentral()
+    }
 }
 
-dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-    testCompile 'org.junit.jupiter:junit-jupiter-params:5.3.1'
-    testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
-    testCompile 'org.slf4j:slf4j-jdk14:1.7.25'
-    api 'io.reactivex.rxjava2:rxjava:2.2.3'
-    implementation 'org.slf4j:slf4j-api:1.7.25'
+subprojects {
+    dependencies {
+        testCompile 'org.slf4j:slf4j-jdk14:1.7.25'
+        api 'io.reactivex.rxjava2:rxjava:2.2.3'
+        implementation 'org.slf4j:slf4j-api:1.7.25'
+    }
 }
 
 project(':main') {
-
     group 'com.microsoft.signalr'
 
     dependencies {
         implementation 'com.google.code.gson:gson:2.8.5'
         implementation 'com.squareup.okhttp3:okhttp:3.11.0'
     }
-
-    task sourceJar(type: Jar) {
-        classifier "sources"
-        from sourceSets.main.allJava
-    }
 }
 
 project(':messagepack') {
-
     group 'com.microsoft.signalr.messagepack'
 
     dependencies {
@@ -61,10 +55,15 @@ project(':messagepack') {
         compile 'org.msgpack:msgpack-core:0.8.20'
         compile 'org.msgpack:jackson-dataformat-msgpack:0.8.20'
     }
+}
 
-    task sourceJar(type: Jar) {
-        classifier "sources"
-        from sourceSets.messagepack.allJava
+project(':test') {
+    dependencies {
+        implementation project(':main')
+        implementation project(':messagepack')
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+        testCompile 'org.junit.jupiter:junit-jupiter-params:5.3.1'
+        testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
     }
 }
 
@@ -73,7 +72,7 @@ spotless {
         licenseHeader '// Copyright (c) .NET Foundation. All rights reserved.\n' +
                 '// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.\n\n' // License header
 
-        importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''	// A sequence of package names
+        importOrder 'java', 'javax', 'org', 'com', 'com.diffplug', ''   // A sequence of package names
 
         replace      'Not enough space after if', 'if(', 'if ('
         replace      'Not enough space after else', 'else{', 'else {'
@@ -95,6 +94,11 @@ spotless {
 
 junitPlatform {
     reportsDir file('test-results')
+}
+
+task sourceJar(type: Jar) {
+    classifier "sources"
+    from sourceSets.main.allJava
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
