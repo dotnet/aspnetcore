@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     await deployer.DeployAsync();
 
                     string output = string.Empty;
-                    var mre = new ManualResetEventSlim();
+                    var mre = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     deployer.HostProcess.OutputDataReceived += (sender, args) =>
                     {
                         if (!string.IsNullOrWhiteSpace(args.Data))
