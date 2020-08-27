@@ -12,7 +12,12 @@ namespace Microsoft.AspNetCore.Components.Forms
     public static class BrowserFileExtensions
     {
         /// <summary>
-        /// Converts the current image file to a new one of the specified file type and maximum file dimensions.
+        /// Attempts to convert the current image file to a new one of the specified file type and maximum file dimensions.
+        /// <para>
+        /// Caution: there is no guarantee that the file will be converted, or will even be a valid image file at all, either
+        /// before or after conversion. The conversion is requested within the browser before it is transferred to .NET
+        /// code, so the resulting data should be treated as untrusted.
+        /// </para>
         /// </summary>
         /// <remarks>
         /// The image will be scaled to fit the specified dimensions while preserving the original aspect ratio.

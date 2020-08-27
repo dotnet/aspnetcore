@@ -36,18 +36,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         public EventCallback<InputFileChangeEventArgs> OnChange { get; set; }
 
         /// <summary>
-        /// Gets or sets the maximum allowed file size in bytes. Defaults to 15 MB.
-        /// </summary>
-        [Parameter]
-        public long MaxFileSize { get; set; } = 1024 * 1024 * 15;
-
-        /// <summary>
-        /// Gets or sets the maximum allowed number of files. Defaults to 3.
-        /// </summary>
-        [Parameter]
-        public int MaxAllowedFiles { get; set; } = 3;
-
-        /// <summary>
         /// Gets or sets a collection of additional attributes that will be applied to the input element.
         /// </summary>
         [Parameter(CaptureUnmatchedValues = true)]
@@ -97,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 file.Owner = this;
             }
 
-            return OnChange.InvokeAsync(new InputFileChangeEventArgs(files, MaxFileSize, MaxAllowedFiles));
+            return OnChange.InvokeAsync(new InputFileChangeEventArgs(files));
         }
 
         void IDisposable.Dispose()

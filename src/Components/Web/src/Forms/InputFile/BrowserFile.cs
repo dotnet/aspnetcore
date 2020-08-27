@@ -7,8 +7,10 @@ using System.Threading;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
-    internal class BrowserFile : IBrowserFile
+    internal sealed class BrowserFile : IBrowserFile
     {
+        private long _size;
+
         internal InputFile Owner { get; set; } = default!;
 
         public int Id { get; set; }
@@ -17,13 +19,32 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         public DateTimeOffset LastModified { get; set; }
 
-        public long Size { get; set; }
+        public long Size
+        {
+            get => _size;
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(Size), $"Size must be a non-negative value. Value provided: {value}.");
+                }
+
+                _size = value;
+            }
+        }
 
         public string ContentType { get; set; } = string.Empty;
 
         public string? RelativePath { get; set; }
 
-        public Stream OpenReadStream(CancellationToken cancellationToken = default)
-            => Owner.OpenReadStream(this, cancellationToken);
+        public Stream OpenReadStream(long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
+        {
+            if (Size > maxAllowedSize)
+            {
+                throw new IOException($"File size '{Size} is large than the maximum allowed size '{maxAllowedSize}'.");
+            }
+
+            return Owner.OpenReadStream(this, cancellationToken);
+        }
     }
 }
