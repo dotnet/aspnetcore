@@ -139,7 +139,7 @@ task generateVersionClass {
     inputs.property "version", project.version
     outputs.dir "$buildDir/generated"
     doFirst {
-        def versionFile = file("$buildDir/../src/main/java/com/microsoft/signalr/Version.java")
+        def versionFile = file("$buildDir/../core/src/main/java/com/microsoft/signalr/Version.java")
         versionFile.parentFile.mkdirs()
         versionFile.text =
                 """
