@@ -95,8 +95,8 @@ namespace InteropTestsClient
             var services = new ServiceCollection();
             services.AddLogging(configure =>
             {
-                configure.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
-                configure.AddSimpleConsole(loggerOptions =>
+                configure.SetMinimumLevel(LogLevel.Trace);
+                configure.AddConsole(loggerOptions =>
                 {
 #pragma warning disable CS0618 // Type or member is obsolete
                     loggerOptions.IncludeScopes = true;
