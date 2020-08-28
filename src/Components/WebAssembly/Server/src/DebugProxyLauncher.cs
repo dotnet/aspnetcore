@@ -117,7 +117,13 @@ namespace Microsoft.AspNetCore.Builder
 
             void OnOutputDataReceived(object sender, DataReceivedEventArgs eventArgs)
             {
-                if (!String.IsNullOrEmpty(eventArgs.Data) && ApplicationStartedRegex.IsMatch(eventArgs.Data))
+                if (String.IsNullOrEmpty(eventArgs.Data))
+                {
+                    taskCompletionSource.TrySetException(new InvalidOperationException(
+                            "No output has been recevied from the application."));
+                }
+
+                if (ApplicationStartedRegex.IsMatch(eventArgs.Data))
                 {
                     aspNetProcess.OutputDataReceived -= OnOutputDataReceived;
                     if (!string.IsNullOrEmpty(capturedUrl))
