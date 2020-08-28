@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
-using Microsoft.AspNetCore.Authorization;
 #endif
 using Microsoft.AspNetCore.Builder;
 #if (IndividualLocalAuth)
@@ -110,7 +110,7 @@ namespace Company.WebApplication1
 #endif
 #if (OrganizationalAuth || IndividualB2CAuth)
            services.AddRazorPages()
-                   .AddMicrosoftIdentityUI();
+                .AddMicrosoftIdentityUI();
 #endif
         }
 

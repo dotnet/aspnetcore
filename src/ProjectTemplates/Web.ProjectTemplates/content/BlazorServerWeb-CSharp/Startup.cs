@@ -107,7 +107,7 @@ namespace BlazorServerWeb_CSharp
 #endif
 #if (OrganizationalAuth || IndividualB2CAuth)
             services.AddControllersWithViews()
-                        .AddMicrosoftIdentityUI();
+                .AddMicrosoftIdentityUI();
 
             services.AddAuthorization(options =>
             {
@@ -119,7 +119,7 @@ namespace BlazorServerWeb_CSharp
             services.AddRazorPages();
 #if (OrganizationalAuth || IndividualB2CAuth)
             services.AddServerSideBlazor()
-                        .AddMicrosoftIdentityConsentHandler();
+                .AddMicrosoftIdentityConsentHandler();
 #else
             services.AddServerSideBlazor();
 #endif

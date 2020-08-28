@@ -103,11 +103,11 @@ namespace Company.WebApplication1
                 options.FallbackPolicy = options.DefaultPolicy;
             });
             services.AddRazorPages()
-                    .AddMvcOptions(options => {})
-                        .AddMicrosoftIdentityUI();
+                .AddMvcOptions(options => {})
+                .AddMicrosoftIdentityUI();
 #elif (IndividualB2CAuth)
             services.AddRazorPages()
-                        .AddMicrosoftIdentityUI();
+                .AddMicrosoftIdentityUI();
 #else
             services.AddRazorPages();
 #endif
