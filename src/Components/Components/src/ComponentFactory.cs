@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Components
             (
                 propertyName: property.Name,
                 propertyType: property.PropertyType,
-                setter: MemberAssignment.CreatePropertySetter(type, property, cascading: false)
+                setter: new PropertySetter(type, property)
             )).ToArray();
 
             return Initialize;
