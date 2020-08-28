@@ -129,7 +129,7 @@ namespace RunTests
                     foreach (var restoreSource in Options.Source)
                     {
                         await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                            "nuget add source {restoreSource}} --configfile NuGet.config",
+                            $"nuget add source {restoreSource} --configfile NuGet.config",
                             environmentVariables: EnvironmentVariables,
                             outputDataReceived: Console.WriteLine,
                             errorDataReceived: Console.Error.WriteLine,
