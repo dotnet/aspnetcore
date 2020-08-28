@@ -126,21 +126,16 @@ namespace RunTests
                         throwOnError: false,
                         cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
 
-                    await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                        "nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet5/nuget/v3/index.json --configfile NuGet.config",
-                        environmentVariables: EnvironmentVariables,
-                        outputDataReceived: Console.WriteLine,
-                        errorDataReceived: Console.Error.WriteLine,
-                        throwOnError: false,
-                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
-
-                    await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
-                        "nuget add source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet6/nuget/v3/index.json --configfile NuGet.config",
-                        environmentVariables: EnvironmentVariables,
-                        outputDataReceived: Console.WriteLine,
-                        errorDataReceived: Console.Error.WriteLine,
-                        throwOnError: false,
-                        cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+                    foreach (var restoreSource in Options.Source)
+                    {
+                        await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
+                            "nuget add source {restoreSource}} --configfile NuGet.config",
+                            environmentVariables: EnvironmentVariables,
+                            outputDataReceived: Console.WriteLine,
+                            errorDataReceived: Console.Error.WriteLine,
+                            throwOnError: false,
+                            cancellationToken: new CancellationTokenSource(TimeSpan.FromMinutes(2)).Token);
+                    }
 
                     // Write nuget sources to console, useful for debugging purposes
                     await ProcessUtil.RunAsync($"{Options.DotnetRoot}/dotnet",
