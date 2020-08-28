@@ -867,6 +867,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_RazorSdkCustomCollectWatchItems">
     <ItemGroup>
       <Watch Include="%(Content.FullPath)" Condition="'%(Content.Extension)' == '.razor' AND '%(Content.Watch)' != 'false'" />
+      <Watch Include="%(Content.FullPath)" Condition="'%(Content.Extension)' == '.razor.css' AND '%(Content.Watch)' != 'false'" />
       <Watch Include="%(Content.FullPath)"
         Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(AddCshtmlFilesToDotNetWatchList)' != 'false' AND '%(Content.Extension)' == '.cshtml' AND '%(Content.Watch)' != 'false'" />
     </ItemGroup>
