@@ -23,6 +23,8 @@ Param(
   [switch][Alias('nobl')]$excludeCIBinarylog,
   [switch] $ci,
   [switch] $prepareMachine,
+  [string] $runtimeSourceFeed = '',
+  [string] $runtimeSourceFeedKey = '',
   [switch] $help,
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$properties
 )
