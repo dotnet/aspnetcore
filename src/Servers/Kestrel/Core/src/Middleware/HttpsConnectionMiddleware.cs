@@ -9,6 +9,7 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Net.Security;
 using System.Runtime.InteropServices;
+using System.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -234,31 +235,57 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             _logger.LocatingCertWithPrivateKey(certificate);
 
+            X509Store OpenStore(StoreLocation storeLocation)
+            {
+                try
+                {
+                    var store = new X509Store(StoreName.My, storeLocation);
+                    store.Open(OpenFlags.ReadOnly);
+                    return store;
+                }
+                catch (Exception exception)
+                {
+                    if (exception is CryptographicException || exception is SecurityException)
+                    {
+                        _logger.FailedToOpenStore(storeLocation, exception);
+                        return null;
+                    }
+
+                    throw;
+                }
+            }
+
             try
             {
-                using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
+                var store = OpenStore(StoreLocation.LocalMachine);
+
+                if (store != null)
                 {
-                    store.Open(OpenFlags.ReadOnly);
-
-                    var certs = store.Certificates.Find(X509FindType.FindByThumbprint, certificate.Thumbprint, validOnly: false);
-
-                    if (certs.Count > 0 && certs[0].HasPrivateKey)
+                    using (store)
                     {
-                        _logger.FoundCertWithPrivateKey(certs[0], StoreLocation.LocalMachine);
-                        return certs[0];
+                        var certs = store.Certificates.Find(X509FindType.FindByThumbprint, certificate.Thumbprint, validOnly: false);
+
+                        if (certs.Count > 0 && certs[0].HasPrivateKey)
+                        {
+                            _logger.FoundCertWithPrivateKey(certs[0], StoreLocation.LocalMachine);
+                            return certs[0];
+                        }
                     }
                 }
 
-                using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+                store = OpenStore(StoreLocation.CurrentUser);
+
+                if (store != null)
                 {
-                    store.Open(OpenFlags.ReadOnly);
-
-                    var certs = store.Certificates.Find(X509FindType.FindByThumbprint, certificate.Thumbprint, validOnly: false);
-
-                    if (certs.Count > 0 && certs[0].HasPrivateKey)
+                    using (store)
                     {
-                        _logger.FoundCertWithPrivateKey(certs[0], StoreLocation.CurrentUser);
-                        return certs[0];
+                        var certs = store.Certificates.Find(X509FindType.FindByThumbprint, certificate.Thumbprint, validOnly: false);
+
+                        if (certs.Count > 0 && certs[0].HasPrivateKey)
+                        {
+                            _logger.FoundCertWithPrivateKey(certs[0], StoreLocation.CurrentUser);
+                            return certs[0];
+                        }
                     }
                 }
             }
@@ -508,6 +535,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 eventId: new EventId(7, "FailToLocateCertificate"),
                 formatString: CoreStrings.FailedToLocateCertificateFromStore);
 
+
+        private static readonly Action<ILogger, string, Exception> _failedToOpenCertificateStore =
+            LoggerMessage.Define<string>(
+                logLevel: LogLevel.Debug,
+                eventId: new EventId(8, "FailToOpenStore"),
+                formatString: CoreStrings.FailedToOpenCertStore);
+
         public static void AuthenticationFailed(this ILogger<HttpsConnectionMiddleware> logger, Exception exception) => _authenticationFailed(logger, exception);
 
         public static void AuthenticationTimedOut(this ILogger<HttpsConnectionMiddleware> logger) => _authenticationTimedOut(logger, null);
@@ -526,5 +560,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         }
 
         public static void FailedToFindCertificateInStore(this ILogger<HttpsConnectionMiddleware> logger, Exception exception) => _failedToFindCertificateInStore(logger, exception);
+
+        public static void FailedToOpenStore(this ILogger<HttpsConnectionMiddleware> logger, StoreLocation storeLocation, Exception exception)
+        {
+            var storeLocationString = storeLocation == StoreLocation.LocalMachine ? nameof(StoreLocation.LocalMachine) : nameof(StoreLocation.CurrentUser);
+
+            _failedToOpenCertificateStore(logger, storeLocationString, exception);
+        }
     }
 }
