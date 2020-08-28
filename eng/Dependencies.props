@@ -124,6 +124,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Internal.AspNetCore.H2Spec.All" />
     <LatestPackageReference Include="Microsoft.Extensions.Internal.Transport" />
     <LatestPackageReference Include="Microsoft.NETCore.Windows.ApiSets" />
+    <LatestPackageReference Include="Microsoft.NETCore.BrowserDebugHost.Transport" />
     <LatestPackageReference Include="Microsoft.Owin.Security.Cookies" />
     <LatestPackageReference Include="Microsoft.Owin.Testing" />
     <LatestPackageReference Include="Microsoft.Web.Administration" />

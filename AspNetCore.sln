@@ -493,10 +493,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Authentication.Msal", "Auth
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Authentication.WebAssembly.Msal", "src\Components\WebAssembly\Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj", "{09F72EF0-2BDE-4B73-B116-A87E38C432FE}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DebugProxy", "DebugProxy", "{F01E5B0D-1277-481D-8879-41A87F3F9524}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.WebAssembly.DebugProxy", "src\Components\WebAssembly\DebugProxy\src\Microsoft.AspNetCore.Components.WebAssembly.DebugProxy.csproj", "{67F51062-6897-4019-AA88-6BDB5E30B015}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "JSInterop", "JSInterop", "{44161B20-CC30-403A-AC94-247592ED7590}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.JSInterop.WebAssembly", "src\Components\WebAssembly\JSInterop\src\Microsoft.JSInterop.WebAssembly.csproj", "{E0B1F2AA-4EBA-4DC7-92D5-2F081354C8DE}"
