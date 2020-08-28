@@ -18,7 +18,6 @@ plugins {
 allprojects {
     apply plugin: "java-library"
     apply plugin: "com.diffplug.gradle.spotless"
-    apply plugin: 'org.junit.platform.gradle.plugin'
 
     // If we're run from outside MSBuild, just assign a bogus dev version.
     version project.findProperty('packageVersion') ?: "99.99.99-dev"
@@ -30,40 +29,43 @@ allprojects {
     }
 }
 
-subprojects {
-    dependencies {
-        testCompile 'org.slf4j:slf4j-jdk14:1.7.25'
-        api 'io.reactivex.rxjava2:rxjava:2.2.3'
-        implementation 'org.slf4j:slf4j-api:1.7.25'
-    }
-}
-
-project(':main') {
+project(':core') {
     group 'com.microsoft.signalr'
 
     dependencies {
         implementation 'com.google.code.gson:gson:2.8.5'
         implementation 'com.squareup.okhttp3:okhttp:3.11.0'
+        api 'io.reactivex.rxjava2:rxjava:2.2.3'
+        implementation 'org.slf4j:slf4j-api:1.7.25'
     }
 }
 
 project(':messagepack') {
-    group 'com.microsoft.signalr.messagepack'
+    group 'com.microsoft.messagepack'
 
     dependencies {
-        implementation project(':main')
+        implementation project(':core')
         compile 'org.msgpack:msgpack-core:0.8.20'
         compile 'org.msgpack:jackson-dataformat-msgpack:0.8.20'
     }
 }
 
 project(':test') {
+    apply plugin: 'org.junit.platform.gradle.plugin'
+
     dependencies {
-        implementation project(':main')
+        implementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+        compile 'org.junit.jupiter:junit-jupiter-params:5.3.1'
+        runtime 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+        implementation 'com.google.code.gson:gson:2.8.5'
+        testCompile 'org.slf4j:slf4j-jdk14:1.7.25'
+        implementation project(':core')
         implementation project(':messagepack')
-        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-        testCompile 'org.junit.jupiter:junit-jupiter-params:5.3.1'
-        testRuntime 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
+        compile project(':messagepack')
+    }
+
+    junitPlatform {
+        reportsDir file('test-results')
     }
 }
 
@@ -90,10 +92,6 @@ spotless {
         indentWithSpaces(4)
         removeUnusedImports() // removes any unused imports
     }
-}
-
-junitPlatform {
-    reportsDir file('test-results')
 }
 
 task sourceJar(type: Jar) {
