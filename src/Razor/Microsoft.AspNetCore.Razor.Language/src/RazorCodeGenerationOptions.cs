@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,7 +17,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 rootNamespace: null,
                 suppressMetadataAttributes: false,
                 suppressPrimaryMethodBody: false,
-                suppressNullabilityEnforcement: false);
+                suppressNullabilityEnforcement: false,
+                omitMinimizedComponentAttributeValues: false);
         }
 
         public static RazorCodeGenerationOptions CreateDesignTimeDefault()
@@ -30,7 +31,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 suppressChecksum: false,
                 suppressMetadataAttributes: true,
                 suppressPrimaryMethodBody: false,
-                suppressNullabilityEnforcement: false);
+                suppressNullabilityEnforcement: false,
+                omitMinimizedComponentAttributeValues: false);
         }
 
         public static RazorCodeGenerationOptions Create(Action<RazorCodeGenerationOptionsBuilder> configure)
@@ -114,5 +116,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// Gets a value that determines if nullability type enforcement should be suppressed for user code.
         /// </summary>
         public virtual bool SuppressNullabilityEnforcement { get; }
+
+        /// <summary>
+        /// Gets a value that determines if the components code writer may omit values for minimized attributes.
+        /// </summary>
+        public virtual bool OmitMinimizedComponentAttributeValues { get; }
     }
 }

@@ -9,9 +9,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     public abstract class ComponentCodeGenerationTestBase : RazorBaselineIntegrationTestBase
     {
+        private RazorConfiguration _configuration;
+
         internal override string FileKind => FileKinds.Component;
 
         internal override bool UseTwoPhaseCompilation => true;
+
+        internal override RazorConfiguration Configuration => _configuration ?? base.Configuration;
 
         protected ComponentCodeGenerationTestBase()
             : base(generateBaselines: null)
@@ -357,6 +361,38 @@ namespace Test
   var myValue = ""Expression value"";
 }
 <div>@myValue <!-- @myValue --> </div>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void OmitsMinimizedAttributeValueParameter()
+        {
+            // Act
+            var generated = CompileToCSharp(@"
+<elem normal-attr=""@(""val"")"" minimized-attr empty-string-atttr=""""></elem>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void IncludesMinimizedAttributeValueParameterBeforeLanguageVersion5()
+        {
+            // Arrange
+            _configuration = RazorConfiguration.Create(
+                RazorLanguageVersion.Version_3_0,
+                base.Configuration.ConfigurationName,
+                base.Configuration.Extensions);
+
+            // Act
+            var generated = CompileToCSharp(@"
+<elem normal-attr=""@(""val"")"" minimized-attr empty-string-atttr=""""></elem>");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);

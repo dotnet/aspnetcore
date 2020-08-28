@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
             using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://www.example.com/oauth-callback?error=access_denied&state=protected_state",
-                ".AspNetCore.Correlation.Weblie.correlationId=N");
+                ".AspNetCore.Correlation.correlationId=N");
 
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("https://www.example.com/access-denied?ReturnUrl=http%3A%2F%2Ftesthost%2Fredirect", transaction.Response.Headers.Location.ToString());
@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
             using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://www.example.com/oauth-callback?error=access_denied&state=protected_state",
-                ".AspNetCore.Correlation.Weblie.correlationId=N");
+                ".AspNetCore.Correlation.correlationId=N");
 
             Assert.Equal(HttpStatusCode.NotAcceptable, transaction.Response.StatusCode);
             Assert.Null(transaction.Response.Headers.Location);
@@ -354,7 +354,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
             using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://www.example.com/oauth-callback?error=access_denied&state=protected_state",
-                ".AspNetCore.Correlation.Weblie.correlationId=N");
+                ".AspNetCore.Correlation.correlationId=N");
 
             Assert.Equal(HttpStatusCode.NotAcceptable, transaction.Response.StatusCode);
             Assert.Null(transaction.Response.Headers.Location);
@@ -390,7 +390,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
             using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://www.example.com/oauth-callback?error=custom_error&state=protected_state",
-                ".AspNetCore.Correlation.Weblie.correlationId=N");
+                ".AspNetCore.Correlation.correlationId=N");
 
             Assert.Equal(HttpStatusCode.NotAcceptable, transaction.Response.StatusCode);
             Assert.Null(transaction.Response.Headers.Location);

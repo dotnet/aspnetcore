@@ -41,6 +41,9 @@ namespace Microsoft.AspNetCore.Razor.Tools
             var result = RewriteCssCommand.AddScopeToSelectors("file.css", @"
     .first, .second { color: red; }
     .third { color: blue; }
+    :root { color: green; }
+    * { color: white; }
+    #some-id { color: yellow; }
 ", "TestScope", out var diagnostics);
 
             // Assert
@@ -48,6 +51,9 @@ namespace Microsoft.AspNetCore.Razor.Tools
             Assert.Equal(@"
     .first[TestScope], .second[TestScope] { color: red; }
     .third[TestScope] { color: blue; }
+    :root[TestScope] { color: green; }
+    *[TestScope] { color: white; }
+    #some-id[TestScope] { color: yellow; }
 ", result);
         }
 
@@ -78,6 +84,83 @@ namespace Microsoft.AspNetCore.Razor.Tools
             Assert.Empty(diagnostics);
             Assert.Equal(@"
     .first /* space at end {} */ div[TestScope] , .myclass[TestScope] /* comment at end */ { color: red; }
+", result);
+        }
+
+        [Fact]
+        public void HandlesPseudoClasses()
+        {
+            // Arrange/act
+            var result = RewriteCssCommand.AddScopeToSelectors("file.css", @"
+    a:fake-pseudo-class { color: red; }
+    a:focus b:hover { color: green; }
+    tr:nth-child(4n + 1) { color: blue; }
+    a:has(b > c) { color: yellow; }
+    a:last-child > ::deep b { color: pink; }
+    a:not(#something) { color: purple; }
+", "TestScope", out var diagnostics);
+
+            // Assert
+            Assert.Empty(diagnostics);
+            Assert.Equal(@"
+    a:fake-pseudo-class[TestScope] { color: red; }
+    a:focus b:hover[TestScope] { color: green; }
+    tr:nth-child(4n + 1)[TestScope] { color: blue; }
+    a:has(b > c)[TestScope] { color: yellow; }
+    a:last-child[TestScope] >  b { color: pink; }
+    a:not(#something)[TestScope] { color: purple; }
+", result);
+        }
+
+        [Fact]
+        public void HandlesPseudoElements()
+        {
+            // Arrange/act
+            var result = RewriteCssCommand.AddScopeToSelectors("file.css", @"
+    a::before { content: ""✋""; }
+    a::after::placeholder { content: ""🐯""; }
+    custom-element::part(foo) { content: ""🤷‍""; }
+    a::before > ::deep another { content: ""👞""; }
+    a::fake-PsEuDo-element { content: ""🐔""; }
+    ::selection { content: ""😾""; }
+    other, ::selection { content: ""👂""; }
+", "TestScope", out var diagnostics);
+
+            // Assert
+            Assert.Empty(diagnostics);
+            Assert.Equal(@"
+    a[TestScope]::before { content: ""✋""; }
+    a[TestScope]::after::placeholder { content: ""🐯""; }
+    custom-element[TestScope]::part(foo) { content: ""🤷‍""; }
+    a[TestScope]::before >  another { content: ""👞""; }
+    a[TestScope]::fake-PsEuDo-element { content: ""🐔""; }
+    [TestScope]::selection { content: ""😾""; }
+    other[TestScope], [TestScope]::selection { content: ""👂""; }
+", result);
+        }
+
+        [Fact]
+        public void HandlesSingleColonPseudoElements()
+        {
+            // Arrange/act
+            var result = RewriteCssCommand.AddScopeToSelectors("file.css", @"
+    a:after { content: ""x""; }
+    a:before { content: ""x""; }
+    a:first-letter { content: ""x""; }
+    a:first-line { content: ""x""; }
+    a:AFTER { content: ""x""; }
+    a:not(something):before { content: ""x""; }
+", "TestScope", out var diagnostics);
+
+            // Assert
+            Assert.Empty(diagnostics);
+            Assert.Equal(@"
+    a[TestScope]:after { content: ""x""; }
+    a[TestScope]:before { content: ""x""; }
+    a[TestScope]:first-letter { content: ""x""; }
+    a[TestScope]:first-line { content: ""x""; }
+    a[TestScope]:AFTER { content: ""x""; }
+    a:not(something)[TestScope]:before { content: ""x""; }
 ", result);
         }
 
