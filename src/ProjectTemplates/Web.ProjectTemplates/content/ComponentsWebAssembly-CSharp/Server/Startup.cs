@@ -75,7 +75,7 @@ namespace ComponentsWebAssembly_CSharp.Server
 #endif
                         .AddInMemoryTokenCaches();
 #else
-                    .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAd"));
+                .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAd"));
 #endif
 #elif (IndividualB2CAuth)
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

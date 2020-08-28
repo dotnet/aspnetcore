@@ -51,7 +51,7 @@ namespace Company.WebApplication1
 #endif
                         .AddInMemoryTokenCaches();
 #else
-                    .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAd"));
+                .AddMicrosoftIdentityWebApi(Configuration.GetSection("AzureAd"));
 #endif
 #elif (IndividualB2CAuth)
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

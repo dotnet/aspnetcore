@@ -78,7 +78,7 @@ namespace Company.WebApplication1
 #endif
                         .AddInMemoryTokenCaches();
 #else
-                    .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"));
+                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"));
 #endif
 #elif (IndividualB2CAuth)
 #if (GenerateApi)
@@ -104,10 +104,10 @@ namespace Company.WebApplication1
             });
             services.AddRazorPages()
                     .AddMvcOptions(options => {})
-                    .AddMicrosoftIdentityUI();
+                        .AddMicrosoftIdentityUI();
 #elif (IndividualB2CAuth)
             services.AddRazorPages()
-                    .AddMicrosoftIdentityUI();
+                        .AddMicrosoftIdentityUI();
 #else
             services.AddRazorPages();
 #endif

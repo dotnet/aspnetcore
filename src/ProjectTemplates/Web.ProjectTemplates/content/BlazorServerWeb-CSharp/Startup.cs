@@ -88,7 +88,7 @@ namespace BlazorServerWeb_CSharp
 #endif
                         .AddInMemoryTokenCaches();
 #else
-                    .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"));
+                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"));
 #endif
 #elif (IndividualB2CAuth)
 #if (GenerateApi)
@@ -107,7 +107,7 @@ namespace BlazorServerWeb_CSharp
 #endif
 #if (OrganizationalAuth || IndividualB2CAuth)
             services.AddControllersWithViews()
-                    .AddMicrosoftIdentityUI();
+                        .AddMicrosoftIdentityUI();
 
             services.AddAuthorization(options =>
             {

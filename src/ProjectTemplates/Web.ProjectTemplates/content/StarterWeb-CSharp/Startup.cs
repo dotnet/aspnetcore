@@ -79,7 +79,7 @@ namespace Company.WebApplication1
 #endif
                         .AddInMemoryTokenCaches();
 #else
-                    .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"));
+                .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAd"));
 #endif
 #elif (IndividualB2CAuth)
 #if (GenerateApi)
@@ -87,7 +87,6 @@ namespace Company.WebApplication1
 
 #endif
             services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-                    .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAdB2C"))
 #if (GenerateApi)
                 .AddMicrosoftIdentityWebApp(Configuration.GetSection("AzureAdB2C"))
                     .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
