@@ -110,7 +110,7 @@ namespace Microsoft.JSInterop
             object?[]? args)
         {
             var taskId = Interlocked.Increment(ref _nextPendingTaskId);
-            var tcs = new TaskCompletionSource<TValue>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<TValue>();
             if (cancellationToken != default)
             {
                 _cancellationRegistrations[taskId] = cancellationToken.Register(() =>
