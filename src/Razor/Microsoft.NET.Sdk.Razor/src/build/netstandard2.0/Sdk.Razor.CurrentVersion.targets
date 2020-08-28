@@ -38,9 +38,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Resolve the RazorLangVersion based on values imported or TFM. -->
   <PropertyGroup>
-    <_TargetFrameworkVersionWithoutV>$(TargetFrameworkVersion.TrimStart('vV'))</_TargetFrameworkVersionWithoutV>
-    <_TargetingNETCoreApp30OrLater Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' >= '3.0'">true</_TargetingNETCoreApp30OrLater>
-    <_TargetingNET50OrLater Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' >= '5.0'">true</_TargetingNET50OrLater>
+    <_TargetingNETCoreApp30OrLater Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND
+      $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '3.0')) ">true</_TargetingNETCoreApp30OrLater>
+    <_TargetingNET50OrLater Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND
+      $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '5.0')) ">true</_TargetingNET50OrLater>
 
     <!--
       Infer the RazorLangVersion if no value was specified. When adding support for newer target frameworks, list newer language versions first.
@@ -227,7 +228,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CopyRefAssembliesToPublishDirectory Condition="'$(CopyRefAssembliesToPublishDirectory)'==''">$(PreserveCompilationReferences)</CopyRefAssembliesToPublishDirectory>
 
     <!-- For 2.x projects desktop and .NET Core projects, if they're opting in to runtime compilation (indicated by PreserveCompilationContext=true), set PreserveCompilationReferences = true -->
-    <PreserveCompilationReferences Condition="'$(PreserveCompilationContext)' == 'true' AND (('$(TargetFrameworkIdentifier)' == '.NETFramework') OR ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' &lt; '3.0'))">true</PreserveCompilationReferences>
+    <PreserveCompilationReferences Condition=" '$(PreserveCompilationContext)' == 'true' AND
+      ('$(TargetFrameworkIdentifier)' == '.NETFramework' OR
+       ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND
+        '$(_TargetingNETCoreApp30OrLater)' != 'true')) ">true</PreserveCompilationReferences>
 
     <!--
       We can't set the actual default value here due to evaluation order (depends on $(OutDir)).
