@@ -13,7 +13,7 @@ using Microsoft.JSInterop;
 namespace Microsoft.AspNetCore.Components.Forms
 {
     /// <summary>
-    /// A component that wraps the HTML file input element and exposes a <see cref="Stream"/> for each file's contents.
+    /// A component that wraps the HTML file input element and supplies a <see cref="Stream"/> for each file's contents.
     /// </summary>
     public class InputFile : ComponentBase, IInputFileJsCallbacks, IDisposable
     {
