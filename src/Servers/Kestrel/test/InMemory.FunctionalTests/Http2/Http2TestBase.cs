@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected readonly RequestDelegate _waitForAbortApplication;
         protected readonly RequestDelegate _waitForAbortFlushingApplication;
         protected readonly RequestDelegate _readRateApplication;
-        protected readonly RequestDelegate _echoMethod;
+        protected readonly RequestDelegate _echoMethodNoBody;
         protected readonly RequestDelegate _echoHost;
         protected readonly RequestDelegate _echoPath;
         protected readonly RequestDelegate _appAbort;
@@ -346,8 +346,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 await stalledReadTask;
             };
 
-            _echoMethod = context =>
+            _echoMethodNoBody = context =>
             {
+                Assert.False(context.Request.CanHaveBody());
                 context.Response.Headers["Method"] = context.Request.Method;
 
                 return Task.CompletedTask;

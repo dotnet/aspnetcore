@@ -99,7 +99,7 @@ namespace Microsoft.JSInterop
 
             public string? NextResultJson { get; set; }
 
-            protected override string? InvokeJS(string identifier, string? argsJson)
+            protected override string? InvokeJS(string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
             {
                 InvokeCalls.Add(new InvokeArgs { Identifier = identifier, ArgsJson = argsJson });
                 return NextResultJson;
@@ -111,7 +111,7 @@ namespace Microsoft.JSInterop
                 public string? ArgsJson { get; set; }
             }
 
-            protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson)
+            protected override void BeginInvokeJS(long asyncHandle, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
                 => throw new NotImplementedException("This test only covers sync calls");
 
             protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)

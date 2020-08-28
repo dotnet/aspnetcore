@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
     public sealed class WebAssemblyHostBuilder
     {
         private Func<IServiceProvider> _createServiceProvider;
+        private RootComponentTypeCache _rootComponentCache;
 
         /// <summary>
         /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> using the most common
@@ -57,6 +58,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
 
             // Retrieve required attributes from JSRuntimeInvoker
             InitializeNavigationManager(jsRuntimeInvoker);
+            InitializeRegisteredRootComponents(jsRuntimeInvoker);
             InitializeDefaultServices();
 
             var hostEnvironment = InitializeEnvironment(jsRuntimeInvoker);
@@ -66,6 +68,38 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             {
                 return Services.BuildServiceProvider(validateScopes: WebAssemblyHostEnvironmentExtensions.IsDevelopment(hostEnvironment));
             };
+        }
+
+        private void InitializeRegisteredRootComponents(WebAssemblyJSRuntimeInvoker jsRuntimeInvoker)
+        {
+            var componentsCount = jsRuntimeInvoker.InvokeUnmarshalled<object, object, object, int>(RegisteredComponentsInterop.GetRegisteredComponentsCount, null, null, null);
+            if (componentsCount == 0)
+            {
+                return;
+            }
+
+            var registeredComponents = new WebAssemblyComponentMarker[componentsCount];
+            for (var i = 0; i < componentsCount; i++)
+            {
+                var id = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, int>(RegisteredComponentsInterop.GetId, i, null, null);
+                var assembly = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetAssembly, id, null, null);
+                var typeName = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetTypeName, id, null, null);
+                var serializedParameterDefinitions = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetParameterDefinitions, id, null, null);
+                var serializedParameterValues = jsRuntimeInvoker.InvokeUnmarshalled<int, object, object, string>(RegisteredComponentsInterop.GetParameterValues, id, null, null);
+                registeredComponents[i] = new WebAssemblyComponentMarker(WebAssemblyComponentMarker.ClientMarkerType, assembly, typeName, serializedParameterDefinitions, serializedParameterValues, id.ToString());
+            }
+
+            var componentDeserializer = WebAssemblyComponentParameterDeserializer.Instance;
+            foreach (var registeredComponent in registeredComponents)
+            {
+                _rootComponentCache = new RootComponentTypeCache();
+                var componentType = _rootComponentCache.GetRootComponent(registeredComponent.Assembly, registeredComponent.TypeName);
+                var definitions = componentDeserializer.GetParameterDefinitions(registeredComponent.ParameterDefinitions);
+                var values = componentDeserializer.GetParameterValues(registeredComponent.ParameterValues);
+                var parameters = componentDeserializer.DeserializeParameters(definitions, values);
+
+                RootComponents.Add(componentType, registeredComponent.PrerenderId, parameters);
+            }
         }
 
         private void InitializeNavigationManager(WebAssemblyJSRuntimeInvoker jsRuntimeInvoker)
@@ -190,7 +224,8 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
             Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
             Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
             Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
-            Services.AddLogging(builder => {
+            Services.AddLogging(builder =>
+            {
                 builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
             });
         }

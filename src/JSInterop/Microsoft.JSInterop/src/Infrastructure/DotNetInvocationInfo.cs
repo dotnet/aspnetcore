@@ -15,7 +15,7 @@ namespace Microsoft.JSInterop.Infrastructure
         /// <param name="methodIdentifier">The identifier of the method to be invoked.</param>
         /// <param name="dotNetObjectId">The object identifier for instance method calls.</param>
         /// <param name="callId">The call identifier.</param>
-        public DotNetInvocationInfo(string assemblyName, string methodIdentifier, long dotNetObjectId, string callId)
+        public DotNetInvocationInfo(string? assemblyName, string methodIdentifier, long dotNetObjectId, string? callId)
         {
             CallId = callId;
             AssemblyName = assemblyName;
@@ -27,7 +27,7 @@ namespace Microsoft.JSInterop.Infrastructure
         /// Gets the name of the assembly containing the method.
         /// Only one of <see cref="DotNetObjectId"/> or <see cref="AssemblyName"/> may be specified.
         /// </summary>
-        public string AssemblyName { get; }
+        public string? AssemblyName { get; }
 
         /// <summary>
         /// Gets the identifier of the method to be invoked. This is the value specified in the <see cref="JSInvokableAttribute"/>.
@@ -43,6 +43,6 @@ namespace Microsoft.JSInterop.Infrastructure
         /// <summary>
         /// Gets the call identifier. This value is <see langword="null"/> when the client does not expect a value to be returned.
         /// </summary>
-        public string CallId { get; }
+        public string? CallId { get; }
     }
 }

@@ -3,9 +3,13 @@
 
 package com.microsoft.signalr;
 
+import java.lang.reflect.Type;
 import java.util.List;
 
+/**
+ * An abstraction for passing around information about method signatures.
+ */
 interface InvocationBinder {
-    Class<?> getReturnType(String invocationId);
-    List<Class<?>> getParameterTypes(String methodName);
+    Type getReturnType(String invocationId);
+    List<Type> getParameterTypes(String methodName);
 }

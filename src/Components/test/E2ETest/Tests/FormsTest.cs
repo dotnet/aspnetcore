@@ -561,6 +561,23 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void RespectsCustomFieldCssClassProvider()
+        {
+            var appElement = MountTypicalValidationComponent();
+            var socksInput = appElement.FindElement(By.ClassName("socks")).FindElement(By.TagName("input"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Validates on edit
+            Browser.Equal("valid-socks", () => socksInput.GetAttribute("class"));
+            socksInput.SendKeys("Purple\t");
+            Browser.Equal("modified valid-socks", () => socksInput.GetAttribute("class"));
+
+            // Can become invalid
+            socksInput.SendKeys(" with yellow spots\t");
+            Browser.Equal("modified invalid-socks", () => socksInput.GetAttribute("class"));
+        }
+
+        [Fact]
         public void NavigateOnSubmitWorks()
         {
             var app = Browser.MountTestComponent<NavigateOnSubmit>();
