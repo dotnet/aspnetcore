@@ -93,7 +93,9 @@ namespace Microsoft.AspNetCore.TestHost
             return webHostBuilder;
         }
 
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
         public static IWebHostBuilder UseSolutionRelativeContentRoot(
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             this IWebHostBuilder builder,
             string solutionRelativePath,
             string solutionName = "*.sln")
@@ -101,7 +103,9 @@ namespace Microsoft.AspNetCore.TestHost
             return builder.UseSolutionRelativeContentRoot(solutionRelativePath, AppContext.BaseDirectory, solutionName);
         }
 
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
         public static IWebHostBuilder UseSolutionRelativeContentRoot(
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             this IWebHostBuilder builder,
             string solutionRelativePath,
             string applicationBasePath,

@@ -48,7 +48,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="tags">A list of tags that can be used to filter health checks.</param>
         /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
         /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
         public static IHealthChecksBuilder AddCheck(
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             this IHealthChecksBuilder builder,
             string name,
             IHealthCheck instance,
@@ -121,7 +123,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// with any lifetime it will be used. Otherwise an instance of type <typeparamref name="T"/> will be constructed with
         /// access to services from the dependency injection container.
         /// </remarks>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
         public static IHealthChecksBuilder AddCheck<T>(
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads.
             this IHealthChecksBuilder builder,
             string name,
             HealthStatus? failureStatus = null,

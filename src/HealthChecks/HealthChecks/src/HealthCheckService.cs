@@ -38,7 +38,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// A <see cref="Task{T}"/> which will complete when all the health checks have been run,
         /// yielding a <see cref="HealthReport"/> containing the results.
         /// </returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
         public Task<HealthReport> CheckHealthAsync(CancellationToken cancellationToken = default)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         {
             return CheckHealthAsync(predicate: null, cancellationToken);
         }
@@ -54,7 +56,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// A <see cref="Task{T}"/> which will complete when all the health checks have been run,
         /// yielding a <see cref="HealthReport"/> containing the results.
         /// </returns>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
         public abstract Task<HealthReport> CheckHealthAsync(
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             Func<HealthCheckRegistration, bool>? predicate,
             CancellationToken cancellationToken = default);
     }
