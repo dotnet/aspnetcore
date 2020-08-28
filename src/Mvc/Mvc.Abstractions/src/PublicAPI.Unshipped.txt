@@ -290,12 +290,12 @@ Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext.OutputFormatterW
 Microsoft.AspNetCore.Mvc.IActionResult
 Microsoft.AspNetCore.Mvc.IActionResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Mvc.IUrlHelper
-Microsoft.AspNetCore.Mvc.IUrlHelper.Action(Microsoft.AspNetCore.Mvc.Routing.UrlActionContext! actionContext) -> string!
+Microsoft.AspNetCore.Mvc.IUrlHelper.Action(Microsoft.AspNetCore.Mvc.Routing.UrlActionContext! actionContext) -> string?
 Microsoft.AspNetCore.Mvc.IUrlHelper.ActionContext.get -> Microsoft.AspNetCore.Mvc.ActionContext!
-Microsoft.AspNetCore.Mvc.IUrlHelper.Content(string! contentPath) -> string!
-Microsoft.AspNetCore.Mvc.IUrlHelper.IsLocalUrl(string! url) -> bool
-Microsoft.AspNetCore.Mvc.IUrlHelper.Link(string! routeName, object! values) -> string!
-Microsoft.AspNetCore.Mvc.IUrlHelper.RouteUrl(Microsoft.AspNetCore.Mvc.Routing.UrlRouteContext! routeContext) -> string!
+Microsoft.AspNetCore.Mvc.IUrlHelper.Content(string? contentPath) -> string?
+Microsoft.AspNetCore.Mvc.IUrlHelper.IsLocalUrl(string? url) -> bool
+Microsoft.AspNetCore.Mvc.IUrlHelper.Link(string? routeName, object? values) -> string?
+Microsoft.AspNetCore.Mvc.IUrlHelper.RouteUrl(Microsoft.AspNetCore.Mvc.Routing.UrlRouteContext! routeContext) -> string?
 Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo
 Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.BinderModelName.get -> string?
 Microsoft.AspNetCore.Mvc.ModelBinding.BindingInfo.BinderModelName.set -> void
@@ -337,7 +337,7 @@ Microsoft.AspNetCore.Mvc.ModelBinding.IBindingSourceMetadata.BindingSource.get -
 Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder
 Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder.BindModelAsync(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingContext! bindingContext) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider
-Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext! context) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder!
+Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider.GetBinder(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBinderProviderContext! context) -> Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder?
 Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider
 Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider.GetMetadataForProperties(System.Type! modelType) -> System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!>!
 Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider.GetMetadataForType(System.Type! modelType) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata!
@@ -742,7 +742,7 @@ static Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.ForP
 static Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.ForProperty(System.Type! modelType, string! name, System.Type! containerType) -> Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity
 static Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity.ForType(System.Type! modelType) -> Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity
 static Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult.Failed() -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult
-static Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult.Success(object! model) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult
+static Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult.Success(object? model) -> Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult
 static Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult.operator !=(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult x, Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult y) -> bool
 static Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult.operator ==(Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult x, Microsoft.AspNetCore.Mvc.ModelBinding.ModelBindingResult y) -> bool
 static Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary.StartsWithPrefix(string! prefix, string! key) -> bool
