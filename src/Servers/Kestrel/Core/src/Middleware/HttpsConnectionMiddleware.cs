@@ -4,11 +4,13 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -91,9 +93,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             {
                 EnsureCertificateIsAllowedForServerAuth(_serverCertificate);
 
+                var certificate = _serverCertificate;
+                if (!certificate.HasPrivateKey)
+                {
+                    // SslStream historically has logic to deal with certificate missing private keys.
+                    // By resolving the SslStreamCertificateContext eagerly, we circumvent this logic so
+                    // try to resolve the certificate from the store if there's no private key in the cert.
+                    certificate = LocateCertificateWithPrivateKey(certificate);
+                }
+
                 // This might be do blocking IO but it'll resolve the certificate chain up front before any connections are
                 // made to the server
-                _serverCertificateContext = SslStreamCertificateContext.Create(_serverCertificate, additionalCertificates: null);
+                _serverCertificateContext = SslStreamCertificateContext.Create(certificate, additionalCertificates: null);
             }
 
             var remoteCertificateValidationCallback = _options.ClientCertificateMode == ClientCertificateMode.NoCertificate ?
@@ -213,6 +224,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 // Restore the original so that it gets closed appropriately
                 context.Transport = originalTransport;
             }
+        }
+
+        // This logic is replicated from https://github.com/dotnet/runtime/blob/02b24db7cada5d5806c5cc513e61e44fb2a41944/src/libraries/System.Net.Security/src/System/Net/Security/SecureChannel.cs#L195-L262
+        // but with public APIs
+        private X509Certificate2 LocateCertificateWithPrivateKey(X509Certificate2 certificate)
+        {
+            Debug.Assert(!certificate.HasPrivateKey, "This should only be called with certificates that don't have a private key");
+
+            _logger.LocatingCertWithPrivateKey(certificate);
+
+            try
+            {
+                using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine))
+                {
+                    store.Open(OpenFlags.ReadOnly);
+
+                    var certs = store.Certificates.Find(X509FindType.FindByThumbprint, certificate.Thumbprint, validOnly: false);
+
+                    if (certs.Count > 0 && certs[0].HasPrivateKey)
+                    {
+                        _logger.FoundCertWithPrivateKey(certs[0], StoreLocation.LocalMachine);
+                        return certs[0];
+                    }
+                }
+
+                using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+                {
+                    store.Open(OpenFlags.ReadOnly);
+
+                    var certs = store.Certificates.Find(X509FindType.FindByThumbprint, certificate.Thumbprint, validOnly: false);
+
+                    if (certs.Count > 0 && certs[0].HasPrivateKey)
+                    {
+                        _logger.FoundCertWithPrivateKey(certs[0], StoreLocation.CurrentUser);
+                        return certs[0];
+                    }
+                }
+            }
+            catch (CryptographicException ex)
+            {
+                // Log as debug since this error is expected an swallowed
+                _logger.FailedToFindCertificateInStore(ex);
+            }
+
+            // Return the cert, and it will fail later
+            return certificate;
         }
 
         private Task DoOptionsBasedHandshakeAsync(ConnectionContext context, SslStream sslStream, Core.Internal.TlsConnectionFeature feature, CancellationToken cancellationToken)
@@ -396,7 +453,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             {
                 var enableHttp2OnWindows81 = AppContext.TryGetSwitch(EnableWindows81Http2, out var enabled) && enabled;
                 if (Environment.OSVersion.Version < new Version(6, 3) // Missing ALPN support
-                    // Win8.1 and 2012 R2 don't support the right cipher configuration by default.
+                                                                      // Win8.1 and 2012 R2 don't support the right cipher configuration by default.
                     || (Environment.OSVersion.Version < new Version(10, 0) && !enableHttp2OnWindows81))
                 {
                     return true;
@@ -409,7 +466,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
     internal static class HttpsConnectionMiddlewareLoggerExtensions
     {
-
         private static readonly Action<ILogger, Exception> _authenticationFailed =
             LoggerMessage.Define(
                 logLevel: LogLevel.Debug,
@@ -434,6 +490,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 eventId: new EventId(4, "Http2DefaultCiphersInsufficient"),
                 formatString: CoreStrings.Http2DefaultCiphersInsufficient);
 
+        private static readonly Action<ILogger, string, Exception> _locatingCertWithPrivateKey =
+            LoggerMessage.Define<string>(
+                logLevel: LogLevel.Debug,
+                eventId: new EventId(5, "LocateCertWithPrivateKey"),
+                formatString: CoreStrings.LocatingCertWithPrivateKey);
+
+        private static readonly Action<ILogger, string, string, Exception> _foundCertWithPrivateKey =
+            LoggerMessage.Define<string, string>(
+                logLevel: LogLevel.Debug,
+                eventId: new EventId(6, "FoundCertWithPrivateKey"),
+                formatString: CoreStrings.FoundCertWithPrivateKey);
+
+        private static readonly Action<ILogger, Exception> _failedToFindCertificateInStore =
+            LoggerMessage.Define(
+                logLevel: LogLevel.Debug,
+                eventId: new EventId(7, "FailToLocateCertificate"),
+                formatString: CoreStrings.FailedToLocateCertificateFromStore);
+
         public static void AuthenticationFailed(this ILogger<HttpsConnectionMiddleware> logger, Exception exception) => _authenticationFailed(logger, exception);
 
         public static void AuthenticationTimedOut(this ILogger<HttpsConnectionMiddleware> logger) => _authenticationTimedOut(logger, null);
@@ -441,5 +515,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         public static void HttpsConnectionEstablished(this ILogger<HttpsConnectionMiddleware> logger, string connectionId, SslProtocols sslProtocol) => _httpsConnectionEstablished(logger, connectionId, sslProtocol, null);
 
         public static void Http2DefaultCiphersInsufficient(this ILogger<HttpsConnectionMiddleware> logger) => _http2DefaultCiphersInsufficient(logger, null);
+
+        public static void LocatingCertWithPrivateKey(this ILogger<HttpsConnectionMiddleware> logger, X509Certificate2 certificate) => _locatingCertWithPrivateKey(logger, certificate.Thumbprint, null);
+
+        public static void FoundCertWithPrivateKey(this ILogger<HttpsConnectionMiddleware> logger, X509Certificate2 certificate, StoreLocation storeLocation)
+        {
+            var storeLocationString = storeLocation == StoreLocation.LocalMachine ? nameof(StoreLocation.LocalMachine) : nameof(StoreLocation.CurrentUser);
+
+            _foundCertWithPrivateKey(logger, certificate.Thumbprint, storeLocationString, null);
+        }
+
+        public static void FailedToFindCertificateInStore(this ILogger<HttpsConnectionMiddleware> logger, Exception exception) => _failedToFindCertificateInStore(logger, exception);
     }
 }
