@@ -28,7 +28,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Xunit;
-using HttpFeatures = Microsoft.AspNetCore.Http.Features;
 
 namespace TestSite
 {
@@ -1454,6 +1453,46 @@ namespace TestSite
             await Assert.ThrowsAsync<IOException>(() => readTask);
         }
 
+        public Task Http2_MethodsRequestWithoutData_Success(HttpContext httpContext)
+        {
+            Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+#if !FORWARDCOMPAT
+            Assert.False(httpContext.Request.CanHaveBody());
+#endif
+            Assert.Null(httpContext.Request.ContentLength);
+            Assert.False(httpContext.Request.Headers.ContainsKey(HeaderNames.TransferEncoding));
+            return Task.CompletedTask;
+        }
+
+        public Task Http2_RequestWithDataAndContentLength_Success(HttpContext httpContext)
+        {
+            Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+#if !FORWARDCOMPAT
+            Assert.True(httpContext.Request.CanHaveBody());
+#endif
+            Assert.Equal(11, httpContext.Request.ContentLength);
+            Assert.False(httpContext.Request.Headers.ContainsKey(HeaderNames.TransferEncoding));
+            return httpContext.Request.Body.CopyToAsync(httpContext.Response.Body);
+        }
+
+        public Task Http2_RequestWithDataAndNoContentLength_Success(HttpContext httpContext)
+        {
+            Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+#if !FORWARDCOMPAT
+            Assert.True(httpContext.Request.CanHaveBody());
+#endif
+            Assert.Null(httpContext.Request.ContentLength);
+            // The client didn't send this header, Http.Sys added it for back compat with HTTP/1.1.
+            Assert.Equal("chunked", httpContext.Request.Headers[HeaderNames.TransferEncoding]);
+            return httpContext.Request.Body.CopyToAsync(httpContext.Response.Body);
+        }
+
+        public Task Http2_ResponseWithData_Success(HttpContext httpContext)
+        {
+            Assert.Equal("HTTP/2", httpContext.Request.Protocol);
+            return httpContext.Response.WriteAsync("Hello World");
+        }
+
         public Task IncreaseRequestLimit(HttpContext httpContext)
         {
             var maxRequestBodySizeFeature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
@@ -1498,5 +1537,5 @@ namespace TestSite
             HeaderNames.ContentEncoding, HeaderNames.ContentType, HeaderNames.ContentRange, HeaderNames.Trailer
         };
 #endif
+        }
     }
-}
