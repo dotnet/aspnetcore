@@ -28,15 +28,14 @@ namespace Microsoft.AspNetCore.Components.Forms
         public int FileCount => _files.Count;
 
         /// <summary>
-        /// Gets the supplied file, or null if no file was supplied. Note that if the input
-        /// accepts multiple files, then instead of reading this property, you should call
-        /// <see cref="AcceptMultipleFiles(int)"/>.
+        /// Gets the supplied file. Note that if the input accepts multiple files, then instead of
+        /// reading this property, you should call <see cref="GetMultipleFiles(int)"/>.
         /// </summary>
-        public IBrowserFile? File => _files.Count switch
+        public IBrowserFile File => _files.Count switch
         {
-            0 => null,
+            0 => throw new InvalidOperationException("No file was supplied."),
             1 => _files[0],
-            _ => throw new InvalidOperationException($"More than one file was supplied. Call {nameof(AcceptMultipleFiles)} to receive multiple files."),
+            _ => throw new InvalidOperationException($"More than one file was supplied. Call {nameof(GetMultipleFiles)} to receive multiple files."),
         };
 
         /// <summary>
@@ -45,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// instead.
         /// </summary>
         /// <param name="maximumFileCount">The maximum number of files to accept. If the number of files exceeds this value, this method will throw an exception.</param>
-        public IReadOnlyList<IBrowserFile> AcceptMultipleFiles(int maximumFileCount = 10)
+        public IReadOnlyList<IBrowserFile> GetMultipleFiles(int maximumFileCount = 10)
         {
             if (_files.Count > maximumFileCount)
             {
