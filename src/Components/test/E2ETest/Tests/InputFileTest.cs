@@ -16,7 +16,7 @@ using OpenQA.Selenium.Support.Extensions;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETests.Tests
+namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class InputFileTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>, IDisposable
     {
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
 
             // Validate that the proper exception is thrown
             var exceptionMessage = Browser.FindElement(By.Id("exception-message"));
-            Browser.Equal("Expected a maximum of 1 files, but got 2.", () => exceptionMessage.Text);
+            Browser.Equal("The maximum number of files accepted is 1, but 2 were supplied.", () => exceptionMessage.Text);
         }
 
         [Fact]
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
 
             // Validate that the proper exception is thrown
             var exceptionMessage = Browser.FindElement(By.Id("exception-message"));
-            Browser.Equal("File with size 32 bytes exceeded the maximum of 10 bytes.", () => exceptionMessage.Text);
+            Browser.Equal("Supplied file with size 32 bytes exceeds the maximum of 10 bytes.", () => exceptionMessage.Text);
         }
 
         public void Dispose()

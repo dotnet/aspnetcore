@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             if (Size > maxAllowedSize)
             {
-                throw new IOException($"File size '{Size} is large than the maximum allowed size '{maxAllowedSize}'.");
+                throw new IOException($"Supplied file with size {Size} bytes exceeds the maximum of {maxAllowedSize} bytes.");
             }
 
             return Owner.OpenReadStream(this, cancellationToken);

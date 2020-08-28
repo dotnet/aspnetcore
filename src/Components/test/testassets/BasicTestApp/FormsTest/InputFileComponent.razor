@@ -1,21 +1,27 @@
 ﻿@using System.IO;
-@using Microsoft.AspNetCore.Components.Forms 
+@using Microsoft.AspNetCore.Components.Forms
 
 <h1>File preview</h1>
 
-Max file size:<br />
-<input type="number" id="max-file-size" @bind-value="@maxFileSize" /><br />
+Max file size:
+<br />
+<input type="number" id="max-file-size" @bind-value="@maxFileSize" />
+<br />
 
-Max allowed files:<br />
-<input type="number" id="max-allowed-files" @bind-value="@maxAllowedFiles" /><br />
+Max allowed files:
+<br />
+<input type="number" id="max-allowed-files" @bind-value="@maxAllowedFiles" />
+<br />
 
-<InputFile OnChange="LoadFiles" MaxFileSize="maxFileSize" MaxAllowedFiles="maxAllowedFiles" id="input-file" multiple /><br />
+<InputFile OnChange="LoadFiles" id="input-file" multiple />
+<br />
 
 <span id="exception-message">@exceptionMessage</span>
 
 @if (isLoading)
 {
-    <p>Loading...</p><br />
+    <p>Loading...</p>
+    <br />
 }
 
 @foreach (var (file, content) in loadedFiles)
@@ -29,7 +35,8 @@ Max allowed files:<br />
 
 <h1>Image upload</h1>
 
-<InputFile OnChange="LoadImage" id="input-image" /><br />
+<InputFile OnChange="LoadImage" id="input-image" />
+<br />
 
 @if (imageDataUri != null)
 {
@@ -64,16 +71,16 @@ Max allowed files:<br />
 
         try
         {
-            foreach (var file in e.Files)
+            foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
             {
                 StateHasChanged();
 
-                using var reader = new StreamReader(file.OpenReadStream());
+                using var reader = new StreamReader(file.OpenReadStream(maxFileSize));
 
                 loadedFiles.Add(file, await reader.ReadToEndAsync());
             }
         }
-        catch (InvalidOperationException ex)
+        catch (Exception ex)
         {
             exceptionMessage = ex.Message;
         }
@@ -83,19 +90,13 @@ Max allowed files:<br />
 
     async Task LoadImage(InputFileChangeEventArgs e)
     {
-        var file = e.Files.SingleOrDefault();
+        var format = "image/jpeg";
+        var imageFile = await e.File.RequestImageFileAsync(format, 640, 480);
 
-        if (file != null)
-        {
-            var format = "image/jpeg";
-            var imageFile = await file.RequestImageFileAsync(format, 640, 480);
+        using var fileStream = imageFile.OpenReadStream(maxFileSize);
+        using var memoryStream = new MemoryStream();
+        await fileStream.CopyToAsync(memoryStream);
 
-            using var fileStream = imageFile.OpenReadStream();
-            using var memoryStream = new MemoryStream();
-            await fileStream.CopyToAsync(memoryStream);
-
-            imageDataUri = $"data:{format};base64,{Convert.ToBase64String(memoryStream.ToArray())}";
-            StateHasChanged();
-        }
+        imageDataUri = $"data:{format};base64,{Convert.ToBase64String(memoryStream.ToArray())}";
     }
 }
