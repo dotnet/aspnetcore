@@ -460,18 +460,23 @@ function Get-Product-Version([string]$AzureFeed, [string]$SpecificVersion) {
 
     Say-Verbose "Checking for existence of $ProductVersionTxtURL"
 
-    $productVersionResponse = GetHTTPResponse($productVersionTxtUrl)
-    
-    if ($productVersionResponse.StatusCode -eq 200)
-    {
-        $productVersion = $productVersionResponse.Content.ReadAsStringAsync().Result.Trim()
-        if ($productVersion -ne $SpecificVersion)
-        {
-            Say "Using alternate version $productVersion found in $ProductVersionTxtURL"
+    try {
+        $productVersionResponse = GetHTTPResponse($productVersionTxtUrl)
+
+        if ($productVersionResponse.StatusCode -eq 200) {
+            $productVersion = $productVersionResponse.Content.ReadAsStringAsync().Result.Trim()
+            if ($productVersion -ne $SpecificVersion)
+            {
+                Say "Using alternate version $productVersion found in $ProductVersionTxtURL"
+            }
+
+            return $productVersion
         }
-    }
-    else
-    {
+        else {
+            Say-Verbose "Got StatusCode $($productVersionResponse.StatusCode) trying to get productVersion.txt at $productVersionTxtUrl, so using default value of $SpecificVersion"
+            $productVersion = $SpecificVersion
+        }
+    } catch {
         Say-Verbose "Could not read productVersion.txt at $productVersionTxtUrl, so using default value of $SpecificVersion"
         $productVersion = $SpecificVersion
     }
