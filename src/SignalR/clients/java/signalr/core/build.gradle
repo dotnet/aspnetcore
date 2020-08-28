@@ -1,0 +1,8 @@
+group 'com.microsoft.signalr'
+
+dependencies {
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
+    api 'io.reactivex.rxjava2:rxjava:2.2.3'
+    implementation 'org.slf4j:slf4j-api:1.7.25'
+}
