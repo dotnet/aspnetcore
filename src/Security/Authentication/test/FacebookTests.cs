@@ -363,7 +363,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
             using var server = host.GetTestServer();
             var transaction = await server.SendAsync(
                 "https://example.com/signin-facebook?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                $".AspNetCore.Correlation.Facebook.{correlationValue}=N");
+                $".AspNetCore.Correlation.{correlationValue}=N");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
             Assert.Equal(1, finalUserInfoEndpoint.Count(c => c == '?'));

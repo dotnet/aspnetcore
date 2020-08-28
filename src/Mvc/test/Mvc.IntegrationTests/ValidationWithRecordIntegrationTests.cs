@@ -1151,7 +1151,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("The value '-123' is not valid.", error.ErrorMessage);
         }
 
-        private record NeverValid(string NeverValidProperty)  : IValidatableObject
+        private record NeverValid(string NeverValidProperty) : IValidatableObject
         {
             public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
             {
@@ -2297,6 +2297,163 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         private static void Validation_InifnitelyRecursiveModel_ValidationOnTopLevelParameterMethod([Required] RecursiveModel model) { }
+
+        private record RecordTypeWithValidatorsOnProperties(string Property1)
+        {
+            [Required]
+            public string Property1 { get; init; }
+        }
+
+        [Fact]
+        public async Task Validation_ValidatorsDefinedOnRecordTypeProperties()
+        {
+            // Arrange
+            var modelType = typeof(RecordTypeWithValidatorsOnProperties);
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelMetadata = modelMetadataProvider.GetMetadataForType(modelType);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(modelMetadataProvider);
+            var expected = $"Record type '{modelType}' has validation metadata defined on property 'Property1' that will be ignored. " +
+                "'Property1' is a parameter in the record primary constructor and validation metadata must be associated with the constructor parameter.";
+
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = modelType,
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?Property1=8");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                parameterBinder.BindModelAsync(parameter, testContext, modelMetadataProvider, modelMetadata));
+
+            Assert.Equal(expected, ex.Message);
+        }
+
+        private record RecordTypeWithValidatorsOnPropertiesAndParameters([Required] string Property1)
+        {
+            [Required]
+            public string Property1 { get; init; }
+        }
+
+        [Fact]
+        public async Task Validation_ValidatorsDefinedOnRecordTypePropertiesAndParameters()
+        {
+            // Arrange
+            var modelType = typeof(RecordTypeWithValidatorsOnPropertiesAndParameters);
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelMetadata = modelMetadataProvider.GetMetadataForType(modelType);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(modelMetadataProvider);
+            var expected = $"Record type '{modelType}' has validation metadata defined on property 'Property1' that will be ignored. " +
+                "'Property1' is a parameter in the record primary constructor and validation metadata must be associated with the constructor parameter.";
+
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = modelType,
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?Property1=8");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                parameterBinder.BindModelAsync(parameter, testContext, modelMetadataProvider, modelMetadata));
+
+            Assert.Equal(expected, ex.Message);
+        }
+
+        private record RecordTypeWithValidatorsOnMixOfPropertiesAndParameters([Required] string Property1, string Property2)
+        {
+            [Required]
+            public string Property2 { get; init; }
+        }
+
+        [Fact]
+        public async Task Validation_ValidatorsDefinedOnMixOfRecordTypePropertiesAndParameters()
+        {
+            // Variation of Validation_ValidatorsDefinedOnRecordTypePropertiesAndParameters, but validators
+            // appear on a mix of properties and parameters.
+            // Arrange
+            var modelType = typeof(RecordTypeWithValidatorsOnMixOfPropertiesAndParameters);
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelMetadata = modelMetadataProvider.GetMetadataForType(modelType);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(modelMetadataProvider);
+            var expected = $"Record type '{modelType}' has validation metadata defined on property 'Property2' that will be ignored. " +
+                "'Property2' is a parameter in the record primary constructor and validation metadata must be associated with the constructor parameter.";
+
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = modelType,
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?Property1=8");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                parameterBinder.BindModelAsync(parameter, testContext, modelMetadataProvider, modelMetadata));
+
+            Assert.Equal(expected, ex.Message);
+        }
+
+        private record RecordTypeWithPropertiesAndParameters([Required] string Property1)
+        {
+            [Required]
+            public string Property2 { get; init; }
+        }
+
+        [Fact]
+        public async Task Validation_ValidatorsOnParametersAndProperties()
+        {
+            // Arrange
+            var modelType = typeof(RecordTypeWithPropertiesAndParameters);
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelMetadata = modelMetadataProvider.GetMetadataForType(modelType);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(modelMetadataProvider);
+
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = modelType,
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString("?Property1=SomeValue");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            Assert.Equal(2, modelState.Count);
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "Property1").Value;
+            Assert.Equal("SomeValue", entry.AttemptedValue);
+            Assert.Equal("SomeValue", entry.RawValue);
+            Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+
+            entry = Assert.Single(modelState, e => e.Key == "Property2").Value;
+            Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
+        }
 
         private static void AssertRequiredError(string key, ModelError error)
         {

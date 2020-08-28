@@ -20,8 +20,4 @@
     <Reference Include="xunit.analyzers" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- Removing nonexistent package -->
-    <SuppressBaselineReference Include="Microsoft.AspNetCore.Testing" />
-  </ItemGroup>
 </Project>

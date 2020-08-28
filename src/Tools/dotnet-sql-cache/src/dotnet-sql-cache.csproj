@@ -15,9 +15,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Data.SqlClient" />
-
-    <!-- Intentional change to remove reference to System.Data.SqlClient. See https://github.com/dotnet/aspnetcore/issues/12445 -->
-    <SuppressBaselineReference Include="System.Data.SqlClient" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -58,6 +58,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// Gets or sets a value that determines if nullability type enforcement should be suppressed for user code.
         /// </summary>
         public virtual bool SuppressNullabilityEnforcement { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that determines if the components code writer may omit values for minimized attributes.
+        /// </summary>
+        public virtual bool OmitMinimizedComponentAttributeValues { get; set; }
 
         public abstract RazorCodeGenerationOptions Build();
 

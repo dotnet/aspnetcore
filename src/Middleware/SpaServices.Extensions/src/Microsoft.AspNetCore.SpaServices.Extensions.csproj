@@ -6,7 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.SpaServices" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.AspNetCore.WebSockets" />
     <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
@@ -16,4 +15,11 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCode.SpaServices.Extensions.Tests" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(AspNetCoreMajorMinorVersion)' == '5.0' ">
+    <!--
+      Dependency (now in shared Fx and a transitive ref for netstandard2.x) was removed in 5.0. Suppression can be
+      removed after 5.0 RTM is released.
+    -->
+    <SuppressBaselineReference Include="Microsoft.AspNetCore.SpaServices" />
+  </ItemGroup>
 </Project>

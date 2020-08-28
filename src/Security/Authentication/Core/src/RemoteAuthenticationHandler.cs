@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             properties.Items[CorrelationProperty] = correlationId;
 
-            var cookieName = Options.CorrelationCookie.Name + Scheme.Name + "." + correlationId;
+            var cookieName = Options.CorrelationCookie.Name + correlationId;
 
             Response.Cookies.Append(cookieName, CorrelationMarker, cookieOptions);
         }
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             properties.Items.Remove(CorrelationProperty);
 
-            var cookieName = Options.CorrelationCookie.Name + Scheme.Name + "." + correlationId;
+            var cookieName = Options.CorrelationCookie.Name + correlationId;
 
             var correlationCookie = Request.Cookies[cookieName];
             if (string.IsNullOrEmpty(correlationCookie))
