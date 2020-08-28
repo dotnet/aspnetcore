@@ -237,8 +237,8 @@ namespace RunTests
             {
                 // Timeout test run 5 minutes before the Helix job would timeout
                 var cts = new CancellationTokenSource(Options.Timeout.Subtract(TimeSpan.FromMinutes(5)));
-                var upload = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
-                var commonTestArgs = $"test {Options.Target} --diag:{upload}\log.txt --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=5m\"";
+                var diagLog = Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT"), "log.txt");
+                var commonTestArgs = $"test {Options.Target} --diag:{diagLog} --logger:xunit --logger:\"console;verbosity=normal\" --blame \"CollectHangDump;TestTimeout=5m\"";
                 if (Options.Quarantined)
                 {
                     Console.WriteLine("Running quarantined tests.");
