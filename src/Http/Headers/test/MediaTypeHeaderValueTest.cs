@@ -746,6 +746,7 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("application/entity+json", "application/entity.v2+json")]
         [InlineData("application/*+json", "application/entity+txt")]
         [InlineData("application/*+*", "application/json")]
+        [InlineData("application/entity", "application/entity+")]
         [InlineData("application/entity+*", "application/entity+json")] // We don't allow suffixes to be wildcards
         [InlineData("application/*+*", "application/entity+json")] // We don't allow suffixes to be wildcards
         [InlineData("application/entity+json", "application/entity")]
