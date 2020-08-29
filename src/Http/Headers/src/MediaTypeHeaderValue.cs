@@ -740,7 +740,7 @@ namespace Microsoft.Net.Http.Headers
             }
             else
             {
-                // If this subtype or suffix matches the subtype of the set,
+                // If this subtype or suffix matches the subtype of the mediaType,
                 // it is considered a subtype.
                 // Ex: application/json > application/val+json
                 return MatchesEitherSubtypeOrSuffix(subType);
