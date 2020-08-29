@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 var lastSimpleSelector = allSimpleSelectors.TakeWhile(s => s != firstDeepCombinator).LastOrDefault();
                 if (lastSimpleSelector != null)
                 {
-                    Edits.Add(new InsertSelectorScopeEdit { Position = FindPositionBeforeTrailingCombinator(lastSimpleSelector) });
+                    Edits.Add(new InsertSelectorScopeEdit { Position = FindPositionToInsertInSelector(lastSimpleSelector) });
                 }
                 else if (firstDeepCombinator != null)
                 {
@@ -203,28 +203,60 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 }
             }
 
-            private int FindPositionBeforeTrailingCombinator(SimpleSelector lastSimpleSelector)
+            private int FindPositionToInsertInSelector(SimpleSelector lastSimpleSelector)
             {
-                // For a selector like "a > ::deep b", the parser splits it as "a >", "::deep", "b".
-                // The place we want to insert the scope is right after "a", hence we need to detect
-                // if the simple selector ends with " >" or similar, and if so, insert before that.
-                var text = lastSimpleSelector.Text;
-                var lastChar = text.Length > 0 ? text[^1] : default;
-                switch (lastChar)
+                var children = lastSimpleSelector.Children;
+                for (var i  = 0; i < children.Count; i++)
                 {
-                    case '>':
-                    case '+':
-                    case '~':
-                        var trailingCombinatorMatch = _trailingCombinatorRegex.Match(text);
-                        if (trailingCombinatorMatch.Success)
-                        {
-                            var trailingCombinatorLength = trailingCombinatorMatch.Length;
-                            return lastSimpleSelector.AfterEnd - trailingCombinatorLength;
-                        }
-                        break;
+                    switch (children[i])
+                    {
+                        // Selectors like "a > ::deep b" get parsed as [[a][>]][::deep][b], and we want to
+                        // insert right after the "a". So if we're processing a SimpleSelector like [[a][>]],
+                        // consider the ">" to signal the "insert before" position.
+                        case TokenItem t when IsTrailingCombinator(t.TokenType):
+
+                        // Similarly selectors like "a::before" get parsed as [[a][::before]], and we want to
+                        // insert right after the "a".  So if we're processing a SimpleSelector like [[a][::before]],
+                        // consider the pseudoelement to signal the "insert before" position.
+                        case PseudoElementSelector:
+                        case PseudoElementFunctionSelector:
+                        case PseudoClassSelector s when IsSingleColonPseudoElement(s):
+                            // Insert after the previous token if there is one, otherwise before the whole thing
+                            return i > 0 ? children[i - 1].AfterEnd : lastSimpleSelector.Start;
+                    }
                 }
 
+                // Since we didn't find any children that signal the insert-before position,
+                // insert after the whole thing
                 return lastSimpleSelector.AfterEnd;
+            }
+
+            private static bool IsSingleColonPseudoElement(PseudoClassSelector selector)
+            {
+                // See https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements
+                // Normally, pseudoelements require a double-colon prefix. However the following "original set"
+                // of pseudoelements also support single-colon prefixes for back-compatibility with older versions
+                // of the W3C spec. Our CSS parser sees them as pseudoselectors rather than pseudoelements, so
+                // we have to special-case them. The single-colon option doesn't exist for other more modern
+                // pseudoelements.
+                var selectorText = selector.Text;
+                return string.Equals(selectorText, ":after", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(selectorText, ":before", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(selectorText, ":first-letter", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(selectorText, ":first-line", StringComparison.OrdinalIgnoreCase);
+            }
+
+            private static bool IsTrailingCombinator(CssTokenType tokenType)
+            {
+                switch (tokenType)
+                {
+                    case CssTokenType.Plus:
+                    case CssTokenType.Tilde:
+                    case CssTokenType.Greater:
+                        return true;
+                    default:
+                        return false;
+                }
             }
 
             protected override void VisitAtDirective(AtDirective item)

@@ -69,6 +69,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.IO.Pipelines" />
     <LatestPackageReference Include="System.Net.Http" />
     <LatestPackageReference Include="System.Net.Http.Json" />
+    <LatestPackageReference Include="System.Net.Sockets" />
     <LatestPackageReference Include="System.Reflection.Metadata" />
     <LatestPackageReference Include="System.Runtime.CompilerServices.Unsafe" />
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
@@ -123,6 +124,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Internal.AspNetCore.H2Spec.All" />
     <LatestPackageReference Include="Microsoft.Extensions.Internal.Transport" />
     <LatestPackageReference Include="Microsoft.NETCore.Windows.ApiSets" />
+    <LatestPackageReference Include="Microsoft.NETCore.BrowserDebugHost.Transport" />
     <LatestPackageReference Include="Microsoft.Owin.Security.Cookies" />
     <LatestPackageReference Include="Microsoft.Owin.Testing" />
     <LatestPackageReference Include="Microsoft.Web.Administration" />

@@ -90,6 +90,7 @@
 
     <!-- Also update the DefaultNetCoreTargetFramework defined at src/Razor/test/testassets/Directory.Build.props -->
     <DefaultNetCoreTargetFramework>net5.0</DefaultNetCoreTargetFramework>
+    <DefaultNetFxTargetFramework>net461</DefaultNetFxTargetFramework>
   </PropertyGroup>
 
   <!-- Warnings and errors -->

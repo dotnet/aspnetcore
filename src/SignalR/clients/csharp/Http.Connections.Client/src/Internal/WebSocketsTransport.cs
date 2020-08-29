@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 #if NETSTANDARD2_1
                     // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
                     var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None);
-#elif NETSTANDARD2_0
+#elif NETSTANDARD2_0 || NET461
                     var isArray = MemoryMarshal.TryGetArray<byte>(memory, out var arraySegment);
                     Debug.Assert(isArray);
 
