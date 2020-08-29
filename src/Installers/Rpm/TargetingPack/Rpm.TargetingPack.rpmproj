@@ -8,10 +8,10 @@
 
     <!-- installer versions -->
     <!-- CLI would take a dependency such as 'aspnetcore-targeting-pack-M.N >= M.N.P'. Here M.N is the part of the id and M.N.P is the package version -->
-    <PackageId>$(TargetingPackInstallerBaseName)-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</PackageId>
+    <PackageId>$(TargetingPackInstallerBaseName)-$(AspNetCoreMajorMinorVersion)</PackageId>
 
     <PackageSummary>ASP.NET Core Targeting Pack</PackageSummary>
-    <PackageDescription>Provides a default set of APIs for building an ASP.NET Core $(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion) application. Contains reference assemblies, documentation, and other design-time assets.</PackageDescription>
+    <PackageDescription>Provides a default set of APIs for building an ASP.NET Core $(AspNetCoreMajorMinorVersion) application. Contains reference assemblies, documentation, and other design-time assets.</PackageDescription>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,7 +21,7 @@
     </ProjectReference>
 
     <InstallerOwnedDirectory Include="$(RpmPackageInstallRoot)packs/$(TargetingPackName)/" />
-    <RpmDependency Include="dotnet-targeting-pack-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)" Version="$(MicrosoftNETCoreAppRefPackageVersion.Split('-')[0])" />
+    <RpmDependency Include="dotnet-targeting-pack-$(AspNetCoreMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRefPackageVersion.Split('-')[0])" />
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
