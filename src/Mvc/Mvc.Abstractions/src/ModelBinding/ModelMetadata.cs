@@ -7,8 +7,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Internal;
@@ -26,11 +28,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// </summary>
         public static readonly int DefaultOrder = 10000;
 
-        private static readonly IReadOnlyDictionary<ModelMetadata, ModelMetadata> EmptyParameterMapping = new Dictionary<ModelMetadata, ModelMetadata>(0);
-
         private int? _hashCode;
         private IReadOnlyList<ModelMetadata>? _boundProperties;
         private IReadOnlyDictionary<ModelMetadata, ModelMetadata>? _parameterMapping;
+        private Exception? _recordTypeValidatorsOnPropertiesError;
+        private bool _recordTypeConstructorDetailsCalculated;
 
         /// <summary>
         /// Creates a new <see cref="ModelMetadata"/>.
@@ -137,37 +139,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
+        /// <summary>
+        /// A mapping from parameters to their corresponding properties on a record type.
+        /// </summary>
         internal IReadOnlyDictionary<ModelMetadata, ModelMetadata> BoundConstructorParameterMapping
         {
             get
             {
-                if (_parameterMapping != null)
-                {
-                    return _parameterMapping;
-                }
+                Debug.Assert(BoundConstructor != null, "This API can be only called for types with bound constructors.");
+                CalculateRecordTypeConstructorDetails();
 
-                if (BoundConstructor is null)
-                {
-                    _parameterMapping = EmptyParameterMapping;
-                    return _parameterMapping;
-                }
-
-                var boundParameters = BoundConstructor.BoundConstructorParameters!;
-                var parameterMapping = new Dictionary<ModelMetadata, ModelMetadata>();
-
-                foreach (var parameter in boundParameters)
-                {
-                    var property = Properties.FirstOrDefault(p =>
-                        string.Equals(p.Name, parameter.ParameterName, StringComparison.Ordinal) &&
-                        p.ModelType == parameter.ModelType);
-
-                    if (property != null)
-                    {
-                        parameterMapping[parameter] = property;
-                    }
-                }
-
-                _parameterMapping = parameterMapping;
                 return _parameterMapping;
             }
         }
@@ -493,6 +474,62 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets a delegate that invokes the bound constructor <see cref="BoundConstructor" /> if non-<see langword="null" />.
         /// </summary>
         public virtual Func<object[], object>? BoundConstructorInvoker => null;
+
+        /// <summary>
+        /// Gets a value that determines if validators can be constructed using metadata exclusively defined on the property.
+        /// </summary>
+        internal virtual bool PropertyHasValidators => false;
+
+        /// <summary>
+        /// Throws if the ModelMetadata is for a record type with validation on properties.
+        /// </summary>
+        internal void ThrowIfRecordTypeHasValidationOnProperties()
+        {
+            CalculateRecordTypeConstructorDetails();
+            if (_recordTypeValidatorsOnPropertiesError != null)
+            {
+                throw _recordTypeValidatorsOnPropertiesError;
+            }
+        }
+
+        [MemberNotNull(nameof(_parameterMapping))]
+        private void CalculateRecordTypeConstructorDetails()
+        {
+            if (_recordTypeConstructorDetailsCalculated)
+            {
+                Debug.Assert(_parameterMapping != null);
+                return;
+            }
+
+
+            var boundParameters = BoundConstructor!.BoundConstructorParameters!;
+            var parameterMapping = new Dictionary<ModelMetadata, ModelMetadata>();
+
+            foreach (var parameter in boundParameters)
+            {
+                var property = Properties.FirstOrDefault(p =>
+                    string.Equals(p.Name, parameter.ParameterName, StringComparison.Ordinal) &&
+                    p.ModelType == parameter.ModelType);
+
+                if (property != null)
+                {
+                    parameterMapping[parameter] = property;
+
+                    if (property.PropertyHasValidators)
+                    {
+                        // When constructing the mapping of paramets -> properties, also determine
+                        // if the property has any validators (without looking at metadata on the type).
+                        // This will help us throw during validation if a user defines validation attributes
+                        // on the property of a record type.
+                        _recordTypeValidatorsOnPropertiesError = new InvalidOperationException(
+                            Resources.FormatRecordTypeHasValidationOnProperties(ModelType, property.Name));
+                    }
+                }
+            }
+
+             _recordTypeConstructorDetailsCalculated = true;
+            _parameterMapping = parameterMapping;
+        }
 
         /// <summary>
         /// Gets a display name for the model.

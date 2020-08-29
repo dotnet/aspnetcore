@@ -306,6 +306,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>907f7da59b40c80941b02ac2a46650adf3f606bc</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="5.0.0-rc.1.20417.14">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>907f7da59b40c80941b02ac2a46650adf3f606bc</Sha>
+    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->

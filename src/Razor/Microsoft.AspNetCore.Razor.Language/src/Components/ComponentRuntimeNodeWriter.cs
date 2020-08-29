@@ -852,11 +852,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         private void WriteAttribute(CodeRenderingContext context, string key, IList<IntermediateToken> value)
         {
             BeginWriteAttribute(context, key);
+
             if (value.Count > 0)
             {
                 context.CodeWriter.WriteParameterSeparator();
                 WriteAttributeValue(context, value);
             }
+            else if (!context.Options.OmitMinimizedComponentAttributeValues)
+            {
+                // In version 5+, there's no need to supply a value for a minimized attribute.
+                // But for older language versions, minimized attributes were represented as "true".
+                context.CodeWriter.WriteParameterSeparator();
+                context.CodeWriter.WriteBooleanLiteral(true);
+            }
+
             context.CodeWriter.WriteEndMethodInvocation();
         }
 

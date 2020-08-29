@@ -13,8 +13,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
 class JsonHubProtocolTest {
     private JsonHubProtocol jsonHubProtocol = new JsonHubProtocol();
 

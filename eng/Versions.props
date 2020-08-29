@@ -68,6 +68,7 @@
     <MicrosoftNETCoreAppInternalPackageVersion>5.0.0-rc.1.20417.14</MicrosoftNETCoreAppInternalPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>5.0.0-rc.1.20417.14</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>5.0.0-rc.1.20417.14</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>5.0.0-rc.1.20417.14</MicrosoftNETCoreBrowserDebugHostTransportPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>5.0.0-rc.1.20417.14</MicrosoftWin32RegistryPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>5.0.0-rc.1.20417.14</MicrosoftWin32SystemEventsPackageVersion>
     <MicrosoftExtensionsCachingAbstractionsPackageVersion>5.0.0-rc.1.20417.14</MicrosoftExtensionsCachingAbstractionsPackageVersion>
@@ -203,7 +204,8 @@
     <SystemCodeDomPackageVersion>4.4.0</SystemCodeDomPackageVersion>
     <SystemCommandlineExperimentalPackageVersion>0.3.0-alpha.19317.1</SystemCommandlineExperimentalPackageVersion>
     <SystemComponentModelPackageVersion>4.3.0</SystemComponentModelPackageVersion>
-    <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
+    <SystemNetHttpPackageVersion>4.3.4</SystemNetHttpPackageVersion>
+    <SystemNetSocketsPackageVersion>4.3.0</SystemNetSocketsPackageVersion>
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.3</SystemThreadingTasksExtensionsPackageVersion>
     <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
@@ -258,8 +260,8 @@
     <IdentityServer4StoragePackageVersion>4.0.4</IdentityServer4StoragePackageVersion>
     <IdentityServer4EntityFrameworkStoragePackageVersion>4.0.4</IdentityServer4EntityFrameworkStoragePackageVersion>
     <MessagePackPackageVersion>2.1.90</MessagePackPackageVersion>
-    <MicrosoftIdentityWebPackageVersion>0.2.1-preview</MicrosoftIdentityWebPackageVersion>
-    <MicrosoftIdentityWebUIPackageVersion>0.2.1-preview</MicrosoftIdentityWebUIPackageVersion>
+    <MicrosoftIdentityWebPackageVersion>0.2.3-preview</MicrosoftIdentityWebPackageVersion>
+    <MicrosoftIdentityWebUIPackageVersion>0.2.3-preview</MicrosoftIdentityWebUIPackageVersion>
     <MicrosoftGraphPackageVersion>3.8.0</MicrosoftGraphPackageVersion>
     <MessagePackAnalyzerPackageVersion>$(MessagePackPackageVersion)</MessagePackAnalyzerPackageVersion>
     <MoqPackageVersion>4.10.0</MoqPackageVersion>
