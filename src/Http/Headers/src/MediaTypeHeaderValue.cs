@@ -731,7 +731,7 @@ namespace Microsoft.Net.Http.Headers
             {
                 if (Suffix.HasValue)
                 {
-                    return MatchesSubtypeWithoutSuffix(subType) && MatchesSubtypeSuffix(suffix);
+                    return MatchesSubtypeWithoutSuffix(subType, startOfSuffix) && MatchesSubtypeSuffix(suffix);
                 }
                 else
                 {
@@ -753,10 +753,9 @@ namespace Microsoft.Net.Http.Headers
                 set.SubTypeWithoutSuffix.Equals(SubTypeWithoutSuffix, StringComparison.OrdinalIgnoreCase);
         }
 
-        private bool MatchesSubtypeWithoutSuffix(StringSegment subType)
+        private bool MatchesSubtypeWithoutSuffix(StringSegment subType, int startOfSuffix)
         {
             StringSegment subTypeWithoutSuffix;
-            var startOfSuffix = subType.LastIndexOf(PlusCharacter);
             if (startOfSuffix == -1)
             {
                 subTypeWithoutSuffix = subType;
