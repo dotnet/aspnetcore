@@ -11,7 +11,10 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Edge;
+using OpenQA.Selenium.IE;
 using OpenQA.Selenium.Remote;
+using OpenQA.Selenium.Safari;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -234,54 +237,74 @@ namespace Microsoft.AspNetCore.E2ETesting
                 name = $"{name} - {context}";
             }
 
-            var capabilities = new DesiredCapabilities();
+            DriverOptions options;
+
+            switch (sauce.BrowserName.ToLower())
+            {
+                case "chrome":
+                    options = new ChromeOptions();
+                    break;
+                case "safari":
+                    options = new SafariOptions();
+                    break;
+                case "internet explorer":
+                    options = new InternetExplorerOptions();
+                    break;
+                case "microsoftedge":
+                    options = new EdgeOptions();
+                    break;
+                default:
+                    throw new InvalidOperationException($"Browser name {sauce.BrowserName} not recognized");
+            }
 
             // Required config
-            capabilities.SetCapability("username", sauce.Username);
-            capabilities.SetCapability("accessKey", sauce.AccessKey);
-            capabilities.SetCapability("tunnelIdentifier", sauce.TunnelIdentifier);
-            capabilities.SetCapability("name", name);
+            options.AddAdditionalCapability("username", sauce.Username);
+            options.AddAdditionalCapability("accessKey", sauce.AccessKey);
+            options.AddAdditionalCapability("tunnelIdentifier", sauce.TunnelIdentifier);
+            options.AddAdditionalCapability("name", name);
 
             if (!string.IsNullOrEmpty(sauce.BrowserName))
             {
-                capabilities.SetCapability("browserName", sauce.BrowserName);
+                options.AddAdditionalCapability("browserName", sauce.BrowserName);
             }
 
             if (!string.IsNullOrEmpty(sauce.PlatformVersion))
             {
-                capabilities.SetCapability("platformName", sauce.PlatformName);
-                capabilities.SetCapability("platformVersion", sauce.PlatformVersion);
+                options.PlatformName = sauce.PlatformName;
+                options.AddAdditionalCapability("platformVersion", sauce.PlatformVersion);
             }
             else
             {
                 // In some cases (like macOS), SauceLabs expects us to set "platform" instead of "platformName".
-                capabilities.SetCapability("platform", sauce.PlatformName);
+                options.AddAdditionalCapability("platform", sauce.PlatformName);
             }
 
             if (!string.IsNullOrEmpty(sauce.BrowserVersion))
             {
-                capabilities.SetCapability("browserVersion", sauce.BrowserVersion);
+                options.BrowserVersion = sauce.BrowserVersion;
             }
 
             if (!string.IsNullOrEmpty(sauce.DeviceName))
             {
-                capabilities.SetCapability("deviceName", sauce.DeviceName);
+                options.AddAdditionalCapability("deviceName", sauce.DeviceName);
             }
 
             if (!string.IsNullOrEmpty(sauce.DeviceOrientation))
             {
-                capabilities.SetCapability("deviceOrientation", sauce.DeviceOrientation);
+                options.AddAdditionalCapability("deviceOrientation", sauce.DeviceOrientation);
             }
 
             if (!string.IsNullOrEmpty(sauce.AppiumVersion))
             {
-                capabilities.SetCapability("appiumVersion", sauce.AppiumVersion);
+                options.AddAdditionalCapability("appiumVersion", sauce.AppiumVersion);
             }
 
             if (!string.IsNullOrEmpty(sauce.SeleniumVersion))
             {
-                capabilities.SetCapability("seleniumVersion", sauce.SeleniumVersion);
+                options.AddAdditionalCapability("seleniumVersion", sauce.SeleniumVersion);
             }
+
+            var capabilities = options.ToCapabilities();
 
             await SauceConnectServer.StartAsync(output);
 
