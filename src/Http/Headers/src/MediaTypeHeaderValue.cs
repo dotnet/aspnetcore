@@ -438,14 +438,14 @@ namespace Microsoft.Net.Http.Headers
         }
 
         /// <summary>
-        /// Gets a value indicating whether this <see cref="MediaTypeHeaderValue"/> is a subset of
-        /// <paramref name="otherMediaType"/> in terms of type/subType. A "subset" is defined as the same or a more specific media type
+        /// Gets a value indicating whether <paramref name="otherMediaType"/> is a subset of
+        /// this <see cref="MediaTypeHeaderValue"/> in terms of type/subType. A "subset" is defined as the same or a more specific media type
         /// according to the precedence described in https://www.ietf.org/rfc/rfc2068.txt section 14.1, Accept.
         /// </summary>
         /// <param name="otherMediaType">The <see cref="StringSegment"/> to compare.</param>
         /// <returns>
-        /// A value indicating whether this <see cref="MediaTypeHeaderValue"/> is a subset of
-        /// <paramref name="otherMediaType"/>.
+        /// A value indicating whether <paramref name="otherMediaType"/> is a subset of
+        /// this <see cref="MediaTypeHeaderValue"/>.
         /// </returns>
         /// <remarks>
         /// For example "multipart/mixed" is a subset of "multipart/mixed",
@@ -459,7 +459,6 @@ namespace Microsoft.Net.Http.Headers
             }
             GetMediaTypeExpressionLength(otherMediaType, 0, out var mediaType);
 
-            // "text/plain" is a subset of "text/plain", "text/*" and "*/*". "*/*" is a subset only of "*/*".
             return MatchesType(mediaType) && MatchesSubtype(mediaType);
         }
 
