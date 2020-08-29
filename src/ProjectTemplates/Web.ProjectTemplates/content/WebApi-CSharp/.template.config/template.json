@@ -36,19 +36,6 @@
           "exclude": [
             "Properties/launchSettings.json"
           ]
-        },
-        {
-          "condition": "(!GenerateApi)",
-          "exclude": [
-            "Services/DownstreamWebApi.cs"
-          ]
-        },
-        {
-          "condition": "(!GenerateGraph)",
-          "exclude": [
-            "Services/MicrosoftGraphServiceExtensions.cs",
-            "Services/TokenAcquisitionCredentialProvider.cs"
-          ]
         }
       ]
     }
@@ -111,6 +98,13 @@
       "replaces": "qualified.domain.name",
       "description": "The domain for the directory tenant (use with SingleOrg or IndividualB2C auth)."
     },
+    "DefaultScope": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "api-scope",
+      "defaultValue": "access_as_user",
+      "description": "The API scope the client needs to request to provision an access token. (use with IndividualB2C, SingleOrg)."
+    },    
     "TenantId": {
       "type": "parameter",
       "datatype": "string",

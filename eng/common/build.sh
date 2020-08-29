@@ -76,9 +76,10 @@ projects=''
 configuration='Debug'
 prepare_machine=false
 verbosity='minimal'
+runtime_source_feed=''
+runtime_source_feed_key=''
 
 properties=''
-
 while [[ $# > 0 ]]; do
   opt="$(echo "${1/#--/-}" | awk '{print tolower($0)}')"
   case "$opt" in
@@ -149,6 +150,14 @@ while [[ $# > 0 ]]; do
       ;;
     -nodereuse)
       node_reuse=$2
+      shift
+      ;;
+    -runtimesourcefeed)
+      runtime_source_feed=$2
+      shift
+      ;;
+     -runtimesourcefeedkey)
+      runtime_source_feed_key=$2
       shift
       ;;
     *)

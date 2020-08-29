@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 {
     /// <summary>
     /// Implements a list that uses an array of objects to store the elements.
-    /// 
+    ///
     /// This differs from a <see cref="System.Collections.Generic.List{T}"/> in that
     /// it not only grows as required but also shrinks if cleared with significant
     /// excess capacity. This makes it useful for component rendering, because
