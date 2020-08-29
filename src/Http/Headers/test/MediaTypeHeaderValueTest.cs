@@ -686,6 +686,7 @@ namespace Microsoft.Net.Http.Headers
         [Theory]
         [InlineData("*/*;", "*/*")]
         [InlineData("text/*", "text/*")]
+        [InlineData("text/*", "text/plain")]
         [InlineData("*/*;", "text/plain")]
         [InlineData("text/plain", "text/plain")]
         [InlineData("text/plain;", "text/plain")]
