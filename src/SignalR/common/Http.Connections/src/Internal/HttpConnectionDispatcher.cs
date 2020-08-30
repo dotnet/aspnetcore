@@ -580,7 +580,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             if (oldContext.User.Identity is WindowsIdentity windowsIdentity)
             {
                 var skipFirstIdentity = false;
-                if (oldContext.User is WindowsPrincipal)
+                if (OperatingSystem.IsWindows() && oldContext.User is WindowsPrincipal)
                 {
                     // We want to explicitly create a WindowsPrincipal instead of a ClaimsPrincipal
                     // so methods that WindowsPrincipal overrides like 'IsInRole', work as expected.
