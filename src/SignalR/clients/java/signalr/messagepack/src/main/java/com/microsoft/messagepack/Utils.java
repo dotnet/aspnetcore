@@ -1,4 +1,4 @@
-package com.microsoft.messagepack;
+package com.microsoft.signalr.messagepack;
 
 import java.io.IOException;
 import java.lang.reflect.Array;

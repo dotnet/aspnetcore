@@ -5,7 +5,7 @@ package com.microsoft.signalr;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import com.microsoft.messagepack.MessagePackHubProtocol;
+import com.microsoft.signalr.messagepack.MessagePackHubProtocol;
 
 class TestUtils {
     

@@ -1,4 +1,4 @@
-group 'com.microsoft.messagepack'
+group 'com.microsoft.signalr.messagepack'
 
 dependencies {
     implementation project(':core')

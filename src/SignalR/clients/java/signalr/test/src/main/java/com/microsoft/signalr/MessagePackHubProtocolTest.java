@@ -19,7 +19,7 @@ import java.util.TreeMap;
 
 import org.junit.jupiter.api.Test;
 
-import com.microsoft.messagepack.MessagePackHubProtocol;
+import com.microsoft.signalr.messagepack.MessagePackHubProtocol;
 
 class MessagePackHubProtocolTest {
     private MessagePackHubProtocol messagePackHubProtocol = new MessagePackHubProtocol();
