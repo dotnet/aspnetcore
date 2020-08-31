@@ -2,7 +2,10 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <!-- Projects in this folder don't follow the usual naming conventions for tests. -->
-    <IsUnitTestProject>false</IsUnitTestProject>
+    <!--
+      Projects in this folder don't follow the usual naming conventions for test assets. Marking as such
+      though the projects directly w/in this folder are more like test infrastructure.
+    -->
+    <IsTestAssetProject>false</IsTestAssetProject>
   </PropertyGroup>
 </Project>
