@@ -17,7 +17,6 @@
       "src\\Components\\Server\\src\\Microsoft.AspNetCore.Components.Server.csproj",
       "src\\Components\\Server\\test\\Microsoft.AspNetCore.Components.Server.Tests.csproj",
       "src\\Components\\Web.Extensions\\src\\Microsoft.AspNetCore.Components.Web.Extensions.csproj",
-      "src\\Components\\Web.Extensions\\test\\Microsoft.AspNetCore.Components.Web.Extensions.Tests.csproj",
       "src\\Components\\WebAssembly\\Authentication.Msal\\src\\Microsoft.Authentication.WebAssembly.Msal.csproj",
       "src\\Components\\WebAssembly\\DevServer\\src\\Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj",
       "src\\Components\\WebAssembly\\JSInterop\\src\\Microsoft.JSInterop.WebAssembly.csproj",
@@ -46,7 +45,9 @@
       "src\\Components\\test\\testassets\\BasicTestApp\\BasicTestApp.csproj",
       "src\\Components\\test\\testassets\\ComponentsApp.Server\\ComponentsApp.Server.csproj",
       "src\\Components\\test\\testassets\\TestContentPackage\\TestContentPackage.csproj",
-      "src\\Components\\test\\testassets\\TestServer\\Components.TestServer.csproj"
+      "src\\Components\\test\\testassets\\TestServer\\Components.TestServer.csproj",
+      "src\\Components\\ProtectedBrowserStorage\\src\\Microsoft.AspNetCore.Components.ProtectedBrowserStorage.csproj",
+      "src\\Components\\ProtectedBrowserStorage\\test\\Microsoft.AspNetCore.Components.ProtectedBrowserStorage.Tests.csproj"
     ]
   }
 }

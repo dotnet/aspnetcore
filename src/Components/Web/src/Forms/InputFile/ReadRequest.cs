@@ -3,7 +3,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Components.Web.Extensions
+namespace Microsoft.AspNetCore.Components.Forms
 {
     [StructLayout(LayoutKind.Explicit)]
     internal struct ReadRequest
