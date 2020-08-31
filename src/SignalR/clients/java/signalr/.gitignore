@@ -7,7 +7,6 @@ test/test-results
 out/
 *.class
 *.jar
-*version.java
 .project
 .classpath
 core/src/main/java/com/microsoft/signalr/Version.java
