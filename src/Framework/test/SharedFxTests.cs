@@ -2,8 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -81,7 +85,7 @@ namespace Microsoft.AspNetCore
         }
 
         [Fact]
-        public void ItContainsValidRuntimeConfigFile()
+        public void SharedFrameworkContainsValidRuntimeConfigFile()
         {
             var runtimeConfigFilePath = Path.Combine(_sharedFxRoot, "Microsoft.AspNetCore.App.runtimeconfig.json");
 
@@ -98,7 +102,7 @@ namespace Microsoft.AspNetCore
         }
 
         [Fact]
-        public void ItContainsValidDepsJson()
+        public void SharedFrameworkContainsValidDepsJson()
         {
             var depsFilePath = Path.Combine(_sharedFxRoot, "Microsoft.AspNetCore.App.deps.json");
 
@@ -153,6 +157,28 @@ namespace Microsoft.AspNetCore
             {
                 Assert.Null(runtimeLibrary["native"]);
             }
+        }
+
+        [Fact]
+        public void SharedFrameworkAssembliesHaveExpectedAssemblyVersions()
+        {
+            // Only test managed assemblies
+            IEnumerable<string> dlls = Directory.GetFiles(_sharedFxRoot, "*.dll", SearchOption.AllDirectories).Where(i => !i.Contains("aspnetcorev2_inprocess"));
+            Assert.NotEmpty(dlls);
+
+            Assert.All(dlls, path =>
+            {
+                var fileName = Path.GetFileNameWithoutExtension(path);
+                var assemblyName = AssemblyName.GetAssemblyName(path);
+                using var fileStream = File.OpenRead(path);
+                using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
+                var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
+                var assemblyDefinition = reader.GetAssemblyDefinition();
+
+                // Assembly versions should all match Major.Minor.0.0
+                Assert.Equal(0, assemblyDefinition.Version.Build);
+                Assert.Equal(0, assemblyDefinition.Version.Revision);
+            });
         }
 
         [Fact]
