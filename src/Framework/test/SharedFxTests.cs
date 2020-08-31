@@ -168,8 +168,6 @@ namespace Microsoft.AspNetCore
 
             Assert.All(dlls, path =>
             {
-                var fileName = Path.GetFileNameWithoutExtension(path);
-                var assemblyName = AssemblyName.GetAssemblyName(path);
                 using var fileStream = File.OpenRead(path);
                 using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
                 var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
@@ -184,7 +182,7 @@ namespace Microsoft.AspNetCore
         [Fact]
         public void SharedFrameworkAssemblyReferencesHaveExpectedAssemblyVersions()
         {
-            IEnumerable<string> dlls = Directory.GetFiles(_sharedFxRoot, "*.dll", SearchOption.AllDirectories).Where(i => !i.Contains("aspnetcorev2_inprocess"));
+            IEnumerable<string> dlls = Directory.GetFiles(_sharedFxRoot, "*.dll", SearchOption.AllDirectories).Where(i => !i.Contains("aspnetcorev2_inprocess") && !i.Contains("System.Security.Cryptography.Xml", StringComparison.OrdinalIgnoreCase));
             Assert.NotEmpty(dlls);
 
             Assert.All(dlls, path =>
