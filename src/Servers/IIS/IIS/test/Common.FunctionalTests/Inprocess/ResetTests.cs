@@ -24,7 +24,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class ResetTests : IISFunctionalTestBase
     {
-        private const string WindowsVersionForTrailers = "10.0.20180";
+        // TODO: This is just a guess, there is no build available yet with this feature.
+        private const string WindowsVersionForTrailers = "10.0.20300";
 
         public ResetTests(PublishedSitesFixture fixture) : base(fixture)
         {
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         };
 
         public static readonly IEnumerable<KeyValuePair<string, string>> PostRequestHeaders = new[]
-{
+        {
             new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
             new KeyValuePair<string, string>(HeaderNames.Scheme, "https"),
             new KeyValuePair<string, string>(HeaderNames.Authority, "localhost:80"),
@@ -355,7 +356,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Reset support was added in Win10_20H2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
         public async Task Reset_AfterCompleteAsync_NoReset()
         {
             var deploymentParameters = GetHttpsDeploymentParameters();
@@ -387,7 +388,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [MinimumOSVersion(OperatingSystems.Windows, "10.0.19529", SkipReason = "Reset support was added in Win10_20H2.")]
+        [MinimumOSVersion(OperatingSystems.Windows, WindowsVersionForTrailers, SkipReason = "Reset support was added in Win10_20H2.")]
         public async Task Reset_CompleteAsyncDuringRequestBody_Resets()
         {
             var deploymentParameters = GetHttpsDeploymentParameters();

@@ -18,7 +18,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class ResponseTrailersTests : IISFunctionalTestBase
     {
-        private const string WindowsVersionForTrailers = "10.0.20180";
+        // TODO: We're just guessing for now, there isn't a stable build with all the features yet.
+        private const string WindowsVersionForTrailers = "10.0.20300";
 
         public ResponseTrailersTests(PublishedSitesFixture fixture) : base(fixture)
         {
