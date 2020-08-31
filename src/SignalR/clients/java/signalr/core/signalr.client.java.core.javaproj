@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <!-- This package ID is only ever used along with eng/PatchConfig.props to determine when to patch the Java client. -->
-    <PackageId>java:signalr.core</PackageId>
+    <PackageId>java:signalr</PackageId>
     <!-- In servicing builds, this will be set to value if the Java client is not configured to be released in the currently building patch. -->
     <IsPackable>true</IsPackable>
     <IsTestProject>false</IsTestProject>
@@ -38,7 +38,7 @@
     <Message Text="> gradlew $(GradleOptions) createPackage" Importance="high" />
     <Exec Command="../gradlew $(GradleOptions) createPackage" />
     <Message Importance="high" Text="java:signalr -> $(PackageOutputPath)%(JavaBuildFiles.Identity)" />
-    <Copy SourceFiles="build\libs\%(JavaBuildFiles.Identity)" DestinationFolder="$(PackageOutputPath)" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)build\libs\%(JavaBuildFiles.Identity)" DestinationFolder="$(PackageOutputPath)" />
   </Target>
 
   <Target Name="Build">

@@ -31,6 +31,7 @@ public class TypeReference<T> {
 
     /**
      * Gets the referenced type.
+     * @return The Type encapsulated by this TypeReference
      */ 
     public Type getType() {
         return this.type;

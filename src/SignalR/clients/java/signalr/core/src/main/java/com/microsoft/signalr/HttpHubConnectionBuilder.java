@@ -62,7 +62,7 @@ public class HttpHubConnectionBuilder {
      * @param protocol The {@link HubProtocol} to be used by the {@link HubConnection}.
      * @return This instance of the HttpHubConnectionBuilder.
      */
-    public HttpHubConnectionBuilder withProtocol(HubProtocol protocol) {
+    public HttpHubConnectionBuilder withHubProtocol(HubProtocol protocol) {
         this.protocol = protocol;
         return this;
     }
