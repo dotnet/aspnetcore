@@ -140,6 +140,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components" ProjectPath="$(RepoRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Forms" ProjectPath="$(RepoRoot)src\Components\Forms\src\Microsoft.AspNetCore.Components.Forms.csproj" />
     <ProjectReferenceProvider Include="Ignitor" ProjectPath="$(RepoRoot)src\Components\Ignitor\src\Ignitor.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.ProtectedBrowserStorage" ProjectPath="$(RepoRoot)src\Components\ProtectedBrowserStorage\src\Microsoft.AspNetCore.Components.ProtectedBrowserStorage.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Server" ProjectPath="$(RepoRoot)src\Components\Server\src\Microsoft.AspNetCore.Components.Server.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Web.Extensions" ProjectPath="$(RepoRoot)src\Components\Web.Extensions\src\Microsoft.AspNetCore.Components.Web.Extensions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Authentication.WebAssembly.Msal" ProjectPath="$(RepoRoot)src\Components\WebAssembly\Authentication.Msal\src\Microsoft.Authentication.WebAssembly.Msal.csproj" />

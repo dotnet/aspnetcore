@@ -2,15 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <Description>A collection of Blazor components for the web.</Description>
+    <Description>Provides functionality for storing protected data using the browser's localStorage and sessionStorage APIs.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <RootNamespace>Microsoft.AspNetCore.Components</RootNamespace>
     <Nullable>enable</Nullable>
-    <IsShipping>false</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection" />
     <Reference Include="Microsoft.JSInterop" />
   </ItemGroup>
 

@@ -2,7 +2,7 @@
 
   <!-- For 'legacy' .csproj files, set map TargetFrameworkVersion back to TargetFramework -->
   <PropertyGroup Condition=" '$(TargetFramework)' == '' AND '$(TargetFrameworks)' == '' ">
-    <TargetFramework>net$(TargetFrameworkVersion.Substring(1).Replace('.',''))</TargetFramework>
+    <TargetFramework>net$(TargetFrameworkVersion.TrimStart('vV').Replace('.',''))</TargetFramework>
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
   </PropertyGroup>
 

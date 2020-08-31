@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Web.Extensions
+namespace Microsoft.AspNetCore.Components.ProtectedBrowserStorage
 {
 
     /// <summary>

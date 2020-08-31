@@ -10,10 +10,10 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Web.Extensions
+namespace Microsoft.AspNetCore.Components.Forms
 {
     /// <summary>
-    /// A component that wraps the HTML file input element and exposes a <see cref="Stream"/> for each file's contents.
+    /// A component that wraps the HTML file input element and supplies a <see cref="Stream"/> for each file's contents.
     /// </summary>
     public class InputFile : ComponentBase, IInputFileJsCallbacks, IDisposable
     {
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
                 (Stream)new SharedBrowserFileStream(JSRuntime, _jsUnmarshalledRuntime, _inputFileElement, file) :
                 new RemoteBrowserFileStream(JSRuntime, _inputFileElement, file, Options.Value, cancellationToken);
 
-        internal async Task<IBrowserFile> ConvertToImageFileAsync(BrowserFile file, string format, int maxWidth, int maxHeight)
+        internal async ValueTask<IBrowserFile> ConvertToImageFileAsync(BrowserFile file, string format, int maxWidth, int maxHeight)
         {
             var imageFile = await JSRuntime.InvokeAsync<BrowserFile>(InputFileInterop.ToImageFile, _inputFileElement, file.Id, format, maxWidth, maxHeight);
 

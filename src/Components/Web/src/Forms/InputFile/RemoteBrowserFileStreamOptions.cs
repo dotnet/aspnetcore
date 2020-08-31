@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.Versioning;
 
-namespace Microsoft.AspNetCore.Components.Web.Extensions
+namespace Microsoft.AspNetCore.Components.Forms
 {
     /// <summary>
     /// Repesents configurable options for <see cref="RemoteBrowserFileStream"/>.
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// This only has an effect when using Blazor Server.
         /// </para>
         /// </summary>
-        public int SegmentSize { get; set; } = 20 * 1024; // SignalR limit is 32K.
+        public int MaxSegmentSize { get; set; } = 20 * 1024; // SignalR limit is 32K.
 
         /// <summary>
         /// Gets or sets the maximum internal buffer size for unread data sent over a SignalR circuit.
@@ -35,6 +35,6 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         /// This only has an effect when using Blazor Server.
         /// </para>
         /// </summary>
-        public TimeSpan SegmentFetchTimeout { get; set; } = TimeSpan.FromSeconds(3);
+        public TimeSpan SegmentFetchTimeout { get; set; } = TimeSpan.FromMinutes(1);
     }
 }

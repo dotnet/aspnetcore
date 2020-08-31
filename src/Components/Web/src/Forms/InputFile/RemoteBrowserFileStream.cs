@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Web.Extensions
+namespace Microsoft.AspNetCore.Components.Forms
 {
     internal class RemoteBrowserFileStream : BrowserFileStream
     {
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.Web.Extensions
         {
             _jsRuntime = jsRuntime;
             _inputFileElement = inputFileElement;
-            _maxSegmentSize = options.SegmentSize;
+            _maxSegmentSize = options.MaxSegmentSize;
             _segmentFetchTimeout = options.SegmentFetchTimeout;
 
             var pipe = new Pipe(new PipeOptions(pauseWriterThreshold: options.MaxBufferSize, resumeWriterThreshold: options.MaxBufferSize));
