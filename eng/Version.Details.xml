@@ -321,6 +321,10 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>f2b7fe854a0b1f78c04dfc065164d6d61040f5b8</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="5.0.0-beta.20427.5">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>f2b7fe854a0b1f78c04dfc065164d6d61040f5b8</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="5.0.0-beta.20427.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>f2b7fe854a0b1f78c04dfc065164d6d61040f5b8</Sha>
