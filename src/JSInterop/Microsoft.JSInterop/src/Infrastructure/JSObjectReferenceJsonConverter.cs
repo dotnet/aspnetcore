@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 namespace Microsoft.JSInterop.Infrastructure
 {
     internal sealed class JSObjectReferenceJsonConverter<TJSObjectReference>
-        : JsonConverter<TJSObjectReference> where TJSObjectReference : JSObjectReference
+        : JsonConverter<TJSObjectReference> where TJSObjectReference : class, IJSObjectReference
     {
         private readonly Func<long, TJSObjectReference> _jsObjectReferenceFactory;
 
@@ -52,7 +52,7 @@ namespace Microsoft.JSInterop.Infrastructure
         public override void Write(Utf8JsonWriter writer, TJSObjectReference value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
-            writer.WriteNumber(JSObjectReference.IdKey, value.Id);
+            writer.WriteNumber(JSObjectReference.IdKey, ((JSObjectReference)(object)value).Id);
             writer.WriteEndObject();
         }
     }
