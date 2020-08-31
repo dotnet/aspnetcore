@@ -17,7 +17,7 @@ namespace Microsoft.JSInterop
         /// </summary>
         protected JSInProcessRuntime()
         {
-            JsonSerializerOptions.Converters.Add(new JSObjectReferenceJsonConverter<IJSInProcessObjectReference>(
+            JsonSerializerOptions.Converters.Add(new JSObjectReferenceJsonConverter<IJSInProcessObjectReference, JSInProcessObjectReference>(
                 id => new JSInProcessObjectReference(this, id)));
         }
 

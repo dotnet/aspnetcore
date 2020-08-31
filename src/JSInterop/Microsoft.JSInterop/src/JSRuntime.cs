@@ -37,7 +37,7 @@ namespace Microsoft.JSInterop
                 Converters =
                 {
                     new DotNetObjectReferenceJsonConverterFactory(this),
-                    new JSObjectReferenceJsonConverter<IJSObjectReference>(id => new JSObjectReference(this, id)),
+                    new JSObjectReferenceJsonConverter<IJSObjectReference, JSObjectReference>(id => new JSObjectReference(this, id)),
                 }
             };
         }
