@@ -7,7 +7,9 @@ test/test-results
 out/
 *.class
 *.jar
+*version.java
 .project
 .classpath
+core/src/main/java/com/microsoft/signalr/Version.java
 # We need the gradle-wrapper.jar file so that others can use the gradle wrapper
 !gradle/wrapper/gradle-wrapper.jar

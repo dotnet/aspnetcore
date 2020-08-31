@@ -17,6 +17,7 @@ public interface HubProtocol {
     /**
      * Creates a new list of {@link HubMessage}s.
      * @param message A ByteBuffer representation of one or more {@link HubMessage}s.
+     * @param binder The {@link InvocationBinder} to use for this Protocol instance.
      * @return A list of {@link HubMessage}s.
      */
     List<HubMessage> parseMessages(ByteBuffer message, InvocationBinder binder);
