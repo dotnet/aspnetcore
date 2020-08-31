@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -506,18 +506,10 @@ namespace Microsoft.AspNetCore.Builder
             EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(endpoints).CreateInertEndpoints = true;
-
-            endpoints.Map(
-                pattern, 
-                context =>
-                {
-                    throw new InvalidOperationException("This endpoint is not expected to be executed directly.");
-                })
-                .Add(b =>
-                {
-                    b.Metadata.Add(new DynamicControllerRouteValueTransformerMetadata(typeof(TTransformer), state));
-                });
+            var controllerDataSource = GetOrCreateDataSource(endpoints);
+            
+            // The data source is just used to share the common order with conventionally routed actions.
+            controllerDataSource.AddDynamicControllerEndpoint(endpoints, pattern, typeof(TTransformer), state);
         }
 
         private static DynamicControllerMetadata CreateDynamicControllerMetadata(string action, string controller, string area)
