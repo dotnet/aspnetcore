@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -41,9 +42,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="check">A delegate that provides the health check implementation.</param>
         /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
         /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IHealthChecksBuilder AddCheck(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             this IHealthChecksBuilder builder,
             string name,
             Func<HealthCheckResult> check,
@@ -96,9 +96,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="check">A delegate that provides the health check implementation.</param>
         /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
         /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IHealthChecksBuilder AddCheck(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             this IHealthChecksBuilder builder,
             string name,
             Func<CancellationToken, HealthCheckResult> check,
@@ -151,9 +150,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="check">A delegate that provides the health check implementation.</param>
         /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
         /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IHealthChecksBuilder AddAsyncCheck(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             this IHealthChecksBuilder builder,
             string name,
             Func<Task<HealthCheckResult>> check,
@@ -206,9 +204,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="check">A delegate that provides the health check implementation.</param>
         /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
         /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IHealthChecksBuilder AddAsyncCheck(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             this IHealthChecksBuilder builder,
             string name,
             Func<CancellationToken, Task<HealthCheckResult>> check,

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,9 +39,8 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// A <see cref="Task{T}"/> which will complete when all the health checks have been run,
         /// yielding a <see cref="HealthReport"/> containing the results.
         /// </returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public Task<HealthReport> CheckHealthAsync(CancellationToken cancellationToken = default)
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         {
             return CheckHealthAsync(predicate: null, cancellationToken);
         }
@@ -56,9 +56,8 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// A <see cref="Task{T}"/> which will complete when all the health checks have been run,
         /// yielding a <see cref="HealthReport"/> containing the results.
         /// </returns>
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public abstract Task<HealthReport> CheckHealthAsync(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             Func<HealthCheckRegistration, bool>? predicate,
             CancellationToken cancellationToken = default);
     }

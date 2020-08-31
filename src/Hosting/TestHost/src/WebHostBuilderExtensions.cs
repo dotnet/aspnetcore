@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -93,9 +94,8 @@ namespace Microsoft.AspNetCore.TestHost
             return webHostBuilder;
         }
 
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IWebHostBuilder UseSolutionRelativeContentRoot(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             this IWebHostBuilder builder,
             string solutionRelativePath,
             string solutionName = "*.sln")
@@ -103,9 +103,8 @@ namespace Microsoft.AspNetCore.TestHost
             return builder.UseSolutionRelativeContentRoot(solutionRelativePath, AppContext.BaseDirectory, solutionName);
         }
 
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IWebHostBuilder UseSolutionRelativeContentRoot(
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
             this IWebHostBuilder builder,
             string solutionRelativePath,
             string applicationBasePath,
