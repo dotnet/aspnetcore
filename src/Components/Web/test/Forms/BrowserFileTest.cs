@@ -22,13 +22,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         [Fact]
         public void OpenReadStream_ThrowsIfFileSizeIsLargerThanAllowedSize()
         {
-            // Arrangev
-            var expected = $"File size '{100} is large than the maximum allowed size '{80}'.";
+            // Arrange
             var file = new BrowserFile { Size = 100 };
 
             // Act & Assert
             var ex = Assert.Throws<IOException>(() => file.OpenReadStream(80));
-            Assert.Equal(expected, ex.Message);
+            Assert.Equal("Supplied file with size 100 bytes exceeds the maximum of 80 bytes.", ex.Message);
         }
     }
 }
