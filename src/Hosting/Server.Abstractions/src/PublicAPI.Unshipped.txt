@@ -15,10 +15,10 @@ Microsoft.AspNetCore.Hosting.Server.IServer.Features.get -> Microsoft.AspNetCore
 Microsoft.AspNetCore.Hosting.Server.IServer.StartAsync<TContext>(Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext>! application, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Hosting.Server.IServer.StopAsync(System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Hosting.Server.IServerIntegratedAuth
-Microsoft.AspNetCore.Hosting.Server.IServerIntegratedAuth.AuthenticationScheme.get -> string?
+Microsoft.AspNetCore.Hosting.Server.IServerIntegratedAuth.AuthenticationScheme.get -> string!
 Microsoft.AspNetCore.Hosting.Server.IServerIntegratedAuth.IsEnabled.get -> bool
 Microsoft.AspNetCore.Hosting.Server.ServerIntegratedAuth
-Microsoft.AspNetCore.Hosting.Server.ServerIntegratedAuth.AuthenticationScheme.get -> string?
+Microsoft.AspNetCore.Hosting.Server.ServerIntegratedAuth.AuthenticationScheme.get -> string!
 Microsoft.AspNetCore.Hosting.Server.ServerIntegratedAuth.AuthenticationScheme.set -> void
 Microsoft.AspNetCore.Hosting.Server.ServerIntegratedAuth.IsEnabled.get -> bool
 Microsoft.AspNetCore.Hosting.Server.ServerIntegratedAuth.IsEnabled.set -> void
