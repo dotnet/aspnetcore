@@ -32,6 +32,10 @@
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
+  <PropertyGroup>
+    <GradleOptions>$(GradleOptions) -PpackageVersion="$(PackageVersion)"</GradleOptions>
+  </PropertyGroup>
+
   <!-- Define Target overrides after importing Directory.Build.targets so these don't get overridden -->
   <Target Name="Pack" DependsOnTargets="$(PackDependsOn)" Condition="'$(IsPackable)' == 'true'">
     <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Pack" />

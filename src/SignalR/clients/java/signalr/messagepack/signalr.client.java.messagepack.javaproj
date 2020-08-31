@@ -7,8 +7,6 @@
     <!-- In servicing builds, this will be set to value if the Java client is not configured to be released in the currently building patch. -->
     <IsPackable>true</IsPackable>
     <IsTestProject>false</IsTestProject>
-    <!-- Installing Java on ARM will take some work -->
-    <SkipHelixArm>true</SkipHelixArm>
     <!-- Disable gradle daemon on CI since the CI seems to try to wait for the daemon to shut down, which it doesn't do :) -->
     <GradleOptions Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(GradleOptions) -Dorg.gradle.daemon=false</GradleOptions>
     <PublishDir>$(OutputPath)</PublishDir>
@@ -33,6 +31,10 @@
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <GradleOptions>$(GradleOptions) -PpackageVersion="$(PackageVersion)"</GradleOptions>
+  </PropertyGroup>
 
   <!-- Define Target overrides after importing Directory.Build.targets so these don't get overridden -->
   <Target Name="Pack" DependsOnTargets="$(PackDependsOn)" Condition="'$(IsPackable)' == 'true'">
