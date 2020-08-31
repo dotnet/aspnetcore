@@ -27,6 +27,31 @@
     {
       "modifiers": [
         {
+          "condition": "(!OrganizationalAuth && !IndividualAuth)",
+          "exclude": [
+            "Views/Shared/_LoginPartial.Identity.cshtml",
+            "Views/Shared/_LoginPartial.OrgAuth.cshtml"
+          ]
+        },
+        {
+          "condition": "(OrganizationalAuth || IndividualB2CAuth)",
+          "rename": {
+            "Views/Shared/_LoginPartial.OrgAuth.cshtml": "Views/Shared/_LoginPartial.cshtml"
+          },
+          "exclude": [
+            "Views/Shared/_LoginPartial.Identity.cshtml"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth)",
+          "rename": {
+            "Views/Shared/_LoginPartial.Identity.cshtml": "Views/Shared/_LoginPartial.cshtml"
+          },
+          "exclude": [
+            "Views/Shared/_LoginPartial.OrgAuth.cshtml"
+          ]
+        },
+        {
           "condition": "(!IndividualLocalAuth || UseLocalDB)",
           "exclude": [
             "app.db"
