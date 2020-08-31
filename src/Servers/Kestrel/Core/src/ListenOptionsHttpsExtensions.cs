@@ -208,7 +208,8 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Configure Kestrel to use HTTPS.
+        /// Configure Kestrel to use HTTPS. This does not use default certificates or other defaults specified via config or
+        /// <see cref="KestrelServerOptions.ConfigureHttpsDefaults(Action{HttpsConnectionAdapterOptions})"/>.
         /// </summary>
         /// <param name="listenOptions">The <see cref="ListenOptions"/> to configure.</param>
         /// <param name="httpsOptions">Options to configure HTTPS.</param>
@@ -230,31 +231,33 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Configure Kestrel to use HTTPS.
+        /// Configure Kestrel to use HTTPS. This does not use default certificates or other defaults specified via config or
+        /// <see cref="KestrelServerOptions.ConfigureHttpsDefaults(Action{HttpsConnectionAdapterOptions})"/>.
         /// </summary>
         /// <param name="listenOptions">The <see cref="ListenOptions"/> to configure.</param>
-        /// <param name="httpsOptionsCallback">Callback to configure HTTPS options.</param>
-        /// <param name="state">State for the <paramref name="httpsOptionsCallback"/>.</param>
+        /// <param name="serverOptionsSelectionCallback">Callback to configure HTTPS options.</param>
+        /// <param name="state">State for the <paramref name="serverOptionsSelectionCallback"/>.</param>
         /// <returns>The <see cref="ListenOptions"/>.</returns>
-        public static ListenOptions UseHttps(this ListenOptions listenOptions, ServerOptionsSelectionCallback httpsOptionsCallback, object state)
+        public static ListenOptions UseHttps(this ListenOptions listenOptions, ServerOptionsSelectionCallback serverOptionsSelectionCallback, object state)
         {
-            return listenOptions.UseHttps(httpsOptionsCallback, state, HttpsConnectionAdapterOptions.DefaultHandshakeTimeout);
+            return listenOptions.UseHttps(serverOptionsSelectionCallback, state, HttpsConnectionAdapterOptions.DefaultHandshakeTimeout);
         }
 
         /// <summary>
-        /// Configure Kestrel to use HTTPS.
+        /// Configure Kestrel to use HTTPS. This does not use default certificates or other defaults specified via config or
+        /// <see cref="KestrelServerOptions.ConfigureHttpsDefaults(Action{HttpsConnectionAdapterOptions})"/>.
         /// </summary>
         /// <param name="listenOptions">The <see cref="ListenOptions"/> to configure.</param>
-        /// <param name="httpsOptionsCallback">Callback to configure HTTPS options.</param>
-        /// <param name="state">State for the <paramref name="httpsOptionsCallback"/>.</param>
+        /// <param name="serverOptionsSelectionCallback">Callback to configure HTTPS options.</param>
+        /// <param name="state">State for the <paramref name="serverOptionsSelectionCallback"/>.</param>
         /// <param name="handshakeTimeout">Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive and finite.</param>
         /// <returns>The <see cref="ListenOptions"/>.</returns>
-        public static ListenOptions UseHttps(this ListenOptions listenOptions, ServerOptionsSelectionCallback httpsOptionsCallback, object state, TimeSpan handshakeTimeout)
+        public static ListenOptions UseHttps(this ListenOptions listenOptions, ServerOptionsSelectionCallback serverOptionsSelectionCallback, object state, TimeSpan handshakeTimeout)
         {
             // HttpsOptionsCallback is an internal delegate that is just the ServerOptionsSelectionCallback + a ConnectionContext parameter.
             // Given that ConnectionContext will eventually be replaced by System.Net.Connections, it doesn't make much sense to make the HttpsOptionsCallback delegate public.
             HttpsOptionsCallback adaptedCallback = (connection, stream, clientHelloInfo, state, cancellationToken) =>
-                httpsOptionsCallback(stream, clientHelloInfo, state, cancellationToken);
+                serverOptionsSelectionCallback(stream, clientHelloInfo, state, cancellationToken);
 
             return listenOptions.UseHttps(adaptedCallback, state, handshakeTimeout);
         }
