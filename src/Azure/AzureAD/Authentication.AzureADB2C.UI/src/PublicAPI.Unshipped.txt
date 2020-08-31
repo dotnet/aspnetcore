@@ -5,6 +5,11 @@ Microsoft.AspNetCore.Authentication.AzureADB2C.UI.AzureADB2COptions.AzureADB2COp
 Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.AccessDeniedModel
 Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.AccessDeniedModel.AccessDeniedModel() -> void
 Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.AccessDeniedModel.OnGet() -> void
+Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages__ViewStart
+Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account__viewImports
+Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_AccessDenied
+Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_Error
+Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_SignedOut
 Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.ErrorModel
 Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.ErrorModel.ErrorModel() -> void
 Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.ErrorModel.OnGet() -> void
@@ -12,6 +17,49 @@ Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.ErrorModel.ShowReques
 Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.SignedOutModel
 Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.SignedOutModel.SignedOutModel() -> void
 Microsoft.AspNetCore.Authentication.AzureADB2CAuthenticationBuilderExtensions
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages__ViewStart.Areas_AzureADB2C_Pages__ViewStart() -> void
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages__ViewStart.Component.get -> Microsoft.AspNetCore.Mvc.IViewComponentHelper
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages__ViewStart.ExecuteAsync() -> System.Threading.Tasks.Task
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages__ViewStart.Engine.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ICompositeViewEngine
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages__ViewStart.Environment.get -> Microsoft.AspNetCore.Hosting.WebHostEnvironment
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages__ViewStart.Html.get -> Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<dynamic>
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages__ViewStart.Json.get -> Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages__ViewStart.ModelExpressionProvider.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages__ViewStart.Url.get -> Microsoft.AspNetCore.Mvc.IUrlHelper
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account__viewImports.Areas_AzureADB2C_Pages_Account__viewImports() -> void
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account__viewImports.Component.get -> Microsoft.AspNetCore.Mvc.IViewComponentHelper
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account__viewImports.ExecuteAsync() -> System.Threading.Tasks.Task
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account__viewImports.Html.get -> Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<dynamic>
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account__viewImports.Json.get -> Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account__viewImports.ModelExpressionProvider.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account__viewImports.Url.get -> Microsoft.AspNetCore.Mvc.IUrlHelper
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_AccessDenied.Areas_AzureADB2C_Pages_Account_AccessDenied() -> void
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_AccessDenied.Component.get -> Microsoft.AspNetCore.Mvc.IViewComponentHelper
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_AccessDenied.ExecuteAsync() -> System.Threading.Tasks.Task
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_AccessDenied.Html.get -> Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.AccessDeniedModel>
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_AccessDenied.Json.get -> Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_AccessDenied.Model.get -> Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.AccessDeniedModel
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_AccessDenied.ModelExpressionProvider.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_AccessDenied.Url.get -> Microsoft.AspNetCore.Mvc.IUrlHelper
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_AccessDenied.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.AccessDeniedModel>
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_Error.Areas_AzureADB2C_Pages_Account_Error() -> void
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_Error.Component.get -> Microsoft.AspNetCore.Mvc.IViewComponentHelper
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_Error.ExecuteAsync() -> System.Threading.Tasks.Task
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_Error.Html.get -> Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.ErrorModel>
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_Error.Json.get -> Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_Error.Model.get -> Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.ErrorModel
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_Error.ModelExpressionProvider.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_Error.Url.get -> Microsoft.AspNetCore.Mvc.IUrlHelper
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_Error.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.ErrorModel>
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_SignedOut.Areas_AzureADB2C_Pages_Account_SignedOut() -> void
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_SignedOut.Component.get -> Microsoft.AspNetCore.Mvc.IViewComponentHelper
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_SignedOut.ExecuteAsync() -> System.Threading.Tasks.Task
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_SignedOut.Html.get -> Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.SignedOutModel>
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_SignedOut.Json.get -> Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_SignedOut.Model.get -> Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.SignedOutModel
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_SignedOut.ModelExpressionProvider.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_SignedOut.Url.get -> Microsoft.AspNetCore.Mvc.IUrlHelper
+~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.Areas_AzureADB2C_Pages_Account_SignedOut.ViewData.get -> Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Internal.SignedOutModel>
 ~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.AzureADB2COptions.AllSchemes.get -> string[]
 ~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.AzureADB2COptions.CallbackPath.get -> string
 ~Microsoft.AspNetCore.Authentication.AzureADB2C.UI.AzureADB2COptions.CallbackPath.set -> void
