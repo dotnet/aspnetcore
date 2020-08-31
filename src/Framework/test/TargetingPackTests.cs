@@ -90,6 +90,31 @@ namespace Microsoft.AspNetCore
         }
 
         [Fact]
+        public void RefAssemblyReferencesHaveExpectedAssemblyVersions()
+        {
+            if (!_isTargetingPackBuilding)
+            {
+                return;
+            }
+
+            IEnumerable<string> dlls = Directory.GetFiles(Path.Combine(_targetingPackRoot, "ref", _targetingPackTfm), "*.dll", SearchOption.AllDirectories);
+            Assert.NotEmpty(dlls);
+
+            Assert.All(dlls, path =>
+            {
+                using var fileStream = File.OpenRead(path);
+                using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
+                var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
+                
+                Assert.All(reader.AssemblyReferences, handle =>
+                {
+                    var reference = reader.GetAssemblyReference(handle);
+                    Assert.Equal(0, reference.Version.Revision);
+                });
+            });
+        }
+
+        [Fact]
         public void PackageOverridesContainsCorrectEntries()
         {
             if (!_isTargetingPackBuilding)

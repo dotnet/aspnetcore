@@ -182,6 +182,26 @@ namespace Microsoft.AspNetCore
         }
 
         [Fact]
+        public void SharedFrameworkAssemblyReferencesHaveExpectedAssemblyVersions()
+        {
+            IEnumerable<string> dlls = Directory.GetFiles(_sharedFxRoot, "*.dll", SearchOption.AllDirectories).Where(i => !i.Contains("aspnetcorev2_inprocess"));
+            Assert.NotEmpty(dlls);
+
+            Assert.All(dlls, path =>
+            {
+                using var fileStream = File.OpenRead(path);
+                using var peReader = new PEReader(fileStream, PEStreamOptions.Default);
+                var reader = peReader.GetMetadataReader(MetadataReaderOptions.Default);
+                
+                Assert.All(reader.AssemblyReferences, handle =>
+                {
+                    var reference = reader.GetAssemblyReference(handle);
+                    Assert.Equal(0, reference.Version.Revision);
+                });
+            });
+        }
+
+        [Fact]
         public void ItContainsVersionFile()
         {
             var versionFile = Path.Combine(_sharedFxRoot, _expectedVersionFileName);
