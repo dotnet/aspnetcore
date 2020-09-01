@@ -181,20 +181,15 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                     });
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
-                    // TODO: Remove when the regression is fixed.
-                    // https://github.com/dotnet/aspnetcore/issues/23164#issuecomment-652646163
-                    if (Environment.OSVersion.Version >= Win10_Regressed_DataFrame)
-                    {
-                        Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: false, length: 11);
-                        Assert.Equal("Hello World", Encoding.UTF8.GetString(dataFrame.Payload.Span));
+                    Assert.Equal(Http2FrameType.DATA, dataFrame.Type);
+                    Assert.Equal(1, dataFrame.StreamId);
+                    Assert.Equal(11, dataFrame.PayloadLength);
+                    Assert.Equal("Hello World", Encoding.UTF8.GetString(dataFrame.Payload.Span));
 
+                    if (!dataFrame.DataEndStream)
+                    {
                         dataFrame = await h2Connection.ReceiveFrameAsync();
                         Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
-                    }
-                    else
-                    {
-                        Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 11);
-                        Assert.Equal("Hello World", Encoding.UTF8.GetString(dataFrame.Payload.Span));
                     }
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
@@ -248,11 +243,16 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                     });
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
-                    Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: false, length: 11);
+                    Assert.Equal(Http2FrameType.DATA, dataFrame.Type);
+                    Assert.Equal(1, dataFrame.StreamId);
+                    Assert.Equal(11, dataFrame.PayloadLength);
                     Assert.Equal("Hello World", Encoding.UTF8.GetString(dataFrame.Payload.Span));
 
-                    dataFrame = await h2Connection.ReceiveFrameAsync();
-                    Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
+                    if (!dataFrame.DataEndStream)
+                    {
+                        dataFrame = await h2Connection.ReceiveFrameAsync();
+                        Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
+                    }
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
                 })
@@ -281,20 +281,15 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                     });
 
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
-                    // TODO: Remove when the regression is fixed.
-                    // https://github.com/dotnet/aspnetcore/issues/23164#issuecomment-652646163
-                    if (Environment.OSVersion.Version >= Win10_Regressed_DataFrame)
-                    {
-                        Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: false, length: 11);
-                        Assert.Equal("Hello World", Encoding.UTF8.GetString(dataFrame.Payload.Span));
+                    Assert.Equal(Http2FrameType.DATA, dataFrame.Type);
+                    Assert.Equal(1, dataFrame.StreamId);
+                    Assert.Equal(11, dataFrame.PayloadLength);
+                    Assert.Equal("Hello World", Encoding.UTF8.GetString(dataFrame.Payload.Span));
 
+                    if (!dataFrame.DataEndStream)
+                    {
                         dataFrame = await h2Connection.ReceiveFrameAsync();
                         Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 0);
-                    }
-                    else
-                    {
-                        Http2Utilities.VerifyDataFrame(dataFrame, 1, endOfStream: true, length: 11);
-                        Assert.Equal("Hello World", Encoding.UTF8.GetString(dataFrame.Payload.Span));
                     }
 
                     h2Connection.Logger.LogInformation("Connection stopped.");
