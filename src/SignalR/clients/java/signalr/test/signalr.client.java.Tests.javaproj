@@ -6,6 +6,8 @@
     <IsTestProject>true</IsTestProject>
     <!-- Installing Java on ARM will take some work -->
     <SkipHelixArm>true</SkipHelixArm>
+    <!-- Skipping on Helix for now -->
+    <BuildHelixPayload>false</BuildHelixPayload>
     <!-- Disable gradle daemon on CI since the CI seems to try to wait for the daemon to shut down, which it doesn't do :) -->
     <GradleOptions Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(GradleOptions) -Dorg.gradle.daemon=false</GradleOptions>
     <PublishDir>$(OutputPath)</PublishDir>
