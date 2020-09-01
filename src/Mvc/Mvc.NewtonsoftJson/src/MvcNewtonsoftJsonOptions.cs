@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </para>
         /// </summary>
         /// <value>Defaults to 30Kb.</value>
-        public int InputFormatterMemoryBufferThreshold { get; set; } = 1024 * 30;
+        public int InputFormatterMemoryBufferThreshold { get; set; } = 1024 * 1024;
 
         IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator() => _switches.GetEnumerator();
 
