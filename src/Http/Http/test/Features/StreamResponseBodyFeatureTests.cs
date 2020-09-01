@@ -41,6 +41,22 @@ namespace Microsoft.AspNetCore.Http.Features
             //Assert
             Assert.Equal(1, streamResponseBodyFeature.StartCalled);
         }
+
+        [Fact]
+        public void DisableBufferingCallsInnerFeature()
+        {
+            // Arrange
+            var stream = new MemoryStream();
+
+            var innerFeature = new InnerDisableBufferingFeature(stream, null);
+            var streamResponseBodyFeature = new StreamResponseBodyFeature(stream, innerFeature);
+
+            // Act
+            streamResponseBodyFeature.DisableBuffering();
+
+            //Assert
+            Assert.True(innerFeature.DisableBufferingCalled);
+        }
     }
 
     public class TestStreamResponseBodyFeature : StreamResponseBodyFeature
@@ -58,5 +74,20 @@ namespace Microsoft.AspNetCore.Http.Features
         }
 
         public int StartCalled { get; private set; }
+    }
+
+    public class InnerDisableBufferingFeature : StreamResponseBodyFeature
+    {
+        public InnerDisableBufferingFeature(Stream stream, IHttpResponseBodyFeature priorFeature)
+            : base(stream, priorFeature)
+        {
+        }
+
+        public override void DisableBuffering()
+        {
+            DisableBufferingCalled = true;
+        }
+
+        public bool DisableBufferingCalled { get; set; }
     }
 }

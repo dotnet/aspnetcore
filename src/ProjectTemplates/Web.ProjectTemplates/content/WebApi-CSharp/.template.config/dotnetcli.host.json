@@ -32,6 +32,10 @@
       "longName": "tenant-id",
       "shortName": ""
     },
+    "DefaultScope": {
+      "longName": "default-scope",
+      "shortName": ""
+    },    
     "Framework": {
       "longName": "framework"
     },

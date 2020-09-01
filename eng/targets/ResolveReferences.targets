@@ -175,9 +175,15 @@
 
       <!-- Identify if any references were present in the last release of this package, but have been removed. -->
       <UnusedBaselinePackageReference Include="@(BaselinePackageReference)"
-          Exclude="@(Reference);@(_ProjectReferenceByAssemblyName);@(PackageReference)" />
-      <!-- Only allow suppressing baseline changes in non-servicing builds. -->
-      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)" Condition="'$(IsServicingBuild)' != 'true'"/>
+          Exclude="@(Reference);@(PackageReference);@(ProjectReference->'%(Filename)')" />
+
+      <!-- Handle suppressions needed because above Exclude is not aware of references added in .nuspec files. -->
+      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference->WithMetadataValue('InNuspecFile', 'true'))"
+          Condition=" '$(IsServicingBuild)' == 'true' " />
+
+      <!-- Allow suppressions of any baseline changes in non-servicing builds. -->
+      <UnusedBaselinePackageReference Remove="@(SuppressBaselineReference)"
+          Condition=" '$(IsServicingBuild)' != 'true' " />
     </ItemGroup>
 
     <JoinItems Left="@(Reference)" Right="@(LatestPackageReference)" LeftMetadata="*" RightMetadata="Version"
@@ -230,6 +236,16 @@
     <ItemGroup>
       <_ExplicitPackageReference Remove="@(_ExplicitPackageReference)" />
     </ItemGroup>
+
+    <Warning
+        Condition=" '$(IsServicingBuild)' != 'true' AND '%(UnusedBaselinePackageReference.Identity)' != '' "
+        Code="BUILD001"
+        Text="Reference to '%(UnusedBaselinePackageReference.Identity)' was removed since the last stable release of this package. This could be a breaking change. See docs/ReferenceResolution.md for instructions on how to update changes to references or suppress this warning if the error was intentional." />
+
+    <Error
+        Condition=" '$(IsServicingBuild)' == 'true' AND @(UnusedBaselinePackageReference->Count()) != 0 "
+        Code="BUILD002"
+        Text="Package references changed since the last release. This could be a breaking change and is not allowed in a servicing update. References removed:%0A - @(UnusedBaselinePackageReference, '%0A - ')" />
 
     <Error
         Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND '%(Reference.Identity)' != '' AND ! Exists('%(Reference.Identity)') AND '$(DisablePackageReferenceRestrictions)' != 'true'"

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -64,10 +64,8 @@ namespace Microsoft.CodeAnalysis.Razor
                 {
                     // Prior to 3.0 there were no C# version specific controlled features. Suppress nullability enforcement.
                     options.SuppressNullabilityEnforcement = true;
-                    return;
                 }
-
-                if (CSharpLanguageVersion < LanguageVersion.CSharp8)
+                else if (CSharpLanguageVersion < LanguageVersion.CSharp8)
                 {
                     // Having nullable flags < C# 8.0 would cause compile errors.
                     options.SuppressNullabilityEnforcement = true;
@@ -84,6 +82,12 @@ namespace Microsoft.CodeAnalysis.Razor
                     // language version for the project by our workspace change detectors. That mechanism extracts the correlated
                     // Roslyn project and acquires the effective C# version at that point.
                     options.SuppressNullabilityEnforcement = false;
+                }
+
+                if (options.Configuration?.LanguageVersion.Major >= 5)
+                {
+                    // This is a useful optimization but isn't supported by older framework versions
+                    options.OmitMinimizedComponentAttributeValues = true;
                 }
             }
         }

@@ -11,8 +11,8 @@ them to a file.
           DependsOnTargets="_CollectWatchItems">
 
     <PropertyGroup>
-      <_IsMicrosoftNETCoreApp31OrNewer
-          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '3.1'))">true</_IsMicrosoftNETCoreApp31OrNewer>
+      <_IsMicrosoftNETCoreApp31OrNewer Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND
+        $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '3.1'))">true</_IsMicrosoftNETCoreApp31OrNewer>
 
       <_IsMicrosoftNETCoreApp31OrNewer Condition="'$(_IsMicrosoftNETCoreApp31OrNewer)' == ''">false</_IsMicrosoftNETCoreApp31OrNewer>
     </PropertyGroup>
@@ -41,6 +41,7 @@ Returns: @(Watch)
     </_CollectWatchItemsDependsOn>
     <_CollectWatchItemsDependsOn Condition=" '$(TargetFramework)' != '' ">
       _CoreCollectWatchItems;
+      $(CustomCollectWatchItems);
     </_CollectWatchItemsDependsOn>
   </PropertyGroup>
 

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -15,9 +15,13 @@
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.JSInterop.WebAssembly" />
 
-    <ProjectReference Include="..\..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj" ReferenceOutputAssemblies="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework" Private="false" Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'" />
-
-    <SuppressBaselineReference Include="Microsoft.AspNetCore.Components.WebAssembly.HttpHandler" />
+    <ProjectReference
+      Include="..\..\..\Web.JS\Microsoft.AspNetCore.Components.Web.JS.npmproj"
+      ReferenceOutputAssemblies="false"
+      SkipGetTargetFrameworkProperties="true"
+      UndefineProperties="TargetFramework"
+      Private="false"
+      Condition="'$(BuildNodeJS)' != 'false' and '$(BuildingInsideVisualStudio)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>

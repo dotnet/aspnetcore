@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
             if (string.IsNullOrEmpty(options.Cookie.Name))
             {
-                options.Cookie.Name = CookieAuthenticationDefaults.CookiePrefix + name;
+                options.Cookie.Name = CookieAuthenticationDefaults.CookiePrefix + Uri.EscapeDataString(name);
             }
             if (options.TicketDataFormat == null)
             {

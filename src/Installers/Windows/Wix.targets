@@ -24,6 +24,18 @@
     <GuidInputs>$(Version);$(Platform);$(VersionSuffix);$(_BuildNumberLabels)</GuidInputs>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)" />
+  </ItemGroup>
+  
+  <PropertyGroup>
+    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)\tools\netcoreapp2.0\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
+    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)\tools\net472\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
+  </PropertyGroup>
+
+  <UsingTask TaskName="CreateLightCommandPackageDrop" AssemblyFile="$(MicrosoftDotNetBuildTasksInstallersTaskAssembly)" />
+  <UsingTask TaskName="CreateLitCommandPackageDrop" AssemblyFile="$(MicrosoftDotNetBuildTasksInstallersTaskAssembly)" />
+
   <Target Name="GenerateGUIDs" BeforeTargets="BeforeBuild" DependsOnTargets="_GeneratePackageGuids;_GenerateBundleGuids" Condition=" '$(DisableGuidGeneration)' != 'true' " />
 
   <Target Name="_GeneratePackageGuids" Condition="'$(OutputType)' == 'package'">
@@ -70,6 +82,29 @@
       <_cabs Include="$(TargetDir)**/*.cab" />
     </ItemGroup>
     <Copy SourceFiles="@(_cabs)" DestinationFolder="$(InstallersOutputPath)" />
+  </Target>
+
+  <Target Name="CreateWixPackageDrop" AfterTargets="Build">
+    <CreateLightCommandPackageDrop
+      LightCommandWorkingDir="$(WixCommandObjDir)"
+      NoLogo="true"
+      Cultures="en-us"
+      Out="$(InstallersOutputPath)$(PackageFileName)"
+      AdditionalBasePaths="$(MSBuildProjectDirectory)"
+      WixExtensions="@(WixExtension)"
+      Loc="@(EmbeddedResource)"
+      Sice="$(SuppressIces)"
+      WixProjectFile="$(MSBuildProjectFile)"
+      Fv="true"
+      WixSrcFiles="@(CompileObjOutput);@(WixObject);@(WixLibProjects);@(_ResolvedWixLibraryPaths)">
+      <Output TaskParameter="LightCommandPackageNameOutput" PropertyName="_LightCommandPackageNameOutput" />
+    </CreateLightCommandPackageDrop>
+    <MakeDir Directories="$(WixCommandPackagesDir)" />
+
+    <ZipDirectory
+      DestinationFile="$(WixCommandPackagesDir)/LightCommandPackage-$(_LightCommandPackageNameOutput).zip"
+      SourceDirectory="$(WixCommandObjDir)/$(_LightCommandPackageNameOutput)"
+      Overwrite="true" />
   </Target>
 
 </Project>

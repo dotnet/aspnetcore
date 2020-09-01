@@ -63,8 +63,8 @@ sync
 exit_code=0
 echo "Restore: $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources..."
 $DOTNET_ROOT/dotnet restore RunTests/RunTests.csproj --source https://api.nuget.org/v3/index.json --ignore-failed-sources
-echo "Running tests: $DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --sdk $2 --runtime $3 --queue $4 --arch $5 --quarantined $6 --ef $7 --aspnetruntime $8 --aspnetref $9 --helixTimeout ${10}..."
-$DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --sdk $2 --runtime $3 --queue $4 --arch $5 --quarantined $6 --ef $7 --aspnetruntime $8 --aspnetref $9 --helixTimeout ${10}
+echo "Running tests: $DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $5 --arch $6 --quarantined $7 --ef $8 --aspnetruntime $9 --aspnetref ${10} --helixTimeout ${11}"
+$DOTNET_ROOT/dotnet run --project RunTests/RunTests.csproj -- --target $1 --runtime $4 --queue $5 --arch $6 --quarantined $7 --ef $8 --aspnetruntime $9 --aspnetref ${10} --helixTimeout ${11}
 exit_code=$?
 echo "Finished tests...exit_code=$exit_code"
 

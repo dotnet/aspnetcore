@@ -19,8 +19,6 @@ import java.util.TreeMap;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
 class MessagePackHubProtocolTest {
     private MessagePackHubProtocol messagePackHubProtocol = new MessagePackHubProtocol();
 

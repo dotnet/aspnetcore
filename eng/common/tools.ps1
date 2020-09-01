@@ -57,6 +57,15 @@ set-strictmode -version 2.0
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
+# If specified, provides an alternate path for getting .NET Core SDKs and Runtimes. This script will still try public sources first.
+[string]$runtimeSourceFeed = if (Test-Path variable:runtimeSourceFeed) { $runtimeSourceFeed } else { $null }
+# Base-64 encoded SAS token that has permission to storage container described by $runtimeSourceFeed
+[string]$runtimeSourceFeedKey = if (Test-Path variable:runtimeSourceFeedKey) { $runtimeSourceFeedKey } else { $null }
+
+# If false, use copy of dotnet-install from /eng/common/dotnet-install-scripts (for custom behaviors).
+# otherwise will fetch from public location.
+[bool]$useDefaultDotnetInstall = if (Test-Path variable:useDefaultDotnetInstall) { $useDefaultDotnetInstall } else { $false }
+
 function Create-Directory ([string[]] $path) {
     New-Item -Path $path -Force -ItemType 'Directory' | Out-Null
 }
@@ -188,37 +197,46 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
 function GetDotNetInstallScript([string] $dotnetRoot) {
   $installScript = Join-Path $dotnetRoot 'dotnet-install.ps1'
   if (!(Test-Path $installScript)) {
-    Create-Directory $dotnetRoot
-    $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
+    create-directory $dotnetroot
 
-    $maxRetries = 5
-    $retries = 1
+    if ($useDefaultDotnetInstall)
+    {
+      $progresspreference = 'silentlycontinue' # don't display the console progress ui - it's a huge perf hit
 
-    $uri = "https://dot.net/$dotnetInstallScriptVersion/dotnet-install.ps1"
+      $maxretries = 5
+      $retries = 1
 
-    while($true) {
-      try {
-        Write-Host "GET $uri"
-        Invoke-WebRequest $uri -OutFile $installScript
-        break
+      $uri = "https://dot.net/$dotnetinstallscriptversion/dotnet-install.ps1"
+
+      while($true) {
+        try {
+          write-host "get $uri"
+          invoke-webrequest $uri -outfile $installscript
+          break
+        }
+        catch {
+          write-host "failed to download '$uri'"
+          write-error $_.exception.message -erroraction continue
+        }
+
+        if (++$retries -le $maxretries) {
+          $delayinseconds = [math]::pow(2, $retries) - 1 # exponential backoff
+          write-host "retrying. waiting for $delayinseconds seconds before next attempt ($retries of $maxretries)."
+          start-sleep -seconds $delayinseconds
+        }
+        else {
+          throw "unable to download file in $maxretries attempts."
+        }
       }
-      catch {
-        Write-Host "Failed to download '$uri'"
-        Write-Error $_.Exception.Message -ErrorAction Continue
-      }
-
-      if (++$retries -le $maxRetries) {
-        $delayInSeconds = [math]::Pow(2, $retries) - 1 # Exponential backoff
-        Write-Host "Retrying. Waiting for $delayInSeconds seconds before next attempt ($retries of $maxRetries)."
-        Start-Sleep -Seconds $delayInSeconds
-      }
-      else {
-        throw "Unable to download file in $maxRetries attempts."
-      }
-
+    }
+    else
+    {
+      # Use a special version of the script from eng/common that understands the existence of a "productVersion.txt" in a dotnet path.
+      # See https://github.com/dotnet/arcade/issues/6047 for details
+      $engCommonCopy = Resolve-Path (Join-Path $PSScriptRoot 'dotnet-install-scripts\dotnet-install.ps1')
+      Copy-Item $engCommonCopy -Destination $installScript -Force
     }
   }
-
   return $installScript
 }
 
@@ -250,10 +268,8 @@ function InstallDotNet([string] $dotnetRoot,
     & $installScript @installParameters
   }
   catch {
-    Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install dotnet runtime '$runtime' from public location."
-
-    # Only the runtime can be installed from a custom [private] location.
-    if ($runtime -and ($runtimeSourceFeed -or $runtimeSourceFeedKey)) {
+    if ($runtimeSourceFeed -or $runtimeSourceFeedKey) {
+      Write-Host "Failed to install dotnet from public location. Trying from '$runtimeSourceFeed'"
       if ($runtimeSourceFeed) { $installParameters.AzureFeed = $runtimeSourceFeed }
 
       if ($runtimeSourceFeedKey) {
@@ -266,10 +282,11 @@ function InstallDotNet([string] $dotnetRoot,
         & $installScript @installParameters
       }
       catch {
-        Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install dotnet runtime '$runtime' from custom location '$runtimeSourceFeed'."
+        Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install dotnet from custom location '$runtimeSourceFeed'."
         ExitWithExitCode 1
       }
     } else {
+      Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Failed to install dotnet from public location."
       ExitWithExitCode 1
     }
   }
@@ -604,11 +621,7 @@ function MSBuild() {
   if ($pipelinesLog) {
     $buildTool = InitializeBuildTool
 
-    # Work around issues with Azure Artifacts credential provider
-    # https://github.com/dotnet/arcade/issues/3932
     if ($ci -and $buildTool.Tool -eq 'dotnet') {
-      dotnet nuget locals http-cache -c
-
       $env:NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS = 20
       $env:NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS = 20
       Write-PipelineSetVariable -Name 'NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS' -Value '20'
