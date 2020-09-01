@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Text.Json;
 using Microsoft.JSInterop.Infrastructure;
 using WebAssembly.JSInterop;
@@ -13,16 +14,6 @@ namespace Microsoft.JSInterop.WebAssembly
     /// </summary>
     public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalledRuntime
     {
-        /// <summary>
-        /// Initializes a new instance of <see cref="WebAssemblyJSRuntime"/>.
-        /// </summary>
-        protected WebAssemblyJSRuntime()
-        {
-            // TODO: Make JSObjectReferenceJsonConverter shared code.
-            JsonSerializerOptions.Converters.Add(new JSObjectReferenceJsonConverter<IJSUnmarshalledObjectReference, WebAssemblyJSObjectReference>(
-                id => new WebAssemblyJSObjectReference(this, id)));
-        }
-
         /// <inheritdoc />
         protected override string InvokeJS(string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
         {
@@ -72,14 +63,30 @@ namespace Microsoft.JSInterop.WebAssembly
 
         internal TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2, long targetInstanceId)
         {
+            var resultType = JSCallResultTypeHelper.FromGeneric<TResult>();
+
             var callInfo = new JSCallInfo
             {
                 FunctionIdentifier = identifier,
                 TargetInstanceId = targetInstanceId,
-                ResultType = JSCallResultTypeHelper.FromGeneric<TResult>()
+                ResultType = resultType,
             };
 
-            var result = InternalCalls.InvokeJS<T0, T1, T2, TResult>(out var exception, ref callInfo, arg0, arg1, arg2);
+            string exception;
+            TResult result;
+
+            switch (resultType)
+            {
+                case JSCallResultType.Default:
+                    result = InternalCalls.InvokeJS<T0, T1, T2, TResult>(out exception, ref callInfo, arg0, arg1, arg2);
+                    break;
+                case JSCallResultType.JSObjectReference:
+                    var id = InternalCalls.InvokeJS<T0, T1, T2, int>(out exception, ref callInfo, arg0, arg1, arg2);
+                    result = (TResult)(object)new WebAssemblyJSObjectReference(this, id);
+                    break;
+                default:
+                    throw new InvalidOperationException($"Invalid result type '{resultType}'.");
+            }
 
             return exception != null
                 ? throw new JSException(exception)

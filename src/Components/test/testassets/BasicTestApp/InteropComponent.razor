@@ -194,6 +194,14 @@
 
         var jsInProcObjectReference = inProcRuntime.Invoke<IJSInProcessObjectReference>("returnJSObjectReference");
         ReturnValues["jsInProcessObjectReference.identity"] = jsInProcObjectReference.Invoke<string>("identity", "Invoked from JSInProcessObjectReference");
+
+        var unmarshalledRuntime = (IJSUnmarshalledRuntime)JSRuntime;
+        var jsUnmarshalledReference = unmarshalledRuntime.InvokeUnmarshalled<IJSUnmarshalledObjectReference>("returnJSObjectReference");
+        ReturnValues["jsUnmarshalledObjectReference.unmarshalledFunction"] = jsUnmarshalledReference.InvokeUnmarshalled<InteropStruct, bool>("unmarshalledFunction", new InteropStruct
+        {
+            Message = "Sent from .NET",
+            NumberField = 42,
+        }).ToString();
     }
 
     public class PassDotNetObjectByRefArgs
