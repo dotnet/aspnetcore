@@ -169,7 +169,7 @@ IN_PROCESS_APPLICATION::LoadManagedApplication(ErrorContext& errorContext)
         errorContext.errorReason = format("ASP.NET Core app failed to start after %d milliseconds", m_pConfig->QueryStartupTimeLimitInMS());
 
         m_waitForShutdown = false;
-        if (m_pConfig->QueryDisableRecycleOnStartupTimeout())
+        if (m_pConfig->QuerySuppressRecycleOnStartupTimeout())
         {
             StopClr();
         }

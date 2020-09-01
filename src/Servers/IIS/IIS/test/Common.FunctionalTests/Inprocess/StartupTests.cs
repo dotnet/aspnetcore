@@ -497,7 +497,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                 deploymentParameters.TransformArguments((a, _) => $"{a} Hang");
                 deploymentParameters.WebConfigActionList.Add(
                     WebConfigHelpers.AddOrModifyAspNetCoreSection("startupTimeLimit", "1"));
-                deploymentParameters.HandlerSettings["disableRecycleOnStartupTimeout"] = "true";
+                deploymentParameters.HandlerSettings["suppressRecycleOnStartupTimeout"] = "true";
                 var deploymentResult = await DeployAsync(deploymentParameters);
 
                 var response = await deploymentResult.HttpClient.GetAsync("/");

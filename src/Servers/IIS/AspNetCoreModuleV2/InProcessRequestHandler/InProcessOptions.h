@@ -119,9 +119,9 @@ public:
     }
 
     bool
-    QueryDisableRecycleOnStartupTimeout() const
+    QuerySuppressRecycleOnStartupTimeout() const
     {
-        return m_fDisableRecycleOnStartupTimeout;
+        return m_fSuppressRecycleOnStartupTimeout;
     }
 
     InProcessOptions(const ConfigurationSource &configurationSource, IHttpSite* pSite);
@@ -145,7 +145,7 @@ private:
     bool                           m_fWindowsAuthEnabled;
     bool                           m_fBasicAuthEnabled;
     bool                           m_fAnonymousAuthEnabled;
-    bool                           m_fDisableRecycleOnStartupTimeout;
+    bool                           m_fSuppressRecycleOnStartupTimeout;
     DWORD                          m_dwStartupTimeLimitInMS;
     DWORD                          m_dwShutdownTimeLimitInMS;
     DWORD                          m_dwMaxRequestBodySize;
