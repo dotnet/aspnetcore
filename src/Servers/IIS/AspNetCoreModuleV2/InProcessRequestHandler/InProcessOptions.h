@@ -118,6 +118,12 @@ public:
         return m_strStackSize;
     }
 
+    bool
+    QueryDisableRecycleOnStartupTimeout() const
+    {
+        return m_fDisableRecycleOnStartupTimeout;
+    }
+
     InProcessOptions(const ConfigurationSource &configurationSource, IHttpSite* pSite);
 
     static
@@ -139,6 +145,7 @@ private:
     bool                           m_fWindowsAuthEnabled;
     bool                           m_fBasicAuthEnabled;
     bool                           m_fAnonymousAuthEnabled;
+    bool                           m_fDisableRecycleOnStartupTimeout;
     DWORD                          m_dwStartupTimeLimitInMS;
     DWORD                          m_dwShutdownTimeLimitInMS;
     DWORD                          m_dwMaxRequestBodySize;
