@@ -12,7 +12,7 @@ namespace System.Net.Quic.Implementations
 
         internal abstract IPEndPoint LocalEndPoint { get; }
 
-        internal abstract IPEndPoint RemoteEndPoint { get; }
+        internal abstract EndPoint RemoteEndPoint { get; }
 
         internal abstract ValueTask ConnectAsync(CancellationToken cancellationToken = default);
 

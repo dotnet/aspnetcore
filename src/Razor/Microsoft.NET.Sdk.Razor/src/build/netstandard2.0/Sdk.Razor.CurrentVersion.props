@@ -78,6 +78,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     This property affects C# projects targeting 3.0 or later.
     -->
     <RazorUpToDateReloadFileTypes>.cs;.razor;.resx;.cshtml</RazorUpToDateReloadFileTypes>
+
+    <!--
+    Target used by dotnet-watch to resolve additional items.
+    -->
+    <CustomCollectWatchItems>$(CustomCollectWatchItems);_RazorSdkCustomCollectWatchItems</CustomCollectWatchItems>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">

@@ -9,10 +9,7 @@
   <!--#if (OrganizationalAuth || IndividualB2CAuth || EnableOpenAPI) -->
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="${MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion}" NoWarn="NU1605" Condition="'$(OrganizationalAuth)' == 'True' OR '$(IndividualB2CAuth)' == 'True'"/>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="${MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion}" NoWarn="NU1605" Condition="'$(OrganizationalAuth)' == 'True' OR '$(IndividualB2CAuth)' == 'True'"/>
     <PackageReference Include="Microsoft.Identity.Web" Version="${MicrosoftIdentityWebPackageVersion}" Condition="'$(OrganizationalAuth)' == 'True' OR '$(IndividualB2CAuth)' == 'True'"/>
-    <PackageReference Include="Microsoft.Graph" Version="${MicrosoftGraphPackageVersion}" Condition="'$(GenerateGraph)' == 'True'"/>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="${SwashbuckleAspNetCorePackageVersion}" Condition="'$(EnableOpenAPI)' == 'True'" />
   </ItemGroup>
   <!--#endif -->

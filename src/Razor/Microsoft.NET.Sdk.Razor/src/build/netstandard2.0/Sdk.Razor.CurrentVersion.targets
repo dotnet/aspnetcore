@@ -38,9 +38,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Resolve the RazorLangVersion based on values imported or TFM. -->
   <PropertyGroup>
-    <_TargetFrameworkVersionWithoutV>$(TargetFrameworkVersion.TrimStart('vV'))</_TargetFrameworkVersionWithoutV>
-    <_TargetingNETCoreApp30OrLater Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' >= '3.0'">true</_TargetingNETCoreApp30OrLater>
-    <_TargetingNET50OrLater Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' >= '5.0'">true</_TargetingNET50OrLater>
+    <_TargetingNETCoreApp30OrLater Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND
+      $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '3.0')) ">true</_TargetingNETCoreApp30OrLater>
+    <_TargetingNET50OrLater Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND
+      $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '5.0')) ">true</_TargetingNET50OrLater>
 
     <!--
       Infer the RazorLangVersion if no value was specified. When adding support for newer target frameworks, list newer language versions first.
@@ -227,7 +228,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <CopyRefAssembliesToPublishDirectory Condition="'$(CopyRefAssembliesToPublishDirectory)'==''">$(PreserveCompilationReferences)</CopyRefAssembliesToPublishDirectory>
 
     <!-- For 2.x projects desktop and .NET Core projects, if they're opting in to runtime compilation (indicated by PreserveCompilationContext=true), set PreserveCompilationReferences = true -->
-    <PreserveCompilationReferences Condition="'$(PreserveCompilationContext)' == 'true' AND (('$(TargetFrameworkIdentifier)' == '.NETFramework') OR ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' &lt; '3.0'))">true</PreserveCompilationReferences>
+    <PreserveCompilationReferences Condition=" '$(PreserveCompilationContext)' == 'true' AND
+      ('$(TargetFrameworkIdentifier)' == '.NETFramework' OR
+       ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND
+        '$(_TargetingNETCoreApp30OrLater)' != 'true')) ">true</PreserveCompilationReferences>
 
     <!--
       We can't set the actual default value here due to evaluation order (depends on $(OutDir)).
@@ -327,12 +331,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <UpToDateCheckBuilt Include="@(RazorIntermediateAssembly)"
       Condition="'$(RazorCompileOnBuild)'=='true' AND '@(Content->WithMetadataValue('Extension', '.cshtml'))' != ''" Set="RazorViews" />
-
-    <!-- Set up watchers for dotnet-watch -->
-    <Watch Include="@(Content->WithMetadataValue('Extension', '.razor'))" />
-
-    <Watch Include="@(Content->WithMetadataValue('Extension', '.cshtml'))"
-      Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(AddCshtmlFilesToDotNetWatchList)' != 'false'" />
   </ItemGroup>
 
   <!--
@@ -868,6 +866,15 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Example, c:\MyProjects\MyProject\bin\debug\MyAssembly.Views.dll -->
       <RazorTargetPath Condition=" '$(RazorTargetPath)' == '' ">$(RazorTargetDir)$(RazorTargetName).dll</RazorTargetPath>
     </PropertyGroup>
+  </Target>
+
+  <Target Name="_RazorSdkCustomCollectWatchItems">
+    <ItemGroup>
+      <Watch Include="%(Content.FullPath)" Condition="'%(Content.Extension)' == '.razor' AND '%(Content.Watch)' != 'false'" />
+      <Watch Include="%(Content.FullPath)" Condition="'%(Content.Extension)' == '.razor.css' AND '%(Content.Watch)' != 'false'" />
+      <Watch Include="%(Content.FullPath)"
+        Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(AddCshtmlFilesToDotNetWatchList)' != 'false' AND '%(Content.Extension)' == '.cshtml' AND '%(Content.Watch)' != 'false'" />
+    </ItemGroup>
   </Target>
 
   <PropertyGroup Condition="'$(RazorDesignTimeTargets)'==''">

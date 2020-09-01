@@ -30,8 +30,6 @@ rm -rf $TIZEN_TMP_DIR
 
 # Configure Tizen rootfs
 echo ">>Start configuring Tizen rootfs"
-rm ./usr/lib/libunwind.so
-ln -s libunwind.so.8 ./usr/lib/libunwind.so
 ln -sfn asm-arm ./usr/include/asm
 patch -p1 < $__TIZEN_CROSSDIR/tizen.patch
 echo "<<Finish configuring Tizen rootfs"

@@ -21,13 +21,25 @@ else
 }
 
 @code {
+    private HttpResponseMessage response;
     private string apiResult;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            apiResult = await downstreamAPI.CallWebApiAsync("me");
+            response = await downstreamAPI.CallWebApiForUserAsync(
+                    "DownstreamApi",
+                    options => options.RelativePath = "");
+
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                apiResult = await response.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                apiResult = "Failed to call the web API";
+            }
         }
         catch (Exception ex)
         {

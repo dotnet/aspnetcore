@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using BasicTestApp;
+using BasicTestApp.FormsTest;
 using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -15,7 +16,7 @@ using OpenQA.Selenium.Support.Extensions;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETests.Tests
+namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class InputFileTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>, IDisposable
     {
@@ -137,6 +138,45 @@ namespace Microsoft.AspNetCore.Components.E2ETests.Tests
 
             Browser.Equal(480, () => uploadedImage.Size.Width);
             Browser.Equal(480, () => uploadedImage.Size.Height);
+        }
+
+        [Fact]
+        public void ThrowsWhenTooManyFilesAreSelected()
+        {
+            var maxAllowedFilesElement = Browser.FindElement(By.Id("max-allowed-files"));
+            maxAllowedFilesElement.Clear();
+            maxAllowedFilesElement.SendKeys("1\n");
+
+            // Save two files locally
+            var file1 = TempFile.Create(_tempDirectory, "txt", "This is file 1.");
+            var file2 = TempFile.Create(_tempDirectory, "txt", "This is file 2.");
+
+            // Select both files
+            var inputFile = Browser.FindElement(By.Id("input-file"));
+            inputFile.SendKeys($"{file1.Path}\n{file2.Path}");
+
+            // Validate that the proper exception is thrown
+            var exceptionMessage = Browser.FindElement(By.Id("exception-message"));
+            Browser.Equal("The maximum number of files accepted is 1, but 2 were supplied.", () => exceptionMessage.Text);
+        }
+
+        [Fact]
+        public void ThrowsWhenOversizedFileIsSelected()
+        {
+            var maxFileSizeElement = Browser.FindElement(By.Id("max-file-size"));
+            maxFileSizeElement.Clear();
+            maxFileSizeElement.SendKeys("10\n");
+
+            // Save a file that exceeds the specified file size limit
+            var file = TempFile.Create(_tempDirectory, "txt", "This file is over 10 bytes long.");
+
+            // Select the file
+            var inputFile = Browser.FindElement(By.Id("input-file"));
+            inputFile.SendKeys(file.Path);
+
+            // Validate that the proper exception is thrown
+            var exceptionMessage = Browser.FindElement(By.Id("exception-message"));
+            Browser.Equal("Supplied file with size 32 bytes exceeds the maximum of 10 bytes.", () => exceptionMessage.Text);
         }
 
         public void Dispose()

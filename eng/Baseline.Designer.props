@@ -8,12 +8,10 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'AspNetCoreRuntime.3.0.x64' ">
     <BaselinePackageVersion>3.0.3</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'AspNetCoreRuntime.3.0.x64' AND '$(TargetFramework)' == 'net461' " />
   <!-- Package: AspNetCoreRuntime.3.0.x86-->
   <PropertyGroup Condition=" '$(PackageId)' == 'AspNetCoreRuntime.3.0.x86' ">
     <BaselinePackageVersion>3.0.3</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'AspNetCoreRuntime.3.0.x86' AND '$(TargetFramework)' == 'net461' " />
   <!-- Package: dotnet-sql-cache-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-sql-cache' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
@@ -29,7 +27,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ApiAuthorization.IdentityServer' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ApiAuthorization.IdentityServer' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ApiAuthorization.IdentityServer' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[3.1.7, )" />
@@ -48,7 +46,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureAD.UI' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureAD.UI' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureAD.UI' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="[3.1.7, )" />
   </ItemGroup>
@@ -56,7 +54,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureADB2C.UI' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureADB2C.UI' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.AzureADB2C.UI' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="[3.1.7, )" />
   </ItemGroup>
@@ -64,53 +62,48 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Certificate' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Certificate' AND '$(TargetFramework)' == 'netcoreapp3.1' " />
   <!-- Package: Microsoft.AspNetCore.Authentication.Facebook-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Facebook' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Facebook' AND '$(TargetFramework)' == 'netcoreapp3.1' " />
   <!-- Package: Microsoft.AspNetCore.Authentication.Google-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Google' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Google' AND '$(TargetFramework)' == 'netcoreapp3.1' " />
   <!-- Package: Microsoft.AspNetCore.Authentication.JwtBearer-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.JwtBearer' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.JwtBearer' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.JwtBearer' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="[5.5.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.MicrosoftAccount-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.MicrosoftAccount' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.MicrosoftAccount' AND '$(TargetFramework)' == 'netcoreapp3.1' " />
   <!-- Package: Microsoft.AspNetCore.Authentication.Negotiate-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Negotiate' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Negotiate' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Negotiate' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[3.1.7, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.OpenIdConnect-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.OpenIdConnect' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.OpenIdConnect' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.OpenIdConnect' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="[5.5.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Twitter-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Twitter' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Twitter' AND '$(TargetFramework)' == 'netcoreapp3.1' " />
   <!-- Package: Microsoft.AspNetCore.Authentication.WsFederation-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.WsFederation' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.WsFederation' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.WsFederation' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.IdentityModel.Protocols.WsFederation" Version="[5.5.0, )" />
     <BaselinePackageReference Include="System.IdentityModel.Tokens.Jwt" Version="[5.5.0, )" />
   </ItemGroup>
@@ -118,7 +111,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authorization' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Metadata" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.7, )" />
@@ -132,7 +125,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="[3.1.7, )" />
   </ItemGroup>
@@ -147,7 +140,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServicesIntegration' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServicesIntegration' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServicesIntegration' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="[3.1.7, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Components-->
@@ -160,7 +153,7 @@
     <BaselinePackageReference Include="Microsoft.JSInterop" Version="[3.1.7, )" />
     <BaselinePackageReference Include="System.ComponentModel.Annotations" Version="[4.7.0, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Analyzers" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.JSInterop" Version="[3.1.7, )" />
@@ -173,7 +166,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Authorization' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Authorization' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Authorization' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Components" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization" Version="[3.1.7, )" />
   </ItemGroup>
@@ -185,7 +178,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Forms' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Forms' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Forms' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Components" Version="[3.1.7, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Forms' AND '$(TargetFramework)' == 'netstandard2.0' ">
@@ -196,7 +189,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Web' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Web' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.Web' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Components" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Components.Forms" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[3.1.7, )" />
@@ -230,7 +223,6 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly.Server' ">
     <BaselinePackageVersion>3.2.1</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly.Server' AND '$(TargetFramework)' == 'netcoreapp3.1' " />
   <!-- Package: Microsoft.AspNetCore.Components.WebAssembly.Authentication-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly.Authentication' ">
     <BaselinePackageVersion>3.2.1</BaselinePackageVersion>
@@ -243,7 +235,6 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly.HttpHandler' ">
     <BaselinePackageVersion>3.2.1</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Components.WebAssembly.HttpHandler' AND '$(TargetFramework)' == 'netstandard2.1' " />
   <!-- Package: Microsoft.JSInterop.WebAssembly-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.JSInterop.WebAssembly' ">
     <BaselinePackageVersion>3.2.1</BaselinePackageVersion>
@@ -255,7 +246,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ConcurrencyLimiter' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ConcurrencyLimiter' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ConcurrencyLimiter' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.7, )" />
   </ItemGroup>
@@ -263,7 +254,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Features" Version="[3.1.7, )" />
     <BaselinePackageReference Include="System.IO.Pipelines" Version="[4.7.1, )" />
   </ItemGroup>
@@ -280,8 +271,6 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.Internal' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.Internal' AND '$(TargetFramework)' == 'netcoreapp3.1' " />
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.Internal' AND '$(TargetFramework)' == 'netstandard2.0' " />
   <!-- Package: Microsoft.AspNetCore.Cryptography.KeyDerivation-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.KeyDerivation' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
@@ -289,7 +278,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.KeyDerivation' AND '$(TargetFramework)' == 'netcoreapp2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[3.1.7, )" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.KeyDerivation' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.KeyDerivation' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[3.1.7, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Cryptography.KeyDerivation' AND '$(TargetFramework)' == 'netstandard2.0' ">
@@ -299,7 +288,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.Internal" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.7, )" />
@@ -324,8 +313,6 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Abstractions' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Abstractions' AND '$(TargetFramework)' == 'netcoreapp3.1' " />
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' " />
   <!-- Package: Microsoft.AspNetCore.DataProtection.AzureKeyVault-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.AzureKeyVault' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
@@ -356,7 +343,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Extensions' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Extensions' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.DataProtection.Extensions' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.DataProtection" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[3.1.7, )" />
   </ItemGroup>
@@ -376,14 +363,14 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[3.1.7, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.HeaderPropagation-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HeaderPropagation' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HeaderPropagation' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HeaderPropagation' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Http" Version="[3.1.7, )" />
   </ItemGroup>
@@ -391,7 +378,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting.WindowsServices' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting.WindowsServices' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Hosting.WindowsServices' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="System.ServiceProcess.ServiceController" Version="[4.7.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Connections.Client-->
@@ -412,7 +399,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[3.1.7, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' AND '$(TargetFramework)' == 'netstandard2.0' ">
@@ -423,7 +410,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Features' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Features' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Features' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[3.1.7, )" />
     <BaselinePackageReference Include="System.IO.Pipelines" Version="[4.7.1, )" />
   </ItemGroup>
@@ -435,7 +422,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.EntityFrameworkCore' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.EntityFrameworkCore' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.EntityFrameworkCore' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.Extensions.Identity.Stores" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="[3.1.7, )" />
   </ItemGroup>
@@ -447,7 +434,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.Specification.Tests' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.Specification.Tests' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.Specification.Tests' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.7, )" />
@@ -458,7 +445,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.UI' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.UI' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Identity.UI' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.Extensions.Identity.Stores" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[12.0.2, )" />
@@ -475,20 +462,18 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Metadata' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Metadata' AND '$(TargetFramework)' == 'netcoreapp3.1' " />
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Metadata' AND '$(TargetFramework)' == 'netstandard2.0' " />
   <!-- Package: Microsoft.AspNetCore.MiddlewareAnalysis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.MiddlewareAnalysis' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.MiddlewareAnalysis' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.MiddlewareAnalysis' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[3.1.7, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.NewtonsoftJson-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.NewtonsoftJson' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.NewtonsoftJson' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.NewtonsoftJson' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[12.0.2, )" />
     <BaselinePackageReference Include="Newtonsoft.Json.Bson" Version="[1.0.2, )" />
@@ -497,7 +482,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.CodeAnalysis.Razor" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyModel" Version="[3.1.3, )" />
@@ -506,7 +491,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Testing' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Testing' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Testing' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.TestHost" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.DependencyModel" Version="[3.1.3, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Hosting" Version="[3.1.7, )" />
@@ -515,7 +500,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.NodeServices' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.NodeServices' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.NodeServices' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Console" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Newtonsoft.Json" Version="[12.0.2, )" />
   </ItemGroup>
@@ -523,12 +508,11 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Owin' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Owin' AND '$(TargetFramework)' == 'netcoreapp3.1' " />
   <!-- Package: Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Libuv" Version="[1.10.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[3.1.7, )" />
@@ -565,7 +549,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.7, )" />
   </ItemGroup>
@@ -578,7 +562,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[3.1.7, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' AND '$(TargetFramework)' == 'netstandard2.0' ">
@@ -604,7 +588,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Specification.Tests' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Specification.Tests' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Specification.Tests' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" Version="[3.1.7, )" />
@@ -616,7 +600,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.StackExchangeRedis' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.StackExchangeRedis' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.StackExchangeRedis' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="MessagePack" Version="[1.7.3.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.7, )" />
     <BaselinePackageReference Include="StackExchange.Redis" Version="[2.0.593, )" />
@@ -625,14 +609,14 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.NodeServices" Version="[3.1.7, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SpaServices.Extensions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices.Extensions' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices.Extensions' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices.Extensions' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.SpaServices" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="[3.1.7, )" />
   </ItemGroup>
@@ -640,7 +624,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.TestHost' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.TestHost' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.TestHost' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="System.IO.Pipelines" Version="[4.7.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.dotnet-openapi-->
@@ -684,7 +668,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Core' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Core' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Core' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[3.1.7, )" />
@@ -698,7 +682,7 @@
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' ">
     <BaselinePackageVersion>3.1.7</BaselinePackageVersion>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' AND '$(TargetFramework)' == 'netcoreapp3.1' ">
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.1') ">
     <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[3.1.7, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[3.1.7, )" />

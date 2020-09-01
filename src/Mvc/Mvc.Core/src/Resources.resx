@@ -534,4 +534,7 @@
   <data name="ValidationStrategy_MappedPropertyNotFound" xml:space="preserve">
     <value>No property found that maps to constructor parameter '{0}' for type '{1}'. Validation requires that each bound parameter of a record type's primary constructor must have a property to read the value.</value>
   </data>
+  <data name="TryUpdateModel_RecordTypeNotSupported" xml:space="preserve">
+    <value>{0} cannot update a record type model. If a '{1}' must be updated, include it in an object type.</value>
+  </data>
 </root>
