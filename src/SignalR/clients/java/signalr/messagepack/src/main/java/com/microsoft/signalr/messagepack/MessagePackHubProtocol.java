@@ -38,7 +38,6 @@ import com.microsoft.signalr.PingMessage;
 import com.microsoft.signalr.StreamBindingFailureMessage;
 import com.microsoft.signalr.StreamInvocationMessage;
 import com.microsoft.signalr.StreamItem;
-import com.microsoft.signalr.TransferFormat;
 
 public class MessagePackHubProtocol implements HubProtocol {
     
@@ -57,11 +56,6 @@ public class MessagePackHubProtocol implements HubProtocol {
     @Override
     public int getVersion() {
         return 1;
-    }
-
-    @Override
-    public TransferFormat getTransferFormat() {
-        return TransferFormat.BINARY;
     }
 
     @Override

@@ -12,7 +12,6 @@ import java.util.List;
 public interface HubProtocol {
     String getName();
     int getVersion();
-    TransferFormat getTransferFormat();
 
     /**
      * Creates a new list of {@link HubMessage}s.

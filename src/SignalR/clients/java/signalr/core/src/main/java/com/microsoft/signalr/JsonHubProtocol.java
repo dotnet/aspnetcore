@@ -35,11 +35,6 @@ class JsonHubProtocol implements HubProtocol {
     }
 
     @Override
-    public TransferFormat getTransferFormat() {
-        return TransferFormat.TEXT;
-    }
-
-    @Override
     public List<HubMessage> parseMessages(ByteBuffer payload, InvocationBinder binder) {
         String payloadStr;
         // If the payload is readOnly, we have to copy the bytes from its array to make the payload string

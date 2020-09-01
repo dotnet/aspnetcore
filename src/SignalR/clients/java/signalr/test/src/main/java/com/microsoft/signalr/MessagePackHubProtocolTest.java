@@ -33,11 +33,6 @@ class MessagePackHubProtocolTest {
     public void checkVersionNumber() {
         assertEquals(1, messagePackHubProtocol.getVersion());
     }
-
-    @Test
-    public void checkTransferFormat() {
-        assertEquals(TransferFormat.BINARY, messagePackHubProtocol.getTransferFormat());
-    }
     
     @Test
     public void verifyWriteInvocationMessage() {

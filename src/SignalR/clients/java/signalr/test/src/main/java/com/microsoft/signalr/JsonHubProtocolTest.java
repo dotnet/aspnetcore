@@ -27,11 +27,6 @@ class JsonHubProtocolTest {
     }
 
     @Test
-    public void checkTransferFormat() {
-        assertEquals(TransferFormat.TEXT, jsonHubProtocol.getTransferFormat());
-    }
-
-    @Test
     public void verifyWriteMessage() {
         InvocationMessage invocationMessage = new InvocationMessage(null, null, "test", new Object[] {"42"}, null);
         String result = TestUtils.byteBufferToString(jsonHubProtocol.writeMessage(invocationMessage));
