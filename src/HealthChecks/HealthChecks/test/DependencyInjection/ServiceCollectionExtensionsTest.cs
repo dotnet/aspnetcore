@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -40,6 +41,27 @@ namespace Microsoft.Extensions.DependencyInjection
                     Assert.Null(actual.ImplementationInstance);
                     Assert.Null(actual.ImplementationFactory);
                 });
+        }
+
+        [Fact]
+        public void AddHealthChecks_CallsConfigureOptions()
+        {
+            // Arrange
+            var isCalled = false;
+            var services = new ServiceCollection();
+            services.AddHealthChecks(options =>
+            {
+                isCalled = true;
+            });
+
+            var serviceProvider = services.BuildServiceProvider();
+            var options = serviceProvider.GetService<IOptions<HealthCheckServiceOptions>>();
+
+            // Act
+            _ = options?.Value;
+
+            // Assert
+            Assert.True(isCalled);
         }
 
         [Fact] // see: https://github.com/dotnet/extensions/issues/639
