@@ -52,8 +52,21 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
                 return null;
             }
 
-            var key = new KeyDefinition();
-            _configuration.Bind(key);
+            var key = new KeyDefinition()
+            {
+                Type = _configuration[nameof(KeyDefinition.Type)],
+                FilePath = _configuration[nameof(KeyDefinition.FilePath)],
+                Password = _configuration[nameof(KeyDefinition.Password)],
+                Name = _configuration[nameof(KeyDefinition.Name)],
+                StoreLocation = _configuration[nameof(KeyDefinition.StoreLocation)],
+                StoreName = _configuration[nameof(KeyDefinition.StoreName)],
+                StorageFlags = _configuration[nameof(KeyDefinition.StorageFlags)]
+            };
+
+            if (bool.TryParse(_configuration[nameof(KeyDefinition.Persisted)], out var value))
+            {
+                key.Persisted = value;
+            }
 
             switch (key.Type)
             {
