@@ -50,8 +50,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <GenerateStaticWebAssetsManifestDependsOn>
       ResolveStaticWebAssetsInputs;
-      _CreateStaticWebAssetsInputsCacheFile;
       $(GenerateStaticWebAssetsManifestDependsOn)
+      _CreateStaticWebAssetsInputsCacheFile;
     </GenerateStaticWebAssetsManifestDependsOn>
 
     <GetCurrentProjectStaticWebAssetsDependsOn>
