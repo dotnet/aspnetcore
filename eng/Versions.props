@@ -143,6 +143,8 @@
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>6.0.0-alpha.1.20426.2</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftEntityFrameworkCorePackageVersion>6.0.0-alpha.1.20426.2</MicrosoftEntityFrameworkCorePackageVersion>
     <MicrosoftEntityFrameworkCoreDesignPackageVersion>6.0.0-alpha.1.20426.2</MicrosoftEntityFrameworkCoreDesignPackageVersion>
+    <!-- Packages from dotnet/arcade -->
+    <MicrosoftDotNetBuildTasksInstallersPackageVersion>5.0.0-beta.20431.1</MicrosoftDotNetBuildTasksInstallersPackageVersion>
   </PropertyGroup>
   <!--
 
@@ -220,9 +222,9 @@
     <MicrosoftBuildFrameworkPackageVersion>15.8.166</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildLocatorPackageVersion>1.2.6</MicrosoftBuildLocatorPackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>15.8.166</MicrosoftBuildUtilitiesCorePackageVersion>
-    <MicrosoftCodeAnalysisCommonPackageVersion>3.7.0-4.20351.7</MicrosoftCodeAnalysisCommonPackageVersion>
-    <MicrosoftCodeAnalysisCSharpPackageVersion>3.7.0-4.20351.7</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>3.7.0-4.20351.7</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftCodeAnalysisCommonPackageVersion>3.7.0</MicrosoftCodeAnalysisCommonPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>3.7.0</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>3.7.0</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>3.3.0-beta2.final</MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>
     <MicrosoftCodeAnalysisFxCopAnalyzersPackageVersion>3.0.0</MicrosoftCodeAnalysisFxCopAnalyzersPackageVersion>
     <MicrosoftCssParserPackageVersion>1.0.0-20200708.1</MicrosoftCssParserPackageVersion>
@@ -237,10 +239,10 @@
     <MicrosoftWebAdministrationPackageVersion>11.1.0</MicrosoftWebAdministrationPackageVersion>
     <MicrosoftWebXdtPackageVersion>1.4.0</MicrosoftWebXdtPackageVersion>
     <SystemIdentityModelTokensJwtPackageVersion>6.7.1</SystemIdentityModelTokensJwtPackageVersion>
-    <!-- Packages from 2.1/2.2 branches used for site extension build -->
+    <!-- Packages from 2.1, 2.2, and 3.1 branches used for site extension build. -->
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>2.1.1</MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>2.2.0</MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion>3.1.3-servicing-20163-14</MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion>3.1.7-servicing-20372-13</MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension31x64PackageVersion>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion)</MicrosoftAspNetCoreAzureAppServicesSiteExtension31x64PackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension31x86PackageVersion>$(MicrosoftAspNetCoreAzureAppServicesSiteExtension31PackageVersion)</MicrosoftAspNetCoreAzureAppServicesSiteExtension31x86PackageVersion>
     <!-- 3rd party dependencies -->
