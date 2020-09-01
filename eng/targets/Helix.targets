@@ -16,10 +16,6 @@
     <HelixPreCommand Include="call RunPowershell.cmd InstallNode.ps1 $(NodeVersion) %25HELIX_CORRELATION_PAYLOAD%25\node\bin || exit /b 1" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(IsHelixJob)' == 'true' AND '$(TestDependsOnAspNetRef)' == 'true' AND '$(IsTargetingPackBuilding)' == 'true'">
-    <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Ref.$(AppRuntimeVersion).nupkg" />
-  </ItemGroup>
-
   <ItemGroup Condition="'$(IsHelixJob)' == 'true' AND '$(TestDependsOnAspNetRuntime)' == 'true'">
     <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\*-ci.nupkg" />
   </ItemGroup>
@@ -91,11 +87,23 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
   </Target>
 
   <Target Name="_CreateHelixWorkItem" Condition="$(BuildHelixPayload)">
-
     <ItemGroup>
       <HelixContent Include="$(OutputPath)/Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestAdapter.dll" />
       <HelixContent Include="$(OutputPath)/Microsoft.VisualStudio.TestPlatform.Extension.Xunit.Xml.TestLogger.dll" />
-      <HelixContent Condition="'$(TestDependsOnAspNetRuntime)' == 'true'" Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Runtime.win-x64.$(AppRuntimeVersion).nupkg" />
+    </ItemGroup>
+
+    <!--
+      Could use _GetPackageVersionInfo target (defined in eng/targets/Packaging.targets and included in every C#
+      and F# project) instead of the $(SharedFxVersion) property but the property works everywhere except in site
+      extensions projects. Could also use $(TargetingPackVersion) but that has slightly more complicated semantics
+      and doesn't keep up when in servicing.
+    -->
+    <ItemGroup Condition=" '$(TestDependsOnAspNetRef)' == 'true' AND '$(IsTargetingPackBuilding)' == 'true' ">
+      <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(TestDependsOnAspNetRuntime)' == 'true' ">
+      <HelixContent Include="$(RepoRoot)artifacts\packages\Release\Shipping\Microsoft.AspNetCore.App.Runtime.win-x64.$(SharedFxVersion).nupkg" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -117,8 +125,8 @@ Usage: dotnet msbuild /t:Helix src/MyTestProject.csproj
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <PreCommands>@(HelixPreCommand)</PreCommands>
         <PostCommands>@(HelixPostCommand)</PostCommands>
-        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) Microsoft.AspNetCore.App.Runtime.win-x64.$(AppRuntimeVersion).nupkg Microsoft.AspNetCore.App.Ref.$(AppRuntimeVersion).nupkg $(HelixTimeout)</Command>
-        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) Microsoft.AspNetCore.App.Runtime.win-x64.$(AppRuntimeVersion).nupkg Microsoft.AspNetCore.App.Ref.$(AppRuntimeVersion).nupkg $(HelixTimeout)</Command>
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) Microsoft.AspNetCore.App.Runtime.win-x64.$(SharedFxVersion).nupkg Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg $(HelixTimeout)</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppRuntimeVersion) $(SharedFxVersion) $(_HelixFriendlyNameTargetQueue) $(TargetArchitecture) $(RunQuarantinedTests) $(DotnetEfPackageVersion) Microsoft.AspNetCore.App.Runtime.win-x64.$(SharedFxVersion).nupkg Microsoft.AspNetCore.App.Ref.$(SharedFxVersion).nupkg $(HelixTimeout)</Command>
         <Command Condition="$(HelixCommand) != ''">$(HelixCommand)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>
