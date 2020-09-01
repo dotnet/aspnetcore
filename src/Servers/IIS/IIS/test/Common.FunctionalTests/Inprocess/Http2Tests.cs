@@ -183,6 +183,16 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
                     Assert.Equal(Http2FrameType.DATA, dataFrame.Type);
                     Assert.Equal(1, dataFrame.StreamId);
+
+                    // Some versions send an empty data frame first.
+                    if (dataFrame.PayloadLength == 0)
+                    {
+                        Assert.False(dataFrame.DataEndStream);
+                        dataFrame = await h2Connection.ReceiveFrameAsync();
+                        Assert.Equal(Http2FrameType.DATA, dataFrame.Type);
+                        Assert.Equal(1, dataFrame.StreamId);
+                    }
+
                     Assert.Equal(11, dataFrame.PayloadLength);
                     Assert.Equal("Hello World", Encoding.UTF8.GetString(dataFrame.Payload.Span));
 
@@ -245,6 +255,16 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
                     Assert.Equal(Http2FrameType.DATA, dataFrame.Type);
                     Assert.Equal(1, dataFrame.StreamId);
+
+                    // Some versions send an empty data frame first.
+                    if (dataFrame.PayloadLength == 0)
+                    {
+                        Assert.False(dataFrame.DataEndStream);
+                        dataFrame = await h2Connection.ReceiveFrameAsync();
+                        Assert.Equal(Http2FrameType.DATA, dataFrame.Type);
+                        Assert.Equal(1, dataFrame.StreamId);
+                    }
+
                     Assert.Equal(11, dataFrame.PayloadLength);
                     Assert.Equal("Hello World", Encoding.UTF8.GetString(dataFrame.Payload.Span));
 
@@ -283,6 +303,16 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                     var dataFrame = await h2Connection.ReceiveFrameAsync();
                     Assert.Equal(Http2FrameType.DATA, dataFrame.Type);
                     Assert.Equal(1, dataFrame.StreamId);
+
+                    // Some versions send an empty data frame first.
+                    if (dataFrame.PayloadLength == 0)
+                    {
+                        Assert.False(dataFrame.DataEndStream);
+                        dataFrame = await h2Connection.ReceiveFrameAsync();
+                        Assert.Equal(Http2FrameType.DATA, dataFrame.Type);
+                        Assert.Equal(1, dataFrame.StreamId);
+                    }
+
                     Assert.Equal(11, dataFrame.PayloadLength);
                     Assert.Equal("Hello World", Encoding.UTF8.GetString(dataFrame.Payload.Span));
 
