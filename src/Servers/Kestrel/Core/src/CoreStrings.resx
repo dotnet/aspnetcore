@@ -632,4 +632,16 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="EndpointHasUnusedHttpsConfig" xml:space="preserve">
     <value>The non-HTTPS endpoint {endpointName} includes HTTPS-only configuration for {keyName}.</value>
   </data>
+  <data name="FoundCertWithPrivateKey" xml:space="preserve">
+    <value>Found certificate with private key and thumbprint {Thumbprint} in certificate store {StoreName}.</value>
+  </data>
+  <data name="LocatingCertWithPrivateKey" xml:space="preserve">
+    <value>Searching for certificate with private key and thumbprint {Thumbprint} in the certificate store.</value>
+  </data>
+  <data name="FailedToLocateCertificateFromStore" xml:space="preserve">
+    <value>Failure to locate certificate from store.</value>
+  </data>
+  <data name="FailedToOpenCertStore" xml:space="preserve">
+    <value>Failed to open certificate store {StoreName}.</value>
+  </data>
 </root>

@@ -3,7 +3,7 @@ SET RepoRoot=%~dp0..\..
 
 ECHO Building x64 Microsoft.AspNetCore.Runtime.SiteExtension
 CALL "%RepoRoot%\build.cmd" -arch x64 -projects "%~dp0Runtime\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj" ^
-    "/bl:%RepoRoot%/artifacts/log/SiteExtensions-Runtime-x86.binlog" %*
+    "/bl:%RepoRoot%/artifacts/log/SiteExtensions-Runtime-x64.binlog" %*
 IF %ERRORLEVEL% NEQ 0 (
    EXIT /b %ErrorLevel%
 )

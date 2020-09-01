@@ -134,14 +134,20 @@
     <AssemblyVersion>$(AspNetCoreMajorMinorVersion).0.0</AssemblyVersion>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <KnownAppHostPackOrFrameworkReferenceTfm>$(DefaultNetCoreTargetFramework)</KnownAppHostPackOrFrameworkReferenceTfm>
+    <KnownAppHostPackOrFrameworkReferenceTfm Condition=" '$(TargetFrameworkIdentifier)' == '$(NETCoreAppFrameworkIdentifier)' AND
+      $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '5.0')) ">netcoreapp$(TargetFrameworkVersion.TrimStart('vV'))</KnownAppHostPackOrFrameworkReferenceTfm>
+  </PropertyGroup>
+
   <ItemGroup>
     <KnownFrameworkReference Update="Microsoft.NETCore.App">
       <!-- Always update the 'latest version', whether the repo is servicing or not. -->
-      <LatestRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">$(MicrosoftNETCoreAppRuntimeVersion)</LatestRuntimeFrameworkVersion>
+      <LatestRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(KnownAppHostPackOrFrameworkReferenceTfm)'">$(MicrosoftNETCoreAppRuntimeVersion)</LatestRuntimeFrameworkVersion>
       <!-- Only update the default runtime version for preview builds. -->
-      <DefaultRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppRuntimeVersion)</DefaultRuntimeFrameworkVersion>
+      <DefaultRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(KnownAppHostPackOrFrameworkReferenceTfm)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppRuntimeVersion)</DefaultRuntimeFrameworkVersion>
       <!-- Only update the targeting pack version for preview builds. -->
-      <TargetingPackVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppRefPackageVersion)</TargetingPackVersion>
+      <TargetingPackVersion Condition="'%(TargetFramework)' == '$(KnownAppHostPackOrFrameworkReferenceTfm)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppRefPackageVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
 
     <KnownFrameworkReference Condition="'$(UseAspNetCoreSharedRuntime)' != 'true'" Remove="Microsoft.AspNetCore.App" />

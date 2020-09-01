@@ -1,0 +1,276 @@
+#nullable enable
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.AuthenticatedEncryptorFactory
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.AuthenticatedEncryptorFactory.AuthenticatedEncryptorFactory(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.AuthenticatedEncryptorFactory.CreateEncryptorInstance(Microsoft.AspNetCore.DataProtection.KeyManagement.IKey! key) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.CngCbcAuthenticatedEncryptorFactory
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.CngCbcAuthenticatedEncryptorFactory.CngCbcAuthenticatedEncryptorFactory(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.CngCbcAuthenticatedEncryptorFactory.CreateEncryptorInstance(Microsoft.AspNetCore.DataProtection.KeyManagement.IKey! key) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.CngGcmAuthenticatedEncryptorFactory
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.CngGcmAuthenticatedEncryptorFactory.CngGcmAuthenticatedEncryptorFactory(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.CngGcmAuthenticatedEncryptorFactory.CreateEncryptorInstance(Microsoft.AspNetCore.DataProtection.KeyManagement.IKey! key) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AlgorithmConfiguration
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AlgorithmConfiguration.AlgorithmConfiguration() -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorConfiguration
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorConfiguration.AuthenticatedEncryptorConfiguration() -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorConfiguration.EncryptionAlgorithm.get -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorConfiguration.EncryptionAlgorithm.set -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorConfiguration.ValidationAlgorithm.get -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ValidationAlgorithm
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorConfiguration.ValidationAlgorithm.set -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorDescriptor
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorDescriptor.AuthenticatedEncryptorDescriptor(Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorConfiguration! configuration, Microsoft.AspNetCore.DataProtection.ISecret! masterKey) -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorDescriptor.ExportToXml() -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.XmlSerializedDescriptorInfo!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorDescriptorDeserializer
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorDescriptorDeserializer.AuthenticatedEncryptorDescriptorDeserializer() -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorDescriptorDeserializer.ImportFromXml(System.Xml.Linq.XElement! element) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorConfiguration
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorConfiguration.CngCbcAuthenticatedEncryptorConfiguration() -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorConfiguration.EncryptionAlgorithm.get -> string!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorConfiguration.EncryptionAlgorithm.set -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorConfiguration.EncryptionAlgorithmKeySize.get -> int
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorConfiguration.EncryptionAlgorithmKeySize.set -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorConfiguration.EncryptionAlgorithmProvider.get -> string!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorConfiguration.EncryptionAlgorithmProvider.set -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorConfiguration.HashAlgorithm.get -> string!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorConfiguration.HashAlgorithm.set -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorConfiguration.HashAlgorithmProvider.get -> string!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorConfiguration.HashAlgorithmProvider.set -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorDescriptor
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorDescriptor.CngCbcAuthenticatedEncryptorDescriptor(Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorConfiguration! configuration, Microsoft.AspNetCore.DataProtection.ISecret! masterKey) -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorDescriptor.ExportToXml() -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.XmlSerializedDescriptorInfo!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorDescriptorDeserializer
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorDescriptorDeserializer.CngCbcAuthenticatedEncryptorDescriptorDeserializer() -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorDescriptorDeserializer.ImportFromXml(System.Xml.Linq.XElement! element) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorConfiguration
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorConfiguration.CngGcmAuthenticatedEncryptorConfiguration() -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorConfiguration.EncryptionAlgorithm.get -> string!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorConfiguration.EncryptionAlgorithm.set -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorConfiguration.EncryptionAlgorithmKeySize.get -> int
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorConfiguration.EncryptionAlgorithmKeySize.set -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorConfiguration.EncryptionAlgorithmProvider.get -> string!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorConfiguration.EncryptionAlgorithmProvider.set -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorDescriptor
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorDescriptor.CngGcmAuthenticatedEncryptorDescriptor(Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorConfiguration! configuration, Microsoft.AspNetCore.DataProtection.ISecret! masterKey) -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorDescriptor.ExportToXml() -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.XmlSerializedDescriptorInfo!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorDescriptorDeserializer
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorDescriptorDeserializer.CngGcmAuthenticatedEncryptorDescriptorDeserializer() -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorDescriptorDeserializer.ImportFromXml(System.Xml.Linq.XElement! element) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor.ExportToXml() -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.XmlSerializedDescriptorInfo!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptorDeserializer
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptorDeserializer.ImportFromXml(System.Xml.Linq.XElement! element) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorConfiguration
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorConfiguration.EncryptionAlgorithmKeySize.get -> int
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorConfiguration.EncryptionAlgorithmKeySize.set -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorConfiguration.EncryptionAlgorithmType.get -> System.Type!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorConfiguration.EncryptionAlgorithmType.set -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorConfiguration.ManagedAuthenticatedEncryptorConfiguration() -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorConfiguration.ValidationAlgorithmType.get -> System.Type!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorConfiguration.ValidationAlgorithmType.set -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorDescriptor
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorDescriptor.ExportToXml() -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.XmlSerializedDescriptorInfo!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorDescriptor.ManagedAuthenticatedEncryptorDescriptor(Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorConfiguration! configuration, Microsoft.AspNetCore.DataProtection.ISecret! masterKey) -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorDescriptorDeserializer
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorDescriptorDeserializer.ImportFromXml(System.Xml.Linq.XElement! element) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorDescriptorDeserializer.ManagedAuthenticatedEncryptorDescriptorDeserializer() -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.XmlExtensions
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.XmlSerializedDescriptorInfo
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.XmlSerializedDescriptorInfo.DeserializerType.get -> System.Type!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.XmlSerializedDescriptorInfo.SerializedDescriptorElement.get -> System.Xml.Linq.XElement!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.XmlSerializedDescriptorInfo.XmlSerializedDescriptorInfo(System.Xml.Linq.XElement! serializedDescriptorElement, System.Type! deserializerType) -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm.AES_128_CBC = 0 -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm.AES_128_GCM = 3 -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm.AES_192_CBC = 1 -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm.AES_192_GCM = 4 -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm.AES_256_CBC = 2 -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm.AES_256_GCM = 5 -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.EncryptionAlgorithm
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor.Decrypt(System.ArraySegment<byte> ciphertext, System.ArraySegment<byte> additionalAuthenticatedData) -> byte[]!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor.Encrypt(System.ArraySegment<byte> plaintext, System.ArraySegment<byte> additionalAuthenticatedData) -> byte[]!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptorFactory
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptorFactory.CreateEncryptorInstance(Microsoft.AspNetCore.DataProtection.KeyManagement.IKey! key) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ManagedAuthenticatedEncryptorFactory
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ManagedAuthenticatedEncryptorFactory.CreateEncryptorInstance(Microsoft.AspNetCore.DataProtection.KeyManagement.IKey! key) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor!
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ManagedAuthenticatedEncryptorFactory.ManagedAuthenticatedEncryptorFactory(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ValidationAlgorithm
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ValidationAlgorithm.HMACSHA256 = 0 -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ValidationAlgorithm
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ValidationAlgorithm.HMACSHA512 = 1 -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ValidationAlgorithm
+Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions
+Microsoft.AspNetCore.DataProtection.DataProtectionOptions
+Microsoft.AspNetCore.DataProtection.DataProtectionOptions.ApplicationDiscriminator.get -> string!
+Microsoft.AspNetCore.DataProtection.DataProtectionOptions.ApplicationDiscriminator.set -> void
+Microsoft.AspNetCore.DataProtection.DataProtectionOptions.DataProtectionOptions() -> void
+Microsoft.AspNetCore.DataProtection.DataProtectionUtilityExtensions
+Microsoft.AspNetCore.DataProtection.EphemeralDataProtectionProvider
+Microsoft.AspNetCore.DataProtection.EphemeralDataProtectionProvider.CreateProtector(string! purpose) -> Microsoft.AspNetCore.DataProtection.IDataProtector!
+Microsoft.AspNetCore.DataProtection.EphemeralDataProtectionProvider.EphemeralDataProtectionProvider() -> void
+Microsoft.AspNetCore.DataProtection.EphemeralDataProtectionProvider.EphemeralDataProtectionProvider(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder
+Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+Microsoft.AspNetCore.DataProtection.IPersistedDataProtector
+Microsoft.AspNetCore.DataProtection.IPersistedDataProtector.DangerousUnprotect(byte[]! protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked) -> byte[]!
+Microsoft.AspNetCore.DataProtection.ISecret
+Microsoft.AspNetCore.DataProtection.ISecret.Length.get -> int
+Microsoft.AspNetCore.DataProtection.ISecret.WriteSecretIntoBuffer(System.ArraySegment<byte> buffer) -> void
+Microsoft.AspNetCore.DataProtection.Internal.IActivator
+Microsoft.AspNetCore.DataProtection.Internal.IActivator.CreateInstance(System.Type! expectedBaseType, string! implementationTypeName) -> object!
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKey
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKey.ActivationDate.get -> System.DateTimeOffset
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKey.CreateEncryptor() -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor!
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKey.CreationDate.get -> System.DateTimeOffset
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKey.Descriptor.get -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor!
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKey.ExpirationDate.get -> System.DateTimeOffset
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKey.IsRevoked.get -> bool
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKey.KeyId.get -> System.Guid
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyEscrowSink
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyEscrowSink.Store(System.Guid keyId, System.Xml.Linq.XElement! element) -> void
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager.CreateNewKey(System.DateTimeOffset activationDate, System.DateTimeOffset expirationDate) -> Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager.GetAllKeys() -> System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!>!
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager.GetCacheExpirationToken() -> System.Threading.CancellationToken
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager.RevokeAllKeys(System.DateTimeOffset revocationDate, string! reason = null) -> void
+Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyManager.RevokeKey(System.Guid keyId, string! reason = null) -> void
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.CacheableKeyRing
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.DefaultKeyResolution
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.DefaultKeyResolution.DefaultKey -> Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.DefaultKeyResolution.DefaultKeyResolution() -> void
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.DefaultKeyResolution.FallbackKey -> Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.DefaultKeyResolution.ShouldGenerateNewKey -> bool
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.ICacheableKeyRingProvider
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.ICacheableKeyRingProvider.GetCacheableKeyRing(System.DateTimeOffset now) -> Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.CacheableKeyRing!
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IDefaultKeyResolver
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IDefaultKeyResolver.ResolveDefaultKeyPolicy(System.DateTimeOffset now, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!>! allKeys) -> Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.DefaultKeyResolution
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IInternalXmlKeyManager
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IInternalXmlKeyManager.CreateNewKey(System.Guid keyId, System.DateTimeOffset creationDate, System.DateTimeOffset activationDate, System.DateTimeOffset expirationDate) -> Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IInternalXmlKeyManager.DeserializeDescriptorFromKeyElement(System.Xml.Linq.XElement! keyElement) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor!
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IInternalXmlKeyManager.RevokeSingleKey(System.Guid keyId, System.DateTimeOffset revocationDate, string! reason) -> void
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRing
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRing.DefaultAuthenticatedEncryptor.get -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor!
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRing.DefaultKeyId.get -> System.Guid
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRing.GetAuthenticatedEncryptorByKeyId(System.Guid keyId, out bool isRevoked) -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor!
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRingProvider
+Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRingProvider.GetCurrentKeyRing() -> Microsoft.AspNetCore.DataProtection.KeyManagement.Internal.IKeyRing!
+Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions
+Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions.AuthenticatedEncryptorConfiguration.get -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AlgorithmConfiguration!
+Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions.AuthenticatedEncryptorConfiguration.set -> void
+Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions.AuthenticatedEncryptorFactories.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptorFactory!>!
+Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions.AutoGenerateKeys.get -> bool
+Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions.AutoGenerateKeys.set -> void
+Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions.KeyEscrowSinks.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyEscrowSink!>!
+Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions.KeyManagementOptions() -> void
+Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions.NewKeyLifetime.get -> System.TimeSpan
+Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions.NewKeyLifetime.set -> void
+Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions.XmlEncryptor.get -> Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlEncryptor!
+Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions.XmlEncryptor.set -> void
+Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions.XmlRepository.get -> Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository!
+Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions.XmlRepository.set -> void
+Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager
+Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.CreateNewKey(System.DateTimeOffset activationDate, System.DateTimeOffset expirationDate) -> Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!
+Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.GetAllKeys() -> System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!>!
+Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.GetCacheExpirationToken() -> System.Threading.CancellationToken
+Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.RevokeAllKeys(System.DateTimeOffset revocationDate, string! reason = null) -> void
+Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.RevokeKey(System.Guid keyId, string! reason = null) -> void
+Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository
+Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.Directory.get -> System.IO.DirectoryInfo!
+Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.FileSystemXmlRepository(System.IO.DirectoryInfo! directory, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository
+Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository.GetAllElements() -> System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement!>!
+Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository.StoreElement(System.Xml.Linq.XElement! element, string! friendlyName) -> void
+Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository
+Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository.RegistryKey.get -> Microsoft.Win32.RegistryKey!
+Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository.RegistryXmlRepository(Microsoft.Win32.RegistryKey! registryKey, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.DataProtection.Secret
+Microsoft.AspNetCore.DataProtection.Secret.Dispose() -> void
+Microsoft.AspNetCore.DataProtection.Secret.Length.get -> int
+Microsoft.AspNetCore.DataProtection.Secret.Secret(Microsoft.AspNetCore.DataProtection.ISecret! secret) -> void
+Microsoft.AspNetCore.DataProtection.Secret.Secret(System.ArraySegment<byte> value) -> void
+Microsoft.AspNetCore.DataProtection.Secret.Secret(byte* secret, int secretLength) -> void
+Microsoft.AspNetCore.DataProtection.Secret.Secret(byte[]! value) -> void
+Microsoft.AspNetCore.DataProtection.Secret.WriteSecretIntoBuffer(System.ArraySegment<byte> buffer) -> void
+Microsoft.AspNetCore.DataProtection.Secret.WriteSecretIntoBuffer(byte* buffer, int bufferLength) -> void
+Microsoft.AspNetCore.DataProtection.XmlEncryption.CertificateResolver
+Microsoft.AspNetCore.DataProtection.XmlEncryption.CertificateResolver.CertificateResolver() -> void
+Microsoft.AspNetCore.DataProtection.XmlEncryption.CertificateXmlEncryptor
+Microsoft.AspNetCore.DataProtection.XmlEncryption.CertificateXmlEncryptor.CertificateXmlEncryptor(System.Security.Cryptography.X509Certificates.X509Certificate2! certificate, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.DataProtection.XmlEncryption.CertificateXmlEncryptor.CertificateXmlEncryptor(string! thumbprint, Microsoft.AspNetCore.DataProtection.XmlEncryption.ICertificateResolver! certificateResolver, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.DataProtection.XmlEncryption.CertificateXmlEncryptor.Encrypt(System.Xml.Linq.XElement! plaintextElement) -> Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlInfo!
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGProtectionDescriptorFlags
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGProtectionDescriptorFlags.MachineKey = 32 -> Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGProtectionDescriptorFlags
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGProtectionDescriptorFlags.NamedDescriptor = 1 -> Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGProtectionDescriptorFlags
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGProtectionDescriptorFlags.None = 0 -> Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGProtectionDescriptorFlags
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGXmlDecryptor
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGXmlDecryptor.Decrypt(System.Xml.Linq.XElement! encryptedElement) -> System.Xml.Linq.XElement!
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGXmlDecryptor.DpapiNGXmlDecryptor() -> void
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGXmlDecryptor.DpapiNGXmlDecryptor(System.IServiceProvider! services) -> void
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGXmlEncryptor
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGXmlEncryptor.DpapiNGXmlEncryptor(string! protectionDescriptorRule, Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGProtectionDescriptorFlags flags, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGXmlEncryptor.Encrypt(System.Xml.Linq.XElement! plaintextElement) -> Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlInfo!
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiXmlDecryptor
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiXmlDecryptor.Decrypt(System.Xml.Linq.XElement! encryptedElement) -> System.Xml.Linq.XElement!
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiXmlDecryptor.DpapiXmlDecryptor() -> void
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiXmlDecryptor.DpapiXmlDecryptor(System.IServiceProvider! services) -> void
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiXmlEncryptor
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiXmlEncryptor.DpapiXmlEncryptor(bool protectToLocalMachine, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiXmlEncryptor.Encrypt(System.Xml.Linq.XElement! plaintextElement) -> Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlInfo!
+Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlDecryptor
+Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlDecryptor.Decrypt(System.Xml.Linq.XElement! encryptedElement) -> System.Xml.Linq.XElement!
+Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlDecryptor.EncryptedXmlDecryptor() -> void
+Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlDecryptor.EncryptedXmlDecryptor(System.IServiceProvider! services) -> void
+Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlInfo
+Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlInfo.DecryptorType.get -> System.Type!
+Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlInfo.EncryptedElement.get -> System.Xml.Linq.XElement!
+Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlInfo.EncryptedXmlInfo(System.Xml.Linq.XElement! encryptedElement, System.Type! decryptorType) -> void
+Microsoft.AspNetCore.DataProtection.XmlEncryption.ICertificateResolver
+Microsoft.AspNetCore.DataProtection.XmlEncryption.ICertificateResolver.ResolveCertificate(string! thumbprint) -> System.Security.Cryptography.X509Certificates.X509Certificate2!
+Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlDecryptor
+Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlDecryptor.Decrypt(System.Xml.Linq.XElement! encryptedElement) -> System.Xml.Linq.XElement!
+Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlEncryptor
+Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlEncryptor.Encrypt(System.Xml.Linq.XElement! plaintextElement) -> Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlInfo!
+Microsoft.AspNetCore.DataProtection.XmlEncryption.NullXmlDecryptor
+Microsoft.AspNetCore.DataProtection.XmlEncryption.NullXmlDecryptor.Decrypt(System.Xml.Linq.XElement! encryptedElement) -> System.Xml.Linq.XElement!
+Microsoft.AspNetCore.DataProtection.XmlEncryption.NullXmlDecryptor.NullXmlDecryptor() -> void
+Microsoft.AspNetCore.DataProtection.XmlEncryption.NullXmlEncryptor
+Microsoft.AspNetCore.DataProtection.XmlEncryption.NullXmlEncryptor.Encrypt(System.Xml.Linq.XElement! plaintextElement) -> Microsoft.AspNetCore.DataProtection.XmlEncryption.EncryptedXmlInfo!
+Microsoft.AspNetCore.DataProtection.XmlEncryption.NullXmlEncryptor.NullXmlEncryptor() -> void
+Microsoft.AspNetCore.DataProtection.XmlEncryption.NullXmlEncryptor.NullXmlEncryptor(System.IServiceProvider! services) -> void
+Microsoft.Extensions.DependencyInjection.DataProtectionServiceCollectionExtensions
+abstract Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AlgorithmConfiguration.CreateNewDescriptor() -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor!
+override Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorConfiguration.CreateNewDescriptor() -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor!
+override Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorConfiguration.CreateNewDescriptor() -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor!
+override Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorConfiguration.CreateNewDescriptor() -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor!
+override Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorConfiguration.CreateNewDescriptor() -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.IAuthenticatedEncryptorDescriptor!
+static Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.XmlExtensions.MarkAsRequiresEncryption(this System.Xml.Linq.XElement! element) -> void
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.AddKeyEscrowSink(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder, Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyEscrowSink! sink) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.AddKeyEscrowSink(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder, System.Func<System.IServiceProvider!, Microsoft.AspNetCore.DataProtection.KeyManagement.IKeyEscrowSink!>! factory) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.AddKeyEscrowSink<TImplementation>(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.AddKeyManagementOptions(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder, System.Action<Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions!>! setupAction) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.DisableAutomaticKeyGeneration(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.PersistKeysToFileSystem(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder, System.IO.DirectoryInfo! directory) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.PersistKeysToRegistry(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder, Microsoft.Win32.RegistryKey! registryKey) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.ProtectKeysWithCertificate(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder, System.Security.Cryptography.X509Certificates.X509Certificate2! certificate) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.ProtectKeysWithCertificate(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder, string! thumbprint) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.ProtectKeysWithDpapi(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.ProtectKeysWithDpapi(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder, bool protectToLocalMachine) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.ProtectKeysWithDpapiNG(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.ProtectKeysWithDpapiNG(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder, string! protectionDescriptorRule, Microsoft.AspNetCore.DataProtection.XmlEncryption.DpapiNGProtectionDescriptorFlags flags) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.SetApplicationName(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder, string! applicationName) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.SetDefaultKeyLifetime(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder, System.TimeSpan lifetime) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.UnprotectKeysWithAnyCertificate(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder, params System.Security.Cryptography.X509Certificates.X509Certificate2![]! certificates) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.UseCryptographicAlgorithms(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder, Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.AuthenticatedEncryptorConfiguration! configuration) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.UseCustomCryptographicAlgorithms(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder, Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngCbcAuthenticatedEncryptorConfiguration! configuration) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.UseCustomCryptographicAlgorithms(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder, Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.CngGcmAuthenticatedEncryptorConfiguration! configuration) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.UseCustomCryptographicAlgorithms(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder, Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel.ManagedAuthenticatedEncryptorConfiguration! configuration) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionBuilderExtensions.UseEphemeralDataProtectionProvider(this Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder! builder) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.AspNetCore.DataProtection.DataProtectionUtilityExtensions.GetApplicationUniqueIdentifier(this System.IServiceProvider! services) -> string!
+static Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.DefaultKeyStorageDirectory.get -> System.IO.DirectoryInfo!
+static Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository.DefaultRegistryKey.get -> Microsoft.Win32.RegistryKey!
+static Microsoft.AspNetCore.DataProtection.Secret.Random(int numBytes) -> Microsoft.AspNetCore.DataProtection.Secret!
+static Microsoft.Extensions.DependencyInjection.DataProtectionServiceCollectionExtensions.AddDataProtection(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+static Microsoft.Extensions.DependencyInjection.DataProtectionServiceCollectionExtensions.AddDataProtection(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.DataProtection.DataProtectionOptions!>! setupAction) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+virtual Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.GetAllElements() -> System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement!>!
+virtual Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.StoreElement(System.Xml.Linq.XElement! element, string! friendlyName) -> void
+virtual Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository.GetAllElements() -> System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement!>!
+virtual Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository.StoreElement(System.Xml.Linq.XElement! element, string! friendlyName) -> void
+virtual Microsoft.AspNetCore.DataProtection.XmlEncryption.CertificateResolver.ResolveCertificate(string! thumbprint) -> System.Security.Cryptography.X509Certificates.X509Certificate2!
+~Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.XmlKeyManager(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions!>! keyManagementOptions, Microsoft.AspNetCore.DataProtection.Internal.IActivator! activator) -> void
+~Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.XmlKeyManager(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions!>! keyManagementOptions, Microsoft.AspNetCore.DataProtection.Internal.IActivator! activator, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void

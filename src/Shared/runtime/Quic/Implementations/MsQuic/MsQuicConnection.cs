@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Quic.Implementations.MsQuic.Internal;
 using System.Net.Security;
+using System.Net.Sockets;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
@@ -32,7 +33,7 @@ namespace System.Net.Quic.Implementations.MsQuic
 
         // Endpoint to either connect to or the endpoint already accepted.
         private IPEndPoint? _localEndPoint;
-        private readonly IPEndPoint _remoteEndPoint;
+        private readonly EndPoint _remoteEndPoint;
 
         private SslApplicationProtocol _negotiatedAlpnProtocol;
 
@@ -92,7 +93,7 @@ namespace System.Net.Quic.Implementations.MsQuic
             MsQuicParameterHelpers.SetSecurityConfig(MsQuicApi.Api, _ptr, (uint)QUIC_PARAM_LEVEL.CONNECTION, (uint)QUIC_PARAM_CONN.SEC_CONFIG, _securityConfig!.NativeObjPtr);
         }
 
-        internal override IPEndPoint RemoteEndPoint => new IPEndPoint(_remoteEndPoint.Address, _remoteEndPoint.Port);
+        internal override EndPoint RemoteEndPoint => _remoteEndPoint;
 
         internal override SslApplicationProtocol NegotiatedApplicationProtocol => _negotiatedAlpnProtocol;
 
@@ -155,7 +156,9 @@ namespace System.Net.Quic.Implementations.MsQuic
         {
             if (!_connected)
             {
-                _connectTcs.SetException(ExceptionDispatchInfo.SetCurrentStackTrace(new IOException("Connection has been shutdown.")));
+                uint hresult = connectionEvent.Data.ShutdownInitiatedByTransport.Status;
+                Exception ex = QuicExceptionHelpers.CreateExceptionForHResult(hresult, "Connection has been shutdown by transport.");
+                _connectTcs.SetException(ExceptionDispatchInfo.SetCurrentStackTrace(ex));
             }
 
             _acceptQueue.Writer.Complete();
@@ -243,12 +246,28 @@ namespace System.Net.Quic.Implementations.MsQuic
         {
             ThrowIfDisposed();
 
+            (string address, int port) = _remoteEndPoint switch
+            {
+                DnsEndPoint dnsEp => (dnsEp.Host, dnsEp.Port),
+                IPEndPoint ipEp => (ipEp.Address.ToString(), ipEp.Port),
+                _ => throw new Exception($"Unsupported remote endpoint type '{_remoteEndPoint.GetType()}'.")
+            };
+
+            // values taken from https://github.com/microsoft/msquic/blob/main/docs/api/ConnectionStart.md
+            int af = _remoteEndPoint.AddressFamily switch
+            {
+                AddressFamily.Unspecified => 0,
+                AddressFamily.InterNetwork => 2,
+                AddressFamily.InterNetworkV6 => 23,
+                _ => throw new Exception($"Unsupported address family of '{_remoteEndPoint.AddressFamily}' for remote endpoint.")
+            };
+
             QuicExceptionHelpers.ThrowIfFailed(
                 MsQuicApi.Api.ConnectionStartDelegate(
                 _ptr,
-                (ushort)_remoteEndPoint.AddressFamily,
-                _remoteEndPoint.Address.ToString(),
-                (ushort)_remoteEndPoint.Port),
+                (ushort)af,
+                address,
+                (ushort)port),
                 "Failed to connect to peer.");
 
             return new ValueTask(_connectTcs.Task);

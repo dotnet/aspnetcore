@@ -88,7 +88,10 @@
 
     <IncludeSymbols>true</IncludeSymbols>
 
-    <!-- Also update the DefaultNetCoreTargetFramework defined at src/Razor/test/testassets/Directory.Build.props -->
+    <!--
+      Also update the DefaultNetCoreTargetFramework defined at src/Razor/test/testassets/Directory.Build.props and
+      the packages referenced in Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj when this changes.
+    -->
     <DefaultNetCoreTargetFramework>net5.0</DefaultNetCoreTargetFramework>
     <DefaultNetFxTargetFramework>net461</DefaultNetFxTargetFramework>
   </PropertyGroup>

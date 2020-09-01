@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -41,6 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="check">A delegate that provides the health check implementation.</param>
         /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
         /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IHealthChecksBuilder AddCheck(
             this IHealthChecksBuilder builder,
             string name,
@@ -94,6 +96,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="check">A delegate that provides the health check implementation.</param>
         /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
         /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IHealthChecksBuilder AddCheck(
             this IHealthChecksBuilder builder,
             string name,
@@ -147,6 +150,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="check">A delegate that provides the health check implementation.</param>
         /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
         /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IHealthChecksBuilder AddAsyncCheck(
             this IHealthChecksBuilder builder,
             string name,
@@ -200,6 +204,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="check">A delegate that provides the health check implementation.</param>
         /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
         /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IHealthChecksBuilder AddAsyncCheck(
             this IHealthChecksBuilder builder,
             string name,
