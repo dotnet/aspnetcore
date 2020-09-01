@@ -8,10 +8,10 @@
     <PackageContentRoot>$(TargetingPackLayoutRoot)</PackageContentRoot>
 
     <!-- CLI would take a dependency such as 'aspnetcore-targeting-pack-M.N >= M.N.P'. Here M.N is part of the id and M.N.P is the PackageVersion -->
-    <PackageId>$(TargetingPackInstallerBaseName)-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</PackageId>
+    <PackageId>$(TargetingPackInstallerBaseName)-$(AspNetCoreMajorMinorVersion)</PackageId>
 
     <PackageSummary>ASP.NET Core Targeting Pack</PackageSummary>
-    <PackageDescription>Provides a default set of APIs for building an ASP.NET Core $(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion) application. Contains reference assemblies, documentation, and other design-time assets.</PackageDescription>
+    <PackageDescription>Provides a default set of APIs for building an ASP.NET Core $(AspNetCoreMajorMinorVersion) application. Contains reference assemblies, documentation, and other design-time assets.</PackageDescription>
 
     <!-- Needed some creativity to convert the PackageVersion M.N.P-PreReleaseVersionLabel-Build to the installer version M.N.P~PreReleaseVersionLabel-Build, The conditional handles stabilized builds -->
     <DotnetTargetingPackDependencyVersion>$(MicrosoftNETCoreAppRefPackageVersion)</DotnetTargetingPackDependencyVersion>
