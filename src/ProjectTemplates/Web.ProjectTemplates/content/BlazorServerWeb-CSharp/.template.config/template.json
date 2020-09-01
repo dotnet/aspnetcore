@@ -29,26 +29,26 @@
         {
           "condition": "(!OrganizationalAuth && !IndividualAuth)",
           "exclude": [
-            "Views/Shared/_LoginPartial.Identity.cshtml",
-            "Views/Shared/_LoginPartial.OrgAuth.cshtml"
+            "Areas/Identity/Pages/Shared/_LoginPartial.Identity.cshtml",
+            "Areas/Identity/Pages/Shared/_LoginPartial.OrgAuth.cshtml"
           ]
         },
         {
           "condition": "(OrganizationalAuth || IndividualB2CAuth)",
           "rename": {
-            "Views/Shared/_LoginPartial.OrgAuth.cshtml": "Views/Shared/_LoginPartial.cshtml"
+            "Areas/Identity/Pages/Shared/_LoginPartial.OrgAuth.cshtml": "Areas/Identity/Pages/Shared/_LoginPartial.cshtml"
           },
           "exclude": [
-            "Views/Shared/_LoginPartial.Identity.cshtml"
+            "Areas/Identity/Pages/Shared/_LoginPartial.Identity.cshtml"
           ]
         },
         {
           "condition": "(IndividualLocalAuth)",
           "rename": {
-            "Views/Shared/_LoginPartial.Identity.cshtml": "Views/Shared/_LoginPartial.cshtml"
+            "Areas/Identity/Pages/Shared/_LoginPartial.Identity.cshtml": "Areas/Identity/Pages/Shared/_LoginPartial.cshtml"
           },
           "exclude": [
-            "Views/Shared/_LoginPartial.OrgAuth.cshtml"
+            "Areas/Identity/Pages/Shared/_LoginPartial.OrgAuth.cshtml"
           ]
         },
         {
@@ -156,7 +156,6 @@
         {
           "condition": "(!GenerateApi)",
             "exclude": [
-              "Services/DownstreamWebApi.cs",
               "Pages/CallWebApi.razor"
             ]
         },
