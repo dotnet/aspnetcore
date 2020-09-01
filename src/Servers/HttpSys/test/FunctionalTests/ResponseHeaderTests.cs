@@ -50,9 +50,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }))
             {
                 // HttpClient would merge the headers no matter what
-#pragma warning disable 618
+#pragma warning disable CS0618
                 WebRequest request = WebRequest.Create(address);
-#pragma warning restore 618
+#pragma warning restore CS0618
                 HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
                 Assert.Equal(4, response.Headers.Count);
                 Assert.Null(response.Headers["Transfer-Encoding"]);
@@ -76,9 +76,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }))
             {
                 // HttpClient would merge the headers no matter what
-#pragma warning disable 618
+#pragma warning disable CS0618
                 WebRequest request = WebRequest.Create(address);
-#pragma warning restore 618
+#pragma warning restore CS0618
                 HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
                 Assert.Equal(4, response.Headers.Count);
                 Assert.Null(response.Headers["Transfer-Encoding"]);
@@ -102,9 +102,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }))
             {
                 // HttpClient would merge the headers no matter what
-#pragma warning disable 618
+#pragma warning disable CS0618
                 WebRequest request = WebRequest.Create(address);
-#pragma warning restore 618
+#pragma warning restore CS0618
                 HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
                 Assert.Equal(4, response.Headers.Count);
                 Assert.Null(response.Headers["Transfer-Encoding"]);
