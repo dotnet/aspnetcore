@@ -453,6 +453,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [RequiresNewHandler]
         public async Task StartupTimeoutIsApplied()
         {
             // From what we can tell, this failure is due to ungraceful shutdown.
@@ -486,6 +487,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task StartupTimeoutIsApplied_DisableRecycleOnStartupTimeout()
         {
             // From what we can tell, this failure is due to ungraceful shutdown.
