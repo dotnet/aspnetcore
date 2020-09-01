@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -48,6 +49,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="tags">A list of tags that can be used to filter health checks.</param>
         /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
         /// <returns>The <see cref="IHealthChecksBuilder"/>.</returns>
+        [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
         public static IHealthChecksBuilder AddCheck(
             this IHealthChecksBuilder builder,
             string name,
@@ -121,6 +123,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// with any lifetime it will be used. Otherwise an instance of type <typeparamref name="T"/> will be constructed with
         /// access to services from the dependency injection container.
         /// </remarks>
+        [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads.", Justification = "Required to maintain compatibility")]
         public static IHealthChecksBuilder AddCheck<T>(
             this IHealthChecksBuilder builder,
             string name,
