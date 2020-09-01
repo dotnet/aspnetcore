@@ -2566,6 +2566,31 @@ class HubConnectionTest {
     }
 
     @Test
+    public void throwFromOnHandlerRunsAllHandlers() {
+        AtomicReference<String> value1 = new AtomicReference<>();
+        AtomicReference<String> value2 = new AtomicReference<>();
+
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.on("inc", (param1) -> {
+            value1.set(param1);
+            throw new RuntimeException("throw from on handler");
+        }, String.class);
+        hubConnection.on("inc", (param1) -> {
+            value2.set(param1);
+        }, String.class);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        mockTransport.receiveMessage("{\"type\":1,\"target\":\"inc\",\"arguments\":[\"Hello World\"]}" + RECORD_SEPARATOR);
+        hubConnection.send("inc", "Hello World");
+
+        // Confirming that our handler was called and the correct message was passed in.
+        assertEquals("Hello World", value1.get());
+        assertEquals("Hello World", value2.get());
+    }
+
+    @Test
     public void receiveHandshakeResponseAndMessage() {
         AtomicReference<Double> value = new AtomicReference<Double>(0.0);
         MockTransport mockTransport = new MockTransport(false);

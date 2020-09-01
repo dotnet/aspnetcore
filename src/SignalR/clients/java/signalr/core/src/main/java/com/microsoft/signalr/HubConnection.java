@@ -223,7 +223,11 @@ public class HubConnection implements AutoCloseable {
                         List<InvocationHandler> handlers = this.handlers.get(invocationMessage.getTarget());
                         if (handlers != null) {
                             for (InvocationHandler handler : handlers) {
-                                handler.getAction().invoke(invocationMessage.getArguments());
+                                try {
+                                    handler.getAction().invoke(invocationMessage.getArguments());
+                                } catch (Exception e) {
+                                    logger.error("Invoking client side method '{}' failed. {}", invocationMessage.getTarget(), e);
+                                }
                             }
                         } else {
                             logger.warn("Failed to find handler for '{}' method.", invocationMessage.getTarget());
