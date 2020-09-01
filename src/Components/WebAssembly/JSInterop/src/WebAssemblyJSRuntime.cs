@@ -13,6 +13,16 @@ namespace Microsoft.JSInterop.WebAssembly
     /// </summary>
     public abstract class WebAssemblyJSRuntime : JSInProcessRuntime, IJSUnmarshalledRuntime
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="WebAssemblyJSRuntime"/>.
+        /// </summary>
+        protected WebAssemblyJSRuntime()
+        {
+            // TODO: Make JSObjectReferenceJsonConverter shared code.
+            JsonSerializerOptions.Converters.Add(new JSObjectReferenceJsonConverter<IJSUnmarshalledObjectReference, WebAssemblyJSObjectReference>(
+                id => new WebAssemblyJSObjectReference(this, id)));
+        }
+
         /// <inheritdoc />
         protected override string InvokeJS(string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
         {
@@ -47,7 +57,7 @@ namespace Microsoft.JSInterop.WebAssembly
             InternalCalls.InvokeJS<object, object, object, string>(out _, ref callInfo, null, null, null);
         }
 
-        protected override void EndInvokeDotNet(DotNetInvocationInfo callInfo, in DotNetInvocationResult dispatchResult)
+        protected internal override void EndInvokeDotNet(DotNetInvocationInfo callInfo, in DotNetInvocationResult dispatchResult)
         {
             // For failures, the common case is to call EndInvokeDotNet with the Exception object.
             // For these we'll serialize as something that's useful to receive on the JS side.
@@ -60,24 +70,12 @@ namespace Microsoft.JSInterop.WebAssembly
             BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args, JSCallResultType.Default, 0);
         }
 
-        /// <inheritdoc />
-        TResult IJSUnmarshalledRuntime.InvokeUnmarshalled<TResult>(string identifier)
-            => ((IJSUnmarshalledRuntime)this).InvokeUnmarshalled<object, object, object, TResult>(identifier, null, null, null);
-
-        /// <inheritdoc />
-        TResult IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, TResult>(string identifier, T0 arg0)
-            => ((IJSUnmarshalledRuntime)this).InvokeUnmarshalled<T0, object, object, TResult>(identifier, arg0, null, null);
-
-        /// <inheritdoc />
-        TResult IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, T1, TResult>(string identifier, T0 arg0, T1 arg1)
-            => ((IJSUnmarshalledRuntime)this).InvokeUnmarshalled<T0, T1, object, TResult>(identifier, arg0, arg1, null);
-
-        /// <inheritdoc />
-        TResult IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)
+        internal TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2, long targetInstanceId)
         {
             var callInfo = new JSCallInfo
             {
                 FunctionIdentifier = identifier,
+                TargetInstanceId = targetInstanceId,
                 ResultType = JSCallResultTypeHelper.FromGeneric<TResult>()
             };
 
@@ -87,5 +85,21 @@ namespace Microsoft.JSInterop.WebAssembly
                 ? throw new JSException(exception)
                 : result;
         }
+
+        /// <inheritdoc />
+        TResult IJSUnmarshalledRuntime.InvokeUnmarshalled<TResult>(string identifier)
+            => InvokeUnmarshalled<object, object, object, TResult>(identifier, null, null, null, 0);
+
+        /// <inheritdoc />
+        TResult IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, TResult>(string identifier, T0 arg0)
+            => InvokeUnmarshalled<T0, object, object, TResult>(identifier, arg0, null, null, 0);
+
+        /// <inheritdoc />
+        TResult IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, T1, TResult>(string identifier, T0 arg0, T1 arg1)
+            => InvokeUnmarshalled<T0, T1, object, TResult>(identifier, arg0, arg1, null, 0);
+
+        /// <inheritdoc />
+        TResult IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)
+            => InvokeUnmarshalled<T0, T1, T2, TResult>(identifier, arg0, arg1, arg2, 0);
     }
 }
