@@ -353,7 +353,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public CertificateConfig(IConfigurationSection configSection)
         {
             ConfigSection = configSection;
-            ConfigSection.Bind(this);
+
+            // Bind explictly to preserve linkability
+            Path = configSection[nameof(Path)];
+            KeyPath = configSection[nameof(KeyPath)];
+            Password = configSection[nameof(Password)];
+            Subject = configSection[nameof(Subject)];
+            Store = configSection[nameof(Store)];
+            Location = configSection[nameof(Location)];
+
+            if (bool.TryParse(configSection[nameof(AllowInvalid)], out var value))
+            {
+                AllowInvalid = value;
+            }
         }
 
         // For testing
