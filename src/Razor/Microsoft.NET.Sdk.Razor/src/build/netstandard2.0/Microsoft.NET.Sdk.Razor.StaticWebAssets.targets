@@ -59,9 +59,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(GetCurrentProjectStaticWebAssetsDependsOn)
     </GetCurrentProjectStaticWebAssetsDependsOn>
 
-    <GetCopyToOutputDirectoryItemsDependsOn>
-      $(GetCopyToOutputDirectoryItemsDependsOn);
+    <PrepareForRunDependsOn>
       GenerateStaticWebAssetsManifest;
+      $(PrepareForRunDependsOn);
+    </PrepareForRunDependsOn>
+
+    <GetCopyToOutputDirectoryItemsDependsOn>
+      _IncludeGeneratedStaticWebAssetsManifest;
+      $(GetCopyToOutputDirectoryItemsDependsOn);
     </GetCopyToOutputDirectoryItemsDependsOn>
 
     <ResolveStaticWebAssetsInputsDependsOn>
@@ -196,6 +201,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       ContentRootDefinitions="@(_ExternalStaticWebAsset)"
       TargetManifestPath="$(_GeneratedStaticWebAssetsDevelopmentManifest)" />
 
+    <ItemGroup>
+      <FileWrites Include="$(_GeneratedStaticWebAssetsDevelopmentManifest)" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="_IncludeGeneratedStaticWebAssetsManifest">
       <!-- This is the list of inputs that will be used for generating the manifest used during development. -->
     <ItemGroup>
       <ContentWithTargetPath
@@ -206,10 +218,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>Never</CopyToPublishDirectory>
       </ContentWithTargetPath>
-    </ItemGroup>
-
-    <ItemGroup>
-      <FileWrites Include="$(_GeneratedStaticWebAssetsDevelopmentManifest)" />
     </ItemGroup>
 
   </Target>
