@@ -180,6 +180,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Path.Combine("lib", TFM, "ClassLibrary.Views.dll"));
         }
 
+        // If you modify this test, make sure you also modify the test below this one to assert that things are not included as content.
         [Fact]
         [InitializeTestProject("PackageLibraryDirectDependency", additionalProjects: new[] { "PackageLibraryTransitiveDependency" })]
         public async Task Pack_IncludesStaticWebAssets()
@@ -197,10 +198,38 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 {
                     Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
                     Path.Combine("staticwebassets", "css", "site.css"),
+                    Path.Combine("staticwebassets", "Components", "App.razor.rz.scp.css"),
                     Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
                     Path.Combine("build", "PackageLibraryDirectDependency.props"),
                     Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.props"),
                     Path.Combine("buildTransitive", "PackageLibraryDirectDependency.props")
+                });
+        }
+
+        [Fact]
+        [InitializeTestProject("PackageLibraryDirectDependency", additionalProjects: new[] { "PackageLibraryTransitiveDependency" })]
+        public async Task Pack_DoesNotIncludeStaticWebAssetsAsContent()
+        {
+            var result = await DotnetMSBuild("Pack");
+
+            Assert.BuildPassed(result, allowWarnings: true);
+
+            Assert.FileExists(result, OutputPath, "PackageLibraryDirectDependency.dll");
+
+            Assert.NupkgDoesNotContain(
+                result,
+                Path.Combine("..", "TestPackageRestoreSource", "PackageLibraryDirectDependency.1.0.0.nupkg"),
+                filePaths: new[]
+                {
+                    Path.Combine("content", "js", "pkg-direct-dep.js"),
+                    Path.Combine("content", "css", "site.css"),
+                    // This is to make sure we don't include the unscoped css file on the build.
+                    Path.Combine("content", "Components", "App.razor.css"),
+                    Path.Combine("content", "Components", "App.razor.rz.scp.css"),
+                    Path.Combine("contentFiles", "js", "pkg-direct-dep.js"),
+                    Path.Combine("contentFiles", "css", "site.css"),
+                    Path.Combine("contentFiles", "Components", "App.razor.css"),
+                    Path.Combine("contentFiles", "Components", "App.razor.rz.scp.css"),
                 });
         }
 

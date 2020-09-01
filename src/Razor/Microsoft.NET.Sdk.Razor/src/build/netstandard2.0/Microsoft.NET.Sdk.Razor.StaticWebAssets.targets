@@ -81,8 +81,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ResolveReferencedProjectsStaticWebAssetsDependsOn>
 
     <GenerateStaticWebAssetsPackTargetsDependsOn>
-      _CreateStaticWebAssetsCustomPropsCacheFile;
       $(GenerateStaticWebAssetsPackTargetsDependsOn)
+      _CreateStaticWebAssetsCustomPropsCacheFile;
     </GenerateStaticWebAssetsPackTargetsDependsOn>
 
     <TargetsForTfmSpecificContentInPackage>

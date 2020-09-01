@@ -114,13 +114,13 @@ Integration with static web assets:
     <Output TaskParameter="DiscoveredScopedCssInputs" ItemName="_DiscoveredScopedCssInputs" />
   </DiscoverDefaultScopedCssItems>
 
-  <ItemGroup Condition="'$(EnableDefaultScopedCssItems)'=='true'">
+  <ItemGroup Condition="'$(EnableDefaultScopedCssItems)' == 'true'">
     <ScopedCssInput Include="@(_DiscoveredScopedCssInputs)" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Remove="@(ScopedCssInput)" />
-    <Content Include="@(ScopedCssInput)" CopyToPublishDirectory="Never" />
+    <Content Include="@(ScopedCssInput)" Pack="false" CopyToPublishDirectory="Never" />
   </ItemGroup>
 </Target>
 
