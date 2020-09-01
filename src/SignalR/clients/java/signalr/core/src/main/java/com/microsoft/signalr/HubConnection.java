@@ -5,7 +5,6 @@ package com.microsoft.signalr;
 
 import java.io.StringReader;
 import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -230,18 +229,16 @@ public class HubConnection implements AutoCloseable {
     public Completable start() {
         CompletableSubject localStart = CompletableSubject.create();
 
-        hubConnectionStateLock.lock();
+        this.state.lock.lock();
         try {
-            if (hubConnectionState != HubConnectionState.DISCONNECTED) {
-                logger.debug("The connection is in the '{}' state. Waiting for in-progress start to complete or completing this start immediately.", hubConnectionState);
+            if (this.state.getHubConnectionState() != HubConnectionState.DISCONNECTED) {
+                logger.debug("The connection is in the '{}' state. Waiting for in-progress start to complete or completing this start immediately.", this.state.getHubConnectionState());
                 return start;
             }
 
-            hubConnectionState = HubConnectionState.CONNECTING;
+            this.state.changeState(HubConnectionState.DISCONNECTED, HubConnectionState.CONNECTING);
             start = localStart;
 
-            handshakeResponseSubject = CompletableSubject.create();
-            handshakeReceived = false;
             CompletableSubject tokenCompletable = CompletableSubject.create();
             Map<String, String> localHeaders = new HashMap<>();
             localHeaders.put(UserAgentHelper.getUserAgentName(), UserAgentHelper.createUserAgentString());
@@ -260,7 +257,6 @@ public class HubConnection implements AutoCloseable {
                 tokenCompletable.onError(error);
             });
 
-            stopError = null;
             Single<NegotiateResponse> negotiate = null;
             if (!skipNegotiate) {
                 negotiate = tokenCompletable.andThen(Single.defer(() -> startNegotiate(baseUrl, 0, localHeaders)));
@@ -287,25 +283,25 @@ public class HubConnection implements AutoCloseable {
                 transport.setOnReceive(this.callback);
                 transport.setOnClose((message) -> stopConnection(message));
 
-            return transport.start(negotiateResponse.getFinalUrl()).andThen(Completable.defer(() -> {
-                ByteBuffer handshake = HandshakeProtocol.createHandshakeRequestMessage(
-                            new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
+                return transport.start(negotiateResponse.getFinalUrl()).andThen(Completable.defer(() -> {
+                    ByteBuffer handshake = HandshakeProtocol.createHandshakeRequestMessage(
+                                new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
 
-                return connectionState.transport.send(handshake).andThen(Completable.defer(() -> {
-                    connectionState.timeoutHandshakeResponse(handshakeResponseTimeout, TimeUnit.MILLISECONDS);
-                    return connectionState.handshakeResponseSubject.andThen(Completable.defer(() -> {
-                        connectionState.lock.lock();
-                        try {
-                            this.state.changeState(HubConnectionState.DISCONNECTED, HubConnectionState.CONNECTED);
-                            logger.info("HubConnection started.");
-                            connectionState.resetServerTimeout();
-                            // Don't send pings if we're using long polling.
-                            if (transportEnum != TransportEnum.LONG_POLLING) {
-                                connectionState.activatePingTimer();
+                    return connectionState.transport.send(handshake).andThen(Completable.defer(() -> {
+                        connectionState.timeoutHandshakeResponse(handshakeResponseTimeout, TimeUnit.MILLISECONDS);
+                        return connectionState.handshakeResponseSubject.andThen(Completable.defer(() -> {
+                            connectionState.lock.lock();
+                            try {
+                                this.state.changeState(HubConnectionState.CONNECTING, HubConnectionState.CONNECTED);
+                                logger.info("HubConnection started.");
+                                connectionState.resetServerTimeout();
+                                // Don't send pings if we're using long polling.
+                                if (transportEnum != TransportEnum.LONG_POLLING) {
+                                    connectionState.activatePingTimer();
+                                }
+                            } finally {
+                                connectionState.lock.unlock();
                             }
-                        } finally {
-                            connectionState.lock.unlock();
-                        }
 
                             return Completable.complete();
                         }));
@@ -315,13 +311,13 @@ public class HubConnection implements AutoCloseable {
             }).subscribe(() -> {
                 localStart.onComplete();
             }, error -> {
-                hubConnectionStateLock.lock();
-                hubConnectionState = HubConnectionState.DISCONNECTED;
-                hubConnectionStateLock.unlock();
+                this.state.lock.lock();
+                this.state.changeState(HubConnectionState.CONNECTING, HubConnectionState.DISCONNECTED);
+                this.state.lock.unlock();
                 localStart.onError(error);
             });
         } finally {
-            hubConnectionStateLock.unlock();
+            this.state.lock.unlock();
         }
 
         return localStart;
@@ -402,11 +398,11 @@ public class HubConnection implements AutoCloseable {
         return stop;
     }
 
-    private void ReceiveLoop(String payload)
+    private void ReceiveLoop(ByteBuffer payload)
     {
         ConnectionState connectionState = this.state.getConnectionState();
         connectionState.resetServerTimeout();
-        payload = connectionState.handleHandshake(payload);
+        connectionState.handleHandshake(payload);
         // The payload only contained the handshake response so we can return.
         if (!payload.hasRemaining()) {
             return;
@@ -1341,7 +1337,7 @@ public class HubConnection implements AutoCloseable {
             }, new Date(0), tickRate);
         }
 
-        public String handleHandshake(String payload) {
+        public void handleHandshake(ByteBuffer payload) {
             if (!handshakeReceived) {
                 List<Byte> handshakeByteList = new ArrayList<Byte>();
                 byte curr = payload.get();
@@ -1374,11 +1370,7 @@ public class HubConnection implements AutoCloseable {
                 }
                 handshakeReceived = true;
                 handshakeResponseSubject.onComplete();
-
-                payload = payload.substring(handshakeLength);
             }
-
-            return payload;
         }
 
         public void timeoutHandshakeResponse(long timeout, TimeUnit unit) {
