@@ -124,6 +124,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task HandshakeDetailsAreAvailableAfterAsyncCallback()
+        {
+            void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.UseHttps(async (stream, clientHelloInfo, state, cancellationToken) =>
+                {
+                    await Task.Yield();
+
+                    return new SslServerAuthenticationOptions
+                    {
+                        ServerCertificate = _x509Certificate2,
+                    };
+                }, state: null);
+            }
+
+            await using (var server = new TestServer(context =>
+            {
+                var tlsFeature = context.Features.Get<ITlsHandshakeFeature>();
+                Assert.NotNull(tlsFeature);
+                Assert.True(tlsFeature.Protocol > SslProtocols.None, "Protocol");
+                Assert.True(tlsFeature.CipherAlgorithm > CipherAlgorithmType.Null, "Cipher");
+                Assert.True(tlsFeature.CipherStrength > 0, "CipherStrength");
+                Assert.True(tlsFeature.HashAlgorithm >= HashAlgorithmType.None, "HashAlgorithm"); // May be None on Linux.
+                Assert.True(tlsFeature.HashStrength >= 0, "HashStrength"); // May be 0 for some algorithms
+                Assert.True(tlsFeature.KeyExchangeAlgorithm >= ExchangeAlgorithmType.None, "KeyExchangeAlgorithm"); // Maybe None on Windows 7
+                Assert.True(tlsFeature.KeyExchangeStrength >= 0, "KeyExchangeStrength"); // May be 0 on mac
+
+                return context.Response.WriteAsync("hello world");
+            }, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+            {
+                var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
+                Assert.Equal("hello world", result);
+            }
+        }
+
+        [Fact]
         public async Task RequireCertificateFailsWhenNoCertificate()
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
@@ -166,22 +202,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        [QuarantinedTest("https://github.com/dotnet/runtime/issues/40402")]
-        public async Task ClientCertificateRequiredConfiguredInCallbackContinuesWhenNoCertificate()
+        public async Task AsyncCallbackSettingClientCertificateRequiredContinuesWhenNoCertificate()
         {
             void ConfigureListenOptions(ListenOptions listenOptions)
             {
-                listenOptions.UseHttps((connection, stream, clientHelloInfo, state, cancellationToken) =>
+                listenOptions.UseHttps((stream, clientHelloInfo, state, cancellationToken) =>
                     new ValueTask<SslServerAuthenticationOptions>(new SslServerAuthenticationOptions
                     {
                         ServerCertificate = _x509Certificate2,
-                        // From the API Docs: "Note that this is only a request --
-                        // if no certificate is provided, the server still accepts the connection request."
-                        // Not to mention this is equivalent to the test above.
                         ClientCertificateRequired = true,
                         RemoteCertificateValidationCallback = (sender, certificate, chain, sslPolicyErrors) => true,
                         CertificateRevocationCheckMode = X509RevocationMode.NoCheck
-                    }), state: null, HttpsConnectionAdapterOptions.DefaultHandshakeTimeout);
+                    }), state: null);
             }
 
             await using (var server = new TestServer(context =>
@@ -241,6 +273,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         return _x509Certificate2;
                     }
                 });
+            }
+
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    var stream = OpenSslStream(connection.Stream);
+                    await stream.AuthenticateAsClientAsync("localhost");
+                    Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
+                    Assert.Equal(1, selectorCalled);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task UsesProvidedAsyncCallback()
+        {
+            var selectorCalled = 0;
+            void ConfigureListenOptions(ListenOptions listenOptions)
+            {
+                listenOptions.UseHttps(async (stream, clientHelloInfo, state, cancellationToken) =>
+                {
+                    await Task.Yield();
+
+                    Assert.NotNull(stream);
+                    Assert.Equal("localhost", clientHelloInfo.ServerName);
+                    selectorCalled++;
+
+                    return new SslServerAuthenticationOptions
+                    {
+                        ServerCertificate = _x509Certificate2
+                    };
+                }, state: null);
             }
 
             await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), ConfigureListenOptions))
