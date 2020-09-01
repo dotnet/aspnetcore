@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 // Look for DbContext classes registered in the service provider
                 var registeredContexts = errorContext.HttpContext.RequestServices.GetServices<DbContextOptions>()
                     .Select(o => o.ContextType)
-                    .Distinct();
+                    .Distinct(); // Workaround for https://github.com/dotnet/efcore/issues/22341
 
                 if (registeredContexts.Any())
                 {
