@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 PropertyNameCaseInsensitive = true,
-                IgnoreNullValues = true
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
             };
 
         // This setting is not configurable, but realistically we don't expect an app to take more than 30 seconds from when
