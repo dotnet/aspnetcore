@@ -200,9 +200,8 @@ namespace Microsoft.AspNetCore.Components
         /// <returns>A <see cref="Task"/> that completes when the component has finished updating and rendering itself.</returns>
         /// <remarks>
         /// <para>
-        /// The <see cref="SetParametersAsync(ParameterView)"/> method should be passed the entire set of parameter values each
-        /// time <see cref="SetParametersAsync(ParameterView)"/> is called. It not required that the caller supply a parameter
-        /// value for all parameters that are logically understood by the component.
+        /// Parameters are passed when <see cref="SetParametersAsync(ParameterView)"/> is called. It is not required that 
+        /// the caller supply a parameter value for all of the parameters that are logically understood by the component.
         /// </para>
         /// <para>
         /// The default implementation of <see cref="SetParametersAsync(ParameterView)"/> will set the value of each property
