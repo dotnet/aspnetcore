@@ -270,7 +270,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         {
             auto content = m_stringRedirectionOutput->GetOutput();
 
-            throw InvalidOperationException(format(L"Error occurred when initializing in-process application, Return code: 0x%x, Error logs: %ls", startupReturnCode, content));
+            throw InvalidOperationException(format(L"Error occurred when initializing in-process application, Return code: 0x%x, Error logs: %ls", startupReturnCode, content.c_str()));
         }
 
         if (m_pConfig->QueryCallStartupHook())
