@@ -268,7 +268,9 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         auto startupReturnCode = context->m_hostFxr.InitializeForApp(context->m_argc, context->m_argv.get(), m_dotnetExeKnownLocation);
         if (startupReturnCode != 0)
         {
-            throw InvalidOperationException(format(L"Error occurred when initializing in-process application, Return code: 0x%x", startupReturnCode));
+            auto content = m_stringRedirectionOutput->GetOutput();
+
+            throw InvalidOperationException(format(L"Error occurred when initializing in-process application, Return code: 0x%x, Error logs: %ls", startupReturnCode, content));
         }
 
         if (m_pConfig->QueryCallStartupHook())
