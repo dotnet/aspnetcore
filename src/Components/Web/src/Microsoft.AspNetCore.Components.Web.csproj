@@ -14,7 +14,6 @@
     <Reference Include="Microsoft.AspNetCore.Components.Forms" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.JSInterop" />
-    <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 
 </Project>
