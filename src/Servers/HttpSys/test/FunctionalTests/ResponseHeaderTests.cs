@@ -49,10 +49,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 return Task.FromResult(0);
             }))
             {
-                // HttpClient would merge the headers no matter what
-#pragma warning disable CS0618
+
+#pragma warning disable // Disables CS0618 to use HttpClient which would merge the headers no matter what
                 WebRequest request = WebRequest.Create(address);
-#pragma warning restore CS0618
+#pragma warning restore
                 HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
                 Assert.Equal(4, response.Headers.Count);
                 Assert.Null(response.Headers["Transfer-Encoding"]);
@@ -75,10 +75,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 return Task.FromResult(0);
             }))
             {
-                // HttpClient would merge the headers no matter what
-#pragma warning disable CS0618
+#pragma warning disable // Disables CS0618 to use HttpClient which would merge the headers no matter what 
                 WebRequest request = WebRequest.Create(address);
-#pragma warning restore CS0618
+#pragma warning restore
                 HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
                 Assert.Equal(4, response.Headers.Count);
                 Assert.Null(response.Headers["Transfer-Encoding"]);
@@ -101,10 +100,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 return Task.FromResult(0);
             }))
             {
-                // HttpClient would merge the headers no matter what
-#pragma warning disable CS0618
+#pragma warning disable // Disables CS0618 to use HttpClient which would merge the headers no matter what 
                 WebRequest request = WebRequest.Create(address);
-#pragma warning restore CS0618
+#pragma warning restore
                 HttpWebResponse response = (HttpWebResponse)await request.GetResponseAsync();
                 Assert.Equal(4, response.Headers.Count);
                 Assert.Null(response.Headers["Transfer-Encoding"]);
