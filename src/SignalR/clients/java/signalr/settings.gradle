@@ -1,2 +1,2 @@
 rootProject.name = 'signalr'
-include 'main'
+include 'core', 'messagepack', 'test'
