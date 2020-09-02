@@ -18,7 +18,7 @@ namespace Microsoft.JSInterop.Infrastructure
             var json = "{}";
 
             // Act & Assert
-            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<JSObjectReference>(json, JsonSerializerOptions));
+            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<IJSObjectReference>(json, JsonSerializerOptions));
             Assert.Equal("Required property __jsObjectId not found.", ex.Message);
         }
 
@@ -29,7 +29,7 @@ namespace Microsoft.JSInterop.Infrastructure
             var json = "{\"foo\":2}";
 
             // Act & Assert
-            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<JSObjectReference>(json, JsonSerializerOptions));
+            var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<IJSObjectReference>(json, JsonSerializerOptions));
             Assert.Equal("Unexcepted JSON property foo.", ex.Message);
         }
 
@@ -40,7 +40,7 @@ namespace Microsoft.JSInterop.Infrastructure
             var json = $"{{\"__jsObjectId\":5";
 
             // Act & Assert
-            var ex = Record.Exception(() => JsonSerializer.Deserialize<JSObjectReference>(json, JsonSerializerOptions));
+            var ex = Record.Exception(() => JsonSerializer.Deserialize<IJSObjectReference>(json, JsonSerializerOptions));
             Assert.IsAssignableFrom<JsonException>(ex);
         }
 
@@ -51,7 +51,7 @@ namespace Microsoft.JSInterop.Infrastructure
             var json = $"{{\"__jsObjectId\":3,\"__jsObjectId\":7}}";
 
             // Act & Assert
-            var ex = Record.Exception(() => JsonSerializer.Deserialize<JSObjectReference>(json, JsonSerializerOptions));
+            var ex = Record.Exception(() => JsonSerializer.Deserialize<IJSObjectReference>(json, JsonSerializerOptions));
             Assert.IsAssignableFrom<JsonException>(ex);
         }
 
@@ -63,7 +63,7 @@ namespace Microsoft.JSInterop.Infrastructure
             var json = $"{{\"__jsObjectId\":{expectedId}}}";
 
             // Act
-            var deserialized = JsonSerializer.Deserialize<JSObjectReference>(json, JsonSerializerOptions)!;
+            var deserialized = (JSObjectReference)JsonSerializer.Deserialize<IJSObjectReference>(json, JsonSerializerOptions)!;
 
             // Assert
             Assert.Equal(expectedId, deserialized?.Id);
@@ -76,7 +76,7 @@ namespace Microsoft.JSInterop.Infrastructure
             var jsObjectRef = new JSObjectReference(JSRuntime, 7);
 
             // Act
-            var json = JsonSerializer.Serialize(jsObjectRef, JsonSerializerOptions);
+            var json = JsonSerializer.Serialize((IJSObjectReference)jsObjectRef, JsonSerializerOptions);
 
             // Assert
             Assert.Equal($"{{\"__jsObjectId\":{jsObjectRef.Id}}}", json);
