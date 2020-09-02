@@ -103,8 +103,6 @@ Integration with static web assets:
        sources like an additional itemgroup or metadata.
   -->
   <_ScopedCssExtension>.rz.scp.css</_ScopedCssExtension>
-
-  <GetCurrentProjectStaticWebAssetsDependsOn Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true'">$(GetCurrentProjectStaticWebAssetsDependsOn);IncludeScopedCssBundle;</GetCurrentProjectStaticWebAssetsDependsOn>
 </PropertyGroup>
 
 <Target Name="_PrepareForScopedCss" DependsOnTargets="$(_PrepareForScopedCssDependsOn)" />
