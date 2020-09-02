@@ -24,9 +24,7 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
   // would update the scroll position to compensate. Then the spacer would remain visible and we'd keep on
   // trying to resize it.
   const scrollContainer = findClosestScrollContainer(spacerBefore);
-  if (scrollContainer) {
-    scrollContainer.style.overflowAnchor = 'none';
-  }
+  (scrollContainer || document.documentElement).style.overflowAnchor = 'none';
 
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
     root: scrollContainer,
