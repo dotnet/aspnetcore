@@ -15,6 +15,8 @@ namespace HostedInAspNet.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<BootResourceRequestLog>();
+
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -46,6 +48,7 @@ namespace HostedInAspNet.Server
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHub<ChatHub>("/chathub");
                 endpoints.MapFallbackToFile("index.html");
             });
         }

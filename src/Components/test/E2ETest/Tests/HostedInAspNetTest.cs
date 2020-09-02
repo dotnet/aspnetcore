@@ -46,6 +46,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.True((bool)bootstrapTooltipType);
         }
 
+        [Fact]
+        public void SignalRClientWorks()
+        {
+            var mainHeaderSelector = By.TagName("h1");
+
+            // Verify we start at home, with the home link highlighted
+            Assert.Equal("Hello, world!", Browser.FindElement(mainHeaderSelector).Text);
+
+            // Navigate to "signalr"
+            Browser.FindElement(By.LinkText("SignalR")).Click();
+            Assert.Equal("SignalR!", Browser.FindElement(mainHeaderSelector).Text);
+
+            var messagesElement = Browser.FindElement(By.CssSelector("li"));
+            Assert.Equal("SignalR Client: Echo", messagesElement.Text);
+        }
+
         private void WaitUntilLoaded()
         {
             new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
