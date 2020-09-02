@@ -80,7 +80,7 @@ Integration with static web assets:
   -->
   <ResolveStaticWebAssetsInputsDependsOn Condition="'$(DisableScopedCssBundling)' != 'true'">
     $(ResolveStaticWebAssetsInputsDependsOn);
-    _AddScopedCssBundle;
+    _AddScopedCssBundles;
   </ResolveStaticWebAssetsInputsDependsOn>
 
   <!-- When used as a reference, the app will have been built before and as a result the list of static web assets will include the bundle
@@ -88,11 +88,13 @@ Integration with static web assets:
 
   <GetCurrentProjectStaticWebAssetsDependsOn Condition="'$(DisableScopedCssBundling)' != 'true'">
     $(GetCurrentProjectStaticWebAssetsDependsOn);
+    _AddScopedCssBundles;
     _AddGeneratedScopedCssFilesForReference;
   </GetCurrentProjectStaticWebAssetsDependsOn>
 
   <GenerateStaticWebAssetsPackTargetsDependsOn>
     $(GenerateStaticWebAssetsPackTargetsDependsOn);
+    _AddScopedCssBundles;
     _AddGeneratedScopedCssFilesForReference;
   </GenerateStaticWebAssetsPackTargetsDependsOn>
 
@@ -185,7 +187,7 @@ Integration with static web assets:
   In the hosted blazor webassembly case, we want to include the bundle within the assets returned to the host, so we wire up this task
   to `GetCurrentProjectStaticWebAssetsDependsOn` so that contents are replaced and shared with the host application.
 
-  Normally, _CollectAllScopedCssAssets will find all the scoped css files from referenced packages, class libraries and the current project. When _AddScopedCssBundle
+  Normally, _CollectAllScopedCssAssets will find all the scoped css files from referenced packages, class libraries and the current project. When _AddScopedCssBundles
   runs, it will remove all those static web assets and add the bundle asset.
   When _CollectAllScopedCssAssets runs as part of a hosted blazor webassembly app, only the current project and package assets are removed from the list of
   static web assets. If the host also decides to generate a bundle, there will be a bundle for the razor client app and another bundle for the host and they will
@@ -225,48 +227,58 @@ Integration with static web assets:
   </PropertyGroup>
 </Target>
 
-<Target Name="_AddScopedCssBundle" Condition="'$(DisableScopedCssBundling)' != 'true'" DependsOnTargets="_PrepareForBundling;_CollectAllScopedCssAssets">
+<Target Name="_ComputeCssBundles" DependsOnTargets="_PrepareForBundling;_CollectAllScopedCssAssets">
+  <ItemGroup>
+    <!-- https://github.com/dotnet/aspnetcore/issues/24245 -->
+    <_AppBundleStaticWebAsset Include="$(_ScopedCssOutputPath)" Condition="@(_AllScopedCss) != ''">
+      <SourceType></SourceType>
+      <SourceId>$(PackageId)</SourceId>
+      <ContentRoot>$(_ScopedCssBundleContentRoot)</ContentRoot>
+      <BasePath>$(_ScopedCssBundleBasePath)</BasePath>
+      <RelativePath>$(PackageId).styles.css</RelativePath>
+    </_AppBundleStaticWebAsset>
+
+    <!-- We include the project bundle as an SWA too so that other targets can be aware of the file and take it into account when making decissions.
+        The application bundle is the only one that gets a special treatment and is allowed to be on the "/" by default when the SWA default path hasn't
+        changed.
+    -->
+    <_ProjectBundleStaticWebAsset Include="$(_ScopedCssProjectOutputPath)" Condition="@(_AllScopedCss) != ''">
+      <SourceType></SourceType>
+      <SourceId>$(PackageId)</SourceId>
+      <ContentRoot>$(_ScopedCssProjectBundleContentRoot)</ContentRoot>
+      <BasePath>$(StaticWebAssetBasePath)</BasePath>
+      <RelativePath>$(PackageId).bundle.scp.css</RelativePath>
+    </_ProjectBundleStaticWebAsset>
+
+  </ItemGroup>
+</Target>
+
+<Target Name="_AddScopedCssBundles" Condition="'$(DisableScopedCssBundling)' != 'true'" DependsOnTargets="_ComputeCssBundles">
   <ItemGroup>
   <!-- When bundling is enabled we want to remove all identified generated scoped css files from the list of static web assets so that
        they are not copied to the output folder. -->
-    <StaticWebAsset Remove="@(_AllScopedCss)" Condition="'$(DisableScopedCssBundling)' != 'true'" />
+    <StaticWebAsset Remove="@(_AllScopedCss)" />
     <!-- https://github.com/dotnet/aspnetcore/issues/24245 -->
-    <StaticWebAsset Include="$(_ScopedCssOutputPath)" Condition="@(_AllScopedCss) != ''">
-      <SourceType></SourceType>
-      <SourceId>$(PackageId)</SourceId>
-      <ContentRoot>$(_ScopedCssBundleContentRoot)</ContentRoot>
-      <BasePath>$(_ScopedCssBundleBasePath)</BasePath>
-      <RelativePath>$(PackageId).styles.css</RelativePath>
-    </StaticWebAsset>
-    <_ExternalStaticWebAsset Include="$(_ScopedCssOutputPath)" Condition="@(_AllScopedCss) != ''">
+    <StaticWebAsset Include="@(_AppBundleStaticWebAsset)" />
+    <!-- We include the project bundle as an SWA too so that other targets can be aware of the file and take it into account when making decissions.
+        The application bundle is the only one that gets a special treatment and is allowed to be on the "/" by default when the SWA default path hasn't
+        changed.
+    -->
+    <StaticWebAsset Include="@(_ProjectBundleStaticWebAsset)" />
+
+    <_ExternalStaticWebAsset Include="@(_AppBundleStaticWebAsset)">
       <SourceType>generated</SourceType>
-      <SourceId>$(PackageId)</SourceId>
-      <ContentRoot>$(_ScopedCssBundleContentRoot)</ContentRoot>
-      <BasePath>$(_ScopedCssBundleBasePath)</BasePath>
-      <RelativePath>$(PackageId).styles.css</RelativePath>
     </_ExternalStaticWebAsset>
 
-    <!-- We include the project bundle as an SWA too so that other targets can be aware of the file and take it into account when making decissions. -->
-    <StaticWebAsset Include="$(_ScopedCssProjectOutputPath)" Condition="@(_AllScopedCss) != ''">
-      <SourceType></SourceType>
-      <SourceId>$(PackageId)</SourceId>
-      <ContentRoot>$(_ScopedCssProjectBundleContentRoot)</ContentRoot>
-      <BasePath>$(_ScopedCssBundleBasePath)</BasePath>
-      <RelativePath>$(PackageId).bundle.scp.css</RelativePath>
-    </StaticWebAsset>
-    <_ExternalStaticWebAsset Include="$(_ScopedCssProjectOutputPath)" Condition="@(_AllScopedCss) != ''">
+    <_ExternalStaticWebAsset Include="@(_ProjectBundleStaticWebAsset)">
       <SourceType>generated</SourceType>
-      <SourceId>$(PackageId)</SourceId>
-      <ContentRoot>$(_ScopedCssProjectBundleContentRoot)</ContentRoot>
-      <BasePath>$(_ScopedCssBundleBasePath)</BasePath>
-      <RelativePath>$(PackageId).bundle.scp.css</RelativePath>
     </_ExternalStaticWebAsset>
 
   </ItemGroup>
 </Target>
 
 <!-- This target runs as part of ResolveStaticWebAssetInputs and collects all the generated scoped css files. When bundling is enabled
-     these files are removed from the list of static web assets by '_AddScopedCssBundle' -->
+     these files are removed from the list of static web assets by '_AddScopedCssBundles' -->
 
 <Target Name="_CollectAllScopedCssAssets">
   <ResolveAllScopedCssAssets StaticWebAssets="@(StaticWebAsset)">
@@ -296,29 +308,6 @@ Integration with static web assets:
   <ItemGroup>
     <StaticWebAsset Remove="@(_ScopedCssStaticWebAsset)" />
     <Staticwebasset Remove="$(_ScopedCssOutputPath)" />
-  </ItemGroup>
-</Target>
-
-<Target Name="IncludeScopedCssBundle" Condition="'$(DisableScopedCssBundling)' != 'true'" DependsOnTargets="_PrepareForBundling;_CollectAllScopedCssAssets;_AddGeneratedScopedCssFiles">
-  <ItemGroup>
-  <!-- When bundling is enabled we want to remove all identified generated scoped css files from the list of static web assets so that
-       they are not copied to the output folder. -->
-    <StaticWebAsset Remove="@(_AllScopedCss)" Condition="'$(DisableScopedCssBundling)' != 'true'" />
-    <!-- https://github.com/dotnet/aspnetcore/issues/24245 -->
-    <StaticWebAsset Include="$(_ScopedCssOutputPath)" Condition="@(_AllScopedCss) != ''">
-      <SourceType></SourceType>
-      <SourceId>$(PackageId)</SourceId>
-      <ContentRoot>$(_ScopedCssIntermediatePath)</ContentRoot>
-      <BasePath>$(_ScopedCssBundleBasePath)</BasePath>
-      <RelativePath>$(PackageId).styles.css</RelativePath>
-    </StaticWebAsset>
-    <_ExternalStaticWebAsset Include="$(_ScopedCssOutputPath)" Condition="@(_AllScopedCss) != ''">
-      <SourceType>generated</SourceType>
-      <SourceId>$(PackageId)</SourceId>
-      <ContentRoot>$(_ScopedCssIntermediatePath)</ContentRoot>
-      <BasePath>$(_ScopedCssBundleBasePath)</BasePath>
-      <RelativePath>$(PackageId).styles.css</RelativePath>
-    </_ExternalStaticWebAsset>
   </ItemGroup>
 </Target>
 

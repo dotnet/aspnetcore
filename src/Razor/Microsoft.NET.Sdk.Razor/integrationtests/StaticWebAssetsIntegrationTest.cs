@@ -65,6 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(result);
 
+            Assert.FileExists(result, PublishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary", "ClassLibrary.bundle.scp.css"));
             Assert.FileExists(result, PublishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js"));
             Assert.FileExists(result, PublishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.v4.js"));
             Assert.FileExists(result, PublishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary2", "css", "site.css"));
@@ -91,22 +92,23 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild("Publish", $"/restore /p:PublishSingleFile=true /p:ReferenceLocallyBuiltPackages=true");
 
             Assert.BuildPassed(result);
-            var publishOutputPath = GetRidSpecificPublishOutputPath("win-x64");
-            Assert.FileExists(result, publishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js"));
-            Assert.FileExists(result, publishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.v4.js"));
-            Assert.FileExists(result, publishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary2", "css", "site.css"));
-            Assert.FileExists(result, publishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary2", "js", "project-direct-dep.js"));
-            Assert.FileExists(result, publishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryDirectDependency", "css", "site.css"));
-            Assert.FileExists(result, publishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryDirectDependency", "js", "pkg-direct-dep.js"));
-            Assert.FileExists(result, publishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryTransitiveDependency", "js", "pkg-transitive-dep.js"));
-            Assert.FileExists(result, publishOutputPath, Path.Combine("wwwroot", "AppWithPackageAndP2PReferenceAndRID.styles.css"));
+            var publishOutputPathWithRID = GetRidSpecificPublishOutputPath("win-x64");
+            Assert.FileExists(result, publishOutputPathWithRID, Path.Combine("wwwroot", "_content", "ClassLibrary", "ClassLibrary.bundle.scp.css"));
+            Assert.FileExists(result, publishOutputPathWithRID, Path.Combine("wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js"));
+            Assert.FileExists(result, publishOutputPathWithRID, Path.Combine("wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.v4.js"));
+            Assert.FileExists(result, publishOutputPathWithRID, Path.Combine("wwwroot", "_content", "ClassLibrary2", "css", "site.css"));
+            Assert.FileExists(result, publishOutputPathWithRID, Path.Combine("wwwroot", "_content", "ClassLibrary2", "js", "project-direct-dep.js"));
+            Assert.FileExists(result, publishOutputPathWithRID, Path.Combine("wwwroot", "_content", "PackageLibraryDirectDependency", "css", "site.css"));
+            Assert.FileExists(result, publishOutputPathWithRID, Path.Combine("wwwroot", "_content", "PackageLibraryDirectDependency", "js", "pkg-direct-dep.js"));
+            Assert.FileExists(result, publishOutputPathWithRID, Path.Combine("wwwroot", "_content", "PackageLibraryTransitiveDependency", "js", "pkg-transitive-dep.js"));
+            Assert.FileExists(result, publishOutputPathWithRID, Path.Combine("wwwroot", "AppWithPackageAndP2PReferenceAndRID.styles.css"));
 
             // Validate that static web assets don't get published as content too on their regular path
-            Assert.FileDoesNotExist(result, publishOutputPath, Path.Combine("wwwroot", "js", "project-transitive-dep.js"));
-            Assert.FileDoesNotExist(result, publishOutputPath, Path.Combine("wwwroot", "js", "project-transitive-dep.v4.js"));
+            Assert.FileDoesNotExist(result, publishOutputPathWithRID, Path.Combine("wwwroot", "js", "project-transitive-dep.js"));
+            Assert.FileDoesNotExist(result, publishOutputPathWithRID, Path.Combine("wwwroot", "js", "project-transitive-dep.v4.js"));
 
             // Validate that the manifest never gets copied
-            Assert.FileDoesNotExist(result, publishOutputPath, "AppWithPackageAndP2PReference.StaticWebAssets.xml");
+            Assert.FileDoesNotExist(result, publishOutputPathWithRID, "AppWithPackageAndP2PReference.StaticWebAssets.xml");
         }
 
         [Fact]
@@ -122,6 +124,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(publish);
 
+            Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary", "ClassLibrary.bundle.scp.css"));
             Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js"));
             Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.v4.js"));
             Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary2", "css", "site.css"));
@@ -145,6 +148,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(publish);
 
+            Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary", "ClassLibrary.bundle.scp.css"));
             Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js"));
             Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.v4.js"));
             Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "_content", "ClassLibrary2", "css", "site.css"));
@@ -317,11 +321,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             };
 
             return $@"<StaticWebAssets Version=""1.0"">
+  <ContentRoot BasePath=""_content/ClassLibrary"" Path=""{projects[4]}"" />
   <ContentRoot BasePath=""_content/ClassLibrary"" Path=""{projects[3]}"" />
   <ContentRoot BasePath=""_content/ClassLibrary2"" Path=""{projects[2]}"" />
   <ContentRoot BasePath=""_content/PackageLibraryDirectDependency"" Path=""{projects[1]}"" />
   <ContentRoot BasePath=""_content/PackageLibraryTransitiveDependency"" Path=""{projects[0]}"" />
-  <ContentRoot BasePath=""/"" Path=""{projects[4]}"" />
 </StaticWebAssets>";
         }
     }
