@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, PublishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryDirectDependency", "css", "site.css"));
             Assert.FileExists(result, PublishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryDirectDependency", "js", "pkg-direct-dep.js"));
             Assert.FileExists(result, PublishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryTransitiveDependency", "js", "pkg-transitive-dep.js"));
-            Assert.FileExists(result, PublishOutputPath, Path.Combine("wwwroot", "_content", "AppWithPackageAndP2PReference", "_framework", "scoped.styles.css"));
+            Assert.FileExists(result, PublishOutputPath, Path.Combine("wwwroot", "AppWithPackageAndP2PReference.styles.css"));
 
             // Validate that static web assets don't get published as content too on their regular path
             Assert.FileDoesNotExist(result, PublishOutputPath, Path.Combine("wwwroot", "js", "project-transitive-dep.js"));
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, publishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryDirectDependency", "css", "site.css"));
             Assert.FileExists(result, publishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryDirectDependency", "js", "pkg-direct-dep.js"));
             Assert.FileExists(result, publishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryTransitiveDependency", "js", "pkg-transitive-dep.js"));
-            Assert.FileExists(result, publishOutputPath, Path.Combine("wwwroot", "_content", "AppWithPackageAndP2PReferenceAndRID", "_framework", "scoped.styles.css"));
+            Assert.FileExists(result, publishOutputPath, Path.Combine("wwwroot", "AppWithPackageAndP2PReferenceAndRID.styles.css"));
 
             // Validate that static web assets don't get published as content too on their regular path
             Assert.FileDoesNotExist(result, publishOutputPath, Path.Combine("wwwroot", "js", "project-transitive-dep.js"));
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryDirectDependency", "css", "site.css"));
             Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryDirectDependency", "js", "pkg-direct-dep.js"));
             Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryTransitiveDependency", "js", "pkg-transitive-dep.js"));
-            Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "_content", "AppWithPackageAndP2PReference", "_framework", "scoped.styles.css"));
+            Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "AppWithPackageAndP2PReference.styles.css"));
         }
 
         [Fact]
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryDirectDependency", "css", "site.css"));
             Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryDirectDependency", "js", "pkg-direct-dep.js"));
             Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "_content", "PackageLibraryTransitiveDependency", "js", "pkg-transitive-dep.js"));
-            Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "_content", "AppWithPackageAndP2PReference", "_framework", "scoped.styles.css"));
+            Assert.FileExists(publish, PublishOutputPath, Path.Combine("wwwroot", "AppWithPackageAndP2PReference.styles.css"));
         }
 
         [Fact]

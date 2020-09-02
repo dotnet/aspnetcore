@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.FileExists(result, IntermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css");
             Assert.FileExists(result, IntermediateOutputPath, "scopedcss", "Components", "Pages", "Index.razor.rz.scp.css");
-            Assert.FileExists(result, IntermediateOutputPath, "scopedcss", "_framework", "scoped.styles.css");
+            Assert.FileExists(result, IntermediateOutputPath, "scopedcss", "bundle", "ComponentApp.styles.css");
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "scopedcss", "Components", "Pages", "FetchData.razor.rz.scp.css");
         }
 
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild("Publish");
             Assert.BuildPassed(result);
 
-            Assert.FileExists(result, PublishOutputPath, "wwwroot", "_content", "ComponentApp", "_framework", "scoped.styles.css");
+            Assert.FileExists(result, PublishOutputPath, "wwwroot", "ComponentApp.styles.css");
             Assert.FileDoesNotExist(result, PublishOutputPath, "wwwroot", "_content", "ComponentApp", "Components", "Pages", "Index.razor.rz.scp.css");
             Assert.FileDoesNotExist(result, PublishOutputPath, "wwwroot", "_content", "ComponentApp", "Components", "Pages", "Counter.razor.rz.scp.css");
         }
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             result = await DotnetMSBuild("Publish", "/p:NoBuild=true");
             Assert.BuildPassed(result);
 
-            Assert.FileExists(result, PublishOutputPath, "wwwroot", "_content", "ComponentApp", "_framework", "scoped.styles.css");
+            Assert.FileExists(result, PublishOutputPath, "wwwroot", "ComponentApp.styles.css");
             Assert.FileDoesNotExist(result, PublishOutputPath, "wwwroot", "_content", "ComponentApp", "Components", "Pages", "Index.razor.rz.scp.css");
             Assert.FileDoesNotExist(result, PublishOutputPath, "wwwroot", "_content", "ComponentApp", "Components", "Pages", "Counter.razor.rz.scp.css");
         }
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildPassed(result);
 
             Assert.FileExists(result, IntermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css");
-            var generatedBundle = Assert.FileExists(result, IntermediateOutputPath, "scopedcss", "_framework", "scoped.styles.css");
+            var generatedBundle = Assert.FileExists(result, IntermediateOutputPath, "scopedcss", "bundle", "ComponentApp.styles.css");
             var generatedCounter = Assert.FileExists(result, IntermediateOutputPath, "Razor", "Components", "Pages", "Counter.razor.g.cs");
 
             var componentThumbprint = GetThumbPrint(generatedCounter);

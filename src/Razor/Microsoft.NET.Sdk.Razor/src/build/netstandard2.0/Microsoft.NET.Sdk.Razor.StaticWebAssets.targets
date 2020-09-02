@@ -69,6 +69,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(GetCopyToOutputDirectoryItemsDependsOn);
     </GetCopyToOutputDirectoryItemsDependsOn>
 
+    <ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
+      ResolveStaticWebAssetsConfiguration;
+      $(ResolveCurrentProjectStaticWebAssetsInputsDependsOn)
+    </ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
+
     <ResolveStaticWebAssetsInputsDependsOn>
       ResolveCurrentProjectStaticWebAssetsInputs;
       ResolveReferencedProjectsStaticWebAssets;
@@ -127,6 +132,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MakeDir
       Directories="$(_StaticWebAssetsIntermediateOutputPath)"
       Condition="!Exists('$(_StaticWebAssetsIntermediateOutputPath)')" />
+  </Target>
+
+  <Target Name="ResolveStaticWebAssetsConfiguration">
+    <PropertyGroup>
+      <StaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">_content/$(PackageId)</StaticWebAssetBasePath>
+    </PropertyGroup>
   </Target>
 
   <!--
@@ -285,7 +296,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="ResolveCurrentProjectStaticWebAssetsInputs" DependsOnTargets="$(ResolveCurrentProjectStaticWebAssetsInputsDependsOn)">
 
       <PropertyGroup>
-        <StaticWebAssetBasePath Condition="$(StaticWebAssetBasePath) == ''">_content/$(PackageId)</StaticWebAssetBasePath>
+        <StaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">_content/$(PackageId)</StaticWebAssetBasePath>
       </PropertyGroup>
 
       <ItemGroup>
