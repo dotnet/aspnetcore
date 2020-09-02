@@ -258,25 +258,25 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
 
             // Required config
-            options.AddAdditionalCapability("username", sauce.Username);
-            options.AddAdditionalCapability("accessKey", sauce.AccessKey);
-            options.AddAdditionalCapability("tunnelIdentifier", sauce.TunnelIdentifier);
-            options.AddAdditionalCapability("name", name);
+            options.AddAdditionalOption("username", sauce.Username);
+            options.AddAdditionalOption("accessKey", sauce.AccessKey);
+            options.AddAdditionalOption("tunnelIdentifier", sauce.TunnelIdentifier);
+            options.AddAdditionalOption("name", name);
 
             if (!string.IsNullOrEmpty(sauce.BrowserName))
             {
-                options.AddAdditionalCapability("browserName", sauce.BrowserName);
+                options.AddAdditionalOption("browserName", sauce.BrowserName);
             }
 
             if (!string.IsNullOrEmpty(sauce.PlatformVersion))
             {
                 options.PlatformName = sauce.PlatformName;
-                options.AddAdditionalCapability("platformVersion", sauce.PlatformVersion);
+                options.AddAdditionalOption("platformVersion", sauce.PlatformVersion);
             }
             else
             {
                 // In some cases (like macOS), SauceLabs expects us to set "platform" instead of "platformName".
-                options.AddAdditionalCapability("platform", sauce.PlatformName);
+                options.AddAdditionalOption("platform", sauce.PlatformName);
             }
 
             if (!string.IsNullOrEmpty(sauce.BrowserVersion))
@@ -286,22 +286,22 @@ namespace Microsoft.AspNetCore.E2ETesting
 
             if (!string.IsNullOrEmpty(sauce.DeviceName))
             {
-                options.AddAdditionalCapability("deviceName", sauce.DeviceName);
+                options.AddAdditionalOption("deviceName", sauce.DeviceName);
             }
 
             if (!string.IsNullOrEmpty(sauce.DeviceOrientation))
             {
-                options.AddAdditionalCapability("deviceOrientation", sauce.DeviceOrientation);
+                options.AddAdditionalOption("deviceOrientation", sauce.DeviceOrientation);
             }
 
             if (!string.IsNullOrEmpty(sauce.AppiumVersion))
             {
-                options.AddAdditionalCapability("appiumVersion", sauce.AppiumVersion);
+                options.AddAdditionalOption("appiumVersion", sauce.AppiumVersion);
             }
 
             if (!string.IsNullOrEmpty(sauce.SeleniumVersion))
             {
-                options.AddAdditionalCapability("seleniumVersion", sauce.SeleniumVersion);
+                options.AddAdditionalOption("seleniumVersion", sauce.SeleniumVersion);
             }
 
             var capabilities = options.ToCapabilities();
