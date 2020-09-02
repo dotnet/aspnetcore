@@ -118,7 +118,7 @@
     <SystemReflectionMetadataPackageVersion>5.0.0-rc.2.20461.4</SystemReflectionMetadataPackageVersion>
     <SystemResourcesExtensionsPackageVersion>5.0.0-rc.2.20461.4</SystemResourcesExtensionsPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>5.0.0-rc.2.20461.4</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RTMVersions.csproj. -->
+    <!-- System.Security.AccessControl should only be referenced in Dependencies.props and RepoTasks.csproj. -->
     <SystemSecurityAccessControlPackageVersion>5.0.0-rc.2.20461.4</SystemSecurityAccessControlPackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>5.0.0-rc.2.20461.4</SystemSecurityCryptographyCngPackageVersion>
     <SystemSecurityCryptographyPkcsPackageVersion>5.0.0-rc.2.20461.4</SystemSecurityCryptographyPkcsPackageVersion>
@@ -170,7 +170,7 @@
     runtime packages for everything else. This is not an issue for assemblies available in Microsoft.NETCore.App.Ref or
     Microsoft.Extensions.Internal.Transport because it is next to impossible we would service those packages.
 
-    System.Security.AccessControl should only be referenced in Dependencies.props and RTMVersions.csproj. Because
+    System.Security.AccessControl should only be referenced in Dependencies.props and RepoTasks.csproj. Because
     it's a transitive reference, we reship the ref/ assembly in Microsoft.AspNetCore.App.Ref. dotnet/runtime ships
     the implementation assemblies in Microsoft.NETCore.App.Runtime.* packages.
 
