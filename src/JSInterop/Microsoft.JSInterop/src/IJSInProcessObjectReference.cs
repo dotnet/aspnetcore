@@ -17,11 +17,6 @@ namespace Microsoft.JSInterop
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>someScope.someFunction</c> on the target instance.</param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-        public TValue Invoke<TValue>(string identifier, params object?[]? args)
-        {
-            ThrowIfDisposed();
-
-            return _jsRuntime.Invoke<TValue>(identifier, Id, args);
-        }
+        TValue Invoke<TValue>(string identifier, params object?[]? args);
     }
 }
