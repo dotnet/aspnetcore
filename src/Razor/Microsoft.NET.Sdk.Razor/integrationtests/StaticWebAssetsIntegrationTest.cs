@@ -313,8 +313,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Path.Combine(restorePath, "packagelibrarydirectdependency", "1.0.0", "build", "..", "staticwebassets") + Path.DirectorySeparatorChar,
                 Path.GetFullPath(Path.Combine(source, "ClassLibrary2", "wwwroot")) + Path.DirectorySeparatorChar,
                 Path.GetFullPath(Path.Combine(source, "ClassLibrary", "wwwroot")) + Path.DirectorySeparatorChar,
-                Path.GetFullPath(Path.Combine(source, "AppWithPackageAndP2PReference", IntermediateOutputPath, "scopedcss", "bundle")) + Path.DirectorySeparatorChar,
-                Path.GetFullPath(Path.Combine(source, "AppWithPackageAndP2PReference", IntermediateOutputPath, "scopedcss", "projectbundle")) + Path.DirectorySeparatorChar,
+                Path.GetFullPath(Path.Combine(source, "ClassLibrary", IntermediateOutputPath, "scopedcss", "projectbundle")) + Path.DirectorySeparatorChar,
             };
 
             return $@"<StaticWebAssets Version=""1.0"">
@@ -323,7 +322,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
   <ContentRoot BasePath=""_content/PackageLibraryDirectDependency"" Path=""{projects[1]}"" />
   <ContentRoot BasePath=""_content/PackageLibraryTransitiveDependency"" Path=""{projects[0]}"" />
   <ContentRoot BasePath=""/"" Path=""{projects[4]}"" />
-  <ContentRoot BasePath=""/"" Path=""{projects[5]}"" />
 </StaticWebAssets>";
         }
     }

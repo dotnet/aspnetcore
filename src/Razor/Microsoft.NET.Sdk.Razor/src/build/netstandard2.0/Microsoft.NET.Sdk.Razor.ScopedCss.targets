@@ -80,16 +80,21 @@ Integration with static web assets:
   -->
   <ResolveStaticWebAssetsInputsDependsOn Condition="'$(DisableScopedCssBundling)' != 'true'">
     $(ResolveStaticWebAssetsInputsDependsOn);
-    AddScopedCssBundle;
+    _AddScopedCssBundle;
   </ResolveStaticWebAssetsInputsDependsOn>
 
   <!-- When used as a reference, the app will have been built before and as a result the list of static web assets will include the bundle
   instead of the individual files. We need to correct that in GetCopyToOuputDirectoryItems -->
 
   <GetCurrentProjectStaticWebAssetsDependsOn Condition="'$(DisableScopedCssBundling)' != 'true'">
-    _AddGeneratedScopedCssFilesForReference;
     $(GetCurrentProjectStaticWebAssetsDependsOn);
+    _AddGeneratedScopedCssFilesForReference;
   </GetCurrentProjectStaticWebAssetsDependsOn>
+
+  <GenerateStaticWebAssetsPackTargetsDependsOn>
+    $(GenerateStaticWebAssetsPackTargetsDependsOn);
+    _AddGeneratedScopedCssFilesForReference;
+  </GenerateStaticWebAssetsPackTargetsDependsOn>
 
   <!-- We are going to use .rz.scp.css as the extension to mark scoped css files that come from packages or that have been pre-procesed by
        referenced class libraries. This way, we can use that information to adjust the build pipeline without having to rely on external
@@ -180,7 +185,7 @@ Integration with static web assets:
   In the hosted blazor webassembly case, we want to include the bundle within the assets returned to the host, so we wire up this task
   to `GetCurrentProjectStaticWebAssetsDependsOn` so that contents are replaced and shared with the host application.
 
-  Normally, _CollectAllScopedCssAssets will find all the scoped css files from referenced packages, class libraries and the current project. When AddScopedCssBundle
+  Normally, _CollectAllScopedCssAssets will find all the scoped css files from referenced packages, class libraries and the current project. When _AddScopedCssBundle
   runs, it will remove all those static web assets and add the bundle asset.
   When _CollectAllScopedCssAssets runs as part of a hosted blazor webassembly app, only the current project and package assets are removed from the list of
   static web assets. If the host also decides to generate a bundle, there will be a bundle for the razor client app and another bundle for the host and they will
@@ -220,7 +225,7 @@ Integration with static web assets:
   </PropertyGroup>
 </Target>
 
-<Target Name="AddScopedCssBundle" Condition="'$(DisableScopedCssBundling)' != 'true'" DependsOnTargets="_PrepareForBundling;_CollectAllScopedCssAssets">
+<Target Name="_AddScopedCssBundle" Condition="'$(DisableScopedCssBundling)' != 'true'" DependsOnTargets="_PrepareForBundling;_CollectAllScopedCssAssets">
   <ItemGroup>
   <!-- When bundling is enabled we want to remove all identified generated scoped css files from the list of static web assets so that
        they are not copied to the output folder. -->
@@ -287,11 +292,10 @@ Integration with static web assets:
   </ItemGroup>
 </Target>
 
-<Target Name="_AddGeneratedScopedCssFilesForReference" DependsOnTargets="_PrepareForBundling;_AddGeneratedScopedCssFiles">
+<Target Name="_AddGeneratedScopedCssFilesForReference" Condition="'$(DisableScopedCssBundling)' != 'true'" DependsOnTargets="_PrepareForBundling;_AddGeneratedScopedCssFiles">
   <ItemGroup>
-    <StaticWebAsset Include="@(_ScopedCssStaticWebAsset)" />
+    <StaticWebAsset Remove="@(_ScopedCssStaticWebAsset)" />
     <Staticwebasset Remove="$(_ScopedCssOutputPath)" />
-    <Staticwebasset Remove="$(_ScopedCssProjectOutputPath)" />
   </ItemGroup>
 </Target>
 
@@ -339,14 +343,6 @@ Integration with static web assets:
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <RelativePath>$([MSBuild]::MakeRelative('$(MSBuildProjectDirectory)',$([MSBuild]::NormalizePath('wwwroot/$(_ScopedCssBundleBasePath)/$(PackageId).styles.css'))))</RelativePath>
     </_ExternalPublishStaticWebAsset>
-  </ItemGroup>
-</Target>
-
-<Target Name="_AdjustIsolatedCssPackageContents" BeforeTargets="_RemoveWebRootContentFromPackaging;_CreateStaticWebAssetsCustomPropsCacheFile" DependsOnTargets="_CollectAllScopedCssAssets">
-  <ItemGroup>
-    <_CurrentProjectStaticWebAsset Remove="$(_ScopedCssOutputFullPath)" />
-    <StaticWebAsset Remove="$(_ScopedCssOutputFullPath)" />
-    <StaticWebAsset Include="@(_AllScopedCss)" Condition="'%(SourceType)' == ''" />
   </ItemGroup>
 </Target>
 

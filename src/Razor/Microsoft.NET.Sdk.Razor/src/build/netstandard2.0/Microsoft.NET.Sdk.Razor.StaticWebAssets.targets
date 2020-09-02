@@ -86,7 +86,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ResolveReferencedProjectsStaticWebAssetsDependsOn>
 
     <GenerateStaticWebAssetsPackTargetsDependsOn>
-      $(GenerateStaticWebAssetsPackTargetsDependsOn)
+      ResolveStaticWebAssetsInputs;
+      $(GenerateStaticWebAssetsPackTargetsDependsOn);
       _CreateStaticWebAssetsCustomPropsCacheFile;
     </GenerateStaticWebAssetsPackTargetsDependsOn>
 
@@ -370,7 +371,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target
     Name="_CreateStaticWebAssetsCustomPropsCacheFile"
-    DependsOnTargets="ResolveStaticWebAssetsInputs;_PrepareForStaticWebAssets">
+    DependsOnTargets="_PrepareForStaticWebAssets">
 
     <ItemGroup>
       <!-- This is the list of inputs that will be used for generating the props file that will be packed with
