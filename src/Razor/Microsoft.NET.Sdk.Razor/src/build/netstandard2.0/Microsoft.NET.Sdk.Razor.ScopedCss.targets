@@ -242,7 +242,7 @@ Integration with static web assets:
         The application bundle is the only one that gets a special treatment and is allowed to be on the "/" by default when the SWA default path hasn't
         changed.
     -->
-    <_ProjectBundleStaticWebAsset Include="$(_ScopedCssProjectOutputPath)" Condition="@(_AllScopedCss) != ''">
+    <_ProjectBundleStaticWebAsset Include="$(_ScopedCssProjectOutputPath)" Condition="@(_ScopedCss) != ''">
       <SourceType></SourceType>
       <SourceId>$(PackageId)</SourceId>
       <ContentRoot>$(_ScopedCssProjectBundleContentRoot)</ContentRoot>
@@ -257,7 +257,7 @@ Integration with static web assets:
   <ItemGroup>
   <!-- When bundling is enabled we want to remove all identified generated scoped css files from the list of static web assets so that
        they are not copied to the output folder. -->
-    <StaticWebAsset Remove="@(_AllScopedCss)" />
+    <StaticWebAsset Remove="@(_DiscoveredScopedCssFiles)" />
     <!-- https://github.com/dotnet/aspnetcore/issues/24245 -->
     <StaticWebAsset Include="@(_AppBundleStaticWebAsset)" />
     <!-- We include the project bundle as an SWA too so that other targets can be aware of the file and take it into account when making decissions.
@@ -270,10 +270,6 @@ Integration with static web assets:
       <SourceType>generated</SourceType>
     </_ExternalStaticWebAsset>
 
-    <_ExternalStaticWebAsset Include="@(_ProjectBundleStaticWebAsset)">
-      <SourceType>generated</SourceType>
-    </_ExternalStaticWebAsset>
-
   </ItemGroup>
 </Target>
 
@@ -282,8 +278,12 @@ Integration with static web assets:
 
 <Target Name="_CollectAllScopedCssAssets">
   <ResolveAllScopedCssAssets StaticWebAssets="@(StaticWebAsset)">
-    <Output TaskParameter="ScopedCssAssets" ItemName="_AllScopedCss" />
+    <Output TaskParameter="ScopedCssAssets" ItemName="_DiscoveredScopedCssFiles" />
+    <Output TaskParameter="ScopedCssProjectBundles" ItemName="_ScopedCssProjectBundles" />
   </ResolveAllScopedCssAssets>
+  <ItemGroup>
+    <_AllScopedCss Include="@(_ScopedCssProjectBundles);@(_DiscoveredScopedCssFiles)" />
+  </ItemGroup>
 </Target>
 
 <!-- This target is only called as part of GetCurrentProjectStaticWebAssets which is only invoked on referenced projects to get the list
@@ -314,10 +314,10 @@ Integration with static web assets:
 <Target Name="BundleScopedCssFiles" Condition="'$(DisableScopedCssBundling)' != 'true' and '@(_AllScopedCss)' != ''">
   <!-- Incrementalism is built into the task itself. -->
   <ConcatenateCssFiles FilesToProcess="@(_AllScopedCss)" OutputFile="$(_ScopedCssOutputPath)" />
-  <ConcatenateCssFiles FilesToProcess="@(_AllScopedCss)" OutputFile="$(_ScopedCssProjectOutputPath)" />
+  <ConcatenateCssFiles Condition="'@(_ScopedCss)' != ''" FilesToProcess="@(_AllScopedCss)" OutputFile="$(_ScopedCssProjectOutputPath)" />
   <ItemGroup>
     <FileWrites Include="$(_ScopedCssOutputPath)" />
-    <FileWrites Include="$(_ScopedCssProjectOutputPath)" />
+    <FileWrites Condition="'@(_ScopedCss)' != ''" Include="$(_ScopedCssProjectOutputPath)" />
   </ItemGroup>
 </Target>
 
