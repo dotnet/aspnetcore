@@ -131,7 +131,7 @@
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Language)' == 'C#'">
-    <AssemblyVersion>$(AspNetCoreMajorMinorVersion).0.0</AssemblyVersion>
+    <AssemblyVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).0.0</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup>

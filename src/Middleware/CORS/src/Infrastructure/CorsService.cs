@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             {
                 var origin = headers[CorsConstants.Origin];
                 result.AllowedOrigin = origin;
-                result.VaryByOrigin = policy.Origins.Count > 1 || !policy.IsDefaultIsOriginAllowed;
+                result.VaryByOrigin = policy.Origins.Count > 1;
             }
 
             result.SupportsCredentials = policy.SupportsCredentials;

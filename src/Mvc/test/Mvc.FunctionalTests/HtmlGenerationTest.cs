@@ -12,7 +12,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -62,6 +61,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     { "EmployeeList", "/HtmlGeneration_Home/EmployeeList" },
                     // Testing the EnvironmentTagHelper
                     { "Environment", null },
+                    // Testing the ImageTagHelper
+                    { "Image", null },
                     // Testing InputTagHelper with File
                     { "Input", null },
                     // Testing the LinkTagHelper
@@ -135,13 +136,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
 #endif
             }
-        }
-
-        [Fact]
-        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25206")]
-        public async Task HtmlGenerationWebSite_GeneratesExpectedResults_WithImageData()
-        {
-            await HtmlGenerationWebSite_GeneratesExpectedResults("image", antiforgeryPath: null);
         }
 
         [Fact]

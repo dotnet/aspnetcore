@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
-    <Compile Include="$(SharedSourceRoot)NonCapturingTimer\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
