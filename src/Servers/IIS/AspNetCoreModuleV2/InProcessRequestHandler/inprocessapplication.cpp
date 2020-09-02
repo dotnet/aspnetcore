@@ -251,6 +251,20 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             LOG_INFOF(L"Setting current directory to %s", this->QueryApplicationPhysicalPath().c_str());
         }
 
+        auto redirectionOutput = LoggingHelpers::CreateOutputs(
+            m_pConfig->QueryStdoutLogEnabled(),
+            m_pConfig->QueryStdoutLogFile(),
+            QueryApplicationPhysicalPath(),
+            m_stringRedirectionOutput
+        );
+
+        StandardStreamRedirection redirection(*redirectionOutput.get(), m_pHttpServer.IsCommandLineLaunch());
+
+        context->m_redirectionOutput = redirectionOutput.get();
+
+        ForwardingRedirectionOutput redirectionForwarder(&context->m_redirectionOutput);
+        const auto redirect = context->m_hostFxr.RedirectOutput(&redirectionForwarder);
+
         auto startupReturnCode = context->m_hostFxr.InitializeForApp(context->m_argc, context->m_argv.get(), m_dotnetExeKnownLocation);
         if (startupReturnCode != 0)
         {
@@ -280,17 +294,6 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 
         bool clrThreadExited;
         {
-            auto redirectionOutput = LoggingHelpers::CreateOutputs(
-                    m_pConfig->QueryStdoutLogEnabled(),
-                    m_pConfig->QueryStdoutLogFile(),
-                    QueryApplicationPhysicalPath(),
-                    m_stringRedirectionOutput
-                );
-
-            StandardStreamRedirection redirection(*redirectionOutput.get(), m_pHttpServer.IsCommandLineLaunch());
-
-            context->m_redirectionOutput = redirectionOutput.get();
-
             //Start CLR thread
             m_clrThread = std::thread(ClrThreadEntryPoint, context);
 
@@ -480,8 +483,6 @@ IN_PROCESS_APPLICATION::ClrThreadEntryPoint(const std::shared_ptr<ExecuteClrCont
     {
         // We use forwarder here instead of context->m_errorWriter itself to be able to
         // disconnect listener before CLR exits
-        ForwardingRedirectionOutput redirectionForwarder(&context->m_redirectionOutput);
-        const auto redirect = context->m_hostFxr.RedirectOutput(&redirectionForwarder);
 
         ExecuteClr(context);
     }
