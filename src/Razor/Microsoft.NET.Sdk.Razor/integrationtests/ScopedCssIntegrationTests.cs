@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, IntermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css");
             Assert.FileExists(result, IntermediateOutputPath, "scopedcss", "Components", "Pages", "Index.razor.rz.scp.css");
             Assert.FileExists(result, IntermediateOutputPath, "scopedcss", "bundle", "ComponentApp.styles.css");
+            Assert.FileExists(result, IntermediateOutputPath, "scopedcss", "projectbundle", "ComponentApp.bundle.scp.css");
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "scopedcss", "Components", "Pages", "FetchData.razor.rz.scp.css");
         }
 
@@ -126,6 +127,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.FileExists(result, IntermediateOutputPath, "scopedcss", "Components", "Pages", "Counter.razor.rz.scp.css");
             var generatedBundle = Assert.FileExists(result, IntermediateOutputPath, "scopedcss", "bundle", "ComponentApp.styles.css");
+            var generatedProjectBundle = Assert.FileExists(result, IntermediateOutputPath, "scopedcss", "projectbundle", "ComponentApp.bundle.scp.css");
             var generatedCounter = Assert.FileExists(result, IntermediateOutputPath, "Razor", "Components", "Pages", "Counter.razor.g.cs");
 
             var componentThumbprint = GetThumbPrint(generatedCounter);

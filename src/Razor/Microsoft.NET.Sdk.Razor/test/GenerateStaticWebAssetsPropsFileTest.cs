@@ -316,64 +316,18 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         }
 
         [Fact]
-        public void Fails_WhenStaticWebAsset_HaveDifferentBasePath()
-        {
-            // Arrange
-            var expectedError = "Static web assets have different 'BasePath' metadata values " +
-                "'_content/mylibrary' and '_content/mylibrary2' " +
-                $"for '{Path.Combine("wwwroot", "js", "sample.js")}' and '{Path.Combine("wwwroot", "css", "site.css")}'.";
-
-            var errorMessages = new List<string>();
-            var buildEngine = new Mock<IBuildEngine>();
-            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-
-            var task = new GenerateStaticWebAsssetsPropsFile
-            {
-                BuildEngine = buildEngine.Object,
-                StaticWebAssets = new TaskItem[]
-                {
-                    CreateItem(Path.Combine("wwwroot","js","sample.js"), new Dictionary<string,string>
-                    {
-                        ["SourceType"] = "",
-                        ["SourceId"] = "MyLibrary",
-                        ["ContentRoot"] = @"$(MSBuildThisFileDirectory)..\staticwebassets",
-                        ["BasePath"] = "_content/mylibrary",
-                        ["RelativePath"] = Path.Combine("js", "sample.js"),
-                    }),
-                    CreateItem(Path.Combine("wwwroot","css","site.css"), new Dictionary<string,string>
-                    {
-                        ["SourceType"] = "",
-                        ["SourceId"] = "MyLibrary",
-                        ["ContentRoot"] = @"$(MSBuildThisFileDirectory)..\staticwebassets",
-                        ["BasePath"] = "_content/mylibrary2",
-                        ["RelativePath"] = Path.Combine("css", "site.css"),
-                    })
-                }
-            };
-
-            // Act
-            var result = task.Execute();
-
-            // Assert
-            Assert.False(result);
-            var message = Assert.Single(errorMessages);
-            Assert.Equal(expectedError, message);
-        }
-
-        [Fact]
         public void WritesPropsFile_WhenThereIsAtLeastOneStaticAsset()
         {
             // Arrange
             var file = Path.GetTempFileName();
             var expectedDocument = @"<Project>
   <ItemGroup>
-    <StaticWebAsset Include=""$(MSBuildThisFileDirectory)..\staticwebassets\**"">
+    <StaticWebAsset Include=""$(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js"">
       <SourceType>Package</SourceType>
       <SourceId>MyLibrary</SourceId>
       <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
       <BasePath>_content/mylibrary</BasePath>
-      <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+      <RelativePath>js/sample.js</RelativePath>
     </StaticWebAsset>
   </ItemGroup>
 </Project>";
@@ -388,14 +342,84 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     TargetPropsFilePath = file,
                     StaticWebAssets = new TaskItem[]
                     {
-                    CreateItem(Path.Combine("wwwroot","js","sample.js"), new Dictionary<string,string>
+                        CreateItem(Path.Combine("wwwroot","js","sample.js"), new Dictionary<string,string>
+                        {
+                            ["SourceType"] = "",
+                            ["SourceId"] = "MyLibrary",
+                            ["ContentRoot"] = @"$(MSBuildThisFileDirectory)..\staticwebassets",
+                            ["BasePath"] = "_content/mylibrary",
+                            ["RelativePath"] = Path.Combine("js", "sample.js").Replace("\\","/"),
+                        }),
+                    }
+                };
+
+                // Act
+                var result = task.Execute();
+
+                // Assert
+                Assert.True(result);
+                var document = File.ReadAllText(file);
+                Assert.Equal(expectedDocument, document, ignoreLineEndingDifferences: true);
+            }
+            finally
+            {
+                if (File.Exists(file))
+                {
+                    File.Delete(file);
+                }
+            }
+        }
+
+        [Fact]
+        public void WritesIndividualItems_WithTheirRespectiveBaseAndRelativePaths()
+        {
+            // Arrange
+            var file = Path.GetTempFileName();
+            var expectedDocument = @"<Project>
+  <ItemGroup>
+    <StaticWebAsset Include=""$(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js"">
+      <SourceType>Package</SourceType>
+      <SourceId>MyLibrary</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/mylibrary</BasePath>
+      <RelativePath>js/sample.js</RelativePath>
+    </StaticWebAsset>
+    <StaticWebAsset Include=""$(MSBuildThisFileDirectory)..\staticwebassets\App.styles.css"">
+      <SourceType>Package</SourceType>
+      <SourceId>MyLibrary</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>/</BasePath>
+      <RelativePath>App.styles.css</RelativePath>
+    </StaticWebAsset>
+  </ItemGroup>
+</Project>";
+
+            try
+            {
+                var buildEngine = new Mock<IBuildEngine>();
+
+                var task = new GenerateStaticWebAsssetsPropsFile
+                {
+                    BuildEngine = buildEngine.Object,
+                    TargetPropsFilePath = file,
+                    StaticWebAssets = new TaskItem[]
                     {
-                        ["SourceType"] = "",
-                        ["SourceId"] = "MyLibrary",
-                        ["ContentRoot"] = @"$(MSBuildThisFileDirectory)..\staticwebassets",
-                        ["BasePath"] = "_content/mylibrary",
-                        ["RelativePath"] = Path.Combine("js", "sample.js"),
-                    }),
+                        CreateItem(Path.Combine("wwwroot","js","sample.js"), new Dictionary<string,string>
+                        {
+                            ["SourceType"] = "",
+                            ["SourceId"] = "MyLibrary",
+                            ["ContentRoot"] = @"$(MSBuildThisFileDirectory)..\staticwebassets",
+                            ["BasePath"] = "_content/mylibrary",
+                            ["RelativePath"] = Path.Combine("js", "sample.js").Replace("\\","/"),
+                        }),
+                        CreateItem(Path.Combine("wwwroot","App.styles.css"), new Dictionary<string,string>
+                        {
+                            ["SourceType"] = "",
+                            ["SourceId"] = "MyLibrary",
+                            ["ContentRoot"] = @"$(MSBuildThisFileDirectory)..\staticwebassets",
+                            ["BasePath"] = "/",
+                            ["RelativePath"] = "App.styles.css",
+                        }),
                     }
                 };
 

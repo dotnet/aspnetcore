@@ -172,6 +172,18 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
+        [InitializeTestProject("AppWithPackageAndP2PReference", language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
+        public async Task Build_Fails_WhenConflictingAssetsFoundBetweenAStaticWebAssetAndAFileInTheWebRootFolder()
+        {
+            Directory.CreateDirectory(Path.Combine(Project.DirectoryPath, "wwwroot", "_content", "ClassLibrary", "js"));
+            File.WriteAllText(Path.Combine(Project.DirectoryPath, "wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js"), "console.log('transitive-dep');");
+
+            var result = await DotnetMSBuild("Build");
+
+            Assert.BuildFailed(result);
+        }
+
+        [Fact]
         [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/23756")]
         [InitializeTestProject("AppWithPackageAndP2PReference", language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Clean_Success_RemovesManifestAndCache()
@@ -301,15 +313,17 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Path.Combine(restorePath, "packagelibrarydirectdependency", "1.0.0", "build", "..", "staticwebassets") + Path.DirectorySeparatorChar,
                 Path.GetFullPath(Path.Combine(source, "ClassLibrary2", "wwwroot")) + Path.DirectorySeparatorChar,
                 Path.GetFullPath(Path.Combine(source, "ClassLibrary", "wwwroot")) + Path.DirectorySeparatorChar,
-                Path.GetFullPath(Path.Combine(source, "AppWithPackageAndP2PReference", IntermediateOutputPath, "scopedcss")) + Path.DirectorySeparatorChar,
+                Path.GetFullPath(Path.Combine(source, "AppWithPackageAndP2PReference", IntermediateOutputPath, "scopedcss", "bundle")) + Path.DirectorySeparatorChar,
+                Path.GetFullPath(Path.Combine(source, "AppWithPackageAndP2PReference", IntermediateOutputPath, "scopedcss", "projectbundle")) + Path.DirectorySeparatorChar,
             };
 
             return $@"<StaticWebAssets Version=""1.0"">
-  <ContentRoot BasePath=""_content/AppWithPackageAndP2PReference"" Path=""{projects[4]}"" />
   <ContentRoot BasePath=""_content/ClassLibrary"" Path=""{projects[3]}"" />
   <ContentRoot BasePath=""_content/ClassLibrary2"" Path=""{projects[2]}"" />
   <ContentRoot BasePath=""_content/PackageLibraryDirectDependency"" Path=""{projects[1]}"" />
   <ContentRoot BasePath=""_content/PackageLibraryTransitiveDependency"" Path=""{projects[0]}"" />
+  <ContentRoot BasePath=""/"" Path=""{projects[4]}"" />
+  <ContentRoot BasePath=""/"" Path=""{projects[5]}"" />
 </StaticWebAssets>";
         }
     }

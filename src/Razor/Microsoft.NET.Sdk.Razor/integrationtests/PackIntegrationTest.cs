@@ -180,6 +180,29 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Path.Combine("lib", TFM, "ClassLibrary.Views.dll"));
         }
 
+        [Fact]
+        [InitializeTestProject("PackageLibraryDirectDependency", additionalProjects: new[] { "PackageLibraryTransitiveDependency" })]
+        public async Task Pack_FailsWhenStaticWebAssetsHaveConflictingPaths()
+        {
+            Project.AddProjectFileContent(@"
+<ItemGroup>
+  <StaticWebAsset Include=""bundle\js\pkg-direct-dep.js"">
+    <SourceType></SourceType>
+    <SourceId>PackageLibraryDirectDependency</SourceId>
+    <ContentRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)\bundle\'))</ContentRoot>
+    <BasePath>_content/PackageLibraryDirectDependency</BasePath>
+    <RelativePath>js/pkg-direct-dep.js</RelativePath>
+  </StaticWebAsset>
+</ItemGroup>");
+
+            Directory.CreateDirectory(Path.Combine(Project.DirectoryPath, "bundle", "js"));
+            File.WriteAllText(Path.Combine(Project.DirectoryPath, "bundle", "js", "pkg-direct-dep.js"), "console.log('bundle');");
+
+            var result = await DotnetMSBuild("Pack");
+
+            Assert.BuildFailed(result);
+        }
+
         // If you modify this test, make sure you also modify the test below this one to assert that things are not included as content.
         [Fact]
         [InitializeTestProject("PackageLibraryDirectDependency", additionalProjects: new[] { "PackageLibraryTransitiveDependency" })]

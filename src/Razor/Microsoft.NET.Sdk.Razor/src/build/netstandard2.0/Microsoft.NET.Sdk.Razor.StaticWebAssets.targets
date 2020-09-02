@@ -294,11 +294,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="ResolveCurrentProjectStaticWebAssetsInputs" DependsOnTargets="$(ResolveCurrentProjectStaticWebAssetsInputsDependsOn)">
-
-      <PropertyGroup>
-        <StaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">_content/$(PackageId)</StaticWebAssetBasePath>
-      </PropertyGroup>
-
       <ItemGroup>
 
       <_ThisProjectStaticWebAsset
@@ -427,6 +422,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_CurrentProjectHasStaticWebAssets Condition="'@(_CurrentProjectStaticWebAsset->Count())' != '0'">true</_CurrentProjectHasStaticWebAssets>
     </PropertyGroup>
+
+    <!-- Validate that there are no path conflicts between the assets we are about to pack. -->
+    <ValidateStaticWebAssetsUniquePaths Condition="'$(_CurrentProjectHasStaticWebAssets)' == 'true'"
+      StaticWebAssets="@(_CurrentProjectStaticWebAsset)"
+      WebRootFiles="" />
 
     <!-- Generates a props file that goes in build\Microsoft.AspNetCore.StaticWebAssets.props
          and that describes the static web assets for the package.
