@@ -67,6 +67,7 @@ jobs:
           /p:MaestroApiEndpoint=https://maestro-prod.westus2.cloudapp.azure.com
           /p:PublishUsingPipelines=${{ parameters.publishUsingPipelines }}
           /p:Configuration=$(_BuildConfig)
+          /p:OfficialBuildId=$(Build.BuildNumber)
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
     
@@ -87,11 +88,6 @@ jobs:
         ArtifactName: ReleaseConfigs
     
     - ${{ if eq(parameters.enablePublishBuildArtifacts, 'true') }}:
-      - task: PublishBuildArtifacts@1
-        displayName: Publish Logs to VSTS
-        inputs:
-          PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
-          PublishLocation: Container
-          ArtifactName: $(Agent.Os)_PublishBuildAssets
-        continueOnError: true
-        condition: always()      
+      - template: /eng/common/templates/steps/publish-logs.yml
+        parameters:
+          JobLabel: 'Publish_Artifacts_Logs'     

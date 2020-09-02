@@ -22,13 +22,8 @@ namespace RunTests
                     { Argument = new Argument<string>(), Required = true },
 
                 new Option(
-                    aliases: new string[] { "--sdk" },
-                    description: "The version of the sdk being used")
-                { Argument = new Argument<string>(), Required = true },
-
-                new Option(
                     aliases: new string[] { "--runtime" },
-                    description: "The version of the runtime being used")
+                    description: "The version of the ASP.NET runtime being installed and used")
                 { Argument = new Argument<string>(), Required = true },
 
                 new Option(
@@ -70,7 +65,6 @@ namespace RunTests
             var parseResult = command.Parse(args);
             var options = new RunTestsOptions();
             options.Target = parseResult.ValueForOption<string>("--target");
-            options.SdkVersion = parseResult.ValueForOption<string>("--sdk");
             options.RuntimeVersion = parseResult.ValueForOption<string>("--runtime");
             options.HelixQueue = parseResult.ValueForOption<string>("--queue");
             options.Architecture = parseResult.ValueForOption<string>("--arch");
