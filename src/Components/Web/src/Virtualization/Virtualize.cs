@@ -241,14 +241,7 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         {
             if (_lastRenderedItemCount > 0)
             {
-                var itemCountInv = 1f / _lastRenderedItemCount;
-                _itemSize = (spacerSeparation - (_lastRenderedPlaceholderCount * _itemSize)) * itemCountInv;
-
-                if (Math.Abs(_itemSize - ItemSize) <= 2 * itemCountInv)
-                {
-                    // The calculated item size was within the margin of a rounding error, so use the user-provided item size.
-                    _itemSize = ItemSize;
-                }
+                _itemSize = (spacerSeparation - (_lastRenderedPlaceholderCount * _itemSize)) / _lastRenderedItemCount;
             }
 
             if (_itemSize <= 0)
