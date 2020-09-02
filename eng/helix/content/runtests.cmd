@@ -29,11 +29,11 @@ set DOTNET_CLI_HOME=%HELIX_CORRELATION_PAYLOAD%\home
 set PATH=%DOTNET_ROOT%;!PATH!;%HELIX_CORRELATION_PAYLOAD%\node\bin
 echo Set path to: %PATH%
 
-powershell.exe -noLogo -NoProfile -ExecutionPolicy unrestricted -command ". eng\common\tools.ps1; InstallDotNet %DOTNET_ROOT% %$sdkVersion% %$arch% '' $true"
+powershell.exe -noLogo -NoProfile -ExecutionPolicy unrestricted -command ". eng\common\tools.ps1; InstallDotNet %DOTNET_ROOT% %$sdkVersion% %$arch% '' $true '' '' $true"
 IF [%$feedCred%] == [] (
-    powershell.exe -noLogo -NoProfile -ExecutionPolicy unrestricted -command ". eng\common\tools.ps1; InstallDotNet %DOTNET_ROOT% %$runtimeVersion% %$arch% dotnet $true"
+    powershell.exe -noLogo -NoProfile -ExecutionPolicy unrestricted -command ". eng\common\tools.ps1; InstallDotNet %DOTNET_ROOT% %$runtimeVersion% %$arch% dotnet $true '' '' $true"
 ) else (
-    powershell.exe -noLogo -NoProfile -ExecutionPolicy unrestricted -command ". eng\common\tools.ps1; InstallDotNet %DOTNET_ROOT% %$runtimeVersion% %$arch% dotnet $true https://dotnetclimsrc.blob.core.windows.net/dotnet %$feedCred%"
+    powershell.exe -noLogo -NoProfile -ExecutionPolicy unrestricted -command ". eng\common\tools.ps1; InstallDotNet %DOTNET_ROOT% %$runtimeVersion% %$arch% dotnet $true https://dotnetclimsrc.blob.core.windows.net/dotnet %$feedCred% $true"
 )
 
 set exit_code=0
