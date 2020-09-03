@@ -346,6 +346,11 @@ function createEmscriptenModuleInstance(resourceLoader: WebAssemblyResourceLoade
         throw new Error(`${notMarked.join()} must be marked with 'BlazorWebAssemblyLazyLoad' item group in your project file to allow lazy-loading.`);
       }
 
+      if (hasDebuggingEnabled()) {
+        const pdbsToLoad = assembliesMarkedAsLazy.map(assembly => changeExtension(assembly, '.pdb'));
+        MONO.mono_wasm_add_lazy_load_files([...assembliesMarkedAsLazy, ...pdbsToLoad].map(a => toAbsoluteUrl(`_framework/${a}`)));
+      }
+
       const resourcePromises = Promise.all(assembliesMarkedAsLazy
             .map(assembly => resourceLoader.loadResource(assembly, `_framework/${assembly}`, lazyAssemblies[assembly], 'assembly'))
             .map(async resource => (await resource.response).arrayBuffer()));
