@@ -4,6 +4,7 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.JSInterop.Implementation;
 
 namespace Microsoft.JSInterop.Infrastructure
 {
@@ -11,6 +12,8 @@ namespace Microsoft.JSInterop.Infrastructure
         where TInterface : class, IJSObjectReference
         where TImplementation : JSObjectReference, TInterface
     {
+        private static readonly JsonEncodedText _idKey = JsonEncodedText.Encode("__jsObjectId");
+
         private readonly Func<long, TImplementation> _jsObjectReferenceFactory;
 
         public JSObjectReferenceJsonConverter(Func<long, TImplementation> jsObjectReferenceFactory)
@@ -19,7 +22,7 @@ namespace Microsoft.JSInterop.Infrastructure
         }
 
         public override bool CanConvert(Type typeToConvert)
-            => typeToConvert == typeof(TInterface) || typeToConvert == typeof(TImplementation);
+            => typeToConvert == typeof(TInterface);// || typeToConvert == typeof(TImplementation);
 
         public override TInterface? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
@@ -29,7 +32,7 @@ namespace Microsoft.JSInterop.Infrastructure
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (id == -1 && reader.ValueTextEquals(JSObjectReference.IdKey.EncodedUtf8Bytes))
+                    if (id == -1 && reader.ValueTextEquals(_idKey.EncodedUtf8Bytes))
                     {
                         reader.Read();
                         id = reader.GetInt64();
@@ -47,7 +50,7 @@ namespace Microsoft.JSInterop.Infrastructure
 
             if (id == -1)
             {
-                throw new JsonException($"Required property {JSObjectReference.IdKey} not found.");
+                throw new JsonException($"Required property {_idKey} not found.");
             }
 
             return _jsObjectReferenceFactory(id);
@@ -56,7 +59,7 @@ namespace Microsoft.JSInterop.Infrastructure
         public override void Write(Utf8JsonWriter writer, TInterface value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
-            writer.WriteNumber(JSObjectReference.IdKey, ((TImplementation)value).Id);
+            writer.WriteNumber(_idKey, ((TImplementation)value).Id);
             writer.WriteEndObject();
         }
     }

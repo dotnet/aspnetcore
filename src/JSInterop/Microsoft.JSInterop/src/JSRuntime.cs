@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.JSInterop.Implementation;
 using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.JSInterop
@@ -37,7 +38,8 @@ namespace Microsoft.JSInterop
                 Converters =
                 {
                     new DotNetObjectReferenceJsonConverterFactory(this),
-                    new JSObjectReferenceJsonConverter<IJSObjectReference, JSObjectReference>(id => new JSObjectReference(this, id)),
+                    new JSObjectReferenceJsonConverter<IJSObjectReference, JSObjectReference>(
+                        id => new JSObjectReference(this, id)),
                 }
             };
         }

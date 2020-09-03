@@ -48,7 +48,7 @@ namespace Microsoft.JSInterop.WebAssembly
             InternalCalls.InvokeJS<object, object, object, string>(out _, ref callInfo, null, null, null);
         }
 
-        protected internal override void EndInvokeDotNet(DotNetInvocationInfo callInfo, in DotNetInvocationResult dispatchResult)
+        protected override void EndInvokeDotNet(DotNetInvocationInfo callInfo, in DotNetInvocationResult dispatchResult)
         {
             // For failures, the common case is to call EndInvokeDotNet with the Exception object.
             // For these we'll serialize as something that's useful to receive on the JS side.

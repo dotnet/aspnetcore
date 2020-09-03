@@ -2,29 +2,38 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.JSInterop
+namespace Microsoft.JSInterop.Implementation
 {
-    internal class JSObjectReference : IJSObjectReference
+    /// <summary>
+    /// Implements functionality for <see cref="IJSObjectReference"/>.
+    /// </summary>
+    public class JSObjectReference : IJSObjectReference
     {
-        public static readonly JsonEncodedText IdKey = JsonEncodedText.Encode("__jsObjectId");
-
         private readonly JSRuntime _jsRuntime;
 
-        private bool _disposed;
+        internal bool Disposed { get; set; }
 
-        public long Id { get; }
+        /// <summary>
+        /// The unique identifier assigned to this instance.
+        /// </summary>
+        protected internal long Id { get; }
 
-        public JSObjectReference(JSRuntime jsRuntime, long id)
+        /// <summary>
+        /// Inititializes a new <see cref="JSObjectReference"/> instance.
+        /// </summary>
+        /// <param name="jsRuntime">The <see cref="JSRuntime"/> used for invoking JS interop calls.</param>
+        /// <param name="id">The unique identifier.</param>
+        protected internal JSObjectReference(JSRuntime jsRuntime, long id)
         {
             _jsRuntime = jsRuntime;
 
             Id = id;
         }
 
+        /// <inheritdoc />
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
         {
             ThrowIfDisposed();
@@ -32,6 +41,7 @@ namespace Microsoft.JSInterop
             return _jsRuntime.InvokeAsync<TValue>(Id, identifier, args);
         }
 
+        /// <inheritdoc />
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
         {
             ThrowIfDisposed();
@@ -39,19 +49,21 @@ namespace Microsoft.JSInterop
             return _jsRuntime.InvokeAsync<TValue>(Id, identifier, cancellationToken, args);
         }
 
+        /// <inheritdoc />
         public async ValueTask DisposeAsync()
         {
-            if (!_disposed)
+            if (!Disposed)
             {
-                _disposed = true;
+                Disposed = true;
 
                 await _jsRuntime.InvokeVoidAsync("DotNet.jsCallDispatcher.disposeJSObjectReferenceById", Id);
             }
         }
 
+        /// <inheritdoc />
         protected void ThrowIfDisposed()
         {
-            if (_disposed)
+            if (Disposed)
             {
                 throw new ObjectDisposedException(GetType().Name);
             }
