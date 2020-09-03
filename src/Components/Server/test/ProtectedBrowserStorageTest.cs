@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.JSInterop;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Server
+namespace Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 {
     public class ProtectedBrowserStorageTest
     {
