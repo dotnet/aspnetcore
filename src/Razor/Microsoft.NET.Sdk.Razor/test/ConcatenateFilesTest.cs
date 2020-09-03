@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 {
     public class ConcatenateCssFilesTest
     {
-        private static string BundleContent =
+        private static readonly string BundleContent =
 @"/* _content/Test/TestFiles/Generated/Counter.razor.rz.scp.css */
 .counter {
     font-size: 2rem;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 }
 ";
 
-        private static string BundleWithImportsContent =
+        private static readonly string BundleWithImportsContent =
 @"@import '_content/Test/TestFiles/Generated/lib.bundle.scp.css';
 @import 'TestFiles/Generated/package.bundle.scp.css';
 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 }
 ";
 
-        private static string UpdatedBundleContent =
+        private static readonly string UpdatedBundleContent =
 @"/* _content/Test/TestFiles/Generated/Counter.razor.rz.scp.css */
 .counter {
     font-size: 2rem;
@@ -51,6 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
     font-weight: bold;
 }
 ";
+
         [Fact]
         public void BundlesScopedCssFiles_ProducesEmpyBundleIfNoFilesAvailable()
         {
@@ -109,7 +110,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             Assert.True(File.Exists(expectedFile));
 
             var actualContents = File.ReadAllText(expectedFile);
-            Assert.Equal(BundleContent, actualContents);
+            Assert.Equal(BundleContent, actualContents, ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -165,7 +166,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             Assert.True(File.Exists(expectedFile));
 
             var actualContents = File.ReadAllText(expectedFile);
-            Assert.Equal(BundleWithImportsContent, actualContents);
+            Assert.Equal(BundleWithImportsContent, actualContents, ignoreLineEndingDifferences: true);
         }
 
         [Theory]
@@ -189,7 +190,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             // Arrange
             var expectedContent = BundleWithImportsContent
                 .Replace("_content/Test/TestFiles/Generated/lib.bundle.scp.css", expectedImport)
-                .Replace("import 'TestFiles/Generated/package.bundle.scp.css'" + Environment.NewLine, "");
+                .Replace("@import 'TestFiles/Generated/package.bundle.scp.css';", "")
+                .Replace("\r\n", "\n")
+                .Replace("\n\n", "\n");
 
             var expectedFile = Path.Combine(Directory.GetCurrentDirectory(), $"{Guid.NewGuid():N}.css");
             var taskInstance = new ConcatenateCssFiles()
@@ -233,7 +236,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             Assert.True(File.Exists(expectedFile));
 
             var actualContents = File.ReadAllText(expectedFile);
-            Assert.Equal(expectedContent, actualContents);
+            Assert.Equal(expectedContent, actualContents, ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -272,7 +275,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             Assert.True(File.Exists(expectedFile));
 
             var actualContents = File.ReadAllText(expectedFile);
-            Assert.Equal(BundleContent, actualContents);
+            Assert.Equal(BundleContent, actualContents, ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -314,7 +317,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             Assert.True(result);
             Assert.True(File.Exists(expectedFile));
             var actualContents = File.ReadAllText(expectedFile);
-            Assert.Equal(BundleContent, actualContents);
+            Assert.Equal(BundleContent, actualContents, ignoreLineEndingDifferences: true);
 
             Assert.Equal(lastModified, File.GetLastWriteTimeUtc(expectedFile));
         }
@@ -383,7 +386,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             Assert.True(result);
             Assert.True(File.Exists(expectedFile));
             var actualContents = File.ReadAllText(expectedFile);
-            Assert.Equal(UpdatedBundleContent, actualContents);
+            Assert.Equal(UpdatedBundleContent, actualContents, ignoreLineEndingDifferences: true);
 
             Assert.NotEqual(lastModified, File.GetLastWriteTimeUtc(expectedFile));
         }
