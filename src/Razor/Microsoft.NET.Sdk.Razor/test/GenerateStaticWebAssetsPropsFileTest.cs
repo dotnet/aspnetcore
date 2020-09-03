@@ -377,19 +377,19 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             var file = Path.GetTempFileName();
             var expectedDocument = @"<Project>
   <ItemGroup>
-    <StaticWebAsset Include=""$(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js"">
-      <SourceType>Package</SourceType>
-      <SourceId>MyLibrary</SourceId>
-      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
-      <BasePath>_content/mylibrary</BasePath>
-      <RelativePath>js/sample.js</RelativePath>
-    </StaticWebAsset>
     <StaticWebAsset Include=""$(MSBuildThisFileDirectory)..\staticwebassets\App.styles.css"">
       <SourceType>Package</SourceType>
       <SourceId>MyLibrary</SourceId>
       <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
       <BasePath>/</BasePath>
       <RelativePath>App.styles.css</RelativePath>
+    </StaticWebAsset>
+    <StaticWebAsset Include=""$(MSBuildThisFileDirectory)..\staticwebassets\js\sample.js"">
+      <SourceType>Package</SourceType>
+      <SourceId>MyLibrary</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/mylibrary</BasePath>
+      <RelativePath>js/sample.js</RelativePath>
     </StaticWebAsset>
   </ItemGroup>
 </Project>";

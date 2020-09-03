@@ -44,7 +44,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             }
 
             var itemGroup = new XElement("ItemGroup");
-            var orderedAssets = StaticWebAssets.OrderBy(e => e.GetMetadata(BasePath)).ThenBy(e => e.GetMetadata(RelativePath));
+            var orderedAssets = StaticWebAssets.OrderBy(e => e.GetMetadata(BasePath), StringComparer.OrdinalIgnoreCase)
+                .ThenBy(e => e.GetMetadata(RelativePath), StringComparer.OrdinalIgnoreCase);
             foreach(var element in orderedAssets)
             {
                 itemGroup.Add(new XElement("StaticWebAsset",
