@@ -24,8 +24,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 ";
 
         private static string BundleWithImportsContent =
-@"import '_content/Test/TestFiles/Generated/lib.bundle.scp.css'
-import 'TestFiles/Generated/package.bundle.scp.css'
+@"@import '_content/Test/TestFiles/Generated/lib.bundle.scp.css';
+@import 'TestFiles/Generated/package.bundle.scp.css';
 
 /* _content/Test/TestFiles/Generated/Counter.razor.rz.scp.css */
 .counter {

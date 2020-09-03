@@ -10,7 +10,6 @@ namespace Microsoft.NET.Sdk.Razor.Test
 {
     public class ResolveAllScopedCssAssetsTest
     {
-
         [Fact]
         public void ResolveAllScopedCssAssets_IgnoresRegularCssFiles()
         {
@@ -19,10 +18,12 @@ namespace Microsoft.NET.Sdk.Razor.Test
             {
                 StaticWebAssets = new[]
                 {
-                    new TaskItem("TestFiles/Pages/Counter.razor.rz.scp.css", new Dictionary<string,string>{
+                    new TaskItem("TestFiles/Pages/Counter.razor.rz.scp.css", new Dictionary<string,string>
+                    {
                         ["RelativePath"] = "Pages/Counter.razor.rz.scp.css"
                     }),
-                    new TaskItem("site.css", new Dictionary<string,string>{
+                    new TaskItem("site.css", new Dictionary<string,string>
+                    {
                         ["RelativePath"] = "site.css"
                     }),
                 }
@@ -45,10 +46,12 @@ namespace Microsoft.NET.Sdk.Razor.Test
             {
                 StaticWebAssets = new[]
                 {
-                    new TaskItem("TestFiles/Pages/Counter.razor.rz.scp.css", new Dictionary<string,string>{
+                    new TaskItem("TestFiles/Pages/Counter.razor.rz.scp.css", new Dictionary<string,string>
+                    {
                         ["RelativePath"] = "Pages/Counter.razor.rz.scp.css"
                     }),
-                    new TaskItem("site.css", new Dictionary<string,string>{
+                    new TaskItem("site.css", new Dictionary<string,string>
+                    {
                         ["RelativePath"] = "site.css"
                     }),
                 }
@@ -71,10 +74,12 @@ namespace Microsoft.NET.Sdk.Razor.Test
             {
                 StaticWebAssets = new[]
                 {
-                    new TaskItem("Folder/Project.bundle.scp.css", new Dictionary<string,string>{
+                    new TaskItem("Folder/Project.bundle.scp.css", new Dictionary<string,string>
+                    {
                         ["RelativePath"] = "Project.bundle.scp.css"
                     }),
-                    new TaskItem("site.css", new Dictionary<string,string>{
+                    new TaskItem("site.css", new Dictionary<string,string>
+                    {
                         ["RelativePath"] = "site.css"
                     }),
                 }
@@ -97,10 +102,12 @@ namespace Microsoft.NET.Sdk.Razor.Test
             {
                 StaticWebAssets = new[]
                 {
-                    new TaskItem("Folder/Project.styles.css", new Dictionary<string,string>{
+                    new TaskItem("Folder/Project.styles.css", new Dictionary<string,string>
+                    {
                         ["RelativePath"] = "Project.styles.css"
                     }),
-                    new TaskItem("site.css", new Dictionary<string,string>{
+                    new TaskItem("site.css", new Dictionary<string,string>
+                    {
                         ["RelativePath"] = "site.css"
                     }),
                 }

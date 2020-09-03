@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     var relativePath = NormalizePath(bundle.GetMetadata("RelativePath"));
                     var importPath = NormalizePath(Path.Combine(prefix, bundleBasePath, relativePath));
 
-                    builder.AppendLine($"import '{importPath}'");
+                    builder.AppendLine($"@import '{importPath}';");
                 }
 
                 builder.AppendLine();
