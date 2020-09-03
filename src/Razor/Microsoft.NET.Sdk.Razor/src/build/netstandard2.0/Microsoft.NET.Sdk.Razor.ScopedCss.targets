@@ -161,6 +161,12 @@ Integration with static web assets:
       <OutputFile>$(_ScopedCssIntermediatePath)%(RelativeDir)%(RecursiveDir)%(FileName)$(_ScopedCssExtension)</OutputFile>
     </_ScopedCss>
     <_ScopedCssOutputs Include="%(_ScopedCss.OutputFile)" />
+
+    <!-- https://github.com/dotnet/project-system/blob/master/docs/up-to-date-check.md -->
+    <ItemGroup>
+      <UpToDateCheckInput Include="%(_ScopedCss.Identity)" />
+      <UpToDateCheckBuilt Include="%(_ScopedCss.OutputFile)" Original="%(_ScopedCss.Identity)" />
+    </ItemGroup>
   </ItemGroup>
 </Target>
 
