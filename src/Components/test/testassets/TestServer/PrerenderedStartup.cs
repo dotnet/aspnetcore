@@ -23,7 +23,7 @@ namespace TestServer
             services.AddMvc();
             services.AddServerSideBlazor();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
-            services.AddSingleton<LazyAssemblyLoader>();
+            services.AddScoped<LazyAssemblyLoader>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

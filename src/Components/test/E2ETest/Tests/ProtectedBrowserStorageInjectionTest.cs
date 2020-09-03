@@ -3,6 +3,7 @@
 
 using System;
 using BasicTestApp;
+using Components.TestServer;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -10,7 +11,7 @@ using OpenQA.Selenium;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETest.Tests
+namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 {
     public class ProtectedBrowserStorageInjectionTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             BrowserFixture browserFixture,
             ToggleExecutionModeServerFixture<Program> serverFixture,
             ITestOutputHelper output)
-            : base(browserFixture, serverFixture, output)
+            : base(browserFixture, serverFixture.WithServerExecution(), output)
         {
         }
 
