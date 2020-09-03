@@ -22,13 +22,6 @@
       RuntimePackRuntimeIdentifiers="${SupportedRuntimeIdentifiers}" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset"
-      Version="${MicrosoftNetCompilersToolsetPackageVersion}"
-      PrivateAssets="all"
-      IsImplicitlyDefined="true" />
-  </ItemGroup>
-
   <!--
     Use the Razor SDK as a project reference. The version of the .NET Core SDK we build with often contains a version of the Razor SDK
     several versions older than latest. To avoid a cyclical dependency, this package reference is added to override the bundled version.

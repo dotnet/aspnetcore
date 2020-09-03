@@ -62,7 +62,7 @@
   </Target>
 
   <Target Name="RestoreTestProjects" BeforeTargets="Restore;Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
-    <MSBuild Projects="..\testassets\RestoreBlazorWasmTestProjects\RestoreBlazorWasmTestProjects.csproj" Targets="Restore" Properties="MicrosoftNetCompilersToolsetPackageVersion=$(MicrosoftNetCompilersToolsetPackageVersion);RepoRoot=$(RepoRoot)" />
+    <MSBuild Projects="..\testassets\RestoreBlazorWasmTestProjects\RestoreBlazorWasmTestProjects.csproj" Targets="Restore" Properties="RepoRoot=$(RepoRoot)" />
   </Target>
 
   <Target Name="EnsureLogFolder" AfterTargets="Build">

@@ -158,12 +158,6 @@
       <DefaultRuntimeFrameworkVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</DefaultRuntimeFrameworkVersion>
       <TargetingPackVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
-
-    <!-- Track compiler separately from Arcade.-->
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset"
-        Version="$(MicrosoftNetCompilersToolsetPackageVersion)"
-        PrivateAssets="all"
-        IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(CopySymbolsToArtifacts)' == 'true' AND '$(TargetFramework)' != '' ">
