@@ -11,7 +11,7 @@ namespace Microsoft.JSInterop.Infrastructure
     public class JSObjectReferenceJsonConverterTest
     {
         private readonly JSRuntime JSRuntime = new TestJSRuntime();
-        private readonly JsonSerializerOptions JsonSerializerOptions;// => JSRuntime.JsonSerializerOptions;
+        private readonly JsonSerializerOptions JsonSerializerOptions;
 
         public JSObjectReferenceJsonConverterTest()
         {
