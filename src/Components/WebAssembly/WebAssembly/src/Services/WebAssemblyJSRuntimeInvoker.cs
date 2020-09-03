@@ -22,6 +22,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Services
         public static WebAssemblyJSRuntimeInvoker Instance = new WebAssemblyJSRuntimeInvoker();
 
         public virtual TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)
-            => ((IJSUnmarshalledRuntime)DefaultWebAssemblyJSRuntime.Instance).InvokeUnmarshalled<T0, T1, T2, TResult>(identifier, arg0, arg1, arg2);
+            => DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<T0, T1, T2, TResult>(identifier, arg0, arg1, arg2);
     }
 }

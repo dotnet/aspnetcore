@@ -73,40 +73,38 @@ namespace Microsoft.JSInterop.WebAssembly
             };
 
             string exception;
-            TResult result;
 
             switch (resultType)
             {
                 case JSCallResultType.Default:
-                    result = InternalCalls.InvokeJS<T0, T1, T2, TResult>(out exception, ref callInfo, arg0, arg1, arg2);
-                    break;
+                    var result = InternalCalls.InvokeJS<T0, T1, T2, TResult>(out exception, ref callInfo, arg0, arg1, arg2);
+                    return exception != null
+                        ? throw new JSException(exception)
+                        : result;
                 case JSCallResultType.JSObjectReference:
                     var id = InternalCalls.InvokeJS<T0, T1, T2, int>(out exception, ref callInfo, arg0, arg1, arg2);
-                    result = (TResult)(object)new WebAssemblyJSObjectReference(this, id);
-                    break;
+                    return exception != null
+                        ? throw new JSException(exception)
+                        : (TResult)(object)new WebAssemblyJSObjectReference(this, id);
                 default:
                     throw new InvalidOperationException($"Invalid result type '{resultType}'.");
             }
-
-            return exception != null
-                ? throw new JSException(exception)
-                : result;
         }
 
         /// <inheritdoc />
-        TResult IJSUnmarshalledRuntime.InvokeUnmarshalled<TResult>(string identifier)
+        public TResult InvokeUnmarshalled<TResult>(string identifier)
             => InvokeUnmarshalled<object, object, object, TResult>(identifier, null, null, null, 0);
 
         /// <inheritdoc />
-        TResult IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, TResult>(string identifier, T0 arg0)
+        public TResult InvokeUnmarshalled<T0, TResult>(string identifier, T0 arg0)
             => InvokeUnmarshalled<T0, object, object, TResult>(identifier, arg0, null, null, 0);
 
         /// <inheritdoc />
-        TResult IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, T1, TResult>(string identifier, T0 arg0, T1 arg1)
+        public TResult InvokeUnmarshalled<T0, T1, TResult>(string identifier, T0 arg0, T1 arg1)
             => InvokeUnmarshalled<T0, T1, object, TResult>(identifier, arg0, arg1, null, 0);
 
         /// <inheritdoc />
-        TResult IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)
+        public TResult InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2)
             => InvokeUnmarshalled<T0, T1, T2, TResult>(identifier, arg0, arg1, arg2, 0);
     }
 }
