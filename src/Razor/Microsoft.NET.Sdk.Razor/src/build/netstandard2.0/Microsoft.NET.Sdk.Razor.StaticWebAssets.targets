@@ -225,7 +225,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ContentWithTargetPath
         Include="$(_GeneratedStaticWebAssetsDevelopmentManifest)"
         Condition="'@(_ExternalStaticWebAsset->Count())' != '0'">
-
+        <Pack>false</Pack>
         <TargetPath>$(TargetName).StaticWebAssets.xml</TargetPath>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>Never</CopyToPublishDirectory>
