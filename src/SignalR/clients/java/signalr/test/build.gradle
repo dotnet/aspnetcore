@@ -5,7 +5,7 @@ dependencies {
     compile 'org.junit.jupiter:junit-jupiter-params:5.3.1'
     runtime 'org.junit.jupiter:junit-jupiter-engine:5.3.1'
     implementation 'com.google.code.gson:gson:2.8.5'
-    testCompile 'org.slf4j:slf4j-jdk14:1.7.25'
+    testImplementation 'ch.qos.logback:logback-classic:1.2.3'
     implementation project(':core')
     implementation project(':messagepack')
     compile project(':messagepack')
