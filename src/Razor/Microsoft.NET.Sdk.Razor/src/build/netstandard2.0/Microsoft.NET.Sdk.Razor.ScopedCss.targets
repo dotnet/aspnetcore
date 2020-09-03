@@ -161,13 +161,14 @@ Integration with static web assets:
       <OutputFile>$(_ScopedCssIntermediatePath)%(RelativeDir)%(RecursiveDir)%(FileName)$(_ScopedCssExtension)</OutputFile>
     </_ScopedCss>
     <_ScopedCssOutputs Include="%(_ScopedCss.OutputFile)" />
-
-    <!-- https://github.com/dotnet/project-system/blob/master/docs/up-to-date-check.md -->
-    <ItemGroup>
-      <UpToDateCheckInput Include="%(_ScopedCss.Identity)" />
-      <UpToDateCheckBuilt Include="%(_ScopedCss.OutputFile)" Original="%(_ScopedCss.Identity)" />
-    </ItemGroup>
   </ItemGroup>
+
+  <!-- https://github.com/dotnet/project-system/blob/master/docs/up-to-date-check.md -->
+  <ItemGroup>
+    <UpToDateCheckInput Include="%(_ScopedCss.Identity)" />
+    <UpToDateCheckBuilt Include="%(_ScopedCss.OutputFile)" Original="%(_ScopedCss.Identity)" />
+  </ItemGroup>
+
 </Target>
 
 <!-- Transforms the original scoped CSS files into their scoped versions on their designated output paths -->
@@ -275,6 +276,7 @@ Integration with static web assets:
     </_ExternalStaticWebAsset>
 
   </ItemGroup>
+
 </Target>
 
 <!-- This target runs as part of ResolveStaticWebAssetInputs and collects all the generated scoped css files. When bundling is enabled
@@ -288,6 +290,14 @@ Integration with static web assets:
   <ItemGroup>
     <_AllScopedCss Include="@(_ScopedCssProjectBundles);@(_DiscoveredScopedCssFiles)" />
   </ItemGroup>
+
+  <!-- https://github.com/dotnet/project-system/blob/master/docs/up-to-date-check.md -->
+  <ItemGroup>
+    <UpToDateCheckInput Include="@(_AllScopedCss)" />
+    <UpToDateCheckBuilt Include="$(_ScopedCssOutputFullPath)" />
+    <UpToDateCheckBuilt Include="$(_ScopedCssProjectOutputFullPath)" />
+  </ItemGroup>
+
 </Target>
 
 <!-- This target is only called as part of GetCurrentProjectStaticWebAssets which is only invoked on referenced projects to get the list
@@ -315,10 +325,30 @@ Integration with static web assets:
   </ItemGroup>
 </Target>
 
-<Target Name="BundleScopedCssFiles" Condition="'$(DisableScopedCssBundling)' != 'true' and '@(_AllScopedCss)' != ''">
+<Target Name="BundleScopedCssFiles" Condition="'$(DisableScopedCssBundling)' != 'true'">
   <!-- Incrementalism is built into the task itself. -->
-  <ConcatenateCssFiles FilesToProcess="@(_AllScopedCss)" OutputFile="$(_ScopedCssOutputPath)" />
-  <ConcatenateCssFiles Condition="'@(_ScopedCss)' != ''" FilesToProcess="@(_AllScopedCss)" OutputFile="$(_ScopedCssProjectOutputPath)" />
+  <ItemGroup>
+    <_CurrentProjectDiscoveredScopedCssFiles Include="@(_DiscoveredScopedCssFiles)" Condition="'%(SourceType)' == ''" />
+  </ItemGroup>
+  <!-- This is the bundle for the app, we will always generate it when there are scoped css files for the current project or
+       we detected existing bundles available. If some other project/package didn't bundle their assets, we will not be including
+       them in this bundle. -->
+  <ConcatenateCssFiles
+    Condition="'@(_ScopedCssProjectBundles)' != '' or '@(_ScopedCss)' != ''"
+    ScopedCssFiles="@(_CurrentProjectDiscoveredScopedCssFiles)"
+    ProjectBundles="@(_ScopedCssProjectBundles)"
+    ScopedCssBundleBasePath="$(_ScopedCssBundleBasePath)"
+    OutputFile="$(_ScopedCssOutputPath)" />
+  <!-- This is the project bundle, we will only generate it when there are scoped files defined in the project. This bundle will be used
+       when the project is referenced from another project or packed as a package (Razor Class Library). If some other project/package
+       didn't bundle their assets, we will not be including them in this bundle. -->
+  <ConcatenateCssFiles
+    Condition="'@(_ScopedCss)' != ''"
+    ScopedCssFiles="@(_CurrentProjectDiscoveredScopedCssFiles)"
+    ProjectBundles="@()"
+    ScopedCssBundleBasePath="$(_ScopedCssBundleBasePath)"
+    OutputFile="$(_ScopedCssProjectOutputPath)" />
+
   <ItemGroup>
     <FileWrites Include="$(_ScopedCssOutputPath)" />
     <FileWrites Condition="'@(_ScopedCss)' != ''" Include="$(_ScopedCssProjectOutputPath)" />
