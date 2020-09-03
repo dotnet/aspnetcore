@@ -146,6 +146,52 @@ namespace Microsoft.AspNetCore.SignalR
         // Currently used only for streaming methods
         internal ConcurrentDictionary<string, CancellationTokenSource> ActiveRequestCancellationSources { get; } = new ConcurrentDictionary<string, CancellationTokenSource>(StringComparer.Ordinal);
 
+        // Only used when writing CloseMessage, it ignores _connectionAborted to be the final message sent to the client
+        internal ValueTask WriteCloseAsync(CloseMessage message, CancellationToken cancellationToken = default)
+        {
+            // Try to grab the lock synchronously, if we fail, go to the slower path
+            if (!_writeLock.Wait(0))
+            {
+                return new ValueTask(WriteCloseSlowAsync(message, cancellationToken));
+            }
+
+            // This method should never throw synchronously
+            var task = WriteCore(message, cancellationToken);
+
+            // The write didn't complete synchronously so await completion
+            if (!task.IsCompletedSuccessfully)
+            {
+                return new ValueTask(CompleteWriteAsync(task));
+            }
+
+            // Otherwise, release the lock acquired when entering WriteAsync
+            _writeLock.Release();
+
+            return default;
+        }
+
+        private async Task WriteCloseSlowAsync(CloseMessage message, CancellationToken cancellationToken)
+        {
+            // Failed to get the lock immediately when entering WriteAsync so await until it is available
+            await _writeLock.WaitAsync(cancellationToken);
+
+            try
+            {
+
+                await WriteCore(message, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                CloseException = ex;
+                Log.FailedWritingMessage(_logger, ex);
+                AbortAllowReconnect();
+            }
+            finally
+            {
+                _writeLock.Release();
+            }
+        }
+
         public virtual ValueTask WriteAsync(HubMessage message, CancellationToken cancellationToken = default)
         {
             // Try to grab the lock synchronously, if we fail, go to the slower path

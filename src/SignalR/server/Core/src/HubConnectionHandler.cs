@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.SignalR
 
             try
             {
-                await connection.WriteAsync(closeMessage);
+                await connection.WriteCloseAsync(closeMessage);
             }
             catch (Exception ex)
             {
