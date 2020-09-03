@@ -3,6 +3,7 @@
   <PropertyGroup>
     <ContainsFunctionalTestAssets>true</ContainsFunctionalTestAssets>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <TestDependsOnAspNetRuntime>true</TestDependsOnAspNetRuntime>
   </PropertyGroup>
 
   <ItemGroup>
