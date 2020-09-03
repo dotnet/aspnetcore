@@ -22,7 +22,7 @@ namespace Microsoft.JSInterop.Infrastructure
         }
 
         public override bool CanConvert(Type typeToConvert)
-            => typeToConvert == typeof(TInterface);// || typeToConvert == typeof(TImplementation);
+            => typeToConvert == typeof(TInterface) || typeToConvert == typeof(TImplementation);
 
         public override TInterface? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {

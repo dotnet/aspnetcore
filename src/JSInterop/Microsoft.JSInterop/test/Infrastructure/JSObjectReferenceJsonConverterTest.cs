@@ -67,18 +67,6 @@ namespace Microsoft.JSInterop.Infrastructure
         }
 
         [Fact]
-        public void Read_Throws_IfDeserializesImplementationType()
-        {
-            // Arrange
-            var json = $"{{\"__jsObjectId\":7}}";
-
-            //var jsObject = JsonSerializer.Deserialize<JSObjectReference>(json, JsonSerializerOptions);
-
-            // Act & Assert
-            Assert.Throws<NotSupportedException>(() => JsonSerializer.Deserialize<JSObjectReference>(json, JsonSerializerOptions));
-        }
-
-        [Fact]
         public void Read_ReadsJson_IJSObjectReference()
         {
             // Arrange
