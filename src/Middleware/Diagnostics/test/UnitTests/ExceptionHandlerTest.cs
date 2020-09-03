@@ -145,15 +145,14 @@ namespace Microsoft.AspNetCore.Diagnostics
                             try
                             {
                                 await next();
-
-                                response.Body = originalResponseBody;
-                                bufferingStream.Seek(0, SeekOrigin.Begin);
-                                await bufferingStream.CopyToAsync(response.Body);
                             }
                             finally
                             {
                                 response.Body = originalResponseBody;
                             }
+
+                            bufferingStream.Seek(0, SeekOrigin.Begin);
+                            await bufferingStream.CopyToAsync(response.Body);
                         });
 
                         app.UseExceptionHandler("/handle-errors");

@@ -58,6 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 }
                 else
                 {
+                    _modelMetadata.ThrowIfRecordTypeHasValidationOnProperties();
                     _parameters = _modelMetadata.BoundConstructor.BoundConstructorParameters;
                 }
 

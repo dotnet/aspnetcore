@@ -26,6 +26,7 @@ use_baseline_core_run=true
 using_mono=false
 wasm_runtime_loc=
 using_wasm=false
+use_latest_dotnet=false
 
 while (($# > 0)); do
   lowerI="$(echo $1 | awk '{print tolower($0)}')"
@@ -115,7 +116,11 @@ while (($# > 0)); do
       configurations=$2
       shift 2
       ;;
-    --help)
+    --latestdotnet)
+      use_latest_dotnet=true
+      shift 1
+      ;;
+    *)
       echo "Common settings:"
       echo "  --corerootdirectory <value>    Directory where Core_Root exists, if running perf testing with --corerun"
       echo "  --architecture <value>         Architecture of the testing being run"
@@ -137,6 +142,7 @@ while (($# > 0)); do
       echo "  --internal                     If the benchmarks are running as an official job."
       echo "  --monodotnet                   Pass the path to the mono dotnet for mono performance testing."
       echo "  --wasm                         Path to the unpacked wasm runtime pack."
+      echo "  --latestdotnet                 --dotnet-versions will not be specified. --dotnet-versions defaults to LKG version in global.json "
       echo ""
       exit 0
       ;;
@@ -194,27 +200,30 @@ if [[ "$internal" == true ]]; then
     fi
 fi
 
-if [[ "$mono_dotnet" != "" ]]; then
+if [[ "$mono_dotnet" != "" ]] && [[ "$monointerpreter" == "false" ]]; then
     configurations="$configurations LLVM=$llvm MonoInterpreter=$monointerpreter MonoAOT=$monoaot"
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoMono"
 fi
 
 if [[ "$wasm_runtime_loc" != "" ]]; then
-    configurations="CompilationMode=wasm;RunKind=micro"
+    configurations="CompilationMode=wasm RunKind=$kind"
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoInterpreter NoWASM NoMono"
 fi
 
-if [[ "$monointerpreter" == "true" ]]; then
-    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoInterpreter"
+if [[ "$mono_dotnet" != "" ]] && [[ "$monointerpreter" == "true" ]]; then
+    extra_benchmark_dotnet_arguments="$extra_benchmark_dotnet_arguments --category-exclusion-filter NoInterpreter NoMono"
 fi
 
-common_setup_arguments="--channel master --queue $queue --build-number $build_number --build-configs \"$configurations\" --architecture $architecture"
+common_setup_arguments="--channel master --queue $queue --build-number $build_number --build-configs $configurations --architecture $architecture"
 setup_arguments="--repository https://github.com/$repository --branch $branch --get-perf-hash --commit-sha $commit_sha $common_setup_arguments"
 
 
-# Get the tools section from the global.json.
-# This grabs the LKG version number of dotnet and passes it to our scripts
-dotnet_version=`cat global.json | python3 -c 'import json,sys;obj=json.load(sys.stdin);print(obj["tools"]["dotnet"])'`
-setup_arguments="--dotnet-versions $dotnet_version $setup_arguments"
-
+if [[ "$use_latest_dotnet" = false ]]; then
+    # Get the tools section from the global.json.
+    # This grabs the LKG version number of dotnet and passes it to our scripts
+    dotnet_version=`cat global.json | python3 -c 'import json,sys;obj=json.load(sys.stdin);print(obj["tools"]["dotnet"])'`
+    setup_arguments="--dotnet-versions $dotnet_version $setup_arguments"
+fi
 
 if [[ "$run_from_perf_repo" = true ]]; then
     payload_directory=
@@ -265,7 +274,7 @@ Write-PipelineSetVariable -name "PerformanceDirectory" -value "$performance_dire
 Write-PipelineSetVariable -name "WorkItemDirectory" -value "$workitem_directory" -is_multi_job_variable false
 Write-PipelineSetVariable -name "Queue" -value "$queue" -is_multi_job_variable false
 Write-PipelineSetVariable -name "SetupArguments" -value "$setup_arguments" -is_multi_job_variable false
-Write-PipelineSetVariable -name "Python" -value "$python3" -is_multi_job_variable false
+Write-PipelineSetVariable -name "Python" -value "python3" -is_multi_job_variable false
 Write-PipelineSetVariable -name "PerfLabArguments" -value "$perflab_arguments" -is_multi_job_variable false
 Write-PipelineSetVariable -name "ExtraBenchmarkDotNetArguments" -value "$extra_benchmark_dotnet_arguments" -is_multi_job_variable false
 Write-PipelineSetVariable -name "BDNCategories" -value "$run_categories" -is_multi_job_variable false

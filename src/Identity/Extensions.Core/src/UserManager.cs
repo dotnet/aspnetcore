@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Identity
 
         private TimeSpan _defaultLockout = TimeSpan.Zero;
         private bool _disposed;
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
         private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 #endif
         private IServiceProvider _services;
@@ -2430,7 +2430,7 @@ namespace Microsoft.AspNetCore.Identity
         private static string NewSecurityStamp()
         {
             byte[] bytes = new byte[20];
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
             _rng.GetBytes(bytes);
 #else
             RandomNumberGenerator.Fill(bytes);

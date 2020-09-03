@@ -225,6 +225,11 @@ namespace System.Net.Quic.Implementations.MsQuic
                 throw new InvalidOperationException("Reading is not allowed on stream.");
             }
 
+            if (NetEventSource.IsEnabled)
+            {
+                NetEventSource.Info(this, $"[{GetHashCode()}] reading into Memory of '{destination.Length}' bytes.");
+            }
+
             lock (_sync)
             {
                 if (_readState == ReadState.ReadsCompleted)
@@ -474,6 +479,11 @@ namespace System.Net.Quic.Implementations.MsQuic
 
         private uint HandleEvent(ref StreamEvent evt)
         {
+            if (NetEventSource.IsEnabled)
+            {
+                NetEventSource.Info(this, $"[{GetHashCode()}] handling event '{evt.Type}'.");
+            }
+
             uint status = MsQuicStatusCodes.Success;
 
             try

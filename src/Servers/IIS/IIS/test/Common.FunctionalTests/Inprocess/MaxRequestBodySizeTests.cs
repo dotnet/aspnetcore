@@ -56,6 +56,46 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
         [ConditionalFact]
         [RequiresNewHandler]
+        public async Task SetIISLimitMaxRequestBodySizeE2EWorksWithLargerLimit()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            deploymentParameters.ServerConfigActionList.Add(
+                (config, _) => {
+                    config
+                        .RequiredElement("system.webServer")
+                        .GetOrAdd("security")
+                        .GetOrAdd("requestFiltering")
+                        .GetOrAdd("requestLimits", "maxAllowedContentLength", "100000000");
+                });
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var result = await deploymentResult.HttpClient.PostAsync("/ReadRequestBodyLarger", new StringContent(new string('a', 100000000)));
+
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        public async Task SetIISLimitMaxRequestBodySizeE2EWorksWithIntMaxValue()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            deploymentParameters.ServerConfigActionList.Add(
+                (config, _) => {
+                    config
+                        .RequiredElement("system.webServer")
+                        .GetOrAdd("security")
+                        .GetOrAdd("requestFiltering")
+                        .GetOrAdd("requestLimits", "maxAllowedContentLength", "4294967295");
+                });
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var result = await deploymentResult.HttpClient.PostAsync("/ReadRequestBodyLarger", new StringContent(new string('a', 10000)));
+
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
         public async Task IISRejectsContentLengthTooLargeByDefault()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -75,6 +115,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [RequiresNewHandler]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task SetIISLimitMaxRequestBodyLogsWarning()
@@ -94,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                 });
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var result = await deploymentResult.HttpClient.PostAsync("/DecreaseRequestLimit", new StringContent("1"));
+            var result = await deploymentResult.HttpClient.PostAsync("/IncreaseRequestLimit", new StringContent("1"));
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
 
             StopServer();

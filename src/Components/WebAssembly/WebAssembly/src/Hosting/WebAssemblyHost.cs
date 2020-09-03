@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting
                 for (var i = 0; i < rootComponents.Length; i++)
                 {
                     var rootComponent = rootComponents[i];
-                    await _renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector);
+                    await _renderer.AddComponentAsync(rootComponent.ComponentType, rootComponent.Selector, rootComponent.Parameters);
                 }
 
                 await tcs.Task;

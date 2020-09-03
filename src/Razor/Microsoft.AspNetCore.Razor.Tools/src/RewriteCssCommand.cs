@@ -2,12 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.Css.Parser.Parser;
 using Microsoft.Css.Parser.Tokens;
 using Microsoft.Css.Parser.TreeItems;
@@ -57,28 +60,55 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
         protected override Task<int> ExecuteCoreAsync()
         {
+            var allDiagnostics = new ConcurrentQueue<RazorDiagnostic>();
+
             Parallel.For(0, Sources.Values.Count, i =>
             {
                 var source = Sources.Values[i];
                 var output = Outputs.Values[i];
                 var cssScope = CssScopes.Values[i];
 
-                var inputText = File.ReadAllText(source);
-                var rewrittenCss = AddScopeToSelectors(inputText, cssScope);
-                File.WriteAllText(output, rewrittenCss);
+                using var inputSourceStream = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                var inputSourceText = SourceText.From(inputSourceStream);
+
+                var rewrittenCss = AddScopeToSelectors(source, inputSourceText, cssScope, out var diagnostics);
+                if (diagnostics.Any())
+                {
+                    foreach (var diagnostic in diagnostics)
+                    {
+                        allDiagnostics.Enqueue(diagnostic);
+                    }
+                }
+                else
+                {
+                    File.WriteAllText(output, rewrittenCss);
+                }
             });
 
-            return Task.FromResult(ExitCodeSuccess);
+            foreach (var diagnostic in allDiagnostics)
+            {
+                Error.WriteLine(diagnostic.ToString());
+            }
+
+            return Task.FromResult(allDiagnostics.Any() ? ExitCodeFailure : ExitCodeSuccess);
         }
 
         // Public for tests
-        public static string AddScopeToSelectors(string inputText, string cssScope)
+        public static string AddScopeToSelectors(string filePath, string inputSource, string cssScope, out IEnumerable<RazorDiagnostic> diagnostics)
+            => AddScopeToSelectors(filePath, SourceText.From(inputSource), cssScope, out diagnostics);
+
+        private static string AddScopeToSelectors(string filePath, SourceText inputSourceText, string cssScope, out IEnumerable<RazorDiagnostic> diagnostics)
         {
             var cssParser = new DefaultParserFactory().CreateParser();
+            var inputText = inputSourceText.ToString();
             var stylesheet = cssParser.Parse(inputText, insertComments: false);
 
             var resultBuilder = new StringBuilder();
             var previousInsertionPosition = 0;
+            var foundDiagnostics = new List<RazorDiagnostic>();
+
+            var ensureNoImportsVisitor = new EnsureNoImports(filePath, inputSourceText, stylesheet, foundDiagnostics);
+            ensureNoImportsVisitor.Visit();
 
             var scopeInsertionPositionsVisitor = new FindScopeInsertionEdits(stylesheet);
             scopeInsertionPositionsVisitor.Visit();
@@ -105,6 +135,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
             resultBuilder.Append(inputText.Substring(previousInsertionPosition));
 
+            diagnostics = foundDiagnostics;
             return resultBuilder.ToString();
         }
 
@@ -156,7 +187,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 var lastSimpleSelector = allSimpleSelectors.TakeWhile(s => s != firstDeepCombinator).LastOrDefault();
                 if (lastSimpleSelector != null)
                 {
-                    Edits.Add(new InsertSelectorScopeEdit { Position = FindPositionBeforeTrailingCombinator(lastSimpleSelector) });
+                    Edits.Add(new InsertSelectorScopeEdit { Position = FindPositionToInsertInSelector(lastSimpleSelector) });
                 }
                 else if (firstDeepCombinator != null)
                 {
@@ -172,28 +203,60 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 }
             }
 
-            private int FindPositionBeforeTrailingCombinator(SimpleSelector lastSimpleSelector)
+            private int FindPositionToInsertInSelector(SimpleSelector lastSimpleSelector)
             {
-                // For a selector like "a > ::deep b", the parser splits it as "a >", "::deep", "b".
-                // The place we want to insert the scope is right after "a", hence we need to detect
-                // if the simple selector ends with " >" or similar, and if so, insert before that.
-                var text = lastSimpleSelector.Text;
-                var lastChar = text.Length > 0 ? text[^1] : default;
-                switch (lastChar)
+                var children = lastSimpleSelector.Children;
+                for (var i  = 0; i < children.Count; i++)
                 {
-                    case '>':
-                    case '+':
-                    case '~':
-                        var trailingCombinatorMatch = _trailingCombinatorRegex.Match(text);
-                        if (trailingCombinatorMatch.Success)
-                        {
-                            var trailingCombinatorLength = trailingCombinatorMatch.Length;
-                            return lastSimpleSelector.AfterEnd - trailingCombinatorLength;
-                        }
-                        break;
+                    switch (children[i])
+                    {
+                        // Selectors like "a > ::deep b" get parsed as [[a][>]][::deep][b], and we want to
+                        // insert right after the "a". So if we're processing a SimpleSelector like [[a][>]],
+                        // consider the ">" to signal the "insert before" position.
+                        case TokenItem t when IsTrailingCombinator(t.TokenType):
+
+                        // Similarly selectors like "a::before" get parsed as [[a][::before]], and we want to
+                        // insert right after the "a".  So if we're processing a SimpleSelector like [[a][::before]],
+                        // consider the pseudoelement to signal the "insert before" position.
+                        case PseudoElementSelector:
+                        case PseudoElementFunctionSelector:
+                        case PseudoClassSelector s when IsSingleColonPseudoElement(s):
+                            // Insert after the previous token if there is one, otherwise before the whole thing
+                            return i > 0 ? children[i - 1].AfterEnd : lastSimpleSelector.Start;
+                    }
                 }
 
+                // Since we didn't find any children that signal the insert-before position,
+                // insert after the whole thing
                 return lastSimpleSelector.AfterEnd;
+            }
+
+            private static bool IsSingleColonPseudoElement(PseudoClassSelector selector)
+            {
+                // See https://developer.mozilla.org/en-US/docs/Web/CSS/Pseudo-elements
+                // Normally, pseudoelements require a double-colon prefix. However the following "original set"
+                // of pseudoelements also support single-colon prefixes for back-compatibility with older versions
+                // of the W3C spec. Our CSS parser sees them as pseudoselectors rather than pseudoelements, so
+                // we have to special-case them. The single-colon option doesn't exist for other more modern
+                // pseudoelements.
+                var selectorText = selector.Text;
+                return string.Equals(selectorText, ":after", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(selectorText, ":before", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(selectorText, ":first-letter", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(selectorText, ":first-line", StringComparison.OrdinalIgnoreCase);
+            }
+
+            private static bool IsTrailingCombinator(CssTokenType tokenType)
+            {
+                switch (tokenType)
+                {
+                    case CssTokenType.Plus:
+                    case CssTokenType.Tilde:
+                    case CssTokenType.Greater:
+                        return true;
+                    default:
+                        return false;
+                }
             }
 
             protected override void VisitAtDirective(AtDirective item)
@@ -254,6 +317,36 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 {
                     VisitDefault(item);
                 }
+            }
+        }
+
+        private class EnsureNoImports : Visitor
+        {
+            private readonly string _filePath;
+            private readonly SourceText _sourceText;
+            private readonly List<RazorDiagnostic> _diagnostics;
+
+            public EnsureNoImports(string filePath, SourceText sourceText, ComplexItem root, List<RazorDiagnostic> diagnostics) : base(root)
+            {
+                _filePath = filePath;
+                _sourceText = sourceText;
+                _diagnostics = diagnostics;
+            }
+
+            protected override void VisitAtDirective(AtDirective item)
+            {
+                if (item.Children.Count >= 2
+                    && item.Children[0] is TokenItem firstChild
+                    && firstChild.TokenType == CssTokenType.At
+                    && item.Children[1] is TokenItem secondChild
+                    && string.Equals(secondChild.Text, "import", StringComparison.OrdinalIgnoreCase))
+                {
+                    var linePosition = _sourceText.Lines.GetLinePosition(item.Start);
+                    var sourceSpan = new SourceSpan(_filePath, item.Start, linePosition.Line, linePosition.Character, item.Length);
+                    _diagnostics.Add(RazorDiagnosticFactory.CreateCssRewriting_ImportNotAllowed(sourceSpan));
+                }
+
+                base.VisitAtDirective(item);
             }
         }
 

@@ -32,6 +32,10 @@
       "longName": "tenant-id",
       "shortName": ""
     },
+    "DefaultScope": {
+      "longName": "default-scope",
+      "shortName": ""
+    },    
     "Framework": {
       "longName": "framework"
     },
@@ -57,16 +61,20 @@
       "shortName": ""
     },
     "CalledApiUrl": {
-        "longName": "called-api-url",
-        "shortName": ""
+      "longName": "called-api-url",
+      "shortName": ""
     },
     "CalledApiScopes": {
-        "longName": "called-api-scopes",
-        "shortName": ""
+      "longName": "called-api-scopes",
+      "shortName": ""
     },
     "CallsMicrosoftGraph": {
-        "longName": "calls-graph",
-        "shortName": ""
+      "longName": "calls-graph",
+      "shortName": ""
+    },
+    "DisableOpenAPI": {
+      "longName": "no-openapi",
+      "shortName": ""
     }
   },
   "usageExamples": [

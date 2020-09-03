@@ -22,13 +22,8 @@ namespace RunTests
                     { Argument = new Argument<string>(), Required = true },
 
                 new Option(
-                    aliases: new string[] { "--sdk" },
-                    description: "The version of the sdk being used")
-                { Argument = new Argument<string>(), Required = true },
-
-                new Option(
                     aliases: new string[] { "--runtime" },
-                    description: "The version of the runtime being used")
+                    description: "The version of the ASP.NET runtime being installed and used")
                 { Argument = new Argument<string>(), Required = true },
 
                 new Option(
@@ -65,12 +60,16 @@ namespace RunTests
                     aliases: new string[] { "--helixTimeout" },
                     description: "The timeout duration of the Helix job")
                 { Argument = new Argument<string>(), Required = true },
+
+                new Option(
+                    aliases: new string[] { "--source" },
+                    description: "The restore sources to use during testing")
+                { Argument = new Argument<string>() { Arity = ArgumentArity.ZeroOrMore }, Required = true }
             };
 
             var parseResult = command.Parse(args);
             var options = new RunTestsOptions();
             options.Target = parseResult.ValueForOption<string>("--target");
-            options.SdkVersion = parseResult.ValueForOption<string>("--sdk");
             options.RuntimeVersion = parseResult.ValueForOption<string>("--runtime");
             options.HelixQueue = parseResult.ValueForOption<string>("--queue");
             options.Architecture = parseResult.ValueForOption<string>("--arch");
@@ -79,6 +78,7 @@ namespace RunTests
             options.AspNetRuntime = parseResult.ValueForOption<string>("--aspnetruntime");
             options.AspNetRef = parseResult.ValueForOption<string>("--aspnetref");
             options.Timeout = TimeSpan.Parse(parseResult.ValueForOption<string>("--helixTimeout"));
+            options.Source = parseResult.ValueForOption<IEnumerable<string>>("--source");
             options.HELIX_WORKITEM_ROOT = Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT");
             options.Path = Environment.GetEnvironmentVariable("PATH");
             options.DotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
@@ -97,6 +97,7 @@ namespace RunTests
         public string HELIX_WORKITEM_ROOT { get; set;}
         public string DotnetRoot { get; set; }
         public string Path { get; set; }
+        public IEnumerable<string> Source { get; set; }
         public TimeSpan Timeout { get; set; }
     }
 }

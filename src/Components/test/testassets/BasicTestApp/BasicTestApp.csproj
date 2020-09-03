@@ -15,6 +15,7 @@
     <Reference Include="System.Net.Http.Json" />
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
+    <Reference Include="Microsoft.AspNetCore.Components.ProtectedBrowserStorage" />
     <Reference Include="Microsoft.AspNetCore.Components.Web.Extensions" />
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
     <Reference Include="Newtonsoft.Json" />

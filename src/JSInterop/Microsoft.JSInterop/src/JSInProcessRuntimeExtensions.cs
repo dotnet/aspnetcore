@@ -16,7 +16,7 @@ namespace Microsoft.JSInterop
         /// <param name="jsRuntime">The <see cref="IJSInProcessRuntime"/>.</param>
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="args">JSON-serializable arguments.</param>
-        public static void InvokeVoid(this IJSInProcessRuntime jsRuntime, string identifier, params object[] args)
+        public static void InvokeVoid(this IJSInProcessRuntime jsRuntime, string identifier, params object?[] args)
         {
             if (jsRuntime == null)
             {

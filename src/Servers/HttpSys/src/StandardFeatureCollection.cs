@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private static readonly Dictionary<Type, Func<FeatureContext, object>> _featureFuncLookup = new Dictionary<Type, Func<FeatureContext, object>>()
         {
             { typeof(IHttpRequestFeature), _identityFunc },
+            { typeof(IHttpRequestBodyDetectionFeature), _identityFunc },
             { typeof(IHttpConnectionFeature), _identityFunc },
             { typeof(IHttpResponseFeature), _identityFunc },
             { typeof(IHttpResponseBodyFeature), _identityFunc },

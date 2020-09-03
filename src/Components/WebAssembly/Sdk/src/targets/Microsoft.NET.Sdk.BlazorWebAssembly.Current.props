@@ -22,6 +22,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IsPackable>false</IsPackable>
 
     <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
+
+    <!-- Turn off symbol publishing by default -->
+    <CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
   </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk.Razor" Project="Sdk.props" />
