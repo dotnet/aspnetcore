@@ -13,10 +13,12 @@
     <!-- Needed some creativity to convert the PackageVersion M.N.P-PreReleaseVersionLabel-Build to the installer version M.N.P~PreReleaseVersionLabel-Build, The conditional handles stabilized builds -->
     <DotnetRuntimeDependencyVersion>$(MicrosoftNETCoreAppRuntimeVersion)</DotnetRuntimeDependencyVersion>
     <DotnetRuntimeDependencyVersion Condition="$(DotnetRuntimeDependencyVersion.Contains('-'))">$(DotnetRuntimeDependencyVersion.Substring(0, $(DotnetRuntimeDependencyVersion.IndexOf('-'))))~$(DotnetRuntimeDependencyVersion.Substring($([MSBuild]::Add($(DotnetRuntimeDependencyVersion.IndexOf('-')), 1))))</DotnetRuntimeDependencyVersion>
+    <DotnetRuntimeDependencyMajorMinorVersion>$(MicrosoftNETCoreAppRuntimeVersion.Split('.')[0]).$(MicrosoftNETCoreAppRuntimeVersion.Split('.')[1])</DotnetRuntimeDependencyMajorMinorVersion>
 
     <PackageSummary>$(SharedFxProductName)</PackageSummary>
     <PackageDescription>$(SharedFxDescription)</PackageDescription>
     <DebianConfigProperties>
+      DotnetRuntimeDependencyMajorMinorVersion=$(DotnetRuntimeDependencyMajorMinorVersion);
       DotnetRuntimeDependencyVersion=$(DotnetRuntimeDependencyVersion);
     </DebianConfigProperties>
   </PropertyGroup>
