@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.JSInterop.Implementation;
 using Microsoft.JSInterop.Infrastructure;
 using Xunit;
 

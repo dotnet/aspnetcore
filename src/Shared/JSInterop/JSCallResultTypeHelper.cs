@@ -6,7 +6,9 @@ namespace Microsoft.JSInterop
     internal static class JSCallResultTypeHelper
     {
         public static JSCallResultType FromGeneric<TResult>()
-            => typeof(TResult) == typeof(IJSObjectReference) || typeof(TResult) == typeof(IJSInProcessObjectReference) ?
+            => typeof(TResult) == typeof(IJSObjectReference)
+            || typeof(TResult) == typeof(IJSInProcessObjectReference)
+            || typeof(TResult) == typeof(IJSUnmarshalledObjectReference) ?
                 JSCallResultType.JSObjectReference :
                 JSCallResultType.Default;
     }
