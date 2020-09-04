@@ -8,7 +8,11 @@
     <base href="/" />
     <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="css/app.css" rel="stylesheet" />
-    <link href="_framework/scoped.styles.css" rel="stylesheet" />
+<!--#if (Hosted)  -->
+    <link href="ComponentsWebAssembly-CSharp.Client.styles.css" rel="stylesheet" />
+<!--#else  -->
+    <link href="ComponentsWebAssembly-CSharp.styles.css" rel="stylesheet" />
+<!--#endif  -->
     <!--#if PWA -->
     <link href="manifest.json" rel="manifest" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />

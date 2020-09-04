@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Build.Framework;
@@ -26,20 +27,29 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 BuildEngine = buildEngine.Object,
                 StaticWebAssets = new TaskItem[]
                 {
-                    CreateItem(Path.Combine(".", "Library", "wwwroot", "sample.js"), new Dictionary<string,string>
+                    CreateItem(Path.Combine("wwroot", "js", "project-transitive-dep.js"), new Dictionary<string,string>
                     {
-                        ["BasePath"] = "/",
-                        ["RelativePath"] = "/sample.js",
-                    })
+                        ["BasePath"] = "_content/ClassLibrary",
+                        ["RelativePath"] = "js/project-transitive-dep.js",
+                        ["SourceId"] = "ClassLibrary",
+                        ["SourceType"] = "Project",
+                    }),
                 },
                 WebRootFiles = new TaskItem[]
                 {
-                    CreateItem(Path.Combine(".", "App", "wwwroot", "sample.js"), new Dictionary<string,string>
+                    CreateItem(Path.Combine("wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js"), new Dictionary<string,string>
                     {
-                        ["TargetPath"] = "/SAMPLE.js",
+                        ["CopyToPublishDirectory"] = "PreserveNewest",
+                        ["ExcludeFromSingleFile"] = "true",
+                        ["OriginalItemSpec"] = Path.Combine("wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js"),
+                        ["TargetPath"] = Path.Combine("wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js"),
                     })
                 }
             };
+
+            var expectedMessage = $"The static web asset '{Path.Combine("wwroot", "js", "project-transitive-dep.js")}' " +
+                "has a conflicting web root path '/wwwroot/_content/ClassLibrary/js/project-transitive-dep.js' with the " +
+                $"project file '{Path.Combine("wwwroot", "_content", "ClassLibrary", "js", "project-transitive-dep.js")}'.";
 
             // Act
             var result = task.Execute();
@@ -47,7 +57,73 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             // Assert
             Assert.False(result);
             var message = Assert.Single(errorMessages);
-            Assert.Equal($"The static web asset '{Path.Combine(".", "Library", "wwwroot", "sample.js")}' has a conflicting web root path '/SAMPLE.js' with the project file '{Path.Combine(".", "App", "wwwroot", "sample.js")}'.", message);
+            Assert.Equal(expectedMessage, message);
+        }
+
+        [Fact]
+        public void AllowsAssetsHavingTheSameBasePathAcrossDifferentSources_WhenTheirFinalDestinationPathIsDifferent()
+        {
+            // Arrange
+            var task = new ValidateStaticWebAssetsUniquePaths
+            {
+                StaticWebAssets = new TaskItem[]
+                {
+                    CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>
+                    {
+                        ["BasePath"] = "MyLibrary",
+                        ["ContentRoot"] = Path.Combine("nuget", "MyLibrary"),
+                        ["RelativePath"] = "sample.js",
+                        ["SourceId"] = "MyLibrary"
+                    }),
+                    CreateItem(Path.Combine("wwwroot", "otherLib.js"), new Dictionary<string,string>
+                    {
+                        ["BasePath"] = "MyLibrary",
+                        ["ContentRoot"] = Path.Combine("nuget", "MyOtherLibrary"),
+                        ["RelativePath"] = "otherLib.js",
+                        ["SourceId"] = "MyOtherLibrary"
+                    })
+                },
+                WebRootFiles = Array.Empty<TaskItem>()
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void AllowsAssetsHavingTheSameContentRootAndDifferentBasePathsAcrossDifferentSources_WhenTheirFinalDestinationPathIsDifferent()
+        {
+            // Arrange
+            var task = new ValidateStaticWebAssetsUniquePaths
+            {
+                StaticWebAssets = new TaskItem[]
+                {
+                    CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>
+                    {
+                        ["BasePath"] = "MyLibrary",
+                        ["SourceId"] = "MyLibrary",
+                        ["RelativePath"] = "sample.js",
+                        ["ContentRoot"] = Path.Combine(".", "MyLibrary")
+                    }),
+                    CreateItem(Path.Combine("wwwroot", "otherLib.js"), new Dictionary<string,string>
+                    {
+                        ["BasePath"] = "MyOtherLibrary",
+                        ["SourceId"] = "MyOtherLibrary",
+                        ["RelativePath"] = "otherlib.js",
+                        ["ContentRoot"] = Path.Combine(".", "MyLibrary")
+                    })
+                },
+                WebRootFiles = Array.Empty<TaskItem>()
+            };
+
+            // Act
+            var result = task.Execute();
+
+            // Assert
+            Assert.True(result);
         }
 
         [Fact]
@@ -83,7 +159,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             // Assert
             Assert.False(result);
             var message = Assert.Single(errorMessages);
-            Assert.Equal($"Conflicting assets with the same path '/sample.js' for content root paths '{Path.Combine(".", "Library", "bin", "dist", "sample.js")}' and '{Path.Combine(".", "Library", "wwwroot", "sample.js")}'.", message);
+            Assert.Equal($"Conflicting assets with the same path '/wwwroot/sample.js' for content root paths '{Path.Combine(".", "Library", "bin", "dist", "sample.js")}' and '{Path.Combine(".", "Library", "wwwroot", "sample.js")}'.", message);
         }
 
         [Fact]
