@@ -290,4 +290,4 @@ These are available in the [Visual Studio Preview](https://www.visualstudio.com/
 
 ## Resx files
 
-If you need to make changes to a .resx file, run `dotnet msbuild /t:Resx <path to csproj>`. This will update the generated C#.
+If you need to make changes to a .resx file, run `dotnet msbuild t:/Resgen <path to csproj>`. This will update the generated C#.
