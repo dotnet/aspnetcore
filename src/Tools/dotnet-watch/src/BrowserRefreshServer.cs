@@ -33,11 +33,13 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public async ValueTask<string> StartAsync(CancellationToken cancellationToken)
         {
+            var hostName = Environment.GetEnvironmentVariable("ASPNETCORE_AUTO_RELOAD_WS_HOSTNAME") ?? "127.0.0.1";
+
             _refreshServer = new HostBuilder()
                 .ConfigureWebHost(builder =>
                 {
                     builder.UseKestrel();
-                    builder.UseUrls("http://127.0.0.1:0");
+                    builder.UseUrls($"http://{hostName}:0");
 
                     builder.Configure(app =>
                     {
@@ -100,7 +102,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 _refreshServer.Dispose();
             }
-            
+
             _taskCompletionSource.TrySetResult();
         }
     }
