@@ -13,11 +13,27 @@ Microsoft.JSInterop.IJSObjectReference.InvokeAsync<TValue>(string! identifier, o
 Microsoft.JSInterop.IJSRuntime
 Microsoft.JSInterop.IJSRuntime.InvokeAsync<TValue>(string! identifier, System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
 Microsoft.JSInterop.IJSRuntime.InvokeAsync<TValue>(string! identifier, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.IJSUnmarshalledObjectReference
+Microsoft.JSInterop.IJSUnmarshalledObjectReference.InvokeUnmarshalled<T0, T1, T2, TResult>(string! identifier, T0 arg0, T1 arg1, T2 arg2) -> TResult
+Microsoft.JSInterop.IJSUnmarshalledObjectReference.InvokeUnmarshalled<T0, T1, TResult>(string! identifier, T0 arg0, T1 arg1) -> TResult
+Microsoft.JSInterop.IJSUnmarshalledObjectReference.InvokeUnmarshalled<T0, TResult>(string! identifier, T0 arg0) -> TResult
+Microsoft.JSInterop.IJSUnmarshalledObjectReference.InvokeUnmarshalled<TResult>(string! identifier) -> TResult
 Microsoft.JSInterop.IJSUnmarshalledRuntime
 Microsoft.JSInterop.IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, T1, T2, TResult>(string! identifier, T0 arg0, T1 arg1, T2 arg2) -> TResult
 Microsoft.JSInterop.IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, T1, TResult>(string! identifier, T0 arg0, T1 arg1) -> TResult
 Microsoft.JSInterop.IJSUnmarshalledRuntime.InvokeUnmarshalled<T0, TResult>(string! identifier, T0 arg0) -> TResult
 Microsoft.JSInterop.IJSUnmarshalledRuntime.InvokeUnmarshalled<TResult>(string! identifier) -> TResult
+Microsoft.JSInterop.Implementation.JSInProcessObjectReference
+Microsoft.JSInterop.Implementation.JSInProcessObjectReference.Dispose() -> void
+Microsoft.JSInterop.Implementation.JSInProcessObjectReference.Invoke<TValue>(string! identifier, params object?[]? args) -> TValue
+Microsoft.JSInterop.Implementation.JSInProcessObjectReference.JSInProcessObjectReference(Microsoft.JSInterop.JSInProcessRuntime! jsRuntime, long id) -> void
+Microsoft.JSInterop.Implementation.JSObjectReference
+Microsoft.JSInterop.Implementation.JSObjectReference.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.JSInterop.Implementation.JSObjectReference.Id.get -> long
+Microsoft.JSInterop.Implementation.JSObjectReference.InvokeAsync<TValue>(string! identifier, System.Threading.CancellationToken cancellationToken, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.Implementation.JSObjectReference.InvokeAsync<TValue>(string! identifier, object?[]? args) -> System.Threading.Tasks.ValueTask<TValue>
+Microsoft.JSInterop.Implementation.JSObjectReference.JSObjectReference(Microsoft.JSInterop.JSRuntime! jsRuntime, long id) -> void
+Microsoft.JSInterop.Implementation.JSObjectReference.ThrowIfDisposed() -> void
 Microsoft.JSInterop.Infrastructure.DotNetDispatcher
 Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo
 Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo.AssemblyName.get -> string?
