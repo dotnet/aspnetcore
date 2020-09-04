@@ -17,8 +17,8 @@ namespace Company.RazorClassLibrary1
 
         public ExampleJsInterop(IJSRuntime jsRuntime)
         {
-            moduleTask = new (async () => await jsRuntime.InvokeAsync<IJSObjectReference>(
-                "import", "./_content/Company.RazorClassLibrary1/exampleJsInterop.js"));
+            moduleTask = new (() => jsRuntime.InvokeAsync<IJSObjectReference>(
+                "import", "./_content/Company.RazorClassLibrary1/exampleJsInterop.js").AsTask());
         }
 
         public async ValueTask<string> Prompt(string message)
