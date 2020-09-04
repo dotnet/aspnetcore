@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
@@ -69,8 +68,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
                 if (scopeFiles.Count > 1)
                 {
-                    Log.LogError($"More than one scoped css files were found for the razor component '{component}'. Each razor component must have at most" +
-                    " a single associated scoped css file." + Environment.NewLine + string.Join(Environment.NewLine, scopeFiles.Select(f => f.ItemSpec)));
+                    Log.LogError(null, "BLAZOR101", "", component, 0, 0, 0, 0, $"More than one scoped css files were found for the razor component '{component}'. " +
+                        $"Each razor component must have at most a single associated scoped css file." +
+                        Environment.NewLine +
+                        string.Join(Environment.NewLine, scopeFiles.Select(f => f.ItemSpec)));
                 }
             }
 
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             // can update the Content item for the .razor.css file with Scoped=false and we will not consider it.
             foreach (var unmatched in unmatchedScopedCss)
             {
-                Log.LogError($"The scoped css file '{unmatched.ItemSpec}' was defined but no associated razor component was found for it.");
+                Log.LogError(null, "BLAZOR102", "", unmatched.ItemSpec, 0, 0, 0, 0, $"The scoped css file '{unmatched.ItemSpec}' was defined but no associated razor component was found for it.");
             }
 
             RazorComponentsWithScopes = razorComponentsWithScopes.ToArray();

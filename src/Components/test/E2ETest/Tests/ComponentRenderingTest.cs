@@ -344,6 +344,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var specialStyleDiv = appElement.FindElement(By.ClassName("special-style"));
             Assert.Equal("50px", specialStyleDiv.GetCssValue("padding"));
 
+            // This style is isolated to the component and comes from the bundle that gets generated for BasicTestApp
+            // and that includes the @import for the TestContentPackage.bundle.scp.css file
+            Assert.Equal("20px", specialStyleDiv.GetCssValue("font-size"));
+
             // The external components are fully functional, not just static HTML
             var externalComponentButton = specialStyleDiv.FindElement(By.TagName("button"));
             Assert.Equal("Click me", externalComponentButton.Text);

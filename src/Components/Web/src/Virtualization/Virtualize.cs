@@ -88,6 +88,15 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
         [Parameter]
         public ICollection<TItem>? Items { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value that determines how many additional items will be rendered
+        /// before and after the visible region. This help to reduce the frequency of rendering
+        /// during scrolling. However, higher values mean that more elements will be present
+        /// in the page.
+        /// </summary>
+        [Parameter]
+        public int OverscanCount { get; set; } = 3;
+
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
@@ -251,8 +260,8 @@ namespace Microsoft.AspNetCore.Components.Web.Virtualization
                 _itemSize = ItemSize;
             }
 
-            itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / _itemSize) - 1);
-            visibleItemCapacity = (int)Math.Ceiling(containerSize / _itemSize) + 2;
+            itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / _itemSize) - OverscanCount);
+            visibleItemCapacity = (int)Math.Ceiling(containerSize / _itemSize) + 2 * OverscanCount;
         }
 
         private void UpdateItemDistribution(int itemsBefore, int visibleItemCapacity)
