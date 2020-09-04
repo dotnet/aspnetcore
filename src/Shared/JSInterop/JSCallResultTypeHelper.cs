@@ -25,7 +25,9 @@ namespace Microsoft.JSInterop
                 }
                 else
                 {
-                    throw new ArgumentException($"JS interop cannot supply an instance of type '{resultType}'.");
+                    throw new ArgumentException(
+                        $"JS interop cannot supply an instance of type '{resultType}'. Consider using " +
+                        $"'{typeof(IJSObjectReference)}' instead.");
                 }
             }
             else

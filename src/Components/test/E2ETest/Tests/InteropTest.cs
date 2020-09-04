@@ -62,6 +62,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 ["SyncExceptionFromAsyncMethod"] = "Function threw a sync exception!",
                 ["AsyncExceptionFromAsyncMethod"] = "Function threw an async exception!",
                 ["JSObjectReferenceInvokeNonFunctionException"] = "The value 'nonFunction' is not a function.",
+                ["JSObjectReferenceInvalidTypeArgumentException"] = "JS interop cannot supply an instance of type",
                 ["resultReturnDotNetObjectByRefAsync"] = "1001",
                 ["instanceMethodThisTypeNameAsync"] = @"""JavaScriptInterop""",
                 ["instanceMethodStringValueUpperAsync"] = @"""MY STRING""",
