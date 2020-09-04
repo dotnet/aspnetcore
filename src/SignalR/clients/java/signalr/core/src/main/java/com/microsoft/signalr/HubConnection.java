@@ -528,7 +528,7 @@ public class HubConnection implements AutoCloseable {
         }
 
         Completable stop = transport.stop();
-        stop.subscribe();
+        stop.onErrorComplete().subscribe();
         return stop;
     }
 
