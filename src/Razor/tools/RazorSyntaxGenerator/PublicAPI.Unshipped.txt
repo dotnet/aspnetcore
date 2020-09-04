@@ -1,0 +1,40 @@
+#nullable enable
+RazorSyntaxGenerator.AbstractNode
+RazorSyntaxGenerator.AbstractNode.AbstractNode() -> void
+RazorSyntaxGenerator.Comment
+RazorSyntaxGenerator.Comment.Comment() -> void
+RazorSyntaxGenerator.Field
+RazorSyntaxGenerator.Field.Field() -> void
+RazorSyntaxGenerator.Kind
+RazorSyntaxGenerator.Kind.Kind() -> void
+RazorSyntaxGenerator.Node
+RazorSyntaxGenerator.Node.Node() -> void
+RazorSyntaxGenerator.PredefinedNode
+RazorSyntaxGenerator.PredefinedNode.PredefinedNode() -> void
+RazorSyntaxGenerator.Program
+RazorSyntaxGenerator.Program.Program() -> void
+RazorSyntaxGenerator.Tree
+RazorSyntaxGenerator.Tree.Tree() -> void
+RazorSyntaxGenerator.TreeType
+RazorSyntaxGenerator.TreeType.TreeType() -> void
+~RazorSyntaxGenerator.AbstractNode.Fields -> System.Collections.Generic.List<RazorSyntaxGenerator.Field>
+~RazorSyntaxGenerator.Comment.Body -> System.Xml.XmlElement[]
+~RazorSyntaxGenerator.Field.Kinds -> System.Collections.Generic.List<RazorSyntaxGenerator.Kind>
+~RazorSyntaxGenerator.Field.Name -> string
+~RazorSyntaxGenerator.Field.New -> string
+~RazorSyntaxGenerator.Field.Optional -> string
+~RazorSyntaxGenerator.Field.Override -> string
+~RazorSyntaxGenerator.Field.PropertyComment -> RazorSyntaxGenerator.Comment
+~RazorSyntaxGenerator.Field.Type -> string
+~RazorSyntaxGenerator.Kind.Name -> string
+~RazorSyntaxGenerator.Node.Errors -> string
+~RazorSyntaxGenerator.Node.Fields -> System.Collections.Generic.List<RazorSyntaxGenerator.Field>
+~RazorSyntaxGenerator.Node.Kinds -> System.Collections.Generic.List<RazorSyntaxGenerator.Kind>
+~RazorSyntaxGenerator.Node.Root -> string
+~RazorSyntaxGenerator.Tree.Root -> string
+~RazorSyntaxGenerator.Tree.Types -> System.Collections.Generic.List<RazorSyntaxGenerator.TreeType>
+~RazorSyntaxGenerator.TreeType.Base -> string
+~RazorSyntaxGenerator.TreeType.FactoryComment -> RazorSyntaxGenerator.Comment
+~RazorSyntaxGenerator.TreeType.Name -> string
+~RazorSyntaxGenerator.TreeType.TypeComment -> RazorSyntaxGenerator.Comment
+~static RazorSyntaxGenerator.Program.Main(string[] args) -> int
