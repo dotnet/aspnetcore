@@ -13,24 +13,27 @@ namespace Company.RazorClassLibrary1
 
     public class ExampleJsInterop : IAsyncDisposable
     {
-        private readonly Task<IJSObjectReference> moduleTask;
+        private readonly Lazy<Task<IJSObjectReference>> moduleTask;
 
         public ExampleJsInterop(IJSRuntime jsRuntime)
         {
-            moduleTask = jsRuntime.InvokeAsync<IJSObjectReference>(
-                "import", "./_content/Company.RazorClassLibrary1/exampleJsInterop.js").AsTask();
+            moduleTask = new (async () => await jsRuntime.InvokeAsync<IJSObjectReference>(
+                "import", "./_content/Company.RazorClassLibrary1/exampleJsInterop.js"));
         }
 
         public async ValueTask<string> Prompt(string message)
         {
-            var module = await moduleTask;
+            var module = await moduleTask.Value;
             return await module.InvokeAsync<string>("showPrompt", message);
         }
 
         public async ValueTask DisposeAsync()
         {
-            var module = await moduleTask;
-            await module.DisposeAsync();
+            if (moduleTask.IsValueCreated)
+            {
+                var module = await moduleTask.Value;
+                await module.DisposeAsync();
+            }
         }
     }
 }
