@@ -462,8 +462,7 @@ namespace Microsoft.AspNetCore.Components
                 () => parameters.SetParameterProperties(target));
 
             // Assert
-            Assert.Equal(
-                $"Unable to set property '{nameof(HasInstanceProperties.IntProp)}' on object of " +
+            Assert.Equal($"Unable to set property '{nameof(HasInstanceProperties.IntProp)}' to value 'string value' on object of " +
                 $"type '{typeof(HasInstanceProperties).FullName}'. The error was: {ex.InnerException.Message}",
                 ex.Message);
         }
@@ -484,7 +483,7 @@ namespace Microsoft.AspNetCore.Components
 
             // Assert
             Assert.Equal(
-                $"Unable to set property '{nameof(HasPropertyWhoseSetterThrows.StringProp)}' on object of " +
+                $"Unable to set property '{nameof(HasPropertyWhoseSetterThrows.StringProp)}' to value 'anything' on object of " +
                 $"type '{typeof(HasPropertyWhoseSetterThrows).FullName}'. The error was: {ex.InnerException.Message}",
                 ex.Message);
         }

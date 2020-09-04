@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Components.Reflection
                 catch (Exception ex)
                 {
                     throw new InvalidOperationException(
-                        $"Unable to set property '{parameterName}' on object of " +
+                        $"Unable to set property '{parameterName}' to value '{value}' on object of " +
                         $"type '{target.GetType().FullName}'. The error was: {ex.Message}", ex);
                 }
             }
