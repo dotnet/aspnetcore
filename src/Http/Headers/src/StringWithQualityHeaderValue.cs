@@ -67,7 +67,9 @@ namespace Microsoft.Net.Http.Headers
 
         public override bool Equals(object? obj)
         {
-            if (!(obj is StringWithQualityHeaderValue other))
+            var other = obj as StringWithQualityHeaderValue;
+
+            if (other == null)
             {
                 return false;
             }
@@ -96,7 +98,7 @@ namespace Microsoft.Net.Http.Headers
 
             if (_quality.HasValue)
             {
-                result ^= _quality.GetValueOrDefault().GetHashCode();
+                result = result ^ _quality.GetValueOrDefault().GetHashCode();
             }
 
             return result;
@@ -153,12 +155,10 @@ namespace Microsoft.Net.Http.Headers
                 return 0;
             }
 
-            var result = new StringWithQualityHeaderValue
-            {
-                _value = input.Subsegment(startIndex, valueLength)
-            };
+            StringWithQualityHeaderValue result = new StringWithQualityHeaderValue();
+            result._value = input.Subsegment(startIndex, valueLength);
             var current = startIndex + valueLength;
-            current += HttpRuleParser.GetWhitespaceLength(input, current);
+            current = current + HttpRuleParser.GetWhitespaceLength(input, current);
 
             if ((current == input.Length) || (input[current] != ';'))
             {
@@ -167,7 +167,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             current++; // skip ';' separator
-            current += HttpRuleParser.GetWhitespaceLength(input, current);
+            current = current + HttpRuleParser.GetWhitespaceLength(input, current);
 
             // If we found a ';' separator, it must be followed by a quality information
             if (!TryReadQuality(input, result, ref current))
@@ -190,7 +190,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             current++; // skip 'q' identifier
-            current += HttpRuleParser.GetWhitespaceLength(input, current);
+            current = current + HttpRuleParser.GetWhitespaceLength(input, current);
 
             // If we found "q" it must be followed by "="
             if ((current == input.Length) || (input[current] != '='))
@@ -199,7 +199,7 @@ namespace Microsoft.Net.Http.Headers
             }
 
             current++; // skip '=' separator
-            current += HttpRuleParser.GetWhitespaceLength(input, current);
+            current = current + HttpRuleParser.GetWhitespaceLength(input, current);
 
             if (current == input.Length)
             {
@@ -213,8 +213,8 @@ namespace Microsoft.Net.Http.Headers
 
             result._quality = quality;
 
-            current += qualityLength;
-            current += HttpRuleParser.GetWhitespaceLength(input, current);
+            current = current + qualityLength;
+            current = current + HttpRuleParser.GetWhitespaceLength(input, current);
 
             index = current;
             return true;

@@ -22,14 +22,14 @@ namespace Microsoft.AspNetCore.WebUtilities
         private const int MinBufferSize = 128;
         internal const int DefaultBufferSize = 16 * 1024;
 
-        private readonly Stream _stream;
+        private Stream _stream;
         private readonly Encoder _encoder;
         private readonly ArrayPool<byte> _bytePool;
         private readonly ArrayPool<char> _charPool;
         private readonly int _charBufferSize;
 
-        private readonly byte[] _byteBuffer;
-        private readonly char[] _charBuffer;
+        private byte[] _byteBuffer;
+        private char[] _charBuffer;
 
         private int _charBufferCount;
         private bool _disposed;

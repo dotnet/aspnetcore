@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private const int MinBufferSize = 128;
         private const int MaxSharedBuilderCapacity = 360; // also the max capacity used in StringBuilderCache
 
-        private readonly Stream _stream;
+        private Stream _stream;
         private readonly Encoding _encoding;
         private readonly Decoder _decoder;
 
@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         private readonly ArrayPool<char> _charPool;
 
         private readonly int _byteBufferSize;
-        private readonly byte[] _byteBuffer;
-        private readonly char[] _charBuffer;
+        private byte[] _byteBuffer;
+        private char[] _charBuffer;
 
         private int _charBufferIndex;
         private int _charsRead;
