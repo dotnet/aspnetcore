@@ -47,7 +47,7 @@
 
   <Target Name="Build">
     <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Build" />
-    <Exec Command="../gradlew $(GradleOptions) compileJava" />
+    <Exec Command="../gradlew --debug $(GradleOptions) compileJava" />
   </Target>
 
   <Target Name="Test" />
