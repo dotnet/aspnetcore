@@ -1487,12 +1487,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Diagno
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.JSInterop.Tests", "src\JSInterop\Microsoft.JSInterop\test\Microsoft.JSInterop.Tests.csproj", "{DAAB6B35-CBD2-4573-B633-CDD42F583A0E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProtectedBrowserStorage", "ProtectedBrowserStorage", "{1B06FD32-3A1D-46A4-B2AF-99159FAD8127}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.ProtectedBrowserStorage", "src\Components\ProtectedBrowserStorage\src\Microsoft.AspNetCore.Components.ProtectedBrowserStorage.csproj", "{9059AC97-7547-4CC1-A076-680CBCCC1F33}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.ProtectedBrowserStorage.Tests", "src\Components\ProtectedBrowserStorage\test\Microsoft.AspNetCore.Components.ProtectedBrowserStorage.Tests.csproj", "{943FD3EC-D330-4277-B3F3-3DFABB57D3B5}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Configuration.KeyPerFile", "src\Configuration.KeyPerFile\src\Microsoft.Extensions.Configuration.KeyPerFile.csproj", "{498A4F54-F11A-46C5-A58D-09DE56C6A034}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Configuration.KeyPerFile", "Configuration.KeyPerFile", "{AEB1933E-9369-4305-B20E-F186F888158F}"
