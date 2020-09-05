@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll"); // Verify dependencies are part of the output.
 
             // Verify scoped css
-            Assert.FileExists(result, blazorPublishDirectory, "_framework", "scoped.styles.css");
+            Assert.FileExists(result, blazorPublishDirectory, "blazorwasm.styles.css");
 
             // Verify referenced static web assets
             Assert.FileExists(result, blazorPublishDirectory, "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
@@ -663,7 +663,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll"); // Verify dependencies are part of the output.
 
             // Verify scoped css
-            Assert.FileExists(result, blazorPublishDirectory, "_framework", "scoped.styles.css");
+            Assert.FileExists(result, blazorPublishDirectory, "blazorwasm.styles.css");
 
             // Verify static assets are in the publish directory
             Assert.FileExists(result, blazorPublishDirectory, "index.html");

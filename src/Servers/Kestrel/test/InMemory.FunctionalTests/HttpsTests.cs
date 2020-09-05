@@ -61,6 +61,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25542")]
+
         public async Task UseHttpsWithAsyncCallbackDoeNotFallBackToDefaultCert()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -81,8 +83,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     var ex = await Assert.ThrowsAnyAsync<Exception>(() =>
                         sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
-                            enabledSslProtocols: SslProtocols.Tls,
+                            enabledSslProtocols: SslProtocols.None,
                             checkCertificateRevocation: false));
+
+                    Logger.LogTrace(ex, "AuthenticateAsClientAsync Exception");
                 }
             }
 

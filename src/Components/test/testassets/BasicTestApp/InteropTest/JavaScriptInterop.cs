@@ -415,20 +415,20 @@ namespace BasicTestApp.InteropTest
         }
 
         [JSInvokable]
-        public static JSObjectReference RoundTripJSObjectReference(JSObjectReference jsObjectReference)
+        public static IJSObjectReference RoundTripJSObjectReference(IJSObjectReference jsObjectReference)
         {
             return jsObjectReference;
         }
 
         [JSInvokable]
-        public static async Task<JSObjectReference> RoundTripJSObjectReferenceAsync(JSObjectReference jSObjectReference)
+        public static async Task<IJSObjectReference> RoundTripJSObjectReferenceAsync(IJSObjectReference jSObjectReference)
         {
             await Task.Yield();
             return jSObjectReference;
         }
 
         [JSInvokable]
-        public static string InvokeDisposedJSObjectReferenceException(JSInProcessObjectReference jsObjectReference)
+        public static string InvokeDisposedJSObjectReferenceException(IJSInProcessObjectReference jsObjectReference)
         {
             try
             {
@@ -442,7 +442,7 @@ namespace BasicTestApp.InteropTest
         }
 
         [JSInvokable]
-        public static async Task<string> InvokeDisposedJSObjectReferenceExceptionAsync(JSObjectReference jsObjectReference)
+        public static async Task<string> InvokeDisposedJSObjectReferenceExceptionAsync(IJSObjectReference jsObjectReference)
         {
             try
             {

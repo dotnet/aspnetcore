@@ -28,8 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             for (var i = 0; i < ScopedCssInput.Length; i++)
             {
                 var input = ScopedCssInput[i];
-                // Todo: Normalize path to forward slashes and lowercase before computing the hash
-                var relativePath = input.ItemSpec.Replace("\\","//");
+                var relativePath = input.ItemSpec.ToLowerInvariant().Replace("\\","//");
                 var scope = input.GetMetadata("CssScope");
                 scope = !string.IsNullOrEmpty(scope) ? scope : GenerateScope(TargetName, relativePath);
 

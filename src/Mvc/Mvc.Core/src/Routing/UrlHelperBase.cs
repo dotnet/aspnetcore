@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 // url doesn't start with "//" or "/\"
                 if (url[1] != '/' && url[1] != '\\')
                 {
-                    return true;
+                    return !HasControlCharacter(url.AsSpan(1));
                 }
 
                 return false;
@@ -78,14 +78,29 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 // url doesn't start with "~//" or "~/\"
                 if (url[2] != '/' && url[2] != '\\')
                 {
-                    return true;
+                    return !HasControlCharacter(url.AsSpan(2));
                 }
 
                 return false;
             }
 
             return false;
+
+            static bool HasControlCharacter(ReadOnlySpan<char> readOnlySpan)
+            {
+                // URLs may not contain ASCII control characters.
+                for (var i = 0; i < readOnlySpan.Length; i++)
+                {
+                    if (char.IsControl(readOnlySpan[i]))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
         }
+
 
         /// <inheritdoc />
         public virtual string Content(string contentPath)
