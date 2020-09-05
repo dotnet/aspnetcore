@@ -4,20 +4,27 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.JSInterop.Implementation;
 
 namespace Microsoft.JSInterop.Infrastructure
 {
-    internal sealed class JSObjectReferenceJsonConverter<TJSObjectReference>
-        : JsonConverter<TJSObjectReference> where TJSObjectReference : JSObjectReference
+    internal sealed class JSObjectReferenceJsonConverter<TInterface, TImplementation> : JsonConverter<TInterface>
+        where TInterface : class, IJSObjectReference
+        where TImplementation : JSObjectReference, TInterface
     {
-        private readonly Func<long, TJSObjectReference> _jsObjectReferenceFactory;
+        private static readonly JsonEncodedText _idKey = JsonEncodedText.Encode("__jsObjectId");
 
-        public JSObjectReferenceJsonConverter(Func<long, TJSObjectReference> jsObjectReferenceFactory)
+        private readonly Func<long, TImplementation> _jsObjectReferenceFactory;
+
+        public JSObjectReferenceJsonConverter(Func<long, TImplementation> jsObjectReferenceFactory)
         {
             _jsObjectReferenceFactory = jsObjectReferenceFactory;
         }
 
-        public override TJSObjectReference? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override bool CanConvert(Type typeToConvert)
+            => typeToConvert == typeof(TInterface) || typeToConvert == typeof(TImplementation);
+
+        public override TInterface? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             long id = -1;
 
@@ -25,7 +32,7 @@ namespace Microsoft.JSInterop.Infrastructure
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (id == -1 && reader.ValueTextEquals(JSObjectReference.IdKey.EncodedUtf8Bytes))
+                    if (id == -1 && reader.ValueTextEquals(_idKey.EncodedUtf8Bytes))
                     {
                         reader.Read();
                         id = reader.GetInt64();
@@ -43,16 +50,16 @@ namespace Microsoft.JSInterop.Infrastructure
 
             if (id == -1)
             {
-                throw new JsonException($"Required property {JSObjectReference.IdKey} not found.");
+                throw new JsonException($"Required property {_idKey} not found.");
             }
 
             return _jsObjectReferenceFactory(id);
         }
 
-        public override void Write(Utf8JsonWriter writer, TJSObjectReference value, JsonSerializerOptions options)
+        public override void Write(Utf8JsonWriter writer, TInterface value, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
-            writer.WriteNumber(JSObjectReference.IdKey, value.Id);
+            writer.WriteNumber(_idKey, ((TImplementation)value).Id);
             writer.WriteEndObject();
         }
     }

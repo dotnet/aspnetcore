@@ -50,8 +50,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <GenerateStaticWebAssetsManifestDependsOn>
       ResolveStaticWebAssetsInputs;
-      _CreateStaticWebAssetsInputsCacheFile;
       $(GenerateStaticWebAssetsManifestDependsOn)
+      _CreateStaticWebAssetsInputsCacheFile;
     </GenerateStaticWebAssetsManifestDependsOn>
 
     <GetCurrentProjectStaticWebAssetsDependsOn>
@@ -59,10 +59,20 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(GetCurrentProjectStaticWebAssetsDependsOn)
     </GetCurrentProjectStaticWebAssetsDependsOn>
 
-    <GetCopyToOutputDirectoryItemsDependsOn>
-      $(GetCopyToOutputDirectoryItemsDependsOn);
+    <PrepareForRunDependsOn>
       GenerateStaticWebAssetsManifest;
+      $(PrepareForRunDependsOn);
+    </PrepareForRunDependsOn>
+
+    <GetCopyToOutputDirectoryItemsDependsOn>
+      _IncludeGeneratedStaticWebAssetsManifest;
+      $(GetCopyToOutputDirectoryItemsDependsOn);
     </GetCopyToOutputDirectoryItemsDependsOn>
+
+    <ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
+      ResolveStaticWebAssetsConfiguration;
+      $(ResolveCurrentProjectStaticWebAssetsInputsDependsOn)
+    </ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
 
     <ResolveStaticWebAssetsInputsDependsOn>
       ResolveCurrentProjectStaticWebAssetsInputs;
@@ -76,8 +86,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ResolveReferencedProjectsStaticWebAssetsDependsOn>
 
     <GenerateStaticWebAssetsPackTargetsDependsOn>
+      ResolveStaticWebAssetsInputs;
+      $(GenerateStaticWebAssetsPackTargetsDependsOn);
       _CreateStaticWebAssetsCustomPropsCacheFile;
-      $(GenerateStaticWebAssetsPackTargetsDependsOn)
     </GenerateStaticWebAssetsPackTargetsDependsOn>
 
     <TargetsForTfmSpecificContentInPackage>
@@ -122,6 +133,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MakeDir
       Directories="$(_StaticWebAssetsIntermediateOutputPath)"
       Condition="!Exists('$(_StaticWebAssetsIntermediateOutputPath)')" />
+  </Target>
+
+  <Target Name="ResolveStaticWebAssetsConfiguration">
+    <PropertyGroup>
+      <StaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">_content/$(PackageId)</StaticWebAssetBasePath>
+    </PropertyGroup>
   </Target>
 
   <!--
@@ -196,20 +213,23 @@ Copyright (c) .NET Foundation. All rights reserved.
       ContentRootDefinitions="@(_ExternalStaticWebAsset)"
       TargetManifestPath="$(_GeneratedStaticWebAssetsDevelopmentManifest)" />
 
+    <ItemGroup>
+      <FileWrites Include="$(_GeneratedStaticWebAssetsDevelopmentManifest)" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="_IncludeGeneratedStaticWebAssetsManifest">
       <!-- This is the list of inputs that will be used for generating the manifest used during development. -->
     <ItemGroup>
       <ContentWithTargetPath
         Include="$(_GeneratedStaticWebAssetsDevelopmentManifest)"
         Condition="'@(_ExternalStaticWebAsset->Count())' != '0'">
-
+        <Pack>false</Pack>
         <TargetPath>$(TargetName).StaticWebAssets.xml</TargetPath>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>Never</CopyToPublishDirectory>
       </ContentWithTargetPath>
-    </ItemGroup>
-
-    <ItemGroup>
-      <FileWrites Include="$(_GeneratedStaticWebAssetsDevelopmentManifest)" />
     </ItemGroup>
 
   </Target>
@@ -275,11 +295,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="ResolveCurrentProjectStaticWebAssetsInputs" DependsOnTargets="$(ResolveCurrentProjectStaticWebAssetsInputsDependsOn)">
-
-      <PropertyGroup>
-        <StaticWebAssetBasePath Condition="$(StaticWebAssetBasePath) == ''">_content/$(PackageId)</StaticWebAssetBasePath>
-      </PropertyGroup>
-
       <ItemGroup>
 
       <_ThisProjectStaticWebAsset
@@ -356,7 +371,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target
     Name="_CreateStaticWebAssetsCustomPropsCacheFile"
-    DependsOnTargets="ResolveStaticWebAssetsInputs;_PrepareForStaticWebAssets">
+    DependsOnTargets="_PrepareForStaticWebAssets">
 
     <ItemGroup>
       <!-- This is the list of inputs that will be used for generating the props file that will be packed with
@@ -408,6 +423,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_CurrentProjectHasStaticWebAssets Condition="'@(_CurrentProjectStaticWebAsset->Count())' != '0'">true</_CurrentProjectHasStaticWebAssets>
     </PropertyGroup>
+
+    <!-- Validate that there are no path conflicts between the assets we are about to pack. -->
+    <ValidateStaticWebAssetsUniquePaths Condition="'$(_CurrentProjectHasStaticWebAssets)' == 'true'"
+      StaticWebAssets="@(_CurrentProjectStaticWebAsset)"
+      WebRootFiles="" />
 
     <!-- Generates a props file that goes in build\Microsoft.AspNetCore.StaticWebAssets.props
          and that describes the static web assets for the package.

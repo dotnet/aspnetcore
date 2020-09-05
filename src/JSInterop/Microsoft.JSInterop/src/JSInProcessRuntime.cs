@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using Microsoft.JSInterop.Implementation;
 using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.JSInterop
@@ -17,8 +18,9 @@ namespace Microsoft.JSInterop
         /// </summary>
         protected JSInProcessRuntime()
         {
-            JsonSerializerOptions.Converters.Add(new JSObjectReferenceJsonConverter<JSInProcessObjectReference>(
-                id => new JSInProcessObjectReference(this, id)));
+            JsonSerializerOptions.Converters.Add(
+                new JSObjectReferenceJsonConverter<IJSInProcessObjectReference, JSInProcessObjectReference>(
+                    id => new JSInProcessObjectReference(this, id)));
         }
 
         [return: MaybeNull]
@@ -27,7 +29,7 @@ namespace Microsoft.JSInterop
             var resultJson = InvokeJS(
                 identifier,
                 JsonSerializer.Serialize(args, JsonSerializerOptions),
-                ResultTypeFromGeneric<TValue>(),
+                JSCallResultTypeHelper.FromGeneric<TValue>(),
                 targetInstanceId);
 
             if (resultJson is null)

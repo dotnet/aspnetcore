@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -73,54 +73,13 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         }
 
         [Fact]
-        public void ReturnsError_ForDuplicateBasePaths()
-        {
-            // Arrange
-            var errorMessages = new List<string>();
-            var buildEngine = new Mock<IBuildEngine>();
-            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-
-            var task = new GenerateStaticWebAssetsManifest
-            {
-                BuildEngine = buildEngine.Object,
-                ContentRootDefinitions = new TaskItem[]
-                {
-                    CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>
-                    {
-                        ["BasePath"] = "MyLibrary",
-                        ["ContentRoot"] = Path.Combine("nuget", "MyLibrary"),
-                        ["SourceId"] = "MyLibrary"
-                    }),
-                    CreateItem(Path.Combine("wwwroot", "otherLib.js"), new Dictionary<string,string>
-                    {
-                        ["BasePath"] = "MyLibrary",
-                        ["ContentRoot"] = Path.Combine("nuget", "MyOtherLibrary"),
-                        ["SourceId"] = "MyOtherLibrary"
-                    })
-                }
-            };
-
-            // Act
-            var result = task.Execute();
-
-            // Assert
-            Assert.False(result);
-            var message = Assert.Single(errorMessages);
-            Assert.Equal(
-                $"Duplicate base paths 'MyLibrary' for content root paths '{Path.Combine("nuget", "MyOtherLibrary")}' and '{Path.Combine("nuget", "MyLibrary")}'. " +
-                $"('{Path.Combine("wwwroot", "otherLib.js")}', '{Path.Combine("wwwroot", "sample.js")}')",
-                message);
-        }
-
-        [Fact]
         public void AllowsMultipleContentRootsWithSameBasePath_ForTheSameSourceId()
         {
             // Arrange
             var file = Path.GetTempFileName();
             var expectedDocument = $@"<StaticWebAssets Version=""1.0"">
-  <ContentRoot BasePath=""Blazor.Client"" Path=""{Path.Combine(".", "nuget", $"Blazor.Client{Path.DirectorySeparatorChar}")}"" />
   <ContentRoot BasePath=""Blazor.Client"" Path=""{Path.Combine(".", "nuget", "bin", "debug", $"netstandard2.1{Path.DirectorySeparatorChar}")}"" />
+  <ContentRoot BasePath=""Blazor.Client"" Path=""{Path.Combine(".", "nuget", $"Blazor.Client{Path.DirectorySeparatorChar}")}"" />
 </StaticWebAssets>";
 
             var buildEngine = new Mock<IBuildEngine>();
@@ -163,47 +122,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     File.Delete(file);
                 }
             }
-        }
-
-        [Fact]
-        public void ReturnsError_ForDuplicateContentRoots()
-        {
-            // Arrange
-            var errorMessages = new List<string>();
-            var buildEngine = new Mock<IBuildEngine>();
-            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-
-            var task = new GenerateStaticWebAssetsManifest
-            {
-                BuildEngine = buildEngine.Object,
-                ContentRootDefinitions = new TaskItem[]
-                {
-                    CreateItem(Path.Combine("wwwroot","sample.js"), new Dictionary<string,string>
-                    {
-                        ["BasePath"] = "MyLibrary",
-                        ["SourceId"] = "MyLibrary",
-                        ["ContentRoot"] = Path.Combine(".", "MyLibrary")
-                    }),
-                    CreateItem(Path.Combine("wwwroot", "otherLib.js"), new Dictionary<string,string>
-                    {
-                        ["BasePath"] = "MyOtherLibrary",
-                        ["SourceId"] = "MyOtherLibrary",
-                        ["ContentRoot"] = Path.Combine(".", "MyLibrary")
-                    })
-                }
-            };
-
-            // Act
-            var result = task.Execute();
-
-            // Assert
-            Assert.False(result);
-            var message = Assert.Single(errorMessages);
-            Assert.Equal(
-                $"Duplicate content root paths '{Path.Combine(".", "MyLibrary")}' for base paths 'MyOtherLibrary' and 'MyLibrary' " +
-                $"('{Path.Combine("wwwroot", "otherLib.js")}', '{Path.Combine("wwwroot", "sample.js")}')",
-                message);
         }
 
         [Fact]

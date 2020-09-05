@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -11,6 +11,15 @@
   <ItemGroup>
     <Reference Include="Microsoft.Build.Utilities.Core" />
     <Reference Include="Microsoft.NET.Sdk.Razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TestFiles\Generated\*.rz.scp.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="TestFiles\Generated\*.bundle.scp.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

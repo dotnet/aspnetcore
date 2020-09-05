@@ -137,7 +137,7 @@
             ReturnValues["returnArray"] = string.Join(",", ((IJSInProcessRuntime)JSRuntime).Invoke<Segment[]>("returnArray").Select(x => x.Source).ToArray());
         }
 
-        var jsObjectReference = await JSRuntime.InvokeAsync<JSObjectReference>("returnJSObjectReference");
+        var jsObjectReference = await JSRuntime.InvokeAsync<IJSObjectReference>("returnJSObjectReference");
         ReturnValues["jsObjectReference.identity"] = await jsObjectReference.InvokeAsync<string>("identity", "Invoked from JSObjectReference");
         ReturnValues["jsObjectReference.nested.add"] = (await jsObjectReference.InvokeAsync<int>("nested.add", 2, 3)).ToString();
         ReturnValues["addViaJSObjectReference"] = (await JSRuntime.InvokeAsync<int>("addViaJSObjectReference", jsObjectReference, 2, 3)).ToString();
@@ -151,7 +151,7 @@
             JSObjectReferenceInvokeNonFunctionException = e;
         }
 
-        var module = await JSRuntime.InvokeAsync<JSObjectReference>("import", "./js/testmodule.js");
+        var module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/testmodule.js");
         ReturnValues["jsObjectReferenceModule"] = await module.InvokeAsync<string>("identity", "Returned from module!");
 
         if (shouldSupportSyncInterop)
@@ -192,8 +192,16 @@
     {
         var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
 
-        var jsInProcObjectReference = inProcRuntime.Invoke<JSInProcessObjectReference>("returnJSObjectReference");
+        var jsInProcObjectReference = inProcRuntime.Invoke<IJSInProcessObjectReference>("returnJSObjectReference");
         ReturnValues["jsInProcessObjectReference.identity"] = jsInProcObjectReference.Invoke<string>("identity", "Invoked from JSInProcessObjectReference");
+
+        var unmarshalledRuntime = (IJSUnmarshalledRuntime)JSRuntime;
+        var jsUnmarshalledReference = unmarshalledRuntime.InvokeUnmarshalled<IJSUnmarshalledObjectReference>("returnJSObjectReference");
+        ReturnValues["jsUnmarshalledObjectReference.unmarshalledFunction"] = jsUnmarshalledReference.InvokeUnmarshalled<InteropStruct, bool>("unmarshalledFunction", new InteropStruct
+        {
+            Message = "Sent from .NET",
+            NumberField = 42,
+        }).ToString();
     }
 
     public class PassDotNetObjectByRefArgs

@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering
         /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch batch)
         {
-            ((IJSUnmarshalledRuntime)DefaultWebAssemblyJSRuntime.Instance).InvokeUnmarshalled<int, RenderBatch, object>(
+            DefaultWebAssemblyJSRuntime.Instance.InvokeUnmarshalled<int, RenderBatch, object>(
                 "Blazor._internal.renderBatch",
                 _webAssemblyRendererId,
                 batch);

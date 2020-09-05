@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.JSInterop.Implementation;
 using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.JSInterop
@@ -37,7 +38,8 @@ namespace Microsoft.JSInterop
                 Converters =
                 {
                     new DotNetObjectReferenceJsonConverterFactory(this),
-                    new JSObjectReferenceJsonConverter<JSObjectReference>(id => new JSObjectReference(this, id)),
+                    new JSObjectReferenceJsonConverter<IJSObjectReference, JSObjectReference>(
+                        id => new JSObjectReference(this, id)),
                 }
             };
         }
@@ -51,17 +53,6 @@ namespace Microsoft.JSInterop
         /// Gets or sets the default timeout for asynchronous JavaScript calls.
         /// </summary>
         protected TimeSpan? DefaultAsyncTimeout { get; set; }
-
-        /// <summary>
-        /// Creates a <see cref="JSCallResultType"/> from the given generic type.
-        /// </summary>
-        /// <typeparam name="TResult">
-        /// The type of the result of the relevant JS interop call.
-        /// </typeparam>
-        protected static JSCallResultType ResultTypeFromGeneric<TResult>()
-            => typeof(TResult) == typeof(JSObjectReference) || typeof(TResult) == typeof(JSInProcessObjectReference) ?
-                JSCallResultType.JSObjectReference :
-                JSCallResultType.Default;
 
         /// <summary>
         /// Invokes the specified JavaScript function asynchronously.
@@ -134,7 +125,7 @@ namespace Microsoft.JSInterop
                 var argsJson = args?.Any() == true ?
                     JsonSerializer.Serialize(args, JsonSerializerOptions) :
                     null;
-                var resultType = ResultTypeFromGeneric<TValue>();
+                var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
 
                 BeginInvokeJS(taskId, identifier, argsJson, resultType, targetInstanceId);
 
