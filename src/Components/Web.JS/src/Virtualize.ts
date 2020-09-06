@@ -5,7 +5,7 @@ export const Virtualize = {
 
 const observersByDotNetId = {};
 
-function findClosestScrollContainer(element: Element | null): Element | null {
+function findClosestScrollContainer(element: HTMLElement | null): HTMLElement | null {
   if (!element) {
     return null;
   }
@@ -20,8 +20,14 @@ function findClosestScrollContainer(element: Element | null): Element | null {
 }
 
 function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLElement, rootMargin = 50): void {
+  // Overflow anchoring can cause an ongoing scroll loop, because when we resize the spacers, the browser
+  // would update the scroll position to compensate. Then the spacer would remain visible and we'd keep on
+  // trying to resize it.
+  const scrollContainer = findClosestScrollContainer(spacerBefore);
+  (scrollContainer || document.documentElement).style.overflowAnchor = 'none';
+
   const intersectionObserver = new IntersectionObserver(intersectionCallback, {
-    root: findClosestScrollContainer(spacerBefore),
+    root: scrollContainer,
     rootMargin: `${rootMargin}px`,
   });
 
@@ -57,7 +63,9 @@ function init(dotNetHelper: any, spacerBefore: HTMLElement, spacerAfter: HTMLEle
         return;
       }
 
-      const spacerSeparation = spacerAfter.offsetTop - (spacerBefore.offsetTop + spacerBefore.offsetHeight);
+      const spacerBeforeRect = spacerBefore.getBoundingClientRect();
+      const spacerAfterRect = spacerAfter.getBoundingClientRect();
+      const spacerSeparation = spacerAfterRect.top - spacerBeforeRect.bottom;
       const containerSize = entry.rootBounds?.height;
 
       if (entry.target === spacerBefore) {

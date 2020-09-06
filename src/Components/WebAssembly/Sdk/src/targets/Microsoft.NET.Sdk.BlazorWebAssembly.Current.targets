@@ -266,10 +266,17 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <GetCurrentProjectStaticWebAssetsDependsOn>
       $(GetCurrentProjectStaticWebAssetsDependsOn);
-      AddScopedCssBundle;
+      _BlazorWasmReplaceBundle;
       _BlazorWasmPrepareForRun;
     </GetCurrentProjectStaticWebAssetsDependsOn>
   </PropertyGroup>
+
+  <Target Name="_BlazorWasmReplaceBundle">
+    <ItemGroup>
+      <StaticWebAsset Include="@(_AppBundleStaticWebAsset)" />
+      <Staticwebasset Remove="@(_ProjectBundleStaticWebAsset)" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="_BlazorWasmPrepareForRun" DependsOnTargets="_ProcessBlazorWasmOutputs" BeforeTargets="_RazorPrepareForRun" AfterTargets="GetCurrentProjectStaticWebAssets">
     <PropertyGroup>

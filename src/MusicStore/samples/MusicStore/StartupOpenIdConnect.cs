@@ -124,6 +124,8 @@ namespace MusicStore
             // During development use the ErrorPage middleware to display error information in the browser
             app.UseDeveloperExceptionPage();
 
+            app.UseMigrationsEndPoint();
+
             // Configure Session.
             app.UseSession();
 

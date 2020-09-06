@@ -130,7 +130,16 @@ function invokeJSFromDotNet(callInfo: Pointer, arg0: any, arg1: any, arg2: any):
     }
   } else {
     const func = DotNet.jsCallDispatcher.findJSFunction(functionIdentifier, targetInstanceId);
-    return func.call(null, arg0, arg1, arg2);
+    const result = func.call(null, arg0, arg1, arg2);
+
+    switch (resultType) {
+      case DotNet.JSCallResultType.Default:
+        return result;
+      case DotNet.JSCallResultType.JSObjectReference:
+        return DotNet.createJSObjectReference(result).__jsObjectId;
+      default:
+        throw new Error(`Invalid JS call result type '${resultType}'.`);
+    }
   }
 }
 
