@@ -11,6 +11,7 @@ Microsoft.AspNetCore.Http.EndpointMetadataCollection.EndpointMetadataCollection(
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Current.get -> object? (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Dispose() -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
+Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Enumerator() -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.MoveNext() -> bool (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator.Reset() -> void (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
 Microsoft.AspNetCore.Http.EndpointMetadataCollection.GetEnumerator() -> Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator (forwarded, contained in Microsoft.AspNetCore.Http.Abstractions)
