@@ -32,11 +32,12 @@ Building ASP.NET Core on Windows requires:
   * To install the exact required components, run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1).
 
     ```ps1
-    PS> ./eng/scripts/InstallVisualStudio.ps1
+    PS> ./eng/scripts/InstallVisualStudio.ps1  [-Edition {Enterprise|Community|Professional}]
     ```
 
     However, any Visual Studio 2019 instance that meets the requirements should be fine. See [global.json](/global.json)
     and [eng/scripts/vs.json](/eng/scripts/vs.json) for those requirements. By default, the script will install Visual Studio Enterprise Edition, however you can use a different edition by passing the `-Edition` flag.
+    Even if you have installed Visual Studio, still recommend you should use this script to install again to avoid errors due to missing components just in case.
 * Git. <https://git-scm.org>
 * NodeJS. LTS version of 10.14.2 or newer <https://nodejs.org>.
 * Install yarn globally (`npm install -g yarn`)
@@ -52,7 +53,7 @@ Building ASP.NET Core on Windows requires:
     However, the build should find any JDK 11 or newer installation on the machine.
    * Set the `JAVA_HOME` environment variable with the path of the java installation directory if your installation did not do that automatically. (Gradle needs this for execution.)
       * This will be `RepoRoot/.tools/jdk/win-x64/` if you used the `InstallJdk.ps1` script
-      * This will be `C:/Program FIles/Java/jdk<version>/` if you installed the JDK globally
+      * This will be `C:/Program Files/Java/jdk<version>/` if you installed the JDK globally
 * Chrome - Selenium-based tests require a version of Chrome to be installed. Download and install it from <https://www.google.com/chrome>
 
 ### macOS/Linux
