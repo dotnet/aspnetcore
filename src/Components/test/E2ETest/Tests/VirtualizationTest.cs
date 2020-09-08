@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var itemSizeInput = Browser.FindElement(By.Id("item-size-input"));
 
             // Change the item size.
-            itemSizeInput.SendKeys("\b\b\b50\n");
+            itemSizeInput.SendKeys("\b\b\b10\n");
 
             // Validate that the list has been re-rendered to show more items.
             Browser.True(() => GetItemCount() > initialItemCount);
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var itemSizeInput = Browser.FindElement(By.Id("item-size-input"));
 
             // Change the item size.
-            itemSizeInput.SendKeys("\b\b\b50\n");
+            itemSizeInput.SendKeys("\b\b\b10\n");
 
             // Validate that the same number of loaded items is rendered.
             Browser.Equal(initialItemCount, GetItemCount);
