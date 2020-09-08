@@ -18,11 +18,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         private readonly OrderedEndpointsSequenceProvider _orderSequence;
 
         public PageActionEndpointDataSource(
+            PageActionEndpointDataSourceIdProvider dataSourceIdProvider,
             IActionDescriptorCollectionProvider actions,
             ActionEndpointFactory endpointFactory,
             OrderedEndpointsSequenceProvider orderedEndpoints)
             : base(actions)
         {
+            DataSourceId = dataSourceIdProvider.CreateId();
             _endpointFactory = endpointFactory;
             _orderSequence = orderedEndpoints;
             DefaultBuilder = new PageActionEndpointConventionBuilder(Lock, Conventions);
@@ -31,6 +33,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             // Change notifications can happen immediately!
             Subscribe();
         }
+
+        public int DataSourceId { get; }
 
         public PageActionEndpointConventionBuilder DefaultBuilder { get; }
 
@@ -53,12 +57,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return endpoints;
         }
 
-        internal void AddDynamicPageEndpoint(IEndpointRouteBuilder endpoints, string pattern, Type transformerType, object state)
+        internal void AddDynamicPageEndpoint(IEndpointRouteBuilder endpoints, string pattern, Type transformerType, object state, int? order = null)
         {
             CreateInertEndpoints = true;
             lock (Lock)
             {
-                var order = _orderSequence.GetNext();
+                order ??= _orderSequence.GetNext();
 
                 endpoints.Map(
                     pattern,
@@ -68,11 +72,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     })
                     .Add(b =>
                     {
-                        ((RouteEndpointBuilder)b).Order = order;
+                        ((RouteEndpointBuilder)b).Order = order.Value;
                         b.Metadata.Add(new DynamicPageRouteValueTransformerMetadata(transformerType, state));
+                        b.Metadata.Add(new PageEndpointDataSourceIdMetadata(DataSourceId));
                     });
             }
         }
     }
 }
-
