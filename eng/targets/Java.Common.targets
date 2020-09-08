@@ -9,6 +9,7 @@
       _Build;
     </BuildDependsOn>
     <JavaBuildArgs Condition="'$(JavaBuildArgs)' == ''">../gradlew $(GradleOptions) compileJava</JavaBuildArgs>
+    <GradleOptions>$(GradleOptions) -PpackageVersion="$(PackageVersion)"</GradleOptions>
   </PropertyGroup>
 
   <ItemGroup>
