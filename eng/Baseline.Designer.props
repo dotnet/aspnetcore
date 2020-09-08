@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.1.21</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.1.22</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -494,14 +494,14 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.22</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.ObjectPool" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.1.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.HttpOverrides-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HttpOverrides' ">

@@ -4,7 +4,7 @@ This file contains a list of all the packages and their versions which were rele
 build of ASP.NET Core 2.1.x. Update this list when preparing for a new patch.
 
 -->
-<Baseline Version="2.1.21">
+<Baseline Version="2.1.22">
   <Package Id="dotnet-dev-certs" Version="2.1.1" />
   <Package Id="dotnet-sql-cache" Version="2.1.1" />
   <Package Id="dotnet-user-secrets" Version="2.1.1" />
@@ -56,7 +56,7 @@ build of ASP.NET Core 2.1.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Http.Connections" Version="1.0.15" />
   <Package Id="Microsoft.AspNetCore.Http.Extensions" Version="2.1.21" />
   <Package Id="Microsoft.AspNetCore.Http.Features" Version="2.1.1" />
-  <Package Id="Microsoft.AspNetCore.Http" Version="2.1.1" />
+  <Package Id="Microsoft.AspNetCore.Http" Version="2.1.22" />
   <Package Id="Microsoft.AspNetCore.HttpOverrides" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.HttpsPolicy" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="2.1.6" />
