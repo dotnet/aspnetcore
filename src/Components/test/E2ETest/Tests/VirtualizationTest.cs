@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using BasicTestApp;
-using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -12,7 +11,7 @@ using OpenQA.Selenium.Support.Extensions;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.Components.E2ETests.Tests
+namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
