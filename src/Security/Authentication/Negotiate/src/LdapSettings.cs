@@ -3,6 +3,7 @@
 
 using System;
 using System.DirectoryServices.Protocols;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
@@ -55,6 +56,19 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// the <see cref="LdapConnection"/>.
         /// </summary>
         public LdapConnection LdapConnection { get; set; }
+
+        /// <summary>
+        /// The expiration that should be used for entries in the cache for user claims, defaults to 10 minutes.
+        /// This is a sliding expiration that will extend each time claims for a user is retrieved.
+        /// </summary>
+        public TimeSpan ClaimsCacheEntryExpiration { get; set; } = TimeSpan.FromMinutes(10);
+
+        /// <summary>
+        /// How many user claim results to store in the cache, defaults to 1024.
+        /// </summary>
+        public int ClaimsCacheSize { get; set; } = 1024;
+
+        internal MemoryCache ClaimsCache { get; set; }
 
         public void Validate()
         {
