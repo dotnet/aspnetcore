@@ -8,11 +8,14 @@
     <SkipHelixArm>true</SkipHelixArm>
     <!-- Skipping on Helix for now -->
     <BuildHelixPayload>false</BuildHelixPayload>
-    <!-- Disable gradle daemon on CI since the CI seems to try to wait for the daemon to shut down, which it doesn't do :) -->
-    <GradleOptions Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(GradleOptions) -Dorg.gradle.daemon=false</GradleOptions>
     <PublishDir>$(OutputPath)</PublishDir>
     <TestDependsOnJava>true</TestDependsOnJava>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../core/signalr.client.java.core.javaproj" />
+    <ProjectReference Include="../messagepack/signalr.client.java.messagepack.javaproj" />
+  </ItemGroup>
 
   <Target Name="Restore" />
 
@@ -21,9 +24,7 @@
   <!-- Define Target overrides after importing Directory.Build.targets so these don't get overridden -->
   <Target Name="Pack" />
 
-  <Target Name="Build" />
-
-  <Target Name="Test" Condition="'$(SkipTests)' != 'true'">
+  <Target Name="Test" Condition="'$(SkipTests)' != 'true'" DependsOnTargets="Build">
     <Telemetry EventName="NETCORE_ENGINEERING_TELEMETRY" EventData="Category=Test" />
     <Message Text="Running Java client tests" Importance="high" />
     <Message Text="> gradlew $(GradleOptions) test" Importance="high" />
