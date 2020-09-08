@@ -19,13 +19,17 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         private readonly List<ConventionalRouteEntry> _routes;
 
         public ControllerActionEndpointDataSource(
+            ControllerActionEndpointDataSourceIdProvider dataSourceIdProvider,
             IActionDescriptorCollectionProvider actions,
             ActionEndpointFactory endpointFactory,
             OrderedEndpointsSequenceProvider orderSequence)
             : base(actions)
         {
             _endpointFactory = endpointFactory;
+
+            DataSourceId = dataSourceIdProvider.CreateId();
             _orderSequence = orderSequence;
+
             _routes = new List<ConventionalRouteEntry>();
 
             DefaultBuilder = new ControllerActionEndpointConventionBuilder(Lock, Conventions);
@@ -34,6 +38,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Change notifications can happen immediately!
             Subscribe();
         }
+
+        public int DataSourceId { get; }
 
         public ControllerActionEndpointConventionBuilder DefaultBuilder { get; }
 
@@ -101,12 +107,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return endpoints;
         }
 
-        internal void AddDynamicControllerEndpoint(IEndpointRouteBuilder endpoints, string pattern, Type transformerType, object state)
+        internal void AddDynamicControllerEndpoint(IEndpointRouteBuilder endpoints, string pattern, Type transformerType, object state, int? order = null)
         {
             CreateInertEndpoints = true;
             lock (Lock)
             {
-                var order = _orderSequence.GetNext();
+                order ??= _orderSequence.GetNext();
 
                 endpoints.Map(
                     pattern,
@@ -116,8 +122,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     })
                     .Add(b =>
                     {
-                        ((RouteEndpointBuilder)b).Order = order;
+                        ((RouteEndpointBuilder)b).Order = order.Value;
                         b.Metadata.Add(new DynamicControllerRouteValueTransformerMetadata(transformerType, state));
+                        b.Metadata.Add(new ControllerEndpointDataSourceIdMetadata(DataSourceId));
                     });
             }
         }

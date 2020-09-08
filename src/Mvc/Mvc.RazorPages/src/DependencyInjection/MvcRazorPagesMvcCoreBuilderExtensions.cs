@@ -89,15 +89,15 @@ namespace Microsoft.Extensions.DependencyInjection
             // Routing
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, PageLoaderMatcherPolicy>());
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, DynamicPageEndpointMatcherPolicy>());
-            services.TryAddSingleton<DynamicPageEndpointSelector>();
+            services.TryAddSingleton<DynamicPageEndpointSelectorCache>();
+            services.TryAddSingleton<PageActionEndpointDataSourceIdProvider>();
 
             // Action description and invocation
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IActionDescriptorProvider, PageActionDescriptorProvider>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPageRouteModelProvider, CompiledPageRouteModelProvider>());
-            services.TryAddSingleton<PageActionEndpointDataSource>();
-            services.TryAddSingleton<DynamicPageEndpointSelector>();
+            services.TryAddSingleton<PageActionEndpointDataSourceFactory>();
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, DynamicPageEndpointMatcherPolicy>());
 
             services.TryAddEnumerable(
