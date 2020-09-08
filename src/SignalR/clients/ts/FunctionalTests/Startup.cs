@@ -160,9 +160,21 @@ namespace FunctionalTests
             {
                 if (context.Request.Path.Value.Contains("/negotiate"))
                 {
-                    context.Response.Cookies.Append("testCookie", "testValue");
-                    context.Response.Cookies.Append("testCookie2", "testValue2");
-                    context.Response.Cookies.Append("expiredCookie", "doesntmatter", new CookieOptions() { Expires = DateTimeOffset.Now.AddHours(-1) });
+                    var cookieOptions = new CookieOptions();
+                    var expiredCookieOptions = new CookieOptions() { Expires = DateTimeOffset.Now.AddHours(-1) };
+                    if (context.Request.IsHttps)
+                    {
+                        cookieOptions.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
+                        cookieOptions.Secure = true;
+
+                        expiredCookieOptions.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
+                        expiredCookieOptions.Secure = true;
+                    }
+                    context.Response.Cookies.Append("testCookie", "testValue", cookieOptions);
+                    context.Response.Cookies.Append("testCookie2", "testValue2", cookieOptions);
+
+                    cookieOptions.Expires = DateTimeOffset.Now.AddHours(-1);
+                    context.Response.Cookies.Append("expiredCookie", "doesntmatter", expiredCookieOptions);
                 }
 
                 await next.Invoke();
