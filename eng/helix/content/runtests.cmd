@@ -1,4 +1,5 @@
 @echo off
+SETLOCAL
 
 REM Use '$' as a variable name prefix to avoid MSBuild variable collisions with these variables
 set $target=%1
