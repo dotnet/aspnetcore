@@ -1,7 +1,7 @@
 <Project DefaultTargets="Build">
 
   <PropertyGroup>
-    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">$(MSBuildProjectDirectory)\obj\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">$(ArtifactsDir)\obj\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)'))$(Configuration)\</IntermediateOutputPath>
     <BuildDependsOn>
       PrepareForBuild;
@@ -20,13 +20,6 @@
   </ItemGroup>
 
   <Target Name="Restore" />
-
-  <PropertyGroup>
-    <PackDependsOn Condition=" '$(NoBuild)' != 'true' ">
-      $(PackDependsOn);
-      Build
-    </PackDependsOn>
-  </PropertyGroup>
 
   <Target Name="PrepareForBuild">
     <MakeDir Directories="$(IntermediateOutputPath);$(PackageOutputPath)"  />
@@ -62,13 +55,9 @@
   </Target>
 
   <PropertyGroup>
-    <PackDependsOn>
-      $(PackDependsOn);
-      PrepareForBuild
-    </PackDependsOn>
     <PackDependsOn Condition="'$(NoBuild)' != 'true'">
-      $(PackDependsOn);
       Build;
+      $(PackDependsOn);
     </PackDependsOn>
   </PropertyGroup>
 
