@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -29,6 +30,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
         /// Creates a new instance of <see cref="BlobLoggerProvider"/>
         /// </summary>
         /// <param name="options">The options to use when creating a provider.</param>
+        [SuppressMessage("ApiDesign", "RS0022:Constructor make noninheritable base class inheritable", Justification = "Required for backwards compatibility")]
         public BlobLoggerProvider(IOptionsMonitor<AzureBlobLoggerOptions> options)
             : this(options, null)
         {

@@ -478,6 +478,16 @@ namespace TestSite
             }
         }
 
+        private async Task ReadRequestBodyLarger(HttpContext ctx)
+        {
+            var readBuffer = new byte[4096];
+            var result = await ctx.Request.Body.ReadAsync(readBuffer, 0, 4096);
+            while (result != 0)
+            {
+                result = await ctx.Request.Body.ReadAsync(readBuffer, 0, 4096);
+            }
+        }
+
         private int _requestsInFlight = 0;
         private async Task ReadAndCountRequestBody(HttpContext ctx)
         {
@@ -1442,6 +1452,13 @@ namespace TestSite
             await httpContext.Response.CompleteAsync();
             feature.Reset((int)0); // GRPC does this
             await Assert.ThrowsAsync<IOException>(() => readTask);
+        }
+
+        public Task IncreaseRequestLimit(HttpContext httpContext)
+        {
+            var maxRequestBodySizeFeature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
+            maxRequestBodySizeFeature.MaxRequestBodySize = 2;
+            return Task.CompletedTask;
         }
 
         internal static readonly HashSet<(string, StringValues, StringValues)> NullTrailers = new HashSet<(string, StringValues, StringValues)>()

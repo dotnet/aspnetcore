@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Assert.Equal("/basepath/SomePath?SomeQuery", requestInfo.RawTarget);
                     Assert.Equal("HTTP/1.1", requestInfo.Protocol);
 
+                    Assert.False(httpContext.Request.CanHaveBody());
                     var connectionInfo = httpContext.Features.Get<IHttpConnectionFeature>();
                     Assert.Equal("::1", connectionInfo.RemoteIpAddress.ToString());
                     Assert.NotEqual(0, connectionInfo.RemotePort);

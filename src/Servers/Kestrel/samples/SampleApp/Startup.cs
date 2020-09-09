@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -109,15 +110,21 @@ namespace SampleApp
 
                             options.ListenAnyIP(basePort + 5, listenOptions =>
                             {
-                                listenOptions.UseHttps(httpsOptions =>
+                                var localhostCert = CertificateLoader.LoadFromStoreCert("localhost", "My", StoreLocation.CurrentUser, allowInvalid: true);
+
+                                listenOptions.UseHttps((stream, clientHelloInfo, state, cancellationToken) =>
                                 {
-                                    var localhostCert = CertificateLoader.LoadFromStoreCert("localhost", "My", StoreLocation.CurrentUser, allowInvalid: true);
-                                    httpsOptions.ServerCertificateSelector = (features, name) =>
+                                    // Here you would check the name, select an appropriate cert, and provide a fallback or fail for null names.
+                                    if (clientHelloInfo.ServerName != null && clientHelloInfo.ServerName != "localhost")
                                     {
-                                        // Here you would check the name, select an appropriate cert, and provide a fallback or fail for null names.
-                                        return localhostCert;
-                                    };
-                                });
+                                        throw new AuthenticationException($"The endpoint is not configured for sever name '{clientHelloInfo.ServerName}'.");
+                                    }
+
+                                    return new ValueTask<SslServerAuthenticationOptions>(new SslServerAuthenticationOptions
+                                    {
+                                        ServerCertificate = localhostCert
+                                    });
+                                }, state: null);
                             });
 
                             options

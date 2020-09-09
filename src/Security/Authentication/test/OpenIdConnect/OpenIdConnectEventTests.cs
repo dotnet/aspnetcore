@@ -1309,7 +1309,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         private Task<HttpResponseMessage> PostAsync(TestServer server, string path, string form)
         {
             var client = server.CreateClient();
-            var cookie = ".AspNetCore.Correlation." + OpenIdConnectDefaults.AuthenticationScheme + ".correlationId=N";
+            var cookie = ".AspNetCore.Correlation.correlationId=N";
             client.DefaultRequestHeaders.Add("Cookie", cookie);
             return client.PostAsync("signin-oidc",
                 new StringContent(form, Encoding.ASCII, "application/x-www-form-urlencoded"));

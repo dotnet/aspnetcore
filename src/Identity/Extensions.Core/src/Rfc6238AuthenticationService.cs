@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Identity
     {
         private static readonly TimeSpan _timestep = TimeSpan.FromMinutes(3);
         private static readonly Encoding _encoding = new UTF8Encoding(false, true);
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
         private static readonly DateTime _unixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 #endif
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Identity
         public static byte[] GenerateRandomKey()
         {
             byte[] bytes = new byte[20];
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
             _rng.GetBytes(bytes);
 #else
             RandomNumberGenerator.Fill(bytes);
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Identity
         // More info: https://tools.ietf.org/html/rfc6238#section-4
         private static ulong GetCurrentTimeStepNumber()
         {
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET461
             var delta = DateTime.UtcNow - _unixEpoch;
 #else
             var delta = DateTimeOffset.UtcNow - DateTimeOffset.UnixEpoch;

@@ -42,9 +42,9 @@ namespace Company.WebApplication1
 #else
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
+#endif
 
             services.AddDatabaseDeveloperPageExceptionFilter();
-#endif
 
             services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();

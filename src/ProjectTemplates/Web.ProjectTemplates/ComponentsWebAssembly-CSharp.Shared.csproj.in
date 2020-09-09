@@ -4,4 +4,7 @@
     <TargetFramework>${DefaultNetCoreTargetFramework}</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
 </Project>

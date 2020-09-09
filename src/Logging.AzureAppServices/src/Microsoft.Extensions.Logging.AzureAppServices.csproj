@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Logger implementation to support Azure App Services 'Diagnostics logs' and 'Log stream' features.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>$(DefaultNetFxTargetFramework);netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <IsShipping>true</IsShipping>
   </PropertyGroup>
@@ -18,6 +18,10 @@
     <Reference Include="Microsoft.Extensions.Logging.Configuration" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="System.ValueTuple" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)'">
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
 
 </Project>

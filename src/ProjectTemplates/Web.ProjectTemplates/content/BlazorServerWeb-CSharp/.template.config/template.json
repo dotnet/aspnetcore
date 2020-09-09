@@ -27,6 +27,31 @@
     {
       "modifiers": [
         {
+          "condition": "(!OrganizationalAuth && !IndividualAuth)",
+          "exclude": [
+            "Areas/Identity/Pages/Shared/_LoginPartial.Identity.cshtml",
+            "Areas/Identity/Pages/Shared/_LoginPartial.OrgAuth.cshtml"
+          ]
+        },
+        {
+          "condition": "(OrganizationalAuth || IndividualB2CAuth)",
+          "rename": {
+            "Areas/Identity/Pages/Shared/_LoginPartial.OrgAuth.cshtml": "Areas/Identity/Pages/Shared/_LoginPartial.cshtml"
+          },
+          "exclude": [
+            "Areas/Identity/Pages/Shared/_LoginPartial.Identity.cshtml"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth)",
+          "rename": {
+            "Areas/Identity/Pages/Shared/_LoginPartial.Identity.cshtml": "Areas/Identity/Pages/Shared/_LoginPartial.cshtml"
+          },
+          "exclude": [
+            "Areas/Identity/Pages/Shared/_LoginPartial.OrgAuth.cshtml"
+          ]
+        },
+        {
           "condition": "(!IndividualLocalAuth || UseLocalDB)",
           "exclude": [
             "app.db"
@@ -131,15 +156,12 @@
         {
           "condition": "(!GenerateApi)",
             "exclude": [
-              "Services/DownstreamWebApi.cs",
               "Pages/CallWebApi.razor"
             ]
         },
         {
           "condition": "(!GenerateGraph)",
           "exclude": [
-            "Services/MicrosoftGraphServiceExtensions.cs",
-            "Services/TokenAcquisitionCredentialProvider.cs",
             "Shared/NavMenu.CallsMicrosoftGraph.razor",
             "Pages/ShowProfile.razor"
             ]

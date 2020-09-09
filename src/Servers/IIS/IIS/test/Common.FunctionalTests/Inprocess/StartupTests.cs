@@ -42,6 +42,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalTheory]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [InlineData("bogus", "", @"Executable was not found at '.*?\\bogus.exe")]
         [InlineData("c:\\random files\\dotnet.exe", "something.dll", @"Could not find dotnet.exe at '.*?\\dotnet.exe'")]
         [InlineData(".\\dotnet.exe", "something.dll", @"Could not find dotnet.exe at '.*?\\.\\dotnet.exe'")]
@@ -95,6 +96,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalTheory]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [InlineData("dotnet")]
         [InlineData("dotnet.EXE")]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
@@ -151,6 +153,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [SkipIfNotAdmin]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task DoesNotStartIfDisabled()
         {
@@ -212,6 +215,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task DetectsOverriddenServer()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -229,6 +233,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task LogsStartupExceptionExitError()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -247,6 +252,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task LogsUnexpectedThreadExitError()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -264,6 +270,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task RemoveHostfxrFromApp_InProcessHostfxrAPIAbsent()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -329,6 +336,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [RequiresNewShim]
         public async Task RemoveHostfxrFromApp_InProcessHostfxrLoadFailure()
         {
@@ -352,6 +360,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task TargedDifferenceSharedFramework_FailedToFindNativeDependencies()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -371,6 +380,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task SingleExecutable_FailedToFindNativeDependencies()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -412,6 +422,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task RemoveInProcessReference_FailedToFindRequestHandler()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -442,9 +453,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [RequiresNewHandler]
         public async Task StartupTimeoutIsApplied()
         {
-            // From what I can tell, this failure is due to ungraceful shutdown.
+            // From what we can tell, this failure is due to ungraceful shutdown.
             // The error could be the same as https://github.com/dotnet/core-setup/issues/4646
             // But can't be certain without another repro.
             using (AppVerifier.Disable(DeployerSelector.ServerType, 0x300))
@@ -459,11 +471,12 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                 var response = await deploymentResult.HttpClient.GetAsync("/");
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
-                StopServer(gracefulShutdown: false);
+                // Startup timeout now recycles process.
+                deploymentResult.AssertWorkerProcessStop();
 
-                EventLogHelpers.VerifyEventLogEvents(deploymentResult,
-                    EventLogHelpers.InProcessFailedToStart(deploymentResult, "Managed server didn't initialize after 1000 ms.")
-                    );
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+                    EventLogHelpers.InProcessFailedToStart(deploymentResult, "Managed server didn't initialize after 1000 ms."),
+                    Logger);
 
                 if (DeployerSelector.HasNewHandler)
                 {
@@ -474,6 +487,40 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
+        public async Task StartupTimeoutIsApplied_DisableRecycleOnStartupTimeout()
+        {
+            // From what we can tell, this failure is due to ungraceful shutdown.
+            // The error could be the same as https://github.com/dotnet/core-setup/issues/4646
+            // But can't be certain without another repro.
+            using (AppVerifier.Disable(DeployerSelector.ServerType, 0x300))
+            {
+                var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+                deploymentParameters.TransformArguments((a, _) => $"{a} Hang");
+                deploymentParameters.WebConfigActionList.Add(
+                    WebConfigHelpers.AddOrModifyAspNetCoreSection("startupTimeLimit", "1"));
+                deploymentParameters.HandlerSettings["suppressRecycleOnStartupTimeout"] = "true";
+                var deploymentResult = await DeployAsync(deploymentParameters);
+
+                var response = await deploymentResult.HttpClient.GetAsync("/");
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+
+                StopServer(gracefulShutdown: false);
+
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+                    EventLogHelpers.InProcessFailedToStart(deploymentResult, "Managed server didn't initialize after 1000 ms."),
+                    Logger);
+
+                if (DeployerSelector.HasNewHandler)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Assert.Contains("500.37", responseContent);
+                }
+            }
+        }
+
+        [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         public async Task CheckInvalidHostingModelParameter()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -496,6 +543,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         public static IEnumerable<object[]> InvalidConfigTransformationsScenarios => InvalidConfigTransformations.ToTheoryData();
 
         [ConditionalTheory]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [MemberData(nameof(InvalidConfigTransformationsScenarios))]
         public async Task ReportsWebConfigAuthoringErrors(string scenario)
         {
@@ -701,6 +749,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalTheory]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         [RequiresNewHandler]
         [InlineData("ASPNETCORE_ENVIRONMENT", "Development")]
@@ -730,6 +779,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [RequiresNewHandler]
         public async Task ExceptionIsLoggedToEventLogAndPutInResponseWhenDeveloperExceptionPageIsEnabledViaWebConfig()
         {
@@ -754,6 +804,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalTheory]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         [RequiresNewHandler]
         [InlineData("ThrowInStartup")]
@@ -778,6 +829,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         [RequiresNewHandler]
         public async Task ExceptionIsNotLoggedToResponseWhenStartupHookIsDisabled()
@@ -801,6 +853,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [RequiresNewHandler]
         public async Task ExceptionIsLoggedToEventLogDoesNotWriteToResponse()
         {
@@ -824,6 +877,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [RequiresNewHandler]
         public async Task CanAddCustomStartupHook()
         {
@@ -841,6 +895,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        [MaximumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H1, SkipReason = "Shutdown hangs https://github.com/dotnet/aspnetcore/issues/25107")]
         [RequiresNewHandler]
         public async Task CanAddCustomStartupHookWhenIISOneIsDisabled()
         {

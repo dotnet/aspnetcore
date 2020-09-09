@@ -21,13 +21,18 @@ namespace Templates.Test
         public ProjectFactoryFixture ProjectFactory { get; }
         public ITestOutputHelper Output { get; }
 
-        [ConditionalFact]
+        [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/sdk/issues/12831")]
-        public async Task WorkerTemplateAsync()
+        [InlineData("C#")]
+        [InlineData("F#")]
+        [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/25404")]
+        public async Task WorkerTemplateAsync(string language)
         {
-            Project = await ProjectFactory.GetOrCreateProject("worker", Output);
+            Project = await ProjectFactory.GetOrCreateProject(
+                $"worker-{ language.ToLowerInvariant()[0] }sharp",
+                Output);
 
-            var createResult = await Project.RunDotNetNewAsync("worker");
+            var createResult = await Project.RunDotNetNewAsync("worker", language: language);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             var publishResult = await Project.RunDotNetPublishAsync();

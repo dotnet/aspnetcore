@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -10,6 +10,10 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.JSInterop" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)JSInterop\*.cs" />
   </ItemGroup>
 
 </Project>

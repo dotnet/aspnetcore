@@ -39,6 +39,26 @@ namespace Templates.Test
         [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
         public Task WebApiTemplateCSharp() => WebApiTemplateCore(languageOverride: null);
 
+        [ConditionalFact]
+        [SkipOnHelix("Cert failures", Queues = "OSX.1014.Amd64;OSX.1014.Amd64.Open")]
+        public async Task WebApiTemplateCSharp_WithoutOpenAPI()
+        {
+            Project = await FactoryFixture.GetOrCreateProject("webapinoopenapi", Output);
+
+            var createResult = await Project.RunDotNetNewAsync("webapi", args: new[] { "--no-openapi" });
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
+
+            var buildResult = await Project.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
+
+            using var aspNetProcess = Project.StartBuiltProjectAsync();
+            Assert.False(
+                aspNetProcess.Process.HasExited,
+                ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+
+            await aspNetProcess.AssertNotFound("swagger");
+        }
+
         private async Task PublishAndBuildWebApiTemplate(string languageOverride, string auth, string[] args)
         {
             Project = await FactoryFixture.GetOrCreateProject("webapi" + (languageOverride == "F#" ? "fsharp" : "csharp") + Guid.NewGuid().ToString().Substring(0, 10).ToLower(), Output);
@@ -80,6 +100,7 @@ namespace Templates.Test
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
 
                 await aspNetProcess.AssertOk("weatherforecast");
+                await aspNetProcess.AssertOk("swagger");
                 await aspNetProcess.AssertNotFound("/");
             }
 
@@ -91,6 +112,8 @@ namespace Templates.Test
 
 
                 await aspNetProcess.AssertOk("weatherforecast");
+                // Swagger is only available in Development
+                await aspNetProcess.AssertNotFound("swagger");
                 await aspNetProcess.AssertNotFound("/");
             }
         }

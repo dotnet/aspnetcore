@@ -1,4 +1,6 @@
 parameters:
+  BARBuildId: ''
+  PromoteToChannelIds: ''
   artifactsPublishingAdditionalParameters: ''
   dependsOn:
   - Validate
@@ -21,6 +23,9 @@ stages:
   displayName: ${{ parameters.channelName }} Publishing
   jobs:
   - template: ../setup-maestro-vars.yml
+    parameters:
+      BARBuildId: ${{ parameters.BARBuildId }}
+      PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
 
   - job: publish_symbols
     displayName: Symbol Publishing
@@ -137,6 +142,7 @@ stages:
         inputs:
           filePath: eng\common\sdk-task.ps1
           arguments: -task PublishArtifactsInManifest -restore -msbuildEngine dotnet
+            /p:PublishingInfraVersion=2
             /p:ArtifactsCategory=$(ArtifactsCategory)
             /p:IsStableBuild=$(IsStableBuild)
             /p:IsInternalBuild=$(IsInternalBuild)

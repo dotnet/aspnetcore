@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             });
             using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://example.com/challenge");
-            Assert.Contains(transaction.SetCookie, cookie => cookie.StartsWith(".AspNetCore.Correlation.Google."));
+            Assert.Contains(transaction.SetCookie, cookie => cookie.StartsWith(".AspNetCore.Correlation."));
         }
 
         [Fact]
@@ -392,7 +392,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             });
             using var server = host.GetTestServer();
             var sendTask = server.SendAsync("https://example.com/signin-google?error=access_denied&error_description=SoBad&error_uri=foobar&state=protected_state",
-                ".AspNetCore.Correlation.Google.correlationId=N");
+                ".AspNetCore.Correlation.correlationId=N");
             if (redirect)
             {
                 var transaction = await sendTask;
@@ -431,7 +431,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             });
             using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://example.com/signin-google?error=access_denied&error_description=SoBad&error_uri=foobar&state=protected_state",
-                ".AspNetCore.Correlation.Google.correlationId=N");
+                ".AspNetCore.Correlation.correlationId=N");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("https://example.com/custom-denied-page?rurl=http%3A%2F%2Fwww.google.com%2F", transaction.Response.Headers.GetValues("Location").First());
         }
@@ -474,7 +474,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             });
             using var server = host.GetTestServer();
             var transaction = await server.SendAsync("https://example.com/signin-google?error=access_denied&error_description=whyitfailed&error_uri=https://example.com/fail&state=protected_state",
-                ".AspNetCore.Correlation.Google.correlationId=N");
+                ".AspNetCore.Correlation.correlationId=N");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.StartsWith("/error?FailureMessage=", transaction.Response.Headers.GetValues("Location").First());
             Assert.True(accessDeniedCalled);
@@ -510,7 +510,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             });
             using var server = host.GetTestServer();
             var sendTask = server.SendAsync("https://example.com/signin-google?error=itfailed&error_description=whyitfailed&error_uri=https://example.com/fail&state=protected_state",
-                ".AspNetCore.Correlation.Google.correlationId=N");
+                ".AspNetCore.Correlation.correlationId=N");
             if (redirect)
             {
                 var transaction = await sendTask;
@@ -552,11 +552,11 @@ namespace Microsoft.AspNetCore.Authentication.Google
             using var server = host.GetTestServer();
             var transaction = await server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                $".AspNetCore.Correlation.Google.{correlationValue}=N");
+                $".AspNetCore.Correlation.{correlationValue}=N");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
             Assert.Equal(2, transaction.SetCookie.Count);
-            Assert.Contains($".AspNetCore.Correlation.Google.{correlationValue}", transaction.SetCookie[0]);
+            Assert.Contains($".AspNetCore.Correlation.{correlationValue}", transaction.SetCookie[0]);
             Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
 
             var authCookie = transaction.AuthenticationCookieValue;
@@ -619,7 +619,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             using var server = host.GetTestServer();
             var sendTask = server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                $".AspNetCore.Correlation.Google.{correlationValue}=N");
+                $".AspNetCore.Correlation.{correlationValue}=N");
             if (redirect)
             {
                 var transaction = await sendTask;
@@ -671,7 +671,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             using var server = host.GetTestServer();
             var sendTask = server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                $".AspNetCore.Correlation.Google.{correlationValue}=N");
+                $".AspNetCore.Correlation.{correlationValue}=N");
             if (redirect)
             {
                 var transaction = await sendTask;
@@ -715,11 +715,11 @@ namespace Microsoft.AspNetCore.Authentication.Google
             using var server = host.GetTestServer();
             var transaction = await server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                $".AspNetCore.Correlation.Google.{correlationValue}=N");
+                $".AspNetCore.Correlation.{correlationValue}=N");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
             Assert.Equal(2, transaction.SetCookie.Count);
-            Assert.Contains($".AspNetCore.Correlation.Google.{correlationValue}", transaction.SetCookie[0]);
+            Assert.Contains($".AspNetCore.Correlation.{correlationValue}", transaction.SetCookie[0]);
             Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
 
             var authCookie = transaction.AuthenticationCookieValue;
@@ -755,11 +755,11 @@ namespace Microsoft.AspNetCore.Authentication.Google
             using var server = host.GetTestServer();
             var transaction = await server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                $".AspNetCore.Correlation.Google.{correlationValue}=N");
+                $".AspNetCore.Correlation.{correlationValue}=N");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/", transaction.Response.Headers.GetValues("Location").First());
             Assert.Equal(2, transaction.SetCookie.Count);
-            Assert.Contains($".AspNetCore.Correlation.Google.{correlationValue}", transaction.SetCookie[0]);
+            Assert.Contains($".AspNetCore.Correlation.{correlationValue}", transaction.SetCookie[0]);
             Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
         }
 
@@ -802,7 +802,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             using var server = host.GetTestServer();
             var transaction = await server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                $".AspNetCore.Correlation.Google.{correlationValue}=N");
+                $".AspNetCore.Correlation.{correlationValue}=N");
 
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/foo", transaction.Response.Headers.GetValues("Location").First());
@@ -876,11 +876,11 @@ namespace Microsoft.AspNetCore.Authentication.Google
             using var server = host.GetTestServer();
             var transaction = await server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                $".AspNetCore.Correlation.Google.{correlationValue}=N");
+                $".AspNetCore.Correlation.{correlationValue}=N");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
             Assert.Equal(2, transaction.SetCookie.Count);
-            Assert.Contains($".AspNetCore.Correlation.Google.{correlationValue}", transaction.SetCookie[0]); // Delete
+            Assert.Contains($".AspNetCore.Correlation.{correlationValue}", transaction.SetCookie[0]); // Delete
             Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
 
             var authCookie = transaction.AuthenticationCookieValue;
@@ -920,11 +920,11 @@ namespace Microsoft.AspNetCore.Authentication.Google
             using var server = host.GetTestServer();
             var transaction = await server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                $".AspNetCore.Correlation.Google.{correlationValue}=N");
+                $".AspNetCore.Correlation.{correlationValue}=N");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
             Assert.Equal(2, transaction.SetCookie.Count);
-            Assert.Contains($".AspNetCore.Correlation.Google.{correlationValue}", transaction.SetCookie[0]); // Delete
+            Assert.Contains($".AspNetCore.Correlation.{correlationValue}", transaction.SetCookie[0]); // Delete
             Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
 
             var authCookie = transaction.AuthenticationCookieValue;
@@ -964,11 +964,11 @@ namespace Microsoft.AspNetCore.Authentication.Google
             using var server = host.GetTestServer();
             var transaction = await server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                $".AspNetCore.Correlation.Google.{correlationValue}=N");
+                $".AspNetCore.Correlation.{correlationValue}=N");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
             Assert.Equal(2, transaction.SetCookie.Count);
-            Assert.Contains($".AspNetCore.Correlation.Google.{correlationValue}", transaction.SetCookie[0]); // Delete
+            Assert.Contains($".AspNetCore.Correlation.{correlationValue}", transaction.SetCookie[0]); // Delete
             Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
 
             var authCookie = transaction.AuthenticationCookieValue;
@@ -1001,11 +1001,11 @@ namespace Microsoft.AspNetCore.Authentication.Google
             using var server = host.GetTestServer();
             var transaction = await server.SendAsync(
                 "https://example.com/signin-google?code=TestCode&state=" + UrlEncoder.Default.Encode(state),
-                $".AspNetCore.Correlation.Google.{correlationValue}=N");
+                $".AspNetCore.Correlation.{correlationValue}=N");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             Assert.Equal("/me", transaction.Response.Headers.GetValues("Location").First());
             Assert.Equal(2, transaction.SetCookie.Count);
-            Assert.Contains($".AspNetCore.Correlation.Google.{correlationValue}", transaction.SetCookie[0]); // Delete
+            Assert.Contains($".AspNetCore.Correlation.{correlationValue}", transaction.SetCookie[0]); // Delete
             Assert.Contains(".AspNetCore." + TestExtensions.CookieAuthenticationScheme, transaction.SetCookie[1]);
 
             var authCookie = transaction.AuthenticationCookieValue;
@@ -1020,7 +1020,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             {
                 Sender = req =>
                 {
-                    if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v4/token")
+                    if (req.RequestUri.AbsoluteUri == "https://oauth2.googleapis.com/token")
                     {
                         return ReturnJsonResponse(new
                         {

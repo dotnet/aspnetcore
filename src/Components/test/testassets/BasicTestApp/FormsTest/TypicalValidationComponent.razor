@@ -66,6 +66,9 @@
             </InputRadioGroup>
         </InputRadioGroup>
     </p>
+    <p class="socks">
+        Socks color: <InputText @bind-Value="person.SocksColor" />
+    </p>
     <p class="accepts-terms">
         Accepts terms: <InputCheckbox @bind-Value="person.AcceptsTerms" title="You have to check this" />
     </p>
@@ -98,6 +101,7 @@
     protected override void OnInitialized()
     {
         editContext = new EditContext(person);
+        editContext.SetFieldCssClassProvider(new CustomFieldCssClassProvider());
         customValidationMessageStore = new ValidationMessageStore(editContext);
     }
 
@@ -144,6 +148,9 @@
 
         [Required, EnumDataType(typeof(Country))]
         public Country? Country { get; set; } = null;
+
+        [Required, StringLength(10), CustomValidationClassName(Valid = "valid-socks", Invalid = "invalid-socks")]
+        public string SocksColor { get; set; }
 
         public string Username { get; set; }
     }

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.JSInterop.Implementation;
 using Microsoft.JSInterop.Infrastructure;
 
 namespace Microsoft.JSInterop
@@ -37,6 +38,8 @@ namespace Microsoft.JSInterop
                 Converters =
                 {
                     new DotNetObjectReferenceJsonConverterFactory(this),
+                    new JSObjectReferenceJsonConverter<IJSObjectReference, JSObjectReference>(
+                        id => new JSObjectReference(this, id)),
                 }
             };
         }
@@ -62,17 +65,8 @@ namespace Microsoft.JSInterop
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-        public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
-        {
-            if (DefaultAsyncTimeout.HasValue)
-            {
-                using var cts = new CancellationTokenSource(DefaultAsyncTimeout.Value);
-                // We need to await here due to the using
-                return await InvokeAsync<TValue>(identifier, cts.Token, args);
-            }
-
-            return await InvokeAsync<TValue>(identifier, CancellationToken.None, args);
-        }
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+            => InvokeAsync<TValue>(0, identifier, args);
 
         /// <summary>
         /// Invokes the specified JavaScript function asynchronously.
@@ -81,14 +75,33 @@ namespace Microsoft.JSInterop
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>window.someScope.someFunction</c>.</param>
         /// <param name="cancellationToken">
         /// A cancellation token to signal the cancellation of the operation. Specifying this parameter will override any default cancellations such as due to timeouts
-        /// (<see cref="JSRuntime.DefaultAsyncTimeout"/>) from being applied.
+        /// (<see cref="DefaultAsyncTimeout"/>) from being applied.
         /// </param>
         /// <param name="args">JSON-serializable arguments.</param>
         /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+            => InvokeAsync<TValue>(0, identifier, cancellationToken, args);
+
+        internal async ValueTask<TValue> InvokeAsync<TValue>(long targetInstanceId, string identifier, object?[]? args)
+        {
+            if (DefaultAsyncTimeout.HasValue)
+            {
+                using var cts = new CancellationTokenSource(DefaultAsyncTimeout.Value);
+                // We need to await here due to the using
+                return await InvokeAsync<TValue>(targetInstanceId, identifier, cts.Token, args);
+            }
+
+            return await InvokeAsync<TValue>(targetInstanceId, identifier, CancellationToken.None, args);
+        }
+
+        internal ValueTask<TValue> InvokeAsync<TValue>(
+            long targetInstanceId,
+            string identifier,
+            CancellationToken cancellationToken,
+            object?[]? args)
         {
             var taskId = Interlocked.Increment(ref _nextPendingTaskId);
-            var tcs = new TaskCompletionSource<TValue>(TaskContinuationOptions.RunContinuationsAsynchronously);
+            var tcs = new TaskCompletionSource<TValue>();
             if (cancellationToken != default)
             {
                 _cancellationRegistrations[taskId] = cancellationToken.Register(() =>
@@ -112,7 +125,9 @@ namespace Microsoft.JSInterop
                 var argsJson = args?.Any() == true ?
                     JsonSerializer.Serialize(args, JsonSerializerOptions) :
                     null;
-                BeginInvokeJS(taskId, identifier, argsJson);
+                var resultType = JSCallResultTypeHelper.FromGeneric<TValue>();
+
+                BeginInvokeJS(taskId, identifier, argsJson, resultType, targetInstanceId);
 
                 return new ValueTask<TValue>(tcs.Task);
             }
@@ -138,7 +153,18 @@ namespace Microsoft.JSInterop
         /// <param name="taskId">The identifier for the function invocation, or zero if no async callback is required.</param>
         /// <param name="identifier">The identifier for the function to invoke.</param>
         /// <param name="argsJson">A JSON representation of the arguments.</param>
-        protected abstract void BeginInvokeJS(long taskId, string identifier, string? argsJson);
+        protected virtual void BeginInvokeJS(long taskId, string identifier, string? argsJson)
+            => BeginInvokeJS(taskId, identifier, argsJson, JSCallResultType.Default, 0);
+
+        /// <summary>
+        /// Begins an asynchronous function invocation.
+        /// </summary>
+        /// <param name="taskId">The identifier for the function invocation, or zero if no async callback is required.</param>
+        /// <param name="identifier">The identifier for the function to invoke.</param>
+        /// <param name="argsJson">A JSON representation of the arguments.</param>
+        /// <param name="resultType">The type of result expected from the invocation.</param>
+        /// <param name="targetInstanceId">The instance ID of the target JS object.</param>
+        protected abstract void BeginInvokeJS(long taskId, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId);
 
         /// <summary>
         /// Completes an async JS interop call from JavaScript to .NET

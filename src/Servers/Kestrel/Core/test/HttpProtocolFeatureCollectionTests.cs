@@ -116,6 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void FeaturesSetByTypeSameAsGeneric()
         {
             _collection[typeof(IHttpRequestFeature)] = CreateHttp1Connection();
+            _collection[typeof(IHttpRequestBodyDetectionFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpResponseFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpResponseBodyFeature)] = CreateHttp1Connection();
             _collection[typeof(IRequestBodyPipeFeature)] = CreateHttp1Connection();
@@ -139,6 +140,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void FeaturesSetByGenericSameAsByType()
         {
             _collection.Set<IHttpRequestFeature>(CreateHttp1Connection());
+            _collection.Set<IHttpRequestBodyDetectionFeature>(CreateHttp1Connection());
             _collection.Set<IHttpResponseFeature>(CreateHttp1Connection());
             _collection.Set<IHttpResponseBodyFeature>(CreateHttp1Connection());
             _collection.Set<IRequestBodyPipeFeature>(CreateHttp1Connection());
@@ -194,6 +196,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private void CompareGenericGetterToIndexer()
         {
             Assert.Same(_collection.Get<IHttpRequestFeature>(), _collection[typeof(IHttpRequestFeature)]);
+            Assert.Same(_collection.Get<IHttpRequestBodyDetectionFeature>(), _collection[typeof(IHttpRequestBodyDetectionFeature)]);
             Assert.Same(_collection.Get<IHttpResponseFeature>(), _collection[typeof(IHttpResponseFeature)]);
             Assert.Same(_collection.Get<IHttpResponseBodyFeature>(), _collection[typeof(IHttpResponseBodyFeature)]);
             Assert.Same(_collection.Get<IRequestBodyPipeFeature>(), _collection[typeof(IRequestBodyPipeFeature)]);

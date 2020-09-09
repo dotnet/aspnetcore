@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll"); // Verify dependencies are part of the output.
 
             // Verify scoped css
-            Assert.FileExists(result, blazorPublishDirectory, "_framework", "scoped.styles.css");
+            Assert.FileExists(result, blazorPublishDirectory, "blazorwasm.styles.css");
 
             // Verify referenced static web assets
             Assert.FileExists(result, blazorPublishDirectory, "_content", "RazorClassLibrary", "wwwroot", "exampleJsInterop.js");
@@ -435,7 +435,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.Contains("System.Text.Json.dll", assemblies);
 
             // No pdbs
-            Assert.Null(bootJsonData.resources.pdb);
+            // Testing this requires an update to the SDK in this repo. Re-enabling tracked via https://github.com/dotnet/aspnetcore/issues/25135
+            // Assert.Null(bootJsonData.resources.pdb);
             Assert.Null(bootJsonData.resources.satelliteResources);
 
             Assert.Contains("appsettings.json", bootJsonData.config);
@@ -662,7 +663,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, blazorPublishDirectory, "_framework", "System.Text.Json.dll"); // Verify dependencies are part of the output.
 
             // Verify scoped css
-            Assert.FileExists(result, blazorPublishDirectory, "_framework", "scoped.styles.css");
+            Assert.FileExists(result, blazorPublishDirectory, "blazorwasm.styles.css");
 
             // Verify static assets are in the publish directory
             Assert.FileExists(result, blazorPublishDirectory, "index.html");
