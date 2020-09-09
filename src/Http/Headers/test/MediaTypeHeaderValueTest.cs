@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Primitives;
+using NuGet.Frameworks;
 using Xunit;
 
 namespace Microsoft.Net.Http.Headers
@@ -691,17 +692,20 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("text/plain", "text/plain")]
         [InlineData("text/plain;", "text/plain")]
         [InlineData("text/plain;", "TEXT/PLAIN")]
-        [InlineData("application/json;v=2", "application/json;param=4")]
         public void MatchesMediaType_PositiveCases(string mediaType1, string mediaType2)
         {
             // Arrange
             var parsedMediaType1 = MediaTypeHeaderValue.Parse(mediaType1);
+            var parsedMediaType2 = MediaTypeHeaderValue.Parse(mediaType2);
 
             // Act
             var matches = parsedMediaType1.MatchesMediaType(mediaType2);
+            var isSubsetOf = parsedMediaType2.IsSubsetOf(parsedMediaType1);
 
             // Assert
             Assert.True(matches);
+            //Make sure that MatchesMediaType produces consistent result with IsSubsetOf
+            Assert.Equal(matches, isSubsetOf);
         }
 
         [Theory]
@@ -712,12 +716,16 @@ namespace Microsoft.Net.Http.Headers
         {
             // Arrange
             var parsedMediaType1 = MediaTypeHeaderValue.Parse(mediaType1);
+            var parsedMediaType2 = MediaTypeHeaderValue.Parse(mediaType2);
 
             // Act
             var matches = parsedMediaType1.MatchesMediaType(mediaType2);
+            var isSubsetOf = parsedMediaType2.IsSubsetOf(parsedMediaType1);
 
             // Assert
             Assert.False(matches);
+            //Make sure that MatchesMediaType produces consistent result with IsSubsetOf
+            Assert.Equal(matches, isSubsetOf);
         }
 
         [Theory]
@@ -725,8 +733,8 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("application/json", "application/entity+json")]
         [InlineData("application/*+json", "application/entity+json")]
         [InlineData("application/*+json", "application/*+json")]
-        [InlineData("application/problem+json", "application/json")]
-        [InlineData("application/vnd.restful+json", "application/json")]
+        [InlineData("application/json", "application/problem+json")]
+        [InlineData("application/json", "application/vnd.restful+json")]
         [InlineData("application/*", "application/*+JSON")]
         [InlineData("application/*", "application/entity+JSON")]
         [InlineData("*/*", "application/entity+json")]
@@ -734,12 +742,16 @@ namespace Microsoft.Net.Http.Headers
         {
             // Arrange
             var parsedMediaType1 = MediaTypeHeaderValue.Parse(mediaType1);
+            var parsedMediaType2 = MediaTypeHeaderValue.Parse(mediaType2);
 
             // Act
             var result = parsedMediaType1.MatchesMediaType(mediaType2);
+            var isSubsetOf = parsedMediaType2.IsSubsetOf(parsedMediaType1);
 
             // Assert
             Assert.True(result);
+            //Make sure that MatchesMediaType produces consistent result with IsSubsetOf
+            Assert.Equal(result, isSubsetOf);
         }
 
         [Theory]
@@ -756,12 +768,29 @@ namespace Microsoft.Net.Http.Headers
         {
             // Arrange
             var parsedMediaType1 = MediaTypeHeaderValue.Parse(mediaType1);
+            var parsedMediaType2 = MediaTypeHeaderValue.Parse(mediaType2);
 
-            // Act
+            // Arrange
             var result = parsedMediaType1.MatchesMediaType(mediaType2);
+            var isSubsetOf = parsedMediaType2.IsSubsetOf(parsedMediaType1);
 
             // Assert
             Assert.False(result);
+            //Make sure that MatchesMediaType produces consistent result with IsSubsetOf
+            Assert.Equal(result, isSubsetOf);
+        }
+
+        [Fact]
+        public void MatchesMediaType_IgnoresParameters()
+        {
+            // Arrange
+            var parsedMediaType1 = MediaTypeHeaderValue.Parse("application/json;param=1");
+
+            // Arrange
+            var result = parsedMediaType1.MatchesMediaType("application/json;param2=1");
+
+            // Assert
+            Assert.True(result);
         }
 
         [Theory]
