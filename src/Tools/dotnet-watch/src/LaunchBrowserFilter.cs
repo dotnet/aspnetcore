@@ -27,7 +27,6 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private bool _canLaunchBrowser;
         private Process _browserProcess;
-        private bool _browserLaunched;
         private BrowserRefreshServer _refreshServer;
         private IReporter _reporter;
         private string _launchPath;
@@ -118,13 +117,12 @@ namespace Microsoft.DotNet.Watcher.Tools
                 process.OutputDataReceived -= OnOutput;
                 process.CancelOutputRead();
 
-                if (!_browserLaunched)
+                if (_canLaunchBrowser && (_browserProcess is null || _browserProcess.HasExited))
                 {
                     _reporter.Verbose("Launching browser.");
                     try
                     {
                         LaunchBrowser(launchUrl);
-                        _browserLaunched = true;
                     }
                     catch (Exception ex)
                     {
