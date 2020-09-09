@@ -84,8 +84,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     retrievedClaims,
                     new MemoryCacheEntryOptions()
                         .SetSize(entrySize)
-                        .SetSlidingExpiration(settings.ClaimsCacheEntrySlidingExpiration)
-                        .SetAbsoluteExpiration(settings.ClaimsCacheEntryAbsoluteExpiration));
+                        .SetSlidingExpiration(settings.ClaimsCacheSlidingExpiration)
+                        .SetAbsoluteExpiration(settings.ClaimsCacheAbsoluteExpiration));
             }
             else
             {
