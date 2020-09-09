@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Identity" />
+    <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Logging" />
@@ -20,8 +21,4 @@
     <Reference Include="xunit.analyzers" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- Removing nonexistent package -->
-    <SuppressBaselineReference Include="Microsoft.AspNetCore.Testing" />
-  </ItemGroup>
 </Project>
