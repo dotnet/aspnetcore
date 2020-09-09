@@ -18,6 +18,7 @@ namespace TestServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSignalR();
             services.AddMvc();
             services.AddCors(options =>
             {
@@ -50,10 +51,11 @@ namespace TestServer
 
                 app.UseRouting();
 
-                app.UseCors();
+                app.UseCors("AllowAll");
 
                 app.UseEndpoints(endpoints =>
                 {
+                    endpoints.MapHub<ChatHub>("/chathub");
                     endpoints.MapControllers();
                     endpoints.MapFallbackToFile("index.html");
                 });

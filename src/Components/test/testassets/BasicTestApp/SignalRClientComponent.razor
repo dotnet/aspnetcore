@@ -1,9 +1,16 @@
-﻿@page "/signalr"
-@using Microsoft.AspNetCore.SignalR.Client
-@inject NavigationManager NavigationManager
-@implements IAsyncDisposable
+﻿@using Microsoft.AspNetCore.SignalR.Client
 
-<h1>SignalR!</h1>
+<h1 id="signalr-client">SignalR Client</h1>
+
+<p>This shows that the SignalR client can be used on WebAssembly.</p>
+
+<p>
+    Hub URL:
+    <input id="hub-url" @bind="hubUrl" />
+    <button id="hub-connect" @onclick="Connect">Connect</button>
+</p>
+
+<div>Connected: @IsConnected</div>
 
 <ul id="messagesList">
     @foreach (var message in messages)
@@ -13,13 +20,14 @@
 </ul>
 
 @code {
+    private string hubUrl;
     private HubConnection hubConnection;
     private List<string> messages = new List<string>();
 
-    protected override async Task OnInitializedAsync()
+    protected async Task Connect()
     {
         hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
+            .WithUrl(hubUrl)
             .Build();
 
         hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
@@ -30,15 +38,11 @@
         });
 
         await hubConnection.StartAsync();
-
-        await Send();
+        await hubConnection.SendAsync("SendMessage", "SignalR Client", "Echo");
     }
 
-    Task Send() =>
-        hubConnection.SendAsync("SendMessage", "SignalR Client", "Echo");
-
     public bool IsConnected =>
-        hubConnection.State == HubConnectionState.Connected;
+        hubConnection != null && hubConnection.State == HubConnectionState.Connected;
 
     public ValueTask DisposeAsync()
     {
