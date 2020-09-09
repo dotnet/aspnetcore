@@ -61,13 +61,13 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// The sliding expiration that should be used for entries in the cache for user claims, defaults to 10 minutes.
         /// This is a sliding expiration that will extend each time claims for a user is retrieved.
         /// </summary>
-        public TimeSpan ClaimsCacheEntrySlidingExpiration { get; set; } = TimeSpan.FromMinutes(10);
+        public TimeSpan ClaimsCacheSlidingExpiration { get; set; } = TimeSpan.FromMinutes(10);
 
         /// <summary>
         /// The absolute expiration that should be used for entries in the cache for user claims, defaults to 60 minutes.
         /// This is an absolute expiration that starts when a claims for a user is retrieved for the first time.
         /// </summary>
-        public TimeSpan ClaimsCacheEntryAbsoluteExpiration { get; set; } = TimeSpan.FromMinutes(60);
+        public TimeSpan ClaimsCacheAbsoluteExpiration { get; set; } = TimeSpan.FromMinutes(60);
 
         /// <summary>
         /// The maximum size of the claim results cache, defaults to 100 MB.
