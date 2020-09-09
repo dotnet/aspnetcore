@@ -1,8 +1,6 @@
-// This file is to show how a library package may provide JavaScript interop features
-// wrapped in a .NET API
+// This is a JavaScript module that is loaded on demand. It can export any number of
+// functions, and may import other JavaScript modules if required.
 
-window.exampleJsFunctions = {
-  showPrompt: function (message) {
-    return prompt(message, 'Type anything here');
-  }
-};
+export function showPrompt(message) {
+  return prompt(message, 'Type anything here');
+}

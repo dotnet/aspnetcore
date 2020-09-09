@@ -3128,6 +3128,84 @@ class HubConnectionTest {
     }
 
     @Test
+    public void stopWithoutObservingWithLongPollingTransportStops() {
+        AtomicInteger requestCount = new AtomicInteger(0);
+        CompletableSubject blockGet = CompletableSubject.create();
+        TestHttpClient client = new TestHttpClient()
+            .on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                (req) -> Single.just(new HttpResponse(200, "",
+                        TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))))
+            .on("GET", (req) -> {
+                if (requestCount.getAndIncrement() > 1) {
+                    blockGet.blockingAwait();
+                }
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{}" + RECORD_SEPARATOR)));
+            })
+            .on("POST", "http://example.com?id=bVOiRPG8-6YiJ6d7ZcTOVQ", (req) -> {
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("")));
+            });
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransport(TransportEnum.LONG_POLLING)
+                .withHttpClient(client)
+                .build();
+
+        CompletableSubject closed = CompletableSubject.create();
+        hubConnection.onClosed((e) -> {
+            closed.onComplete();
+        });
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        hubConnection.stop();
+        closed.timeout(1, TimeUnit.SECONDS).blockingAwait();
+        blockGet.onComplete();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
+
+    @Test
+    public void hubConnectionClosesAndRunsOnClosedCallbackAfterCloseMessageWithLongPolling()  {
+        AtomicInteger requestCount = new AtomicInteger(0);
+        CompletableSubject blockGet = CompletableSubject.create();
+        TestHttpClient client = new TestHttpClient()
+            .on("POST", "http://example.com/negotiate?negotiateVersion=1",
+                (req) -> Single.just(new HttpResponse(200, "",
+                        TestUtils.stringToByteBuffer("{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"))))
+            .on("GET", (req) -> {
+                if (requestCount.getAndIncrement() > 1) {
+                    blockGet.blockingAwait();
+                    return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"type\":7}" + RECORD_SEPARATOR)));
+                }
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{}" + RECORD_SEPARATOR)));
+            })
+            .on("POST", "http://example.com?id=bVOiRPG8-6YiJ6d7ZcTOVQ", (req) -> {
+                return Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("")));
+            });
+
+        HubConnection hubConnection = HubConnectionBuilder
+            .create("http://example.com")
+            .withTransport(TransportEnum.LONG_POLLING)
+            .withHttpClient(client)
+            .build();
+
+        CompletableSubject closed = CompletableSubject.create();
+        hubConnection.onClosed((ex) -> {
+            closed.onComplete();
+        });
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        blockGet.onComplete();
+
+        closed.timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+    }
+
+    @Test
     public void receivingServerSentEventsTransportFromNegotiateFails() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "",
